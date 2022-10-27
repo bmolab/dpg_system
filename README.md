@@ -67,7 +67,8 @@ class AdditionNode(Node):
             data = self.input.get_received_data()
             operand = self.operand_input.get_widget_value()
             sum = data + operand
-            self.output.send(sum)```
+            self.output.send(sum)
+```
             
 The static method at the start creates a 'factory' for creating these nodes. This will always be the same except that the name of the node being created must match the name of the class.
 
