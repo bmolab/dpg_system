@@ -3,7 +3,7 @@ system for supporting ui and nodes using dearpygui
 
 dpg_system creates an enhanced dearpygui-based environment for building out node-based playgrounds for quick ui work in python.
 
-Simple Example:
+__Simple Example__
 
 This example creates and runs an instance of dgp_system.App. When run, you will see a window with a blank grid, which is the canvas on which you can place nodes. 
 
@@ -29,12 +29,12 @@ You can select multiple nodes by dragging across them.
 The selected node(s) can be duplicated by pressing 'd'.
 
 Other shortcuts:
-'i' creates an integer ui node 
-'f' creates a float ui node
-'v' creates a vector ui node
-'b' creates a button node
-'t' creates a toggle (checkbox) ui node
-'m' creates a message ui node (which sends / receives strings and lists
+-'i' creates an integer ui node 
+-'f' creates a float ui node
+-'v' creates a vector ui node
+-'b' creates a button node
+-'t' creates a toggle (checkbox) ui node
+-'m' creates a message ui node (which sends / receives strings and lists
 
 when you have selected a node, pressing 'o' shows you any additional options that you can set for this node (pressing it again makes this disappear.)
 
@@ -42,7 +42,7 @@ You can save and load node patches from the 'File' menu. They are saved as json 
 
 You can have multiple node windows in separate tabs in the dpg_system window.
 
-_Custom Nodes
+__Custom Nodes__
 
 A simple node can be created by creating a sub-class of Node.
 
