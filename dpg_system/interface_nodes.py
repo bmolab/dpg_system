@@ -1,0 +1,1008 @@
+import dearpygui.dearpygui as dpg
+import time
+from dpg_system.node import Node
+import threading
+from dpg_system.conversion_utils import *
+from dpg_system.matrix_nodes import RollingBuffer
+
+def register_interface_nodes():
+    Node.app.register_node("menu", MenuNode.factory)
+    Node.app.register_node("toggle", ToggleNode.factory)
+    Node.app.register_node("button", ButtonNode.factory)
+    Node.app.register_node("b", ButtonNode.factory)
+    Node.app.register_node("mouse", MouseNode.factory)
+    Node.app.register_node("float", ValueNode.factory)
+    Node.app.register_node("int", ValueNode.factory)
+    Node.app.register_node("slider", ValueNode.factory)
+    Node.app.register_node("message", ValueNode.factory)
+    Node.app.register_node("knob", ValueNode.factory)
+    Node.app.register_node("plot", PlotNode.factory)
+    Node.app.register_node("heat_map", PlotNode.factory)
+    Node.app.register_node("heat_scroll", PlotNode.factory)
+    Node.app.register_node("Value Tool", ValueNode.factory)
+    Node.app.register_node('print', PrintNode.factory)
+    Node.app.register_node('load_action', LoadActionNode.factory)
+    Node.app.register_node('color', ColorPickerNode.factory)
+    Node.app.register_node('vector', VectorNode.factory)
+
+
+class ButtonNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ButtonNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.target_time = 0
+        self.frame_task_primed = False
+        self.flash_duration = .100
+
+        self.input = self.add_input('', trigger_node=self, widget_type='button', widget_width=14)
+        self.input.add_callback(self.clicked_function, user_data=self)
+        self.output = self.add_output("")
+
+        self.flash_duration_option = self.add_option('flash duration', widget_type='drag_float', min=0, max=1.0, default_value=self.flash_duration)
+
+        with dpg.theme() as self.active_theme:
+            with dpg.theme_component(dpg.mvAll):
+                dpg.add_theme_color(dpg.mvThemeCol_Button, (255, 255, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, (255, 255, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, (255, 255, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
+        with dpg.theme() as self.inactive_theme:
+            with dpg.theme_component(dpg.mvAll):
+                dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
+
+    def custom(self):
+        self.add_frame_task()
+
+    def clicked_function(self):
+        self.flash_duration = self.flash_duration_option.get_widget_value()
+        self.target_time = time.time() + self.flash_duration
+        self.frame_task_primed = True
+        dpg.bind_item_theme(self.input.widget.uuid, self.active_theme)
+
+    def frame_task(self):
+        if self.frame_task_primed:
+            now = time.time()
+            if now >= self.target_time:
+                self.frame_task_primed = False
+                dpg.bind_item_theme(self.input.widget.uuid, self.inactive_theme)
+
+    def execute(self):
+        # how do we handle this?
+        # highlight button if input
+        # output bang if clicked
+        self.output.set('bang')
+        self.send_outputs()
+
+
+class MenuNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = MenuNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.choice = ''
+        self.choices = args
+        self.choice_input = self.add_input('##choice', widget_type='combo', default_value=self.choice)
+        self.choice_input.widget.combo_items = args
+        self.choice_input.add_callback(self.set_choice)
+
+        self.output = self.add_output("")
+
+    def set_choice(self):
+        do_execute = True
+        if self.choice_input.fresh_input:
+            input_choice = self.choice_input.get_received_data()
+            t = type(input_choice)
+            test_choice = None
+            if t == list:
+                if len(input_choice) == 1:
+                    test_choice = input_choice[0]
+                else:
+                    if input_choice[0] == 'set':
+                        test_choice = input_choice[1]
+                        do_execute = False
+                    elif input_choice[0] == 'append':
+                        for new_choice in input_choice[1:]:
+                            if new_choice not in self.choices:
+                                self.choices.append(new_choice)
+                        dpg.configure_item(self.choice_input.widget.uuid, items=self.choices)
+                        do_execute = False
+                    else:
+                        self.choices = []
+                        for new_choice in input_choice:
+                            if new_choice not in self.choices:
+                                self.choices.append(new_choice)
+                        dpg.configure_item(self.choice_input.widget.uuid, items=self.choices)
+                        do_execute = False
+            elif t in [int, float, bool]:
+                test_choice = str(input_choice)
+                if test_choice not in self.choices:
+                    choice = int(input_choice)
+                    if choice < len(self.choices):
+                        test_choice = self.choices[choice]
+            elif t == str:
+                test_choice = input_choice
+            if test_choice is not None and test_choice in self.choices:
+                self.choice_input.set(test_choice)
+        if do_execute:
+            self.execute()
+
+    def execute(self):
+        self.output[0].set(self.choice_input.get_widget_value())
+        self.send_outputs()
+
+
+class MouseNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = MouseNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.value = False
+        self.mouse_pos = None
+
+        self.input = self.add_input("", trigger_node=self, widget_type='checkbox', widget_width=40)
+        self.input.add_callback(self.execute)
+        self.output_x = self.add_output("x")
+        self.output_y = self.add_output("y")
+
+    def custom(self):
+        self.add_frame_task()
+
+    def frame_task(self):
+        if self.input.get_widget_value():
+            self.mouse_pos = dpg.get_mouse_pos(local=False)
+            self.execute()
+
+    def execute(self):
+        if self.mouse_pos is not None:
+            self.output_y.set(self.mouse_pos[1])
+            self.output_x.set(self.mouse_pos[0])
+        self.send_outputs()
+
+
+class ToggleNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ToggleNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.value = False
+        self.input = self.add_input("", trigger_node=self, widget_type='checkbox', widget_width=40)
+        self.input.add_callback(self.execute)
+        self.output = self.add_output("")
+
+    def execute(self):
+        if self.input.fresh_input:
+            received = self.input.get_received_data
+            if type(received) == str:
+                if received == 'bang':
+                    self.value = not self.value
+                    self.input.set(self.value)
+        else:
+            self.value = self.input.get_widget_value()
+
+        self.output.set(self.value)
+        self.send_outputs()
+
+
+class ValueNode(Node):
+    handler = None
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ValueNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        widget_type = 'drag_float'
+        widget_width = 100
+        self.value = dpg.generate_uuid()
+        self.horizontal = True
+        self.min = None
+        self.max = None
+        self.format = '%.3f'
+        self.variable = None
+        self.variable_name = ''
+        self.min_property = None
+        self.max_property = None
+
+        if label == 'float':
+            widget_type = 'drag_float'
+        elif label == 'int':
+            widget_type = 'drag_int'
+        elif label == 'slider':
+            if args is not None and len(args) > 0:
+                max, t = decode_arg(args, 0)
+                if t == float:
+                    widget_type = 'slider_float'
+                    self.max = max
+                elif t == int:
+                    widget_type = 'slider_int'
+                    self.max = max
+            else:
+                widget_type = 'slider_float'
+        elif label == 'knob':
+            widget_type = 'knob_float'
+            if args is not None and len(args) > 0:
+                max, t = decode_arg(args, 0)
+                if t == float:
+                    widget_type = 'knob_float'
+                    self.max = max
+                elif t == int:
+                    widget_type = 'knob_int'
+                    self.max = max
+        elif label == 'string' or label == 'message':
+            widget_type = 'text_input'
+
+        if args is not None and len(args) > 0:
+            for i in range(len(args)):
+                max, t = decode_arg(args, i)
+                if t == str:
+                    self.variable_name = max
+
+        if self.max is None:
+            self.input = self.add_input("", trigger_node=self, widget_type=widget_type, widget_uuid=self.value, widget_width=widget_width, has_trigger=True)
+        else:
+            self.input = self.add_input("", trigger_node=self, widget_type=widget_type, widget_uuid=self.value, widget_width=widget_width, has_trigger=True, max=self.max)
+
+        # self.input.add_callback(self.value_changed)
+        if self.variable_name != '':
+            self.output = self.add_output(self.variable_name)
+        else:
+            self.output = self.add_output('out')
+
+        self.variable_binding_property = self.add_option('bind to', widget_type='text_input', width=120, default_value=self.variable_name)
+        self.variable_binding_property.add_callback(self.binding_changed)
+
+        if widget_type in ['drag_float', 'slider_float', "knob_float"]:
+            self.min_property = self.add_option('min', widget_type='drag_float', default_value=self.min)
+            self.min_property.add_callback(self.options_changed)
+            self.max_property = self.add_option('max', widget_type='drag_float', default_value=self.max)
+            self.max_property.add_callback(self.options_changed)
+        if widget_type in ['drag_float', 'slider_float', 'drag_int', 'knob_int']:
+            self.format_property = self.add_option('format', widget_type='text_input', default_value=self.format)
+            self.format_property.add_callback(self.options_changed)
+
+    def binding_changed(self):
+        binding = self.variable_binding_property.get_widget_value()
+        self.bind_to_variable(binding)
+
+    def bind_to_variable(self, variable_name):
+        # change name
+        if variable_name != '':
+            v = Node.app.find_variable(variable_name)
+            if v is None:
+                default = 0.0
+                if self.input.widget.widget in ['drag_float', 'slider_float', "knob_float"]:
+                    default = 0.0
+                elif self.input.widget.widget in ['drag_int', 'slider_int', "knob_int"]:
+                    default = 0
+                elif self.input.widget.widget in ['combo', 'text_input']:
+                    default = ''
+                v = Node.app.add_variable(variable_name, default_value=default)
+            if v:
+                self.variable_name = variable_name
+                self.variable = v
+                self.input.attach_to_variable(v)
+                self.variable.attach_client(self)
+                self.output._label = self.variable_name
+                dpg.configure_item(self.output.uuid, label=self.variable_name)
+                self.variable_update()
+
+    def custom(self):
+        if self.variable_name != '':
+            self.bind_to_variable(self.variable_name)
+
+    def options_changed(self):
+        if self.min_property is not None and self.max_property is not None:
+            self.min = self.min_property.get_widget_value()
+            self.max = self.max_property.get_widget_value()
+            self.input.widget.set_limits(self.min, self.max)
+
+        self.format = self.format_property.get_widget_value()
+        self.input.widget.set_format(self.format)
+
+    def value_changed(self):
+        pass
+
+    def variable_update(self):
+        if self.variable is not None:
+            data = self.variable.get_value()
+            self.input.set(data, propagate=False)
+        self.update(propagate=False)
+
+    def custom_cleanup(self):
+        if self.variable is not None:
+            self.variable.detach_client(self)
+
+    def execute(self):
+        value = None
+        if self._input_attributes[0].fresh_input:
+            in_data = self._input_attributes[0].get_received_data()
+            t = type(in_data)
+            if t == str:
+                value = in_data.split(' ')
+            elif t == list:
+                value = in_data
+            elif t in [float, int, bool]:
+                value = in_data
+            else:
+                if self.input.widget.widget == 'text_input':
+                    value = str(in_data)
+            if self.variable is not None:
+                self.variable.set(value, from_client=self)
+        else:
+            value = dpg.get_value(self.value)
+            if type(value) == str:
+                value = value.split(' ')
+                if len(value) == 1:
+                    value = value[0]
+            if self.variable is not None:
+                self.variable.set(value, from_client=self)
+        if self.input.widget.widget == 'text_input':
+            size = dpg.get_text_size(self.input.get_widget_value(), font=dpg.get_item_font(self.input.widget.uuid))
+            width = size[0]
+            if width > 1024:
+                width = 1024
+            if width > dpg.get_item_width(self.input.widget.uuid):
+                dpg.set_item_width(self.input.widget.uuid, width)
+        self.output.set(value)
+        self.send_outputs()
+
+    def update(self, propagate=True):
+        value = dpg.get_value(self.value)
+        if type(value) == str:
+            value = value.split(' ')
+            if len(value) == 1:
+                value = value[0]
+        if self.variable is not None and propagate:
+            self.variable.set(value, from_client=self)
+
+        if self.input.widget.widget == 'text_input':
+            size = dpg.get_text_size(self.input.get_widget_value(), font=dpg.get_item_font(self.input.widget.uuid))
+            width = size[0]
+            if width > 1024:
+                width = 1024
+            if width > dpg.get_item_width(self.input.widget.uuid):
+                dpg.set_item_width(self.input.widget.uuid, width)
+        self.output.set(value)
+        self.send_outputs()
+
+
+class VectorNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = VectorNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.max_component_count = 32
+        self.current_component_count = 4
+        self.format = '%.3f'
+
+        if args is not None:
+            # print(args)
+            self.current_component_count = any_to_int(args[0])
+
+        self.input = self.add_input("in", trigger_node=self)
+
+        self.component_properties = []
+        for i in range(self.max_component_count):
+            cp = self.add_property('##' + str(i), widget_type='drag_float')
+            self.component_properties.append(cp)
+            cp.add_callback(self.component_changed)
+
+        self.output = self.add_output('out')
+
+        self.component_count_property = self.add_option('component count', widget_type='drag_int', default_value=self.current_component_count)
+        self.component_count_property.add_callback(self.component_count_changed)
+
+        self.format_option = self.add_option(label='number format', widget_type='text_input', default_value=self.format)
+        self.format_option.add_callback(self.change_format)
+
+    def custom(self):
+        for i in range(self.max_component_count):
+            if i < self.current_component_count:
+                dpg.show_item(self.component_properties[i].uuid)
+            else:
+                dpg.hide_item(self.component_properties[i].uuid)
+
+    def component_count_changed(self):
+        self.current_component_count = self.component_count_property.get_widget_value()
+        if self.current_component_count > self.max_component_count:
+            self.current_component_count = self.max_component_count
+            self.component_count_property.set(self.current_component_count)
+        for i in range(self.max_component_count):
+            if i < self.current_component_count:
+                dpg.show_item(self.component_properties[i].uuid)
+            else:
+                dpg.hide_item(self.component_properties[i].uuid)
+
+    def component_changed(self):
+        self.execute()
+
+    def change_format(self):
+        self.format = self.format_option.get_widget_value()
+        for i in range(self.max_component_count):
+            dpg.configure_item(self.component_properties[i].widget.uuid, format=self.format)
+
+    def execute(self):
+        if self.input.fresh_input:
+            value = self.input.get_received_data()
+            t = type(value)
+            if t == list:
+                value = np.array(value)
+                t = np.ndarray
+            elif t in [float, int, np.double, np.int64]:
+                self.current_component_count = 1
+                value = np.array([value])
+                t = np.ndarray
+            if t == np.ndarray:
+                if self.current_component_count != value.size:
+                    self.component_count_property.set(value.size)
+                self.current_component_count = value.size
+                ar = value.reshape((value.size))
+                if self.current_component_count > self.max_component_count:
+                    self.current_component_count = self.max_component_count
+                for i in range(self.max_component_count):
+                    if i < self.current_component_count:
+                        dpg.show_item(self.component_properties[i].uuid)
+                        self.component_properties[i].set(any_to_float(ar[i]))
+                    else:
+                        dpg.hide_item(self.component_properties[i].uuid)
+                self.output.send(value)
+        else:
+            output_array = np.ndarray((self.current_component_count))
+            for i in range(self.current_component_count):
+                output_array[i] = self.component_properties[i].get_widget_value()
+            self.output.send(output_array)
+
+
+class PrintNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = PrintNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.precision = 3
+        self.format_string = '{:.3f}'
+        self.input = self.add_input('in', trigger_node=self)
+
+        self.precision_option = self.add_option(label='precision', widget_type='drag_int', default_value=self.precision, min=0, max=32)
+        self.precision_option.add_callback(self.change_format)
+
+    def change_format(self):
+        self.precision = self.precision_option.get_widget_value()
+        if self.precision < 0:
+            self.precision = 0
+            self.precision_option.set(0)
+        self.format_string = '{:.' + str(self.precision) + 'f}'
+
+    def print_list(self, list):
+        print('[', end='')
+        n = len(list)
+        end = ' '
+        for i, d in enumerate(list):
+            if i == n - 1:
+                end = ''
+            tt = type(d)
+            if tt in [int, np.int64, bool, np.bool_, str]:
+                print(d, end=end)
+            elif tt in [float, np.double]:
+                print(self.format_string.format(d), end=end)
+            elif tt == list:
+                self.print_list(d)
+        print(']')
+
+    def execute(self):
+        data = self.input.get_received_data()
+        t = type(data)
+        if t in [int, np.int64, bool, np.bool_, str]:
+            print(data)
+        elif t in [float, np.double]:
+            print(self.format_string.format(data))
+        elif t == list:
+            self.print_list(data)
+        elif t == np.ndarray:
+            np.set_printoptions(precision=self.precision)
+            print(data)
+
+
+class LoadActionNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = LoadActionNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.first_time = True
+
+        self.message_list = []
+        if len(args) > 0:
+            for arg in args:
+                self.message_list.append(arg)
+        self.message_string = ' '.join(self.message_list)
+
+        self.input = self.add_input('trigger', trigger_node=self)
+        self.load_action_property = self.add_property(label='##loadActionString', widget_type='text_input', default_value=self.message_string)
+        self.output = self.add_output("out")
+
+    def custom(self):
+        self.add_frame_task()
+
+    def frame_task(self):
+        if self.first_time:
+            self.first_time = False
+            self.remove_frame_tasks()
+            self.output.send(self.message_list)
+
+    def execute(self):
+        self.output.send(self.message_list)
+
+
+class PlotNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = PlotNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.style_type = 'line'
+
+        self.style = -1
+        if label == 'plot':
+            self.style = 0
+            self.update_style = 'input is stream of samples'
+        elif label == 'heat_scroll':
+            self.style = 5
+            self.style_type = label
+            self.update_style = 'input is multi-channel sample'
+        elif label == 'heat_map':
+            self.style = 6
+            self.style_type = label
+            self.update_style = 'buffer holds one sample of input'
+
+        self.sample_count = 200
+        self.width = 300
+        self.height = 128
+        self.min_x = 0
+        self.max_x = self.sample_count
+        self.min_y = -1.0
+        self.max_y = 1.0
+        self.format = ''
+        self.rows = 1
+        self.elapser = 0
+
+        self.x_axis = dpg.generate_uuid()
+        self.y_axis = dpg.generate_uuid()
+        self.plot_data_tag = dpg.generate_uuid()
+        self.plot_tag = dpg.generate_uuid()
+
+        self.x_data = np.linspace(0, self.sample_count, self.sample_count)
+        self.roll_along_x = False
+
+        self.input = self.add_input("y", trigger_node=self)
+
+        self.input_x = None
+        if self.style == 1:
+            self.input_x = self.add_input("x")
+
+        self.plot_display = self.add_display('')
+        self.plot_display.submit_callback = self.submit_display
+
+        self.style_property = self.add_option('style', widget_type='combo', default_value=self.style_type)
+        self.style_property.widget.combo_items = ['line', 'scatter', 'stair', 'stem', 'bar', 'heat_map', 'heat_scroll']
+        self.style_property.add_callback(self.change_style_property)
+
+        self.heat_map_colour_property = self.add_option('color', widget_type='combo', default_value='viridis')
+        self.heat_map_colour_property.widget.combo_items = ['deep', 'dark', 'pastel', 'paired', 'viridis', 'plasma', 'hot', 'cool', 'pink', 'jet', 'twilight', 'red-blue', 'brown-bluegreen', 'pink-yellowgreen', 'spectral', 'greys']
+        self.heat_map_colour_property.add_callback(self.change_colormap)
+
+        self.sample_count_option = self.add_option(label='sample count', widget_type='drag_int', default_value=self.sample_count, max=3840)
+        self.sample_count_option.add_callback(self.change_sample_count)
+
+        self.width_option = self.add_option(label='width', widget_type='drag_int', default_value=self.width, max=3840)
+        self.width_option.add_callback(self.change_size)
+
+        self.height_option = self.add_option(label='height', widget_type='drag_int', default_value=self.height, max=3840)
+        self.height_option.add_callback(self.change_size)
+
+        self.min_x_option = self.add_option(label='min x', widget_type='drag_float', default_value=self.min_x, max=3840)
+        self.min_x_option.add_callback(self.change_range)
+        self.min_x_option.widget.speed = .01
+
+        self.max_x_option = self.add_option(label='max x', widget_type='drag_float', default_value=self.max_x, max=3840)
+        self.max_x_option.add_callback(self.change_range)
+        self.max_x_option.widget.speed = .01
+
+        self.min_y_option = self.add_option(label='min y', widget_type='drag_float', default_value=self.min_y, max=3840)
+        self.min_y_option.add_callback(self.change_range)
+        self.min_y_option.widget.speed = .01
+
+        self.max_y_option = self.add_option(label='max y', widget_type='drag_float', default_value=self.max_y, max=3840)
+        self.max_y_option.add_callback(self.change_range)
+        self.max_y_option.widget.speed = .01
+
+        self.format_option = self.add_option(label='number format', widget_type='text_input', default_value='')
+        self.format_option.add_callback(self.change_format)
+
+        self.lock = threading.Lock()
+
+    def submit_display(self):
+        with(dpg.plot(label='', tag=self.plot_tag, height=self.height, width=self.width, no_title=True)):
+            if self.style in [6, 5]:
+                dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Viridis)
+            dpg.add_plot_axis(dpg.mvXAxis, label="", tag=self.x_axis, no_tick_labels=True)
+            dpg.add_plot_axis(dpg.mvYAxis, label="", tag=self.y_axis, no_tick_labels=True)
+
+    def custom(self):
+        self.reallocate_buffer()
+
+        if self.style == 0:
+            self.min_y = -1.0
+            self.min_y_option.set(-1.0)
+            self.max_y = 1.0
+            self.max_y_option.set(1.0)
+            dpg.set_axis_limits(self.y_axis, self.min_y, self.max_y)
+            buffer = self.y_data.get_buffer(block=True)
+            if buffer is not None:
+                dpg.add_line_series(self.x_data, buffer.ravel(), parent=self.y_axis, tag=self.plot_data_tag)
+            self.y_data.release_buffer()
+            dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Deep)
+        elif self.style == 5:
+            self.min_y = 0.0
+            self.min_y_option.set(0.0)
+            self.max_y = 1.0
+            self.max_y_option.set(1.0)
+            dpg.set_axis_limits(self.y_axis, 0, 1)
+            dpg.set_axis_limits(self.x_axis, self.min_x / self.sample_count, self.max_x / self.sample_count)
+            buffer = self.y_data.get_buffer(block=True)
+            if buffer is not None:
+                dpg.add_heat_series(x=buffer, rows=self.y_data.breadth, cols=self.y_data.sample_count, parent=self.y_axis,
+                                tag=self.plot_data_tag, format=self.format, scale_min=self.min_y, scale_max=self.max_y)
+                self.y_data.release_buffer()
+            dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Viridis)
+            self.change_range()
+        elif self.style == 6:
+            self.min_y = 0.0
+            self.min_y_option.set(0.0)
+            self.max_y = 1.0
+            self.max_y_option.set(1.0)
+            self.format = '%.3f'
+            dpg.set_axis_limits(self.y_axis, 0, 1)
+            dpg.set_axis_limits(self.x_axis, self.min_x / self.sample_count, self.max_x / self.sample_count)
+            buffer = self.y_data.get_buffer(block=True)
+            if buffer is not None:
+                dpg.add_heat_series(x=buffer.ravel(), rows=self.y_data.breadth, cols=self.y_data.sample_count, parent=self.y_axis,
+                                    tag=self.plot_data_tag, format=self.format, scale_min=self.min_y, scale_max=self.max_y)
+                self.y_data.release_buffer()
+            dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Viridis)
+            self.change_range()
+            self.format_option.set(self.format)
+
+    def change_colormap(self):
+        colormap = self.heat_map_colour_property.get_widget_value()
+        if colormap == 'deep':
+            dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Deep)
+        elif colormap == 'dark':
+            dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Dark)
+        elif colormap == 'pastel':
+            dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Pastel)
+        elif colormap == 'paired':
+            dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Paired)
+        elif colormap == 'viridis':
+            dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Viridis)
+        elif colormap == 'plasma':
+            dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Plasma)
+        elif colormap == 'hot':
+            dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Hot)
+        elif colormap == 'cool':
+            dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Cool)
+        elif colormap == 'pink':
+            dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Pink)
+        elif colormap == 'jet':
+            dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Jet)
+        elif colormap == 'twilight':
+            dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Twilight)
+        elif colormap == 'red-blue':
+            dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_RdBu)
+        elif colormap == 'brown-bluegreen':
+            dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_BrBG)
+        elif colormap == 'pink-yellowgreen':
+            dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_PiYG)
+        elif colormap == 'spectral':
+            dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Spectral)
+        elif colormap == 'greys':
+            dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Greys)
+
+    def value_dragged(self):
+        if not dpg.is_mouse_button_down(0):
+            return
+        self.value_changed()
+
+    def buffer_changed(self, buffer):
+        self.sample_count_option.set(self.sample_count)
+        self.min_x_option.set(0)
+        self.max_x_option.set(self.sample_count)
+        dpg.set_axis_limits(self.x_axis, self.min_x / self.sample_count, self.max_x / self.sample_count)
+        if self.style != 0:
+            if dpg.does_item_exist(self.plot_data_tag):
+                dpg.configure_item(self.plot_data_tag, rows=self.y_data.breadth, cols=self.y_data.sample_count)
+        self.change_range()
+
+
+    def change_sample_count_no_lock(self):
+        self.sample_count_option.set(self.sample_count)
+        self.min_x_option.set(0)
+        self.max_x_option.set(self.sample_count)
+        dpg.set_axis_limits(self.x_axis, self.min_x / self.sample_count, self.max_x / self.sample_count)
+        del self.y_data
+        self.reallocate_buffer()
+        del self.x_data
+        self.x_data = np.linspace(0, self.sample_count, self.sample_count)
+        dpg.configure_item(self.plot_data_tag, rows=self.y_data.breadth, cols=self.y_data.sample_count)
+        self.change_range()
+
+    def reallocate_buffer(self):
+        self.y_data = RollingBuffer((self.sample_count, self.rows), roll_along_x=False)
+        self.y_data.owner = self
+        self.y_data.buffer_changed_callback = self.buffer_changed
+        self.y_data.set_update_style(self.update_style)
+
+    def change_style_property(self):
+        self.style_type = self.style_property.get_widget_value()
+        if self.style_type == 'heat_map':
+            self.style = 6
+            self.update_style = 'buffer holds one sample of input'
+        elif self.style_type == 'heat_scroll':
+            self.style = 5
+            self.update_style = 'input is multi-channel sample'
+        else:
+            self.style = 0
+            self.heat_map_colour_property.set('deep')
+            self.update_style = 'input is stream of samples'
+        self.y_data.set_update_style(self.update_style)
+        if self.style_type != 'heat_map' and self.sample_count_option.get_widget_value() == 1:
+            self.sample_count_option.set(200)
+        self.change_sample_count()
+
+    def change_sample_count(self):
+        self.lock.acquire(blocking=True)
+        self.sample_count = self.sample_count_option.get_widget_value()
+        if self.sample_count < 1:
+            self.sample_count = 1
+            self.sample_count_option.set(self.sample_count)
+        del self.x_data
+        del self.y_data
+        self.x_data = np.linspace(0, self.sample_count, self.sample_count)
+        self.reallocate_buffer()
+
+        self.min_x_option.set(0)
+        self.max_x_option.set(self.sample_count)
+
+        dpg.delete_item(self.plot_data_tag)
+        buffer = self.y_data.get_buffer(block=True)
+        if buffer is not None:
+            if self.style < 4:
+                if self.style_type == 'line':
+                    dpg.add_line_series(self.x_data, buffer, parent=self.y_axis, tag=self.plot_data_tag)
+                elif self.style_type == 'scatter':
+                    dpg.add_scatter_series(self.x_data, buffer, parent=self.y_axis, tag=self.plot_data_tag)
+                elif self.style_type == 'stair':
+                    dpg.add_stair_series(self.x_data, buffer, parent=self.y_axis, tag=self.plot_data_tag)
+                elif self.style_type == 'stem':
+                    dpg.add_stem_series(self.x_data, buffer, parent=self.y_axis, tag=self.plot_data_tag)
+                elif self.style_type == 'bar':
+                    dpg.add_bar_series(self.x_data, buffer, parent=self.y_axis, tag=self.plot_data_tag)
+                self.change_colormap()
+            else:
+                dpg.set_axis_limits(self.y_axis, 0, 1)
+                dpg.set_axis_limits(self.x_axis, self.min_x / self.sample_count, self.max_x / self.sample_count)
+                dpg.add_heat_series(x=buffer, rows=self.y_data.breadth, cols=self.y_data.sample_count, parent=self.y_axis,
+                                    tag=self.plot_data_tag, format=self.format, scale_min=self.min_y, scale_max=self.max_y)
+                self.change_colormap()
+            self.y_data.release_buffer()
+        self.change_range()
+        self.lock.release()
+
+    def change_range(self):
+        if self.style >= 4:
+            dpg.set_axis_limits(self.y_axis, 0, 1)
+            dpg.set_axis_limits(self.x_axis, self.min_x_option.get_widget_value() / self.sample_count, self.max_x_option.get_widget_value() / self.sample_count)
+            dpg.set_axis_limits(self.y_axis, self.min_y_option.get_widget_value(), self.max_y_option.get_widget_value())
+        else:
+            dpg.set_axis_limits(self.y_axis, self.min_y_option.get_widget_value(), self.max_y_option.get_widget_value())
+            dpg.set_axis_limits(self.x_axis, self.min_x_option.get_widget_value(), self.max_x_option.get_widget_value())
+
+    def change_size(self):
+        dpg.set_item_width(self.plot_tag, self.width_option.get_widget_value())
+        dpg.set_item_height(self.plot_tag, self.height_option.get_widget_value())
+
+    def change_format(self):
+        self.format = self.format_option.get_widget_value()
+        if self.style >= 4:
+            dpg.configure_item(self.plot_data_tag, format=self.format)
+
+    def execute(self):
+        self.lock.acquire(blocking=True)
+        if self.input.fresh_input:   # standard plot
+            data = self.input.get_received_data()
+            t = type(data)
+
+            if self.style == 0:
+                if t in [float, np.double, int, np.int64, bool, np.bool_]:
+                    ii = np.array([data])
+                    self.y_data.update(ii)
+                elif t == list:
+                    length = len(data)
+                    if length > self.sample_count:
+                        length = self.sample_count
+                    ii = np.array(data)
+                    self.y_data.update(ii)
+                elif t == np.ndarray:
+                    if len(data.shape) == 1:
+                        self.y_data.update(data)
+            elif self.style == 5:  # heat_scroll ... input might be list or array
+                if t not in [list, np.ndarray]:
+                    ii = np.array([data])
+                    self.y_data.update(ii)
+                elif t == list:
+                    rows = len(data)
+                    if rows != self.rows:
+                        self.rows = rows
+                        self.sample_count_option.set(self.sample_count)
+                    ii = np.array([data]).reshape((rows, 1))
+                    self.y_data.update(ii)
+                elif t == np.ndarray:
+                    rows = data.size
+                    if rows != self.rows:
+                        self.rows = rows
+                    ii = data.reshape((rows, 1))
+                    self.y_data.update(ii)
+            elif self.style == 6:  # heat map
+                if t not in [list, np.ndarray]:
+                    rows = 1
+                    sample_count = 1
+                    if rows != self.rows or sample_count != self.sample_count:
+                        self.rows = rows
+                        self.sample_count = sample_count
+                    self.y_data.update(np.array([data]))
+
+                elif t == list:
+                    h_data, _, _ = list_to_hybrid_list(data)
+                    rows = len(h_data)
+                    if rows != self.rows or self.sample_count != 1:
+                        self.rows = rows
+                        self.sample_count = 1
+                    ii = np.array([h_data]).reshape((rows, self.sample_count))
+                    self.y_data.update(ii)
+
+                elif t == np.ndarray:
+                    dims = len(data.shape)
+                    sample_count = 1
+                    rows = data.shape[0]
+                    if dims > 1:
+                        sample_count = data.shape[1]
+                    if rows != self.rows or self.sample_count != sample_count:
+                        self.rows = rows
+                        self.sample_count = sample_count
+                    self.y_data.update(data)
+
+        if self.style == 1:
+            if self.input_x.fresh_input:
+                self.x_data[1:] = self.x_data[0:-1]
+                self.x_data[0] = self.input_x.get_received_data()
+        if self.style == 0:
+            buffer = self.y_data.get_buffer()
+            if buffer is not None:
+                dpg.set_value(self.plot_data_tag, [self.x_data, buffer.ravel()])
+                self.y_data.release_buffer()
+        elif self.style in [5, 6]:
+            buffer = self.y_data.get_buffer()
+            if buffer is not None:
+                dpg.set_value(self.plot_data_tag, [buffer.ravel(), self.x_data])
+                self.y_data.release_buffer()
+
+        self.lock.release()
+        self.send_outputs()
+
+
+class ColorPickerNode(Node):
+    handler = None
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ColorPickerNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.wheel = True
+        self.alpha = True
+        self.inputs = False
+
+        self.input = self.add_input("", trigger_node=self, widget_type='color_picker', widget_width=128)
+        self.input.add_callback(self.color_changed)
+
+        self.output = self.add_output("")
+
+        self.hue_wheel_option = self.add_option('hue_wheel', widget_type='checkbox', default_value=self.wheel)
+        self.hue_wheel_option.add_callback(self.hue_wheel_changed)
+
+        self.alpha_option = self.add_option('alpha', widget_type='checkbox', default_value=self.alpha)
+        self.alpha_option.add_callback(self.alpha_changed)
+
+        self.inputs_option = self.add_option('inputs', widget_type='checkbox', default_value=self.inputs)
+        self.inputs_option.add_callback(self.inputs_changed)
+
+    def inputs_changed(self):
+        inputs = self.inputs_option.get_widget_value()
+        if inputs != self.inputs:
+            if inputs:
+                dpg.configure_item(self.input.widget.uuid, no_inputs=False)
+            else:
+                dpg.configure_item(self.input.widget.uuid, no_inputs=True)
+            self.inputs = inputs
+
+    def hue_wheel_changed(self):
+        wheel = self.hue_wheel_option.get_widget_value()
+        if wheel != self.wheel:
+            if wheel:
+                dpg.configure_item(self.input.widget.uuid, picker_mode=dpg.mvColorPicker_wheel)
+            else:
+                dpg.configure_item(self.input.widget.uuid, picker_mode=dpg.mvColorPicker_bar)
+            self.wheel = wheel
+
+    def alpha_changed(self):
+        alpha = self.alpha_option.get_widget_value()
+        if alpha != self.alpha:
+            if alpha:
+                dpg.configure_item(self.input.widget.uuid, no_alpha=False)
+                dpg.configure_item(self.input.widget.uuid, alpha_preview=dpg.mvColorEdit_AlphaPreviewHalf)
+            else:
+                data = self.input.get_widget_value()
+                if data is not None:
+                    data[3] = 255
+                    self.input.widget.set(data)
+                dpg.configure_item(self.input.widget.uuid, no_alpha=True)
+                dpg.configure_item(self.input.widget.uuid, alpha_preview=dpg.mvColorEdit_AlphaPreviewNone)
+            self.alpha = alpha
+
+    def color_changed(self):
+        self.execute()
+
+    def execute(self):
+        data = None
+        if self.input.fresh_input:
+            data = self.input.get_received_data()
+            self.input.widget.set(tuple(data))
+        else:
+            data = list(self.input.get_widget_value())
+        self.output.send(data)
+        pass
+
+

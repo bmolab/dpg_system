@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Shadow Hybrid Definition, 2019-04-05. For Vive Tracker or Motive Rigid Body
+  worn on the RightThigh strap.
+-->
+<node id="default">
+  <node id="Body" bus="1">
+    <node id="Hips" translate="0 100 0" marker="1 0 0 0 0 4 -2" mass="0.25">
+      <node id="RightThigh" translate="-8.91 -6.269997 0" marker="1 0 0 0 0 -19.288246 -0.67356" mass="0.1">
+        <node id="Reference" translate="-6 -19.375 2"/>
+        <node id="RightLeg" translate="0 -44.852665 -1.566289" marker="1 0 0 0 0 -17.45737 -1.220738" mass="0.044">
+          <node id="RightFoot" translate="0 -42.371404 -2.908845" marker="1 0 0 0 0 -2.856854 6.452279" mass="0.016">
+            <node id="RightToe" translate="0 -5.506189 12.649626">
+              <node id="RightToeEnd" translate="0 0 9.822702"/>
+            </node>
+            <node id="RightHeel" translate="0 -5.50637 -2.8584"/>
+          </node>
+        </node>
+      </node>
+      <node id="LeftThigh" translate="8.91 -6.269997 0" marker="1 0 0 0 0 -19.288246 -0.67356" mass="0.1">
+        <node id="LeftLeg" translate="0 -44.852665 -1.566289" marker="1 0 0 0 0 -17.45737 -1.220738" mass="0.044">
+          <node id="LeftFoot" translate="0 -42.371404 -2.908845" marker="1 0 0 0 0 -2.856854 6.452279" mass="0.016">
+            <node id="LeftToe" translate="0 -5.506189 12.649626">
+              <node id="LeftToeEnd" translate="0 0 9.823"/>
+            </node>
+            <node id="LeftHeel" translate="0 -5.50637 -2.8584"/>
+          </node>
+        </node>
+      </node>
+      <node id="SpineLow" translate="0 5 0">
+        <node id="SpineMid" translate="0 13.633705 -0.953362">
+          <node id="Chest" translate="0 13.59214 -1.428591" marker="1 0 0 0 0 4.199993 0" mass="0.23">
+            <node id="RightShoulder" translate="-5.51315 14.500153 0.381952" mass="0.01">
+              <node id="RightArm" translate="-12.186851 -0.000153 -3.509" marker="1 0 0 0 -12.103 -0.634 0.088" mass="0.023">
+                <node id="RightForearm" translate="-27.231207 -1.427127 0.197588" marker="1 0 0 0 -11.669 -0.612 2.06" mass="0.014">
+                  <node id="RightHand" translate="-26.255381 -1.375986 4.635886" marker="1 0 0 0 -4.377 -0.231 0.771" mass="0.006">
+                    <node id="RightFinger" translate="-8.753334 -0.462278 1.541268">
+                      <node id="RightFingerEnd" translate="-8.753 -0.462 1.541374"/>
+                    </node>
+                  </node>
+                </node>
+              </node>
+            </node>
+            <node id="LeftShoulder" translate="5.51315 14.500153 0.381952" mass="0.01">
+              <node id="LeftArm" translate="12.186851 -0.000153 -3.508626" marker="1 0 0 0 12.10276 -0.634277 0.087817" mass="0.023">
+                <node id="LeftForearm" translate="27.231207 -1.427127 0.197588" marker="1 0 0 0 11.669062 -0.611554 2.060394" mass="0.014">
+                  <node id="LeftHand" translate="26.255381 -1.375986 4.635886" marker="1 0 0 0 4.376675 -0.231143 0.770634" mass="0.006">
+                    <node id="LeftFinger" translate="8.753334 -0.462278 1.541268">
+                      <node id="LeftFingerEnd" translate="8.753 -0.462 1.541"/>
+                    </node>
+                  </node>
+                </node>
+              </node>
+            </node>
+            <node id="Neck" translate="0 16 0">
+              <node id="Head" translate="0 11.883209 0.368989" marker="1 0 0 0 0 5.963654 0.670988" mass="0.087">
+                <node id="HeadEnd" translate="0 17.890945 2.012963"/>
+              </node>
+            </node>
+          </node>
+        </node>
+      </node>
+    </node>
+    <node id="Prop"/>
+    <node id="Tracker0"/>
+    <node id="Tracker1"/>
+    <node id="Tracker2"/>
+    <node id="Tracker3"/>
+  </node>
+</node>
