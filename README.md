@@ -3,6 +3,27 @@ system for supporting ui and nodes using dearpygui
 
 dpg_system creates an enhanced dearpygui-based environment for building out node-based playgrounds for quick ui work in python.
 
+__Requirements__
+
+It is recommended to create a conda environment (python 3.9 is most tested)
+
+In initial testing, this was was else needed to be installed after a basic conda install:
+
+```
+pip install squeezepy
+pip install dearpygui
+conda install pyquaternion
+pip install fuzzywuzzy
+pip install python-Levenshtein
+pip install space
+python -m spacy download en_core_web_lg
+pip install python-osc
+conda install pyopengl
+conda install pyglfw -c conda-forge
+pip install matplotlib
+pip install numpy-quaternion
+```
+
 __Simple Example__
 
 This example creates and runs an instance of dgp_system.App. When run, you will see a window with a blank grid, which is the canvas on which you can place nodes. 
@@ -69,7 +90,14 @@ class AdditionNode(Node):
             sum = data + operand
             self.output.send(sum)
 ```
-            
+
+You would also have to register this node thus:
+
+```
+Node.app.register_node("add", AdditionNode.factory)
+```
+So that you can create this node by name.
+
 The static method at the start creates a 'factory' for creating these nodes. This will always be the same except that the name of the node being created must match the name of the class.
 
 The init method must call __init__ for the superclass (Node), then creates inputs and outputs, sets internal values, etc.
