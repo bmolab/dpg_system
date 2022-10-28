@@ -7,6 +7,7 @@ from dpg_system.node_editor import *
 from os.path import exists
 import json
 import os
+import platform as platform_
 
 imported = []
 try:
@@ -264,15 +265,13 @@ class App:
     def setup_dpg(self):
         dpg.create_context()
         dpg.configure_app(manual_callback_management=True)
-        with dpg.font_registry():
-            default_font = dpg.add_font("Inconsolata-g.otf", 24)
-
-            dpg.bind_font(default_font)
-
-        dpg.set_global_font_scale(0.5)
-
-        self.viewport = dpg.create_viewport()
-        # print(self.viewport)
+        if 'macOS' in platform_.platform():
+            with dpg.font_registry():
+                if os.path.exists('Inconsolata-g.otf'):
+                    default_font = dpg.add_font("Inconsolata-g.otf", 24)
+                    dpg.bind_font(default_font)
+                    dpg.set_global_font_scale(0.5)
+        dpg.create_viewport()
         dpg.setup_dearpygui()
 
     def setup_themes(self):
@@ -794,6 +793,7 @@ class App:
         self.node_editors = [NodeEditor()]
 
         with dpg.window() as main_window:
+            print('created_window')
             self.main_window_id = main_window
             dpg.bind_item_theme(main_window, self.global_theme)
             dpg.add_spacer(height=14)
@@ -818,20 +818,23 @@ class App:
                             dpg.add_key_press_handler(dpg.mvKey_Back, callback=self.del_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Return, callback=self.return_handler)
 
-                with dpg.tab(label='second editor', user_data=len(self.tabs)) as tab:
-                    self.tabs.append(tab)
-                    with dpg.group(id=self.side_panel):
-                        dpg.add_input_int(label='test')
-                        dpg.add_input_int(label='test2')
-                        dpg.add_input_int(label='test3')
-                        new_editor = NodeEditor()
-                        self.node_editors.append(new_editor)
-                        self.node_editors[1].submit(self.side_panel)
-                        dpg.add_input_int(label='test4')
+                # with dpg.tab(label='second editor', user_data=len(self.tabs)) as tab:
+                #     self.tabs.append(tab)
+                #     with dpg.group(id=self.side_panel):
+                #         dpg.add_input_int(label='test')
+                #         dpg.add_input_int(label='test2')
+                #         dpg.add_input_int(label='test3')
+                #         new_editor = NodeEditor()
+                #         self.node_editors.append(new_editor)
+                #         self.node_editors[1].submit(self.side_panel)
+                #         dpg.add_input_int(label='test4')
         dpg.set_primary_window(main_window, True)
+        print('about to show viewport')
         dpg.show_viewport()
+        print('showed viewport')
 
     def run_loop(self):
+        print('run_loop')
         elapsed = 0
         while dpg.is_dearpygui_running():
             now = time.time()
