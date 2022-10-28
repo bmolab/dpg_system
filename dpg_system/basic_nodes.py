@@ -52,7 +52,7 @@ class PlaceholderNode(Node):
         self.name_property = self.add_property(label='##node_name', widget_type='text_input', width=180)
         self.static_name = self.add_property(label='##static_name', widget_type='text_input', width=180)
         self.args_property = self.add_property(label='args', widget_type='text_input', width=180)
-        self.args_property.add_callback(self.execute())
+        self.args_property.add_callback(self.execute)
         if len(self.node_list) == 0:
             self.node_list = self.app.node_factory_container.get_node_list()
         self.variable_list = self.app.get_variable_list()
