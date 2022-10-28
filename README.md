@@ -100,9 +100,38 @@ So that you can create this node by name.
 
 The static method at the start creates a 'factory' for creating these nodes. This will always be the same except that the name of the node being created must match the name of the class.
 
+```
+    @staticmethod
+def factory(name, data, args=None):
+    node = AdditionNode(name, data, args)
+    return node
+```
+
 The init method must call __init__ for the superclass (Node), then creates inputs and outputs, sets internal values, etc.
 
+```
+def __init__(self, label: str, data, args):
+    super().__init__(label, data, args)
+    self.input = self.add_input("in", trigger_node=self)
+    self.operand = 0
+    if args is not None and len(args) > 0:
+        self.operand, value_type = decode_arg(args, 0)
+    self.operand_input = self.add_input("operand", widget_type='drag_float', default_value=self.operand)
+    self.output = self.add_output("sum")
+```
+    
 The execute method is called when new input is received in self.input. Note that self.input is created with the argument trigger_node=self. This indicates that any input received in that input should cause the node to execute.
+    
+    
+```
+def execute(self):
+    if self.input.fresh_input:
+        data = self.input.get_received_data()
+        operand = self.operand_input.get_widget_value()
+        sum = data + operand
+        self.output.send(sum)
+```
+    
 Note also that the self.operand_input is not created with 'trigger_node=self', meaning that input received in this input does not cause the node to execute.
 
 Much more complicated behaviours are of course possible. For example, If you define a 'frame_task(self)' method, it is called once per update of the dpg_system, which is usually at 60 hz.
