@@ -1,0 +1,152 @@
+{
+    "height": 800,
+    "width": 1280,
+    "position": [
+        100,
+        100
+    ],
+    "name": "more_open_gl",
+    "path": "/Users/drokeby/PycharmProjects/guitest/more_open_gl.json",
+    "nodes": {
+        "0": {
+            "name": "metro",
+            "id": 1263,
+            "position_x": 88,
+            "position_y": 73,
+            "width": 129,
+            "height": 84,
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 30.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "string"
+                }
+            }
+        },
+        "1": {
+            "name": "counter",
+            "id": 1302,
+            "position_x": 284,
+            "position_y": 104,
+            "width": 123,
+            "height": 102,
+            "properties": {
+                "0": {
+                    "name": "count",
+                    "value": 360,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "step",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "2": {
+            "name": "sin",
+            "id": 1352,
+            "position_x": 463,
+            "position_y": 150,
+            "width": 70,
+            "height": 66,
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "3": {
+            "name": "plot",
+            "id": 1385,
+            "position_x": 586,
+            "position_y": 153,
+            "width": 308,
+            "height": 162,
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 1263,
+            "source_output_index": 0,
+            "dest_node": 1302,
+            "dest_input_index": 0
+        },
+        "1": {
+            "source_node": 1302,
+            "source_output_index": 0,
+            "dest_node": 1352,
+            "dest_input_index": 0
+        },
+        "2": {
+            "source_node": 1352,
+            "source_output_index": 0,
+            "dest_node": 1385,
+            "dest_input_index": 0
+        }
+    }
+}

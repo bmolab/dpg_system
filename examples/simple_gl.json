@@ -1,0 +1,119 @@
+{
+    "nodes": {
+        "0": {
+            "name": "gl_context",
+            "id": 74,
+            "position_x": 198,
+            "position_y": 188,
+            "width": 68,
+            "height": 48,
+            "properties": {
+                "0": {
+                    "name": "fov",
+                    "value": 60.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "1": {
+            "name": "gl_translate",
+            "id": 97,
+            "position_x": 400,
+            "position_y": 216,
+            "width": 98,
+            "height": 120,
+            "properties": {
+                "0": {
+                    "name": "x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "z",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "reset",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "2": {
+            "name": "gl_sphere",
+            "id": 142,
+            "position_x": 643,
+            "position_y": 293,
+            "width": 116,
+            "height": 66,
+            "properties": {
+                "0": {
+                    "name": "size",
+                    "value": 0.5,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "slices",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "stacks",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "shading",
+                    "value": "smooth",
+                    "value_type": "string"
+                }
+            }
+        },
+        "3": {
+            "name": "message",
+            "id": 172,
+            "position_x": 208,
+            "position_y": 99,
+            "width": 130,
+            "height": 48,
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": "frustum 2",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 74,
+            "source_output_index": 0,
+            "dest_node": 97,
+            "dest_input_index": 0
+        },
+        "1": {
+            "source_node": 97,
+            "source_output_index": 0,
+            "dest_node": 142,
+            "dest_input_index": 0
+        },
+        "2": {
+            "source_node": 172,
+            "source_output_index": 0,
+            "dest_node": 74,
+            "dest_input_index": 0
+        }
+    }
+}

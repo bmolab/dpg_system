@@ -1,0 +1,560 @@
+{
+    "height": 800,
+    "width": 1280,
+    "position": [
+        100,
+        100
+    ],
+    "name": "simple_gl",
+    "path": "/Users/drokeby/PycharmProjects/guitest/simple_gl.json",
+    "nodes": {
+        "0": {
+            "name": "gl_context",
+            "id": 87,
+            "position_x": 330,
+            "position_y": 56,
+            "width": 70,
+            "height": 48,
+            "properties": {
+                "0": {
+                    "name": "fov",
+                    "value": 60.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "1": {
+            "name": "gl_translate",
+            "id": 105,
+            "position_x": 566,
+            "position_y": 164,
+            "width": 99,
+            "height": 120,
+            "properties": {
+                "0": {
+                    "name": "x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "z",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "reset",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "2": {
+            "name": "gl_sphere",
+            "id": 144,
+            "position_x": 908,
+            "position_y": 210,
+            "width": 117,
+            "height": 66,
+            "properties": {
+                "0": {
+                    "name": "size",
+                    "value": 0.5,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "slices",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "stacks",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "shading",
+                    "value": "smooth",
+                    "value_type": "string"
+                }
+            }
+        },
+        "3": {
+            "name": "gl_material",
+            "id": 211,
+            "position_x": 715,
+            "position_y": 84,
+            "width": 148,
+            "height": 156,
+            "properties": {
+                "0": {
+                    "name": "shininess",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "presets",
+                    "value": "brass",
+                    "value_type": "string"
+                }
+            },
+            "ambient": [
+                0.329412,
+                0.223529,
+                0.027451,
+                1.0
+            ],
+            "diffuse": [
+                0.780392,
+                0.568627,
+                0.113725,
+                1.0
+            ],
+            "specular": [
+                0.992157,
+                0.941176,
+                0.807843,
+                1.0
+            ],
+            "emission": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        "4": {
+            "name": "gl_sphere",
+            "id": 257,
+            "position_x": 905,
+            "position_y": 448,
+            "width": 117,
+            "height": 66,
+            "properties": {
+                "0": {
+                    "name": "size",
+                    "value": 0.38999998569488525,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "slices",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "stacks",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "shading",
+                    "value": "smooth",
+                    "value_type": "string"
+                }
+            }
+        },
+        "5": {
+            "name": "gl_material",
+            "id": 284,
+            "position_x": 718,
+            "position_y": 322,
+            "width": 148,
+            "height": 156,
+            "properties": {
+                "0": {
+                    "name": "shininess",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "presets",
+                    "value": "chrome",
+                    "value_type": "string"
+                }
+            },
+            "ambient": [
+                0.25,
+                0.25,
+                0.25,
+                1.0
+            ],
+            "diffuse": [
+                0.4,
+                0.4,
+                0.4,
+                1.0
+            ],
+            "specular": [
+                0.774597,
+                0.774597,
+                0.774597,
+                1.0
+            ],
+            "emission": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        "6": {
+            "name": "gl_translate",
+            "id": 329,
+            "position_x": 567,
+            "position_y": 327,
+            "width": 99,
+            "height": 120,
+            "properties": {
+                "0": {
+                    "name": "x",
+                    "value": 0.23000000417232513,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "y",
+                    "value": -0.4000000059604645,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "z",
+                    "value": 0.09000000357627869,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "reset",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "7": {
+            "name": "gl_sphere",
+            "id": 370,
+            "position_x": 902,
+            "position_y": 609,
+            "width": 117,
+            "height": 66,
+            "properties": {
+                "0": {
+                    "name": "size",
+                    "value": 0.25999999046325684,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "slices",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "stacks",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "shading",
+                    "value": "smooth",
+                    "value_type": "string"
+                }
+            }
+        },
+        "8": {
+            "name": "gl_material",
+            "id": 397,
+            "position_x": 722,
+            "position_y": 519,
+            "width": 148,
+            "height": 156,
+            "properties": {
+                "0": {
+                    "name": "shininess",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "presets",
+                    "value": "ruby",
+                    "value_type": "string"
+                }
+            },
+            "ambient": [
+                0.1745,
+                0.01175,
+                0.01175,
+                0.55
+            ],
+            "diffuse": [
+                0.61424,
+                0.04136,
+                0.04136,
+                0.55
+            ],
+            "specular": [
+                0.727811,
+                0.626959,
+                0.626959,
+                0.55
+            ],
+            "emission": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        "9": {
+            "name": "gl_translate",
+            "id": 441,
+            "position_x": 567,
+            "position_y": 491,
+            "width": 99,
+            "height": 120,
+            "properties": {
+                "0": {
+                    "name": "x",
+                    "value": 0.9200000166893005,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "y",
+                    "value": 0.44999998807907104,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "z",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "reset",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "10": {
+            "name": "gl_rotate",
+            "id": 532,
+            "position_x": 406,
+            "position_y": 220,
+            "width": 99,
+            "height": 120,
+            "properties": {
+                "0": {
+                    "name": "x",
+                    "value": 248.67681884765625,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "y",
+                    "value": 345.49847412109375,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "z",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "reset",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "11": {
+            "name": "signal",
+            "id": 589,
+            "position_x": 155,
+            "position_y": 310,
+            "width": 129,
+            "height": 84,
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "saw",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 360.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "12": {
+            "init": "gl_translate 0 0 -2",
+            "name": "gl_translate",
+            "id": 641,
+            "position_x": 437,
+            "position_y": 55,
+            "width": 99,
+            "height": 120,
+            "properties": {
+                "0": {
+                    "name": "x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "z",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "reset",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "13": {
+            "name": "signal",
+            "id": 682,
+            "position_x": 156,
+            "position_y": 214,
+            "width": 129,
+            "height": 84,
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 4.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "saw",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 360.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 87,
+            "source_output_index": 0,
+            "dest_node": 641,
+            "dest_input_index": 0
+        },
+        "1": {
+            "source_node": 105,
+            "source_output_index": 0,
+            "dest_node": 211,
+            "dest_input_index": 0
+        },
+        "2": {
+            "source_node": 211,
+            "source_output_index": 0,
+            "dest_node": 144,
+            "dest_input_index": 0
+        },
+        "3": {
+            "source_node": 284,
+            "source_output_index": 0,
+            "dest_node": 257,
+            "dest_input_index": 0
+        },
+        "4": {
+            "source_node": 329,
+            "source_output_index": 0,
+            "dest_node": 284,
+            "dest_input_index": 0
+        },
+        "5": {
+            "source_node": 397,
+            "source_output_index": 0,
+            "dest_node": 370,
+            "dest_input_index": 0
+        },
+        "6": {
+            "source_node": 441,
+            "source_output_index": 0,
+            "dest_node": 397,
+            "dest_input_index": 0
+        },
+        "7": {
+            "source_node": 532,
+            "source_output_index": 0,
+            "dest_node": 105,
+            "dest_input_index": 0
+        },
+        "8": {
+            "source_node": 532,
+            "source_output_index": 0,
+            "dest_node": 329,
+            "dest_input_index": 0
+        },
+        "9": {
+            "source_node": 532,
+            "source_output_index": 0,
+            "dest_node": 441,
+            "dest_input_index": 0
+        },
+        "10": {
+            "source_node": 589,
+            "source_output_index": 0,
+            "dest_node": 532,
+            "dest_input_index": 2
+        },
+        "11": {
+            "source_node": 641,
+            "source_output_index": 0,
+            "dest_node": 532,
+            "dest_input_index": 0
+        },
+        "12": {
+            "source_node": 682,
+            "source_output_index": 0,
+            "dest_node": 532,
+            "dest_input_index": 1
+        }
+    }
+}
