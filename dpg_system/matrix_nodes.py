@@ -15,10 +15,7 @@ t_BufferCircularVertical = 2
 def register_matrix_nodes():
     Node.app.register_node('buffer', BufferNode.factory)
     Node.app.register_node('rolling_buffer', RollingBufferNode.factory)
-    Node.app.register_node('flatten', FlattenMatrixNode.factory)
     Node.app.register_node('cwt', WaveletNode.factory)
-    Node.app.register_node('vector_length', VectorLengthNode.factory)
-    Node.app.register_node('cosine_sim', VectorCosineSimilarityNode.factory)
 
 
 class BufferNode(Node):
@@ -30,24 +27,18 @@ class BufferNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.sample_count = 256
-        if args is not None and len(args) > 0:
-            count, t = decode_arg(args, 0)
-            if t == int:
-                self.sample_count = count
+        self.sample_count = self.arg_as_int(256)
 
         self.update_style = 1
         self.output_style = 1
-        self.input = self.add_input("input", trigger_node=self)
-        self.index_input = self.add_input("sample to output", trigger_node=self)
+        self.input = self.add_input("input", triggers_execution=True)
+        self.index_input = self.add_input("sample to output", triggers_execution=True)
         self.output = self.add_output("output")
         self.sample_count_option = self.add_option('sample count', widget_type='drag_int', default_value=self.sample_count)
-        self.update_style_option = self.add_option('update style', widget_type='combo', default_value='input is stream of samples', width=250)
+        self.update_style_option = self.add_option('update style', widget_type='combo', default_value='input is stream of samples', width=250, callback=self.update_style_changed)
         self.update_style_option.widget.combo_items = ['buffer holds one sample of input', 'input is stream of samples', 'input is multi-channel sample']
-        self.update_style_option.add_callback(self.update_style_changed)
-        self.output_style_option = self.add_option('output style', widget_type='combo', default_value='output samples on demand by index', width=250)
+        self.output_style_option = self.add_option('output style', widget_type='combo', default_value='output samples on demand by index', width=250, callback=self.output_style_changed)
         self.output_style_option.widget.combo_items = ['output buffer on every input', 'output samples on demand by index']
-        self.output_style_option.add_callback(self.output_style_changed)
         self.buffer = np.zeros((self.sample_count))
         self.write_pos = 0
 
@@ -358,15 +349,13 @@ class RollingBufferNode(Node):
             if t == int:
                 self.sample_count = count
         self.rolling_buffer = RollingBuffer(self.sample_count, roll_along_x=False)
-        self.input = self.add_input("input", trigger_node=self)
+        self.input = self.add_input("input", triggers_execution=True)
         self.output = self.add_output("output")
         self.sample_count_option = self.add_option('sample count', widget_type='drag_int', default_value=self.sample_count)
-        self.update_style_option = self.add_option('update style', widget_type='combo', default_value='input is stream of samples', width=250)
+        self.update_style_option = self.add_option('update style', widget_type='combo', default_value='input is stream of samples', width=250, callback=self.update_style_changed)
         self.update_style_option.widget.combo_items = ['buffer holds one sample of input', 'input is stream of samples', 'input is multi-channel sample']
-        self.update_style_option.add_callback(self.update_style_changed)
-        self.scroll_direction_option = self.add_option('scroll direction', widget_type='combo', default_value=self.scroll_direction)
+        self.scroll_direction_option = self.add_option('scroll direction', widget_type='combo', default_value=self.scroll_direction, callback=self.scroll_direction_changed)
         self.scroll_direction_option.widget.combo_items = ['horizontal', 'vertical']
-        self.scroll_direction_option.add_callback(self.scroll_direction_changed)
 
     def scroll_direction_changed(self):
         self.scroll_direction = self.scroll_direction_option.get_widget_value()
@@ -393,29 +382,12 @@ class RollingBufferNode(Node):
                 del output_buffer
                 self.rolling_buffer.release_buffer()
 
+
 # reshape?
 # slice
 # transpose
 # invert
 
-
-class FlattenMatrixNode(Node):
-    @staticmethod
-    def factory(name, data, args=None):
-        node = FlattenMatrixNode(name, data, args)
-        return node
-
-    def __init__(self, label: str, data, args):
-        super().__init__(label, data, args)
-        self.input = self.add_input("input", trigger_node=self)
-        self.output = self.add_output("output")
-
-    def execute(self):
-        if self.input.fresh_input:
-            data = self.input.get_received_data()
-            if type(data) == np.ndarray:
-                data = np.ravel(data)
-                self.output.send(data)
 
 
 class WaveletNode(Node):
@@ -426,7 +398,7 @@ class WaveletNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.input = self.add_input("input", trigger_node=self)
+        self.input = self.add_input("input", triggers_execution=True)
         self.output = self.add_output("output")
         self.octaves = 2
         self.octaves_property = self.add_property('octaves', widget_type='drag_int', default_value=self.octaves)
@@ -443,48 +415,3 @@ class WaveletNode(Node):
             wavelets, _ = ssqueezepy.cwt(data.ravel(), nv=self.octaves, wavelet=self.wavelets, scales='log-piecewise')
             self.output.send(np.abs(wavelets))
 
-
-class VectorLengthNode(Node):
-    @staticmethod
-    def factory(name, data, args=None):
-        node = VectorLengthNode(name, data, args)
-        return node
-
-    def __init__(self, label: str, data, args):
-        super().__init__(label, data, args)
-        self.input = self.add_input("vector", trigger_node=self)
-        self.output = self.add_output("vector length")
-
-    def execute(self):
-        if self.input.fresh_input:
-            data = self.input.get_received_data()
-            data = any_to_array(data)
-            length = np.linalg.norm(data)
-            self.output.send(length)
-
-
-class VectorCosineSimilarityNode(Node):
-    @staticmethod
-    def factory(name, data, args=None):
-        node = VectorCosineSimilarityNode(name, data, args)
-        return node
-
-    def __init__(self, label: str, data, args):
-        super().__init__(label, data, args)
-        self.input = self.add_input("vector", trigger_node=self)
-        self.input2 = self.add_input('vector2')
-        self.output = self.add_output("cosine similarity")
-        self.vector = None
-        self.vector2 = None
-
-    def execute(self):
-        if self.input.fresh_input:
-            data = self.input.get_received_data()
-            self.vector = any_to_array(data)
-        if self.input2.fresh_input:
-            data = self.input2.get_received_data()
-            self.vector2 = any_to_array(data)
-
-        if self.vector is not None and self.vector2 is not None:
-            cosine = np.dot(self.vector, self.vector2) / (np.linalg.norm(self.vector) * np.linalg.norm(self.vector2))
-            self.output.send(cosine)
