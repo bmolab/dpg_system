@@ -3,6 +3,7 @@ import math
 import numpy as np
 import random
 import time
+from scipy import signal
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
 
@@ -21,6 +22,7 @@ def register_signal_nodes():
     Node.app.register_node('trigger', ThresholdTriggerNode.factory)
     Node.app.register_node('hysteresis', ThresholdTriggerNode.factory)
     Node.app.register_node('sample_hold', SampleHoldNode.factory)
+    Node.app.register_node('band_pass', BandPassFilterNode.factory)
 
 
 class DifferentiateNode(Node):
@@ -35,7 +37,7 @@ class DifferentiateNode(Node):
         self.previous_value = None
         self.previousType = None
 
-        self.input = self.add_input("", trigger_node=self)
+        self.input = self.add_input("", triggers_execution=True)
         self.output = self.add_output("")
 
     def float_diff(self, received):
@@ -95,8 +97,7 @@ class DifferentiateNode(Node):
                 t = np.ndarray
             if t == np.ndarray:
                 output = self.array_diff(received)
-            self.output.set(output)
-            self.send_outputs()
+            self.output.send(output)
 
         self.previous_value = received
         self.previousType = t
@@ -111,27 +112,21 @@ class RandomNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.range = 1.0
+        self.range = self.arg_as_number(default_value=1.0)
         self.bipolar = False
 
-        self.trigger_input = self.add_input('trigger', trigger_node=self)
+        self.trigger_input = self.add_input('trigger', triggers_execution=True)
         self.range_input = self.add_input('range', widget_type='drag_float', default_value=self.range)
         self.range_input.widget.speed = 0.01
         self.bipolar_property = self.add_option('bipolar', widget_type='checkbox', default_value=self.bipolar)
         self.output = self.add_output('out')
-
-    def custom(self):
-        in_value, t = decode_arg(self.args, 0)
-        if t in [int, float]:
-            self.range_input.widget.set(self.range)
 
     def execute(self):
         if self.bipolar_property.get_widget_value():
             output_value = random.random() * self.range_input.get_widget_value() * 2 - self.range_input.get_widget_value()
         else:
             output_value = random.random() * self.range_input.get_widget_value()
-        self.output.set(output_value)
-        self.send_outputs()
+        self.output.send(output_value)
 
 
 class SignalNode(Node):
@@ -155,29 +150,17 @@ class SignalNode(Node):
         self.vector_size = 1
         self.vector = None
 
-        self.on_off_input = self.add_input('on', widget_type='checkbox', trigger_node=self)
-        self.on_off_input.add_callback(self.start_stop)
-
-        self.period_input = self.add_input('period', widget_type='drag_float', default_value=self.period)
-        self.period_input.add_callback(self.change_period)
-
-        self.shape_input = self.add_input('shape', widget_type='combo', default_value=self.shape)
+        self.on_off_input = self.add_input('on', widget_type='checkbox', triggers_execution=True, callback=self.start_stop)
+        self.period_input = self.add_input('period', widget_type='drag_float', default_value=self.period, callback=self.change_period)
+        self.shape_input = self.add_input('shape', widget_type='combo', default_value=self.shape, callback=self.set_shape)
         self.shape_input.widget.combo_items = ['sin', 'cos', 'saw', 'square', 'triangle', 'random']
-        self.shape_input.add_callback(self.set_shape)
-
-        self.range_property = self.add_option('range', widget_type='drag_float', default_value=self.range)
-        self.range_property.add_callback(self.change_range)
+        self.range_property = self.add_option('range', widget_type='drag_float', default_value=self.range, callback=self.change_range)
         self.range_property.widget.speed = 0.01
-
-        self.bipolar_property = self.add_option('bipolar', widget_type='checkbox', default_value=self.bipolar)
-        self.bipolar_property.add_callback(self.change_bipolar)
-
-        self.size_property = self.add_option('vector size', widget_type='drag_int', default_value=self.vector_size)
-        self.size_property.add_callback(self.change_size)
-
+        self.bipolar_property = self.add_option('bipolar', widget_type='checkbox', default_value=self.bipolar, callback=self.change_bipolar)
+        self.size_property = self.add_option('vector size', widget_type='drag_int', default_value=self.vector_size, callback=self.change_size)
         self.output = self.add_output("")
 
-    def custom(self):
+    def custom_setup(self):
         if self.args is not None and len(self.args) > 0:
             for arg in self.args:
                 if arg in ['sin', 'cos', 'saw', 'square', 'triangle', 'random']:
@@ -186,7 +169,6 @@ class SignalNode(Node):
                 elif float(arg) != 0:
                     self.period = float(arg)
                     self.period_input.widget.set(self.period)
-
         self.add_frame_task()
 
     def update_parameters_from_widgets(self):
@@ -270,8 +252,7 @@ class SignalNode(Node):
             self.execute()
 
     def execute(self):
-        self.output.set(self.signal_value)
-        self.send_outputs()
+        self.output.send(self.signal_value)
 
 
 class SubSampleNode(Node):
@@ -283,18 +264,10 @@ class SubSampleNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.subsampler = 2
+        self.subsampler = self.arg_as_int(default_value=2)
         self.sample_count = 0
-
-        if args is not None and len(args) > 0:
-            self.subsampler = any_to_int((args[0]))
-
-        self.input = self.add_input("input", trigger_node=self)
-        self.input.add_callback(self.execute)
-
-        self.rate_property = self.add_property('rate', widget_type='drag_int', default_value=self.subsampler, min=0, max=math.inf)
-        self.rate_property.add_callback(self.rate_changed)
-
+        self.input = self.add_input("input", triggers_execution=True, callback=self.execute)
+        self.rate_property = self.add_property('rate', widget_type='drag_int', default_value=self.subsampler, min=0, max=math.inf, callback=self.rate_changed)
         self.output = self.add_output("out")
 
     def rate_changed(self):
@@ -305,7 +278,7 @@ class SubSampleNode(Node):
             self.sample_count += 1
             if self.sample_count + 1 >= self.subsampler:
                 self.sample_count = 0
-                self.output.send(self.input._data)
+                self.output.send(self.input.get_received_data())
 
 
 class NoiseGateNode(Node):
@@ -317,25 +290,16 @@ class NoiseGateNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.threshold = 0.1
+        self.threshold = self.arg_as_float(default_value=0.1)
         self.bipolar = False
         self.squeeze = False
 
-        if args is not None and len(args) > 0:
-            self.threshold = any_to_float((args[0]))
+        self.input = self.add_input("input", triggers_execution=True)
 
-        self.input = self.add_input("input", trigger_node=self)
-
-        self.threshold_property = self.add_property('threshold', widget_type='drag_float', default_value=self.threshold)
-        self.threshold_property.add_callback(self.option_changed)
-
+        self.threshold_property = self.add_property('threshold', widget_type='drag_float', default_value=self.threshold, callback=self.option_changed)
         self.output = self.add_output("out")
-
-        self.bipolar_option = self.add_option('bipolar', widget_type='checkbox', default_value=self.bipolar)
-        self.bipolar_option.add_callback(self.option_changed)
-
-        self.squeeze_option = self.add_option('squeeze', widget_type='checkbox', default_value=self.bipolar)
-        self.squeeze_option.add_callback(self.option_changed)
+        self.bipolar_option = self.add_option('bipolar', widget_type='checkbox', default_value=self.bipolar, callback=self.option_changed)
+        self.squeeze_option = self.add_option('squeeze', widget_type='checkbox', default_value=self.bipolar, callback=self.option_changed)
 
     def option_changed(self):
         self.threshold = self.threshold_property.get_widget_value()
@@ -418,9 +382,9 @@ class ThresholdTriggerNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.threshold = 0.1
+        self.threshold = self.arg_as_float(default_value=0.1)
         self.bipolar = False
-        self.release_threshold = 0.1
+        self.release_threshold = self.arg_as_float(index=1, default_value=0.1)
         if label == 'hysteresis':
             self.threshold = 0.2
         self.retrigger_delay = 0
@@ -430,27 +394,13 @@ class ThresholdTriggerNode(Node):
         self.previous_on = None
         self.previous_off = None
 
-        if args is not None and len(args) > 0:
-            self.threshold = any_to_float((args[0]))
-            if len(args) > 1:
-                self.release_threshold = any_to_float((args[1]))
-
-        self.input = self.add_input("input", trigger_node=self)
-
-        self.threshold_property = self.add_property('threshold', widget_type='drag_float', default_value=self.threshold)
-        self.threshold_property.add_callback(self.option_changed)
-
-        self.release_threshold_property = self.add_property('threshold', widget_type='drag_float', default_value=self.release_threshold)
-        self.release_threshold_property.add_callback(self.option_changed)
-
+        self.input = self.add_input("input", triggers_execution=True)
+        self.threshold_property = self.add_property('threshold', widget_type='drag_float', default_value=self.threshold, callback=self.option_changed)
+        self.release_threshold_property = self.add_property('threshold', widget_type='drag_float', default_value=self.release_threshold, callback=self.option_changed)
         self.output = self.add_output("out")
-
-        self.output_mode_option = self.add_option('trigger mode', widget_type='combo', default_value='output toggle', width=100)
-        self.output_mode_option.add_callback(self.option_changed)
+        self.output_mode_option = self.add_option('trigger mode', widget_type='combo', default_value='output toggle', width=100, callback=self.option_changed)
         self.output_mode_option.widget.combo_items = ['output toggle', 'output bang']
-
-        self.retrigger_delay_option = self.add_option('retrig delay', widget_type='drag_float', default_value=self.retrigger_delay)
-        self.retrigger_delay_option.add_callback(self.option_changed)
+        self.retrigger_delay_option = self.add_option('retrig delay', widget_type='drag_float', default_value=self.retrigger_delay, callback=self.option_changed)
 
     def option_changed(self):
         self.threshold = self.threshold_property.get_widget_value()
@@ -513,8 +463,8 @@ class MultiDiffFilterNode(Node):
         if args is not None and len(args) > 0:
             self.filter_count = len(args)
             self.degrees.resize([self.filter_count])
-            self.accums.resize([self.filter_count])
-            self.ones.resize([self.filter_count])
+            self.accums = np.zeros([self.filter_count])
+            self.ones = np.ones([self.filter_count])
             for index, degree_str in enumerate(args):
                 degree = any_to_float(degree_str)
                 if degree > 1.0:
@@ -522,19 +472,14 @@ class MultiDiffFilterNode(Node):
                 elif degree < 0:
                     degree = 0
                 self.degrees[index] = degree
-
-        self.ones.fill(1.0)
-        self.accums.fill(0.0)
         self.minus_degrees = self.ones - self.degrees
-
-        self.input = self.add_input('in', trigger_node=self)
-
+        self.input = self.add_input('in', triggers_execution=True)
         self.filter_degree_inputs = []
         for i in range(self.filter_count):
-            input_ = self.add_input('filter ' + str(i), widget_type='drag_float', min=0.0, max=1.0, default_value=float(self.degrees[i]))
-            input_.add_callback(self.degree_changed)
+            input_ = self.add_input('filter ' + str(i), widget_type='drag_float', min=0.0, max=1.0, default_value=float(self.degrees[i]), callback=self.degree_changed)
             self.filter_degree_inputs.append(input_)
         self.output = self.add_output('out')
+        self.message_handlers = {'set': self.set, 'clear': self.clear}
 
     def degree_changed(self):
         for i in range(self.filter_count):
@@ -543,24 +488,21 @@ class MultiDiffFilterNode(Node):
 
     def execute(self):
         input_value = self.input.get_data()
-        if type(input_value) == list:
-            if type(input_value[0]) == str:
-                if input_value[0] == 'set':
-                    set_count = len(input_value) - 1
-                    if set_count > self.filter_count:
-                        set_count = self.filter_count
-                    for i in range(set_count):
-                        self.accums[i] = float(input_value[i + 1])
-                elif input_value[0] == 'clear':
-                    self.accums.fill(0)
-        elif type(input_value) == str:
-            if input_value == 'clear':
-                self.accums.fill(0)
-        else:
+        handled, do_output = self.check_for_messages(input_value)
+        if not handled:
             self.accums = self.accums * self.degrees + input_value * self.minus_degrees
-        out_values = self.accums[:-1] - self.accums[1:]
-        self.output.set(out_values)
-        self.send_outputs()
+            out_values = self.accums[:-1] - self.accums[1:]
+            self.output.send(out_values)
+
+    def set(self, args):
+        set_count = len(args)
+        if set_count > self.filter_count:
+            set_count = self.filter_count
+        for i in range(set_count):
+            self.accums[i] = float(args[i])
+
+    def clear(self, args):
+        self.accums.fill(0)
 
 
 class FilterNode(Node):
@@ -572,15 +514,17 @@ class FilterNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.degree = 0.9
-        self.accum = 0
+        self.degree = self.arg_as_float(default_value=0.9)
+        if self.degree < 0.0:
+            self.degree = 0.0
+        elif self.degree > 1.0:
+            self.degree = 1.0
 
-        self.input = self.add_input('in', trigger_node=self)
+        self.accum = 0.0
 
-        self.degree_input = self.add_input('degree', widget_type='drag_float', min=0.0, max=1.0)
-        self.degree_input.add_callback(self.change_degree)
+        self.input = self.add_input('in', triggers_execution=True)
+        self.degree_input = self.add_input('degree', widget_type='drag_float', min=0.0, max=1.0, default_value=self.degree, callback=self.change_degree)
         self.degree_input.widget.speed = .01
-
         self.output = self.add_output("out")
 
     def change_degree(self):
@@ -590,17 +534,10 @@ class FilterNode(Node):
         elif self.degree > 1:
             self.degree = 1
 
-    def custom(self):
-        in_degree, t = decode_arg(self.args, 0)
-        if t in [int, float]:
-            self.degree = in_degree
-            self.degree_input.widget.set(self.degree)
-
     def execute(self):
         input_value = self.input.get_data()
         self.accum = self.accum * self.degree + input_value * (1.0 - self.degree)
-        self.output.set(self.accum)
-        self.send_outputs()
+        self.output.send(self.accum)
 
 
 class SampleHoldNode(Node):
@@ -615,7 +552,7 @@ class SampleHoldNode(Node):
         self.sample_hold = True
         self.sample = 0
         self.sample_hold_input = self.add_input("sample/hold", widget_type='checkbox')
-        self.input = self.add_input("input", trigger_node=self)
+        self.input = self.add_input("input", triggers_execution=True)
         self.output = self.add_output("out")
 
     def execute(self):
@@ -635,7 +572,7 @@ class TogEdgeNode(Node):
         super().__init__(label, data, args)
 
         self.state = False
-        self.input = self.add_input("", trigger_node=self)
+        self.input = self.add_input("", triggers_execution=True)
         self.on_output = self.add_output("on")
         self.off_output = self.add_output("off")
 
@@ -648,4 +585,179 @@ class TogEdgeNode(Node):
             if not self.state:
                 self.on_output.send('bang')
         self.state = new_state
+
+
+# class BandpassNode(Node):
+#     @staticmethod
+#     def factory(name, data, args=None):
+#         node = BandpassNode(name, data, args)
+#         return node
+#
+#     def __init__(self, label: str, data, args):
+#         super().__init__(label, data, args)
+#
+#         self.low_cut = 10
+#         self.high_cut = 20
+#         self.sample_frequency = 60
+#         self.nyquist = self.sample_frequency * 0.5
+#         self.low = self.low_cut / self.nyquist
+#         self.high = self.high_cut / self.nyquist
+#         self.order = 5
+#
+#         self.input = self.add_input("", triggers_execution=True)
+#         self.order_property = self.add_property('order', widget_type='input_int', default_value=self.order, min=1, max=8, callback=self.params_changed)
+#         self.low_cut_property = self.add_property('low', widget_type='drag_float', default_value=self.low_cut, callback=self.params_changed)
+#         self.high_cut_property = self.add_property('high', widget_type='drag_float', default_value=self.high_cut, callback=self.params_changed)
+#
+#         self.on_output = self.add_output("on")
+#         self.off_output = self.add_output("off")
+#         self.sos = signal.butter(self.order, [self.low, self.high], btype='band', output='sos')
+#
+#     def params_changed(self):
+#         self.low_cut = self.low_cut_property.get_widget_value()
+#         self.high_cut = self.high_cut_property.get_widget_value()
+#         self.low = self.low_cut / self.nyquist
+#         self.high = self.high_cut / self.nyquist
+#         self.order = self.order_property.get_widget_value()
+#         self.sos = signal.butter(self.order, [self.low, self.high], btype='band', output='sos')
+#
+#     def execute(self):
+#         signal = self.input.get_received_data()
+
+class BandPassFilterNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = BandPassFilterNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.order = 5
+        self.low_cut = 10
+        self.high_cut = 20
+        self.sample_frequency = 60
+        self.filter_type = 'bandpass'
+        self.filter_design = 'butter'
+        self.nyquist = self.sample_frequency * 0.5
+
+        self.input = self.add_input("signal", triggers_execution=True)
+        self.filter_type_property = self.add_property('filter type', widget_type='combo', default_value=self.filter_type, callback=self.params_changed)
+        self.filter_type_property.widget.combo_items = ['bandpass', 'lowpass', 'highpass', 'bandstop']
+        self.filter_design_property = self.add_property('filter design', widget_type='combo', default_value=self.filter_design, callback=self.params_changed)
+        self.filter_design_property.widget.combo_items = ['butter', 'cheby1', 'cheby2']
+        self.order_property = self.add_property('order', widget_type='input_int', default_value=self.order, min=1, max=8, callback=self.params_changed)
+        self.low_cut_property = self.add_property('low', widget_type='drag_float', default_value=self.low_cut, callback=self.params_changed)
+        self.high_cut_property = self.add_property('high', widget_type='drag_float', default_value=self.high_cut, callback=self.params_changed)
+        self.sample_frequency_property = self.add_property('sample freq', widget_type='drag_float', default_value=self.sample_frequency, callback=self.params_changed)
+
+        self.output = self.add_output("filtered")
+        self.filter = IIR2Filter(self.order, [self.low_cut, self.high_cut], filter_type=self.filter_type, design=self.filter_design, fs=self.sample_frequency)
+
+    def params_changed(self):
+        self.filter = None
+        self.low_cut = self.low_cut_property.get_widget_value()
+        self.high_cut = self.high_cut_property.get_widget_value()
+        self.order = self.order_property.get_widget_value()
+        self.sample_frequency = self.sample_frequency_property.get_widget_value()
+        self.nyquist = self.sample_frequency * 0.5
+        self.filter_type = self.filter_type_property.get_widget_value()
+        self.filter_design = self.filter_design_property.get_widget_value()
+        if self.high_cut > self.nyquist:
+            self.high_cut = self.nyquist - 1
+        if self.low_cut > self.high_cut:
+            self.low_cut = self.high_cut * .5
+        if self.filter_type in ['bandpass', 'bandstop']:
+            self.filter = IIR2Filter(self.order, [self.low_cut, self.high_cut], filter_type=self.filter_type, design=self.filter_design, fs=self.sample_frequency)
+        elif self.filter_type == 'lowpass':
+            self.filter = IIR2Filter(self.order, [self.high_cut], filter_type=self.filter_type, design=self.filter_design, fs=self.sample_frequency)
+        elif self.filter_type == 'highpass':
+            self.filter = IIR2Filter(self.order, [self.low_cut], filter_type=self.filter_type, design=self.filter_design, fs=self.sample_frequency)
+
+    def execute(self):
+        signal = self.input.get_received_data()
+        if self.filter is not None:
+            signal_out = self.filter.filter(signal)
+            self.output.send(signal_out)
+
+
+class IIR2Filter():
+    def __init__(self, order, cutoff, filter_type, design='butter', rp=1, rs=1, fs=0):
+        self.designs = ['butter', 'cheby1', 'cheby2']
+        self.filter_types_1 = ['lowpass', 'highpass', 'Lowpass', 'Highpass', 'low', 'high']
+        self.filter_types_2 = ['bandstop', 'bandpass', 'Bandstop', 'Bandpass']
+        self.error_flag = 0
+        self.coefficients = None
+        self.coefficients = self.create_coefficients(order, cutoff, filter_type, design, rp, rs, fs)
+        self.acc_input = np.zeros(len(self.coefficients))
+        self.acc_output = np.zeros(len(self.coefficients))
+        self.buffer1 = np.zeros(len(self.coefficients))
+        self.buffer2 = np.zeros(len(self.coefficients))
+        self.input = 0
+        self.output = 0
+
+    def filter(self, input):
+        # len(coefficients[0,:] == 1 means that there was an error in the generation of the coefficients
+        # and the filtering should not be used
+
+        if len(self.coefficients[0, :]) > 1:
+            self.input = input
+            self.output = 0
+
+            # The for loop creates a chain of second order filters according to the order desired.
+            # If a 10th order filter is to be created the loop will iterate 5 times to create a chain of
+            # 5 second order filters.
+            
+            for i in range(len(self.coefficients)):
+                self.fir_coefficients = self.coefficients[i][0:3]
+                self.iir_coefficients = self.coefficients[i][3:6]
+
+                # Calculating the accumulated input consisting of the input and the values coming from
+                # the feedback loops (delay buffers weighed by the IIR coefficients).
+                
+                self.acc_input[i] = (self.input + self.buffer1[i] * -self.iir_coefficients[1] + self.buffer2[i] * -self.iir_coefficients[2])
+
+                # Calculating the accumulated output provided by the accumulated input and the values from the delay
+                # buffers weighed by the FIR coefficients.
+                
+                self.acc_output[i] = (self.acc_input[i] * self.fir_coefficients[0] + self.buffer1[i] * self.fir_coefficients[1] + self.buffer2[i] * self.fir_coefficients[2])
+
+                # Shifting the values on the delay line: acc_input -> buffer1 -> buffer2
+                
+                self.buffer2[i] = self.buffer1[i]
+                self.buffer1[i] = self.acc_input[i]
+
+                self.input = self.acc_output[i]
+
+            self.output = self.acc_output[-1]  # was i
+        return self.output
+
+    def create_coefficients(self, order, cutoff, filter_type, design='butter', rp=1, rs=1, fs=0):
+        # Error handling: other errors can arise too, but those are dealt with in the signal package.
+
+        self.error_flag = 1  # if there was no error then it will be set to 0
+        self.coefficients = [0]  # with no error this will hold the coefficients
+
+        if design not in self.designs:
+            print('Gave wrong filter design! Remember: butter, cheby1, cheby2.')
+        elif filter_type not in self.filter_types_1 and filter_type not in self.filter_types_2:
+            print('Gave wrong filter type! Remember: lowpass, highpass, bandpass, bandstop.')
+        elif fs < 0:
+            print('The sampling frequency has to be positive!')
+        else:
+            self.error_flag = 0
+
+        # if fs was given then the given cutoffs need to be normalised to Nyquist
+        if fs and self.error_flag == 0:
+            for i in range(len(cutoff)):
+                cutoff[i] = cutoff[i] / fs * 2
+
+        if design == 'butter' and self.error_flag == 0:
+            self.coefficients = signal.butter(order, cutoff, filter_type, output='sos')
+        elif design == 'cheby1' and self.error_flag == 0:
+            self.coefficients = signal.cheby1(order, rp, cutoff, filter_type, output='sos')
+        elif design == 'cheby2' and self.error_flag == 0:
+            self.coefficients = signal.cheby2(order, rs, cutoff, filter_type, output='sos')
+
+        return self.coefficients
 
