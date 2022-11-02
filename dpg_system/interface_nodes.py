@@ -39,8 +39,7 @@ class ButtonNode(Node):
         self.frame_task_primed = False
         self.flash_duration = .100
 
-        self.input = self.add_input('', trigger_node=self, widget_type='button', widget_width=14)
-        self.input.add_callback(self.clicked_function, user_data=self)
+        self.input = self.add_input('', triggers_execution=True, widget_type='button', widget_width=14, callback=self.clicked_function)
         self.output = self.add_output("")
 
         self.flash_duration_option = self.add_option('flash duration', widget_type='drag_float', min=0, max=1.0, default_value=self.flash_duration)
@@ -55,7 +54,7 @@ class ButtonNode(Node):
             with dpg.theme_component(dpg.mvAll):
                 dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
 
-    def custom(self):
+    def custom_setup(self):
         self.add_frame_task()
 
     def clicked_function(self):
@@ -72,11 +71,7 @@ class ButtonNode(Node):
                 dpg.bind_item_theme(self.input.widget.uuid, self.inactive_theme)
 
     def execute(self):
-        # how do we handle this?
-        # highlight button if input
-        # output bang if clicked
-        self.output.set('bang')
-        self.send_outputs()
+        self.output.send('bang')
 
 
 class MenuNode(Node):
@@ -90,16 +85,16 @@ class MenuNode(Node):
 
         self.choice = ''
         self.choices = args
-        self.choice_input = self.add_input('##choice', widget_type='combo', default_value=self.choice)
+        self.choice_input = self.add_input('##choice', widget_type='combo', default_value=self.choice, callback=self.set_choice)
         self.choice_input.widget.combo_items = args
-        self.choice_input.add_callback(self.set_choice)
 
         self.output = self.add_output("")
 
     def set_choice(self):
         do_execute = True
         if self.choice_input.fresh_input:
-            input_choice = self.choice_input.get_received_data()
+            self.choice_input.fresh_input = False
+            input_choice = self.choice_input._data
             t = type(input_choice)
             test_choice = None
             if t == list:
@@ -136,8 +131,7 @@ class MenuNode(Node):
             self.execute()
 
     def execute(self):
-        self.output[0].set(self.choice_input.get_widget_value())
-        self.send_outputs()
+        self.outputs[0].send(self.choice_input.get_widget_value())
 
 
 class MouseNode(Node):
@@ -152,12 +146,11 @@ class MouseNode(Node):
         self.value = False
         self.mouse_pos = None
 
-        self.input = self.add_input("", trigger_node=self, widget_type='checkbox', widget_width=40)
-        self.input.add_callback(self.execute)
+        self.input = self.add_input("", triggers_execution=True, widget_type='checkbox', widget_width=40, callback=self.execute)
         self.output_x = self.add_output("x")
         self.output_y = self.add_output("y")
 
-    def custom(self):
+    def custom_setup(self):
         self.add_frame_task()
 
     def frame_task(self):
@@ -167,9 +160,9 @@ class MouseNode(Node):
 
     def execute(self):
         if self.mouse_pos is not None:
-            self.output_y.set(self.mouse_pos[1])
-            self.output_x.set(self.mouse_pos[0])
-        self.send_outputs()
+            self.output_y.set_value(self.mouse_pos[1])
+            self.output_x.set_value(self.mouse_pos[0])
+        self.send_all()
 
 
 class ToggleNode(Node):
@@ -182,13 +175,12 @@ class ToggleNode(Node):
         super().__init__(label, data, args)
 
         self.value = False
-        self.input = self.add_input("", trigger_node=self, widget_type='checkbox', widget_width=40)
-        self.input.add_callback(self.execute)
+        self.input = self.add_input("", triggers_execution=True, widget_type='checkbox', widget_width=40, callback=self.execute)
         self.output = self.add_output("")
 
     def execute(self):
         if self.input.fresh_input:
-            received = self.input.get_received_data
+            received = self.input._data     # so that we can catch 'bang' ?
             if type(received) == str:
                 if received == 'bang':
                     self.value = not self.value
@@ -196,8 +188,7 @@ class ToggleNode(Node):
         else:
             self.value = self.input.get_widget_value()
 
-        self.output.set(self.value)
-        self.send_outputs()
+        self.output.send(self.value)
 
 
 class ValueNode(Node):
@@ -257,27 +248,22 @@ class ValueNode(Node):
                     self.variable_name = max
 
         if self.max is None:
-            self.input = self.add_input("", trigger_node=self, widget_type=widget_type, widget_uuid=self.value, widget_width=widget_width, has_trigger=True)
+            self.input = self.add_input("", triggers_execution=True, widget_type=widget_type, widget_uuid=self.value, widget_width=widget_width, trigger_button=True)
         else:
-            self.input = self.add_input("", trigger_node=self, widget_type=widget_type, widget_uuid=self.value, widget_width=widget_width, has_trigger=True, max=self.max)
+            self.input = self.add_input("", triggers_execution=True, widget_type=widget_type, widget_uuid=self.value, widget_width=widget_width, trigger_button=True, max=self.max)
 
-        # self.input.add_callback(self.value_changed)
         if self.variable_name != '':
             self.output = self.add_output(self.variable_name)
         else:
             self.output = self.add_output('out')
 
-        self.variable_binding_property = self.add_option('bind to', widget_type='text_input', width=120, default_value=self.variable_name)
-        self.variable_binding_property.add_callback(self.binding_changed)
+        self.variable_binding_property = self.add_option('bind to', widget_type='text_input', width=120, default_value=self.variable_name, callback=self.binding_changed)
 
         if widget_type in ['drag_float', 'slider_float', "knob_float"]:
-            self.min_property = self.add_option('min', widget_type='drag_float', default_value=self.min)
-            self.min_property.add_callback(self.options_changed)
-            self.max_property = self.add_option('max', widget_type='drag_float', default_value=self.max)
-            self.max_property.add_callback(self.options_changed)
+            self.min_property = self.add_option('min', widget_type='drag_float', default_value=self.min, callback=self.options_changed)
+            self.max_property = self.add_option('max', widget_type='drag_float', default_value=self.max, callback=self.options_changed)
         if widget_type in ['drag_float', 'slider_float', 'drag_int', 'knob_int']:
-            self.format_property = self.add_option('format', widget_type='text_input', default_value=self.format)
-            self.format_property.add_callback(self.options_changed)
+            self.format_property = self.add_option('format', widget_type='text_input', default_value=self.format, callback=self.options_changed)
 
     def binding_changed(self):
         binding = self.variable_binding_property.get_widget_value()
@@ -305,7 +291,7 @@ class ValueNode(Node):
                 dpg.configure_item(self.output.uuid, label=self.variable_name)
                 self.variable_update()
 
-    def custom(self):
+    def custom_setup(self):
         if self.variable_name != '':
             self.bind_to_variable(self.variable_name)
 
@@ -321,6 +307,14 @@ class ValueNode(Node):
     def value_changed(self):
         pass
 
+    def increment_widget(self, widget):
+        widget.increment()
+        self.execute()
+
+    def decrement_widget(self, widget):
+        widget.decrement()
+        self.execute()
+
     def variable_update(self):
         if self.variable is not None:
             data = self.variable.get_value()
@@ -333,8 +327,8 @@ class ValueNode(Node):
 
     def execute(self):
         value = None
-        if self._input_attributes[0].fresh_input:
-            in_data = self._input_attributes[0].get_received_data()
+        if self.inputs[0].fresh_input:
+            in_data = self.inputs[0].get_data()
             t = type(in_data)
             if t == str:
                 value = in_data.split(' ')
@@ -362,8 +356,7 @@ class ValueNode(Node):
                 width = 1024
             if width > dpg.get_item_width(self.input.widget.uuid):
                 dpg.set_item_width(self.input.widget.uuid, width)
-        self.output.set(value)
-        self.send_outputs()
+        self.outputs[0].send(value)
 
     def update(self, propagate=True):
         value = dpg.get_value(self.value)
@@ -381,8 +374,7 @@ class ValueNode(Node):
                 width = 1024
             if width > dpg.get_item_width(self.input.widget.uuid):
                 dpg.set_item_width(self.input.widget.uuid, width)
-        self.output.set(value)
-        self.send_outputs()
+        self.outputs[0].send(value)
 
 
 class VectorNode(Node):
@@ -395,30 +387,23 @@ class VectorNode(Node):
         super().__init__(label, data, args)
 
         self.max_component_count = 32
-        self.current_component_count = 4
         self.format = '%.3f'
 
-        if args is not None:
-            # print(args)
-            self.current_component_count = any_to_int(args[0])
+        self.current_component_count = self.arg_as_int(default_value=4)
 
-        self.input = self.add_input("in", trigger_node=self)
+        self.input = self.add_input("in", triggers_execution=True)
 
         self.component_properties = []
         for i in range(self.max_component_count):
-            cp = self.add_property('##' + str(i), widget_type='drag_float')
+            cp = self.add_property('##' + str(i), widget_type='drag_float', callback=self.component_changed)
             self.component_properties.append(cp)
-            cp.add_callback(self.component_changed)
 
         self.output = self.add_output('out')
 
-        self.component_count_property = self.add_option('component count', widget_type='drag_int', default_value=self.current_component_count)
-        self.component_count_property.add_callback(self.component_count_changed)
+        self.component_count_property = self.add_option('component count', widget_type='drag_int', default_value=self.current_component_count, callback=self.component_count_changed)
+        self.format_option = self.add_option(label='number format', widget_type='text_input', default_value=self.format, callback=self.change_format)
 
-        self.format_option = self.add_option(label='number format', widget_type='text_input', default_value=self.format)
-        self.format_option.add_callback(self.change_format)
-
-    def custom(self):
+    def custom_setup(self):
         for i in range(self.max_component_count):
             if i < self.current_component_count:
                 dpg.show_item(self.component_properties[i].uuid)
@@ -468,12 +453,13 @@ class VectorNode(Node):
                         self.component_properties[i].set(any_to_float(ar[i]))
                     else:
                         dpg.hide_item(self.component_properties[i].uuid)
-                self.output.send(value)
+                self.output.set_value(value)
         else:
             output_array = np.ndarray((self.current_component_count))
             for i in range(self.current_component_count):
                 output_array[i] = self.component_properties[i].get_widget_value()
-            self.output.send(output_array)
+            self.output.set_value(output_array)
+        self.output.send()
 
 
 class PrintNode(Node):
@@ -487,10 +473,9 @@ class PrintNode(Node):
 
         self.precision = 3
         self.format_string = '{:.3f}'
-        self.input = self.add_input('in', trigger_node=self)
+        self.input = self.add_input('in', triggers_execution=True)
 
-        self.precision_option = self.add_option(label='precision', widget_type='drag_int', default_value=self.precision, min=0, max=32)
-        self.precision_option.add_callback(self.change_format)
+        self.precision_option = self.add_option(label='precision', widget_type='drag_int', default_value=self.precision, min=0, max=32, callback=self.change_format)
 
     def change_format(self):
         self.precision = self.precision_option.get_widget_value()
@@ -546,11 +531,11 @@ class LoadActionNode(Node):
                 self.message_list.append(arg)
         self.message_string = ' '.join(self.message_list)
 
-        self.input = self.add_input('trigger', trigger_node=self)
+        self.input = self.add_input('trigger', triggers_execution=True)
         self.load_action_property = self.add_property(label='##loadActionString', widget_type='text_input', default_value=self.message_string)
         self.output = self.add_output("out")
 
-    def custom(self):
+    def custom_setup(self):
         self.add_frame_task()
 
     def frame_task(self):
@@ -573,10 +558,12 @@ class PlotNode(Node):
         super().__init__(label, data, args)
         self.style_type = 'line'
 
+        default_color_map = 'viridis'
         self.style = -1
         if label == 'plot':
             self.style = 0
             self.update_style = 'input is stream of samples'
+            default_color_map = 'deep'
         elif label == 'heat_scroll':
             self.style = 5
             self.style_type = label
@@ -605,7 +592,7 @@ class PlotNode(Node):
         self.x_data = np.linspace(0, self.sample_count, self.sample_count)
         self.roll_along_x = False
 
-        self.input = self.add_input("y", trigger_node=self)
+        self.input = self.add_input("y", triggers_execution=True)
 
         self.input_x = None
         if self.style == 1:
@@ -614,41 +601,29 @@ class PlotNode(Node):
         self.plot_display = self.add_display('')
         self.plot_display.submit_callback = self.submit_display
 
-        self.style_property = self.add_option('style', widget_type='combo', default_value=self.style_type)
+        self.style_property = self.add_option('style', widget_type='combo', default_value=self.style_type, callback=self.change_style_property)
         self.style_property.widget.combo_items = ['line', 'scatter', 'stair', 'stem', 'bar', 'heat_map', 'heat_scroll']
-        self.style_property.add_callback(self.change_style_property)
 
-        self.heat_map_colour_property = self.add_option('color', widget_type='combo', default_value='viridis')
+        self.heat_map_colour_property = self.add_option('color', widget_type='combo', default_value=default_color_map, callback=self.change_colormap)
         self.heat_map_colour_property.widget.combo_items = ['deep', 'dark', 'pastel', 'paired', 'viridis', 'plasma', 'hot', 'cool', 'pink', 'jet', 'twilight', 'red-blue', 'brown-bluegreen', 'pink-yellowgreen', 'spectral', 'greys']
-        self.heat_map_colour_property.add_callback(self.change_colormap)
 
-        self.sample_count_option = self.add_option(label='sample count', widget_type='drag_int', default_value=self.sample_count, max=3840)
-        self.sample_count_option.add_callback(self.change_sample_count)
+        self.sample_count_option = self.add_option(label='sample count', widget_type='drag_int', default_value=self.sample_count, max=3840, callback=self.change_sample_count)
+        self.width_option = self.add_option(label='width', widget_type='drag_int', default_value=self.width, max=3840, callback=self.change_size)
+        self.height_option = self.add_option(label='height', widget_type='drag_int', default_value=self.height, max=3840, callback=self.change_size)
 
-        self.width_option = self.add_option(label='width', widget_type='drag_int', default_value=self.width, max=3840)
-        self.width_option.add_callback(self.change_size)
-
-        self.height_option = self.add_option(label='height', widget_type='drag_int', default_value=self.height, max=3840)
-        self.height_option.add_callback(self.change_size)
-
-        self.min_x_option = self.add_option(label='min x', widget_type='drag_float', default_value=self.min_x, max=3840)
-        self.min_x_option.add_callback(self.change_range)
+        self.min_x_option = self.add_option(label='min x', widget_type='drag_float', default_value=self.min_x, max=3840, callback=self.change_range)
         self.min_x_option.widget.speed = .01
 
-        self.max_x_option = self.add_option(label='max x', widget_type='drag_float', default_value=self.max_x, max=3840)
-        self.max_x_option.add_callback(self.change_range)
+        self.max_x_option = self.add_option(label='max x', widget_type='drag_float', default_value=self.max_x, max=3840, callback=self.change_range)
         self.max_x_option.widget.speed = .01
 
-        self.min_y_option = self.add_option(label='min y', widget_type='drag_float', default_value=self.min_y, max=3840)
-        self.min_y_option.add_callback(self.change_range)
+        self.min_y_option = self.add_option(label='min y', widget_type='drag_float', default_value=self.min_y, max=3840, callback=self.change_range)
         self.min_y_option.widget.speed = .01
 
-        self.max_y_option = self.add_option(label='max y', widget_type='drag_float', default_value=self.max_y, max=3840)
-        self.max_y_option.add_callback(self.change_range)
+        self.max_y_option = self.add_option(label='max y', widget_type='drag_float', default_value=self.max_y, max=3840, callback=self.change_range)
         self.max_y_option.widget.speed = .01
 
-        self.format_option = self.add_option(label='number format', widget_type='text_input', default_value='')
-        self.format_option.add_callback(self.change_format)
+        self.format_option = self.add_option(label='number format', widget_type='text_input', default_value='', callback=self.change_format)
 
         self.lock = threading.Lock()
 
@@ -659,7 +634,7 @@ class PlotNode(Node):
             dpg.add_plot_axis(dpg.mvXAxis, label="", tag=self.x_axis, no_tick_labels=True)
             dpg.add_plot_axis(dpg.mvYAxis, label="", tag=self.y_axis, no_tick_labels=True)
 
-    def custom(self):
+    def custom_setup(self):
         self.reallocate_buffer()
 
         if self.style == 0:
@@ -753,7 +728,6 @@ class PlotNode(Node):
             if dpg.does_item_exist(self.plot_data_tag):
                 dpg.configure_item(self.plot_data_tag, rows=self.y_data.breadth, cols=self.y_data.sample_count)
         self.change_range()
-
 
     def change_sample_count_no_lock(self):
         self.sample_count_option.set(self.sample_count)
@@ -850,10 +824,9 @@ class PlotNode(Node):
     def execute(self):
         self.lock.acquire(blocking=True)
         if self.input.fresh_input:   # standard plot
-            data = self.input.get_received_data()
-            t = type(data)
-
             if self.style == 0:
+                data = self.input.get_received_data()
+                t = type(data)
                 if t in [float, np.double, int, np.int64, bool, np.bool_]:
                     ii = np.array([data])
                     self.y_data.update(ii)
@@ -867,6 +840,8 @@ class PlotNode(Node):
                     if len(data.shape) == 1:
                         self.y_data.update(data)
             elif self.style == 5:  # heat_scroll ... input might be list or array
+                data = self.input.get_received_data()
+                t = type(data)
                 if t not in [list, np.ndarray]:
                     ii = np.array([data])
                     self.y_data.update(ii)
@@ -884,6 +859,8 @@ class PlotNode(Node):
                     ii = data.reshape((rows, 1))
                     self.y_data.update(ii)
             elif self.style == 6:  # heat map
+                data = self.input.get_received_data()
+                t = type(data)
                 if t not in [list, np.ndarray]:
                     rows = 1
                     sample_count = 1
@@ -928,7 +905,7 @@ class PlotNode(Node):
                 self.y_data.release_buffer()
 
         self.lock.release()
-        self.send_outputs()
+        self.send_all()
 
 
 class ColorPickerNode(Node):
@@ -943,30 +920,22 @@ class ColorPickerNode(Node):
 
         self.wheel = True
         self.alpha = True
-        self.inputs = False
+        self.has_inputs = False
 
-        self.input = self.add_input("", trigger_node=self, widget_type='color_picker', widget_width=128)
-        self.input.add_callback(self.color_changed)
-
+        self.input = self.add_input("", triggers_execution=True, widget_type='color_picker', widget_width=128, callback=self.color_changed)
         self.output = self.add_output("")
-
-        self.hue_wheel_option = self.add_option('hue_wheel', widget_type='checkbox', default_value=self.wheel)
-        self.hue_wheel_option.add_callback(self.hue_wheel_changed)
-
-        self.alpha_option = self.add_option('alpha', widget_type='checkbox', default_value=self.alpha)
-        self.alpha_option.add_callback(self.alpha_changed)
-
-        self.inputs_option = self.add_option('inputs', widget_type='checkbox', default_value=self.inputs)
-        self.inputs_option.add_callback(self.inputs_changed)
+        self.hue_wheel_option = self.add_option('hue_wheel', widget_type='checkbox', default_value=self.wheel, callback=self.hue_wheel_changed)
+        self.alpha_option = self.add_option('alpha', widget_type='checkbox', default_value=self.alpha, callback=self.alpha_changed)
+        self.inputs_option = self.add_option('inputs', widget_type='checkbox', default_value=self.has_inputs, callback=self.inputs_changed)
 
     def inputs_changed(self):
-        inputs = self.inputs_option.get_widget_value()
-        if inputs != self.inputs:
-            if inputs:
+        has_inputs = self.inputs_option.get_widget_value()
+        if has_inputs != self.has_inputs:
+            if has_inputs:
                 dpg.configure_item(self.input.widget.uuid, no_inputs=False)
             else:
                 dpg.configure_item(self.input.widget.uuid, no_inputs=True)
-            self.inputs = inputs
+            self.has_inputs = has_inputs
 
     def hue_wheel_changed(self):
         wheel = self.hue_wheel_option.get_widget_value()
@@ -996,13 +965,11 @@ class ColorPickerNode(Node):
         self.execute()
 
     def execute(self):
-        data = None
         if self.input.fresh_input:
             data = self.input.get_received_data()
             self.input.widget.set(tuple(data))
         else:
             data = list(self.input.get_widget_value())
         self.output.send(data)
-        pass
 
 
