@@ -1,0 +1,163 @@
+{
+    "height": 800,
+    "width": 1280,
+    "position": [
+        100,
+        100
+    ],
+    "name": "",
+    "nodes": {
+        "0": {
+            "name": "clip_embedding",
+            "id": 114,
+            "position_x": 429,
+            "position_y": 179,
+            "width": 95,
+            "height": 48
+        },
+        "1": {
+            "name": "message",
+            "id": 129,
+            "position_x": 209,
+            "position_y": 159,
+            "width": 153,
+            "height": 48,
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": "a photo of a wet cat",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                }
+            }
+        },
+        "2": {
+            "name": "type",
+            "id": 191,
+            "position_x": 642,
+            "position_y": 257,
+            "width": 157,
+            "height": 48,
+            "properties": {
+                "0": {
+                    "name": "type",
+                    "value": "array[512]",
+                    "value_type": "string"
+                }
+            }
+        },
+        "3": {
+            "name": "message",
+            "id": 202,
+            "position_x": 219,
+            "position_y": 376,
+            "width": 130,
+            "height": 48,
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": "a photo of a dog",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                }
+            }
+        },
+        "4": {
+            "name": "clip_embedding",
+            "id": 239,
+            "position_x": 446,
+            "position_y": 390,
+            "width": 95,
+            "height": 48
+        },
+        "5": {
+            "name": "cosine_similarity",
+            "id": 269,
+            "position_x": 586,
+            "position_y": 387,
+            "width": 113,
+            "height": 66
+        },
+        "6": {
+            "name": "float",
+            "id": 291,
+            "position_x": 775,
+            "position_y": 430,
+            "width": 130,
+            "height": 48,
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 114,
+            "source_output_index": 0,
+            "dest_node": 191,
+            "dest_input_index": 0
+        },
+        "1": {
+            "source_node": 114,
+            "source_output_index": 0,
+            "dest_node": 269,
+            "dest_input_index": 0
+        },
+        "2": {
+            "source_node": 129,
+            "source_output_index": 0,
+            "dest_node": 114,
+            "dest_input_index": 0
+        },
+        "3": {
+            "source_node": 202,
+            "source_output_index": 0,
+            "dest_node": 239,
+            "dest_input_index": 0
+        },
+        "4": {
+            "source_node": 239,
+            "source_output_index": 0,
+            "dest_node": 269,
+            "dest_input_index": 1
+        },
+        "5": {
+            "source_node": 269,
+            "source_output_index": 0,
+            "dest_node": 291,
+            "dest_input_index": 0
+        }
+    }
+}

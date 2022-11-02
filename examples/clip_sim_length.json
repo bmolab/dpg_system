@@ -1,0 +1,952 @@
+{
+    "height": 800,
+    "width": 1280,
+    "position": [
+        100,
+        100
+    ],
+    "name": "clip_sim_length",
+    "path": "/Users/drokeby/PycharmProjects/DPG_SYSTEM/clip_sim_length.json",
+    "nodes": {
+        "0": {
+            "name": "clip_embedding",
+            "id": 102,
+            "position_x": 429,
+            "position_y": 179,
+            "width": 95,
+            "height": 48
+        },
+        "1": {
+            "name": "message",
+            "id": 117,
+            "position_x": 166,
+            "position_y": 93,
+            "width": 491,
+            "height": 48,
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": "a cubist painting of a clown by Picasso",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                }
+            }
+        },
+        "2": {
+            "name": "message",
+            "id": 150,
+            "position_x": 219,
+            "position_y": 376,
+            "width": 130,
+            "height": 48,
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": "a photo of a dog",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                }
+            }
+        },
+        "3": {
+            "name": "clip_embedding",
+            "id": 173,
+            "position_x": 446,
+            "position_y": 390,
+            "width": 95,
+            "height": 48
+        },
+        "4": {
+            "name": "cosine_similarity",
+            "id": 188,
+            "position_x": 601,
+            "position_y": 388,
+            "width": 113,
+            "height": 66
+        },
+        "5": {
+            "name": "float",
+            "id": 208,
+            "position_x": 775,
+            "position_y": 423,
+            "width": 130,
+            "height": 48,
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0.3565255105495453,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "6": {
+            "name": "euclidean_distance",
+            "id": 260,
+            "position_x": 603,
+            "position_y": 227,
+            "width": 119,
+            "height": 48
+        },
+        "7": {
+            "name": "euclidean_distance",
+            "id": 275,
+            "position_x": 599,
+            "position_y": 529,
+            "width": 119,
+            "height": 48
+        },
+        "8": {
+            "name": "float",
+            "id": 292,
+            "position_x": 757,
+            "position_y": 244,
+            "width": 130,
+            "height": 48,
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 23.36556625366211,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "9": {
+            "name": "float",
+            "id": 324,
+            "position_x": 765,
+            "position_y": 547,
+            "width": 130,
+            "height": 48,
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 25.16506576538086,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "10": {
+            "name": "coll",
+            "id": 403,
+            "position_x": 282,
+            "position_y": 583,
+            "width": 117,
+            "height": 66,
+            "properties": {
+                "0": {
+                    "name": "name",
+                    "value": "untitled",
+                    "value_type": "string"
+                }
+            },
+            "collection": {
+                "0": [
+                    "A",
+                    "photograph",
+                    "of",
+                    "the",
+                    "sun",
+                    "peeking",
+                    "over",
+                    "the",
+                    "tops",
+                    "of",
+                    "the",
+                    "snow",
+                    "covered",
+                    "mountains"
+                ],
+                "1": [
+                    "An",
+                    "unreal",
+                    "engine",
+                    "image",
+                    "of",
+                    "a",
+                    "jungle",
+                    "river",
+                    "and",
+                    "a",
+                    "leopard"
+                ],
+                "2": [
+                    "An",
+                    "image",
+                    "of",
+                    "a",
+                    "vegetable",
+                    "garden",
+                    "in",
+                    "the",
+                    "summer"
+                ],
+                "3": [
+                    "a",
+                    "daycare",
+                    "center",
+                    "designed",
+                    "by",
+                    "Gaudi"
+                ],
+                "4": [
+                    "a",
+                    "photograph",
+                    "of",
+                    "a",
+                    "colorful",
+                    "fish",
+                    "swimming",
+                    "through",
+                    "a",
+                    "coral",
+                    "reef",
+                    "in",
+                    "Australia"
+                ],
+                "5": [
+                    "a",
+                    "mural",
+                    "by",
+                    "Diego",
+                    "Rivera",
+                    "showing",
+                    "a",
+                    "revolt",
+                    "of",
+                    "the",
+                    "bakers"
+                ],
+                "6": [
+                    "a",
+                    "christmas",
+                    "tree",
+                    "decorated",
+                    "by",
+                    "Piet",
+                    "Mondrian"
+                ],
+                "7": [
+                    "a",
+                    "cubist",
+                    "painting",
+                    "of",
+                    "a",
+                    "clown",
+                    "by",
+                    "Picasso"
+                ],
+                "8": [
+                    "a",
+                    "quilt",
+                    "of",
+                    "a",
+                    "skeleton",
+                    "in",
+                    "love"
+                ],
+                "9": [
+                    "a",
+                    "humorous",
+                    "robot",
+                    "designed",
+                    "by",
+                    "Paul",
+                    "Klee"
+                ],
+                "10": [
+                    "an",
+                    "instagram",
+                    "photo",
+                    "of",
+                    "a",
+                    "plate",
+                    "of",
+                    "spaghetti",
+                    "bolognese"
+                ],
+                "11": [
+                    "a",
+                    "medieval",
+                    "painting",
+                    "of",
+                    "a",
+                    "boy",
+                    "band"
+                ],
+                "12": [
+                    "a",
+                    "modern",
+                    "apartment",
+                    "building",
+                    "designed",
+                    "by",
+                    "the",
+                    "devil"
+                ],
+                "13": [
+                    "the",
+                    "long",
+                    "hangover",
+                    "after",
+                    "the",
+                    "terrible",
+                    "fire"
+                ],
+                "14": [
+                    "a",
+                    "painting",
+                    "of",
+                    "a",
+                    "spaceship",
+                    "by",
+                    "Picasso"
+                ],
+                "15": [
+                    "a",
+                    "stormy",
+                    "desert",
+                    "landscape",
+                    "filled",
+                    "with",
+                    "cactuses",
+                    "and",
+                    "snakes",
+                    "with",
+                    "an",
+                    "ominous",
+                    "sense",
+                    "of",
+                    "foreboding"
+                ],
+                "16": [
+                    "a",
+                    "baroque",
+                    "painting",
+                    "of",
+                    "a",
+                    "shipwreck",
+                    "sinking",
+                    "in",
+                    "a",
+                    "turbulent",
+                    "sea"
+                ],
+                "17": [
+                    "a",
+                    "baroque",
+                    "painting",
+                    "of",
+                    "a",
+                    "shipwreck",
+                    "sinking",
+                    "in",
+                    "a",
+                    "turbulent",
+                    "sea"
+                ],
+                "18": [
+                    "an",
+                    "oil",
+                    "painting",
+                    "of",
+                    "an",
+                    "egg",
+                    "frying",
+                    "on",
+                    "the",
+                    "hood",
+                    "of",
+                    "a",
+                    "sportscar"
+                ],
+                "19": [
+                    "a",
+                    "medieval",
+                    "painting",
+                    "of",
+                    "the",
+                    "Virgin",
+                    "Mary",
+                    "riding",
+                    "a",
+                    "rocket",
+                    "in",
+                    "outer",
+                    "space"
+                ],
+                "20": [
+                    "a",
+                    "japanese",
+                    "woodcut",
+                    "of",
+                    "the",
+                    "american",
+                    "president"
+                ],
+                "21": [
+                    "a",
+                    "kitchen",
+                    "designed",
+                    "by",
+                    "Gustav",
+                    "Klimt"
+                ],
+                "22": [
+                    "a",
+                    "beautifully",
+                    "lit,",
+                    "high",
+                    "resolution",
+                    "photograph",
+                    "of",
+                    "a",
+                    "million",
+                    "dollars"
+                ],
+                "23": [
+                    "a",
+                    "persian",
+                    "miniature",
+                    "of",
+                    "musicians",
+                    "in",
+                    "a",
+                    "garden"
+                ],
+                "24": [
+                    "a",
+                    "celtic",
+                    "illuminated",
+                    "manuscript",
+                    "of",
+                    "a",
+                    "devil",
+                    "and",
+                    "a",
+                    "business",
+                    "man"
+                ],
+                "25": [
+                    "a",
+                    "painting",
+                    "of",
+                    "a",
+                    "screaming",
+                    "banker",
+                    "by",
+                    "Roy",
+                    "Lichtenstein"
+                ],
+                "26": [
+                    "an",
+                    "impressionist",
+                    "painting",
+                    "of",
+                    "a",
+                    "shopping",
+                    "mall",
+                    "at",
+                    "dusk"
+                ],
+                "27": [
+                    "a",
+                    "documentary",
+                    "photograph",
+                    "of",
+                    "a",
+                    "river",
+                    "on",
+                    "fire",
+                    "flowing",
+                    "through",
+                    "a",
+                    "city"
+                ],
+                "28": [
+                    "a",
+                    "clown",
+                    "on",
+                    "a",
+                    "bicycle",
+                    "at",
+                    "sunset",
+                    "painted",
+                    "by",
+                    "Edvard",
+                    "Munch"
+                ],
+                "29": [
+                    "a",
+                    "photograph",
+                    "of",
+                    "a",
+                    "rainy",
+                    "side",
+                    "street",
+                    "in",
+                    "Tokyo",
+                    "at",
+                    "night"
+                ],
+                "30": [
+                    "a",
+                    "pastel",
+                    "drawing",
+                    "of",
+                    "the",
+                    "ghost",
+                    "of",
+                    "spring",
+                    "by",
+                    "Odilon",
+                    "Redon"
+                ],
+                "31": [
+                    "river",
+                    "with",
+                    "a",
+                    "fuzzy",
+                    "and",
+                    "bright",
+                    "yellow",
+                    "crescent",
+                    "moon",
+                    "shining",
+                    "at",
+                    "the",
+                    "top"
+                ],
+                "32": [
+                    "Oil",
+                    "on",
+                    "canvas",
+                    "painting",
+                    "of",
+                    "a",
+                    "blue",
+                    "night",
+                    "sky",
+                    "with",
+                    "roiling",
+                    "energy"
+                ],
+                "33": [
+                    "The",
+                    "buildings",
+                    "of",
+                    "downtown",
+                    "Manhattan",
+                    "situated",
+                    "below",
+                    "Mount",
+                    "Everest"
+                ],
+                "34": [
+                    "trying",
+                    "to",
+                    "find",
+                    "my",
+                    "way",
+                    "in",
+                    "a",
+                    "big",
+                    "confusing",
+                    "world,",
+                    "abstract",
+                    "expressionist",
+                    "oil",
+                    "painting"
+                ],
+                "35": [
+                    "the",
+                    "door",
+                    "of",
+                    "knowing,",
+                    "a",
+                    "portal",
+                    "brightly",
+                    "opening",
+                    "the",
+                    "way",
+                    "through",
+                    "darkness"
+                ],
+                "36": [
+                    "A",
+                    "castle",
+                    "made",
+                    "of",
+                    "cardboard"
+                ],
+                "37": [
+                    "A",
+                    "richly",
+                    "textured",
+                    "oil",
+                    "painting",
+                    "of",
+                    "a",
+                    "young",
+                    "badger",
+                    "delicately",
+                    "sniffing",
+                    "a",
+                    "yellow",
+                    "rose",
+                    "next",
+                    "to",
+                    "a",
+                    "tree",
+                    "trunk"
+                ],
+                "38": [
+                    "A",
+                    "photo",
+                    "of",
+                    "an",
+                    "Athenian",
+                    "vase",
+                    "with",
+                    "a",
+                    "painting",
+                    "of",
+                    "pangolins",
+                    "playing",
+                    "basketball",
+                    "in",
+                    "the",
+                    "style",
+                    "of",
+                    "Egyptian",
+                    "hieroglyphics"
+                ],
+                "39": [
+                    "an",
+                    "oil",
+                    "painting",
+                    "of",
+                    "a",
+                    "giant",
+                    "robot",
+                    "made",
+                    "of",
+                    "sushi,",
+                    "holding",
+                    "chopsticks"
+                ],
+                "40": [
+                    "Downtown",
+                    "Manhattan",
+                    "at",
+                    "sunrise.",
+                    "Detailed",
+                    "ink",
+                    "wash"
+                ],
+                "41": [
+                    "light",
+                    "and",
+                    "happiness",
+                    "throughout",
+                    "and",
+                    "finding",
+                    "its",
+                    "way",
+                    "to",
+                    "every",
+                    "corner",
+                    "of",
+                    "the",
+                    "world,",
+                    "abstract",
+                    "oil",
+                    "painting"
+                ],
+                "42": [
+                    "A",
+                    "solitary",
+                    "figure",
+                    "shrouded",
+                    "in",
+                    "mists",
+                    "peers",
+                    "up",
+                    "from",
+                    "the",
+                    "cobble",
+                    "stone",
+                    "street",
+                    "at",
+                    "the",
+                    "imposing",
+                    "and",
+                    "dark",
+                    "gothic",
+                    "buildings"
+                ],
+                "43": [
+                    "the",
+                    "planet",
+                    "Jupiter",
+                    "rises",
+                    "over",
+                    "the",
+                    "horizon",
+                    "of",
+                    "Mars"
+                ],
+                "44": [
+                    "A",
+                    "tornado",
+                    "made",
+                    "of",
+                    "bees",
+                    "crashing",
+                    "into",
+                    "a",
+                    "skyscraper.",
+                    "painting",
+                    "in",
+                    "the",
+                    "style",
+                    "of",
+                    "abstract",
+                    "cubism."
+                ],
+                "45": [
+                    "A",
+                    "soft",
+                    "beam",
+                    "of",
+                    "light",
+                    "shines",
+                    "down",
+                    "on",
+                    "an",
+                    "armored",
+                    "granite",
+                    "wombat",
+                    "warrior",
+                    "statue",
+                    "holding",
+                    "a",
+                    "broad",
+                    "sword."
+                ]
+            }
+        },
+        "11": {
+            "name": "message",
+            "id": 423,
+            "position_x": 162,
+            "position_y": 469,
+            "width": 130,
+            "height": 48,
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": "load",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                }
+            }
+        },
+        "12": {
+            "name": "message",
+            "id": 477,
+            "position_x": 462,
+            "position_y": 639,
+            "width": 491,
+            "height": 48,
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": "a cubist painting of a clown by Picasso",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                }
+            }
+        },
+        "13": {
+            "name": "int",
+            "id": 516,
+            "position_x": 82,
+            "position_y": 579,
+            "width": 130,
+            "height": 48,
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 7,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 102,
+            "source_output_index": 0,
+            "dest_node": 188,
+            "dest_input_index": 0
+        },
+        "1": {
+            "source_node": 102,
+            "source_output_index": 0,
+            "dest_node": 260,
+            "dest_input_index": 0
+        },
+        "2": {
+            "source_node": 117,
+            "source_output_index": 0,
+            "dest_node": 102,
+            "dest_input_index": 0
+        },
+        "3": {
+            "source_node": 150,
+            "source_output_index": 0,
+            "dest_node": 173,
+            "dest_input_index": 0
+        },
+        "4": {
+            "source_node": 173,
+            "source_output_index": 0,
+            "dest_node": 188,
+            "dest_input_index": 1
+        },
+        "5": {
+            "source_node": 173,
+            "source_output_index": 0,
+            "dest_node": 275,
+            "dest_input_index": 0
+        },
+        "6": {
+            "source_node": 188,
+            "source_output_index": 0,
+            "dest_node": 208,
+            "dest_input_index": 0
+        },
+        "7": {
+            "source_node": 260,
+            "source_output_index": 0,
+            "dest_node": 292,
+            "dest_input_index": 0
+        },
+        "8": {
+            "source_node": 275,
+            "source_output_index": 0,
+            "dest_node": 324,
+            "dest_input_index": 0
+        },
+        "9": {
+            "source_node": 403,
+            "source_output_index": 0,
+            "dest_node": 477,
+            "dest_input_index": 0
+        },
+        "10": {
+            "source_node": 403,
+            "source_output_index": 0,
+            "dest_node": 117,
+            "dest_input_index": 0
+        },
+        "11": {
+            "source_node": 423,
+            "source_output_index": 0,
+            "dest_node": 403,
+            "dest_input_index": 0
+        },
+        "12": {
+            "source_node": 516,
+            "source_output_index": 0,
+            "dest_node": 403,
+            "dest_input_index": 0
+        }
+    }
+}
