@@ -29,11 +29,10 @@ class MyGLContext:
         self.width = width
         self.pending_fov = 60
         self.fov = 30
-        self.hold_context = glfw.get_current_context()
         print('about to create window')
+
 #        gl.glutInitDisplayMode(glfw.GLUT_RGB | glfw.GLUT_DOUBLE | glfw.GLUT_DEPTH)
         self.window = glfw.create_window(width, height, name, None, None)
-        print('new_window', self.window)
         if self.window:
             print('window created')
             glfw.make_context_current(self.window)
@@ -59,15 +58,12 @@ class MyGLContext:
             gl.glEnable(gl.GL_BLEND)
             gl.glShadeModel(gl.GL_SMOOTH)
 
-        glfw.make_context_current(self.hold_context)
+        # else:
+        #     glfw.terminate()
 
     def prepare_draw(self):
-        self.hold_context = glfw.get_current_context()
         if self.window:
             glfw.make_context_current(self.window)
-            # c = glfw.get_current_context()
-            # print('prep', c, self.window)
-
             gl.glClear(gl.GL_COLOR_BUFFER_BIT)
             gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
 #            self.update_fov()
@@ -75,7 +71,6 @@ class MyGLContext:
     def end_draw(self):
         if self.window:
             glfw.swap_buffers(self.window)
-        glfw.make_context_current(self.hold_context)
 
     def close(self):
         if self.window:
