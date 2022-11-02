@@ -110,7 +110,7 @@ class NodeEditor:
         link_index = 0
         for node_index, node in enumerate(selected_node_objects):
             # save links
-            for out_index, output in enumerate(node._output_attributes):
+            for out_index, output in enumerate(node.outputs):
                 if len(output._children) > 0:
                     for in_index, input in enumerate(output._children):
                         link_container = {}
@@ -118,7 +118,7 @@ class NodeEditor:
                         link_container['source_output_index'] = out_index
                         dest_node = input.node
                         link_container['dest_node'] = dest_node.uuid
-                        for node_in_index, test_input in enumerate(dest_node._input_attributes):
+                        for node_in_index, test_input in enumerate(dest_node.inputs):
                             if test_input.uuid == input.uuid:
                                 link_container['dest_input_index'] = node_in_index
                                 links_container[link_index] = link_container
@@ -151,7 +151,7 @@ class NodeEditor:
         link_index = 0
         for node_index, node in enumerate(self._nodes):
             # save links
-            for out_index, output in enumerate(node._output_attributes):
+            for out_index, output in enumerate(node.outputs):
                 if len(output._children) > 0:
                     for in_index, input in enumerate(output._children):
                         link_container = {}
@@ -159,7 +159,7 @@ class NodeEditor:
                         link_container['source_output_index'] = out_index
                         dest_node = input.node
                         link_container['dest_node'] = dest_node.uuid
-                        for node_in_index, test_input in enumerate(dest_node._input_attributes):
+                        for node_in_index, test_input in enumerate(dest_node.inputs):
                             if test_input.uuid == input.uuid:
                                 link_container['dest_input_index'] = node_in_index
                                 links_container[link_index] = link_container
@@ -193,7 +193,6 @@ class NodeEditor:
 
         if 'name' in file_container:
             self.patch_name = file_container['name']
-            print('got', self.patch_name)
         if 'path' in file_container:
             self.file_path = file_container['path']
         height = dpg.get_viewport_height()
@@ -248,10 +247,10 @@ class NodeEditor:
                 if source_node is not None and dest_node is not None:
                     source_output_index = link_container['source_output_index']
                     dest_input_index = link_container['dest_input_index']
-                    if source_output_index < len(source_node._output_attributes):
-                        source_output = source_node._output_attributes[source_output_index]
-                        if dest_input_index < len(dest_node._input_attributes):
-                            dest_input = dest_node._input_attributes[dest_input_index]
+                    if source_output_index < len(source_node.outputs):
+                        source_output = source_node.outputs[source_output_index]
+                        if dest_input_index < len(dest_node.inputs):
+                            dest_input = dest_node.inputs[dest_input_index]
                             source_output.add_child(dest_input, self.uuid)
         dpg.configure_viewport(0, height=height, width=width, x_pos=int(position[0]), y_pos=int(position[1]))
         dpg.set_viewport_pos(position)
