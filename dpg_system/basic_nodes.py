@@ -7,8 +7,6 @@ from dpg_system.node import Node
 import threading
 from dpg_system.conversion_utils import *
 import json
-from re import match, I as insensitive
-from fuzzywuzzy import fuzz
 
 
 def register_basic_nodes():
@@ -38,196 +36,6 @@ def register_basic_nodes():
     Node.app.register_node('var', VariableNode.factory)
 
 
-class PlaceholderNode(Node):
-    node_list = []
-
-    @staticmethod
-    def factory(name, data, args=None):
-        node = PlaceholderNode('New Node', data, args)
-        return node
-
-    def __init__(self, label: str, data, args):
-        super().__init__(label, data, args)
-        self.filtered_list = []
-        self.name_property = self.add_property(label='##node_name', widget_type='text_input', width=180)
-        self.static_name = self.add_property(label='##static_name', widget_type='text_input', width=180)
-        self.args_property = self.add_property(label='args', widget_type='text_input', width=180)
-        self.args_property.add_callback(self.execute)
-        if len(self.node_list) == 0:
-            self.node_list = self.app.node_factory_container.get_node_list()
-        self.variable_list = self.app.get_variable_list()
-
-        self.node_list_box = self.add_property('###options', widget_type='list_box', width=180)
-        self.node_list_box.add_callback(self.selection_callback)
-
-    def custom(self):
-        dpg.configure_item(self.args_property.widget.uuid, show=False, on_enter=True)
-        dpg.configure_item(self.static_name.widget.uuid, show=False)
-        dpg.configure_item(self.node_list_box.widget.uuid, show=False)
-
-    def selection_callback(self):
-        selection = dpg.get_value(self.node_list_box.widget.uuid)
-
-    def fuzzy_score(self, test):
-        scores = {}
-        for index, node_name in enumerate(self.node_list):
-            ratio = fuzz.partial_ratio(node_name.lower(), test.lower())
-            if ratio == 100:
-                len_diff = abs(len(test.lower()) - len(node_name.lower()))
-                full_ratio = fuzz.ratio(node_name.lower(), test.lower())
-                ratio = (ratio * len_diff + full_ratio) / (1 + len_diff)
-                if test.lower() == node_name.lower()[:len(test)]:
-                    ratio += 10
-            scores[node_name] = ratio
-        for index, variable_name in enumerate(self.variable_list):
-            ratio = fuzz.partial_ratio(variable_name.lower(), test.lower())
-            if ratio == 100:
-                len_diff = abs(len(test.lower()) - len(variable_name.lower()))
-                full_ratio = fuzz.ratio(variable_name.lower(), test.lower())
-                ratio = (ratio * len_diff + full_ratio) / (1 + len_diff)
-                if test.lower() == variable_name.lower()[:len(test)]:
-                    ratio += 10
-            scores[variable_name] = ratio
-        sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-        self.filtered_list = []
-        for index, item in enumerate(sorted_scores):
-            if item[1] == 100:
-                self.filtered_list.append(item[0])
-            elif item[1] > 20 and len(self.filtered_list) < 10:
-                self.filtered_list.append(item[0])
-
-    def increment_widget(self, widget):
-        filter_name = dpg.get_value(self.node_list_box.widget.uuid)
-        print(filter_name)
-        if filter_name in self.filtered_list:
-            print('name in list')
-            index = self.filtered_list.index(filter_name)
-            print(index)
-            index -= 1
-            print(index)
-            if index >= 0:
-                print('ok index')
-                filter_name = self.filtered_list[index]
-                print(filter_name)
-                self.node_list_box.set(filter_name)
-
-    def decrement_widget(self, widget):
-        filter_name = dpg.get_value(self.node_list_box.widget.uuid)
-        print(filter_name)
-        if filter_name in self.filtered_list:
-            print('name in list')
-            index = self.filtered_list.index(filter_name)
-            print(index)
-            index += 1
-            print(index)
-            if index < len(self.filtered_list):
-                print('ok index')
-                filter_name = self.filtered_list[index]
-                print(filter_name)
-                self.node_list_box.set(filter_name)
-
-    def on_edit(self, widget):
-        if widget == self.static_name:
-            return
-        if widget == self.name_property.widget and len(self.node_list) > 0:
-            self.filtered_list = []
-            filter_name = dpg.get_value(self.name_property.widget.uuid)
-            if len(filter_name) > 0:
-                dpg.configure_item(self.node_list_box.widget.uuid, show=True)
-            if len(filter_name) > 0 and filter_name[-1] == ' ':
-                selection = dpg.get_value(self.node_list_box.widget.uuid)
-                dpg.focus_item(self.node_list_box.widget.uuid)
-                dpg.configure_item(self.name_property.widget.uuid, enabled=False)
-                dpg.configure_item(self.node_list_box.widget.uuid, items=[], show=False)
-                dpg.configure_item(self.name_property.widget.uuid, show=False)
-                dpg.configure_item(self.static_name.widget.uuid, show=True)
-                dpg.configure_item(self.args_property.widget.uuid, show=True, on_enter=True)
-                self.static_name.set(selection)
-                dpg.focus_item(self.args_property.widget.uuid)
-            else:
-                f = filter_name.lower()
-                self.fuzzy_score(f)
-                dpg.configure_item(self.node_list_box.widget.uuid, items=self.filtered_list)
-                if len(self.filtered_list) > 0:
-                    dpg.set_value(self.node_list_box.widget.uuid, self.filtered_list[0])
-
-        elif widget == self.node_list_box.widget:
-            selection = dpg.get_value(self.node_list_box.widget.uuid)
-            dpg.focus_item(self.node_list_box.widget.uuid)
-            dpg.configure_item(self.name_property.widget.uuid, enabled=False)
-            dpg.configure_item(self.node_list_box.widget.uuid, items=[], show=False)
-            dpg.configure_item(self.name_property.widget.uuid, show=False)
-            dpg.configure_item(self.static_name.widget.uuid, show=True)
-            dpg.configure_item(self.args_property.widget.uuid, show=True, on_enter=True)
-            self.static_name.set(selection)
-            dpg.focus_item(self.args_property.widget.uuid)
-
-    def on_deactivate(self, widget):
-        if widget == self.args_property.widget:
-            self.execute()
-
-    def execute(self):
-        if dpg.is_item_active(self.name_property.widget.uuid):
-            print(self.name_property.get_widget_value())
-        else:
-            selection_name = dpg.get_value(self.node_list_box.widget.uuid)
-            new_node_name = dpg.get_value(self.name_property.widget.uuid)
-            arg_string = dpg.get_value(self.args_property.widget.uuid)
-            new_node_args = []
-            if len(arg_string) > 0:
-                args = arg_string.split(' ')
-                new_node_args = [new_node_name] + args
-            else:
-                new_node_args = [new_node_name]
-            node_model = None
-            found = False
-            if new_node_args[0] in self.node_list:
-                found = True
-            elif selection_name in self.node_list:
-                new_node_args[0] = selection_name
-                found = True
-            if found:
-                if len(new_node_args) > 1:
-                    Node.app.create_node_by_name(new_node_args[0], self, new_node_args[1:])
-                else:
-                    Node.app.create_node_by_name(new_node_args[0], self, )
-                return
-            elif new_node_args[0] in self.variable_list:
-                v = self.app.find_variable(new_node_args[0])
-                if v is not None:
-                    found = True
-            elif selection_name in self.variable_list:
-                new_node_args[0] = selection_name
-                v = self.app.find_variable(new_node_args[0])
-                if v is not None:
-                    found = True
-            if found:
-                additional = []
-                if len(new_node_args) > 1:
-                    additional = new_node_args[1:]
-                t = type(v.value)
-                found = False
-                if t == int:
-                    new_node_args = ['int', new_node_args[0]]
-                    found = True
-                elif t == float:
-                    new_node_args = ['float', new_node_args[0]]
-                    found = True
-                elif t == str:
-                    new_node_args = ['message', new_node_args[0]]
-                    found = True
-                elif t == bool:
-                    new_node_args = ['toggle', new_node_args[0]]
-                    found = True
-                if found:
-                    if len(additional) > 0:
-                        new_node_args += additional
-                    if len(new_node_args) > 1:
-                        Node.app.create_node_by_name(new_node_args[0], self, new_node_args[1:])
-                    else:
-                        Node.app.create_node_by_name(new_node_args[0], self, )
-
-
 class MetroNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -237,24 +45,25 @@ class MetroNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
+        # NOTE: __init__ does not create the node, but it defines the components of the node.
+        # the actual dearpygui widgets and nodes do not exist, therefore cannot be modified, etc.
+        # until they are submitted for creation which happens after __init__ is complete
+        # custom_setup() is called after that creation routine, allowing you to do any
+        # special initialization that might be required that requires the UI elements to actually exist
+
+        # set internal variables
         self.last_tick = 0
-        self.period = 30
         self.on = False
         self.units = 1000
-
-        self.on_off_input = self.add_input('on', widget_type='checkbox', trigger_node=self)
-        self.on_off_input.add_callback(self.start_stop)
-
-        self.period_input = self.add_input('period', widget_type='drag_float', default_value=self.period)
-        self.period_input.add_callback(self.change_period)
-
-        self.units_property = self.add_property('units', widget_type='combo', default_value='milliseconds')
-        self.units_property.widget.combo_items = ['seconds', 'milliseconds', 'minutes', 'hours']
-        self.units_property.add_callback(self.set_units)
-
-        self.output = self.add_output("")
-
         self.units_dict = {'seconds': 1, 'milliseconds': 1000, 'minutes': 1.0/60.0, 'hours': 1.0/60.0/60.0}
+        self.period = self.arg_as_float(30.0)
+
+        # set inputs / properties / outputs / options
+        self.on_off_input = self.add_input('on', widget_type='checkbox', triggers_execution=True, callback=lambda: self.start_stop())
+        self.period_input = self.add_input('period', widget_type='drag_float', default_value=self.period, callback=lambda: self.change_period())
+        self.units_property = self.add_property('units', widget_type='combo', default_value='milliseconds', callback=lambda: self.set_units())
+        self.units_property.widget.combo_items = ['seconds', 'milliseconds', 'minutes', 'hours']
+        self.output = self.add_output("")
 
     def change_period(self):
         self.period = self.period_input.get_widget_value()
@@ -262,22 +71,21 @@ class MetroNode(Node):
             self.period = .001
 
     def start_stop(self):
-        # NEED SOMETHING THAT SETS VALUE FIRST THEN CALLS
         self.on = self.on_off_input.get_widget_value()
         if self.on:
             self.last_tick = time.time()
 
     def set_units(self):
-        units_string = self.units_property.get_widget_value() #dpg.get_value(self.shape_input._widget.uuid)
+        units_string = self.units_property.get_widget_value()
         if units_string in self.units_dict:
             self.units = self.units_dict[units_string]
 
-    def custom(self):
-        in_value, t = decode_arg(self.args, 0)
-        if t in [int, float]:
-            self.period = in_value
-            self.period_input.widget.set(self.period)
-        self.add_frame_task()
+    # called when node is actually being created, allowing you to do appropriate custom initialization
+
+    def custom_setup(self):
+        self.add_frame_task()  # best to add frame task on actual node creation
+
+    # this routine is called every update frame (usually 60 fps). It is optional... for those nodes that need constant updating
 
     def frame_task(self):
         if self.on:
@@ -289,9 +97,11 @@ class MetroNode(Node):
                 if self.last_tick + self.period < current:
                     self.last_tick = current
 
+    # the execute function is what causes output. It is called whenever something is received in an input that declares a trigger_node
+    # it can also be called from other functions like frame_task() above
+
     def execute(self):
-        self.output.set(1)
-        self.send_outputs()
+        self.output.send('bang')
 
 
 class TimerNode(Node):
@@ -313,22 +123,19 @@ class TimerNode(Node):
         self.output_elapsed = 0
         self.update_time_base()
 
-        if args is not None and len(args) > 0:
+        if len(args) > 0:
             if args[0] in self.units_dict:
                 self.units = self.units_dict[args[0]]
                 default_units = args[0]
 
         if label == 'elapsed':
             self.mode = 1
-            self.input = self.add_input('', trigger_node=self)
+            self.input = self.add_input('', triggers_execution=True)
         else:
-            self.input = self.add_input('on', widget_type='checkbox', trigger_node=self)
-            self.input.add_callback(self.start_stop)
+            self.input = self.add_input('on', widget_type='checkbox', triggers_execution=True, callback=lambda: self.start_stop())
 
-        self.units_property = self.add_property('units', widget_type='combo', default_value=default_units)
+        self.units_property = self.add_property('units', widget_type='combo', default_value=default_units, callback=lambda: self.set_units())
         self.units_property.widget.combo_items = ['seconds', 'milliseconds', 'minutes', 'hours']
-        self.units_property.add_callback(self.set_units)
-
         self.output = self.add_output("")
 
         self.output_integers_option = self.add_option('output integers', widget_type='checkbox', default_value=True)
@@ -346,7 +153,7 @@ class TimerNode(Node):
         if units_string in self.units_dict:
             self.units = self.units_dict[units_string]
 
-    def custom(self):
+    def custom_setup(self):
         if self.mode == 0:
             self.add_frame_task()
 
@@ -373,10 +180,9 @@ class TimerNode(Node):
     def execute(self):
         if self.mode == 1:
             self.calc_time()
-        self.output.set(self.output_elapsed)
+        self.output.send(self.output_elapsed)
         if self.mode == 1:
             self.update_time_base()
-        self.send_outputs()
 
 
 class CounterNode(Node):
@@ -388,79 +194,59 @@ class CounterNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.max = 255
         self.current_value = 0
-        self.step = 1
 
-        self.input = self.add_input("input", trigger_node=self)
+        self.max_count = self.arg_as_int(default_value=255)
+        self.step = self.arg_as_int(default_value=1)
 
-        self.max_input = self.add_input('count', widget_type='drag_int', default_value=self.max)
-        self.max_input.add_callback(self.change_max)
-
-        self.step_input = self.add_input('step', widget_type='drag_int', default_value=self.step)
-        self.step_input.add_callback(self.change_step)
-
+        self.input = self.add_input("input", triggers_execution=True)
+        self.max_input = self.add_input('count', widget_type='drag_int', default_value=self.max_count, callback=lambda: self.update_max_count_from_widget())
+        self.step_input = self.add_input('step', widget_type='drag_int', default_value=self.step, callback=lambda: self.update_step_from_widget())
         self.output = self.add_output("count out")
-
         self.carry_output = self.add_output("carry out")
         self.carry_output.output_always = False
 
-    def change_max(self):
-        self.max = self.max_input.get_widget_value()
+        self.message_handlers = {'reset': self.reset_message, 'set': self.set_message, 'step': self.step_message}
 
-    def change_step(self):
+    # widget callbacks
+    def update_max_count_from_widget(self):
+        self.max_count = self.max_input.get_widget_value()
+
+    def update_step_from_widget(self):
         self.step = self.step_input.get_widget_value()
 
-    def custom(self):
-        in_value, t = decode_arg(self.args, 0)
-        if t in [int, float]:
-            self.max = int(in_value)
-            self.max_input.widget.set(self.max)
+    # messages
+    def reset_message(self, message_data):
+        self.current_value = 0
+        return False
 
-        in_value, t = decode_arg(self.args, 1)
-        if t in [int, float]:
-            self.step = int(in_value)
+    def set_message(self, message_data):
+        self.current_value = any_to_int(message_data[0])
+        return True
+
+    def step_message(self, message_data):
+        self.step = any_to_int(message_data[0])
+        return False
 
     def execute(self):
-        handled = False
         in_data = self.input.get_data()
-        if type(in_data) is str:
-            if in_data == 'reset':
-                self.current_value = 0
-                handled = True
-        elif type(in_data) == list:
-            list_len = len(in_data)
-            if list_len > 0:
-                if type(in_data[0]) == str:
-                    if in_data[0] == 'set':
-                        if list_len > 1:
-                            val, t = decode_arg(in_data, 1)
-                            if t == int:
-                                self.current_value = val
-                            elif t == float:
-                                self.current_value = int(val)
-                            handled = True
-                    elif in_data[1] == 'step':
-                        if list_len > 1:
-                            val, t = decode_arg(in_data, 1)
-                            if t == int:
-                                self.step = val
-                            elif t == float:
-                                self.step = int(val)
-                            handled = True
+        handled, do_output = self.check_for_messages(in_data)
+
         if not handled:
             self.current_value += self.step
             if self.current_value < 0:
-                self.carry_output.set(-1)
-                self.current_value += self.max
-                self.current_value &= self.max
-            elif self.current_value >= self.max:
-                self.carry_output.set(0)
-                self.current_value %= self.max
-            elif self.current_value > self.max - self.step:
-                self.carry_output.set(1)
-        self.output.set(self.current_value)
-        self.send_outputs()
+                self.carry_output.set_value(-1)
+                self.current_value += self.max_count
+                self.current_value &= self.max_count
+            elif self.current_value >= self.max_count:
+                self.carry_output.set_value(0)
+                self.current_value %= self.max_count
+            elif self.current_value > self.max_count - self.step:
+                self.carry_output.set_value(1)
+
+        if do_output:
+            self.output.set_value(self.current_value)
+            self.send_all()
 
 
 class GateNode(Node):
@@ -472,26 +258,18 @@ class GateNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.num_gates = 1
+        self.num_gates = self.arg_as_int(default_value=1)
         self.state = 0
         self.bool_state = False
 
-        in_value, t = decode_arg(self.args, 0)
-        if t in [int, float]:
-            self.num_gates = int(in_value)
-
-        self.open = dpg.generate_uuid()
-        self.outputs = []
         if self.num_gates > 1:
-            self.choice_input = self.add_input('', widget_type='drag_int', default_value=self.state)
+            self.choice_input = self.add_input('', widget_type='drag_int', triggers_execution=True, default_value=self.state, callback=self.change_state, max=self.num_gates, min=0)
         else:
-            self.choice_input = self.add_input('', widget_type='checkbox', widget_uuid=self.bool_state, widget_width=40)
-        self.choice_input.add_callback(self.change_state)
-
-        self.gated_input = self.add_input("input", trigger_node=self)
+            self.choice_input = self.add_input('', widget_type='checkbox', triggers_execution=True, default_value=self.bool_state, widget_width=40, callback=self.change_state)
+        self.gated_input = self.add_input("input", triggers_execution=True)
 
         for i in range(self.num_gates):
-            self.outputs.append(self.add_output("out " + str(i)))
+            self.add_output("out " + str(i))
 
     def change_state(self):
         if self.num_gates == 1:
@@ -503,14 +281,12 @@ class GateNode(Node):
         if self.num_gates == 1:
             if self.bool_state:
                 if self.gated_input.fresh_input:
-                    value = self.gated_input.get_data()
-                    self.outputs[0].set(value)
+                    self.outputs[0].send(self.gated_input.get_received_data())
         else:
             if self.num_gates >= self.state > 0:
                 if self.gated_input.fresh_input:
-                    value = self.gated_input.get_data()
-                    self.outputs[self.state - 1].set(value)
-        self.send_outputs()
+                    value = self.gated_input.get_received_data()
+                    self.outputs[self.state - 1].send(self.gated_input.get_received_data())
 
 
 class SwitchNode(Node):
@@ -522,22 +298,16 @@ class SwitchNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.num_switches = 1
+        self.num_switches = self.arg_as_int(default_value=1)
         self.state = 0
         self.bool_state = False
 
-        in_value, t = decode_arg(self.args, 0)
-        if t in [int, float]:
-            self.num_switches = int(in_value)
-
-        self.choice_input = self.add_input('which input', widget_type='input_int')
-        self.choice_input.add_callback(self.change_state)
-
+        self.choice_input = self.add_input('which input', widget_type='input_int', callback=self.change_state)
         self.switch_inputs = []
         for i in range(self.num_switches):
             self.switch_inputs.append(self.add_input('in ' + str(i + 1)))
 
-        self.output = self.add_output('out')
+        self.out = self.add_output('out')
 
     def change_state(self):
         self.state = self.choice_input.get_widget_value()
@@ -548,15 +318,14 @@ class SwitchNode(Node):
             self.state = self.num_switches
             self.choice_input.set(self.state)
         if self.state != 0:
-            self.switch_inputs[self.state - 1].trigger_node = self
+            self.switch_inputs[self.state - 1].triggers_execution = True
         for i in range(self.num_switches):
             if i + 1 != self.state:
-                self.switch_inputs[i].trigger_node = None
+                self.switch_inputs[i].triggers_execution = False
 
     def execute(self):
         received = self.switch_inputs[self.state - 1].get_received_data()
-        self.output.set(received)
-        self.send_outputs()
+        self.out.send(received)
 
 
 class UnpackNode(Node):
@@ -568,44 +337,39 @@ class UnpackNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.num_outs = 1
-        self.outputs = []
-        in_value, t = decode_arg(self.args, 0)
-        if t in [int, float]:
-            self.num_outs = int(in_value)
-
-        self.input = self.add_input("", trigger_node=self)
+        self.num_outs = self.arg_as_int(default_value=1)
+        self.input = self.add_input("", triggers_execution=True)
 
         for i in range(self.num_outs):
-            self.outputs.append(self.add_output("out " + str(i)))
+            self.add_output("out " + str(i))
 
     def execute(self):
         if self.input.fresh_input:
             value = self.input.get_received_data()
             t = type(value)
             if t in [float, int, bool]:
-                self.outputs[0].set(value)
+                self.outputs[0].set_value(value)
             elif t == 'str':
                 listing, _, _ = string_to_hybrid_list(value)
                 out_count = len(listing)
                 if out_count > self.num_outs:
                     out_count = self.num_outs
                 for i in range(out_count):
-                    self.outputs[i].set(listing[i])
+                    self.outputs[i].set_value(listing[i])
             elif t == list:
                 listing, _, _ = list_to_hybrid_list(value)
                 out_count = len(listing)
                 if out_count > self.num_outs:
                     out_count = self.num_outs
                 for i in range(out_count):
-                    self.outputs[i].set(listing[i])
+                    self.outputs[i].set_value(listing[i])
             elif t == np.ndarray:
                 out_count = value.size
                 if out_count > self.num_outs:
                     out_count = self.num_outs
                 for i in range(out_count):
-                    self.outputs[i].set(value[i])
-            self.send_outputs()
+                    self.outputs[i].set_value(value[i])
+            self.send_all()
 
 
 class PackNode(Node):
@@ -617,40 +381,35 @@ class PackNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.num_ins = 2
-
-        in_value, t = decode_arg(self.args, 0)
-        if t in [int, float]:
-            self.num_ins = int(in_value)
+        self.num_ins = self.arg_as_int(default_value=2)
 
         for i in range(self.num_ins):
             if i == 0:
-                self.add_input("in " + str(i + 1), trigger_node=self)
+                self.add_input("in " + str(i + 1), triggers_execution=True)
             else:
                 if label == 'pak':
-                    self.add_input("in " + str(i + 1), trigger_node=self)
+                    self.add_input("in " + str(i + 1), triggers_execution=True)
                 else:
                     self.add_input("in " + str(i + 1))
 
         self.output = self.add_output("out")
-
         self.output_preference_option = self.add_option('output pref', widget_type='combo')
         self.output_preference_option.widget.combo_items = ['list', 'array']
 
-    def custom(self):
+    def custom_setup(self):
         for i in range(self.num_ins):
-            self._input_attributes[i].set_data(0)
+            self.inputs[i].receive_data(0)
 
     def execute(self):
         trigger = False
         if self.label == 'pak':
             trigger = True
-        elif self._input_attributes[0].fresh_input:
+        elif self.inputs[0].fresh_input:
             trigger = True
         if trigger:
             out_list = []
             for i in range(self.num_ins):
-                value = self._input_attributes[i].get_received_data()
+                value = self.inputs[i].get_data()
                 t = type(value)
                 if t in [list, tuple]:
                     out_list += value
@@ -660,8 +419,7 @@ class PackNode(Node):
                 else:
                     out_list.append(value)
             out_list, _ = list_to_array_or_list_if_hetero(out_list)
-            self.output.set(out_list)
-            self.send_outputs()
+            self.output.send(out_list)
 
 
 class DelayNode(Node):
@@ -673,18 +431,12 @@ class DelayNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        if len(args) > 0:
-            self.delay = any_to_int(args[0])
-        else:
-            self.delay = 8
+        self.delay = self.arg_as_int(default_value=8)
         self.buffer = [None] * self.delay
         self.buffer_position = 0
 
         self.input = self.add_input("in")
-
-        self.delay_input = self.add_input('delay', widget_type='drag_int', default_value=self.delay, min=0, max=4000)
-        self.delay_input.add_callback(self.delay_changed)
-
+        self.delay_input = self.add_input('delay', widget_type='drag_int', default_value=self.delay, min=0, max=4000, callback=self.delay_changed)
         self.output = self.add_output("out")
 
         self.add_frame_task()
@@ -702,7 +454,7 @@ class DelayNode(Node):
             self.output.send(out_data)
 
         if self.input.fresh_input:
-            self.buffer[self.buffer_position] = self.input.get_received_data()
+            self.buffer[self.buffer_position] = self.input.get_data()
         else:
             self.buffer[self.buffer_position] = None
         self.buffer_position += 1
@@ -752,7 +504,7 @@ class SelectNode(Node):
             self.mode = 0
         self.selector_count = 0
 
-        if args is not None:
+        if len(args) > 0:
             if self.mode == 0:
                 self.selector_count = len(args)
             else:
@@ -763,33 +515,29 @@ class SelectNode(Node):
         self.selector_options = []
         self.last_states = []
         self.current_states = []
-        self.outputs = []
 
-        self.input = self.add_input("in", trigger_node=self)
+        self.input = self.add_input("in", triggers_execution=True)
 
         if self.mode == 0:
             for i in range(self.selector_count):
-                self.outputs.append(self.add_output(any_to_string(args[i])))
+                self.add_output(any_to_string(args[i]))
             for i in range(self.selector_count):
                 val, t = decode_arg(args, i)
                 self.selectors.append(val)
                 self.last_states.append(0)
                 self.current_states.append(0)
             for i in range(self.selector_count):
-                an_option = self.add_option('selector ' + str(i), widget_type='text_input', default_value=args[i])
+                an_option = self.add_option('selector ' + str(i), widget_type='text_input', default_value=args[i], callback=self.selectors_changed)
                 self.selector_options.append(an_option)
-                an_option.add_callback(self.selectors_changed)
-
         else:
             for i in range(self.selector_count):
-                self.outputs.append(self.add_output(str(i)))
+                self.add_output(str(i))
                 self.selectors.append(i)
                 self.last_states.append(0)
                 self.current_states.append(0)
 
-        self.output_mode_option = self.add_option('output_mode', widget_type='combo', default_value='bang')
+        self.output_mode_option = self.add_option('output_mode', widget_type='combo', default_value='bang',  callback=self.output_mode_changed)
         self.output_mode_option.widget.combo_items = ['bang', 'flag']
-        self.output_mode_option.add_callback(self.output_mode_changed)
 
         self.new_selectors = False
 
@@ -816,7 +564,7 @@ class SelectNode(Node):
         if self.new_selectors:
             self.update_selectors()
             self.new_selectors = False
-        value = self.input.get_data()
+        value = self.input.get_received_data()
 
         if self.out_mode == 0:
             if type(value) == list:
@@ -865,19 +613,17 @@ class TriggerNode(Node):
             self.trigger_count = len(args)
         self.triggers = []
         self.trigger_options = []
-        self.outputs = []
 
-        self.input = self.add_input("", trigger_node=self)
+        self.input = self.add_input("", triggers_execution=True)
 
         for i in range(self.trigger_count):
-            self.outputs.append(self.add_output(any_to_string(args[i])))
+            self.add_output(any_to_string(args[i]))
         for i in range(self.trigger_count):
             val, t = decode_arg(args, i)
             self.triggers.append(val)
         for i in range(self.trigger_count):
-            an_option = self.add_option('trigger ' + str(i), widget_type='text_input', default_value=args[i])
+            an_option = self.add_option('trigger ' + str(i), widget_type='text_input', default_value=args[i], callback=self.triggers_changed)
             self.trigger_options.append(an_option)
-            an_option.add_callback(self.triggers_changed)
 
         self.new_triggers = False
 
@@ -901,7 +647,8 @@ class TriggerNode(Node):
 
         for i in range(self.trigger_count):
             j = self.trigger_count - i - 1
-            self.outputs[j].send(self.triggers[j])
+            self.outputs[j].set_value(self.triggers[j])
+        self.send_all()
 
 
 class CombineNode(Node):
@@ -913,20 +660,16 @@ class CombineNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.num_ins = 2
-
         self.combine_list = []
 
-        in_value, t = decode_arg(self.args, 0)
-        if t in [int, float]:
-            self.num_ins = int(in_value)
+        self.num_ins = self.arg_as_int(default_value=2)
 
         for i in range(self.num_ins):
             if i == 0:
-                input_ = self.add_input("in " + str(i + 1), trigger_node=self)
+                input_ = self.add_input("in " + str(i + 1), triggers_execution=True)
             else:
                 if label == 'kombine':
-                    input_ = self.add_input("in " + str(i + 1), trigger_node=self)
+                    input_ = self.add_input("in " + str(i + 1), triggers_execution=True)
                 else:
                     input_ = self.add_input("in " + str(i + 1))
             input_._data = ''
@@ -936,9 +679,8 @@ class CombineNode(Node):
     def execute(self):
         output_string = ''
         for i in range(self.num_ins):
-            output_string += any_to_string(self._input_attributes[i]._data)
-        self.output.set(output_string)
-        self.send_outputs()
+            output_string += any_to_string(self.inputs[i]._data)
+        self.output.send(output_string)
 
 
 class TypeNode(Node):
@@ -950,15 +692,7 @@ class TypeNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.num_ins = 2
-
-        self.combine_list = []
-
-        in_value, t = decode_arg(self.args, 0)
-        if t in [int, float]:
-            self.num_ins = int(in_value)
-
-        self.input = self.add_input("in", trigger_node=self)
+        self.input = self.add_input("in", triggers_execution=True)
         self.type_property = self.add_property('type', widget_type='text_input', width=120)
 
     def execute(self):
@@ -1009,11 +743,10 @@ class ArrayNode(Node):
             shape_list, _, _ = list_to_hybrid_list(shape_split)
             self.shape = shape_list
 
-        self.input = self.add_input("in", trigger_node=self)
+        self.input = self.add_input("in", triggers_execution=True)
         self.output = self.add_output('array out')
 
-        self.shape_property = self.add_option('shape', widget_type='text_input', default_value = shape_text)
-        self.shape_property.add_callback(self.shape_changed)
+        self.shape_property = self.add_option('shape', widget_type='text_input', default_value=shape_text, callback=self.shape_changed)
 
     def shape_changed(self):
         shape_text = self.shape_property.get_widget_value()
@@ -1038,7 +771,7 @@ class StringNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.input = self.add_input("in", trigger_node=self)
+        self.input = self.add_input("in", triggers_execution=True)
         self.output = self.add_output('string out')
 
     def execute(self):
@@ -1056,7 +789,7 @@ class ListNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.input = self.add_input("in", trigger_node=self)
+        self.input = self.add_input("in", triggers_execution=True)
         self.output = self.add_output('list out')
 
     def execute(self):
@@ -1078,18 +811,16 @@ class PrependNode(Node):
 
         self.as_list = False
 
-        in_value, t = decode_arg(self.args, 0)
-        self.prepender = in_value
+        self.prepender = ''
 
-        self.input = self.add_input("in", trigger_node=self)
+        if len(args) > 0:
+            in_value, t = decode_arg(args, 0)
+            self.prepender = in_value
 
-        self.prepender_property = self.add_property("prefix", widget_type='text_input', default_value=self.prepender)
-        self.prepender_property.add_callback(self.prepender_changed)
-
+        self.input = self.add_input("in", triggers_execution=True)
+        self.prepender_property = self.add_property("prefix", widget_type='text_input', default_value=self.prepender, callback=self.prepender_changed)
         self.output = self.add_output("out")
-
-        self.always_as_list_option = self.add_option('always output list', widget_type='checkbox', default_value=False)
-        self.always_as_list_option.add_callback(self.option_changed)
+        self.always_as_list_option = self.add_option('always output list', widget_type='checkbox', default_value=False, callback=self.option_changed)
 
     def option_changed(self):
         self.as_list = self.always_as_list_option.get_widget_value()
@@ -1125,22 +856,18 @@ class AppendNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.num_ins = 2
-
         self.as_list = False
 
-        in_value, t = decode_arg(self.args, 0)
-        self.appender = in_value
+        self.appender = ''
 
-        self.input = self.add_input("in", trigger_node=self)
+        if len(args) > 0:
+            in_value, t = decode_arg(args, 0)
+            self.appender = in_value
 
-        self.apender_property = self.add_property("prefix", widget_type='text_input', default_value=self.appender)
-        self.apender_property.add_callback(self.appender_changed)
-
+        self.input = self.add_input("in", triggers_execution=True)
+        self.appender_property = self.add_property("prefix", widget_type='text_input', default_value=self.appender, callback=self.appender_changed)
         self.output = self.add_output("out")
-
-        self.always_as_list_option = self.add_option('always output list', widget_type='checkbox', default_value=False)
-        self.always_as_list_option.add_callback(self.option_changed)
+        self.always_as_list_option = self.add_option('always output list', widget_type='checkbox', default_value=False, callback=self.option_changed)
 
     def option_changed(self):
         self.as_list = self.always_as_list_option.get_widget_value()
@@ -1211,26 +938,18 @@ class CollectionNode(Node):
         self.save_pointer = -1
         self.read_pointer = -1
 
-        in_value, t = decode_arg(self.args, 0)
-        if t in [str]:
-            self.collection_name = in_value
+        self.collection_name = self.arg_as_string(default_value='untitled')
 
-        self.input = self.add_input('in', trigger_node=self)
-        print(self.input.uuid)
-
+        self.input = self.add_input('in', triggers_execution=True)
         self.collection_name_property = self.add_property('name', widget_type='text_input', default_value=self.collection_name)
-        print(self.collection_name_property.uuid)
-        print(self.collection_name_property.widget.uuid)
-
         self.output = self.add_output("out")
-        print(self.output.uuid)
+        self.message_handlers = {'clear': self.clear_message, 'dump': self.dump, 'save': self.save_dialog, 'load': self.load_dialog}
 
     def dump(self):
         for key in self.collection:
             out_list = [key]
             out_list += self.collection[key]
-            self.output.set(out_list)
-            self.send_outputs()
+            self.output.send(out_list)
 
     def save_dialog(self):
         with dpg.file_dialog(directory_selector=False, show=True, height=400, user_data=self, callback=save_coll_callback,
@@ -1241,10 +960,10 @@ class CollectionNode(Node):
         with open(path, 'w') as f:
             json.dump(self.collection, f, indent=4)
 
-    def save_custom(self, container):
+    def save_custom_setup(self, container):
         container['collection'] = self.collection
 
-    def load_custom(self, container):
+    def load_custom_setup(self, container):
         if 'collection' in container:
             self.collection = container['collection']
 
@@ -1257,59 +976,50 @@ class CollectionNode(Node):
         with open(path, 'r') as f:
             self.collection = json.load(f)
 
+    def clear_message(self):
+        self.collection = {}
+        self.save_pointer = -1
+
     def execute(self):
         data = self.input.get_received_data()
-        t = type(data)
-        address = any_to_string(data)
-        if t == str:
-            if address == 'clear':
-                self.collection = {}
-                self.save_pointer = -1
-                return
-            elif address == 'dump':
-                self.dump()
-                return
-            elif address == 'save':
-                self.save_dialog()
-                return
-            elif address == 'load':
-                self.load_dialog()
-                return
-        if t in [int, float, np.int64, np.double]:
-            if data in self.collection:
-                self.output.set(self.collection[data])
-                self.send_outputs()
-            elif address in self.collection:
-                self.output.set(self.collection[address])
-                self.send_outputs()
-        elif t == str:
-            if address in self.collection:
-                self.output.set(self.collection[address])
-                self.send_outputs()
-        elif t in [list]:
-            index = any_to_string(data[0])
-            if index == 'delete':
-                if len(data) > 1:
-                    index = any_to_string(data[1])
-                    if index in self.collection:
-                        self.collection.__delitem__(index)
-                return
-            elif index == 'append':
-                self.save_pointer += 1
-                while self.save_pointer in self.collection:
+        handled, do_output = self.check_for_messages(data)
+        if not handled:
+            t = type(data)
+            address = any_to_string(data)
+
+            if t in [int, float, np.int64, np.double]:
+                if data in self.collection:
+                    self.output.send(self.collection[data])
+                elif address in self.collection:
+                    self.output.send(self.collection[address])
+            elif t == str:
+                if address in self.collection:
+                    self.output.send(self.collection[address])
+            elif t in [list]:
+                index = any_to_string(data[0])
+                if index == 'delete':
+                    if len(data) > 1:
+                        index = any_to_string(data[1])
+                        if index in self.collection:
+                            self.collection.__delitem__(index)
+                    return
+                elif index == 'append':
                     self.save_pointer += 1
-                index = self.save_pointer
-            data = data[1:]
-            if len(data) == 1:
-                t = type(data[0])
-                if t == list:
-                    self.collection[index] = data[0]
-                elif t == tuple:
-                    self.collection[index] = list(data[0])
+                    while self.save_pointer in self.collection:
+                        self.save_pointer += 1
+                    index = self.save_pointer
+                data = data[1:]
+                if len(data) == 1:
+                    t = type(data[0])
+                    if t == list:
+                        self.collection[index] = data[0]
+                    elif t == tuple:
+                        self.collection[index] = list(data[0])
+                    else:
+                        self.collection[index] = data
                 else:
                     self.collection[index] = data
-            else:
-                self.collection[index] = data
+
 
 class RepeatNode(Node):
     @staticmethod
@@ -1320,23 +1030,18 @@ class RepeatNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.outputs = []
-        self.trigger_count = 2
-        if args is not None:
-            a, t = decode_arg(args, 0)
-            if t in [int, float]:
-                self.trigger_count = int(a)
+        self.trigger_count = self.arg_as_int(default_value=2)
 
-        self.input = self.add_input("", trigger_node=self)
-
+        self.input = self.add_input("", triggers_execution=True)
         for i in range(self.trigger_count):
-            self.outputs.append(self.add_output('out ' + str(i)))
+            self.add_output('out ' + str(i))
 
     def execute(self):
         data = self.input.get_received_data()
         for i in range(self.trigger_count):
             j = self.trigger_count - i - 1
-            self.outputs[j].send(data)
+            self.outputs[j].set_value(data)
+        self.send_all()
 
 
 class VariableNode(Node):
@@ -1356,19 +1061,30 @@ class VariableNode(Node):
             if self.variable is not None:
                 self.variable.attach_client(self)
 
-        self.input = self.add_input("in", trigger_node=self)
-        self.variable_name_property = self.add_property('name', widget_type='text_input', default_value=self.variable_name)
+        self.input = self.add_input("in", triggers_execution=True)
+        self.variable_name_property = self.add_property('name', widget_type='text_input', default_value=self.variable_name, callback=self.variable_name_changed)
         self.output = self.add_output("out")
+
+    def variable_name_changed(self):
+        variable_name = self.variable_name_property.get_widget_value()
+        self.variable.detach_client(self)
+        self.variable = None
+        self.variable_name = variable_name
+        self.variable = self.app.find_variable(self.variable_name)
+        if self.variable is not None:
+            print('attaching to', self.variable_name)
+            self.variable.attach_client(self)
+            self.execute()
 
     def custom_cleanup(self):
         if self.variable is not None:
             self.variable.detach_client(self)
 
-    def set_value(self, data):
+    def set_variable_value(self, data):
         if self.variable:
             self.variable.set(data, from_client=self)
 
-    def get_value(self):
+    def get_variable_value(self):
         if self.variable:
             return self.variable.get()
 
@@ -1376,12 +1092,12 @@ class VariableNode(Node):
         if self.input.fresh_input:
             data = self.input.get_received_data()
             if type(data) == str and data == 'bang':
-                data = self.get_value()
+                data = self.get_variable_value()
             else:
-                self.set_value(data)
+                self.set_variable_value(data)
             self.output.send(data)
         else:
-            data = self.get_value()
+            data = self.get_variable_value()
             self.output.send(data)
 
 #  get variable
