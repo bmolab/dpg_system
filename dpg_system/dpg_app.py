@@ -2,7 +2,7 @@ import dearpygui.dearpygui as dpg
 import time
 import numpy as np
 
-from dpg_system.node import Node, InputNodeAttribute, OutputNodeAttribute, Variable
+from dpg_system.node import Node, InputNodeAttribute, OutputNodeAttribute, Variable, PlaceholderNode
 from dpg_system.node_editor import *
 from os.path import exists
 import json
@@ -60,6 +60,16 @@ try:
     imported.append('gl_nodes.py')
 except ModuleNotFoundError:
     pass
+try:
+    from dpg_system.clip_node import *
+    imported.append('clip_node.py')
+except ModuleNotFoundError:
+    pass
+try:
+    from dpg_system.numpy_nodes import *
+    imported.append('numpy_nodes.py')
+except ModuleNotFoundError:
+    pass
 
 # import additional node files in folder
 
@@ -92,36 +102,45 @@ def widget_activated(source, data, user_data):
 
 
 def widget_deactive(source, data, user_data):
+    node = None
     if Node.app.return_pressed:
         Node.app.return_pressed = False
         item = dpg.get_item_user_data(data)
-        # print('deactive', data, item)
         if item is not None:
-            node = item.node
+            if isinstance(item, Node):
+                node = item
+            else:
+                node = item.node
             if node is not None and node.label == 'New Node':
                 node.execute()
     elif dpg.is_item_ok(data):
         item = dpg.get_item_user_data(data)
         if item is not None:
-            node = item.node
-            # print("about to deactivate", data, item, node)
+            if isinstance(item, Node):
+                node = item
+            else:
+                node = item.node
             if node is not None:
-                # print("deactivate", data)
                 node.on_deactivate(item)
     Node.app.active_widget = -1
     Node.app.focussed_widget = -1
 
 
 def widget_edited(source, data, user_data):
+    node = None
     if user_data is not None:
-        user_data.on_edit()
+        if isinstance(user_data, Node):
+            user_data.on_edit()
         # print("edited+", user_data, data)
     else:
         if dpg.does_item_exist(data):
             item = dpg.get_item_user_data(data)
             # print('edited', data, item)
             if item is not None:
-                node = item.node
+                if isinstance(item, Node):
+                    node = item
+                else:
+                    node = item.node
                 if node is not None:
                     # print("edited", data)
                     node.on_edit(item)
@@ -135,7 +154,6 @@ def widget_deactive_after_edit(source, data, user_data):
         if dpg.does_item_exist(data):
             item = dpg.get_item_user_data(data)
             if item is not None:
-                # print("deactivated_after_edit", data, item)
                 item.value_changed(data, force=True)
     Node.app.active_widget = -1
     Node.app.focussed_widget = -1
@@ -271,7 +289,8 @@ class App:
                     default_font = dpg.add_font("Inconsolata-g.otf", 24)
                     dpg.bind_font(default_font)
                     dpg.set_global_font_scale(0.5)
-        dpg.create_viewport()
+        self.viewport = dpg.create_viewport()
+        # print(self.viewport)
         dpg.setup_dearpygui()
 
     def setup_themes(self):
@@ -351,128 +370,11 @@ class App:
         if 'register_spacy_nodes' in globals():
             register_spacy_nodes()
 
-        # self.register_node("metro", MetroNode.factory)
-        # self.register_node("counter", CounterNode.factory)
-        # self.register_node("gate", GateNode.factory)
-        # self.register_node("switch", SwitchNode.factory)
-        # self.register_node("unpack", UnpackNode.factory)
-        # self.register_node("pack", PackNode.factory)
-        # self.register_node("pak", PackNode.factory)
-        # self.register_node("timer", TimerNode.factory)
-        # self.register_node("elapsed", TimerNode.factory)
-        # self.register_node("delay", DelayNode.factory)
-        # self.register_node("select", SelectNode.factory)
-        # self.register_node("decode", SelectNode.factory)
-        # self.register_node("t", TriggerNode.factory)
-        # self.register_node("combine", CombineNode.factory)
-        # self.register_node("kombine", CombineNode.factory)
-        # self.register_node("type", TypeNode.factory)
-        # self.register_node("array", ArrayNode.factory)
-        # self.register_node("string", StringNode.factory)
-        # self.register_node("list", ListNode.factory)
-        # self.register_node('prepend', PrependNode.factory)
-        # self.register_node('append', AppendNode.factory)
-        # self.register_node('coll', CollectionNode.factory)
-        # self.register_node('repeat', RepeatNode.factory)
-        # self.register_node('var', VariableNode.factory)
+        if 'register_clip_nodes' in globals():
+            register_clip_nodes()
 
-        # self.register_node('osc_source', OSCSourceNode.factory)
-        # self.register_node('osc_receive', OSCReceiveNode.factory)
-        # self.register_node('osc_target', OSCTargetNode.factory)
-        # self.register_node('osc_send', OSCSendNode.factory)
-
-        # self.register_node('gl_context', GLContextNode.factory)
-        # self.register_node('gl_sphere', GLSphereNode.factory)
-        # self.register_node('gl_cylinder', GLCylinderNode.factory)
-        # self.register_node('gl_disk', GLDiskNode.factory)
-        # self.register_node('gl_partial_disk', GLPartialDiskNode.factory)
-        # self.register_node('gl_translate', GLTransformNode.factory)
-        # self.register_node('gl_rotate', GLTransformNode.factory)
-        # self.register_node('gl_scale', GLTransformNode.factory)
-        # self.register_node('gl_material', GLMaterialNode.factory)
-        # self.register_node('gl_align', GLAlignNode.factory)
-        # self.register_node('gl_quaternion_rotate', GLQuaternionRotateNode.factory)
-
-        # self.register_node("menu", MenuNode.factory)
-        # self.register_node("toggle", ToggleNode.factory)
-        # self.register_node("button", ButtonNode.factory)
-        # self.register_node("b", ButtonNode.factory)
-        # self.register_node("mouse", MouseNode.factory)
-        # self.register_node("float", ValueNode.factory)
-        # self.register_node("int", ValueNode.factory)
-        # self.register_node("slider", ValueNode.factory)
-        # self.register_node("message", ValueNode.factory)
-        # self.register_node("knob", ValueNode.factory)
-        # self.register_node("plot", PlotNode.factory)
-        # self.register_node("heat_map", PlotNode.factory)
-        # self.register_node("heat_scroll", PlotNode.factory)
-        # self.register_node("Value Tool", ValueNode.factory)
-        # self.register_node('print', PrintNode.factory)
-        # self.register_node('load_action', LoadActionNode.factory)
-        # self.register_node('color', ColorPickerNode.factory)
-        # self.register_node('vector', VectorNode.factory)
-
-        # self.register_node("+", ArithmeticNode.factory)
-        # self.register_node("-", ArithmeticNode.factory)
-        # self.register_node("!-", ArithmeticNode.factory)
-        # self.register_node("*", ArithmeticNode.factory)
-        # self.register_node("/", ArithmeticNode.factory)
-        # self.register_node("!/", ArithmeticNode.factory)
-        # self.register_node("min", ArithmeticNode.factory)
-        # self.register_node("max", ArithmeticNode.factory)
-        # self.register_node("mod", ArithmeticNode.factory)
-        # self.register_node("%", ArithmeticNode.factory)
-        # self.register_node("^", ArithmeticNode.factory)
-        # self.register_node("pow", ArithmeticNode.factory)
-        # self.register_node("sin", OpSingleTrigNode.factory)
-        # self.register_node("cos", OpSingleTrigNode.factory)
-        # self.register_node("asin", OpSingleTrigNode.factory)
-        # self.register_node("acos", OpSingleTrigNode.factory)
-        # self.register_node("tan", OpSingleTrigNode.factory)
-        # self.register_node("atan", OpSingleTrigNode.factory)
-        # self.register_node("log10", OpSingleNode.factory)
-        # self.register_node("log2", OpSingleNode.factory)
-        # self.register_node("exp", OpSingleNode.factory)
-        # self.register_node("inverse", OpSingleNode.factory)
-        # self.register_node("abs", OpSingleNode.factory)
-        # self.register_node("sqrt", OpSingleNode.factory)
-        # self.register_node("norm", OpSingleNode.factory)
-
-        # self.register_node(">", ComparisonNode.factory)
-        # self.register_node(">=", ComparisonNode.factory)
-        # self.register_node("==", ComparisonNode.factory)
-        # self.register_node("!=", ComparisonNode.factory)
-        # self.register_node("<", ComparisonNode.factory)
-        # self.register_node("<=", ComparisonNode.factory)
-
-        # self.register_node('buffer', BufferNode.factory)
-        # self.register_node('rolling_buffer', RollingBufferNode.factory)
-        # self.register_node('flatten', FlattenMatrixNode.factory)
-        # self.register_node('cwt', WaveletNode.factory)
-
-        # self.register_node('gl_body', MoCapGLBody.factory)
-        # self.register_node('take', MoCapTakeNode.factory)
-        # self.register_node('body_to_joints', MoCapBody.factory)
-
-        # self.register_node('quaternion_to_euler', QuaternionToEulerNode.factory)
-        # self.register_node('quaternion_to_matrix', QuaternionToRotationMatrixNode.factory)
-        # self.register_node('quaternion_distance', QuaternionDistanceNode.factory)
-
-        # self.register_node("filter", FilterNode.factory)
-        # self.register_node("smooth", FilterNode.factory)
-        # self.register_node("diff_filter_bank", MultiDiffFilterNode.factory)
-        # self.register_node("diff_filter", MultiDiffFilterNode.factory)
-        # self.register_node("random", RandomNode.factory)
-        # self.register_node("signal", SignalNode.factory)
-        # self.register_node("togedge", TogEdgeNode.factory)
-        # self.register_node("subsample", SubSampleNode.factory)
-        # self.register_node("diff", DifferentiateNode.factory)
-        # self.register_node('noise_gate', NoiseGateNode.factory)
-        # self.register_node('trigger', ThresholdTriggerNode.factory)
-        # self.register_node('hysteresis', ThresholdTriggerNode.factory)
-        # self.register_node('sample_hold', SampleHoldNode.factory)
-
-        # self.register_node('rephrase', RephraseNode.factory)
+        if 'register_numpy_nodes' in globals():
+            register_numpy_nodes()
 
     def get_variable_list(self):
         v_list = list(self.variables.keys())
@@ -496,7 +398,7 @@ class App:
             return self.variables[variable_name]
         return None
 
-    def create_node_by_name_from_file(self, node_name, pos, args=None):
+    def create_node_by_name_from_file(self, node_name, pos, args=[]):
         node_model = self.node_factory_container.locate_node_by_name(node_name)
         if node_model is not None:
             new_node = self.create_node_from_model(node_model, pos, args=args)
@@ -514,7 +416,7 @@ class App:
             return new_node
         return None
 
-    def create_node_by_name(self, node_name, placeholder, args=None, pos=None):
+    def create_node_by_name(self, node_name, placeholder, args=[], pos=None):
         node_model = self.node_factory_container.locate_node_by_name(node_name)
         if placeholder:
             pos = dpg.get_item_pos(placeholder.uuid)
@@ -528,7 +430,7 @@ class App:
             self.node_editors[self.current_node_editor].remove_node(placeholder)
         return new_node
 
-    def create_node_from_model(self, model, pos, name=None, args=None):
+    def create_node_from_model(self, model, pos, name=None, args=[]):
         node = model.create(name, args)
         node.submit(self.node_editors[self.current_node_editor].uuid, pos=pos)
         self.node_editors[self.current_node_editor].add_node(node)
@@ -616,39 +518,39 @@ class App:
         self.focussed_widget = widget_uuid
 
     def up_handler(self):
+        handled = False
         if self.hovered_item is not None:
             uuid = self.hovered_item.uuid
             if dpg.does_item_exist(uuid):
                 if dpg.is_item_hovered(uuid):
-                    self.hovered_item.increment()
-        elif self.active_widget != -1:
-            print('active widget up')
+                    handled = True
+                    self.hovered_item.node.increment_widget(self.hovered_item)
+                    if self.hovered_item.callback is not None:
+                        self.hovered_item.callback()
+        if not handled and self.active_widget != -1:
             if dpg.does_item_exist(self.active_widget):
-                print('exists')
                 widget = dpg.get_item_user_data(self.active_widget)
                 if widget is not None:
-                    print('widget', widget)
                     if widget.node is not None:
-                        print('widget node', widget.node)
                         widget.node.increment_widget(widget)
                         if widget.callback is not None:
                             widget.callback()
 
     def down_handler(self):
+        handled = False
         if self.hovered_item is not None:
             uuid = self.hovered_item.uuid
             if dpg.does_item_exist(uuid):
                 if dpg.is_item_hovered(uuid):
-                    self.hovered_item.decrement()
-        elif self.active_widget != -1:
-            print('active widget down')
+                    handled = True
+                    self.hovered_item.node.decrement_widget(self.hovered_item)
+                    if self.hovered_item.callback is not None:
+                        self.hovered_item.callback()
+        if not handled and self.active_widget != -1:
             if dpg.does_item_exist(self.active_widget):
-                print('exists')
                 widget = dpg.get_item_user_data(self.active_widget)
                 if widget is not None:
-                    print('widget', widget)
                     if widget.node is not None:
-                        print('widget node', widget.node)
                         widget.node.decrement_widget(widget)
                         if widget.callback is not None:
                             widget.callback()
@@ -722,7 +624,7 @@ class App:
             self.node_editors[self.current_node_editor].load(path)
             return
         self.active_widget = 1
-        print('before file_dialog')
+        # print('before file_dialog')
         with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, callback=load_patches_callback, tag="file_dialog_id"):
             dpg.add_file_extension(".json")
 
@@ -793,7 +695,6 @@ class App:
         self.node_editors = [NodeEditor()]
 
         with dpg.window() as main_window:
-            print('created_window')
             self.main_window_id = main_window
             dpg.bind_item_theme(main_window, self.global_theme)
             dpg.add_spacer(height=14)
@@ -818,23 +719,20 @@ class App:
                             dpg.add_key_press_handler(dpg.mvKey_Back, callback=self.del_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Return, callback=self.return_handler)
 
-                # with dpg.tab(label='second editor', user_data=len(self.tabs)) as tab:
-                #     self.tabs.append(tab)
-                #     with dpg.group(id=self.side_panel):
-                #         dpg.add_input_int(label='test')
-                #         dpg.add_input_int(label='test2')
-                #         dpg.add_input_int(label='test3')
-                #         new_editor = NodeEditor()
-                #         self.node_editors.append(new_editor)
-                #         self.node_editors[1].submit(self.side_panel)
-                #         dpg.add_input_int(label='test4')
+                with dpg.tab(label='second editor', user_data=len(self.tabs)) as tab:
+                    self.tabs.append(tab)
+                    with dpg.group(id=self.side_panel):
+                        dpg.add_input_int(label='test')
+                        dpg.add_input_int(label='test2')
+                        dpg.add_input_int(label='test3')
+                        new_editor = NodeEditor()
+                        self.node_editors.append(new_editor)
+                        self.node_editors[1].submit(self.side_panel)
+                        dpg.add_input_int(label='test4')
         dpg.set_primary_window(main_window, True)
-        print('about to show viewport')
         dpg.show_viewport()
-        print('showed viewport')
 
     def run_loop(self):
-        print('run_loop')
         elapsed = 0
         while dpg.is_dearpygui_running():
             now = time.time()
@@ -846,29 +744,14 @@ class App:
                     task.frame_task()
                 dpg.run_callbacks(jobs)
             except Exception as exc_:
-                print('dpg calls', exc_)
+                print(exc_)
             self.frame_number += 1
             self.frame_variable.set(self.frame_number)
             self.frame_time_variable.set(elapsed)
             dpg.render_dearpygui_frame()
             then = time.time()
             elapsed = then - now
-            try:
-                for p in GLContextNode.pending_contexts:
-                    p.create()
-                GLContextNode.pending_contexts = []
-                for c in GLContextNode.context_list:
-                    if c.ready:
-                        if not glfw.window_should_close(c.context.window):
-                            c.draw()
-                deleted = []
-                for c in GLContextNode.pending_deletes:
-                    c.close()
-                    deleted.append(c)
-                for c in deleted:
-                    GLContextNode.pending_deletes.remove(c)
-            except Exception as exc_:
-                print('gl_calls', exc_)
-            # glfw.poll_events()
-#            self.openGL_thread.
+
+            if 'GLContextNode' in globals():
+                GLContextNode.maintenance_loop()
 
