@@ -161,7 +161,7 @@ class Joint:
     def set_matrix(self):
         base_vector = np.array(self.ref_vector)
         limb_vector = np.array(self.bone_dim)
-        # print(self.name, base_vector, limb_vector)
+        print(self.name, base_vector, limb_vector)
 
         scale = np.linalg.norm(limb_vector)
         limb_vector /= scale
@@ -194,6 +194,6 @@ class Joint:
         self.matrix = m
         self.length = scale
 
-        # print(self.name, self.matrix)
+        print(self.name, self.matrix)
 
 
