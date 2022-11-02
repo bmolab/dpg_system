@@ -7,7 +7,7 @@ def any_to_string(data):
         return data
     elif t in [int, bool, np.int64, np.bool_]:
         return str(data)
-    elif t in [float, np.double]:
+    elif t in [float, np.double, np.float32]:
         return '%.3f' % data
     elif t == list:
         return list_to_string(data)
@@ -31,7 +31,7 @@ def any_to_list(data):
         return data.tolist()
     elif t == np.int64:
         return [int(data)]
-    elif t in [np.float, np.double]:
+    elif t in [np.float, np.double, np.float32]:
         return [float(data)]
     elif t == np.bool_:
         return [bool(data)]
@@ -180,7 +180,7 @@ def string_to_array(input):
         hybrid_list, homogenous, types = string_to_hybrid_list(input)
         if homogenous:
             t = type(hybrid_list[0])
-            if t in [float, int, bool, np.int64, np.float, np.double, np.bool_]:
+            if t in [float, int, bool, np.int64, np.float, np.double, np.float32, np.bool_]:
                 out_list = np.array(hybrid_list)
         else:
             if len(types) == 2:
@@ -227,7 +227,7 @@ def list_to_array_or_list_if_hetero(input):
     hybrid_list, homogenous, types = list_to_hybrid_list(input)
     if homogenous:
         t = type(hybrid_list[0])
-        if t in [float, int, bool, np.int64, np.float, np.double, np.bool_]:
+        if t in [float, int, bool, np.int64, np.float, np.double, np.float32, np.bool_]:
             return np.array(hybrid_list), True
     else:
         if len(types) == 2:
@@ -244,7 +244,7 @@ def list_to_int(input):
             t = type(val)
             if t == int:
                 output = val
-            elif t in [float, bool, np.int64, np.float, np.double, np.bool_]:
+            elif t in [float, bool, np.int64, np.float, np.double, np.float32, np.bool_]:
                 output = int(val)
             elif t == str:
                 output = string_to_int(val)
@@ -259,7 +259,7 @@ def list_to_float(input):
         if len(input) > 0:
             val = input[0]
             t = type(val)
-            if t == [int, bool, np.int64, np.float, np.double, np.bool_]:
+            if t == [int, bool, np.int64, np.float, np.double, np.float32, np.bool_]:
                 output = float(val)
             elif t == float:
                 output = val
@@ -277,7 +277,7 @@ def list_to_bool(input):
             return False
         val = input[0]
         t = type(val)
-        if t in [int, np.int64, float, np.float, np.double, bool, np.bool_]:
+        if t in [int, np.int64, float, np.float, np.double, np.float32, bool, np.bool_]:
             return bool(val)
         elif t == str:
             return string_to_bool(val)
@@ -352,7 +352,7 @@ def decode_arg(args, index):
     if args is not None and 0 <= index < len(args):
         arg = args[index]
         t = type(arg)
-        if t in [float, np.float, np.double]:
+        if t in [float, np.float, np.double, np.float32]:
             return float(arg), float
         elif t in [int, np.int64]:
             return int(arg), int
