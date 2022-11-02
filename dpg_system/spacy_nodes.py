@@ -9,26 +9,15 @@ import time
 indent = 0
 
 
-# NOTE if new sentence is short and references subject or object of the sentence
-# add as subordinate clause
-# the horse was running across the field
-# a horse with a beautiful mane
-# ->
-# the horse with the beautiful mane was running across the field
-# also something with
-# the horse was running across the field
-# the horse has a beautiful mane
-# -> the horse [that] has a beautiful mane was running across the field
-
-# also, if you added a because clause, replace it if a new because clause comes...
-
 def register_spacy_nodes():
     Node.app.register_node('rephrase', RephraseNode.factory)
+    Node.app.register_node('lemma', LemmaNode.factory)
     Node.app.register_node('spacy_vector', PhraseVectorNode.factory)
     Node.app.register_node('spacy_similarity', PhraseSimilarityNode.factory)
 
 
-class PhraseMatch:
+
+class PhraseMatch():
     def __init__(self, token=None, phrase=None, score=0.0, bare=False):
         self.token = token
         self.phrase = phrase
@@ -48,6 +37,7 @@ class PhraseMatch:
         self.bare = False
 
 
+
 def print_chunk_list(a_chunk, top_level=0):
     for c in a_chunk:
         if type(c) == list:
@@ -64,8 +54,8 @@ class SpacyNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        if self.nlp is None:
-            self.nlp = spacy.load('en_core_web_lg')
+        if self.__class__.nlp is None:
+            self.__class__.nlp = spacy.load('en_core_web_lg')
 
 
 class PhraseVectorNode(SpacyNode):
@@ -79,7 +69,7 @@ class PhraseVectorNode(SpacyNode):
 
         self.sentence = None
         self.doc = None
-        self.input = self.add_input('phrase in', trigger_node=self)
+        self.input = self.add_input('phrase in', triggers_execution=True)
         self.output = self.add_output('phrase vector out')
 
     def execute(self):
@@ -104,8 +94,8 @@ class PhraseSimilarityNode(SpacyNode):
         self.doc = None
         self.sentence2 = None
         self.doc2 = None
-        self.input = self.add_input('phrase in', trigger_node=self)
-        self.input2 = self.add_input('phrase 2 in', trigger_node=self)
+        self.input = self.add_input('phrase in', triggers_execution=True)
+        self.input2 = self.add_input('phrase 2 in', triggers_execution=True)
         self.output = self.add_output('phrase similarity out')
 
     def execute(self):
@@ -122,6 +112,29 @@ class PhraseSimilarityNode(SpacyNode):
             self.output.send(sim)
 
 
+class LemmaNode(SpacyNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = LemmaNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.doc = None
+        self.input = self.add_input('text in', triggers_execution=True)
+        self.output = self.add_output('lemmas out')
+
+    def execute(self):
+        if self.input.fresh_input:
+            self.sentence = self.input.get_received_data()
+            self.sentence = any_to_string(self.sentence)
+            self.doc = self.nlp(self.sentence)
+            lemma_list = []
+            for word in self.doc:
+                lemma_list.append(word.lemma_)
+            self.output.send(lemma_list)
+
+
 class RephraseNode(SpacyNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -130,6 +143,7 @@ class RephraseNode(SpacyNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+        self.chunks = []
         self.root_index = -1
         self.sentence = ''
         self.indent = 0
@@ -140,7 +154,7 @@ class RephraseNode(SpacyNode):
         self.clear_input_pause = 40.0
         self.complexity_threshold = 6.0
         self.output_as_list = False
-        self.input = self.add_input('text in', trigger_node=self)
+        self.input = self.add_input('text in', triggers_execution=True)
         self.replace_sim_threshold_property = self.add_property('replace similarity', widget_type='drag_float', default_value=self.replace_sim_threshold)
         self.clear_input_pause_property = self.add_property('clear input pause', widget_type='drag_float', default_value=self.clear_input_pause)
         self.complexity_threshold_property = self.add_property('complexity replace threshold', widget_type='drag_float', default_value=self.complexity_threshold)
@@ -151,10 +165,9 @@ class RephraseNode(SpacyNode):
         self.focus_noun = None
         self.pending_focus_noun = ''
 
-        if self.nlp is not None:
+        if self.__class__.nlp is not None:
             temp_sentence = 'an apple'
             temp_doc = self.nlp(temp_sentence)
-            print()
             self.token_an = temp_doc[0]
             temp_sentence = 'a pear'
             temp_doc = self.nlp(temp_sentence)
@@ -181,6 +194,7 @@ class RephraseNode(SpacyNode):
             self.token_are = temp_doc[1]
             temp_doc = self.nlp('he is wet')
             self.token_is = temp_doc[1]
+        self.message_handlers = {'full_tree': self.show_full_tree, 'bare_tree': self.show_bare_tree}
 
     def subtree(self, root_word):
         sub = []
@@ -246,22 +260,24 @@ class RephraseNode(SpacyNode):
                 sub.append(t)
         return sub
 
+    def show_full_tree(self, data):
+        if self.doc is not None:
+            if self.doc.has_annotation("DEP"):
+                if len(self.sentence) > 0:
+                    self.trigger_subtree(data[0])
+
+    def show_bare_tree(self, data):
+        if self.doc is not None:
+            if self.doc.has_annotation("DEP"):
+                if len(self.sentence) > 0:
+                    self.trigger_bare_tree(data[0])
 
     def execute(self):
         if self.input.fresh_input:
-            sentence = self.input.get_received_data()
-            if sentence[0] == 'full_tree':
-                if self.doc is not None:
-                    if self.doc.has_annotation("DEP"):
-                        if len(sentence) > 1:
-                            self.trigger_subtree(sentence[1])
-            elif sentence[0] == 'bare_tree':
-                if self.doc is not None:
-                    if self.doc.has_annotation("DEP"):
-                        if len(sentence) > 1:
-                            self.trigger_bare_tree(sentence[1])
-            else:
-                sentence = any_to_string(sentence)
+            input = self.input.get_received_data()
+            handled, do_output = self.check_for_messages(input)
+            if not handled:
+                sentence = any_to_string(input)
                 self.parse(sentence)
 
     def phrase_list_to_string(self, in_list):
@@ -328,6 +344,7 @@ class RephraseNode(SpacyNode):
         return sentence_string_list
 
     def try_replace_sconj(self, sentence, new_token, conjunction=None):
+#        best = PhraseMatch()
         new_sconj = list(self.new_doc)
         for old_index, token in enumerate(self.doc):
             if token.text == new_token.text:  # same sconj
@@ -671,6 +688,7 @@ class RephraseNode(SpacyNode):
                     return new_sentence
         return ''
 
+
     def remove_adjective(self, root_token):
         for t in self.doc:
             if t.pos_ == 'ADJ' or t.dep_ == 'amod':
@@ -791,6 +809,7 @@ class RephraseNode(SpacyNode):
         return ''
 
     def parse(self, sentence):
+        self.chunks = []
         self.root_index = -1
         self.indent = 0
         now = time.time()
@@ -830,6 +849,28 @@ class RephraseNode(SpacyNode):
         else:
             sentence_string = self.doc.text_with_ws
             self.output.send(sentence_string)
+
+    def choose_focus_noun(self):
+        subject = None
+        object = None
+        prep_object = None
+
+        for t in self.doc:
+            if t.dep_ in ['nsubj', 'nsubjpass']:
+                subject = t
+                break
+            elif t.dep_ == 'dobj':
+                if object is None:
+                    object = t
+            elif t.dep_ == 'pobj':
+                if prep_object is None:
+                    prep_object = t
+
+        if subject is not None:
+            return subject
+        elif object is not None:
+            return object
+        return prep_object
 
     def choose_focus_noun(self):
         subject = None
@@ -984,17 +1025,3 @@ class RephraseNode(SpacyNode):
             rephrase += old_object
 
         return rephrase.copy()
-
-        # if len(new_det) == 0:
-        #     if len(old_det) > 0:
-        #         rephrase += old_det
-        # else:
-        #     rephrase += new_det
-        # if len(new_adjectives) > 0:
-        #     rephrase += new_adjectives
-        # else:
-        #     rephrase += old_adjectives
-        # #        start = rephrase
-        # new_np = rephrase.copy()
-        # new_np.append(new_token)
-        # return new_np.copy()
