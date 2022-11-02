@@ -5,7 +5,6 @@ from dpg_system.node import Node
 from dpg_system.conversion_utils import *
 import quaternion
 
-
 def register_quaternion_nodes():
     Node.app.register_node('quaternion_to_euler', QuaternionToEulerNode.factory)
     Node.app.register_node('quaternion_to_matrix', QuaternionToRotationMatrixNode.factory)
@@ -23,7 +22,7 @@ class QuaternionToEulerNode(Node):
 
         self.degree_factor = 180.0 / math.pi
 
-        self.input = self.add_input("quaternion", trigger_node=self)
+        self.input = self.add_input("quaternion", triggers_execution=True)
         self.output = self.add_output("euler angles")
         self.x_offset_option = self.add_option('offset x', widget_type='drag_int', default_value=0)
         self.y_offset_option = self.add_option('offset y', widget_type='drag_int', default_value=0)
@@ -63,7 +62,7 @@ class QuaternionToRotationMatrixNode(Node):
 
         self.degree_factor = 180.0 / math.pi
 
-        self.input = self.add_input("quaternion", trigger_node=self)
+        self.input = self.add_input("quaternion", triggers_execution=True)
         self.output = self.add_output("rotation matrix")
 
     def execute(self):
@@ -91,7 +90,7 @@ class QuaternionDistanceNode(Node):
         self.degree_factor = 180.0 / math.pi
         self.reference = np.array([1.0, 0.0, 0.0, 0.0])
 
-        self.input = self.add_input("quaternion", trigger_node=self)
+        self.input = self.add_input("quaternion", triggers_execution=True)
         self.reference_input = self.add_input("reference")
         self.freeze_input = self.add_input('freeze ref', widget_type='checkbox', default_value=False)
         self.distance_axis_property = self.add_property('##distanceAxis', widget_type='combo', default_value='all axes')
