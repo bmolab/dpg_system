@@ -64,21 +64,17 @@ class MoCapTakeNode(MoCapNode):
         self.file_name = ''
         self.streaming = False
 
-        self.on_off_property = self.add_property('on/off', widget_type='checkbox')
-        self.on_off_property.add_callback(self.start_stop_streaming)
-        self.speed_property = self.add_input('speed', widget_type='drag_float', default_value=self.speed)
-        self.speed_property.add_callback(self.speed_changed)
-        self.input = self.add_input('frame', widget_type='drag_int', trigger_node=self)
-        self.input.add_callback(self.frame_widget_changed)
-        self.load_button = self.add_property('load', widget_type='button')
-        self.load_button.add_callback(self.load_take)
+        self.on_off_property = self.add_property('on/off', widget_type='checkbox', callback=self.start_stop_streaming)
+        self.speed_property = self.add_input('speed', widget_type='drag_float', default_value=self.speed, callback=self.speed_changed)
+        self.input = self.add_input('frame', widget_type='drag_int', triggers_execution=True, callback=self.frame_widget_changed)
+        self.load_button = self.add_property('load', widget_type='button', callback=self.load_take)
         self.file_name_property = self.add_property('', widget_type='text_input')
         self.quaternions_out = self.add_output('quaternions')
         self.positions_out = self.add_output('positions')
         self.labels_out = self.add_output('labels')
         self.load_path = ''
-        self.load_path_option = self.add_option('path', widget_type='text_input', default_value=self.load_path)
-        self.load_path_option.add_callback(self.load_from_load_path)
+        self.load_path_option = self.add_option('path', widget_type='text_input', default_value=self.load_path, callback=self.load_from_load_path)
+        self.message_handlers = {'load': self.load_take}
 
     def speed_changed(self):
         self.speed = self.speed_property.get_widget_value()
@@ -99,10 +95,10 @@ class MoCapTakeNode(MoCapNode):
             self.current_frame = 0
         self.input.set(self.current_frame)
         frame = int(self.current_frame)
-        self.quaternions_out.set(self.quat_buffer[frame])
-        self.positions_out.set(self.position_buffer[frame])
-        self.labels_out.set(self.label_buffer[frame])
-        self.send_outputs()
+        self.quaternions_out.set_value(self.quat_buffer[frame])
+        self.positions_out.set_value(self.position_buffer[frame])
+        self.labels_out.set_value(self.label_buffer[frame])
+        self.send_all()
 
     def load_from_load_path(self):
         path = self.load_path_option.get_widget_value()
@@ -129,29 +125,26 @@ class MoCapTakeNode(MoCapNode):
         data = self.input.get_widget_value()
         if data < self.frames:
             self.current_frame = data
-            self.quaternions_out.set(self.quat_buffer[self.current_frame])
-            self.positions_out.set(self.position_buffer[self.current_frame])
-            self.labels_out.set(self.label_buffer[self.current_frame])
-            self.send_outputs()
+            self.quaternions_out.set_value(self.quat_buffer[self.current_frame])
+            self.positions_out.set_value(self.position_buffer[self.current_frame])
+            self.labels_out.set_value(self.label_buffer[self.current_frame])
+            self.send_all()
 
     def execute(self):
         if self.input.fresh_input:
             data = self.input.get_received_data()
-            t = type(data)
-            if t == int:
-                if data < self.frames:
-                    self.current_frame = int(data)
-                    self.quaternions_out.set(self.quat_buffer[self.current_frame])
-                    self.positions_out.set(self.position_buffer[self.current_frame])
-                    self.labels_out.set(self.label_buffer[self.current_frame])
-                    self.send_outputs()
-            elif t == str:
-                if data == 'load':
-                    with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400,
-                                         user_data=self, callback=self.load_npz_callback, tag="file_dialog_id"):
-                        dpg.add_file_extension(".npz")
+            handled, do_output = self.check_for_messages(data)
+            if not handled:
+                t = type(data)
+                if t == int:
+                    if data < self.frames:
+                        self.current_frame = int(data)
+                        self.quaternions_out.set_value(self.quat_buffer[self.current_frame])
+                        self.positions_out.set_value(self.position_buffer[self.current_frame])
+                        self.labels_out.set_value(self.label_buffer[self.current_frame])
+                        self.send_all()
 
-    def load_take(self):
+    def load_take(self, args=None):
         with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400,
                              user_data=self, callback=self.load_npz_callback, tag="file_dialog_id"):
             dpg.add_file_extension(".npz")
@@ -161,7 +154,6 @@ class MoCapTakeNode(MoCapNode):
         if 'file_path_name' in app_data:
             self.load_path = app_data['file_path_name']
             if self.load_path != '':
-                # print(self.load_path)
                 self.load_take_from_npz(self.load_path)
         else:
             print('no file chosen')
@@ -198,14 +190,14 @@ class MoCapBody(MoCapNode):
             index = self.joint_map[key]
             self.joint_offsets.append(index)
 
-        self.input = self.add_input('pose in', trigger_node=self)
-        self.gl_chain_input = self.add_input('gl chain', trigger_node=self)
-        self.outputs = []
+        self.input = self.add_input('pose in', triggers_execution=True)
+        self.gl_chain_input = self.add_input('gl chain', triggers_execution=True)
+        self.joint_outputs = []
 
         for key in self.joint_map:
             stripped_key = key.replace('_', ' ')
             output = self.add_output(stripped_key)
-            self.outputs.append(output)
+            self.joint_outputs.append(output)
 
     def execute(self):
         if self.input.fresh_input:
@@ -215,8 +207,8 @@ class MoCapBody(MoCapNode):
                 for i, index in enumerate(self.joint_offsets):
                     if index < incoming.shape[0]:
                         joint_value = incoming[index]
-                        self.outputs[i].set(joint_value)
-                self.send_outputs()
+                        self.joint_outputs[i].set_value(joint_value)
+                self.send_all()
 
 
 class MoCapGLBody(MoCapNode):
@@ -229,8 +221,8 @@ class MoCapGLBody(MoCapNode):
         super().__init__(label, data, args)
 
         self.show_joint_activity = False
-        self.input = self.add_input('pose in', trigger_node=self)
-        self.gl_chain_input = self.add_input('gl chain', trigger_node=self)
+        self.input = self.add_input('pose in', triggers_execution=True)
+        self.gl_chain_input = self.add_input('gl chain', triggers_execution=True)
         self.gl_chain_output = self.add_output('gl_chain')
         self.show_joint_spheres_option = self.add_option('show joint motion', widget_type='checkbox', default_value=self.show_joint_activity)
         self.joint_motion_scale_option = self.add_option('joint motion scale', widget_type='drag_float', default_value=5)
