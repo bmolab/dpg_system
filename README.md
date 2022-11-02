@@ -12,10 +12,10 @@ In initial testing, this was was else needed to be installed after a basic conda
 ```
 pip install squeezepy
 pip install dearpygui
-conda install pyquaternion
+pip install pyquaternion
 pip install fuzzywuzzy
 pip install python-Levenshtein
-pip install space
+pip install spacy
 python -m spacy download en_core_web_lg
 pip install python-osc
 conda install pyopengl
