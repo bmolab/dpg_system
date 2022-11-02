@@ -22,6 +22,7 @@ conda install pyopengl
 conda install pyglfw -c conda-forge
 pip install matplotlib
 pip install numpy-quaternion
+pip install scipy
 ```
 
 __Simple Example__
