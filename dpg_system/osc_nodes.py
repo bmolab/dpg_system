@@ -172,7 +172,7 @@ class OSCTarget:
                     if not is_name:
                         self.ip = arg
 
-    def custom(self):
+    def custom_setup(self):
         self.create_client()
         self.osc_manager.register_target(self)
 
@@ -224,14 +224,11 @@ class OSCTargetNode(OSCTarget, Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.input = self.add_input('osc to send', trigger_node=self)
+        self.input = self.add_input('osc to send', triggers_execution=True)
 
-        self.target_name_property = self.add_property('name', widget_type='text_input', default_value=self.name)
-        self.target_name_property.add_callback(self.target_changed)
-        self.target_ip_property = self.add_property('ip', widget_type='text_input', default_value=str(self.ip))
-        self.target_ip_property.add_callback(self.target_changed)
-        self.target_port_property = self.add_property('port', widget_type='text_input', default_value=str(self.port))
-        self.target_port_property.add_callback(self.target_changed)
+        self.target_name_property = self.add_property('name', widget_type='text_input', default_value=self.name, callback=self.target_changed)
+        self.target_ip_property = self.add_property('ip', widget_type='text_input', default_value=str(self.ip), callback=self.target_changed)
+        self.target_port_property = self.add_property('port', widget_type='text_input', default_value=str(self.port), callback=self.target_changed)
 
     def target_changed(self):
         name = self.target_name_property.get_widget_value()
@@ -364,10 +361,8 @@ class OSCSourceNode(OSCSource, Node):
                 elif t == str:
                     self.name = arg
 
-        self.source_name_property = self.add_property('name', widget_type='text_input', default_value=self.name)
-        self.source_name_property.add_callback(self.source_changed)
-        self.source_port_property = self.add_property('port', widget_type='text_input', default_value=str(self.port))
-        self.source_port_property.add_callback(self.source_changed)
+        self.source_name_property = self.add_property('name', widget_type='text_input', default_value=self.name, callback=self.source_changed)
+        self.source_port_property = self.add_property('port', widget_type='text_input', default_value=str(self.port), callback=self.source_changed)
         self.output = self.add_output("osc received")
         self.create_server()
 
@@ -434,10 +429,8 @@ class OSCReceiveNode(Node):
             if len(args) > 1:
                 self.address = args[1]
 
-        self.source_name_property = self.add_property('source name', widget_type='text_input', default_value=self.name)
-        self.source_name_property.add_callback(self.name_changed)
-        self.source_address_property = self.add_property('address', widget_type='text_input', default_value=self.address)
-        self.source_address_property.add_callback(self.address_changed)
+        self.source_name_property = self.add_property('source name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
+        self.source_address_property = self.add_property('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
         self.output = self.add_output("osc received")
 
     def name_changed(self):
@@ -454,7 +447,7 @@ class OSCReceiveNode(Node):
         if new_address != self.address:
             self.osc_manager.receive_node_address_changed(self, new_address, self.source)
 
-    def custom(self):
+    def custom_setup(self):
         if self.name != '':
             self.find_source_node(self.name)
 
@@ -504,12 +497,10 @@ class OSCSendNode(Node):
             if len(args) > 1:
                 self.address = args[1]
 
-        self.input = self.add_input("osc to send", trigger_node=self)
+        self.input = self.add_input("osc to send", triggers_execution=True)
 
-        self.target_name_property = self.add_property('target name', widget_type='text_input', default_value=self.name)
-        self.target_name_property.add_callback(self.name_changed)
-        self.target_address_property = self.add_property('address', widget_type='text_input', default_value=self.address)
-        self.target_address_property.add_callback(self.address_changed)
+        self.target_name_property = self.add_property('target name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
+        self.target_address_property = self.add_property('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
 
     def name_changed(self):
         new_name = self.target_name_property.get_widget_value()
@@ -526,7 +517,7 @@ class OSCSendNode(Node):
             self.address = new_address
             self.find_target_node(self.name)
 
-    def custom(self):
+    def custom_setup(self):
         if self.name != '':
             self.find_target_node(self.name)
 
