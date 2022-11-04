@@ -25,6 +25,8 @@ pip install numpy-quaternion
 pip install scipy
 ```
 
+for the clip nodes, you also need to install CLIP by installing huggingface transformers
+
 __Simple Example__
 
 This example creates and runs an instance of dgp_system.App. When run, you will see a window with a blank grid, which is the canvas on which you can place nodes. 
@@ -142,4 +144,10 @@ This frame_task can for example call the 'execute' function to output every sing
 You can also add callbacks to the widgets so that if the user changes the value of the widget, either an internal value is updated, or perhaps the execute method is called.
 
 
+NEW ADDITIONS: all nodes now check data received at inputs to see if the data starts with the name of a property, option or input. If it does, then the remainder of the data is used to set that property, etc. For example if you have a property named 'frequency' then sending the message 'frequency 1.5' to any input would set the value of frequency to 1.5.
 
+Relatedly, when you create a new node you can add arguments that specify the values of properties. For 'metro' you can create 'metro 30' for create a metro with a period of 30 milliseconds. But you could also be more specific and write 'metro period=30 units=seconds' which would set the period to 30 and the units to seconds, so the period would be 30 seconds.
+
+All this named property argument and message handling is done automatically. You only need to handle arguments yourself in the case that you want to accept a list of values without property names. In the case that arguments include named and unnamed arguments, the named arguments are collected separately and set, then any unnamed arguments are passed, in their relative order, as the 'args' to the node's '__init__' function for you to process.
+
+If you do not specify the property names, then the node assumes the values are in the order expected by any argument handling that the node does in its __init__ function.
