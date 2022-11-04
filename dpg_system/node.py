@@ -171,6 +171,8 @@ class PropertyNodeAttribute:
     #     self.node = node
     #     if self.widget:
     #         self.widget.node = node
+    def set_default_value(self, data):
+        self.widget.set_default_value(data)
 
     def attach_to_variable(self, variable):
         self.variable = variable
@@ -194,6 +196,14 @@ class PropertyNodeAttribute:
         return self.widget.value
 
     def set(self, data, propagate=True):
+        if type(data) == list:
+            if len(data) == 1:
+                data = data[0]
+            else:
+                if self.widget.widget in ['text_input', 'combo']:
+                    data = any_to_string(data)
+                else:
+                    data = data[0]
         self.widget.set(data, propagate)
         if self.variable and propagate:
             self.variable.set_value(data)  # will propagate to all instances
@@ -368,6 +378,18 @@ class PropertyWidget:
                 dpg.bind_item_theme(button, item_theme)
         return
 
+    def set_default_value(self, data):
+        if self.widget in ['drag_float', 'slider_float', 'knob_float', 'input_float']:
+            self.default_value = any_to_float(data)
+        elif self.widget in ['drag_int', 'slider_int', 'knob_int', 'input_int']:
+            self.default_value = any_to_int(data)
+        elif self.widget == 'checkbox':
+            self.default_value = any_to_bool(data)
+        elif self.widget in ['text_input', 'combo', 'list_box']:
+            self.default_value = any_to_string(data)
+        elif self.widget == 'color_picker':
+            self.default_value = tuple(any_to_list(data))
+
     def set_limits(self, min_, max_):
         self.min = min_
         self.max = max_
@@ -514,70 +536,22 @@ class PropertyWidget:
             widget_container['value_type'] = value_type
 
     def get_as_float(self, data):
-        t = type(data)
-        if t == float:
-            return data
-        elif t == int:
-            return float(data)
-        elif t == bool:
-            if data == True:
-                return 1.0
-            return 0.0
-        elif t == str:
-            return string_to_float(data)
-        elif t == list:
-            return self.get_as_float(data[0])
-        return 0.0
+        return any_to_float(data)
 
     def get_as_bool(self, data):
-        t = type(data)
-        if t == bool:
-            return data
-        elif t == float:
-            return data != 0.0
-        elif t == int:
-            return data != 0
-        elif t == str:
-            return string_to_bool(data)
-        elif t == list:
-            return self.get_as_bool(data[0])
-        return 0.0
+        return any_to_bool(data)
 
     def get_as_string(self, data):
-        t = type(data)
-        if t == str:
-            return data
-        elif t in float:
-            return '%.3f' % data
-        elif t in [int, bool]:
-            return str(data)
-        elif t == list:
-            string_list = []
-            for v in data:
-                tt = type(data)
-                if tt == str:
-                    string_list.append(v)
-                elif tt == int:
-                    string_list.append(str(v))
-                elif tt == float:
-                    string_list.append('%.3f' % v)
-                elif tt == bool:
-                    if v:
-                        string_list.append('true')
-                    else:
-                        string_list.append('false')
-            return ' '.join(string_list)
-        return 0.0
+        return any_to_string(data)
 
     def get_as_list(self, data):
-        t = type(data)
-        if t == str:
-            return string_to_list(data)
-        elif t in [float, int, bool]:
-            return [data]
-        elif t == list:
-            return data
-        return []
+        return any_to_list(data)
+
+    def get_as_int(self, data):
+        return any_to_int(data)
+
+    def get_as_array(self, data):
+        return any_to_array(data)
 
 
 class InputNodeAttribute:
@@ -626,6 +600,10 @@ class InputNodeAttribute:
                     self.widget.user_data = self.user_data
                 self.widget.submit()
 
+    def set_default_value(self, data):
+        if self.widget is not None:
+            self.widget.set_default_value(data)
+
     def add_callback(self, callback, user_data=None):
         self.callback = callback
         self.user_data = user_data
@@ -664,22 +642,21 @@ class InputNodeAttribute:
         self._parents.remove(parent)
 
     def receive_data(self, data):
-        if type(data) == str and data == 'bang':
+        if not self.node.check_for_messages(data):
+            if type(data) == str and data == 'bang':
+                if self.widget:
+                    if self.widget.widget != 'text_input':
+                        data = self.get_widget_value()
+                elif self.bang_repeats_previous:
+                    data = self._data
+            self._data = data
+            self.fresh_input = True
+            dpg.bind_item_theme(self.uuid, self._pin_active_theme)
+            Node.app.node_editors[Node.app.current_node_editor].add_active_pin(self.uuid)
             if self.widget:
-                if self.widget.widget != 'text_input':
-                    data = self.get_widget_value()
-            elif self.bang_repeats_previous:
-                data = self._data
-        self._data = data
-        self.fresh_input = True
-        dpg.bind_item_theme(self.uuid, self._pin_active_theme)
-        Node.app.node_editors[Node.app.current_node_editor].add_active_pin(self.uuid)
-        if self.widget:
-            if self.callback:
                 self.widget.set(data)
-                self.callback()
-            else:
-                self.widget.set(data)
+                if self.callback:
+                    self.callback()
 
     def trigger(self):
         if self.triggers_execution:
@@ -704,6 +681,14 @@ class InputNodeAttribute:
             return self.widget.value
 
     def set(self, data, propagate=True):
+        if type(data) == list:
+            if len(data) == 1:
+                data = data[0]
+            else:
+                if self.widget.widget in ['text_input', 'combo']:
+                    data = any_to_string(data)
+                else:
+                    data = data[0]
         if self.widget:
             self.widget.set(data, False)
         if self.variable and propagate:
@@ -777,13 +762,17 @@ class Node:
         self.displays = []
         self.ordered_elements = []
         self.message_handlers = {}
+        self.property_registery = {}
 
         self._data = data
-        self.args = args
+        self.unparsed_args = args
+        self.ordered_args = []
         self.horizontal = False
         self.loaded_uuid = -1
         self.options_visible = False
         self.has_frame_task = False
+        self.created = False
+        self.parse_args()
 
     def custom_cleanup(self):
         pass
@@ -804,6 +793,8 @@ class Node:
         self.ordered_elements.append(new_property)
         if callback is not None:
             new_property.add_callback(callback=callback, user_data=self)
+        self.property_registery[label] = new_property
+        self.message_handlers[label] = self.property_message
         return new_property
 
     def add_option(self, label: str = "", uuid=None, widget_type=None, width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, callback=None):
@@ -812,6 +803,8 @@ class Node:
         self.ordered_elements.append(new_option)
         if callback is not None:
             new_option.add_callback(callback=callback, user_data=self)
+        self.property_registery[label] = new_option
+        self.message_handlers[label] = self.property_message
         return new_option
 
     def add_display(self, label: str = "", uuid=None, width=80, callback=None):
@@ -829,6 +822,9 @@ class Node:
         self.ordered_elements.append(new_input)
         if callback is not None:
             new_input.add_callback(callback=callback, user_data=self)
+        if widget_type is not None:
+            self.property_registery[label] = new_input
+            self.message_handlers[label] = self.property_message
         return new_input
 
     def add_output(self, label: str = "output", pos=None):
@@ -882,27 +878,27 @@ class Node:
     def submit(self, parent, pos):
         with dpg.node(parent=parent, label=self.label, tag=self.uuid, pos=pos):
             dpg.set_item_pos(self.uuid, pos)
-            if self.horizontal:
-                if len(self.ordered_elements) > 0:
-                    for attribute in self.ordered_elements:
-                        attribute.submit(self.uuid)
-                    self.custom_setup()
-            else:
-                if len(self.ordered_elements) > 0:
-                    for attribute in self.ordered_elements:
-                        attribute.submit(self.uuid)
-                    self.custom_setup()
+            self.handle_parsed_args()
+            if len(self.ordered_elements) > 0:
+                for attribute in self.ordered_elements:
+                    attribute.submit(self.uuid)
+                self.custom_setup()
+                self.update_parsed_args()
 
         dpg.set_item_user_data(self.uuid, self)
         self.add_handler_to_widgets()
         for option_att in self.options:
             dpg.hide_item(option_att.uuid)
             dpg.hide_item(option_att.widget.uuid)
+        self.created = True
+
+    def args_as_list(self):
+        return self.ordered_args
 
     def arg_as_number(self, default_value=0, index=0):
         value = default_value
-        if len(self.args) > index:
-            val, t = decode_arg(self.args, index)
+        if len(self.ordered_args) > index:
+            val, t = decode_arg(self.ordered_args, index)
             if t == float:
                 value = val
             else:
@@ -911,26 +907,26 @@ class Node:
 
     def arg_as_int(self, default_value=0.0, index=0):
         value = default_value
-        if len(self.args) > index:
-            value = any_to_int(self.args[index])
+        if len(self.ordered_args) > index:
+            value = any_to_int(self.ordered_args[index])
         return value
 
     def arg_as_float(self, default_value=0.0, index=0):
         value = default_value
-        if len(self.args) > index:
-            value = any_to_float(self.args[index])
+        if len(self.ordered_args) > index:
+            value = any_to_float(self.ordered_args[index])
         return value
 
     def arg_as_string(self, default_value='', index=0):
         value = default_value
-        if len(self.args) > index:
-            value = any_to_string(self.args[index])
+        if len(self.ordered_args) > index:
+            value = any_to_string(self.ordered_args[index])
         return value
 
     def arg_as_bool(self, default_value=False, index=0):
         value = default_value
-        if len(self.args) > index:
-            value = any_to_bool(self.args[index])
+        if len(self.ordered_args) > index:
+            value = any_to_bool(self.ordered_args[index])
         return value
 
     def toggle_show_hide_options(self):
@@ -946,7 +942,6 @@ class Node:
                     dpg.hide_item(option_att.widget.uuid)
 
     def check_for_messages(self, in_data):
-        do_output = True
         handled = False
         if len(self.message_handlers) > 0:
             message = ''
@@ -962,9 +957,14 @@ class Node:
                         message_data = in_data[1:]
             if message != '':
                 if message in self.message_handlers:
-                    do_output = self.message_handlers[message](message_data)
+                    self.message_handlers[message](message, message_data)
                     handled = True
-        return handled, do_output
+                else:  # maybe two words in message header
+                    message = ' '.join(message.split('_'))
+                    if message in self.message_handlers:
+                        self.message_handlers[message](message, message_data)
+                        handled = True
+        return handled
 
     def save_custom_setup(self, container):
         pass
@@ -978,12 +978,24 @@ class Node:
     def on_deactivate(self, widget):
         pass
 
+    def property_message(self, message='', args=[]):
+        property = None
+        if message in self.property_registery:
+            property = self.property_registery[message]
+        if len(args) == 1:
+            property.set(args[0])
+        else:
+            property.set(args)
+        if property.widget is not None:
+            if property.widget.callback is not None:
+                property.widget.callback()
+
     def save(self, node_container, index):
         if node_container is not None:
-            if self.args and len(self.args) > 0:
+            if self.unparsed_args and len(self.unparsed_args) > 0:
                 args_container = {}
                 args_string = self.label
-                for index, arg in enumerate(self.args):
+                for index, arg in enumerate(self.unparsed_args):
                     args_container[index] = arg
                     args_string = args_string + ' ' + arg
                 node_container['init'] = args_string
@@ -1022,7 +1034,7 @@ class Node:
         if node_container is not None:
             if 'init' in node_container:
                 arg_container = node_container['init']
-                self.args = arg_container.split(' ')[1:]
+                self.unparsed_args = arg_container.split(' ')[1:]
             if 'name' in node_container:
                 self.label = node_container['name']
             if 'id' in node_container:
@@ -1094,6 +1106,41 @@ class Node:
         elif type in ['toggle']:
             dpg.set_value(uuid, any_to_bool(input))
 
+    def parse_args(self):
+        self.ordered_args = []
+        self.parsed_args = {}
+        if self.unparsed_args is not None:
+            for arg in self.unparsed_args:
+                handled = False
+                if '=' in arg:
+                    print('found', arg)
+                    arg_parts = arg.split('=')
+                    if len(arg_parts) == 2:
+                        print(arg_parts)
+                        if arg_parts[0][-1] == ' ':
+                            arg_parts[0] = arg_parts[0][:-1]
+                        if arg_parts[1][0] == ' ':
+                            arg_parts[1] = arg_parts[1][1:]
+                        self.parsed_args[arg_parts[0]] = arg_parts[1]
+                        handled = True
+                if not handled:
+                    self.ordered_args.append(arg)
+        print(self.parsed_args, self.ordered_args)
+
+    def handle_parsed_args(self):
+        for arg_name in self.parsed_args:
+            if arg_name in self.property_registery:
+                property = self.property_registery[arg_name]
+                property.set_default_value(self.parsed_args[arg_name])
+
+    def update_parsed_args(self):
+        for arg_name in self.parsed_args:
+            if arg_name in self.property_registery:
+                property = self.property_registery[arg_name]
+                if property.widget is not None:
+                    if property.widget.callback is not None:
+                        property.widget.callback()
+
 
 class PlaceholderNode(Node):
     node_list = []
@@ -1150,32 +1197,32 @@ class PlaceholderNode(Node):
 
     def increment_widget(self, widget):
         filter_name = dpg.get_value(self.node_list_box.widget.uuid)
-        print(filter_name)
+        # print(filter_name)
         if filter_name in self.filtered_list:
-            print('name in list')
+            # print('name in list')
             index = self.filtered_list.index(filter_name)
-            print(index)
+            # print(index)
             index -= 1
-            print(index)
+            # print(index)
             if index >= 0:
-                print('ok index')
+                # print('ok index')
                 filter_name = self.filtered_list[index]
-                print(filter_name)
+                # print(filter_name)
                 self.node_list_box.set(filter_name)
 
     def decrement_widget(self, widget):
         filter_name = dpg.get_value(self.node_list_box.widget.uuid)
-        print(filter_name)
+        # print(filter_name)
         if filter_name in self.filtered_list:
-            print('name in list')
+            # print('name in list')
             index = self.filtered_list.index(filter_name)
-            print(index)
+            # print(index)
             index += 1
-            print(index)
+            # print(index)
             if index < len(self.filtered_list):
-                print('ok index')
+                # print('ok index')
                 filter_name = self.filtered_list[index]
-                print(filter_name)
+                # print(filter_name)
                 self.node_list_box.set(filter_name)
 
     def on_edit(self, widget):
@@ -1278,4 +1325,7 @@ class PlaceholderNode(Node):
                         Node.app.create_node_by_name(new_node_args[0], self, new_node_args[1:])
                     else:
                         Node.app.create_node_by_name(new_node_args[0], self, )
+
+
+
 

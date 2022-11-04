@@ -61,8 +61,8 @@ try:
 except ModuleNotFoundError:
     pass
 try:
-    from dpg_system.clip_node import *
-    imported.append('clip_node.py')
+    from dpg_system.clip_nodes import *
+    imported.append('clip_nodes.py')
 except ModuleNotFoundError:
     pass
 try:
@@ -679,8 +679,8 @@ class App:
         dpg.set_value(self.minimap_menu_item, self.node_editors[self.current_node_editor].mini_map)
 
     def add_node_editor(self):
-        conf = dpg.get_item_configuration(self.tab_bar)
-        print(conf)
+        # conf = dpg.get_item_configuration(self.tab_bar)
+        # print(conf)
         editor_number = len(self.node_editors)
         with dpg.tab(label='editor ' + str(editor_number), parent=self.tab_bar, user_data=len(self.tabs)) as tab:
             self.tabs.append(tab)
@@ -741,7 +741,8 @@ class App:
             jobs = dpg.get_callback_queue()  # retrieves and clears queue
             try:
                 for task in self.frame_tasks:
-                    task.frame_task()
+                    if task.created:
+                        task.frame_task()
                 dpg.run_callbacks(jobs)
             except Exception as exc_:
                 print(exc_)

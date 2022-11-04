@@ -23,6 +23,8 @@ def register_signal_nodes():
     Node.app.register_node('hysteresis', ThresholdTriggerNode.factory)
     Node.app.register_node('sample_hold', SampleHoldNode.factory)
     Node.app.register_node('band_pass', BandPassFilterNode.factory)
+    Node.app.register_node('filter_bank', FilterBankNode.factory)
+    Node.app.register_node('spectrum', SpectrumNode.factory)
 
 
 class DifferentiateNode(Node):
@@ -150,6 +152,13 @@ class SignalNode(Node):
         self.vector_size = 1
         self.vector = None
 
+        if self.ordered_args is not None and len(self.ordered_args) > 0:
+            for arg in self.ordered_args:
+                if arg in ['sin', 'cos', 'saw', 'square', 'triangle', 'random']:
+                    self.shape = arg
+                elif float(arg) != 0:
+                    self.period = float(arg)
+
         self.on_off_input = self.add_input('on', widget_type='checkbox', triggers_execution=True, callback=self.start_stop)
         self.period_input = self.add_input('period', widget_type='drag_float', default_value=self.period, callback=self.change_period)
         self.shape_input = self.add_input('shape', widget_type='combo', default_value=self.shape, callback=self.set_shape)
@@ -159,16 +168,6 @@ class SignalNode(Node):
         self.bipolar_property = self.add_option('bipolar', widget_type='checkbox', default_value=self.bipolar, callback=self.change_bipolar)
         self.size_property = self.add_option('vector size', widget_type='drag_int', default_value=self.vector_size, callback=self.change_size)
         self.output = self.add_output("")
-
-    def custom_setup(self):
-        if self.args is not None and len(self.args) > 0:
-            for arg in self.args:
-                if arg in ['sin', 'cos', 'saw', 'square', 'triangle', 'random']:
-                    self.shape = arg
-                    self.shape_input.widget.set(self.shape)
-                elif float(arg) != 0:
-                    self.period = float(arg)
-                    self.period_input.widget.set(self.period)
         self.add_frame_task()
 
     def update_parameters_from_widgets(self):
@@ -479,7 +478,8 @@ class MultiDiffFilterNode(Node):
             input_ = self.add_input('filter ' + str(i), widget_type='drag_float', min=0.0, max=1.0, default_value=float(self.degrees[i]), callback=self.degree_changed)
             self.filter_degree_inputs.append(input_)
         self.output = self.add_output('out')
-        self.message_handlers = {'set': self.set, 'clear': self.clear}
+        self.message_handlers['set'] = self.set
+        self.message_handlers['clear'] = self.clear
 
     def degree_changed(self):
         for i in range(self.filter_count):
@@ -488,20 +488,20 @@ class MultiDiffFilterNode(Node):
 
     def execute(self):
         input_value = self.input.get_data()
-        handled, do_output = self.check_for_messages(input_value)
-        if not handled:
-            self.accums = self.accums * self.degrees + input_value * self.minus_degrees
-            out_values = self.accums[:-1] - self.accums[1:]
-            self.output.send(out_values)
+        # handled, do_output = self.check_for_messages(input_value)
+        # if not handled:
+        self.accums = self.accums * self.degrees + input_value * self.minus_degrees
+        out_values = self.accums[:-1] - self.accums[1:]
+        self.output.send(out_values)
 
-    def set(self, args):
+    def set(self, message, args):
         set_count = len(args)
         if set_count > self.filter_count:
             set_count = self.filter_count
         for i in range(set_count):
             self.accums[i] = float(args[i])
 
-    def clear(self, args):
+    def clear(self, message, args):
         self.accums.fill(0)
 
 
@@ -623,6 +623,185 @@ class TogEdgeNode(Node):
 #
 #     def execute(self):
 #         signal = self.input.get_received_data()
+
+# envelope:
+# square of the signal + square of (diff of the signal * period * 9.5)
+
+# filter bank
+# calc high and low cut for n bands across frequency range in octaves
+
+class FilterBankNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = FilterBankNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.order = 5
+        self.low_bound = 1
+        self.high_bound = 20
+        self.sample_frequency = 60
+        self.filter_type = 'bandpass'
+        self.filter_design = 'butter'
+        self.nyquist = self.sample_frequency * 0.5
+        self.number_of_bands = 8
+        self.ready = False
+        self.bands = np.logspace(np.log10(self.low_bound), np.log10(self.high_bound), self.number_of_bands + 1)
+        self.centers = []
+        for i in range(self.number_of_bands):
+            self.centers.append((self.bands[i] + self.bands[i + 1]) / 2)
+
+        self.input = self.add_input("signal", triggers_execution=True)
+        self.number_of_bands_property = self.add_property('band count', widget_type='input_int', default_value=self.number_of_bands, callback=self.params_changed)
+        # self.filter_type_property = self.add_property('filter type', widget_type='combo', default_value=self.filter_type, callback=self.params_changed)
+        # self.filter_type_property.widget.combo_items = ['bandpass', 'lowpass', 'highpass', 'bandstop']
+        self.filter_design_property = self.add_property('filter design', widget_type='combo', default_value=self.filter_design, callback=self.params_changed)
+        self.filter_design_property.widget.combo_items = ['butter', 'cheby1', 'cheby2']
+        self.order_property = self.add_property('order', widget_type='input_int', default_value=self.order, min=1, max=8, callback=self.params_changed)
+        self.low_cut_property = self.add_property('low', widget_type='drag_float', default_value=self.low_bound, callback=self.params_changed)
+        self.high_cut_property = self.add_property('high', widget_type='drag_float', default_value=self.high_bound, callback=self.params_changed)
+        self.sample_frequency_property = self.add_property('sample freq', widget_type='drag_float', default_value=self.sample_frequency, callback=self.params_changed)
+
+        self.output = self.add_output("filtered")
+
+        self.filters = []
+        for i in range(self.number_of_bands):
+            filter = IIR2Filter(self.order, [self.bands[i], self.bands[i + 1]], filter_type=self.filter_type, design=self.filter_design, fs=self.sample_frequency)
+            self.filters.append(filter)
+        self.signal_out = np.zeros((self.number_of_bands))
+        self.ready = True
+
+    def params_changed(self):
+        self.ready = False
+        self.low_bound = self.low_cut_property.get_widget_value()
+        self.high_bound = self.high_cut_property.get_widget_value()
+        self.order = self.order_property.get_widget_value()
+        self.sample_frequency = self.sample_frequency_property.get_widget_value()
+        self.nyquist = self.sample_frequency * 0.5
+        # self.filter_type = self.filter_type_property.get_widget_value()
+        self.filter_design = self.filter_design_property.get_widget_value()
+
+        if self.high_bound > self.nyquist:
+            self.high_bound = self.nyquist - 1
+        if self.low_bound > self.high_bound:
+            self.low_bound = self.high_bound * .5
+
+        self.bands = np.logspace(np.log10(self.low_bound), np.log10(self.high_bound), self.number_of_bands + 1)
+        self.centers = []
+        for i in range(self.number_of_bands):
+            self.centers.append((self.bands[i] + self.bands[i + 1]) / 2)
+        print(self.bands)
+        print(self.centers)
+        self.filters = []
+        for i in range(self.number_of_bands):
+            filter = IIR2Filter(self.order, [self.bands[i], self.bands[i + 1]], filter_type=self.filter_type, design=self.filter_design, fs=self.sample_frequency)
+            self.filters.append(filter)
+        self.signal_out = np.zeros((self.number_of_bands))
+        self.ready = True
+
+    def execute(self):
+        signal = self.input.get_received_data()
+
+        if self.ready:
+            for i, filter in enumerate(self.filters):
+                self.signal_out[i] = filter.filter(signal)
+        self.output.send(self.signal_out)
+
+
+class SpectrumNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = SpectrumNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.order = 5
+        self.low_bound = 1
+        self.high_bound = 20
+        self.sample_frequency = 60
+        self.filter_type = 'bandpass'
+        self.filter_design = 'butter'
+        self.nyquist = self.sample_frequency * 0.5
+        self.number_of_bands = 8
+        self.ready = False
+        self.bands = np.logspace(np.log10(self.low_bound), np.log10(self.high_bound), self.number_of_bands + 1)
+        self.centers = []
+        self.gain = []
+        for i in range(self.number_of_bands):
+            self.centers.append((self.bands[i] + self.bands[i + 1]) / 2)
+            self.gain.append(9.6 / self.centers[i])
+        self.gain = np.array(self.gain)
+
+        self.input = self.add_input("signal", triggers_execution=True)
+        self.number_of_bands_property = self.add_property('band count', widget_type='input_int', default_value=self.number_of_bands, callback=self.params_changed)
+        # self.filter_type_property = self.add_property('filter type', widget_type='combo', default_value=self.filter_type, callback=self.params_changed)
+        # self.filter_type_property.widget.combo_items = ['bandpass', 'lowpass', 'highpass', 'bandstop']
+        self.filter_design_property = self.add_property('filter design', widget_type='combo', default_value=self.filter_design, callback=self.params_changed)
+        self.filter_design_property.widget.combo_items = ['butter', 'cheby1', 'cheby2']
+        self.order_property = self.add_property('order', widget_type='input_int', default_value=self.order, min=1, max=8, callback=self.params_changed)
+        self.low_cut_property = self.add_property('low', widget_type='drag_float', default_value=self.low_bound, callback=self.params_changed)
+        self.high_cut_property = self.add_property('high', widget_type='drag_float', default_value=self.high_bound, callback=self.params_changed)
+        self.sample_frequency_property = self.add_property('sample freq', widget_type='drag_float', default_value=self.sample_frequency, callback=self.params_changed)
+
+        self.output = self.add_output("spectrum")
+
+        self.filters = []
+        for i in range(self.number_of_bands):
+            filter = IIR2Filter(self.order, [self.bands[i], self.bands[i + 1]], filter_type=self.filter_type, design=self.filter_design, fs=self.sample_frequency)
+            self.filters.append(filter)
+        self.signal_out = np.zeros((self.number_of_bands))
+        self.previous_signal = np.zeros((self.number_of_bands))
+        self.ready = True
+
+    def params_changed(self):
+        self.ready = False
+        self.low_bound = self.low_cut_property.get_widget_value()
+        self.high_bound = self.high_cut_property.get_widget_value()
+        self.order = self.order_property.get_widget_value()
+        self.sample_frequency = self.sample_frequency_property.get_widget_value()
+        self.nyquist = self.sample_frequency * 0.5
+        # self.filter_type = self.filter_type_property.get_widget_value()
+        self.filter_design = self.filter_design_property.get_widget_value()
+        self.number_of_bands = self.number_of_bands_property.get_widget_value()
+
+        if self.high_bound > self.nyquist:
+            self.high_bound = self.nyquist - 1
+        if self.low_bound > self.high_bound:
+            self.low_bound = self.high_bound * .5
+
+        self.bands = np.logspace(np.log10(self.low_bound), np.log10(self.high_bound), self.number_of_bands + 1)
+        self.centers = []
+        self.gain = []
+        for i in range(self.number_of_bands):
+            self.centers.append((self.bands[i] + self.bands[i + 1]) / 2)
+            self.gain.append(9.6 / self.centers[i])
+        self.gain = np.array(self.gain)
+        print(self.bands)
+        print(self.centers)
+        self.filters = []
+        for i in range(self.number_of_bands):
+            filter = IIR2Filter(self.order, [self.bands[i], self.bands[i + 1]], filter_type=self.filter_type, design=self.filter_design, fs=self.sample_frequency)
+            self.filters.append(filter)
+        self.signal_out = np.zeros((self.number_of_bands))
+        self.previous_signal = np.zeros((self.number_of_bands))
+        self.ready = True
+
+    def execute(self):
+        signal = self.input.get_received_data()
+
+        if self.ready:
+            for i, filter in enumerate(self.filters):
+                self.signal_out[i] = filter.filter(signal)
+            slur = (self.signal_out + self.previous_signal) / 2
+            diff = (self.signal_out - self.previous_signal) * self.gain
+            output_signal = slur * slur + diff * diff
+            self.previous_signal = self.signal_out.copy()
+            self.output.send(output_signal)
+
 
 class BandPassFilterNode(Node):
     @staticmethod

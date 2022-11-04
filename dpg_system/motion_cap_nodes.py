@@ -74,7 +74,7 @@ class MoCapTakeNode(MoCapNode):
         self.labels_out = self.add_output('labels')
         self.load_path = ''
         self.load_path_option = self.add_option('path', widget_type='text_input', default_value=self.load_path, callback=self.load_from_load_path)
-        self.message_handlers = {'load': self.load_take}
+        self.message_handlers['load'] = self.load_take_message
 
     def speed_changed(self):
         self.speed = self.speed_property.get_widget_value()
@@ -133,16 +133,23 @@ class MoCapTakeNode(MoCapNode):
     def execute(self):
         if self.input.fresh_input:
             data = self.input.get_received_data()
-            handled, do_output = self.check_for_messages(data)
-            if not handled:
-                t = type(data)
-                if t == int:
-                    if data < self.frames:
-                        self.current_frame = int(data)
-                        self.quaternions_out.set_value(self.quat_buffer[self.current_frame])
-                        self.positions_out.set_value(self.position_buffer[self.current_frame])
-                        self.labels_out.set_value(self.label_buffer[self.current_frame])
-                        self.send_all()
+            # handled, do_output = self.check_for_messages(data)
+            # if not handled:
+            t = type(data)
+            if t == int:
+                if data < self.frames:
+                    self.current_frame = int(data)
+                    self.quaternions_out.set_value(self.quat_buffer[self.current_frame])
+                    self.positions_out.set_value(self.position_buffer[self.current_frame])
+                    self.labels_out.set_value(self.label_buffer[self.current_frame])
+                    self.send_all()
+
+    def load_take_message(self, message='', args=[]):
+        if len(args) > 0:
+            path = any_to_string(args[0])
+            self.load_take_from_npz(path)
+        else:
+            self.load_take(args)
 
     def load_take(self, args=None):
         with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400,

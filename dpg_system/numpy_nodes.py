@@ -40,7 +40,7 @@ class NumpyUnaryNode(Node):
         self.op = np.sum
         if label in self.operations:
             self.op = self.operations[label]
-            print(self.op)
+            # print(self.op)
         if len(args) > 0:
             d, t = decode_arg(args, 0)
             if t == int:

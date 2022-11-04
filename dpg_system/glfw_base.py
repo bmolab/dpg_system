@@ -15,26 +15,26 @@ class MyGLContext:
 
     def __init__(self, name='untitled', width=640, height=480):
         if not self.inited:
-            print('about to init glfw')
+            # print('about to init glfw')
             if not glfw.init():
                 print("library is not initialized")
                 return
             self.inited = True
 #        Create a windowed mode window and its OpenGL context
         print(glfw.get_version())
-        print('glfw inited')
+        # print('glfw inited')
         self.rotation_angle = 0
         self.d_x = 0
         self.height = height
         self.width = width
         self.pending_fov = 60
         self.fov = 30
-        print('about to create window')
+        # print('about to create window')
 
 #        gl.glutInitDisplayMode(glfw.GLUT_RGB | glfw.GLUT_DOUBLE | glfw.GLUT_DEPTH)
         self.window = glfw.create_window(width, height, name, None, None)
         if self.window:
-            print('window created')
+            # print('window created')
             glfw.make_context_current(self.window)
             glfw.set_key_callback(self.window, self.on_key)
 
@@ -84,7 +84,7 @@ class MyGLContext:
         if self.pending_fov != self.fov:
             if self.window:
                 aspect = self.width / self.height
-                print('fov', self.pending_fov, aspect)
+                # print('fov', self.pending_fov, aspect)
                 current_matrix_mode = gl.glGetInteger(gl.GL_MATRIX_MODE)
                 gl.glMatrixMode(gl.GL_PROJECTION)
                 projectionD = gl.glGetDoublev(gl.GL_PROJECTION_MATRIX)

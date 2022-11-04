@@ -9,8 +9,8 @@ def any_to_string(data):
         return str(data)
     elif t in [float, np.double, np.float32]:
         return '%.3f' % data
-    elif t == list:
-        return list_to_string(data)
+    elif t in [list, tuple]:
+        return list_to_string(list(data))
     elif t == np.ndarray:
         np.set_printoptions(precision=3)
         out_string = str(data)
@@ -23,6 +23,8 @@ def any_to_list(data):
     t = type(data)
     if t == list:
         return data
+    elif t == tuple:
+        return list(tuple)
     elif t == str:
         return string_to_list(data)
     elif t in [float, int, bool]:
@@ -46,8 +48,8 @@ def any_to_int(data):
         return int(data)
     elif t == str:
         return string_to_int(data)
-    elif t == list:
-        return any_to_int(data[0])
+    elif t in [list, tuple]:
+        return list_to_int(list(data))
     elif t == np.ndarray:
         return array_to_int(data)
     elif t in [np.int64, np.float, np.float32, np.double, np.bool_]:
@@ -63,8 +65,8 @@ def any_to_float(data):
         return string_to_float(data)
     elif t in [int, bool]:
         return float(data)
-    elif t == list:
-        return list_to_float(data)
+    elif t in [list, tuple]:
+        return list_to_float(list(data))
     elif t == np.ndarray:
         return array_to_float(data)
     elif t in [np.int64, np.float32, np.float, np.double, np.bool_]:
@@ -80,8 +82,8 @@ def any_to_bool(data):
         return string_to_bool(data)
     elif t in [float, int]:
         return bool(data)
-    elif t == list:
-        return list_to_bool(data[0])
+    elif t in [list, tuple]:
+        return list_to_bool(list(data))
     elif t == np.ndarray:
         return array_to_bool(data)
     elif t in [np.int64, np.float, np.float32, np.double, np.bool_]:
@@ -102,8 +104,8 @@ def any_to_array(data):
         return np.array([data])
     elif t == str:
         return string_to_array(data)
-    if t == list:
-        return list_to_array(data)
+    elif t in [list, tuple]:
+        return list_to_array(list(data))
     elif t in [np.int64, np.float, np.float32, np.double, np.bool_]:
         return np.array(data)
     return np.ndarray([0])
@@ -154,7 +156,6 @@ def array_to_bool(input):
 def float_to_string(input):
     if type(input) in [float, int, bool, np.float, np.int64, np.bool_, np.double]:
         return str(float(input))
-
     return ''
 
 
@@ -345,7 +346,11 @@ def string_to_int(input):
 def string_to_bool(input):
     if input == 'True':
         return True
-    return False
+    elif input == 'False':
+        return False
+    elif input == '0':
+        return False
+    return True
 
 
 def decode_arg(args, index):

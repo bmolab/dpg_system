@@ -344,8 +344,8 @@ class RollingBufferNode(Node):
 
         self.sample_count = 256
         self.scroll_direction = 'horizontal'
-        if args is not None and len(args) > 0:
-            count, t = decode_arg(args, 0)
+        if self.ordered_args is not None and len(self.ordered_args) > 0:
+            count, t = decode_arg(self.ordered_args, 0)
             if t == int:
                 self.sample_count = count
         self.rolling_buffer = RollingBuffer(self.sample_count, roll_along_x=False)

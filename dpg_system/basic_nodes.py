@@ -57,11 +57,12 @@ class MetroNode(Node):
         self.units = 1000
         self.units_dict = {'seconds': 1, 'milliseconds': 1000, 'minutes': 1.0/60.0, 'hours': 1.0/60.0/60.0}
         self.period = self.arg_as_float(30.0)
+        self.streaming = False
 
         # set inputs / properties / outputs / options
-        self.on_off_input = self.add_input('on', widget_type='checkbox', triggers_execution=True, callback=lambda: self.start_stop())
-        self.period_input = self.add_input('period', widget_type='drag_float', default_value=self.period, callback=lambda: self.change_period())
-        self.units_property = self.add_property('units', widget_type='combo', default_value='milliseconds', callback=lambda: self.set_units())
+        self.on_off_input = self.add_input('on', widget_type='checkbox', callback=self.start_stop)
+        self.period_input = self.add_input('period', widget_type='drag_float', default_value=self.period, callback=self.change_period)
+        self.units_property = self.add_property('units', widget_type='combo', default_value='milliseconds', callback=self.set_units)
         self.units_property.widget.combo_items = ['seconds', 'milliseconds', 'minutes', 'hours']
         self.output = self.add_output("")
 
@@ -73,17 +74,20 @@ class MetroNode(Node):
     def start_stop(self):
         self.on = self.on_off_input.get_widget_value()
         if self.on:
+            if not self.streaming:
+                self.add_frame_task()
+                self.streaming = True
+                self.execute()
             self.last_tick = time.time()
+        else:
+            if self.streaming:
+                self.remove_frame_tasks()
+                self.streaming = False
 
     def set_units(self):
         units_string = self.units_property.get_widget_value()
         if units_string in self.units_dict:
             self.units = self.units_dict[units_string]
-
-    # called when node is actually being created, allowing you to do appropriate custom initialization
-
-    def custom_setup(self):
-        self.add_frame_task()  # best to add frame task on actual node creation
 
     # this routine is called every update frame (usually 60 fps). It is optional... for those nodes that need constant updating
 
@@ -123,10 +127,10 @@ class TimerNode(Node):
         self.output_elapsed = 0
         self.update_time_base()
 
-        if len(args) > 0:
-            if args[0] in self.units_dict:
-                self.units = self.units_dict[args[0]]
-                default_units = args[0]
+        if len(self.ordered_args) > 0:
+            if self.ordered_args[0] in self.units_dict:
+                self.units = self.units_dict[self.ordered_args[0]]
+                default_units = self.ordered_args[0]
 
         if label == 'elapsed':
             self.mode = 1
@@ -140,6 +144,9 @@ class TimerNode(Node):
 
         self.output_integers_option = self.add_option('output integers', widget_type='checkbox', default_value=True)
 
+        if self.mode == 0:
+            self.add_frame_task()
+
     def update_time_base(self):
         self.base_time = time.time()
 
@@ -152,10 +159,6 @@ class TimerNode(Node):
         units_string = self.units_property.get_widget_value()
         if units_string in self.units_dict:
             self.units = self.units_dict[units_string]
-
-    def custom_setup(self):
-        if self.mode == 0:
-            self.add_frame_task()
 
     def calc_time(self):
         do_execute = False
@@ -206,7 +209,9 @@ class CounterNode(Node):
         self.carry_output = self.add_output("carry out")
         self.carry_output.output_always = False
 
-        self.message_handlers = {'reset': self.reset_message, 'set': self.set_message, 'step': self.step_message}
+        self.message_handlers['reset'] = self.reset_message
+        self.message_handlers['set'] = self.set_message
+        # self.message_handlers['step'] = self.step_message
 
     # widget callbacks
     def update_max_count_from_widget(self):
@@ -216,37 +221,33 @@ class CounterNode(Node):
         self.step = self.step_input.get_widget_value()
 
     # messages
-    def reset_message(self, message_data):
+    def reset_message(self, message='', message_data=[]):
         self.current_value = 0
-        return False
 
-    def set_message(self, message_data):
+    def set_message(self, message='', message_data=[]):
         self.current_value = any_to_int(message_data[0])
-        return True
 
-    def step_message(self, message_data):
-        self.step = any_to_int(message_data[0])
-        return False
+    # def step_message(self, message='', message_data=[]):
+    #     self.step = any_to_int(message_data[0])
 
     def execute(self):
-        in_data = self.input.get_data()
-        handled, do_output = self.check_for_messages(in_data)
+        in_data = self.input.get_received_data()
+        # handled, do_output = self.check_for_messages(in_data)
+        #
+        # if not handled:
+        self.current_value += self.step
+        if self.current_value < 0:
+            self.carry_output.set_value(-1)
+            self.current_value += self.max_count
+            self.current_value &= self.max_count
+        elif self.current_value >= self.max_count:
+            self.carry_output.set_value(0)
+            self.current_value %= self.max_count
+        elif self.current_value > self.max_count - self.step:
+            self.carry_output.set_value(1)
 
-        if not handled:
-            self.current_value += self.step
-            if self.current_value < 0:
-                self.carry_output.set_value(-1)
-                self.current_value += self.max_count
-                self.current_value &= self.max_count
-            elif self.current_value >= self.max_count:
-                self.carry_output.set_value(0)
-                self.current_value %= self.max_count
-            elif self.current_value > self.max_count - self.step:
-                self.carry_output.set_value(1)
-
-        if do_output:
-            self.output.set_value(self.current_value)
-            self.send_all()
+        self.output.set_value(self.current_value)
+        self.send_all()
 
 
 class GateNode(Node):
@@ -367,8 +368,12 @@ class UnpackNode(Node):
                 out_count = value.size
                 if out_count > self.num_outs:
                     out_count = self.num_outs
-                for i in range(out_count):
-                    self.outputs[i].set_value(value[i])
+                if value.dtype in [np.double, np.float]:
+                    for i in range(out_count):
+                        self.outputs[i].set_value(float(value[i]))
+                elif value.dtype in [np.int64, np.int, np.bool_]:
+                    for i in range(out_count):
+                        self.outputs[i].set_value(int(value[i]))
             self.send_all()
 
 
@@ -943,9 +948,12 @@ class CollectionNode(Node):
         self.input = self.add_input('in', triggers_execution=True)
         self.collection_name_property = self.add_property('name', widget_type='text_input', default_value=self.collection_name)
         self.output = self.add_output("out")
-        self.message_handlers = {'clear': self.clear_message, 'dump': self.dump, 'save': self.save_dialog, 'load': self.load_dialog}
+        self.message_handlers['clear'] = self.clear_message
+        self.message_handlers['dump'] = self.dump
+        self.message_handlers['save'] = self.save_message
+        self.message_handlers['load'] = self.load_message
 
-    def dump(self):
+    def dump(self, message='', data=[]):
         for key in self.collection:
             out_list = [key]
             out_list += self.collection[key]
@@ -960,6 +968,13 @@ class CollectionNode(Node):
         with open(path, 'w') as f:
             json.dump(self.collection, f, indent=4)
 
+    def save_message(self, message='', data=[]):
+        if len(data) > 0:
+            path = data[0]
+            self.save_data(path)
+        else:
+            self.save_dialog()
+
     def save_custom_setup(self, container):
         container['collection'] = self.collection
 
@@ -972,53 +987,60 @@ class CollectionNode(Node):
                              tag="coll_dialog_id"):
             dpg.add_file_extension(".json")
 
+    def load_message(self, message='', data=[]):
+        if len(data) > 0:
+            path = data[0]
+            self.load_data(path)
+        else:
+            self.load_dialog()
+
     def load_data(self, path):
         with open(path, 'r') as f:
             self.collection = json.load(f)
 
-    def clear_message(self):
+    def clear_message(self, message='', data=[]):
         self.collection = {}
         self.save_pointer = -1
 
     def execute(self):
         data = self.input.get_received_data()
-        handled, do_output = self.check_for_messages(data)
-        if not handled:
-            t = type(data)
-            address = any_to_string(data)
+        # handled, do_output = self.check_for_messages(data)
+        # if not handled:
+        t = type(data)
+        address = any_to_string(data)
 
-            if t in [int, float, np.int64, np.double]:
-                if data in self.collection:
-                    self.output.send(self.collection[data])
-                elif address in self.collection:
-                    self.output.send(self.collection[address])
-            elif t == str:
-                if address in self.collection:
-                    self.output.send(self.collection[address])
-            elif t in [list]:
-                index = any_to_string(data[0])
-                if index == 'delete':
-                    if len(data) > 1:
-                        index = any_to_string(data[1])
-                        if index in self.collection:
-                            self.collection.__delitem__(index)
-                    return
-                elif index == 'append':
+        if t in [int, float, np.int64, np.double]:
+            if data in self.collection:
+                self.output.send(self.collection[data])
+            elif address in self.collection:
+                self.output.send(self.collection[address])
+        elif t == str:
+            if address in self.collection:
+                self.output.send(self.collection[address])
+        elif t in [list]:
+            index = any_to_string(data[0])
+            if index == 'delete':
+                if len(data) > 1:
+                    index = any_to_string(data[1])
+                    if index in self.collection:
+                        self.collection.__delitem__(index)
+                return
+            elif index == 'append':
+                self.save_pointer += 1
+                while self.save_pointer in self.collection:
                     self.save_pointer += 1
-                    while self.save_pointer in self.collection:
-                        self.save_pointer += 1
-                    index = self.save_pointer
-                data = data[1:]
-                if len(data) == 1:
-                    t = type(data[0])
-                    if t == list:
-                        self.collection[index] = data[0]
-                    elif t == tuple:
-                        self.collection[index] = list(data[0])
-                    else:
-                        self.collection[index] = data
+                index = self.save_pointer
+            data = data[1:]
+            if len(data) == 1:
+                t = type(data[0])
+                if t == list:
+                    self.collection[index] = data[0]
+                elif t == tuple:
+                    self.collection[index] = list(data[0])
                 else:
                     self.collection[index] = data
+            else:
+                self.collection[index] = data
 
 
 class RepeatNode(Node):
@@ -1072,7 +1094,7 @@ class VariableNode(Node):
         self.variable_name = variable_name
         self.variable = self.app.find_variable(self.variable_name)
         if self.variable is not None:
-            print('attaching to', self.variable_name)
+#            print('attaching to', self.variable_name)
             self.variable.attach_client(self)
             self.execute()
 

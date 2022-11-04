@@ -157,9 +157,9 @@ class OSCTarget:
         self.client = None
         self.send_nodes = {}
 
-        if args is not None:
-            for i in range(len(args)):
-                arg, t = decode_arg(args, i)
+        if self.ordered_args is not None:
+            for i in range(len(self.ordered_args)):
+                arg, t = decode_arg(self.ordered_args, i)
                 if t == int:
                     self.port = arg
                 elif t == str:

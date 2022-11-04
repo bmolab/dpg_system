@@ -194,7 +194,8 @@ class RephraseNode(SpacyNode):
             self.token_are = temp_doc[1]
             temp_doc = self.nlp('he is wet')
             self.token_is = temp_doc[1]
-        self.message_handlers = {'full_tree': self.show_full_tree, 'bare_tree': self.show_bare_tree}
+        self.message_handlers['full_tree'] = self.show_full_tree
+        self.message_handlers['bare_tree'] = self.show_bare_tree
 
     def subtree(self, root_word):
         sub = []
@@ -260,13 +261,13 @@ class RephraseNode(SpacyNode):
                 sub.append(t)
         return sub
 
-    def show_full_tree(self, data):
+    def show_full_tree(self, message, data):
         if self.doc is not None:
             if self.doc.has_annotation("DEP"):
                 if len(self.sentence) > 0:
                     self.trigger_subtree(data[0])
 
-    def show_bare_tree(self, data):
+    def show_bare_tree(self, message, data):
         if self.doc is not None:
             if self.doc.has_annotation("DEP"):
                 if len(self.sentence) > 0:
@@ -275,10 +276,10 @@ class RephraseNode(SpacyNode):
     def execute(self):
         if self.input.fresh_input:
             input = self.input.get_received_data()
-            handled, do_output = self.check_for_messages(input)
-            if not handled:
-                sentence = any_to_string(input)
-                self.parse(sentence)
+            # handled, do_output = self.check_for_messages(input)
+            # if not handled:
+            sentence = any_to_string(input)
+            self.parse(sentence)
 
     def phrase_list_to_string(self, in_list):
         string = ''
@@ -382,7 +383,7 @@ class RephraseNode(SpacyNode):
                     # sim = c.similarity(n)
                     if sim > best.score:
                         best.set(token, current_pp, sim, False)
-                    print(current_pp, sim)
+                    # print(current_pp, sim)
         if best.score > self.replace_sim_threshold:
             best_pp = best.phrase
             sentence_list = self.gather_token_list_from_doc()
@@ -504,7 +505,7 @@ class RephraseNode(SpacyNode):
                     sim = c.similarity(n)
                     if sim > best.score:
                         best.set(token, current_vp, sim, False)
-                    print(current_vp, sim)
+                    # print(current_vp, sim)
 
                     # if new_vp has no subject, we do not look at the subject of the vp
                     # most likely subject remains the same and object / adverd / prep phrase is changing
@@ -514,7 +515,7 @@ class RephraseNode(SpacyNode):
                     sim = c_bare.similarity(n)
                     if sim > best.score:
                         best.set(token, current_vp, sim, True)
-                    print(c, sim)
+                    # print(c, sim)
 
         if best.score > self.replace_sim_threshold:
             proposed_vp_to_replace = list(best.phrase)
@@ -571,14 +572,14 @@ class RephraseNode(SpacyNode):
                         sim = c.similarity(n)
                         if sim > best.score:
                             best.set(token, current_np, sim, False)
-                        print(c, n, sim)
+                        # print(c, n, sim)
 
                         n = bare_new_np
                         c_bare = self.doc[token.i:token.i + 1]
                         sim = c_bare.similarity(n)
                         if sim > best.score:
                             best.set(token, c, sim, True)
-                        print(c, n, sim)
+                        # print(c, n, sim)
 
                         if new_np[0].pos_ != 'DET':
                             if not self.noun_token_is_plural(new_token):
@@ -588,7 +589,7 @@ class RephraseNode(SpacyNode):
                                 sim = c.similarity(temp_doc)
                                 if sim > best.score:
                                     best.set(token, current_np, sim, False)
-                                print('added_article', current_np, test_string, sim)
+                                # print('added_article', current_np, test_string, sim)
                         # item = self.nlp.vocab.__getitem__(new_token.text)
 #                        if new_token.morph.get('Number')[0] != best.token.morph.get('Number')[0]:
                         new_test_string = 'the ' + new_token.lemma_
@@ -598,7 +599,7 @@ class RephraseNode(SpacyNode):
                         sim = old_temp_doc.similarity(new_temp_doc)
                         if sim > best.score:
                             best.set(token, current_np, sim, False)
-                        print('forced_singular', old_test_string, new_test_string, sim)
+                        # print('forced_singular', old_test_string, new_test_string, sim)
 
         if best.score > self.replace_sim_threshold or (new_is_proper_noun and best.token.pos_ == 'PROPN'):
             proposed_np_to_replace = list(best.phrase)
@@ -642,7 +643,7 @@ class RephraseNode(SpacyNode):
                 sim = c.similarity(n)
                 if sim > best.score:
                     best.set(token, None, sim, False)
-                print(token.text, sim)
+                # print(token.text, sim)
         if best.score > self.replace_sim_threshold:
             best_token = best.token
             sentence_list = self.gather_token_list_from_doc()

@@ -36,7 +36,6 @@ class ButtonNode(Node):
         super().__init__(label, data, args)
 
         self.target_time = 0
-        self.frame_task_primed = False
         self.flash_duration = .100
 
         self.input = self.add_input('', triggers_execution=True, widget_type='button', widget_width=14, callback=self.clicked_function)
@@ -54,21 +53,17 @@ class ButtonNode(Node):
             with dpg.theme_component(dpg.mvAll):
                 dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
 
-    def custom_setup(self):
-        self.add_frame_task()
-
     def clicked_function(self):
         self.flash_duration = self.flash_duration_option.get_widget_value()
         self.target_time = time.time() + self.flash_duration
-        self.frame_task_primed = True
         dpg.bind_item_theme(self.input.widget.uuid, self.active_theme)
+        self.add_frame_task()
 
     def frame_task(self):
-        if self.frame_task_primed:
-            now = time.time()
-            if now >= self.target_time:
-                self.frame_task_primed = False
-                dpg.bind_item_theme(self.input.widget.uuid, self.inactive_theme)
+        now = time.time()
+        if now >= self.target_time:
+            dpg.bind_item_theme(self.input.widget.uuid, self.inactive_theme)
+            self.remove_frame_tasks()
 
     def execute(self):
         self.output.send('bang')
@@ -84,9 +79,9 @@ class MenuNode(Node):
         super().__init__(label, data, args)
 
         self.choice = ''
-        self.choices = args
+        self.choices = self.args_as_list()
         self.choice_input = self.add_input('##choice', widget_type='combo', default_value=self.choice, callback=self.set_choice)
-        self.choice_input.widget.combo_items = args
+        self.choice_input.widget.combo_items = self.choices
 
         self.output = self.add_output("")
 
@@ -143,15 +138,22 @@ class MouseNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.value = False
         self.mouse_pos = None
+        self.streaming = False
 
-        self.input = self.add_input("", triggers_execution=True, widget_type='checkbox', widget_width=40, callback=self.execute)
+        self.input = self.add_input("", triggers_execution=True, widget_type='checkbox', widget_width=40, callback=self.start_stop_streaming)
         self.output_x = self.add_output("x")
         self.output_y = self.add_output("y")
 
-    def custom_setup(self):
-        self.add_frame_task()
+    def start_stop_streaming(self):
+        if self.input.get_widget_value():
+            if not self.streaming:
+                self.add_frame_task()
+                self.streaming = True
+        else:
+            if self.streaming:
+                self.remove_frame_tasks()
+                self.streaming = False
 
     def frame_task(self):
         if self.input.get_widget_value():
@@ -218,8 +220,8 @@ class ValueNode(Node):
         elif label == 'int':
             widget_type = 'drag_int'
         elif label == 'slider':
-            if args is not None and len(args) > 0:
-                max, t = decode_arg(args, 0)
+            if self.ordered_args is not None and len(self.ordered_args) > 0:
+                max, t = decode_arg(self.ordered_args, 0)
                 if t == float:
                     widget_type = 'slider_float'
                     self.max = max
@@ -230,8 +232,8 @@ class ValueNode(Node):
                 widget_type = 'slider_float'
         elif label == 'knob':
             widget_type = 'knob_float'
-            if args is not None and len(args) > 0:
-                max, t = decode_arg(args, 0)
+            if self.ordered_args is not None and len(self.ordered_args) > 0:
+                max, t = decode_arg(self.ordered_args, 0)
                 if t == float:
                     widget_type = 'knob_float'
                     self.max = max
@@ -241,9 +243,9 @@ class ValueNode(Node):
         elif label == 'string' or label == 'message':
             widget_type = 'text_input'
 
-        if args is not None and len(args) > 0:
-            for i in range(len(args)):
-                max, t = decode_arg(args, i)
+        if self.ordered_args is not None and len(self.ordered_args) > 0:
+            for i in range(len(self.ordered_args)):
+                max, t = decode_arg(self.ordered_args, i)
                 if t == str:
                     self.variable_name = max
 
@@ -534,8 +536,6 @@ class LoadActionNode(Node):
         self.input = self.add_input('trigger', triggers_execution=True)
         self.load_action_property = self.add_property(label='##loadActionString', widget_type='text_input', default_value=self.message_string)
         self.output = self.add_output("out")
-
-    def custom_setup(self):
         self.add_frame_task()
 
     def frame_task(self):
@@ -584,6 +584,8 @@ class PlotNode(Node):
         self.rows = 1
         self.elapser = 0
 
+        self.range = 1.0
+        self.offset = 0.0
         self.x_axis = dpg.generate_uuid()
         self.y_axis = dpg.generate_uuid()
         self.plot_data_tag = dpg.generate_uuid()
@@ -658,7 +660,7 @@ class PlotNode(Node):
             buffer = self.y_data.get_buffer(block=True)
             if buffer is not None:
                 dpg.add_heat_series(x=buffer, rows=self.y_data.breadth, cols=self.y_data.sample_count, parent=self.y_axis,
-                                tag=self.plot_data_tag, format=self.format, scale_min=self.min_y, scale_max=self.max_y)
+                                tag=self.plot_data_tag, format=self.format, scale_min=0, scale_max=1)
                 self.y_data.release_buffer()
             dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Viridis)
             self.change_range()
@@ -805,9 +807,13 @@ class PlotNode(Node):
 
     def change_range(self):
         if self.style >= 4:
-            dpg.set_axis_limits(self.y_axis, 0, 1)
+#            dpg.set_axis_limits(self.y_axis, 0, 1)
+            self.max_y = self.max_y_option.get_widget_value()
+            self.min_y = self.min_y_option.get_widget_value()
+            self.range = self.max_y - self.min_y
+            self.offset = - self.min_y
             dpg.set_axis_limits(self.x_axis, self.min_x_option.get_widget_value() / self.sample_count, self.max_x_option.get_widget_value() / self.sample_count)
-            dpg.set_axis_limits(self.y_axis, self.min_y_option.get_widget_value(), self.max_y_option.get_widget_value())
+            dpg.set_axis_limits(self.y_axis, 0.0, 1.0)
         else:
             dpg.set_axis_limits(self.y_axis, self.min_y_option.get_widget_value(), self.max_y_option.get_widget_value())
             dpg.set_axis_limits(self.x_axis, self.min_x_option.get_widget_value(), self.max_x_option.get_widget_value())
@@ -828,13 +834,13 @@ class PlotNode(Node):
                 data = self.input.get_received_data()
                 t = type(data)
                 if t in [float, np.double, int, np.int64, bool, np.bool_]:
-                    ii = np.array([data])
+                    ii = any_to_array(float(data))
                     self.y_data.update(ii)
                 elif t == list:
                     length = len(data)
                     if length > self.sample_count:
                         length = self.sample_count
-                    ii = np.array(data)
+                    ii = list_to_array(data)
                     self.y_data.update(ii)
                 elif t == np.ndarray:
                     if len(data.shape) == 1:
@@ -843,20 +849,22 @@ class PlotNode(Node):
                 data = self.input.get_received_data()
                 t = type(data)
                 if t not in [list, np.ndarray]:
-                    ii = np.array([data])
+                    ii = any_to_array(data)
+                    ii = (ii + self.offset) / self.range
                     self.y_data.update(ii)
                 elif t == list:
                     rows = len(data)
                     if rows != self.rows:
                         self.rows = rows
                         self.sample_count_option.set(self.sample_count)
-                    ii = np.array([data]).reshape((rows, 1))
+                    ii = list_to_array(data).reshape((rows, 1))
+                    ii = (ii + self.offset) / self.range
                     self.y_data.update(ii)
                 elif t == np.ndarray:
                     rows = data.size
                     if rows != self.rows:
                         self.rows = rows
-                    ii = data.reshape((rows, 1))
+                    ii = (data.reshape((rows, 1)) + self.offset) / self.range
                     self.y_data.update(ii)
             elif self.style == 6:  # heat map
                 data = self.input.get_received_data()
@@ -875,7 +883,7 @@ class PlotNode(Node):
                     if rows != self.rows or self.sample_count != 1:
                         self.rows = rows
                         self.sample_count = 1
-                    ii = np.array([h_data]).reshape((rows, self.sample_count))
+                    ii = list_to_array(h_data).reshape((rows, self.sample_count))
                     self.y_data.update(ii)
 
                 elif t == np.ndarray:
