@@ -70,6 +70,11 @@ try:
     imported.append('numpy_nodes.py')
 except ModuleNotFoundError:
     pass
+try:
+    from dpg_system.torch_nodes import *
+    imported.append('torch_nodes.py')
+except ModuleNotFoundError:
+    pass
 
 # import additional node files in folder
 
@@ -375,6 +380,9 @@ class App:
 
         if 'register_numpy_nodes' in globals():
             register_numpy_nodes()
+
+        if 'register_torch_nodes' in globals():
+            register_torch_nodes()
 
     def get_variable_list(self):
         v_list = list(self.variables.keys())

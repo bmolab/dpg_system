@@ -153,17 +153,21 @@ class RephraseNode(SpacyNode):
         self.last_input_time = time.time()
         self.clear_input_pause = 40.0
         self.complexity_threshold = 6.0
+        self.clip_score_threshold = 640.0
         self.output_as_list = False
         self.input = self.add_input('text in', triggers_execution=True)
+        self.clip_score_input = self.add_input('clip score')
         self.replace_sim_threshold_property = self.add_property('replace similarity', widget_type='drag_float', default_value=self.replace_sim_threshold)
         self.clear_input_pause_property = self.add_property('clear input pause', widget_type='drag_float', default_value=self.clear_input_pause)
         self.complexity_threshold_property = self.add_property('complexity replace threshold', widget_type='drag_float', default_value=self.complexity_threshold)
+        self.clip_score_threshold_property = self.add_property('clip score threshold', widget_type='drag_float', default_value=self.clip_score_threshold)
         self.output_as_list_property = self.add_property('output as list', widget_type='checkbox', default_value=self.output_as_list)
         self.output = self.add_output('results')
         self.previous_sentence = ''
         self.recursion = 0
         self.focus_noun = None
         self.pending_focus_noun = ''
+        self.clip_score = 0
 
         if self.__class__.nlp is not None:
             temp_sentence = 'an apple'
@@ -274,12 +278,14 @@ class RephraseNode(SpacyNode):
                     self.trigger_bare_tree(data[0])
 
     def execute(self):
+        if self.clip_score_input.fresh_input:
+            self.clip_score = self.clip_score_input.get_received_data()
         if self.input.fresh_input:
             input = self.input.get_received_data()
             # handled, do_output = self.check_for_messages(input)
             # if not handled:
             sentence = any_to_string(input)
-            self.parse(sentence)
+            self.parse(sentence, self.clip_score)
 
     def phrase_list_to_string(self, in_list):
         string = ''
@@ -744,7 +750,7 @@ class RephraseNode(SpacyNode):
                         return new_sentence
         return ''
 
-    def conditional_parse(self, sentence, strip_det=False):
+    def conditional_parse(self, sentence, strip_det=False, clip_score=0.0):
         if self.doc is None:
             return ''
         self.new_doc = self.nlp(sentence)
@@ -765,6 +771,9 @@ class RephraseNode(SpacyNode):
             # if 'not' is follow by a noun phrase
                 # capture that noun phrase and remove it
 
+        # IF CLIP SCORE IS TOO HIGH, DO NOT DO THIS...
+        if clip_score > self.clip_score_threshold:
+            return ''
         if self.new_doc[0].lower_ in ['it', 'they', 'he', 'she'] and self.focus_noun is not None:
             sentence_list = list(self.new_doc)
             sentence_list[0] = self.focus_noun
@@ -809,7 +818,7 @@ class RephraseNode(SpacyNode):
             return self.try_replace_adjective(sentence, root, conjunction)
         return ''
 
-    def parse(self, sentence):
+    def parse(self, sentence, clip_score):
         self.chunks = []
         self.root_index = -1
         self.indent = 0
@@ -824,32 +833,33 @@ class RephraseNode(SpacyNode):
         self.replace_sim_threshold = self.replace_sim_threshold_property.get_widget_value()
         self.clear_input_pause = self.clear_input_pause_property.get_widget_value()
         if now - self.last_input_time < self.clear_input_pause:
-            rewritten_sentence = self.conditional_parse(sentence)
+            rewritten_sentence = self.conditional_parse(sentence, clip_score=clip_score)
             if len(rewritten_sentence) > 0:
                 sentence = rewritten_sentence
                 was_rewritten = True
 
-        self.last_input_time = now
+        if clip_score < self.clip_score_threshold:
+            self.last_input_time = now
 
-        self.sentence = sentence
-        self.doc = self.nlp(self.sentence)
-        if len(self.pending_focus_noun) > 0:
-            for t in self.doc:
-                if t.text == self.pending_focus_noun:
-                    self.focus_noun = t
-                    break
-            self.pending_focus_noun = ''
+            self.sentence = sentence
+            self.doc = self.nlp(self.sentence)
+            if len(self.pending_focus_noun) > 0:
+                for t in self.doc:
+                    if t.text == self.pending_focus_noun:
+                        self.focus_noun = t
+                        break
+                self.pending_focus_noun = ''
 
-        if self.focus_noun is None or not was_rewritten:
-            self.focus_noun = self.choose_focus_noun()
+            if self.focus_noun is None or not was_rewritten:
+                self.focus_noun = self.choose_focus_noun()
 
-        if self.output_as_list_property.get_widget_value():
-            token_list = self.gather_token_list_from_doc()
-            sentence_list = self.token_list_to_string_list(token_list)
-            self.output.send(sentence_list)
-        else:
-            sentence_string = self.doc.text_with_ws
-            self.output.send(sentence_string)
+            if self.output_as_list_property.get_widget_value():
+                token_list = self.gather_token_list_from_doc()
+                sentence_list = self.token_list_to_string_list(token_list)
+                self.output.send(sentence_list)
+            else:
+                sentence_string = self.doc.text_with_ws
+                self.output.send(sentence_string)
 
     def choose_focus_noun(self):
         subject = None
