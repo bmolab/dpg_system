@@ -10,7 +10,7 @@ It is recommended to create a conda environment (python 3.9 is most tested)
 In initial testing, this was what else needed to be installed after a basic conda install:
 
 ```
-pip install squeezepy
+pip install ssqueezepy
 pip install dearpygui
 pip install pyquaternion
 pip install fuzzywuzzy
