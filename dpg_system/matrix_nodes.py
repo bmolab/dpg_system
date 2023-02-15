@@ -16,6 +16,7 @@ def register_matrix_nodes():
     Node.app.register_node('buffer', BufferNode.factory)
     Node.app.register_node('rolling_buffer', RollingBufferNode.factory)
     Node.app.register_node('cwt', WaveletNode.factory)
+    Node.app.register_node('confusion', ConfusionMatrixNode.factory)
 
 
 class BufferNode(Node):
@@ -158,6 +159,22 @@ class RollingBuffer:
         elif update_style == 'input is multi-channel sample':
             self.update_style = t_BufferCircularVertical
         self.allocate((self.sample_count, self.breadth), self.roll_along_x)
+
+    def set_value(self, x, value):
+        if not self.lock.locked():
+            if self.lock.acquire(blocking=False):
+                if x < self.buffer.shape[1] and x >= 0:
+                    if self.roll_along_x:
+                        self.buffer[x, 0] = value
+                    else:
+                        self.buffer[0, x] = value
+                self.lock.release()
+
+    def set_write_pos(self, pos):
+        if not self.lock.locked():
+            if self.lock.acquire(blocking=False):
+                self.write_pos = pos
+            self.lock.release()
 
     def update(self, incoming):
         if not self.lock.locked():
@@ -388,7 +405,32 @@ class RollingBufferNode(Node):
 # transpose
 # invert
 
+class ConfusionMatrixNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ConfusionMatrixNode(name, data, args)
+        return node
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input("input", triggers_execution=True)
+        self.input2 = self.add_input("input2", triggers_execution=True)
+        self.output = self.add_output("output")
+        self.confusion_matrix = np.zeros((1, 1))
+        self.data2 = None
 
+    def execute(self):
+        if self.input2.fresh_input:
+            self.data2 = self.input2.get_received_data()
+        if self.data2 is not None and len(self.data2) > 0:
+            data1 = self.input.get_received_data()
+            self.confusion_matrix = np.ndarray((len(self.data2), len(data1)))
+            for index, word in enumerate(data1):
+                for index2, word2 in enumerate(self.data2):
+                    if word == word2:
+                        self.confusion_matrix[index2, index] = 1.0
+                    else:
+                        self.confusion_matrix[index2, index] = 0.0
+            self.output.send(self.confusion_matrix)
 
 class WaveletNode(Node):
     @staticmethod

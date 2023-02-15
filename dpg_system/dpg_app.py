@@ -298,6 +298,9 @@ class App:
         # print(self.viewport)
         dpg.setup_dearpygui()
 
+    def position_viewport(self, x, y):
+        dpg.configure_viewport(self.viewport, x_pos=x, y_pos=y)
+
     def setup_themes(self):
         with dpg.theme() as self.global_theme:
             with dpg.theme_component(dpg.mvAll):
@@ -525,6 +528,9 @@ class App:
         dpg.focus_item(widget_uuid)
         self.focussed_widget = widget_uuid
 
+    # def mouse_drag_handler(self):
+    #     print('dragged', self.active_widget)
+
     def up_handler(self):
         handled = False
         if self.hovered_item is not None:
@@ -543,6 +549,9 @@ class App:
                         widget.node.increment_widget(widget)
                         if widget.callback is not None:
                             widget.callback()
+
+    def create_gui(self):
+        pass
 
     def down_handler(self):
         handled = False
@@ -576,14 +585,6 @@ class App:
             self.set_widget_focus(node.name_property.widget.uuid)
 
     def update(self):
-        # with dpg.mutex():
-        #     dpg.delete_item(self.left_panel, children_only=True)
-        #     self.data_set_container.submit(self.left_panel)
-        #     self.node_factory_container.submit(self.left_panel)
-        #
-        #     dpg.delete_item(self.right_panel, children_only=True)
-        #     self.inspector_container.submit(self.right_panel)
-        #     self.tool_container.submit(self.right_panel)
         pass
 
     def load_from_file(self, path):
@@ -703,6 +704,7 @@ class App:
         self.node_editors = [NodeEditor()]
 
         with dpg.window() as main_window:
+            global dpg_app
             self.main_window_id = main_window
             dpg.bind_item_theme(main_window, self.global_theme)
             dpg.add_spacer(height=14)
@@ -712,6 +714,7 @@ class App:
                     with dpg.group(id=self.center_panel):
                         self.node_editors[0].submit(self.center_panel)
                         with dpg.handler_registry():
+                            # dpg.add_mouse_drag_handler(callback=self.mouse_drag_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Up, callback=self.up_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Down, callback=self.down_handler)
                             dpg.add_key_press_handler(dpg.mvKey_N, callback=self.new_handler)
@@ -730,13 +733,10 @@ class App:
                 with dpg.tab(label='second editor', user_data=len(self.tabs)) as tab:
                     self.tabs.append(tab)
                     with dpg.group(id=self.side_panel):
-                        dpg.add_input_int(label='test')
-                        dpg.add_input_int(label='test2')
-                        dpg.add_input_int(label='test3')
+                        self.create_gui()
                         new_editor = NodeEditor()
                         self.node_editors.append(new_editor)
                         self.node_editors[1].submit(self.side_panel)
-                        dpg.add_input_int(label='test4')
         dpg.set_primary_window(main_window, True)
         dpg.show_viewport()
 

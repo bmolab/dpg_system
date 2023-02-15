@@ -122,7 +122,7 @@ class NumpyMatMulNode(Node):
         self.operand = 0
         self.input = self.add_input('in 1', triggers_execution=True)
         self.operand_input = self.add_input('in 2')
-        self.output = self.add_output("dot_product")
+        self.output = self.add_output("output")
 
     def execute(self):
         if self.operand_input.fresh_input:

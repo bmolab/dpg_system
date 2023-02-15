@@ -4,6 +4,7 @@ import en_core_web_lg
 from spacy import displacy
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
+from scipy import spatial
 import time
 
 indent = 0
@@ -14,7 +15,7 @@ def register_spacy_nodes():
     Node.app.register_node('lemma', LemmaNode.factory)
     Node.app.register_node('spacy_vector', PhraseVectorNode.factory)
     Node.app.register_node('spacy_similarity', PhraseSimilarityNode.factory)
-
+    Node.app.register_node('spacy_confusion', SpacyConfusionMatrixNode.factory)
 
 
 class PhraseMatch():
@@ -56,6 +57,41 @@ class SpacyNode(Node):
 
         if self.__class__.nlp is None:
             self.__class__.nlp = spacy.load('en_core_web_lg')
+
+
+class SpacyConfusionMatrixNode(SpacyNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = SpacyConfusionMatrixNode(name, data, args)
+        return node
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input("input", triggers_execution=True)
+        self.input2 = self.add_input("input2", triggers_execution=True)
+        self.output = self.add_output("output")
+        self.confusion_matrix = np.zeros((1, 1))
+        self.doc1 = None
+        self.doc2 = None
+        self.data2 = None
+        self.vectors_2 = []
+
+    def execute(self):
+        if self.input2.fresh_input:
+            self.vectors_2 = []
+            self.data2 = self.input2.get_received_data()
+            for word in self.data2:
+                self.vectors_2.append(self.nlp(word).vector)
+
+        if self.data2 is not None and len(self.data2) > 0:
+            self.vectors = []
+            data1 = self.input.get_received_data()
+            self.confusion_matrix = np.ndarray((len(self.data2), len(data1)))
+            for index, word in enumerate(data1):
+                vector_ = self.nlp(word).vector
+                for index2, word2 in enumerate(self.data2):
+                    sim = 1-spatial.distance.cosine(vector_, self.vectors_2[index2])
+                    self.confusion_matrix[index2, index] = sim
+            self.output.send(self.confusion_matrix)
 
 
 class PhraseVectorNode(SpacyNode):
@@ -788,6 +824,10 @@ class RephraseNode(SpacyNode):
 
         complexity = self.phrase_complexity(self.new_doc)
 
+        if self.new_doc[0].pos_ in ['CCONJ', 'SCONJ'] and complexity > self.complexity_threshold_property.get_widget_value():
+            sentence = self.sentence + ' ' + sentence
+            return sentence
+
         if root.pos_ != 'ADP' and complexity > self.complexity_threshold_property.get_widget_value():
             return ''
 
@@ -816,6 +856,7 @@ class RephraseNode(SpacyNode):
             return self.try_replace_noun_phrase(sentence, root, conjunction, strip_det)
         elif root.pos_ == 'ADJ':
             return self.try_replace_adjective(sentence, root, conjunction)
+
         return ''
 
     def parse(self, sentence, clip_score):

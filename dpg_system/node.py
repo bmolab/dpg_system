@@ -1161,6 +1161,8 @@ class PlaceholderNode(Node):
         self.variable_list = self.app.get_variable_list()
 
         self.node_list_box = self.add_property('###options', widget_type='list_box', width=180)
+        self.list_box_arrowed = False
+        self.current_name = ''
 
     def custom_setup(self):
         dpg.configure_item(self.args_property.widget.uuid, show=False, on_enter=True)
@@ -1205,6 +1207,7 @@ class PlaceholderNode(Node):
             index -= 1
             # print(index)
             if index >= 0:
+                self.list_box_arrowed = True
                 # print('ok index')
                 filter_name = self.filtered_list[index]
                 # print(filter_name)
@@ -1220,6 +1223,7 @@ class PlaceholderNode(Node):
             index += 1
             # print(index)
             if index < len(self.filtered_list):
+                self.list_box_arrowed = True
                 # print('ok index')
                 filter_name = self.filtered_list[index]
                 # print(filter_name)
@@ -1229,6 +1233,7 @@ class PlaceholderNode(Node):
         if widget == self.static_name:
             return
         if widget == self.name_property.widget and len(self.node_list) > 0:
+            self.list_box_arrowed = False
             self.filtered_list = []
             filter_name = dpg.get_value(self.name_property.widget.uuid)
             if len(filter_name) > 0:
@@ -1267,8 +1272,21 @@ class PlaceholderNode(Node):
 
     def execute(self):
         if dpg.is_item_active(self.name_property.widget.uuid):
-            print(self.name_property.get_widget_value())
+            print('execute', self.name_property.get_widget_value())
         else:
+            if self.list_box_arrowed:
+                selection = dpg.get_value(self.node_list_box.widget.uuid)
+                dpg.focus_item(self.node_list_box.widget.uuid)
+                dpg.configure_item(self.name_property.widget.uuid, enabled=False)
+                dpg.set_value(self.name_property.widget.uuid, selection)
+                dpg.configure_item(self.node_list_box.widget.uuid, items=[], show=False)
+                dpg.configure_item(self.name_property.widget.uuid, show=False)
+                dpg.configure_item(self.static_name.widget.uuid, show=True)
+                dpg.configure_item(self.args_property.widget.uuid, show=True, on_enter=True)
+                self.static_name.set(selection)
+                dpg.focus_item(self.args_property.widget.uuid)
+                self.list_box_arrowed = False
+                return
             selection_name = dpg.get_value(self.node_list_box.widget.uuid)
             new_node_name = dpg.get_value(self.name_property.widget.uuid)
             arg_string = dpg.get_value(self.args_property.widget.uuid)

@@ -468,8 +468,8 @@ class MultiDiffFilterNode(Node):
                 degree = any_to_float(degree_str)
                 if degree > 1.0:
                     degree = 1.0
-                elif degree < 0:
-                    degree = 0
+                elif degree < 0.0:
+                    degree = 0.0
                 self.degrees[index] = degree
         self.minus_degrees = self.ones - self.degrees
         self.input = self.add_input('in', triggers_execution=True)

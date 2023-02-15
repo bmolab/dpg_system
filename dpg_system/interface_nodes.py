@@ -24,6 +24,8 @@ def register_interface_nodes():
     Node.app.register_node('load_action', LoadActionNode.factory)
     Node.app.register_node('color', ColorPickerNode.factory)
     Node.app.register_node('vector', VectorNode.factory)
+    Node.app.register_node('draw', DrawNode.factory)
+
 
 
 class ButtonNode(Node):
@@ -600,6 +602,7 @@ class PlotNode(Node):
         if self.style == 1:
             self.input_x = self.add_input("x")
 
+        self.output = self.add_output('')
         self.plot_display = self.add_display('')
         self.plot_display.submit_callback = self.submit_display
 
@@ -628,9 +631,16 @@ class PlotNode(Node):
         self.format_option = self.add_option(label='number format', widget_type='text_input', default_value='', callback=self.change_format)
 
         self.lock = threading.Lock()
+        # self.handler = dpg.item_handler_registry(tag='plot_mouse_handler')
+        # with self.handler:
+        #     dpg.add_item_hover_handler(callback=mouse_moved)
+        self.plotter = None
+        self.was_drawing = False
+        self.add_frame_task()
+
 
     def submit_display(self):
-        with(dpg.plot(label='', tag=self.plot_tag, height=self.height, width=self.width, no_title=True)):
+        with dpg.plot(label='', tag=self.plot_tag, height=self.height, width=self.width, no_title=True) as self.plotter:
             if self.style in [6, 5]:
                 dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Viridis)
             dpg.add_plot_axis(dpg.mvXAxis, label="", tag=self.x_axis, no_tick_labels=True)
@@ -680,6 +690,8 @@ class PlotNode(Node):
             dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Viridis)
             self.change_range()
             self.format_option.set(self.format)
+        # dpg.bind_item_handler_registry(self.plotter, "plot handler")
+
 
     def change_colormap(self):
         colormap = self.heat_map_colour_property.get_widget_value()
@@ -715,6 +727,38 @@ class PlotNode(Node):
             dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Spectral)
         elif colormap == 'greys':
             dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Greys)
+
+    def frame_task(self):
+        if self.was_drawing:
+            if not dpg.is_mouse_button_down(0):
+                self.was_drawing = False
+                self.output.send(self.y_data.get_buffer()[0])
+                self.y_data.release_buffer()
+        if dpg.is_item_hovered(self.plotter):
+            if dpg.is_mouse_button_down(0):
+                pos = dpg.get_plot_mouse_pos()
+                x = int(pos[0])
+                y = pos[1]
+                if self.was_drawing:
+                    last_y = self.last_pos[1]
+                    last_x = int(round(self.last_pos[0]))
+                    change_x = x - last_x
+                    change_y = y - last_y
+                    if change_x > 0:
+                        for i in range(last_x, x):
+                            interpolated_y = ((i - last_x) / change_x) * change_y + last_y
+                            self.y_data.set_value(i, interpolated_y)
+                    else:
+                        for i in range(x, last_x):
+                            interpolated_y = ((i - x) / change_x) * change_y + last_y
+                            self.y_data.set_value(i, interpolated_y)
+                self.last_pos = pos
+                self.y_data.set_value(x, y)
+                self.y_data.set_write_pos(0)
+                self.update_plot()
+                self.was_drawing = True
+            else:
+                self.was_drawing = False
 
     def value_dragged(self):
         if not dpg.is_mouse_button_down(0):
@@ -830,9 +874,14 @@ class PlotNode(Node):
     def execute(self):
         self.lock.acquire(blocking=True)
         if self.input.fresh_input:   # standard plot
+            data = self.input.get_received_data()
+            t = type(data)
+            if t == str:
+                if data == 'dump':
+                    print('about to output data')
+                    self.output.send(self.y_data.get_buffer()[0])
+                    self.y_data.release_buffer()
             if self.style == 0:
-                data = self.input.get_received_data()
-                t = type(data)
                 if t in [float, np.double, int, np.int64, bool, np.bool_]:
                     ii = any_to_array(float(data))
                     self.y_data.update(ii)
@@ -846,8 +895,6 @@ class PlotNode(Node):
                     if len(data.shape) == 1:
                         self.y_data.update(data)
             elif self.style == 5:  # heat_scroll ... input might be list or array
-                data = self.input.get_received_data()
-                t = type(data)
                 if t not in [list, np.ndarray]:
                     ii = any_to_array(data)
                     ii = (ii + self.offset) / self.range
@@ -867,8 +914,6 @@ class PlotNode(Node):
                     ii = (data.reshape((rows, 1)) + self.offset) / self.range
                     self.y_data.update(ii)
             elif self.style == 6:  # heat map
-                data = self.input.get_received_data()
-                t = type(data)
                 if t not in [list, np.ndarray]:
                     rows = 1
                     sample_count = 1
@@ -914,6 +959,22 @@ class PlotNode(Node):
 
         self.lock.release()
         self.send_all()
+
+    def update_plot(self):
+        if self.style == 1:
+            if self.input_x.fresh_input:
+                self.x_data[1:] = self.x_data[0:-1]
+                self.x_data[0] = self.input_x.get_received_data()
+        if self.style == 0:
+            buffer = self.y_data.get_buffer()
+            if buffer is not None:
+                dpg.set_value(self.plot_data_tag, [self.x_data, buffer.ravel()])
+                self.y_data.release_buffer()
+        elif self.style in [5, 6]:
+            buffer = self.y_data.get_buffer()
+            if buffer is not None:
+                dpg.set_value(self.plot_data_tag, [buffer.ravel(), self.x_data])
+                self.y_data.release_buffer()
 
 
 class ColorPickerNode(Node):
@@ -979,5 +1040,19 @@ class ColorPickerNode(Node):
         else:
             data = list(self.input.get_widget_value())
         self.output.send(data)
+
+class DrawNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = DrawNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.add_spacer(width=100, height=100)
+        self.add_frame_task()
+
+    def frame_task(self):
+        dpg.draw_circle((10, 10), 10, color=(255, 0, 0, 255))
 
 
