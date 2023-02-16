@@ -79,16 +79,24 @@ class ArithmeticNode(Node):
         self.output.send(output_value)
 
     def mod(self, a, b):
+        if type(a) == np.ndarray:
+            if b == 0:
+                return np.zeros_like(a)
+            return np.mod(a, b)
         if b == 0:
             return 0
         return a % b
 
     def min(self, a, b):
+        if type(a) == np.ndarray:
+            return np.minimum(a, b)
         if a > b:
             return b
         return a
 
     def max(self, a, b):
+        if type(a) == np.ndarray:
+            return np.maximum(a, b)
         if a < b:
             return b
         return a
@@ -106,6 +114,11 @@ class ArithmeticNode(Node):
         return a * b
 
     def divide(self, a, b):
+        if type(a) == np.ndarray:
+            old_errs = np.seterr(divide='ignore')
+            out = np.divide(a, b)
+            np.seterr(**old_errs)
+            return out
         if b == 0:
             return a / 1e-8
         return a / b
@@ -116,15 +129,24 @@ class ArithmeticNode(Node):
         return a // b
 
     def inverse_divide(self, a, b):
+        if type(a) == np.ndarray:
+            old_errs = np.seterr(divide='ignore')
+            out = np.divide(b, a)
+            np.seterr(**old_errs)
+            return out
         if a == 0:
             return b / 1e-8
         return b / a
 
     def power(self, a, b):
-        return math.pow(a, b)
+        if type(a) == np.ndarray:
+            return np.power(a, b)
+        else:
+            return math.pow(a, b)
 
 
 class ComparisonNode(Node):
+    output_op = bool
     @staticmethod
     def factory(name, data, args=None):
         node = ComparisonNode(name, data, args)
@@ -143,9 +165,22 @@ class ComparisonNode(Node):
             self.operation = self.operations[label]
         else:
             self.operation = self.operations['>']
+        self.output_type_option = self.add_option('output_type', widget_type='combo', default_value='bool', callback=self.output_type_changed)
+        self.output_type_option.widget.combo_items = ['bool', 'int', 'float']
 
-    def operand_changed(self, s, a, u):
+    def operand_changed(self):
         self.operand = self.operand_input.get_widget_value()
+
+    def output_type_changed(self):
+        output_type = self.output_type_option.get_widget_value()
+        print('got output type ' + output_type)
+        self.output_op = bool
+        if output_type == 'bool':
+            self.output_op = bool
+        elif output_type == 'int':
+            self.output_op = int
+        elif output_type == 'float':
+            self.output_op = float
 
     def execute(self):
         if self.operand_input.fresh_input:
@@ -158,7 +193,11 @@ class ComparisonNode(Node):
         if t == list:
             input_value = list_to_array(input_value)
 
-        output_value = self.operation(input_value, self.operand)
+        if type(input_value) == np.ndarray:
+            output_value = self.operation(input_value, self.operand).astype(self.output_op)
+        else:
+            output_value = self.output_op(self.operation(input_value, self.operand))
+
         self.output.send(output_value)
 
     def greater(self, a, b):

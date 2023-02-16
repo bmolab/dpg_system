@@ -17,6 +17,7 @@ class OutputNodeAttribute:
             self.create_pin_themes()
         self.uuid = -1
         self._label = label
+        self.label_uuid = -1
         self._children = []  # output attributes
         self.links = []
         self.pos = pos
@@ -80,11 +81,11 @@ class OutputNodeAttribute:
         if self.pos is not None:
             with dpg.node_attribute(parent=parent, attribute_type=dpg.mvNode_Attr_Output,
                                     user_data=self, pos=self.pos) as self.uuid:
-                dpg.add_text(self._label)
+                self.label_uuid = dpg.add_text(self._label)
         else:
             with dpg.node_attribute(parent=parent, attribute_type=dpg.mvNode_Attr_Output,
                                     user_data=self) as self.uuid:
-                dpg.add_text(self._label)
+                self.label_uuid = dpg.add_text(self._label)
 
     def get_children(self):
         return self._children

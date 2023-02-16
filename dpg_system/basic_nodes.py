@@ -618,6 +618,7 @@ class TriggerNode(Node):
             self.trigger_count = len(args)
         self.triggers = []
         self.trigger_options = []
+        self.trigger_pass = []
 
         self.input = self.add_input("", triggers_execution=True)
 
@@ -629,19 +630,40 @@ class TriggerNode(Node):
         for i in range(self.trigger_count):
             an_option = self.add_option('trigger ' + str(i), widget_type='text_input', default_value=args[i], callback=self.triggers_changed)
             self.trigger_options.append(an_option)
+            self.trigger_pass.append(0)
 
-        self.new_triggers = False
-
-    def triggers_changed(self):
         self.new_triggers = True
 
+    def triggers_changed(self):
+        print('trigger changed')
+        self.new_triggers = True
+        self.update_triggers()
+
     def update_triggers(self):
+        print('trigger updates')
         new_triggers = []
         for i in range(self.trigger_count):
             new_triggers.append(self.trigger_options[i].get_widget_value())
         for i in range(self.trigger_count):
             # this does not update the label
-            dpg.set_item_label(self.outputs[i].uuid, label=new_triggers[i])
+            if new_triggers[i] == 'int':
+                self.trigger_pass[i] = 1
+            elif new_triggers[i] == 'float':
+                self.trigger_pass[i] = 2
+            elif new_triggers[i] == 'string':
+                self.trigger_pass[i] = 3
+            elif new_triggers[i] == 'list':
+                self.trigger_pass[i] = 4
+            elif new_triggers[i] == 'array':
+                self.trigger_pass[i] = 5
+            elif new_triggers[i] == 'bang':
+                self.trigger_pass[i] = 6
+            else:
+                self.trigger_pass[i] = 0
+
+            self.outputs[i].label = new_triggers[i]
+            dpg.set_value(self.outputs[i].label_uuid, new_triggers[i])
+            # dpg.set_item_label(self.outputs[i].uuid, label=new_triggers[i])
             sel, t = decode_arg(new_triggers, i)
             self.triggers[i] = sel
 
@@ -650,10 +672,26 @@ class TriggerNode(Node):
             self.update_triggers()
             self.new_triggers = False
 
-        for i in range(self.trigger_count):
-            j = self.trigger_count - i - 1
-            self.outputs[j].set_value(self.triggers[j])
-        self.send_all()
+        if self.input.fresh_input:
+            in_data = self.input.get_received_data()
+            for i in range(self.trigger_count):
+                j = self.trigger_count - i - 1
+                trig_mode = self.trigger_pass[j]
+                if trig_mode == 0:
+                    self.outputs[j].set_value(self.triggers[j])
+                elif trig_mode == 1:
+                    self.outputs[j].set_value(any_to_int(in_data))
+                elif trig_mode == 2:
+                    self.outputs[j].set_value(any_to_float(in_data))
+                elif trig_mode == 3:
+                    self.outputs[j].set_value(any_to_string(in_data))
+                elif trig_mode == 4:
+                    self.outputs[j].set_value(any_to_list(in_data))
+                elif trig_mode == 5:
+                    self.outputs[j].set_value(any_to_array(in_data))
+                elif trig_mode == 6:
+                    self.outputs[j].set_value('bang')
+            self.send_all()
 
 
 class CombineNode(Node):

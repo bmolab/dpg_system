@@ -5,6 +5,7 @@ import time
 import numpy as np
 
 
+# add random, linspace, ones, zeros
 def register_numpy_nodes():
     Node.app.register_node('np.linalg.norm', NumpyUnaryLinearAlgebraNode.factory)
     Node.app.register_node('euclidean_distance', NumpyUnaryLinearAlgebraNode.factory)
@@ -24,7 +25,84 @@ def register_numpy_nodes():
     Node.app.register_node('np.matmul', NumpyMatMulNode.factory)
     Node.app.register_node('np.stack', NumpyBinaryNode.factory)
     Node.app.register_node('np.concatenate', NumpyBinaryNode.factory)
+    Node.app.register_node('np.rand', NumpyGeneratorNode.factory)
+    Node.app.register_node('np.ones', NumpyGeneratorNode.factory)
+    Node.app.register_node('np.zeros', NumpyGeneratorNode.factory)
+    Node.app.register_node('np.linspace', NumpyLinSpaceNode.factory)
 
+
+class NumpyGeneratorNode(Node):
+    operations = {'np.rand': np.random.random, 'np.ones': np.ones, 'np.zeros': np.zeros}
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyGeneratorNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.op = np.random.random
+        if label in self.operations:
+            self.op = self.operations[label]
+        self.shape = []
+        for i in range(len(args)):
+            d, t = decode_arg(args, i)
+            if t == int:
+                self.shape += (d,)
+        if len(self.shape) == 0:
+            self.shape = [1]
+
+        self.input = self.add_input('trigger', triggers_execution=True)
+        self.output = self.add_output('out')
+
+        self.shape_options = []
+        for i in range(len(self.shape)):
+            self.shape_options.append(self.add_option('dim ' + str(i), widget_type='drag_int', default_value=self.shape[i]))
+
+    def execute(self):
+        for i in range(len(self.shape)):
+            self.shape[i] = self.shape_options[i].get_widget_value()
+        out_array = self.op(tuple(self.shape))
+        self.output.send(out_array)
+
+
+class NumpyLinSpaceNode(Node):
+    operations = {'np.linspace': np.linspace}
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyLinSpaceNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.op = np.linspace
+        if label in self.operations:
+            self.op = self.operations[label]
+        self.shape = []
+        self.start = 0.0
+        self.stop = 1.0
+        self.steps = 50
+        if len(args) > 0:
+            d, t = decode_arg(args, 0)
+            self.start = any_to_float(d)
+        if len(args) > 1:
+            d, t = decode_arg(args, 1)
+            self.stop = any_to_float(d)
+        if len(args) > 2:
+            d, t = decode_arg(args, 2)
+            self.steps = any_to_int(d)
+
+        self.input = self.add_input('trigger', triggers_execution=True)
+        self.start_property = self.add_property('start', widget_type='drag_float', default_value=self.start)
+        self.stop_property = self.add_property('stop', widget_type='drag_float', default_value=self.stop)
+        self.steps_property = self.add_property('steps', widget_type='drag_int', default_value=self.steps)
+        self.output = self.add_output('out')
+
+    def execute(self):
+        self.start = self.start_property.get_widget_value()
+        self.stop = self.stop_property.get_widget_value()
+        self.steps = self.steps_property.get_widget_value()
+        out_array = self.op(self.start, self.stop, self.steps)
+        self.output.send(out_array)
 
 class NumpyUnaryNode(Node):
     operations = {'np.sum': np.sum, 'np.mean': np.mean, 'np.std': np.std, 'np.var': np.var, 'np.median': np.median}
