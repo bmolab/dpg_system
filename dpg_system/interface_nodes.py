@@ -708,6 +708,25 @@ class PlotNode(Node):
         # dpg.bind_item_handler_registry(self.plotter, "plot handler")
         self.change_style_property()
 
+    def save_custom_setup(self, container):
+        self.lock.acquire(blocking=True)
+        if self.label == 'profile':
+            container['data'] = self.y_data.get_buffer().tolist()
+            self.y_data.release_buffer()
+        self.lock.release()
+
+    def load_custom_setup(self, container):
+        self.lock.acquire(blocking=True)
+        if 'data' in container:
+            data = np.array(container['data'])
+            if len(data.shape) == 1:
+                self.y_data.update(data)
+            elif len(data.shape) == 2 and data.shape[0] == 1:
+                self.y_data.update(data[0])
+            buffer = self.y_data.get_buffer()
+            dpg.set_value(self.plot_data_tag, [self.x_data, buffer.ravel()])
+            self.y_data.release_buffer()
+        self.lock.release()
 
     def change_colormap(self):
         colormap = self.heat_map_colour_property.get_widget_value()
@@ -772,7 +791,6 @@ class PlotNode(Node):
                 unit_x = off_x * x_scale
                 unit_y = off_y * y_scale
                 unit_y = self.max_y - unit_y
-                print(self.range, y_scale, off_y, unit_y)
                 if unit_x < 0:
                     unit_x = 0
                 elif unit_x >= self.sample_count:
@@ -948,7 +966,6 @@ class PlotNode(Node):
             t = type(data)
             if t == str:
                 if data == 'dump':
-                    print('about to output data')
                     self.output.send(self.y_data.get_buffer()[0])
                     self.y_data.release_buffer()
             if self.style == 0:
