@@ -19,6 +19,7 @@ def register_interface_nodes():
     Node.app.register_node("plot", PlotNode.factory)
     Node.app.register_node("heat_map", PlotNode.factory)
     Node.app.register_node("heat_scroll", PlotNode.factory)
+    Node.app.register_node("profile", PlotNode.factory)
     Node.app.register_node("Value Tool", ValueNode.factory)
     Node.app.register_node('print', PrintNode.factory)
     Node.app.register_node('load_action', LoadActionNode.factory)
@@ -558,11 +559,14 @@ class PlotNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.style_type = 'line'
 
+        self.sample_count = 200
+        self.min_y = -1.0
+        self.max_y = 1.0
         default_color_map = 'viridis'
         self.style = -1
         if label == 'plot':
+            self.style_type = 'line'
             self.style = 0
             self.update_style = 'input is stream of samples'
             default_color_map = 'deep'
@@ -574,14 +578,19 @@ class PlotNode(Node):
             self.style = 6
             self.style_type = label
             self.update_style = 'buffer holds one sample of input'
+        elif label == 'profile':
+            self.style_type = 'bar'
+            self.sample_count = 16
+            self.min_y = 0
+            self.max_y = 1.0
+            self.style = 0
+            self.update_style = 'input is stream of samples'
+            default_color_map = 'deep'
 
-        self.sample_count = 200
         self.width = 300
         self.height = 128
         self.min_x = 0
         self.max_x = self.sample_count
-        self.min_y = -1.0
-        self.max_y = 1.0
         self.format = ''
         self.rows = 1
         self.elapser = 0
@@ -630,6 +639,8 @@ class PlotNode(Node):
 
         self.format_option = self.add_option(label='number format', widget_type='text_input', default_value='', callback=self.change_format)
 
+        self.continuous_output = self.add_option(label='continuous output', widget_type='checkbox', default_value=False)
+
         self.lock = threading.Lock()
         # self.handler = dpg.item_handler_registry(tag='plot_mouse_handler')
         # with self.handler:
@@ -637,7 +648,7 @@ class PlotNode(Node):
         self.plotter = None
         self.was_drawing = False
         self.add_frame_task()
-
+        self.last_pos = [0, 0]
 
     def submit_display(self):
         with dpg.plot(label='', tag=self.plot_tag, height=self.height, width=self.width, no_title=True) as self.plotter:
@@ -650,10 +661,14 @@ class PlotNode(Node):
         self.reallocate_buffer()
 
         if self.style == 0:
-            self.min_y = -1.0
-            self.min_y_option.set(-1.0)
+            if self.style_type == 'bar':
+                self.min_y = 0.0
+            else:
+                self.min_y = -1.0
+
+            self.min_y_option.set(self.min_y)
             self.max_y = 1.0
-            self.max_y_option.set(1.0)
+            self.max_y_option.set(self.max_y)
             dpg.set_axis_limits(self.y_axis, self.min_y, self.max_y)
             buffer = self.y_data.get_buffer(block=True)
             if buffer is not None:
@@ -691,6 +706,7 @@ class PlotNode(Node):
             self.change_range()
             self.format_option.set(self.format)
         # dpg.bind_item_handler_registry(self.plotter, "plot handler")
+        self.change_style_property()
 
 
     def change_colormap(self):
@@ -729,36 +745,86 @@ class PlotNode(Node):
             dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Greys)
 
     def frame_task(self):
+        x = 0
+        y = 0
+        ref_pos = [-1, -1]
         if self.was_drawing:
             if not dpg.is_mouse_button_down(0):
                 self.was_drawing = False
                 self.output.send(self.y_data.get_buffer()[0])
                 self.y_data.release_buffer()
+            else:
+                editor = self.app.node_editors[self.app.current_node_editor]
+                node_padding = editor.node_scalers[dpg.mvNodeStyleVar_NodePadding]
+                window_padding = self.app.window_padding
+                plot_padding = 10
+                mouse = dpg.get_mouse_pos(local=True)
+                pos_x = dpg.get_item_pos(self.plotter)[0] + plot_padding + node_padding[0] + window_padding[0]
+                pos_y = dpg.get_item_pos(self.plotter)[1] + plot_padding + node_padding[1] + window_padding[1] + 4  # 4 is from unknown source
+                size = dpg.get_item_rect_size(self.plotter)
+                size[0] -= (2 * plot_padding)
+                size[1] -= (2 * plot_padding)
+                x_scale = self.sample_count / size[0]
+                y_scale = self.range / size[1]
+
+                off_x = mouse[0] - pos_x
+                off_y = mouse[1] - pos_y
+                unit_x = off_x * x_scale
+                unit_y = off_y * y_scale
+                unit_y = self.max_y - unit_y
+                print(self.range, y_scale, off_y, unit_y)
+                if unit_x < 0:
+                    unit_x = 0
+                elif unit_x >= self.sample_count:
+                    unit_x = self.sample_count - 1
+                if unit_y < self.min_y:
+                    unit_y = self.min_y
+                elif unit_y > self.max_y:
+                    unit_y = self.max_y
+                x = unit_x
+                y = unit_y
+                ref_pos = [x, y]
+                x = int(x)
+                # print(ref_pos)
+
         if dpg.is_item_hovered(self.plotter):
             if dpg.is_mouse_button_down(0):
-                pos = dpg.get_plot_mouse_pos()
-                x = int(pos[0])
-                y = pos[1]
-                if self.was_drawing:
-                    last_y = self.last_pos[1]
-                    last_x = int(round(self.last_pos[0]))
-                    change_x = x - last_x
-                    change_y = y - last_y
-                    if change_x > 0:
-                        for i in range(last_x, x):
-                            interpolated_y = ((i - last_x) / change_x) * change_y + last_y
-                            self.y_data.set_value(i, interpolated_y)
-                    else:
-                        for i in range(x, last_x):
-                            interpolated_y = ((i - x) / change_x) * change_y + last_y
-                            self.y_data.set_value(i, interpolated_y)
-                self.last_pos = pos
+                # ref_pos = dpg.get_plot_mouse_pos()
+                # x = int(ref_pos[0])
+                # y = ref_pos[1]
+                self.was_drawing = True
+            else:
+                self.last_pos = [-1, -1]
+                self.was_drawing = False
+        elif not dpg.is_mouse_button_down(0):
+            # ref_pos = dpg.get_plot_mouse_pos()
+            # x = int(ref_pos[0])
+            # y = ref_pos[1]
+            self.was_drawing = False
+
+        if self.was_drawing:
+            if self.last_pos[0] != -1:
+                last_y = self.last_pos[1]
+                last_x = int(round(self.last_pos[0]))
+                change_x = x - last_x
+                change_y = y - last_y
+                if change_x > 0:
+                    for i in range(last_x, x):
+                        interpolated_y = ((i - last_x) / change_x) * change_y + last_y
+                        self.y_data.set_value(i, interpolated_y)
+                else:
+                    for i in range(x, last_x):
+                        interpolated_y = ((i - x) / change_x) * change_y + last_y
+                        self.y_data.set_value(i, interpolated_y)
+            if ref_pos[0] != -1:
+                self.last_pos = ref_pos
                 self.y_data.set_value(x, y)
                 self.y_data.set_write_pos(0)
                 self.update_plot()
                 self.was_drawing = True
-            else:
-                self.was_drawing = False
+                if self.continuous_output.get_widget_value():
+                    self.output.send(self.y_data.get_buffer()[0])
+                    self.y_data.release_buffer()
 
     def value_dragged(self):
         if not dpg.is_mouse_button_down(0):
@@ -859,6 +925,10 @@ class PlotNode(Node):
             dpg.set_axis_limits(self.x_axis, self.min_x_option.get_widget_value() / self.sample_count, self.max_x_option.get_widget_value() / self.sample_count)
             dpg.set_axis_limits(self.y_axis, 0.0, 1.0)
         else:
+            self.max_y = self.max_y_option.get_widget_value()
+            self.min_y = self.min_y_option.get_widget_value()
+            self.range = self.max_y - self.min_y
+            self.offset = - self.min_y
             dpg.set_axis_limits(self.y_axis, self.min_y_option.get_widget_value(), self.max_y_option.get_widget_value())
             dpg.set_axis_limits(self.x_axis, self.min_x_option.get_widget_value(), self.max_x_option.get_widget_value())
 

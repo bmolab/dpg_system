@@ -241,6 +241,10 @@ class App:
         self.verbose = False
         self.verbose_menu_item = -1
         self.minimap_menu_item = -1
+        self.window_padding = [4, 3]
+        self.frame_padding = [4, 0]
+        self.cell_padding = [4, 2]
+        self.item_spacing = [5, 2]
         self.setup_themes()
         self.node_factory_container = NodeFactoryContainer("Modifiers", 150, -1)
         self.side_panel = dpg.generate_uuid()
@@ -304,10 +308,10 @@ class App:
     def setup_themes(self):
         with dpg.theme() as self.global_theme:
             with dpg.theme_component(dpg.mvAll):
-                dpg.add_theme_style(dpg.mvStyleVar_WindowPadding, 4, 3, category=dpg.mvThemeCat_Core)
-                dpg.add_theme_style(dpg.mvStyleVar_FramePadding, 4, 0, category=dpg.mvThemeCat_Core)
-                dpg.add_theme_style(dpg.mvStyleVar_CellPadding, 4, 2, category=dpg.mvThemeCat_Core)
-                dpg.add_theme_style(dpg.mvStyleVar_ItemSpacing, 5, 2, category=dpg.mvThemeCat_Core)
+                dpg.add_theme_style(dpg.mvStyleVar_WindowPadding, self.window_padding[0], self.window_padding[1], category=dpg.mvThemeCat_Core)
+                dpg.add_theme_style(dpg.mvStyleVar_FramePadding, self.frame_padding[0], self.frame_padding[1], category=dpg.mvThemeCat_Core)
+                dpg.add_theme_style(dpg.mvStyleVar_CellPadding, self.cell_padding[0], self.cell_padding[1], category=dpg.mvThemeCat_Core)
+                dpg.add_theme_style(dpg.mvStyleVar_ItemSpacing, self.item_spacing[0], self.item_spacing[1], category=dpg.mvThemeCat_Core)
 
         with dpg.theme() as self.borderless_child_theme:
             with dpg.theme_component(dpg.mvChildWindow):
