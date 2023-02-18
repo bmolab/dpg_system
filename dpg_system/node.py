@@ -501,7 +501,6 @@ class PropertyWidget:
             self.value = val
         elif self.widget in ['drag_float', 'input_float', 'slider_float', 'knob_float']:
             val = any_to_float(data)
-            print('val', val, self.widget, self.min, self.max)
             if val:
                 if self.min != self.max:
                     if self.max and val > self.max:
@@ -1114,10 +1113,10 @@ class Node:
             for arg in self.unparsed_args:
                 handled = False
                 if '=' in arg:
-                    print('found', arg)
+ #                   print('found', arg)
                     arg_parts = arg.split('=')
                     if len(arg_parts) == 2:
-                        print(arg_parts)
+ #                       print(arg_parts)
                         if arg_parts[0][-1] == ' ':
                             arg_parts[0] = arg_parts[0][:-1]
                         if arg_parts[1][0] == ' ':
@@ -1126,7 +1125,7 @@ class Node:
                         handled = True
                 if not handled:
                     self.ordered_args.append(arg)
-        print(self.parsed_args, self.ordered_args)
+ #       print(self.parsed_args, self.ordered_args)
 
     def handle_parsed_args(self):
         for arg_name in self.parsed_args:
@@ -1142,6 +1141,34 @@ class Node:
                     if property.widget.callback is not None:
                         property.widget.callback()
 
+
+class OriginNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = OriginNode('', data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+#        print('create origin')
+        super().__init__(label, data, args)
+        self.ref_property = self.add_property('', widget_type='button', width=1)
+
+    def custom_setup(self):
+        with dpg.theme() as item_theme:
+            with dpg.theme_component(dpg.mvAll):
+                dpg.add_theme_style(dpg.mvStyleVar_FramePadding, 0, category=dpg.mvThemeCat_Core)
+#                dpg.add_theme_style(dpg.mvStyleVar_WindowMinSize, (0, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_style(dpg.mvStyleVar_FrameBorderSize, 0, category=dpg.mvThemeCat_Core)
+
+                dpg.add_theme_color(dpg.mvNodeCol_TitleBar, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvNodeCol_TitleBarHovered, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvNodeCol_TitleBarSelected, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
+
+                dpg.add_theme_color(dpg.mvThemeCol_FrameBg, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_FrameBgActive, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_FrameBgHovered, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
+        dpg.bind_item_theme(self.ref_property.uuid, item_theme)
+        dpg.bind_item_theme(self.uuid, item_theme)
 
 class PlaceholderNode(Node):
     node_list = []

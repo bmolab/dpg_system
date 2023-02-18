@@ -805,6 +805,7 @@ class PlotNode(Node):
                     mouse = dpg.get_mouse_pos(local=True)
                     pos_x = dpg.get_item_pos(self.plotter)[0] + plot_padding + node_padding[0] + window_padding[0]
                     pos_y = dpg.get_item_pos(self.plotter)[1] + plot_padding + node_padding[1] + window_padding[1] + 4  # 4 is from unknown source
+
                     size = dpg.get_item_rect_size(self.plotter)
                     size[0] -= (2 * plot_padding)
                     size[1] -= (2 * plot_padding)
@@ -836,10 +837,11 @@ class PlotNode(Node):
                         self.was_drawing = True
                 else:
                     self.hovered = True
+                    self.last_pos = [-1, -1]
                     if self.was_drawing:
-                        self.last_pos = [-1, -1]
                         self.was_drawing = False
                         PlotNode.mousing_plot = None
+
             else:
                 self.hovered = False
                 if not dpg.is_mouse_button_down(0):

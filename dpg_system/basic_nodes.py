@@ -635,12 +635,12 @@ class TriggerNode(Node):
         self.new_triggers = True
 
     def triggers_changed(self):
-        print('trigger changed')
+#        print('trigger changed')
         self.new_triggers = True
         self.update_triggers()
 
     def update_triggers(self):
-        print('trigger updates')
+ #       print('trigger updates')
         new_triggers = []
         for i in range(self.trigger_count):
             new_triggers.append(self.trigger_options[i].get_widget_value())

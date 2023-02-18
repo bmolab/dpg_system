@@ -3,8 +3,7 @@ import math
 import time
 import numpy as np
 import random
-
-from dpg_system.node import Node
+from dpg_system.node import Node, OriginNode
 import json
 
 
@@ -38,6 +37,7 @@ class NodeEditor:
         self.patch_name = ''
         self.file_path = ''
         self.mini_map = False
+        self.origin = None
 
     def add_node(self, node: Node):
         self._nodes.append(node)
@@ -75,6 +75,15 @@ class NodeEditor:
                 for node in self._nodes:
                     node.submit(self.uuid)
         dpg.bind_theme(self.node_theme)
+        # add invisible node that is reference for panning
+
+        self.origin = OriginNode.factory("origin", None)
+        self.origin.submit(self.uuid, pos=[0, 0])
+        self.add_node(self.origin)
+#        print('origin', dpg.get_item_pos(self.origin.ref_property.widget.uuid))
+ #        dpg.hide_item(self.origin.uuid)
+#        dpg.configure_item(self.origin.uuid, show=False)
+#        print(dpg.get_item_configuration(self.origin.uuid))
 
     def add_active_pin(self, uuid):
         self.active_pins.append(uuid)
@@ -175,7 +184,7 @@ class NodeEditor:
         if path is None:
             return
         self.patch_name = path.split('/')[-1]
-        print(path, self.patch_name)
+ #       print(path, self.patch_name)
         if '.' in self.patch_name:
             parts = self.patch_name.split('.')
             if len(parts) == 2:
@@ -259,7 +268,7 @@ class NodeEditor:
         # print(conf)
 
     def load_(self, patch_container, path='', name=''):
-        print(path, name)
+ #       print(path, name)
         self.file_path = path
         self.patch_name = name
         self.uncontainerize(patch_container)

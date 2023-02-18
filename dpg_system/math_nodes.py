@@ -173,7 +173,7 @@ class ComparisonNode(Node):
 
     def output_type_changed(self):
         output_type = self.output_type_option.get_widget_value()
-        print('got output type ' + output_type)
+ #       print('got output type ' + output_type)
         self.output_op = bool
         if output_type == 'bool':
             self.output_op = bool

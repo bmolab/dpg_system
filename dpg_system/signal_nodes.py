@@ -692,8 +692,8 @@ class FilterBankNode(Node):
         self.centers = []
         for i in range(self.number_of_bands):
             self.centers.append((self.bands[i] + self.bands[i + 1]) / 2)
-        print(self.bands)
-        print(self.centers)
+        # print(self.bands)
+        # print(self.centers)
         self.filters = []
         for i in range(self.number_of_bands):
             filter = IIR2Filter(self.order, [self.bands[i], self.bands[i + 1]], filter_type=self.filter_type, design=self.filter_design, fs=self.sample_frequency)
@@ -780,8 +780,8 @@ class SpectrumNode(Node):
             self.centers.append((self.bands[i] + self.bands[i + 1]) / 2)
             self.gain.append(9.6 / self.centers[i])
         self.gain = np.array(self.gain)
-        print(self.bands)
-        print(self.centers)
+        # print(self.bands)
+        # print(self.centers)
         self.filters = []
         for i in range(self.number_of_bands):
             filter = IIR2Filter(self.order, [self.bands[i], self.bands[i + 1]], filter_type=self.filter_type, design=self.filter_design, fs=self.sample_frequency)

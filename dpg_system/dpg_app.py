@@ -577,13 +577,20 @@ class App:
                             widget.callback()
 
     def new_handler(self):
+        origin = self.node_editors[self.current_node_editor].origin
+
         if self.active_widget == -1:
             node = PlaceholderNode.factory("New Node", None)
             mouse_pos = dpg.get_mouse_pos(local=False)
             panel_size = dpg.get_item_rect_size(self.center_panel)
             panel_pos = dpg.get_item_pos(self.center_panel)
-            mouse_pos[0] -= (panel_pos[0] + 8)
-            mouse_pos[1] -= (panel_pos[1] + 8)
+ #           dpg.hide_item(origin.uuid)
+            origin_pos = dpg.get_item_pos(origin.ref_property.widget.uuid)
+            origin_node_pos = dpg.get_item_pos(origin.uuid)
+#            print(origin_pos, origin_node_pos)
+
+            mouse_pos[0] -= (panel_pos[0] + 8 + (origin_pos[0] - origin_node_pos[0]) - 4)
+            mouse_pos[1] -= (panel_pos[1] + 8 + (origin_pos[1] - origin_node_pos[1]) - 15)
             node.submit(self.node_editors[self.current_node_editor].uuid, pos=mouse_pos)
             self.node_editors[self.current_node_editor].add_node(node)
             self.set_widget_focus(node.name_property.widget.uuid)
@@ -622,7 +629,7 @@ class App:
                             self.current_node_editor = editor_index
                             self.node_editors[editor_index].load_(nodes_container)
                 else:  # single patch
-                    print(patch_name)
+#                    print(patch_name)
                     self.node_editors[self.current_node_editor].load_(file_container, path, patch_name)
 
         except Exception as exc_:
