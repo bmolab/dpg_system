@@ -174,17 +174,18 @@ class NodeEditor:
     def save(self, path=None):
         if path is None:
             return
-        with open(path, 'w') as f:
-            file_container = self.containerize()
-            json.dump(file_container, f, indent=4)
         self.patch_name = path.split('/')[-1]
+        print(path, self.patch_name)
         if '.' in self.patch_name:
             parts = self.patch_name.split('.')
             if len(parts) == 2:
                 if parts[1] == 'json':
                     self.patch_name = parts[0]
         self.file_path = path
-        dpg.set_viewport_title(self.patch_name)
+        with open(path, 'w') as f:
+            file_container = self.containerize()
+            json.dump(file_container, f, indent=4)
+        Node.app.set_current_tab_title(self.patch_name)
 
     def uncontainerize(self, file_container, offset=None):
         created_nodes = {}

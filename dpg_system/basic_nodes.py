@@ -1118,6 +1118,9 @@ class VariableNode(Node):
         if args is not None and len(args) > 0:
             self.variable_name = ' '.join(args)
             self.variable = self.app.find_variable(self.variable_name)
+            if self.variable is None:
+                default = 0.0
+                self.variable = Node.app.add_variable(self.variable_name, default_value=default)
             if self.variable is not None:
                 self.variable.attach_client(self)
 
@@ -1131,8 +1134,10 @@ class VariableNode(Node):
         self.variable = None
         self.variable_name = variable_name
         self.variable = self.app.find_variable(self.variable_name)
+        if self.variable is None:
+            default = 0.0
+            self.variable = Node.app.add_variable(self.variable_name, default_value=default)
         if self.variable is not None:
-#            print('attaching to', self.variable_name)
             self.variable.attach_client(self)
             self.execute()
 

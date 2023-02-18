@@ -302,50 +302,48 @@ class PropertyWidget:
                     min = self.min
                 else:
                     min = 0
+                    self.min = 0
                 if self.max is not None:
                     max = self.max
                 else:
                     max = 100
+                    self.max = 100
                 dpg.add_slider_int(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node, default_value=self.default_value, min_value=min, max_value=max)
             elif self.widget == 'knob_float':
                 if self.min is not None:
                     min = self.min
                 else:
                     min = 0
+                    self.min = 0
                 if self.max is not None:
                     max = self.max
                 else:
-                    max = 100
+                    max = 1.0
+                    self.max = 1.0
                 dpg.add_knob_float(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node, default_value=self.default_value, min_value=min, max_value=max)
-            elif self.widget == 'knob_int':
-                if self.min is not None:
-                    min = self.min
-                else:
-                    min = 0
-                if self.max is not None:
-                    max = self.max
-                else:
-                    max = 100
-                dpg.add_knob_int(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node, default_value=self.default_value, min_value=min, max_value=max)
             elif self.widget == 'input_float':
                 if self.min is not None:
                     min = self.min
                 else:
                     min = 0
+                    self.min = 0
                 if self.max is not None:
                     max = self.max
                 else:
                     max = 100
+                    self.max = 100
                 dpg.add_input_float(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node, default_value=self.default_value, step=self.step, min_value=min, max_value=max)
             elif self.widget == 'input_int':
                 if self.min is not None:
                     min = self.min
                 else:
                     min = 0
+                    self.min = 0
                 if self.max is not None:
                     max = self.max
                 else:
                     max = 100
+                    self.max = 100
                 dpg.add_input_int(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node, default_value=self.default_value, step=self.step, min_value=min, max_value=max)
             elif self.widget == 'checkbox':
                 dpg.add_checkbox(label=self._label, tag=self.uuid, default_value=self.default_value, user_data=self)
@@ -503,6 +501,7 @@ class PropertyWidget:
             self.value = val
         elif self.widget in ['drag_float', 'input_float', 'slider_float', 'knob_float']:
             val = any_to_float(data)
+            print('val', val, self.widget, self.min, self.max)
             if val:
                 if self.min != self.max:
                     if self.max and val > self.max:
@@ -691,6 +690,7 @@ class InputNodeAttribute:
                 else:
                     data = data[0]
         if self.widget:
+            # print('set widget', data)
             self.widget.set(data, False)
         if self.variable and propagate:
             self.variable.set_value(data)
@@ -1237,6 +1237,7 @@ class PlaceholderNode(Node):
             self.list_box_arrowed = False
             self.filtered_list = []
             filter_name = dpg.get_value(self.name_property.widget.uuid)
+
             if len(filter_name) > 0:
                 dpg.configure_item(self.node_list_box.widget.uuid, show=True)
             if len(filter_name) > 0 and filter_name[-1] == ' ':
@@ -1268,7 +1269,7 @@ class PlaceholderNode(Node):
             dpg.focus_item(self.args_property.widget.uuid)
 
     def on_deactivate(self, widget):
-        if widget == self.args_property.widget:
+        if widget in [self.args_property.widget, self.name_property.widget]:
             self.execute()
 
     def execute(self):

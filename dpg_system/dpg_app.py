@@ -622,6 +622,7 @@ class App:
                             self.current_node_editor = editor_index
                             self.node_editors[editor_index].load_(nodes_container)
                 else:  # single patch
+                    print(patch_name)
                     self.node_editors[self.current_node_editor].load_(file_container, path, patch_name)
 
         except Exception as exc_:

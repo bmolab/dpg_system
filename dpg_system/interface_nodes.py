@@ -197,7 +197,6 @@ class ToggleNode(Node):
 
 
 class ValueNode(Node):
-    handler = None
     @staticmethod
     def factory(name, data, args=None):
         node = ValueNode(name, data, args)
@@ -217,40 +216,58 @@ class ValueNode(Node):
         self.variable_name = ''
         self.min_property = None
         self.max_property = None
+        self.start_value = None
+        self.format_property = None
 
         if label == 'float':
             widget_type = 'drag_float'
+            for i in range(len(self.ordered_args)):
+                val, t = decode_arg(self.ordered_args, i)
+                if t in [float, int]:
+                    self.start_value = val
+                elif t == str:
+                    if val == '+':
+                        widget_type = 'input_float'
         elif label == 'int':
             widget_type = 'drag_int'
+            for i in range(len(self.ordered_args)):
+                val, t = decode_arg(self.ordered_args, i)
+                if t in [float, int]:
+                    self.start_value = val
+                elif t == str:
+                    if val == '+':
+                        widget_type = 'input_int'
         elif label == 'slider':
-            if self.ordered_args is not None and len(self.ordered_args) > 0:
-                max, t = decode_arg(self.ordered_args, 0)
-                if t == float:
-                    widget_type = 'slider_float'
-                    self.max = max
-                elif t == int:
-                    widget_type = 'slider_int'
-                    self.max = max
-            else:
-                widget_type = 'slider_float'
+            widget_type = 'slider_float'
+            if self.ordered_args is not None:
+                for i in range(len(self.ordered_args)):
+                    val, t = decode_arg(self.ordered_args, i)
+                    if t == float:
+                        widget_type = 'slider_float'
+                        self.max = val
+                    elif t == int:
+                        widget_type = 'slider_int'
+                        self.max = val
+            if self.max is None:
+                self.max = 1.0
         elif label == 'knob':
             widget_type = 'knob_float'
-            if self.ordered_args is not None and len(self.ordered_args) > 0:
-                max, t = decode_arg(self.ordered_args, 0)
-                if t == float:
-                    widget_type = 'knob_float'
-                    self.max = max
-                elif t == int:
-                    widget_type = 'knob_int'
-                    self.max = max
+            if self.ordered_args is not None:
+                for i in range(len(self.ordered_args)):
+                    val, t = decode_arg(self.ordered_args, i)
+                    if t in [float, int]:
+                        self.max = val
+            if self.max is None:
+                self.max = 100
         elif label == 'string' or label == 'message':
             widget_type = 'text_input'
 
         if self.ordered_args is not None and len(self.ordered_args) > 0:
             for i in range(len(self.ordered_args)):
-                max, t = decode_arg(self.ordered_args, i)
+                var_name, t = decode_arg(self.ordered_args, i)
                 if t == str:
-                    self.variable_name = max
+                    if widget_type not in ['input_int', 'input_float'] or var_name != '+':
+                        self.variable_name = var_name
 
         if self.max is None:
             self.input = self.add_input("", triggers_execution=True, widget_type=widget_type, widget_uuid=self.value, widget_width=widget_width, trigger_button=True)
@@ -267,7 +284,7 @@ class ValueNode(Node):
         if widget_type in ['drag_float', 'slider_float', "knob_float"]:
             self.min_property = self.add_option('min', widget_type='drag_float', default_value=self.min, callback=self.options_changed)
             self.max_property = self.add_option('max', widget_type='drag_float', default_value=self.max, callback=self.options_changed)
-        if widget_type in ['drag_float', 'slider_float', 'drag_int', 'knob_int']:
+        if widget_type in ['drag_float', 'slider_float', 'drag_int', 'knob_int', 'input_int']:
             self.format_property = self.add_option('format', widget_type='text_input', default_value=self.format, callback=self.options_changed)
 
     def binding_changed(self):
@@ -276,13 +293,16 @@ class ValueNode(Node):
 
     def bind_to_variable(self, variable_name):
         # change name
+        if self.variable is not None:
+            self.variable.detach_client(self)
+            self.variable = None
         if variable_name != '':
             v = Node.app.find_variable(variable_name)
             if v is None:
                 default = 0.0
                 if self.input.widget.widget in ['drag_float', 'slider_float', "knob_float"]:
                     default = 0.0
-                elif self.input.widget.widget in ['drag_int', 'slider_int', "knob_int"]:
+                elif self.input.widget.widget in ['drag_int', 'slider_int', "knob_int", 'input_int']:
                     default = 0
                 elif self.input.widget.widget in ['combo', 'text_input']:
                     default = ''
@@ -299,6 +319,8 @@ class ValueNode(Node):
     def custom_setup(self):
         if self.variable_name != '':
             self.bind_to_variable(self.variable_name)
+        if self.start_value is not None:
+            self.input.set(self.start_value)
 
     def options_changed(self):
         if self.min_property is not None and self.max_property is not None:
@@ -306,8 +328,9 @@ class ValueNode(Node):
             self.max = self.max_property.get_widget_value()
             self.input.widget.set_limits(self.min, self.max)
 
-        self.format = self.format_property.get_widget_value()
-        self.input.widget.set_format(self.format)
+        if self.format_property is not None:
+            self.format = self.format_property.get_widget_value()
+            self.input.widget.set_format(self.format)
 
     def value_changed(self):
         pass
@@ -552,6 +575,8 @@ class LoadActionNode(Node):
 
 
 class PlotNode(Node):
+    mousing_plot = None
+
     @staticmethod
     def factory(name, data, args=None):
         node = PlotNode(name, data, args)
@@ -594,6 +619,8 @@ class PlotNode(Node):
         self.format = ''
         self.rows = 1
         self.elapser = 0
+
+        self.hovered = False
 
         self.range = 1.0
         self.offset = 0.0
@@ -642,9 +669,6 @@ class PlotNode(Node):
         self.continuous_output = self.add_option(label='continuous output', widget_type='checkbox', default_value=False)
 
         self.lock = threading.Lock()
-        # self.handler = dpg.item_handler_registry(tag='plot_mouse_handler')
-        # with self.handler:
-        #     dpg.add_item_hover_handler(callback=mouse_moved)
         self.plotter = None
         self.was_drawing = False
         self.add_frame_task()
@@ -705,7 +729,6 @@ class PlotNode(Node):
             dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Viridis)
             self.change_range()
             self.format_option.set(self.format)
-        # dpg.bind_item_handler_registry(self.plotter, "plot handler")
         self.change_style_property()
 
     def save_custom_setup(self, container):
@@ -764,85 +787,88 @@ class PlotNode(Node):
             dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Greys)
 
     def frame_task(self):
-        x = 0
-        y = 0
-        ref_pos = [-1, -1]
-        if self.was_drawing:
-            if not dpg.is_mouse_button_down(0):
-                self.was_drawing = False
-                self.output.send(self.y_data.get_buffer()[0])
-                self.y_data.release_buffer()
-            else:
-                editor = self.app.node_editors[self.app.current_node_editor]
-                node_padding = editor.node_scalers[dpg.mvNodeStyleVar_NodePadding]
-                window_padding = self.app.window_padding
-                plot_padding = 10
-                mouse = dpg.get_mouse_pos(local=True)
-                pos_x = dpg.get_item_pos(self.plotter)[0] + plot_padding + node_padding[0] + window_padding[0]
-                pos_y = dpg.get_item_pos(self.plotter)[1] + plot_padding + node_padding[1] + window_padding[1] + 4  # 4 is from unknown source
-                size = dpg.get_item_rect_size(self.plotter)
-                size[0] -= (2 * plot_padding)
-                size[1] -= (2 * plot_padding)
-                x_scale = self.sample_count / size[0]
-                y_scale = self.range / size[1]
-
-                off_x = mouse[0] - pos_x
-                off_y = mouse[1] - pos_y
-                unit_x = off_x * x_scale
-                unit_y = off_y * y_scale
-                unit_y = self.max_y - unit_y
-                if unit_x < 0:
-                    unit_x = 0
-                elif unit_x >= self.sample_count:
-                    unit_x = self.sample_count - 1
-                if unit_y < self.min_y:
-                    unit_y = self.min_y
-                elif unit_y > self.max_y:
-                    unit_y = self.max_y
-                x = unit_x
-                y = unit_y
-                ref_pos = [x, y]
-                x = int(x)
-                # print(ref_pos)
-
-        if dpg.is_item_hovered(self.plotter):
-            if dpg.is_mouse_button_down(0):
-                # ref_pos = dpg.get_plot_mouse_pos()
-                # x = int(ref_pos[0])
-                # y = ref_pos[1]
-                self.was_drawing = True
-            else:
-                self.last_pos = [-1, -1]
-                self.was_drawing = False
-        elif not dpg.is_mouse_button_down(0):
-            # ref_pos = dpg.get_plot_mouse_pos()
-            # x = int(ref_pos[0])
-            # y = ref_pos[1]
-            self.was_drawing = False
-
-        if self.was_drawing:
-            if self.last_pos[0] != -1:
-                last_y = self.last_pos[1]
-                last_x = int(round(self.last_pos[0]))
-                change_x = x - last_x
-                change_y = y - last_y
-                if change_x > 0:
-                    for i in range(last_x, x):
-                        interpolated_y = ((i - last_x) / change_x) * change_y + last_y
-                        self.y_data.set_value(i, interpolated_y)
-                else:
-                    for i in range(x, last_x):
-                        interpolated_y = ((i - x) / change_x) * change_y + last_y
-                        self.y_data.set_value(i, interpolated_y)
-            if ref_pos[0] != -1:
-                self.last_pos = ref_pos
-                self.y_data.set_value(x, y)
-                self.y_data.set_write_pos(0)
-                self.update_plot()
-                self.was_drawing = True
-                if self.continuous_output.get_widget_value():
+        if PlotNode.mousing_plot == self.plotter or PlotNode.mousing_plot is None:
+            x = 0
+            y = 0
+            ref_pos = [-1, -1]
+            if self.was_drawing:
+                if not dpg.is_mouse_button_down(0):
+                    self.was_drawing = False
                     self.output.send(self.y_data.get_buffer()[0])
                     self.y_data.release_buffer()
+                    PlotNode.mousing_plot = None
+                else:
+                    editor = self.app.node_editors[self.app.current_node_editor]
+                    node_padding = editor.node_scalers[dpg.mvNodeStyleVar_NodePadding]
+                    window_padding = self.app.window_padding
+                    plot_padding = 10
+                    mouse = dpg.get_mouse_pos(local=True)
+                    pos_x = dpg.get_item_pos(self.plotter)[0] + plot_padding + node_padding[0] + window_padding[0]
+                    pos_y = dpg.get_item_pos(self.plotter)[1] + plot_padding + node_padding[1] + window_padding[1] + 4  # 4 is from unknown source
+                    size = dpg.get_item_rect_size(self.plotter)
+                    size[0] -= (2 * plot_padding)
+                    size[1] -= (2 * plot_padding)
+                    x_scale = self.sample_count / size[0]
+                    y_scale = self.range / size[1]
+
+                    off_x = mouse[0] - pos_x
+                    off_y = mouse[1] - pos_y
+                    unit_x = off_x * x_scale
+                    unit_y = off_y * y_scale
+                    unit_y = self.max_y - unit_y
+                    if unit_x < 0:
+                        unit_x = 0
+                    elif unit_x >= self.sample_count:
+                        unit_x = self.sample_count - 1
+                    if unit_y < self.min_y:
+                        unit_y = self.min_y
+                    elif unit_y > self.max_y:
+                        unit_y = self.max_y
+                    x = unit_x
+                    y = unit_y
+                    ref_pos = [x, y]
+                    x = int(x)
+
+            if dpg.is_item_hovered(self.plotter):
+                if dpg.is_mouse_button_down(0):
+                    if self.hovered and not self.was_drawing:
+                        PlotNode.mousing_plot = self.plotter
+                        self.was_drawing = True
+                else:
+                    self.hovered = True
+                    if self.was_drawing:
+                        self.last_pos = [-1, -1]
+                        self.was_drawing = False
+                        PlotNode.mousing_plot = None
+            else:
+                self.hovered = False
+                if not dpg.is_mouse_button_down(0):
+                    self.was_drawing = False
+                    PlotNode.mousing_plot = None
+
+            if self.was_drawing:
+                if self.last_pos[0] != -1:
+                    last_y = self.last_pos[1]
+                    last_x = int(round(self.last_pos[0]))
+                    change_x = x - last_x
+                    change_y = y - last_y
+                    if change_x > 0:
+                        for i in range(last_x, x):
+                            interpolated_y = ((i - last_x) / change_x) * change_y + last_y
+                            self.y_data.set_value(i, interpolated_y)
+                    else:
+                        for i in range(x, last_x):
+                            interpolated_y = ((i - x) / change_x) * change_y + last_y
+                            self.y_data.set_value(i, interpolated_y)
+                if ref_pos[0] != -1:
+                    self.last_pos = ref_pos
+                    self.y_data.set_value(x, y)
+                    self.y_data.set_write_pos(0)
+                    self.update_plot()
+                    self.was_drawing = True
+                    if self.continuous_output.get_widget_value():
+                        self.output.send(self.y_data.get_buffer()[0])
+                        self.y_data.release_buffer()
 
     def value_dragged(self):
         if not dpg.is_mouse_button_down(0):
@@ -1065,7 +1091,6 @@ class PlotNode(Node):
 
 
 class ColorPickerNode(Node):
-    handler = None
     @staticmethod
     def factory(name, data, args=None):
         node = ColorPickerNode(name, data, args)
