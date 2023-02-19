@@ -66,12 +66,12 @@ class MetroNode(Node):
         self.units_property.widget.combo_items = ['seconds', 'milliseconds', 'minutes', 'hours']
         self.output = self.add_output("")
 
-    def change_period(self):
+    def change_period(self, input=None):
         self.period = self.period_input.get_widget_value()
         if self.period <= 0:
             self.period = .001
 
-    def start_stop(self):
+    def start_stop(self, input=None):
         self.on = self.on_off_input.get_widget_value()
         if self.on:
             if not self.streaming:
@@ -84,7 +84,7 @@ class MetroNode(Node):
                 self.remove_frame_tasks()
                 self.streaming = False
 
-    def set_units(self):
+    def set_units(self, input=None):
         units_string = self.units_property.get_widget_value()
         if units_string in self.units_dict:
             self.units = self.units_dict[units_string]
@@ -136,9 +136,9 @@ class TimerNode(Node):
             self.mode = 1
             self.input = self.add_input('', triggers_execution=True)
         else:
-            self.input = self.add_input('on', widget_type='checkbox', triggers_execution=True, callback=lambda: self.start_stop())
+            self.input = self.add_input('on', widget_type='checkbox', triggers_execution=True, callback=self.start_stop)
 
-        self.units_property = self.add_property('units', widget_type='combo', default_value=default_units, callback=lambda: self.set_units())
+        self.units_property = self.add_property('units', widget_type='combo', default_value=default_units, callback=self.set_units)
         self.units_property.widget.combo_items = ['seconds', 'milliseconds', 'minutes', 'hours']
         self.output = self.add_output("")
 
@@ -150,7 +150,7 @@ class TimerNode(Node):
     def update_time_base(self):
         self.base_time = time.time()
 
-    def start_stop(self):
+    def start_stop(self, input=None):
         on = self.input.get_widget_value()
         if on:
             self.update_time_base()
@@ -203,8 +203,8 @@ class CounterNode(Node):
         self.step = self.arg_as_int(default_value=1)
 
         self.input = self.add_input("input", triggers_execution=True)
-        self.max_input = self.add_input('count', widget_type='drag_int', default_value=self.max_count, callback=lambda: self.update_max_count_from_widget())
-        self.step_input = self.add_input('step', widget_type='drag_int', default_value=self.step, callback=lambda: self.update_step_from_widget())
+        self.max_input = self.add_input('count', widget_type='drag_int', default_value=self.max_count, callback=self.update_max_count_from_widget)
+        self.step_input = self.add_input('step', widget_type='drag_int', default_value=self.step, callback=self.update_step_from_widget)
         self.output = self.add_output("count out")
         self.carry_output = self.add_output("carry out")
         self.carry_output.output_always = False
@@ -214,10 +214,10 @@ class CounterNode(Node):
         # self.message_handlers['step'] = self.step_message
 
     # widget callbacks
-    def update_max_count_from_widget(self):
+    def update_max_count_from_widget(self, input=None):
         self.max_count = self.max_input.get_widget_value()
 
-    def update_step_from_widget(self):
+    def update_step_from_widget(self, input=None):
         self.step = self.step_input.get_widget_value()
 
     # messages
@@ -272,7 +272,7 @@ class GateNode(Node):
         for i in range(self.num_gates):
             self.add_output("out " + str(i))
 
-    def change_state(self):
+    def change_state(self, input=None):
         if self.num_gates == 1:
             self.bool_state = self.choice_input.get_widget_value()
         else:
@@ -310,7 +310,7 @@ class SwitchNode(Node):
 
         self.out = self.add_output('out')
 
-    def change_state(self):
+    def change_state(self, input=None):
         self.state = self.choice_input.get_widget_value()
         if self.state < 0:
             self.state = 0
@@ -447,7 +447,7 @@ class DelayNode(Node):
         self.add_frame_task()
         self.new_delay = self.delay
 
-    def delay_changed(self):
+    def delay_changed(self, input=None):
         self.new_delay = self.delay_input.get_widget_value()
 
     def frame_task(self):

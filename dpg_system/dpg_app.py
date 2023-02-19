@@ -391,6 +391,9 @@ class App:
         if 'register_torch_nodes' in globals():
             register_torch_nodes()
 
+        if 'register_base_nodes' in globals():
+            register_base_nodes()
+
     def get_variable_list(self):
         v_list = list(self.variables.keys())
         return v_list
@@ -699,17 +702,32 @@ class App:
         self.current_node_editor = chosen_tab_index
         dpg.set_value(self.minimap_menu_item, self.node_editors[self.current_node_editor].mini_map)
 
-    def add_node_editor(self):
+    def remove_node_editor(self, stale_editor):
+        for i, editor in enumerate(self.node_editors):
+            if editor == stale_editor:
+                editor.remove_all_nodes()
+                stale_tab = self.tabs[i]
+                self.tabs.remove(stale_tab)
+                dpg.delete_item(stale_tab)
+                del editor
+                self.node_editors.remove(stale_editor)
+
+                break
+
+    def add_node_editor(self, editor_name=None):
         # conf = dpg.get_item_configuration(self.tab_bar)
         # print(conf)
         editor_number = len(self.node_editors)
-        with dpg.tab(label='editor ' + str(editor_number), parent=self.tab_bar, user_data=len(self.tabs)) as tab:
+        if editor_name is None:
+            editor_name = 'editor ' + str(editor_number)
+        with dpg.tab(label=editor_name, parent=self.tab_bar, user_data=len(self.tabs)) as tab:
             self.tabs.append(tab)
             panel_uuid = dpg.generate_uuid()
             with dpg.group(id=panel_uuid):
                 new_editor = NodeEditor()
                 self.node_editors.append(new_editor)
                 self.node_editors[len(self.node_editors) - 1].submit(panel_uuid)
+        return new_editor
 
     def start(self):
         dpg.set_viewport_title("Untitled")
@@ -742,13 +760,6 @@ class App:
                             dpg.add_key_press_handler(dpg.mvKey_Back, callback=self.del_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Return, callback=self.return_handler)
 
-                with dpg.tab(label='second editor', user_data=len(self.tabs)) as tab:
-                    self.tabs.append(tab)
-                    with dpg.group(id=self.side_panel):
-                        self.create_gui()
-                        new_editor = NodeEditor()
-                        self.node_editors.append(new_editor)
-                        self.node_editors[1].submit(self.side_panel)
         dpg.set_primary_window(main_window, True)
         dpg.show_viewport()
 

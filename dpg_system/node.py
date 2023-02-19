@@ -6,6 +6,11 @@ import json
 from typing import List, Any, Callable, Union, Tuple
 from fuzzywuzzy import fuzz
 
+def register_base_nodes():
+    Node.app.register_node('patcher', PatcherNode.factory)
+    Node.app.register_node('p', PatcherNode.factory)
+    Node.app.register_node('in', PatcherInputNode.factory)
+    Node.app.register_node('out', PatcherOutputNode.factory)
 
 class OutputNodeAttribute:
     _pin_active_theme = None
@@ -17,7 +22,7 @@ class OutputNodeAttribute:
             self.create_pin_themes()
         self.uuid = -1
         self._label = label
-        self.label_uuid = -1
+        self.label_uuid = None
         self._children = []  # output attributes
         self.links = []
         self.pos = pos
@@ -26,6 +31,16 @@ class OutputNodeAttribute:
         self.new_output = False
         self.loaded_uuid = -1
         self.loaded_children = []
+
+    def get_label(self):
+        return self._label
+
+    def set_label(self, name):
+        self._label = name
+        if self.label_uuid == None:
+            self.label_uuid = dpg.add_text(self._label)
+        else:
+            dpg.set_value(self.label_uuid, self._label)
 
     def create_pin_themes(self):
         with dpg.theme() as self._pin_active_theme:
@@ -42,6 +57,14 @@ class OutputNodeAttribute:
         self._children.append(child)
         self.links.append(link_uuid)
         dpg.set_item_user_data(link_uuid, [self, child])
+
+    def remove_links(self):
+        for child in self._children:
+            child.remove_parent(self)
+        for link in self.links:
+            dpg.delete_item(link)
+        self.links = []
+        self._children = []
 
     def remove_link(self, link, child):
         # print('remove_link')
@@ -565,11 +588,13 @@ class InputNodeAttribute:
             self.uuid = dpg.generate_uuid()
         else:
             self.uuid = uuid
+        self.label_uuid = None
         self._parents = []  # input attribute
         self._data = 0
         self.executor = False
         self.triggers_execution = triggers_execution
         self.node = node
+        self.input_index = -1
         self.fresh_input = False
         self.node_attribute = None
         self.bang_repeats_previous = True
@@ -581,6 +606,16 @@ class InputNodeAttribute:
         self.user_data = None
         self.variable = None
 
+    def get_label(self):
+        return self._label
+
+    def set_label(self, name):
+        self._label = name
+        if self.widget is None:
+            dpg.set_value(self.label_uuid, self._label)
+        else:
+            dpg.set_item_label(self.widget.uuid, self._label)
+
     def create_pin_themes(self):
         self._pin_inactive_theme = dpg.theme()
         with dpg.theme() as self._pin_active_theme:
@@ -589,10 +624,10 @@ class InputNodeAttribute:
 
     def submit(self, parent):
         self.node_attribute = dpg.node_attribute(parent=parent, attribute_type=dpg.mvNode_Attr_Input, user_data=self, id=self.uuid)
+        # print(self, self._label)
         with self.node_attribute:
             if self.widget is None:
-                if self._label != "":
-                    dpg.add_text(self._label)
+                self.label_uuid = dpg.add_text(self._label)
             else:
                 if self.callback:
                     self.widget.callback = self.callback
@@ -654,8 +689,8 @@ class InputNodeAttribute:
             Node.app.node_editors[Node.app.current_node_editor].add_active_pin(self.uuid)
             if self.widget:
                 self.widget.set(data)
-                if self.callback:
-                    self.callback()
+            if self.callback:
+                self.callback(self)
 
     def trigger(self):
         if self.triggers_execution:
@@ -819,6 +854,7 @@ class Node:
     def add_input(self, label: str = "", uuid=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, callback=None):
         new_input = InputNodeAttribute(label, uuid, self, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
         self.inputs.append(new_input)
+        new_input.input_index = len(self.inputs) - 1
         self.ordered_elements.append(new_input)
         if callback is not None:
             new_input.add_callback(callback=callback, user_data=self)
@@ -1140,6 +1176,205 @@ class Node:
                 if property.widget is not None:
                     if property.widget.callback is not None:
                         property.widget.callback()
+
+
+class PatcherInputNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = PatcherInputNode('input', data, args)
+        return node
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input_name = ''
+        if len(args) > 0:
+            s, t = decode_arg(args, 0)
+            if t == str:
+                self.input_name = s
+
+        text_width = dpg.get_text_size('source')
+        self.go_property = self.add_property('source', widget_type='button', width=text_width[0] + 8, callback=self.jump_to_patcher)
+        self.input_out = self.add_output(self.input_name)
+        self.patcher_node = self.app.node_editors[self.app.current_node_editor].patcher_node
+
+    def jump_to_patcher(self):
+        parent_patcher = self.app.node_editors[self.app.current_node_editor].parent_patcher
+        if parent_patcher is not None:
+            for i, editor in enumerate(self.app.node_editors):
+                if editor == parent_patcher:
+                    tab = self.app.tabs[i]
+                    self.app.current_node_editor = i
+                    dpg.set_value(self.app.tab_bar, tab)
+                    break
+    def custom_setup(self):
+        remote_input = self.patcher_node.add_patcher_input(self.input_name, self.input_out)
+        if self.input_name == '':
+            self.input_name = remote_input.get_label()
+            self.input_out.set_label(self.input_name)
+    def custom_cleanup(self):
+        self.patcher_node.remove_patcher_input(self.input_name, self.input_out)
+
+class PatcherOutputNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = PatcherOutputNode('output', data, args)
+        return node
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.output_name = ''
+        if len(args) > 0:
+            s, t = decode_arg(args, 0)
+            if t == str:
+                self.output_name = s
+        text_width = dpg.get_text_size('dest')
+        self.go_property = self.add_property('dest', widget_type='button', width=text_width[0] + 8, callback=self.jump_to_patcher)
+        self.output_in = self.add_input(self.output_name, callback=self.send_to_patcher)
+        self.patcher_node = self.app.node_editors[self.app.current_node_editor].patcher_node
+        self.target_output = None
+
+    def send_to_patcher(self, input=None):
+        if self.target_output is not None and input is not None:
+            if input.fresh_input:
+                input.fresh_input = False
+                data = input.get_received_data()
+                if data is not None:
+                    self.target_output.send(data)
+    def jump_to_patcher(self):
+        parent_patcher = self.app.node_editors[self.app.current_node_editor].parent_patcher
+        if parent_patcher is not None:
+            for i, editor in enumerate(self.app.node_editors):
+                if editor == parent_patcher:
+                    tab = self.app.tabs[i]
+                    self.app.current_node_editor = i
+                    dpg.set_value(self.app.tab_bar, tab)
+                    break
+    def custom_setup(self):
+        self.target_output = self.patcher_node.add_patcher_output(self.output_name, self.output_in)
+        if self.output_name == '':
+            self.output_name = self.target_output.get_label()
+            self.output_in.set_label(self.output_name)
+    def custom_cleanup(self):
+        self.patcher_node.remove_patcher_output(self.output_name, self.output_in)
+
+
+class PatcherNode(Node):
+    '''
+    PatcherNode instantiates a new Node Editor
+    Inside this editor window, create InputNodes and OutputNodes
+    These open up (make visible) previously hidden inputs and outputs on the PatcherNode
+    Node Editor must have a PatcherNode member that can be set when created this way
+    This provides the communication conduit
+    Things received in inputs of the PatcherNode are passed to the inputs in the attached Editor
+    Things sent to an output of an attached Editor, are passed to the outputs of the PatcherNode
+    - How are these saved (as groups) - patcher node must save attached editor nodes
+
+    '''
+    @staticmethod
+    def factory(name, data, args=None):
+        node = PatcherNode('patcher', data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.max_input_count = 20
+        self.max_output_count = 20
+
+        self.patcher_name = 'untitled'
+        if len(args) > 0:
+            s, t = decode_arg(args, 0)
+            if t == str:
+                self.patcher_name = s
+        my_editor = self.app.node_editors[self.app.current_node_editor]
+        self.patch_editor = self.app.add_node_editor(self.patcher_name)
+        self.patch_editor.patcher_node = self
+        self.patch_editor.parent_patcher = my_editor
+        text_size = dpg.get_text_size(self.patcher_name)
+
+        self.add_property(self.patcher_name, widget_type='button', width=text_size[0] + 8, callback=self.open_patcher)
+        self.patcher_inputs = [None] * self.max_input_count
+        self.patcher_outputs = [None] * self.max_output_count
+        self.input_outs = [None] * self.max_input_count
+        self.output_ins = [None] * self.max_output_count
+        for i in range(self.max_input_count):
+            in_temp = self.add_input('in ' + str(i), callback=self.receive_)
+            self.patcher_inputs[i] = in_temp
+        for i in range(self.max_output_count):
+            out_temp = self.add_output('out ' + str(i))
+            self.patcher_outputs[i] = out_temp
+
+    def receive_(self, input=None):
+        if input is not None:
+            index = input.input_index
+
+            if self.input_outs[index] is not None:
+                data = self.patcher_inputs[index].get_received_data()
+                self.input_outs[index].send(data)
+
+    def open_patcher(self):
+        for i, editor in enumerate(self.app.node_editors):
+            if editor == self.patch_editor:
+                tab = self.app.tabs[i]
+                self.app.current_node_editor = i
+                dpg.set_value(self.app.tab_bar, tab)
+                break
+
+    def add_patcher_output(self, output_name, output):
+        for i in range(self.max_output_count):
+            if self.output_ins[i] is None:
+                self.output_ins[i] = output
+                if output_name != '':
+                    dpg.set_value(self.patcher_outputs[i].label_uuid, output_name)
+                self.update_outputs()
+                return self.patcher_outputs[i]
+        return None
+
+    def remove_patcher_output(self, output_name, output):
+        for i in range(self.max_output_count):
+            if self.output_ins[i] == output:
+                self.output_ins[i] = None
+                self.patcher_outputs[i].set_label('out ' + str(i))
+                # dpg.set_value(self.patcher_outputs[i].label_uuid, 'out ' + str(i))
+                self.patcher_outputs[i].remove_links()
+ #               self.patcher_outputs[i].delet()
+            # must remove connections!
+        self.update_outputs()
+
+    def update_outputs(self):
+        for i in range(self.max_output_count):
+            if self.output_ins[i] is not None:
+                dpg.show_item(self.patcher_outputs[i].uuid)
+            else:
+                dpg.hide_item(self.patcher_outputs[i].uuid)
+
+    def add_patcher_input(self, input_name, input):
+        for i in range(self.max_input_count):
+            if self.input_outs[i] is None:
+                self.input_outs[i] = input
+                if input_name != '':
+                    dpg.set_value(self.patcher_inputs[i].label_uuid, input_name)
+                self.update_inputs()
+                return self.patcher_inputs[i]
+
+    def remove_patcher_input(self, input_name, input):
+        for i in range(self.max_input_count):
+            if self.input_outs[i] == input:
+                self.input_outs[i] = None
+                dpg.set_value(self.patcher_inputs[i].label_uuid, 'in ' + str(i))
+                self.patcher_inputs[i].delete_parents()
+        self.update_inputs()
+
+    def update_inputs(self):
+        for i in range(self.max_input_count):
+            if self.input_outs[i] is not None:
+                dpg.show_item(self.patcher_inputs[i].uuid)
+            else:
+                dpg.hide_item(self.patcher_inputs[i].uuid)
+    def custom_setup(self):
+        self.update_inputs()
+        self.update_outputs()
+
+    def custom_cleanup(self):  # should delete associated patcher
+       self.app.remove_node_editor(self.patch_editor)
+
 
 
 class OriginNode(Node):

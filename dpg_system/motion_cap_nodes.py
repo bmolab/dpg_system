@@ -76,7 +76,7 @@ class MoCapTakeNode(MoCapNode):
         self.load_path_option = self.add_option('path', widget_type='text_input', default_value=self.load_path, callback=self.load_from_load_path)
         self.message_handlers['load'] = self.load_take_message
 
-    def speed_changed(self):
+    def speed_changed(self, input=None):
         self.speed = self.speed_property.get_widget_value()
 
     def start_stop_streaming(self):
@@ -121,7 +121,7 @@ class MoCapTakeNode(MoCapNode):
         self.current_frame = 0
         self.start_stop_streaming()
 
-    def frame_widget_changed(self):
+    def frame_widget_changed(self, input=None):
         data = self.input.get_widget_value()
         if data < self.frames:
             self.current_frame = data

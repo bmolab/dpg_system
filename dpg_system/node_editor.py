@@ -38,17 +38,26 @@ class NodeEditor:
         self.file_path = ''
         self.mini_map = False
         self.origin = None
+        self.patcher_node = None
+        self.parent_patcher = None
 
     def add_node(self, node: Node):
         self._nodes.append(node)
+        self.num_nodes = len(self._nodes)
+
+    def remove_all_nodes(self):
+        for node in self._nodes:
+            node.cleanup()
+            dpg.delete_item(node.uuid)
+        self._nodes = []
         self.num_nodes = len(self._nodes)
 
     def node_cleanup(self, node_uuid):
         # print('deleting', node_uuid)
         for node in self._nodes:
             if node.uuid == node_uuid:
-                for element in node.ordered_elements:
-                    print(element.uuid)
+                # for element in node.ordered_elements:
+                #     print(element.uuid)
                 # for property in node._property_attributes:
                 #     print(property.label, property.uuid)
                 # for option in node._option_attributes:

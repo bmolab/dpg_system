@@ -56,7 +56,7 @@ class ButtonNode(Node):
             with dpg.theme_component(dpg.mvAll):
                 dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
 
-    def clicked_function(self):
+    def clicked_function(self, input=None):
         self.flash_duration = self.flash_duration_option.get_widget_value()
         self.target_time = time.time() + self.flash_duration
         dpg.bind_item_theme(self.input.widget.uuid, self.active_theme)
@@ -88,7 +88,7 @@ class MenuNode(Node):
 
         self.output = self.add_output("")
 
-    def set_choice(self):
+    def set_choice(self, input=None):
         do_execute = True
         if self.choice_input.fresh_input:
             self.choice_input.fresh_input = False
@@ -148,7 +148,7 @@ class MouseNode(Node):
         self.output_x = self.add_output("x")
         self.output_y = self.add_output("y")
 
-    def start_stop_streaming(self):
+    def start_stop_streaming(self, input=None):
         if self.input.get_widget_value():
             if not self.streaming:
                 self.add_frame_task()
@@ -180,8 +180,11 @@ class ToggleNode(Node):
         super().__init__(label, data, args)
 
         self.value = False
-        self.input = self.add_input("", triggers_execution=True, widget_type='checkbox', widget_width=40, callback=self.execute)
+        self.input = self.add_input("", triggers_execution=True, widget_type='checkbox', widget_width=40, callback=self.call_execute)
         self.output = self.add_output("")
+
+    def call_execute(self, input=None):
+        self.execute()
 
     def execute(self):
         if self.input.fresh_input:
@@ -1144,7 +1147,7 @@ class ColorPickerNode(Node):
                 dpg.configure_item(self.input.widget.uuid, alpha_preview=dpg.mvColorEdit_AlphaPreviewNone)
             self.alpha = alpha
 
-    def color_changed(self):
+    def color_changed(self, input=None):
         self.execute()
 
     def execute(self):

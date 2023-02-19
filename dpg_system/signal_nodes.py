@@ -177,7 +177,7 @@ class SignalNode(Node):
         self.change_bipolar()
         self.start_stop()
 
-    def set_shape(self):
+    def set_shape(self, input=None):
         self.shape = self.shape_input.get_widget_value()
 
     def change_size(self):
@@ -185,7 +185,7 @@ class SignalNode(Node):
         if self.vector_size != 1:
             self.vector = np.ndarray((self.vector_size))
 
-    def change_period(self):
+    def change_period(self, input=None):
         self.period = self.period_input.get_widget_value()
         if self.period <= 0:
             self.period = .001
@@ -196,7 +196,7 @@ class SignalNode(Node):
     def change_bipolar(self):
         self.bipolar = self.bipolar_property.get_widget_value()
 
-    def start_stop(self):
+    def start_stop(self, input=None):
         self.on = self.on_off_input.get_widget_value()
         if self.on:
             self.first_tick = time.time()
@@ -265,12 +265,15 @@ class SubSampleNode(Node):
 
         self.subsampler = self.arg_as_int(default_value=2)
         self.sample_count = 0
-        self.input = self.add_input("input", triggers_execution=True, callback=self.execute)
+        self.input = self.add_input("input", triggers_execution=True, callback=self.call_execute)
         self.rate_property = self.add_property('rate', widget_type='drag_int', default_value=self.subsampler, min=0, max=math.inf, callback=self.rate_changed)
         self.output = self.add_output("out")
 
     def rate_changed(self):
         self.subsampler = self.rate_property.get_widget_value()
+
+    def call_execute(self, input=None):
+        self.execute()
 
     def execute(self):
         if self.input.fresh_input:
@@ -527,7 +530,7 @@ class FilterNode(Node):
         self.degree_input.widget.speed = .01
         self.output = self.add_output("out")
 
-    def change_degree(self):
+    def change_degree(self, input=None):
         self.degree = self.degree_input.get_widget_value()
         if self.degree < 0:
             self.degree = 0

@@ -660,7 +660,7 @@ class GLMaterialNode(GLNode):
             self.material.emission = p.emission
             self.material.shininess = p.shininess
 
-    def shininess_changed(self):
+    def shininess_changed(self, input=None):
         self.material.shininess = self.shininess_input.get_widget_value()
 
     def remember_state(self):
@@ -1029,7 +1029,7 @@ class GLAlignNode(GLNode):
             gl.glEnd()
             gl.glMultMatrixf(self.alignment_matrix)
 
-    def axis_changed(self):
+    def axis_changed(self, input=None):
         self.axis[0] = self.x_input.get_widget_value()
         self.axis[1] = self.y_input.get_widget_value()
         self.axis[2] = self.z_input.get_widget_value()
