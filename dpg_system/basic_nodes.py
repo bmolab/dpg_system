@@ -34,6 +34,10 @@ def register_basic_nodes():
     Node.app.register_node("decode", SelectNode.factory)
     Node.app.register_node("t", TriggerNode.factory)
     Node.app.register_node('var', VariableNode.factory)
+    Node.app.register_node('send', ConduitSendNode.factory)
+    Node.app.register_node('receive', ConduitReceiveNode.factory)
+    Node.app.register_node('s', ConduitSendNode.factory)
+    Node.app.register_node('r', ConduitReceiveNode.factory)
 
 
 class MetroNode(Node):
@@ -1103,6 +1107,87 @@ class RepeatNode(Node):
             self.outputs[j].set_value(data)
         self.send_all()
 
+
+class ConduitSendNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ConduitSendNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.conduit_name = ''
+        self.conduit = None
+        if args is not None and len(args) > 0:
+            self.conduit_name = ' '.join(args)
+            self.conduit = self.app.find_conduit(self.conduit_name)
+            if self.conduit is None:
+                self.conduit = Node.app.add_conduit(self.conduit_name)
+
+        self.input = self.add_input(self.conduit_name, triggers_execution=True)
+        self.conduit_name_option = self.add_option('name', widget_type='text_input', default_value=self.conduit_name, callback=self.conduit_name_changed)
+
+    def conduit_name_changed(self):
+        conduit_name = self.conduit_name_option.get_widget_value()
+        self.conduit = None
+        self.conduit_name = conduit_name
+        self.conduit = self.app.find_conduit(self.conduit_name)
+        if self.conduit is None:
+            self.conduit = Node.app.add_conduit(self.conduit_name)
+        self.input.set_label(self.conduit_name)
+
+    def execute(self):
+        if self.input.fresh_input and self.conduit is not None:
+            data = self.input.get_received_data()
+            self.conduit.transmit(data)
+
+
+class ConduitReceiveNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ConduitReceiveNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.conduit_name = ''
+        self.conduit = None
+        if args is not None and len(args) > 0:
+            self.conduit_name = ' '.join(args)
+            self.conduit = self.app.find_conduit(self.conduit_name)
+            if self.conduit is None:
+                self.conduit = Node.app.add_conduit(self.conduit_name)
+            if self.conduit is not None:
+                self.conduit.attach_client(self)
+
+        self.output = self.add_output(self.conduit_name)
+        self.conduit_name_option = self.add_option('name', widget_type='text_input',
+                                                       default_value=self.conduit_name,
+                                                       callback=self.conduit_name_changed)
+
+    def conduit_name_changed(self):
+        conduit_name = self.conduit_name_option.get_widget_value()
+        self.conduit.detach_client(self)
+        self.conduit = None
+        self.conduit_name = conduit_name
+        self.conduit = self.app.find_conduit(self.conduit_name)
+        if self.conduit is None:
+            self.conduit = Node.app.add_conduit(self.conduit_name)
+        if self.conduit is not None:
+            self.conduit.attach_client(self)
+        self.output.set_label(self.conduit_name)
+
+    def custom_cleanup(self):
+        if self.conduit is not None:
+            self.conduit.detach_client(self)
+
+    def receive(self, data):
+        self.output.send(data)
+
+    def execute(self):
+        pass
 
 class VariableNode(Node):
     @staticmethod

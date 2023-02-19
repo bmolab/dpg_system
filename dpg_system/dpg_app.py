@@ -259,6 +259,7 @@ class App:
         self.current_node_editor = 0
         self.frame_tasks = []
         self.variables = {}
+        self.conduits = {}
 
         self.osc_manager = OSCManager(label='osc_manager', data=0, args=None)
 
@@ -398,6 +399,10 @@ class App:
         v_list = list(self.variables.keys())
         return v_list
 
+    def get_conduit_list(self):
+        c_list = list(self.conduit.keys())
+        return c_list
+
     def update_font_scale(self, value):
         dpg.set_global_font_scale(value)
 
@@ -405,6 +410,16 @@ class App:
         for editor in self.node_editors:
             editor.scale_nodes(value)
         pass
+
+    def add_conduit(self, conduit_name='untitled'):
+        c = Conduit(label=conduit_name)
+        self.conduits[conduit_name] = c
+        return c
+
+    def find_conduit(self, conduit_name):
+        if conduit_name in self.conduits:
+            return self.conduits[conduit_name]
+        return None
 
     def add_variable(self, variable_name='untitled', default_value=None, getter=None, setter=None):
         v = Variable(label=variable_name, default_value=default_value, getter=getter, setter=setter)

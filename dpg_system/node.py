@@ -734,6 +734,24 @@ class InputNodeAttribute:
         return self._data
 
 
+class Conduit:
+    def __init__(self, label: str):
+        self.label = label
+        self.clients = []
+
+    def transmit(self, data, from_client=None):
+        for client in self.clients:
+            if client != from_client:
+                client.receive(data)
+
+    def attach_client(self, client):
+        if client not in self.clients:
+            self.clients.append(client)
+
+    def detach_client(self, client):
+        if client in self.clients:
+            self.clients.remove(client)
+
 class Variable:
     def __init__(self, label: str, default_value=0.0, setter=None, getter=None):
         self.label = label
