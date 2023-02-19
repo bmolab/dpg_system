@@ -10,11 +10,11 @@ import json
 class NodeEditor:
     @staticmethod
     def _link_callback(sender, app_data, user_data):
-        # print('link callback')
         output_attr_uuid, input_attr_uuid = app_data
         input_attr = dpg.get_item_user_data(input_attr_uuid)
         output_attr = dpg.get_item_user_data(output_attr_uuid)
         output_attr.add_child(input_attr, sender)
+        Node.app.get_current_editor().modified = True
 
     @staticmethod
     def _unlink_callback(sender, app_data, user_data):
@@ -23,10 +23,12 @@ class NodeEditor:
         out = dat[0]
         child = dat[1]
         out.remove_link(app_data, child)
+        Node.app.get_current_editor().modified = True
 
     def __init__(self, height=0, width=0):
         self._nodes = []
         self._links = []
+        self.subpatches = []
         self.height = height
         self.width = width
         self.uuid = dpg.generate_uuid()
@@ -40,10 +42,38 @@ class NodeEditor:
         self.origin = None
         self.patcher_node = None
         self.parent_patcher = None
+        self.modified = False
+
+    def add_subpatch(self, subpatch_editor):
+        self.subpatches.append(subpatch_editor)
+
+    def find_patcher_node(self, patcher_name):
+        # print('find_patcher_node in ', self.patch_name, self._nodes)
+        for node in self._nodes:
+            if node.label == 'patcher':
+                # print('found a patcher', node.patcher_name, patcher_name)
+                # might have to have load_uuids in case multiple of same name in patcher
+                if node.patcher_name == patcher_name:
+                    return node
+        return None
+
+    def reconnect_to_parent(self, parent_patcher_node=None):
+        if self.parent_patcher is not None:
+            print('reconnect_to_parent', self.patch_name)
+            if parent_patcher_node is None:
+                parent_patcher_node = self.parent_patcher.find_patcher_node(self.patch_name)
+            if parent_patcher_node is not None:
+                print('found parent')
+                for node in self._nodes:
+                    if node.label == 'in':
+                        node.connect_to_parent(parent_patcher_node)
+                    elif node.label == 'out':
+                        node.connect_to_parent(parent_patcher_node)
 
     def add_node(self, node: Node):
         self._nodes.append(node)
         self.num_nodes = len(self._nodes)
+        self.modified = True
 
     def remove_all_nodes(self):
         for node in self._nodes:
@@ -51,6 +81,7 @@ class NodeEditor:
             dpg.delete_item(node.uuid)
         self._nodes = []
         self.num_nodes = len(self._nodes)
+        self.modified = True
 
     def node_cleanup(self, node_uuid):
         # print('deleting', node_uuid)
@@ -76,6 +107,7 @@ class NodeEditor:
                 self._nodes.remove(node)
                 dpg.delete_item(node.uuid)
                 self.num_nodes = len(self._nodes)
+                self.modified = True
                 break
 
     def submit(self, parent):
@@ -146,6 +178,7 @@ class NodeEditor:
 
         dpg.clear_selected_nodes(self.uuid)
         self.uncontainerize(file_container, offset=offset)
+        self.modified = True
 
     def containerize(self, patch_container=None):
         if patch_container is None:
@@ -229,6 +262,9 @@ class NodeEditor:
             nodes_container = file_container['nodes']
             for index, node_index in enumerate(nodes_container):
                 node_container = nodes_container[node_index]
+                if 'name' in node_container:
+                    if node_container['name'] == '':
+                        continue
                 pos = [0, 0]
                 if 'position_x' in node_container:
                     pos[0] = node_container['position_x'] + offset[0]
@@ -275,11 +311,13 @@ class NodeEditor:
         dpg.set_viewport_pos(position)
         # conf = dpg.get_viewport_configuration(0)
         # print(conf)
+        self.modified = False
 
     def load_(self, patch_container, path='', name=''):
  #       print(path, name)
         self.file_path = path
         self.patch_name = name
+        # print('editor load', patch_container)
         self.uncontainerize(patch_container)
         if self.patch_name == '':
             self.patch_name = 'node patch'
@@ -306,7 +344,8 @@ class NodeEditor:
                             if parts[1] == 'json':
                                 self.patch_name = parts[0]
                     Node.app.set_current_tab_title(self.patch_name)
- #                   dpg.set_viewport_title(self.patch_name)
+                    self.modified = False
+        #                   dpg.set_viewport_title(self.patch_name)
         except:
             print('exception occurred during load')
             pass

@@ -801,7 +801,7 @@ class PlotNode(Node):
                     self.y_data.release_buffer()
                     PlotNode.mousing_plot = None
                 else:
-                    editor = self.app.node_editors[self.app.current_node_editor]
+                    editor = self.app.get_current_editor()
                     node_padding = editor.node_scalers[dpg.mvNodeStyleVar_NodePadding]
                     window_padding = self.app.window_padding
                     plot_padding = 10

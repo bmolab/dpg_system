@@ -176,60 +176,48 @@ def widget_clicked(source, data, user_data):
 load_path = None
 save_path = None
 
+def cancel_callback(sender, app_data):
+    if sender is not None:
+        dpg.delete_item(sender)
+    Node.app.active_widget = -1
 
 def load_patches_callback(sender, app_data):
     global load_path
-    if 'file_path_name' in app_data:
+
+    if app_data is not None and 'file_path_name' in app_data:
         load_path = app_data['file_path_name']
         if load_path != '':
             Node.app.load_from_file(load_path)
     else:
         print('no file chosen')
-    dpg.delete_item(sender)
+    if sender is not None:
+        dpg.delete_item(sender)
     Node.app.active_widget = -1
 
 
 def save_file_callback(sender, app_data):
     global save_path
-    if 'file_path_name' in app_data:
+    if app_data is not None and 'file_path_name' in app_data:
         save_path = app_data['file_path_name']
         if save_path != '':
-            Node.app.node_editors[Node.app.current_node_editor].save(save_path)
+            Node.app.save_patch(save_path)
     else:
         print('no file chosen')
-    dpg.delete_item(sender)
+    if sender is not None:
+        dpg.delete_item(sender)
     Node.app.active_widget = -1
 
 
 def save_patches_callback(sender, app_data):
     global save_path
-    if 'file_path_name' in app_data:
+    if app_data is not None and 'file_path_name' in app_data:
         save_path = app_data['file_path_name']
         if save_path != '':
-            with open(save_path, 'w') as f:
-                file_container = {}
-                patches_container = {}
-                Node.app.patches_path = save_path
-
-                patch_name = save_path.split('/')[-1]
-                if '.' in patch_name:
-                    parts = patch_name.split('.')
-                    if len(parts) == 2:
-                        if parts[1] == 'json':
-                            patch_name = parts[0]
-
-                Node.app.patches_name = patch_name
-                for index, node_editor in enumerate(Node.app.node_editors):
-                    patch_container = {}
-                    node_editor.save_into(patch_container)
-                    patches_container[index] = patch_container
-                file_container['name'] = Node.app.patches_name
-                file_container['path'] = Node.app.patches_path
-                file_container['patches'] = patches_container
-                json.dump(file_container, f, indent=4)
+            Node.app.save_setup(save_path)
     else:
         print('no file chosen')
-    dpg.delete_item(sender)
+    if sender is not None:
+        dpg.delete_item(sender)
     Node.app.active_widget = -1
 
 
@@ -318,6 +306,24 @@ class App:
             with dpg.theme_component(dpg.mvChildWindow):
                 dpg.add_theme_color(dpg.mvThemeCol_Border, [0, 0, 0, 0])
 
+    def find_orphaned_subpatch(self, editor_name):
+        # print('finding', editor_name)
+        for editor in self.node_editors:
+            if editor.patch_name == editor_name:
+                if editor.parent_patcher is None:
+                    # print('found', editor_name)
+                    return editor
+        return None
+
+    def find_editor(self, editor_name):
+        for editor in self.node_editors:
+            if editor.patch_name == editor_name:
+                return editor
+        return None
+
+    def get_current_editor(self):
+        return self.node_editors[self.current_node_editor]
+
     def set_verbose(self):
         if self.verbose_menu_item != -1:
             self.verbose = dpg.get_value(self.verbose_menu_item)
@@ -325,23 +331,99 @@ class App:
     def show_minimap(self):
         if self.minimap_menu_item != -1:
             show = dpg.get_value(self.minimap_menu_item)
-            self.node_editors[self.current_node_editor].show_minimap(show)
+            self.get_current_editor().show_minimap(show)
 
-    def save_setup(self):
-        pass
+    def containerize_sub_patches(self, editor, container=None):
+        if container is None:
+            container = {}
+        start_length = len(container)
+        for index, node_editor in enumerate(editor.subpatches):
+            patch_container = {}
+            node_editor.save_into(patch_container)
+            container[index + start_length] = patch_container
+        return container
 
-    def save_setup_as(self):
-        pass
+    def containerize_patch(self, editor, container=None):
+        if container is None:
+            container = {}
+        start_length = len(container)
+        patch_container = {}
+        editor.save_into(patch_container)
+        container[start_length] = patch_container
+        return container
+
+    def save_patch(self, save_path):
+        current_editor = self.get_current_editor()
+        if len(current_editor.subpatches) == 0:
+            current_editor.save(save_path)
+        else:
+            with open(save_path, 'w') as f:
+                file_container = {}
+                self.patches_path = save_path
+
+                patch_name = save_path.split('/')[-1]
+                if '.' in patch_name:
+                    parts = patch_name.split('.')
+                    if len(parts) == 2:
+                        if parts[1] == 'json':
+                            patch_name = parts[0]
+
+                self.patches_name = patch_name
+
+                subpatches_container = None
+                if len(current_editor.subpatches) > 0:
+                    subpatches_container = self.containerize_sub_patches(current_editor)
+
+                patch_container = self.containerize_patch(current_editor)
+
+                file_container['name'] = self.patches_name
+                file_container['path'] = self.patches_path
+
+                if subpatches_container is not None:
+                    file_container['subpatches'] = subpatches_container
+
+                file_container['patches'] = patch_container
+
+                json.dump(file_container, f, indent=4)
+
+    def save_setup(self, save_path):
+        with open(save_path, 'w') as f:
+            file_container = {}
+            self.patches_path = save_path
+
+            patch_name = save_path.split('/')[-1]
+            if '.' in patch_name:
+                parts = patch_name.split('.')
+                if len(parts) == 2:
+                    if parts[1] == 'json':
+                        patch_name = parts[0]
+
+            subpatcher_container = {}
+            patches_container = {}
+            self.patches_name = patch_name
+            for index, node_editor in enumerate(self.node_editors):
+                if not node_editor.parent_patcher:
+                    if len(node_editor.subpatches) > 0:
+                        subpatches_container = self.containerize_sub_patches(node_editor, subpatcher_container)
+                    patches_container = self.containerize_patch(node_editor, patches_container)
+
+            file_container['name'] = self.patches_name
+            file_container['path'] = self.patches_path
+            if subpatches_container is not None:
+                file_container['subpatches'] = subpatches_container
+            file_container['patches'] = patches_container
+            json.dump(file_container, f, indent=4)
 
     def setup_menus(self):
         with dpg.viewport_menu_bar():
             with dpg.menu(label="File"):
                 dpg.add_menu_item(label="Save Setup", callback=self.save_patches)
                 dpg.add_menu_item(label="Save Setup As", callback=self.save_patches)
-                dpg.add_menu_item(label="Save Nodes", callback=self.save_nodes)
-                dpg.add_menu_item(label="Save Nodes As", callback=self.save_as_nodes)
+                dpg.add_menu_item(label="Save Patch", callback=self.save_nodes)
+                dpg.add_menu_item(label="Save Patch As", callback=self.save_as_nodes)
                 dpg.add_menu_item(label="Load", callback=self.load_nodes)
-                dpg.add_menu_item(label='New Node Editor', callback=self.add_node_editor)
+                dpg.add_menu_item(label='New Patch', callback=self.add_node_editor)
+                dpg.add_menu_item(label='Close Current Patch', callback=self.close_current_node_editor)
                 dpg.add_menu_item(label="Show Style Editor", callback=self.show_style)
                 dpg.add_menu_item(label="Show Demo", callback=self.show_demo)
                 self.verbose_menu_item = dpg.add_menu_item(label="verbose logging", check=True, callback=self.set_verbose)
@@ -460,13 +542,13 @@ class App:
         else:
             new_node = self.create_var_node_for_variable(node_name, pos)
         if placeholder:
-            self.node_editors[self.current_node_editor].remove_node(placeholder)
+            self.get_current_editor().remove_node(placeholder)
         return new_node
 
     def create_node_from_model(self, model, pos, name=None, args=[]):
         node = model.create(name, args)
-        node.submit(self.node_editors[self.current_node_editor].uuid, pos=pos)
-        self.node_editors[self.current_node_editor].add_node(node)
+        node.submit(self.get_current_editor().uuid, pos=pos)
+        self.get_current_editor().add_node(node)
         return node
 
     def remove_frame_task(self, remove_node):
@@ -476,11 +558,11 @@ class App:
 
     def del_handler(self):
         if self.active_widget == -1:
-            node_uuids = dpg.get_selected_nodes(self.node_editors[self.current_node_editor].uuid)
+            node_uuids = dpg.get_selected_nodes(self.get_current_editor().uuid)
             for node_uuid in node_uuids:
                 # somehow we have to connect to the actual Node object
-                self.node_editors[self.current_node_editor].node_cleanup(node_uuid)
-            link_uuids = dpg.get_selected_links(self.node_editors[self.current_node_editor].uuid)
+                self.get_current_editor().node_cleanup(node_uuid)
+            link_uuids = dpg.get_selected_links(self.get_current_editor().uuid)
             for link_uuid in link_uuids:
                 dat = dpg.get_item_user_data(link_uuid)
                 out = dat[0]
@@ -497,8 +579,8 @@ class App:
         panel_pos = dpg.get_item_pos(self.center_panel)
         mouse_pos[0] -= (panel_pos[0] + 8)
         mouse_pos[1] -= (panel_pos[1] + 8)
-        node.submit(self.node_editors[self.current_node_editor].uuid, pos=mouse_pos)
-        self.node_editors[self.current_node_editor].add_node(node)
+        node.submit(self.get_current_editor().uuid, pos=mouse_pos)
+        self.get_current_editor().add_node(node)
 
     def int_handler(self):
         if self.active_widget == -1:
@@ -537,14 +619,14 @@ class App:
 
     def options_handler(self):
         if self.active_widget == -1:
-            selected_nodes_uuids = dpg.get_selected_nodes(self.node_editors[self.current_node_editor].uuid)
+            selected_nodes_uuids = dpg.get_selected_nodes(self.get_current_editor().uuid)
             for selected_nodes_uuid in selected_nodes_uuids:
                 node_object = dpg.get_item_user_data(selected_nodes_uuid)
                 node_object.toggle_show_hide_options()
 
     def duplicate_handler(self):
         if self.active_widget == -1:
-            self.node_editors[self.current_node_editor].duplicate_selection()
+            self.get_current_editor().duplicate_selection()
 
     def set_widget_focus(self, widget_uuid):
         dpg.focus_item(widget_uuid)
@@ -595,7 +677,7 @@ class App:
                             widget.callback()
 
     def new_handler(self):
-        origin = self.node_editors[self.current_node_editor].origin
+        origin = self.get_current_editor().origin
 
         if self.active_widget == -1:
             node = PlaceholderNode.factory("New Node", None)
@@ -609,8 +691,8 @@ class App:
 
             mouse_pos[0] -= (panel_pos[0] + 8 + (origin_pos[0] - origin_node_pos[0]) - 4)
             mouse_pos[1] -= (panel_pos[1] + 8 + (origin_pos[1] - origin_node_pos[1]) - 15)
-            node.submit(self.node_editors[self.current_node_editor].uuid, pos=mouse_pos)
-            self.node_editors[self.current_node_editor].add_node(node)
+            node.submit(self.get_current_editor().uuid, pos=mouse_pos)
+            self.get_current_editor().add_node(node)
             self.set_widget_focus(node.name_property.widget.uuid)
 
     def update(self):
@@ -627,28 +709,61 @@ class App:
                         if parts[1] == 'json':
                             patch_name = parts[0]
                 file_container = json.load(f)
+                subpatch_count = 0
+                if 'subpatches' in file_container:
+                    patches_container = file_container['subpatches']
+                    subpatch_count = len(patches_container)
+                patch_count = 0
+                if 'patches' in file_container:
+                    patches_container = file_container['patches']
+                    patch_count = len(patches_container)
+                patch_assign = {}
+                sub_patch_assign = {}
+                available_editors = {}
+                for editor_index, editor in enumerate(self.node_editors):
+                    if editor is not None:
+                        if editor.num_nodes <= 1:
+                            available_editors[len(list(available_editors.keys()))] = (editor_index, editor)
+                for i in range(patch_count):
+                    if len(list(available_editors.keys())) > 0:
+                        patch_assign[i] = available_editors[0]
+                        del available_editors[0]
+                    else:
+                        patch_assign[i] = (len(self.node_editors), self.add_node_editor())
+                for i in range(subpatch_count):
+                    if len(list(available_editors.keys())) > 0:
+                        sub_patch_assign[i] = available_editors[0]
+                        del available_editors[0]
+                    else:
+                        sub_patch_assign[i] = (len(self.node_editors), self.add_node_editor())
+
+                if 'subpatches' in file_container:
+                    self.patches_path = path
+                    self.patches_name = patch_name
+                    patches_container = file_container['subpatches']
+
+                    for index, patch_index in enumerate(patches_container):
+                        nodes_container = patches_container[patch_index]
+                        editor_index, editor = sub_patch_assign[index]
+
+                        if editor is not None:
+                            self.current_node_editor = editor_index
+                            editor.load_(nodes_container)
+
                 if 'patches' in file_container:
                     self.patches_path = path
                     self.patches_name = patch_name
                     patches_container = file_container['patches']
+
                     for index, patch_index in enumerate(patches_container):
                         nodes_container = patches_container[patch_index]
-                        loaded = False
-                        for editor_index, editor in enumerate(self.node_editors):
-                            if editor is not None:
-                                if editor.num_nodes == 0:
-                                    self.current_node_editor = editor_index
-                                    editor.load_(nodes_container)
-                                    loaded = True
-                                    break
-                        if not loaded:
-                            editor_index = len(self.node_editors)
-                            self.add_node_editor()
+                        editor_index, editor = patch_assign[index]
+
+                        if editor is not None:
                             self.current_node_editor = editor_index
-                            self.node_editors[editor_index].load_(nodes_container)
+                            editor.load_(nodes_container)
                 else:  # single patch
-#                    print(patch_name)
-                    self.node_editors[self.current_node_editor].load_(file_container, path, patch_name)
+                    self.get_current_editor().load_(file_container, path, patch_name)
 
         except Exception as exc_:
             print(exc_)
@@ -660,19 +775,20 @@ class App:
 
     def load(self, path=''):
         if path != '':
-            self.node_editors[self.current_node_editor].load(path)
+            self.get_current_editor().load(path)
             return
         self.active_widget = 1
         # print('before file_dialog')
-        with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, callback=load_patches_callback, tag="file_dialog_id"):
+        with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, callback=load_patches_callback, cancel_callback=cancel_callback, tag="file_dialog_id"):
             dpg.add_file_extension(".json")
 
     def save_as_nodes(self):
         self.save('')
 
     def save_nodes(self):
-        if exists(self.node_editors[self.current_node_editor].file_path):
-            self.node_editors[self.current_node_editor].save(self.node_editors[self.current_node_editor].file_path)
+        # needs to save sub-patches
+        if exists(self.get_current_editor().file_path):
+            self.get_current_editor().save(self.get_current_editor().file_path)
         else:
             self.save_as_nodes()
 
@@ -688,16 +804,16 @@ class App:
     def save_with_path(self, sender, data):
         filename = os.sep.join(data)
         for i in open(filename, "rt"):
-            self.node_editors[self.current_node_editor].save(filename)
+            self.get_current_editor().save(filename)
 
     def save(self, path=''):
         self.active_widget = 1
-        with dpg.file_dialog(directory_selector=False, show=True, height=400, callback=save_file_callback, tag="file_dialog_id"):
+        with dpg.file_dialog(directory_selector=False, show=True, height=400, callback=save_file_callback, cancel_callback=cancel_callback, tag="file_dialog_id"):
             dpg.add_file_extension(".json")
 
     def save_patches(self, path=''):
         self.active_widget = 1
-        with dpg.file_dialog(directory_selector=False, show=True, height=400, callback=save_patches_callback, tag="file_dialog_id"):
+        with dpg.file_dialog(directory_selector=False, show=True, height=400, callback=save_patches_callback, cancel_callback=cancel_callback, tag="file_dialog_id"):
             dpg.add_file_extension(".json")
 
     def add_frame_task(self, dest):
@@ -715,31 +831,40 @@ class App:
         chosen_tab_uuid = dpg.get_value(self.tab_bar)
         chosen_tab_index = dpg.get_item_user_data(chosen_tab_uuid)
         self.current_node_editor = chosen_tab_index
-        dpg.set_value(self.minimap_menu_item, self.node_editors[self.current_node_editor].mini_map)
+        dpg.set_value(self.minimap_menu_item, self.get_current_editor().mini_map)
 
     def remove_node_editor(self, stale_editor):
+        if stale_editor is None:
+            return
         for i, editor in enumerate(self.node_editors):
             if editor == stale_editor:
+                if editor.modified:
+                    self.save_as_nodes()
+                if stale_editor.parent_patcher is not None:
+                    stale_editor.parent_patcher.subpatches.remove(stale_editor)
                 editor.remove_all_nodes()
                 stale_tab = self.tabs[i]
                 self.tabs.remove(stale_tab)
                 dpg.delete_item(stale_tab)
                 del editor
                 self.node_editors.remove(stale_editor)
-
+                if self.current_node_editor >= len(self.node_editors):
+                    self.current_node_editor = len(self.node_editors) - 1
                 break
 
-    def add_node_editor(self, editor_name=None):
-        # conf = dpg.get_item_configuration(self.tab_bar)
-        # print(conf)
+    def close_current_node_editor(self):
+        self.remove_node_editor(self.get_current_editor())
+
+    def add_node_editor(self):
         editor_number = len(self.node_editors)
-        if editor_name is None:
-            editor_name = 'editor ' + str(editor_number)
+        editor_name = 'editor ' + str(editor_number)
         with dpg.tab(label=editor_name, parent=self.tab_bar, user_data=len(self.tabs)) as tab:
             self.tabs.append(tab)
             panel_uuid = dpg.generate_uuid()
             with dpg.group(id=panel_uuid):
                 new_editor = NodeEditor()
+                if editor_name is not None:
+                    new_editor.patch_name = editor_name
                 self.node_editors.append(new_editor)
                 self.node_editors[len(self.node_editors) - 1].submit(panel_uuid)
         return new_editor
