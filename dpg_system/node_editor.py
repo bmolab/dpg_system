@@ -175,9 +175,9 @@ class NodeEditor:
                                 link_index += 1
                                 break
         file_container['links'] = links_container
-
         dpg.clear_selected_nodes(self.uuid)
         self.uncontainerize(file_container, offset=offset)
+        # what if we create a list of teh duplicated nodes and move all node positions by mouse until clicked?
         self.modified = True
 
     def containerize(self, patch_container=None):
@@ -221,6 +221,7 @@ class NodeEditor:
 
     def save_into(self, patch_container):
         patch_container = self.containerize(patch_container)
+        self.modified = False
 
     def save(self, path=None):
         if path is None:
@@ -237,6 +238,7 @@ class NodeEditor:
             file_container = self.containerize()
             json.dump(file_container, f, indent=4)
         Node.app.set_current_tab_title(self.patch_name)
+        self.modified = False
 
     def uncontainerize(self, file_container, offset=None):
         created_nodes = {}
@@ -322,6 +324,7 @@ class NodeEditor:
         if self.patch_name == '':
             self.patch_name = 'node patch'
         Node.app.set_current_tab_title(self.patch_name)
+        self.modified = False
 
     def load(self, path=''):
         try:
