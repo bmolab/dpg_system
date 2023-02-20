@@ -26,6 +26,9 @@ def register_interface_nodes():
     Node.app.register_node('color', ColorPickerNode.factory)
     Node.app.register_node('vector', VectorNode.factory)
     Node.app.register_node('draw', DrawNode.factory)
+    Node.app.register_node('radio', RadioButtonsNode.factory)
+    Node.app.register_node('radio_h', RadioButtonsNode.factory)
+    Node.app.register_node('radio_v', RadioButtonsNode.factory)
 
 
 
@@ -169,6 +172,35 @@ class MouseNode(Node):
             self.output_x.set_value(self.mouse_pos[0])
         self.send_all()
 
+class RadioButtonsNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = RadioButtonsNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.value = False
+        self.buttons = []
+        if args is not None and len(args) > 0:
+            for i in range(len(args)):
+                v, t = decode_arg(args, i)
+                self.buttons.append(v)
+        self.radio_group = self.add_property(widget_type='radio_group', callback=self.execute)
+        self.radio_group.widget.combo_items = self.buttons
+        if label == 'radio_h':
+            self.radio_group.widget.horizontal = True
+        else:
+            self.radio_group.widget.horizontal = False
+        self.output = self.add_output("")
+
+    def call_execute(self, input=None):
+        self.execute()
+
+    def execute(self):
+        self.output.send(self.radio_group.get_widget_value())
+
 
 class ToggleNode(Node):
     @staticmethod
@@ -307,7 +339,7 @@ class ValueNode(Node):
                     default = 0.0
                 elif self.input.widget.widget in ['drag_int', 'slider_int', "knob_int", 'input_int']:
                     default = 0
-                elif self.input.widget.widget in ['combo', 'text_input']:
+                elif self.input.widget.widget in ['combo', 'text_input', 'radio_group']:
                     default = ''
                 v = Node.app.add_variable(variable_name, default_value=default)
             if v:

@@ -219,6 +219,9 @@ def save_file_callback(sender, app_data):
         save_path = app_data['file_path_name']
         if save_path != '':
             Node.app.save_patch(save_path)
+            if Node.app.saving_to_lib:
+                Node.app.register_patcher(Node.app.patches_name)
+                Node.app.saving_to_lib = False
     else:
         print('no file chosen')
     if sender is not None:
@@ -295,6 +298,7 @@ class App:
         self.dragging_created_nodes = False
         self.dragging_ref = [0, 0]
         self.clipboard = None
+        self.saving_to_lib = False
 
         self.register_patchers()
         self.handler = dpg.item_handler_registry(tag="widget handler")
@@ -321,11 +325,14 @@ class App:
         # print(self.viewport)
         dpg.setup_dearpygui()
 
+    def register_patcher(self, name):
+        self.patchers.append(name)
+
     def register_patchers(self):
         for entry in os.scandir('dpg_system/patcher_library'):
             if entry.is_file():
                 if entry.name[-5:] == '.json':
-                    self.patchers.append(entry.name[:-5])
+                    self.register_patcher(entry.name[:-5])
 
     def position_viewport(self, x, y):
         dpg.configure_viewport(self.viewport, x_pos=x, y_pos=y)
@@ -399,9 +406,12 @@ class App:
         return container
 
     def save_patch(self, save_path):
+        print('save_patch')
         current_editor = self.get_current_editor()
         if len(current_editor.subpatches) == 0:
             current_editor.save(save_path)
+            self.patches_name = self.get_current_editor().patch_name
+            print(self.patches_name)
         else:
             with open(save_path, 'w') as f:
                 self.patches_path = save_path
@@ -414,7 +424,7 @@ class App:
                             patch_name = parts[0]
 
                 self.patches_name = patch_name
-
+                print(self.patches_name)
                 file_container = {}
                 file_container['name'] = self.patches_name
                 file_container['path'] = self.patches_path
@@ -455,6 +465,8 @@ class App:
                 dpg.add_separator()
                 dpg.add_menu_item(label="Save Patch (S)", callback=self.save_nodes)
                 dpg.add_menu_item(label="Save Patch As", callback=self.save_as_nodes)
+                dpg.add_separator()
+                dpg.add_menu_item(label="Save to Library", callback=self.save_to_library)
                 dpg.add_separator()
                 dpg.add_menu_item(label="Save Setup", callback=self.save_patches)
                 dpg.add_menu_item(label="Save Setup As", callback=self.save_patches)
@@ -924,6 +936,12 @@ class App:
     def save_as_nodes(self):
         self.save('')
 
+    def save_to_library(self):
+        self.saving_to_lib = True
+        self.save('', default_directory='dpg_system/patcher_library')
+        self.patchers.append(self.patches_name)
+
+
     def save_nodes(self):
         # needs to save sub-patches
         if exists(self.get_current_editor().file_path):
@@ -967,9 +985,9 @@ class App:
         for i in open(filename, "rt"):
             self.get_current_editor().save(filename)
 
-    def save(self, path=''):
+    def save(self, path='', default_directory=''):
         self.active_widget = 1
-        with dpg.file_dialog(directory_selector=False, show=True, height=400, callback=save_file_callback, cancel_callback=cancel_callback, tag="file_dialog_id"):
+        with dpg.file_dialog(directory_selector=False, show=True, height=400, callback=save_file_callback, cancel_callback=cancel_callback, default_path=default_directory, tag="file_dialog_id"):
             dpg.add_file_extension(".json")
 
     def save_patches(self, path=''):

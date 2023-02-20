@@ -226,7 +226,7 @@ class PropertyNodeAttribute:
             if len(data) == 1:
                 data = data[0]
             else:
-                if self.widget.widget in ['text_input', 'combo']:
+                if self.widget.widget in ['text_input', 'combo', 'radio_group']:
                     data = any_to_string(data)
                 else:
                     data = data[0]
@@ -254,6 +254,7 @@ class PropertyWidget:
         self.callback = None
         self.user_data = self
         self.tag = self.uuid
+        self.horizontal = False
         if widget_type == 'drag_float':
             self.speed = 0.01
         else:
@@ -280,7 +281,7 @@ class PropertyWidget:
                 if type(self.default_value) is not float:
                     self.default_value = 0
             self.value = self.default_value
-        elif self.widget in ['text_input', 'combo']:
+        elif self.widget in ['text_input', 'combo', 'radio_group']:
             if self.default_value is None:
                 self.default_value = ''
             self.value = self.default_value
@@ -374,6 +375,9 @@ class PropertyWidget:
                 dpg.add_checkbox(label=self._label, tag=self.uuid, default_value=self.default_value, user_data=self)
                 dpg.set_item_user_data(self.uuid, user_data=self)
                 dpg.set_item_callback(self.uuid, callback=lambda: self.clickable_changed())
+            elif self.widget == 'radio_group':
+                dpg.add_radio_button(self.combo_items, label=self._label, tag=self.uuid, user_data=self.node, horizontal=self.horizontal)
+                dpg.set_item_callback(self.uuid, callback=self.clickable_changed)
             elif self.widget == 'button':
                 button = dpg.add_button(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node)
                 with dpg.theme() as item_theme:
@@ -391,7 +395,7 @@ class PropertyWidget:
                 dpg.set_item_callback(self.uuid, callback=lambda: self.clickable_changed())
             elif self.widget == 'list_box':
                 dpg.add_listbox(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node, num_items=8)
-            if self.widget not in ['checkbox', 'button', 'combo']:
+            if self.widget not in ['checkbox', 'button', 'combo', 'radio_group']:
                 dpg.set_item_user_data(self.uuid, user_data=self)
                 dpg.set_item_callback(self.uuid, callback=lambda s, a, u: self.value_changed(a))
             if self.widget_has_trigger:
@@ -409,7 +413,7 @@ class PropertyWidget:
             self.default_value = any_to_int(data)
         elif self.widget == 'checkbox':
             self.default_value = any_to_bool(data)
-        elif self.widget in ['text_input', 'combo', 'list_box']:
+        elif self.widget in ['text_input', 'combo', 'list_box', 'radio_group']:
             self.default_value = any_to_string(data)
         elif self.widget == 'color_picker':
             self.default_value = tuple(any_to_list(data))
@@ -496,7 +500,7 @@ class PropertyWidget:
             val = any_to_bool(data)
             dpg.set_value(self.uuid, val)
             self.value = val
-        elif self.widget == 'combo':
+        elif self.widget in ['combo', 'radio_group']:
             val = any_to_string(data)
             dpg.set_value(self.uuid, val)
             self.value = val
@@ -721,7 +725,7 @@ class InputNodeAttribute:
             if len(data) == 1:
                 data = data[0]
             else:
-                if self.widget.widget in ['text_input', 'combo']:
+                if self.widget.widget in ['text_input', 'combo', 'radio_group']:
                     data = any_to_string(data)
                 else:
                     data = data[0]
