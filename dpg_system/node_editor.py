@@ -50,6 +50,186 @@ class NodeEditor:
     def add_subpatch(self, subpatch_editor):
         self.subpatches.append(subpatch_editor)
 
+    def align_selected(self):
+        # find dominant axis
+        # align to that axis
+        selected_nodes = dpg.get_selected_nodes(self.uuid)
+        x_min = 100000
+        x_max = -100000
+        y_min = 100000
+        y_max = -100000
+        for node_uuid in selected_nodes:
+            pos = dpg.get_item_pos(node_uuid)
+            if pos[0] < x_min:
+                x_min = pos[0]
+            if pos[0] > x_max:
+                x_max = pos[0]
+            if pos[1] < y_min:
+                y_min = pos[1]
+            if pos[1] > y_max:
+                y_max = pos[1]
+        if (x_max - x_min) > (y_max - y_min):
+            y_mean = (y_max + y_min) / 2
+            for node_uuid in selected_nodes:
+                pos = dpg.get_item_pos(node_uuid)
+                pos[1] = y_mean
+                dpg.set_item_pos(node_uuid, pos)
+        else:
+            x_mean = (x_max + x_min) / 2
+            for node_uuid in selected_nodes:
+                pos = dpg.get_item_pos(node_uuid)
+                pos[0] = x_mean
+                dpg.set_item_pos(node_uuid, pos)
+
+    def space_out_selected(self, scaler=1.1):
+        selected_nodes = dpg.get_selected_nodes(self.uuid)
+        x_min = 100000
+        x_max = -100000
+        y_min = 100000
+        y_max = -100000
+        for node_uuid in selected_nodes:
+            pos = dpg.get_item_pos(node_uuid)
+            if pos[0] < x_min:
+                x_min = pos[0]
+            if pos[0] > x_max:
+                x_max = pos[0]
+            if pos[1] < y_min:
+                y_min = pos[1]
+            if pos[1] > y_max:
+                y_max = pos[1]
+        y_mean = (y_max + y_min) / 2
+        x_mean = (x_max + x_min) / 2
+        x_step = (x_max - x_min) / len(selected_nodes)
+        y_step = (y_max - y_min) / len(selected_nodes)
+
+        count = len(selected_nodes)
+        x_step *= 1.2
+        y_step *= 1.2
+
+        for node_uuid in selected_nodes:
+            pos = dpg.get_item_pos(node_uuid)
+            x_off = pos[0] - x_mean
+            y_off = pos[1] - y_mean
+            pos[0] = x_mean + x_off * scaler
+            pos[1] = y_mean + y_off * scaler
+            dpg.set_item_pos(node_uuid, pos)
+
+    def align_and_distribute_selected(self):
+        # find dominant axis
+        # align and distribute to that axis
+        selected_nodes = dpg.get_selected_nodes(self.uuid)
+        if len(selected_nodes) <= 1:
+            return
+        x_min = 100000
+        x_max = -100000
+        y_min = 100000
+        y_max = -100000
+        for node_uuid in selected_nodes:
+            pos = dpg.get_item_pos(node_uuid)
+            if pos[0] < x_min:
+                x_min = pos[0]
+            if pos[0] > x_max:
+                x_max = pos[0]
+            if pos[1] < y_min:
+                y_min = pos[1]
+            if pos[1] > y_max:
+                y_max = pos[1]
+        if (x_max - x_min) > (y_max - y_min):
+            y_mean = (y_max + y_min) / 2
+            x_step = (x_max - x_min) / (len(selected_nodes) - 1)
+
+            dest_dict = {}
+            for index, node_uuid in enumerate(selected_nodes):
+                pos = dpg.get_item_pos(node_uuid)
+                dest_dict[index] = [pos[0], node_uuid]
+            sorted_dest = sorted(dest_dict.items(), key=lambda item: item[1][0])
+            for index, dest_data in enumerate(sorted_dest):
+                uuid = dest_data[1][1]
+                pos = [x_min + x_step * index, y_mean]
+                dpg.set_item_pos(uuid, pos)
+        else:
+            x_mean = (x_max + x_min) / 2
+            y_step = (y_max - y_min) / (len(selected_nodes) - 1)
+
+            dest_dict = {}
+            for index, node_uuid in enumerate(selected_nodes):
+                pos = dpg.get_item_pos(node_uuid)
+                dest_dict[index] = [pos[1], node_uuid]
+            sorted_dest = sorted(dest_dict.items(), key=lambda item: item[1][0])
+            for index, dest_data in enumerate(sorted_dest):
+                uuid = dest_data[1][1]
+                pos = [x_mean, y_min + y_step * index]
+                dpg.set_item_pos(uuid, pos)
+
+    def connect_selected(self):
+        selected_nodes = dpg.get_selected_nodes(self.uuid)
+        if len(selected_nodes) <= 1:
+            return
+        x_min = 100000
+        x_max = -100000
+        for node_uuid in selected_nodes:
+            pos = dpg.get_item_pos(node_uuid)
+            if pos[0] < x_min:
+                x_min = pos[0]
+            if pos[0] > x_max:
+                x_max = pos[0]
+        x_mean = (x_max + x_min) / 2
+
+        source_nodes = []
+        dest_nodes = []
+
+        for node_uuid in selected_nodes:
+            pos = dpg.get_item_pos(node_uuid)
+            if pos[0] <= x_mean:
+                source_nodes.append(dpg.get_item_user_data(node_uuid))
+            else:
+                dest_nodes.append(dpg.get_item_user_data(node_uuid))
+
+        if len(source_nodes) == 1:
+            out_count = len(source_nodes[0].outputs)
+            dest_count = len(dest_nodes)
+            connect_count = out_count
+            if dest_count < out_count:
+                connect_count = dest_count
+            dest_dict = {}
+            for i in range(connect_count):
+                pos = dpg.get_item_pos(dest_nodes[i].uuid)
+                dest_dict[pos[1]] = dest_nodes[i]
+            sorted_dest = dict(sorted(dest_dict.items()))
+            for index, dest_key in enumerate(sorted_dest):
+                out_ = source_nodes[0].outputs[index]
+                in_ = sorted_dest[dest_key].inputs[0]
+                out_.add_child(in_, self.uuid)
+        elif len(dest_nodes) == 1:
+            in_count = len(dest_nodes[0].inputs)
+            source_count = len(source_nodes)
+            connect_count = in_count
+            if source_count < in_count:
+                connect_count = source_count
+            for i in range(connect_count):
+                out_ = source_nodes[i].outputs[0]
+                in_ = dest_nodes[0].inputs[i]
+                out_.add_child(in_, self.uuid)
+        else:
+            connect_count = len(dest_nodes)
+            if len(source_nodes) < connect_count:
+                connect_count = len(source_nodes)
+            source_dict = {}
+            dest_dict = {}
+            for i in range(connect_count):
+                pos = dpg.get_item_pos(source_nodes[i].uuid)
+                source_dict[pos[1]] = source_nodes[i]
+                pos = dpg.get_item_pos(dest_nodes[i].uuid)
+                dest_dict[pos[1]] = dest_nodes[i]
+            sorted_source = dict(sorted(source_dict.items()))
+            sorted_dest = dict(sorted(dest_dict.items()))
+            source_keys = list(sorted_source.keys())
+            dest_keys = list(sorted_dest.keys())
+            for index, source in enumerate(source_keys):
+                source_output = sorted_source[source].outputs[0]
+                dest_input = sorted_dest[dest_keys[index]].inputs[0]
+                source_output.add_child(dest_input, self.uuid)
+
     def find_patcher_node(self, patcher_name):
         # print('find_patcher_node in ', self.patch_name, self._nodes)
         for node in self._nodes:
@@ -118,6 +298,7 @@ class NodeEditor:
             with dpg.node_editor(tag=self.uuid, callback=NodeEditor._link_callback, height=self.height, width=self.width, delink_callback=NodeEditor._unlink_callback):
                 for node in self._nodes:
                     node.submit(self.uuid)
+
         dpg.bind_theme(self.node_theme)
         # add invisible node that is reference for panning
 
@@ -145,6 +326,147 @@ class NodeEditor:
         else:
             dpg.configure_item(self.uuid, minimap=False)
             self.mini_map = False
+
+    def cut_selection(self):
+        clip = self.copy_selection()
+        node_uuids = dpg.get_selected_nodes(self.uuid)
+        for node_uuid in node_uuids:
+            # somehow we have to connect to the actual Node object
+            self.node_cleanup(node_uuid)
+        link_uuids = dpg.get_selected_links(self.uuid)
+        for link_uuid in link_uuids:
+            dat = dpg.get_item_user_data(link_uuid)
+            out = dat[0]
+            child = dat[1]
+            out.remove_link(link_uuid, child)
+        return clip
+
+    def copy_selection(self):
+        Node.app.loading = True
+        file_container = {}
+        nodes_container = {}
+        selected_node_objects = []
+        selected_nodes = dpg.get_selected_nodes(self.uuid)
+        subpatch_container = {}
+
+        # NOTE - sub-patcher objects should not move with mouse
+        for index, node in enumerate(self._nodes):
+            if node.uuid in selected_nodes:
+                if node.label == 'patcher':
+                    if node.patch_editor is not None:
+                        patch_container = {}
+                        node.patch_editor.containerize(patch_container)
+                        subpatch_container[index] = patch_container
+                        # we need to remove all subpatch nodes from drag list...
+
+        if len(subpatch_container) > 0:
+            file_container['patches'] = subpatch_container
+        for index, node in enumerate(self._nodes):
+            if node.uuid in selected_nodes:
+                selected_node_objects.append(node)
+                node_container = {}
+                node.save(node_container, index)
+                nodes_container[index] = node_container
+        file_container['nodes'] = nodes_container
+
+        links_container = {}
+        link_index = 0
+
+        for node_index, node in enumerate(selected_node_objects):
+            # save links
+            for out_index, output in enumerate(node.outputs):
+                if len(output._children) > 0:
+                    for in_index, input in enumerate(output._children):
+                        link_container = {}
+                        link_container['source_node'] = node.uuid
+                        link_container['source_output_index'] = out_index
+                        dest_node = input.node
+                        link_container['dest_node'] = dest_node.uuid
+                        for node_in_index, test_input in enumerate(dest_node.inputs):
+                            if test_input.uuid == input.uuid:
+                                link_container['dest_input_index'] = node_in_index
+                                links_container[link_index] = link_container
+                                link_index += 1
+                                break
+        file_container['links'] = links_container
+        # dpg.clear_selected_nodes(self.uuid)
+        Node.app.loading = False
+        return file_container
+
+    def paste(self, file_container):
+        Node.app.created_nodes = {}
+        Node.app.loading = True
+        if len(file_container) == 0:
+            return
+        self.uncontainerize(file_container)
+        for node_editor_uuid in Node.app.links_containers:
+            links_container = Node.app.links_containers[node_editor_uuid]
+            for index, link_index in enumerate(links_container):
+                source_node = None
+                dest_node = None
+                link_container = links_container[link_index]
+                source_node_loaded_uuid = link_container['source_node']
+                if source_node_loaded_uuid in Node.app.created_nodes:
+                    source_node = Node.app.created_nodes[source_node_loaded_uuid]
+                dest_node_loaded_uuid = link_container['dest_node']
+                if dest_node_loaded_uuid in Node.app.created_nodes:
+                    dest_node = Node.app.created_nodes[dest_node_loaded_uuid]
+                if source_node is not None and dest_node is not None:
+                    source_output_index = link_container['source_output_index']
+                    dest_input_index = link_container['dest_input_index']
+                    if source_output_index < len(source_node.outputs):
+                        source_output = source_node.outputs[source_output_index]
+                        if dest_input_index < len(dest_node.inputs):
+                            dest_input = dest_node.inputs[dest_input_index]
+                            source_output.add_child(dest_input, node_editor_uuid)
+
+        for uuid in Node.app.created_nodes:
+            node = Node.app.created_nodes[uuid]
+            node.loaded_uuid = -1
+        for editor in Node.app.node_editors:
+            editor.loaded_uuid = -1
+            editor.loaded_parent_node_uuid = -1
+
+        # now Node.app.created_nodes dict has all created nodes
+        Node.app.dragging_created_nodes = True
+        Node.app.drag_starts = {}
+        for node_uuid in self.duplicated_subpatch_nodes:
+            if node_uuid in Node.app.created_nodes:
+                del Node.app.created_nodes[node_uuid]
+        for created_node in Node.app.created_nodes:
+            node = Node.app.created_nodes[created_node]
+            Node.app.drag_starts[created_node] = dpg.get_item_pos(node.uuid)
+            # but top left most node should be at mouse...
+        if len(Node.app.drag_starts) > 0:
+            sort = sorted(Node.app.drag_starts.items(), key=lambda item: item[1][0])
+            left_most = sort[0][1][0]
+            sort = sorted(Node.app.drag_starts.items(), key=lambda item: item[1][1])
+            top_most = sort[0][1][1]
+            left_top = [left_most, top_most]
+            Node.app.dragging_ref = self.editor_pos_to_global_pos(left_top)
+            self.modified = True
+            Node.app.loading = False
+            Node.app.drag_create_nodes()
+        else:
+            print('no drag starts')
+
+    def global_pos_to_editor_pos(self, pos):
+        panel_pos = dpg.get_item_pos(Node.app.center_panel)
+        origin_pos = dpg.get_item_pos(self.origin.ref_property.widget.uuid)
+        origin_node_pos = dpg.get_item_pos(self.origin.uuid)
+        editor_mouse_pos = pos
+        editor_mouse_pos[0] -= (panel_pos[0] + 8 + (origin_pos[0] - origin_node_pos[0]) - 4)
+        editor_mouse_pos[1] -= (panel_pos[1] + 8 + (origin_pos[1] - origin_node_pos[1]) - 15)
+        return editor_mouse_pos
+
+    def editor_pos_to_global_pos(self, pos):
+        panel_pos = dpg.get_item_pos(Node.app.center_panel)
+        origin_pos = dpg.get_item_pos(self.origin.ref_property.widget.uuid)
+        origin_node_pos = dpg.get_item_pos(self.origin.uuid)
+        global_pos = pos
+        global_pos[0] += (panel_pos[0] + 8 + (origin_pos[0] - origin_node_pos[0]) - 4)
+        global_pos[1] += (panel_pos[1] + 8 + (origin_pos[1] - origin_node_pos[1]) - 30)
+        return global_pos
 
     def duplicate_selection(self):
         Node.app.loading = True

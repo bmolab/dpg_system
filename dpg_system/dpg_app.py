@@ -86,6 +86,24 @@ for entry in os.scandir('dpg_system'):
                 string = f'from dpg_system.{name} import *'
                 exec(string)
 
+for entry in os.scandir('dpg_system/plugins'):
+    if entry.is_file():
+        if entry.name[-8:] == 'nodes.py':
+            if entry.name not in imported:
+                name = entry.name[:-3]
+                string = f'from dpg_system.plugins.{name} import *'
+                exec(string)
+    else:
+        for subentry in os.scandir('dpg_system/plugins/' + entry.name):
+            if subentry.is_file():
+                if subentry.name[-8:] == 'nodes.py':
+                    if subentry.name not in imported:
+                        name = subentry.name[:-3]
+                        string = f'from dpg_system.plugins.{entry.name}.{subentry} import *'
+                        exec(string)
+
+
+
 
 def widget_active(source, data, user_data):
     pass
@@ -244,6 +262,8 @@ class App:
         Node.app = self
         self.register_nodes()
 
+        self.patchers = []
+
         self.node_editors = []
         self.current_node_editor = 0
         self.frame_tasks = []
@@ -274,6 +294,9 @@ class App:
 
         self.dragging_created_nodes = False
         self.dragging_ref = [0, 0]
+        self.clipboard = None
+
+        self.register_patchers()
         self.handler = dpg.item_handler_registry(tag="widget handler")
         with self.handler:
             dpg.add_item_active_handler(callback=widget_active)
@@ -297,6 +320,12 @@ class App:
         self.viewport = dpg.create_viewport()
         # print(self.viewport)
         dpg.setup_dearpygui()
+
+    def register_patchers(self):
+        for entry in os.scandir('dpg_system/patcher_library'):
+            if entry.is_file():
+                if entry.name[-5:] == '.json':
+                    self.patchers.append(entry.name[:-5])
 
     def position_viewport(self, x, y):
         dpg.configure_viewport(self.viewport, x_pos=x, y_pos=y)
@@ -420,15 +449,31 @@ class App:
     def setup_menus(self):
         with dpg.viewport_menu_bar():
             with dpg.menu(label="File"):
+                dpg.add_menu_item(label='New Patch (N)', callback=self.add_node_editor)
+                dpg.add_menu_item(label="Open (O)", callback=self.load_nodes)
+                dpg.add_menu_item(label='Close Current Patch (W)', callback=self.close_current_node_editor)
+                dpg.add_separator()
+                dpg.add_menu_item(label="Save Patch (S)", callback=self.save_nodes)
+                dpg.add_menu_item(label="Save Patch As", callback=self.save_as_nodes)
+                dpg.add_separator()
                 dpg.add_menu_item(label="Save Setup", callback=self.save_patches)
                 dpg.add_menu_item(label="Save Setup As", callback=self.save_patches)
-                dpg.add_menu_item(label="Save Patch", callback=self.save_nodes)
-                dpg.add_menu_item(label="Save Patch As", callback=self.save_as_nodes)
-                dpg.add_menu_item(label="Load", callback=self.load_nodes)
-                dpg.add_menu_item(label='New Patch', callback=self.add_node_editor)
-                dpg.add_menu_item(label='Close Current Patch', callback=self.close_current_node_editor)
+            with dpg.menu(label='Edit'):
+                dpg.add_menu_item(label="Cut (X)", callback=self.cut_selected)
+                dpg.add_menu_item(label="Copy (C)", callback=self.copy_selected)
+                dpg.add_menu_item(label="Paste (V)", callback=self.paste_selected)
+                dpg.add_menu_item(label="Duplicate (D)", callback=self.duplicate_handler)
+                dpg.add_separator()
+                dpg.add_menu_item(label="Connect Selected", callback=self.connect_selected)
+                dpg.add_menu_item(label="Align Selected", callback=self.align_selected)
+                dpg.add_menu_item(label="Align and Distribute Selected", callback=self.align_distribute_selected)
+                dpg.add_menu_item(label="Space Out Selected", callback=self.space_out_selected)
+                dpg.add_menu_item(label="Tighten Selected", callback=self.tighten_selected)
+
+            with dpg.menu(label='Options'):
                 dpg.add_menu_item(label="Show Style Editor", callback=self.show_style)
                 dpg.add_menu_item(label="Show Demo", callback=self.show_demo)
+                dpg.add_separator()
                 self.verbose_menu_item = dpg.add_menu_item(label="verbose logging", check=True, callback=self.set_verbose)
                 dpg.add_menu_item(label='osc status', callback=self.print_osc_state)
                 self.minimap_menu_item = dpg.add_menu_item(label='minimap', callback=self.show_minimap, check=True)
@@ -627,9 +672,55 @@ class App:
                 node_object = dpg.get_item_user_data(selected_nodes_uuid)
                 node_object.toggle_show_hide_options()
 
+    def C_handler(self):
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+            self.clipboard = self.get_current_editor().copy_selection()
+
+    def X_handler(self):
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+            self.clipboard = self.get_current_editor().cut_selection()
+
+    def S_handler(self):
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+            self.save_nodes()
+
+    def O_handler(self):
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+            self.load_nodes()
+        else:
+            self.options_handler()
+
+    def N_handler(self):
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+            self.add_node_editor()
+        else:
+            self.new_handler()
+
+    def W_handler(self):
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+            self.close_current_node_editor()
+
+    def V_handler(self):
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+            self.paste_selected()
+        else:
+            self.vector_handler()
+
+    def D_handler(self):
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+            if self.active_widget == -1:
+                self.get_current_editor().duplicate_selection()
+
     def duplicate_handler(self):
         if self.active_widget == -1:
             self.get_current_editor().duplicate_selection()
+    def cut_selected(self):
+        if self.active_widget == -1:
+            self.get_current_editor().cut_selection()
+
+    def copy_selected(self):
+        if self.active_widget == -1:
+            self.get_current_editor().copy_selection()
 
     def mouse_down_handler(self):
         self.dragging_created_nodes = False
@@ -705,12 +796,9 @@ class App:
         if self.active_widget == -1:
             node = PlaceholderNode.factory("New Node", None)
             mouse_pos = dpg.get_mouse_pos(local=False)
-            panel_size = dpg.get_item_rect_size(self.center_panel)
             panel_pos = dpg.get_item_pos(self.center_panel)
- #           dpg.hide_item(origin.uuid)
             origin_pos = dpg.get_item_pos(origin.ref_property.widget.uuid)
             origin_node_pos = dpg.get_item_pos(origin.uuid)
-#            print(origin_pos, origin_node_pos)
 
             mouse_pos[0] -= (panel_pos[0] + 8 + (origin_pos[0] - origin_node_pos[0]) - 4)
             mouse_pos[1] -= (panel_pos[1] + 8 + (origin_pos[1] - origin_node_pos[1]) - 15)
@@ -846,6 +934,28 @@ class App:
     def save_as_patches(self):
         self.save_patches('')
 
+    def connect_selected(self):
+        self.get_current_editor().connect_selected()
+
+
+    def paste_selected(self):
+        if self.clipboard is not None:
+            self.get_current_editor().paste(self.clipboard)
+        else:
+            print('clipboard is empty')
+
+    def align_selected(self):
+        self.get_current_editor().align_selected()
+
+    def space_out_selected(self):
+        self.get_current_editor().space_out_selected(1.1)
+
+    def tighten_selected(self):
+        self.get_current_editor().space_out_selected(0.9)
+
+    def align_distribute_selected(self):
+        self.get_current_editor().align_and_distribute_selected()
+
     def show_style(self):
         dpg.show_style_editor()
 
@@ -943,15 +1053,23 @@ class App:
                             # dpg.add_mouse_drag_handler(callback=self.mouse_drag_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Up, callback=self.up_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Down, callback=self.down_handler)
-                            dpg.add_key_press_handler(dpg.mvKey_N, callback=self.new_handler)
+                            # dpg.add_key_press_handler(dpg.mvKey_N, callback=self.new_handler)
                             dpg.add_key_press_handler(dpg.mvKey_I, callback=self.int_handler)
                             dpg.add_key_press_handler(dpg.mvKey_F, callback=self.float_handler)
                             dpg.add_key_press_handler(dpg.mvKey_T, callback=self.toggle_handler)
                             dpg.add_key_press_handler(dpg.mvKey_B, callback=self.button_handler)
                             dpg.add_key_press_handler(dpg.mvKey_M, callback=self.message_handler)
-                            dpg.add_key_press_handler(dpg.mvKey_V, callback=self.vector_handler)
-                            dpg.add_key_press_handler(dpg.mvKey_O, callback=self.options_handler)
-                            dpg.add_key_press_handler(dpg.mvKey_D, callback=self.duplicate_handler)
+                            # dpg.add_key_press_handler(dpg.mvKey_V, callback=self.vector_handler)
+                            # dpg.add_key_press_handler(dpg.mvKey_O, callback=self.options_handler)
+
+                            dpg.add_key_press_handler(dpg.mvKey_D, callback=self.D_handler)
+                            dpg.add_key_press_handler(dpg.mvKey_C, callback=self.C_handler)
+                            dpg.add_key_press_handler(dpg.mvKey_V, callback=self.V_handler)
+                            dpg.add_key_press_handler(dpg.mvKey_X, callback=self.X_handler)
+                            dpg.add_key_press_handler(dpg.mvKey_W, callback=self.W_handler)
+                            dpg.add_key_press_handler(dpg.mvKey_O, callback=self.O_handler)
+                            dpg.add_key_press_handler(dpg.mvKey_S, callback=self.S_handler)
+                            dpg.add_key_press_handler(dpg.mvKey_N, callback=self.N_handler)
 
                             dpg.add_key_press_handler(dpg.mvKey_Back, callback=self.del_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Return, callback=self.return_handler)

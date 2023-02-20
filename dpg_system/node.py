@@ -1541,6 +1541,7 @@ class PlaceholderNode(Node):
         if len(self.node_list) == 0:
             self.node_list = self.app.node_factory_container.get_node_list()
         self.variable_list = self.app.get_variable_list()
+        self.patcher_list = self.app.patchers
 
         self.node_list_box = self.add_property('###options', widget_type='list_box', width=180)
         self.list_box_arrowed = False
@@ -1571,6 +1572,15 @@ class PlaceholderNode(Node):
                 if test.lower() == variable_name.lower()[:len(test)]:
                     ratio += 10
             scores[variable_name] = ratio
+        for index, patcher_name in enumerate(self.patcher_list):
+            ratio = fuzz.partial_ratio(patcher_name.lower(), test.lower())
+            if ratio == 100:
+                len_diff = abs(len(test.lower()) - len(patcher_name.lower()))
+                full_ratio = fuzz.ratio(patcher_name.lower(), test.lower())
+                ratio = (ratio * len_diff + full_ratio) / (1 + len_diff)
+                if test.lower() == patcher_name.lower()[:len(test)]:
+                    ratio += 10
+            scores[patcher_name] = ratio
         sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
         self.filtered_list = []
         for index, item in enumerate(sorted_scores):
@@ -1726,6 +1736,19 @@ class PlaceholderNode(Node):
                         Node.app.create_node_by_name(new_node_args[0], self, new_node_args[1:])
                     else:
                         Node.app.create_node_by_name(new_node_args[0], self, )
+            else:
+                if new_node_args[0] in self.patcher_list:
+                    found = True
+                elif selection_name in self.patcher_list:
+                    new_node_args[0] = selection_name
+                    found = True
+                if found:
+                    hold_node_editor_index = Node.app.current_node_editor
+                    Node.app.create_node_by_name('patcher', self, new_node_args[:1])
+                    Node.app.current_node_editor = len(Node.app.node_editors) - 1
+                    Node.app.load_from_file('dpg_system/patcher_library/' + new_node_args[0] + '.json')
+                    Node.app.current_node_editor = hold_node_editor_index
+                    return
 
 
 
