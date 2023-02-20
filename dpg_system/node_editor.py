@@ -45,6 +45,7 @@ class NodeEditor:
         self.patcher_node = None
         self.parent_patcher = None
         self.modified = False
+        self.duplicated_subpatch_nodes = {}
 
     def add_subpatch(self, subpatch_editor):
         self.subpatches.append(subpatch_editor)
@@ -146,10 +147,26 @@ class NodeEditor:
             self.mini_map = False
 
     def duplicate_selection(self):
+        Node.app.loading = True
+        Node.app.created_nodes = {}
         file_container = {}
         nodes_container = {}
         selected_node_objects = []
         selected_nodes = dpg.get_selected_nodes(self.uuid)
+        subpatch_container = {}
+
+        # NOTE - sub-patcher objects should not move with mouse
+        for index, node in enumerate(self._nodes):
+            if node.uuid in selected_nodes:
+                if node.label == 'patcher':
+                    if node.patch_editor is not None:
+                        patch_container = {}
+                        node.patch_editor.containerize(patch_container)
+                        subpatch_container[index] = patch_container
+                        # we need to remove all subpatch nodes from drag list...
+
+        if len(subpatch_container) > 0:
+            file_container['patches'] = subpatch_container
         for index, node in enumerate(self._nodes):
             if node.uuid in selected_nodes:
                 selected_node_objects.append(node)
@@ -157,9 +174,10 @@ class NodeEditor:
                 node.save(node_container, index)
                 nodes_container[index] = node_container
         file_container['nodes'] = nodes_container
-        offset = [50, 50]
+
         links_container = {}
         link_index = 0
+
         for node_index, node in enumerate(selected_node_objects):
             # save links
             for out_index, output in enumerate(node.outputs):
@@ -178,9 +196,50 @@ class NodeEditor:
                                 break
         file_container['links'] = links_container
         dpg.clear_selected_nodes(self.uuid)
-        self.uncontainerize(file_container, offset=offset)
+
+        self.uncontainerize(file_container)
+
+        for node_editor_uuid in Node.app.links_containers:
+            links_container = Node.app.links_containers[node_editor_uuid]
+            for index, link_index in enumerate(links_container):
+                source_node = None
+                dest_node = None
+                link_container = links_container[link_index]
+                source_node_loaded_uuid = link_container['source_node']
+                if source_node_loaded_uuid in Node.app.created_nodes:
+                    source_node = Node.app.created_nodes[source_node_loaded_uuid]
+                dest_node_loaded_uuid = link_container['dest_node']
+                if dest_node_loaded_uuid in Node.app.created_nodes:
+                    dest_node = Node.app.created_nodes[dest_node_loaded_uuid]
+                if source_node is not None and dest_node is not None:
+                    source_output_index = link_container['source_output_index']
+                    dest_input_index = link_container['dest_input_index']
+                    if source_output_index < len(source_node.outputs):
+                        source_output = source_node.outputs[source_output_index]
+                        if dest_input_index < len(dest_node.inputs):
+                            dest_input = dest_node.inputs[dest_input_index]
+                            source_output.add_child(dest_input, node_editor_uuid)
+
+        for uuid in Node.app.created_nodes:
+            node = Node.app.created_nodes[uuid]
+            node.loaded_uuid = -1
+        for editor in Node.app.node_editors:
+            editor.loaded_uuid = -1
+            editor.loaded_parent_node_uuid = -1
+
+        # now Node.app.created_nodes dict has all created nodes
+        Node.app.dragging_created_nodes = True
+        Node.app.dragging_ref = dpg.get_mouse_pos()
+        Node.app.drag_starts = {}
+        for node_uuid in self.duplicated_subpatch_nodes:
+            if node_uuid in Node.app.created_nodes:
+                del Node.app.created_nodes[node_uuid]
+        for created_node in Node.app.created_nodes:
+            node = Node.app.created_nodes[created_node]
+            Node.app.drag_starts[created_node] = dpg.get_item_pos(node.uuid)
         # what if we create a list of teh duplicated nodes and move all node positions by mouse until clicked?
         self.modified = True
+        Node.app.loading = False
 
     def containerize(self, patch_container=None):
         if patch_container is None:
@@ -205,6 +264,7 @@ class NodeEditor:
 
         links_container = {}
         link_index = 0
+
         for node_index, node in enumerate(self._nodes):
             # save links
             for out_index, output in enumerate(node.outputs):
@@ -251,7 +311,19 @@ class NodeEditor:
     def uncontainerize(self, file_container, offset=None):
         if offset is None:
             offset = [0, 0]
+        hold_editor = Node.app.current_node_editor
 
+        if 'patches' in file_container:
+            patch_container = file_container['patches']
+            for patch_key in patch_container:
+                patch = patch_container[patch_key]
+                sub_patch_editor = Node.app.add_node_editor()
+                Node.app.current_node_editor = len(Node.app.node_editors) - 1
+                sub_patch_editor.uncontainerize(patch)
+                Node.app.set_current_tab_title(sub_patch_editor.patch_name)
+        self.duplicated_subpatch_nodes = Node.app.created_nodes.copy()
+
+        Node.app.current_node_editor = hold_editor
         if 'name' in file_container:
             self.patch_name = file_container['name']
         if 'path' in file_container:
@@ -270,7 +342,6 @@ class NodeEditor:
         position = dpg.get_viewport_pos()
         if 'position' in file_container:
             position = file_container['position']
-        # print(height, width, position)
 
         if 'nodes' in file_container:
             nodes_container = file_container['nodes']

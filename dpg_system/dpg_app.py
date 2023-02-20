@@ -249,6 +249,7 @@ class App:
         self.frame_tasks = []
         self.variables = {}
         self.conduits = {}
+        self.loaded_patcher_nodes = []
 
         self.osc_manager = OSCManager(label='osc_manager', data=0, args=None)
 
@@ -257,6 +258,7 @@ class App:
         self.patches_name = ''
         self.links_containers = {}
         self.created_nodes = {}
+        self.drag_starts = {}
 
         self.global_theme = None
         self.borderless_child_theme = None
@@ -270,6 +272,8 @@ class App:
         self.font_scale_variable = self.add_variable(variable_name='font_scale', setter=self.update_font_scale, default_value=0.5)
         self.gui_scale_variable = self.add_variable(variable_name='gui_scale', setter=self.update_gui_scale, default_value=1.0)
 
+        self.dragging_created_nodes = False
+        self.dragging_ref = [0, 0]
         self.handler = dpg.item_handler_registry(tag="widget handler")
         with self.handler:
             dpg.add_item_active_handler(callback=widget_active)
@@ -627,6 +631,26 @@ class App:
         if self.active_widget == -1:
             self.get_current_editor().duplicate_selection()
 
+    def mouse_down_handler(self):
+        self.dragging_created_nodes = False
+
+    def drag_create_nodes(self):
+        if self.dragging_created_nodes:
+            if dpg.is_mouse_button_down(0):
+                self.dragging_created_nodes = False
+            else:
+                mouse_pos = dpg.get_mouse_pos()
+                delta = [0, 0]
+                delta[0] = mouse_pos[0] - self.dragging_ref[0]
+                delta[1] = mouse_pos[1] - self.dragging_ref[1]
+                for node_uuid in self.created_nodes:
+                    node = self.created_nodes[node_uuid]
+                    start = self.drag_starts[node_uuid]
+                    dest = [0, 0]
+                    dest[0] = start[0] + delta[0]
+                    dest[1] = start[1] + delta[1]
+                    dpg.set_item_pos(node.uuid, dest)
+
     def set_widget_focus(self, widget_uuid):
         dpg.focus_item(widget_uuid)
         self.focussed_widget = widget_uuid
@@ -931,6 +955,8 @@ class App:
 
                             dpg.add_key_press_handler(dpg.mvKey_Back, callback=self.del_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Return, callback=self.return_handler)
+                            dpg.add_mouse_move_handler(callback=self.drag_create_nodes)
+                            dpg.add_mouse_click_handler(callback=self.mouse_down_handler)
 
         dpg.set_primary_window(main_window, True)
         dpg.show_viewport()
