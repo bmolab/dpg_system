@@ -225,6 +225,7 @@ class App:
     def __init__(self):
         self.viewport = None
         self.main_window_id = -1
+        self.loading = False
         self.setup_dpg()
         self.verbose = False
         self.verbose_menu_item = -1
@@ -254,6 +255,8 @@ class App:
         self.setup_menus()
         self.patches_path = ''
         self.patches_name = ''
+        self.links_containers = {}
+        self.created_nodes = {}
 
         self.global_theme = None
         self.borderless_child_theme = None
@@ -306,13 +309,21 @@ class App:
             with dpg.theme_component(dpg.mvChildWindow):
                 dpg.add_theme_color(dpg.mvThemeCol_Border, [0, 0, 0, 0])
 
-    def find_orphaned_subpatch(self, editor_name):
-        # print('finding', editor_name)
+    def find_loaded_parent(self, loaded_parent_node_uuid):
+        for loaded_patcher_node in self.loaded_patcher_nodes:
+            if loaded_patcher_node.loaded_uuid == loaded_parent_node_uuid:
+                parent = loaded_patcher_node
+                return parent
+        return None
+
+    def find_orphaned_subpatch(self, editor_name, loaded_uuid):
         for editor in self.node_editors:
-            if editor.patch_name == editor_name:
+            if editor.patch_name == editor_name and editor.loaded_uuid == loaded_uuid:
                 if editor.parent_patcher is None:
-                    # print('found', editor_name)
                     return editor
+                else:
+                    print('sub-patcher already claimed')
+
         return None
 
     def find_editor(self, editor_name):
@@ -333,23 +344,25 @@ class App:
             show = dpg.get_value(self.minimap_menu_item)
             self.get_current_editor().show_minimap(show)
 
-    def containerize_sub_patches(self, editor, container=None):
-        if container is None:
-            container = {}
-        start_length = len(container)
-        for index, node_editor in enumerate(editor.subpatches):
-            patch_container = {}
-            node_editor.save_into(patch_container)
-            container[index + start_length] = patch_container
-        return container
+    # def containerize_sub_patches(self, editor, container=None):
+    #     if container is None:
+    #         container = {}
+    #     start_length = len(container)
+    #     for index, node_editor in enumerate(editor.subpatches):
+    #         patch_container = {}
+    #         node_editor.save_into(patch_container)
+    #         container[index + start_length] = patch_container
+    #     return container
 
     def containerize_patch(self, editor, container=None):
         if container is None:
             container = {}
-        start_length = len(container)
-        patch_container = {}
-        editor.save_into(patch_container)
-        container[start_length] = patch_container
+
+        if len(editor.subpatches) > 0:
+            for index, node_editor in enumerate(editor.subpatches):
+                self.containerize_patch(node_editor, container)
+
+        container[len(container)] = editor.save_into()
         return container
 
     def save_patch(self, save_path):
@@ -358,7 +371,6 @@ class App:
             current_editor.save(save_path)
         else:
             with open(save_path, 'w') as f:
-                file_container = {}
                 self.patches_path = save_path
 
                 patch_name = save_path.split('/')[-1]
@@ -370,25 +382,15 @@ class App:
 
                 self.patches_name = patch_name
 
-                subpatches_container = None
-                if len(current_editor.subpatches) > 0:
-                    subpatches_container = self.containerize_sub_patches(current_editor)
-
-                patch_container = self.containerize_patch(current_editor)
-
+                file_container = {}
                 file_container['name'] = self.patches_name
                 file_container['path'] = self.patches_path
-
-                if subpatches_container is not None:
-                    file_container['subpatches'] = subpatches_container
-
-                file_container['patches'] = patch_container
+                file_container['patches'] = self.containerize_patch(current_editor)
 
                 json.dump(file_container, f, indent=4)
 
     def save_setup(self, save_path):
         with open(save_path, 'w') as f:
-            file_container = {}
             self.patches_path = save_path
 
             patch_name = save_path.split('/')[-1]
@@ -398,19 +400,16 @@ class App:
                     if parts[1] == 'json':
                         patch_name = parts[0]
 
-            subpatcher_container = {}
-            patches_container = {}
             self.patches_name = patch_name
-            for index, node_editor in enumerate(self.node_editors):
-                if not node_editor.parent_patcher:
-                    if len(node_editor.subpatches) > 0:
-                        subpatches_container = self.containerize_sub_patches(node_editor, subpatcher_container)
-                    patches_container = self.containerize_patch(node_editor, patches_container)
 
+            file_container = {}
             file_container['name'] = self.patches_name
             file_container['path'] = self.patches_path
-            if subpatches_container is not None:
-                file_container['subpatches'] = subpatches_container
+
+            patches_container = {}
+            for index, node_editor in enumerate(self.node_editors):
+                patches_container = self.containerize_patch(node_editor, patches_container)
+
             file_container['patches'] = patches_container
             json.dump(file_container, f, indent=4)
 
@@ -516,7 +515,7 @@ class App:
     def create_node_by_name_from_file(self, node_name, pos, args=[]):
         node_model = self.node_factory_container.locate_node_by_name(node_name)
         if node_model is not None:
-            new_node = self.create_node_from_model(node_model, pos, args=args)
+            new_node = self.create_node_from_model(node_model, pos, args=args, from_file=True)
             return new_node
         else:
             new_node = self.create_var_node_for_variable(node_name, pos)
@@ -545,9 +544,9 @@ class App:
             self.get_current_editor().remove_node(placeholder)
         return new_node
 
-    def create_node_from_model(self, model, pos, name=None, args=[]):
+    def create_node_from_model(self, model, pos, name=None, args=[], from_file=False):
         node = model.create(name, args)
-        node.submit(self.get_current_editor().uuid, pos=pos)
+        node.submit(self.get_current_editor().uuid, pos=pos, from_file=from_file)
         self.get_current_editor().add_node(node)
         return node
 
@@ -699,6 +698,10 @@ class App:
         pass
 
     def load_from_file(self, path):
+        self.loading = True
+        self.loaded_patcher_nodes = []
+        self.links_containers = {}
+        self.created_nodes = {}
         hold_current_editor = self.current_node_editor
         try:
             with open(path, 'r') as f:
@@ -709,17 +712,16 @@ class App:
                         if parts[1] == 'json':
                             patch_name = parts[0]
                 file_container = json.load(f)
-                subpatch_count = 0
-                if 'subpatches' in file_container:
-                    patches_container = file_container['subpatches']
-                    subpatch_count = len(patches_container)
+
                 patch_count = 0
                 if 'patches' in file_container:
                     patches_container = file_container['patches']
                     patch_count = len(patches_container)
+
                 patch_assign = {}
-                sub_patch_assign = {}
+                # sub_patch_assign = {}
                 available_editors = {}
+
                 for editor_index, editor in enumerate(self.node_editors):
                     if editor is not None:
                         if editor.num_nodes <= 1:
@@ -730,34 +732,29 @@ class App:
                         del available_editors[0]
                     else:
                         patch_assign[i] = (len(self.node_editors), self.add_node_editor())
-                for i in range(subpatch_count):
-                    if len(list(available_editors.keys())) > 0:
-                        sub_patch_assign[i] = available_editors[0]
-                        del available_editors[0]
-                    else:
-                        sub_patch_assign[i] = (len(self.node_editors), self.add_node_editor())
 
-                if 'subpatches' in file_container:
-                    self.patches_path = path
-                    self.patches_name = patch_name
-                    patches_container = file_container['subpatches']
-
-                    for index, patch_index in enumerate(patches_container):
-                        nodes_container = patches_container[patch_index]
-                        editor_index, editor = sub_patch_assign[index]
-
-                        if editor is not None:
-                            self.current_node_editor = editor_index
-                            editor.load_(nodes_container)
+                # if 'subpatches' in file_container:
+                #     self.patches_path = path
+                #     self.patches_name = patch_name
+                #     patches_container = file_container['subpatches']
+                #
+                #     for index, patch_index in enumerate(patches_container):
+                #         nodes_container = patches_container[patch_index]
+                #         editor_index, editor = sub_patch_assign[index]
+                #
+                #         if editor is not None:
+                #             self.current_node_editor = editor_index
+                #             editor.load_(nodes_container)
 
                 if 'patches' in file_container:
                     self.patches_path = path
                     self.patches_name = patch_name
                     patches_container = file_container['patches']
 
+                    patch_count = len(patch_assign)
                     for index, patch_index in enumerate(patches_container):
                         nodes_container = patches_container[patch_index]
-                        editor_index, editor = patch_assign[index]
+                        editor_index, editor = patch_assign[patch_count - index - 1]
 
                         if editor is not None:
                             self.current_node_editor = editor_index
@@ -765,10 +762,40 @@ class App:
                 else:  # single patch
                     self.get_current_editor().load_(file_container, path, patch_name)
 
+                for node_editor_uuid in self.links_containers:
+                    links_container = self.links_containers[node_editor_uuid]
+                    for index, link_index in enumerate(links_container):
+                        source_node = None
+                        dest_node = None
+                        link_container = links_container[link_index]
+                        source_node_loaded_uuid = link_container['source_node']
+                        if source_node_loaded_uuid in self.created_nodes:
+                            source_node = self.created_nodes[source_node_loaded_uuid]
+                        dest_node_loaded_uuid = link_container['dest_node']
+                        if dest_node_loaded_uuid in self.created_nodes:
+                            dest_node = self.created_nodes[dest_node_loaded_uuid]
+                        if source_node is not None and dest_node is not None:
+                            source_output_index = link_container['source_output_index']
+                            dest_input_index = link_container['dest_input_index']
+                            if source_output_index < len(source_node.outputs):
+                                source_output = source_node.outputs[source_output_index]
+                                if dest_input_index < len(dest_node.inputs):
+                                    dest_input = dest_node.inputs[dest_input_index]
+                                    source_output.add_child(dest_input, node_editor_uuid)
+
+                for uuid in self.created_nodes:
+                    node = self.created_nodes[uuid]
+                    node.loaded_uuid = -1
+                for editor in self.node_editors:
+                    editor.loaded_uuid = -1
+                    editor.loaded_parent_node_uuid = -1
+                # now reorder deeper subpatchers?
+
         except Exception as exc_:
             print(exc_)
             print('load failed')
         self.current_node_editor = hold_current_editor
+        self.loading = False
 
     def load_nodes(self):
         self.load('')
@@ -827,6 +854,10 @@ class App:
         if len(self.tabs) > self.current_node_editor:
             dpg.configure_item(self.tabs[self.current_node_editor], label=title)
 
+    def set_tab_title(self, tab_index, title):
+        if len(self.tabs) > tab_index >= 0:
+            dpg.configure_item(self.tabs[tab_index], label=title)
+
     def selected_tab(self):
         chosen_tab_uuid = dpg.get_value(self.tab_bar)
         chosen_tab_index = dpg.get_item_user_data(chosen_tab_uuid)
@@ -855,9 +886,10 @@ class App:
     def close_current_node_editor(self):
         self.remove_node_editor(self.get_current_editor())
 
-    def add_node_editor(self):
-        editor_number = len(self.node_editors)
-        editor_name = 'editor ' + str(editor_number)
+    def add_node_editor(self, editor_name=None):
+        if editor_name is None:
+            editor_number = len(self.node_editors)
+            editor_name = 'editor ' + str(editor_number)
         with dpg.tab(label=editor_name, parent=self.tab_bar, user_data=len(self.tabs)) as tab:
             self.tabs.append(tab)
             panel_uuid = dpg.generate_uuid()

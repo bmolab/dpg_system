@@ -32,6 +32,8 @@ class NodeEditor:
         self.height = height
         self.width = width
         self.uuid = dpg.generate_uuid()
+        self.loaded_uuid = -1
+        self.loaded_parent_node_uuid = -1
         self.active_pins = []
         self.num_nodes = 0
         self.node_theme = None
@@ -59,11 +61,11 @@ class NodeEditor:
 
     def reconnect_to_parent(self, parent_patcher_node=None):
         if self.parent_patcher is not None:
-            print('reconnect_to_parent', self.patch_name)
+            # print('reconnect_to_parent', self.patch_name)
             if parent_patcher_node is None:
                 parent_patcher_node = self.parent_patcher.find_patcher_node(self.patch_name)
             if parent_patcher_node is not None:
-                print('found parent')
+                # print('found parent')
                 for node in self._nodes:
                     if node.label == 'in':
                         node.connect_to_parent(parent_patcher_node)
@@ -187,7 +189,10 @@ class NodeEditor:
         patch_container['height'] = dpg.get_viewport_height()
         patch_container['width'] = dpg.get_viewport_width()
         patch_container['position'] = dpg.get_viewport_pos()
-        if self.patch_name != ' ':
+        patch_container['id'] = self.uuid
+        if self.patcher_node is not None:
+            patch_container['parent_node_uuid'] = self.patcher_node.uuid
+        if self.patch_name != '':
             patch_container['name'] = self.patch_name
         if self.file_path != '':
             patch_container['path'] = self.file_path
@@ -219,9 +224,12 @@ class NodeEditor:
         patch_container['links'] = links_container
         return patch_container
 
-    def save_into(self, patch_container):
+    def save_into(self, patch_container=None):
+        if patch_container is None:
+            patch_container = {}
         patch_container = self.containerize(patch_container)
         self.modified = False
+        return patch_container
 
     def save(self, path=None):
         if path is None:
@@ -241,7 +249,6 @@ class NodeEditor:
         self.modified = False
 
     def uncontainerize(self, file_container, offset=None):
-        created_nodes = {}
         if offset is None:
             offset = [0, 0]
 
@@ -249,6 +256,11 @@ class NodeEditor:
             self.patch_name = file_container['name']
         if 'path' in file_container:
             self.file_path = file_container['path']
+        if 'id' in file_container:
+            self.loaded_uuid = file_container['id']
+        if 'parent_node_uuid' in file_container:
+            self.loaded_parent_node_uuid = file_container['parent_node_uuid']
+
         height = dpg.get_viewport_height()
         if 'height' in file_container:
             height = file_container['height']
@@ -285,41 +297,24 @@ class NodeEditor:
                     new_node = Node.app.create_node_by_name_from_file(l, pos, )
                 if new_node != None:
                     new_node.load(node_container, offset=offset)
-                    created_nodes[new_node.loaded_uuid] = new_node
+                    Node.app.created_nodes[new_node.loaded_uuid] = new_node
                     dpg.focus_item(new_node.uuid)
 
+        if self.loaded_parent_node_uuid != -1:
+            parent_node = Node.app.find_loaded_parent(self.loaded_parent_node_uuid)
+            if parent_node is not None:
+                parent_node.connect(self)
+
         if 'links' in file_container:
-            links_container = file_container['links']
-            # print(links_container)
-            for index, link_index in enumerate(links_container):
-                source_node = None
-                dest_node = None
-                link_container = links_container[link_index]
-                source_node_loaded_uuid = link_container['source_node']
-                if source_node_loaded_uuid in created_nodes:
-                    source_node = created_nodes[source_node_loaded_uuid]
-                dest_node_loaded_uuid = link_container['dest_node']
-                if dest_node_loaded_uuid in created_nodes:
-                    dest_node = created_nodes[dest_node_loaded_uuid]
-                if source_node is not None and dest_node is not None:
-                    source_output_index = link_container['source_output_index']
-                    dest_input_index = link_container['dest_input_index']
-                    if source_output_index < len(source_node.outputs):
-                        source_output = source_node.outputs[source_output_index]
-                        if dest_input_index < len(dest_node.inputs):
-                            dest_input = dest_node.inputs[dest_input_index]
-                            source_output.add_child(dest_input, self.uuid)
+            Node.app.links_containers[self.uuid] = file_container['links']
+
         dpg.configure_viewport(0, height=height, width=width, x_pos=int(position[0]), y_pos=int(position[1]))
         dpg.set_viewport_pos(position)
-        # conf = dpg.get_viewport_configuration(0)
-        # print(conf)
         self.modified = False
 
     def load_(self, patch_container, path='', name=''):
- #       print(path, name)
         self.file_path = path
         self.patch_name = name
-        # print('editor load', patch_container)
         self.uncontainerize(patch_container)
         if self.patch_name == '':
             self.patch_name = 'node patch'

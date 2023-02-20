@@ -29,8 +29,8 @@ class OutputNodeAttribute:
         self.node = node
         self.output_always = True
         self.new_output = False
-        self.loaded_uuid = -1
-        self.loaded_children = []
+        # self.loaded_uuid = -1
+        # self.loaded_children = []
 
     def get_label(self):
         return self._label
@@ -123,12 +123,12 @@ class OutputNodeAttribute:
             children[index] = child.uuid
         output_container['children'] = children
 
-    def load(self, output_container):
-        self.loaded_uuid = output_container['id']
-        self.loaded_children = []
-        kids = output_container['children']
-        for i in kids:
-            self.loaded_children.append(kids[i])
+    # def load(self, output_container):
+    #     self.loaded_uuid = output_container['id']
+    #     self.loaded_children = []
+    #     kids = output_container['children']
+    #     for i in kids:
+    #         self.loaded_children.append(kids[i])
 
 
 def value_trigger_callback(s, a, u):
@@ -910,7 +910,7 @@ class Node:
             attribute.set_value(self._data)
         self.send_all()
 
-    def custom_setup(self):
+    def custom_setup(self, from_file):
         pass
 
     def trigger(self):
@@ -931,14 +931,14 @@ class Node:
             Node.app.remove_frame_task(self)
             self.has_frame_task = False
 
-    def submit(self, parent, pos):
+    def submit(self, parent, pos, from_file=False):
         with dpg.node(parent=parent, label=self.label, tag=self.uuid, pos=pos):
             dpg.set_item_pos(self.uuid, pos)
             self.handle_parsed_args()
             if len(self.ordered_elements) > 0:
                 for attribute in self.ordered_elements:
                     attribute.submit(self.uuid)
-                self.custom_setup()
+                self.custom_setup(from_file)
                 self.update_parsed_args()
 
         dpg.set_item_user_data(self.uuid, self)
@@ -1205,7 +1205,7 @@ class PatcherInputNode(Node):
         return node
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        print('create in')
+        # print('create in')
         self.input_name = ''
         if len(args) > 0:
             s, t = decode_arg(args, 0)
@@ -1228,11 +1228,11 @@ class PatcherInputNode(Node):
                     break
 
     def connect_to_parent(self, patcher_node):
-        print('in connect to parent', self.input_name)
+        # print('in connect to parent', self.input_name)
         self.patcher_node = patcher_node
-        self.custom_setup()
+        self.custom_setup(False)  # ??
 
-    def custom_setup(self):
+    def custom_setup(self, from_file):
         if self.patcher_node is not None:
             remote_input = self.patcher_node.add_patcher_input(self.input_name, self.input_out)
             if self.input_name == '':
@@ -1250,7 +1250,7 @@ class PatcherOutputNode(Node):
         return node
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        print('create out')
+        # print('create out')
         self.output_name = ''
         if len(args) > 0:
             s, t = decode_arg(args, 0)
@@ -1280,11 +1280,11 @@ class PatcherOutputNode(Node):
                     break
 
     def connect_to_parent(self, patcher_node):
-        print('out connect to parent', self.output_name)
+        # print('out connect to parent', self.output_name)
         self.patcher_node = patcher_node
-        self.custom_setup()
+        self.custom_setup(False)
 
-    def custom_setup(self):
+    def custom_setup(self, from_file):
         if self.patcher_node is not None:
             self.target_output = self.patcher_node.add_patcher_output(self.output_name, self.output_in)
             if self.output_name == '':
@@ -1317,6 +1317,7 @@ class PatcherNode(Node):
         super().__init__(label, data, args)
         self.max_input_count = 20
         self.max_output_count = 20
+        self.subpatcher_loaded_uuid = -1
 
         self.patcher_name = 'untitled'
         if len(args) > 0:
@@ -1324,18 +1325,18 @@ class PatcherNode(Node):
             if t == str:
                 self.patcher_name = s
         self.home_editor = self.app.get_current_editor()
+        self.patch_editor = None
         # if there is an editor with self.patcher_name that has no parents, use it instead of creating
-        self.patch_editor = self.app.find_orphaned_subpatch(self.patcher_name)
-        self.reattached = False
-        if self.patch_editor is None:
-            self.patch_editor = self.app.add_node_editor()
-            self.app.set_current_tab_title(self.patcher_name)
-        else:
-            self.reattached = True
-        self.patch_editor.patcher_node = self
-        self.patch_editor.parent_patcher = self.home_editor
+        # self.patch_editor = self.app.find_orphaned_subpatch(self.patcher_name)
+        # self.reattached = False
+        # if self.patch_editor is None:
+        #     self.patch_editor = self.app.add_node_editor()
+        #     self.app.set_current_tab_title(self.patcher_name)
+        # else:
+        #     self.reattached = True
+        # self.patch_editor.patcher_node = self
+        # self.patch_editor.parent_patcher = self.home_editor
         text_size = dpg.get_text_size(self.patcher_name)
-        self.home_editor.add_subpatch(self.patch_editor)
 
         self.add_property(self.patcher_name, widget_type='button', width=text_size[0] + 8, callback=self.open_patcher)
         self.show_input = [False] * self.max_input_count
@@ -1368,7 +1369,7 @@ class PatcherNode(Node):
                 break
 
     def add_patcher_output(self, output_name, output):
-        print('add patcher output', output_name)
+        # print('add patcher output', output_name)
         for i in range(self.max_output_count):
             if self.output_ins[i] is None:
                 self.output_ins[i] = output
@@ -1399,7 +1400,7 @@ class PatcherNode(Node):
                 dpg.hide_item(self.patcher_outputs[i].uuid)
 
     def add_patcher_input(self, input_name, input):
-        print('add patcher input', input_name)
+        # print('add patcher input', input_name)
         for i in range(self.max_input_count):
             if self.input_outs[i] is None:
                 self.input_outs[i] = input
@@ -1425,12 +1426,42 @@ class PatcherNode(Node):
             else:
                 dpg.hide_item(self.patcher_inputs[i].uuid)
 
-    def custom_setup(self):
-        self.update_inputs()
-        self.update_outputs()
-        if self.reattached:  # this happens before the editor knows it has this node... not in self._nodes yet
-            # so when do we call reconnect?
-            print('reconnecting')
+    def custom_setup(self, from_file):
+        if not from_file:
+            self.patch_editor = self.app.add_node_editor(self.patcher_name)
+            self.app.set_tab_title(len(self.app.node_editors) - 1, self.patcher_name)
+            # self.home_editor.add_subpatch(self.patch_editor)
+            self.connect()
+
+
+
+        # note that this happens before custom load setup... so 'self.subpatcher_loaded_uuid' is not yet valid
+        # self.patch_editor = self.app.find_orphaned_subpatch(self.patcher_name, self.subpatcher_loaded_uuid)
+        # # note that patch_editor may not have been opened yet if opening from file
+        # reattached = False
+        # if self.patch_editor is None and not self.app.loading:
+        #     self.patch_editor = self.app.add_node_editor(self.patcher_name)
+        #     self.app.set_tab_title(len(self.app.node_editors) - 1, self.patcher_name)
+        # elif self.patch_editor is not None:
+        #     reattached = True
+        #
+        # if self.patch_editor is not None:
+        #     self.reconnect(self.patch_editor, attaching=reattached)
+        # else:
+        #     print('patch editor not loaded yet')
+        #     self.app.loaded_patcher_nodes.append(self)
+        #     # patch not yet loaded so will be attached when it loads
+
+    def connect(self, patch_editor=None):
+        if patch_editor is not None:
+            self.patch_editor = patch_editor
+        if self.patch_editor is not None:
+            self.home_editor.add_subpatch(self.patch_editor)
+            self.patch_editor.patcher_node = self
+            self.patch_editor.parent_patcher = self.home_editor
+            self.update_inputs()
+            self.update_outputs()
+            # self.loaded_uuid = -1
             self.patch_editor.reconnect_to_parent(self)
 
     def custom_cleanup(self):  # should delete associated patcher
@@ -1439,14 +1470,31 @@ class PatcherNode(Node):
     def save_custom_setup(self, container):
         container['show inputs'] = self.show_input
         container['show outputs'] = self.show_output
+        container['patcher id'] = self.patch_editor.uuid
 
-    def load_custom_setup(self, container):
+    def load_custom_setup(self, container):  # called after custom setup...
         if 'show inputs' in container:
             self.show_input = container['show inputs']
         if 'show outputs' in container:
             self.show_output = container['show outputs']
-        self.update_inputs()
-        self.update_outputs()
+        if 'patcher id' in container:
+            self.subpatcher_loaded_uuid = container['patcher id']
+
+        self.patch_editor = self.app.find_orphaned_subpatch(self.patcher_name, self.subpatcher_loaded_uuid)
+        # note that patch_editor may not have been opened yet if opening from file
+        if self.patch_editor is None:
+            self.patch_editor = self.app.add_node_editor(self.patcher_name)
+            self.app.set_tab_title(len(self.app.node_editors) - 1, self.patcher_name)
+        elif self.patch_editor is not None:
+            self.update_inputs()
+            self.update_outputs()
+
+        if self.patch_editor is not None:
+            self.connect()
+        else:
+            print('patch editor not loaded yet')
+            self.app.loaded_patcher_nodes.append(self)
+            # patch not yet loaded so will be attached when it loads
 
 class OriginNode(Node):
     @staticmethod
@@ -1459,7 +1507,7 @@ class OriginNode(Node):
         super().__init__(label, data, args)
         self.ref_property = self.add_property('', widget_type='button', width=1)
 
-    def custom_setup(self):
+    def custom_setup(self, from_file):
         with dpg.theme() as item_theme:
             with dpg.theme_component(dpg.mvAll):
                 dpg.add_theme_style(dpg.mvStyleVar_FramePadding, 0, category=dpg.mvThemeCat_Core)
@@ -1498,7 +1546,7 @@ class PlaceholderNode(Node):
         self.list_box_arrowed = False
         self.current_name = ''
 
-    def custom_setup(self):
+    def custom_setup(self, from_file):
         dpg.configure_item(self.args_property.widget.uuid, show=False, on_enter=True)
         dpg.configure_item(self.static_name.widget.uuid, show=False)
         dpg.configure_item(self.node_list_box.widget.uuid, show=False)

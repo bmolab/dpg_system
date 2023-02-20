@@ -405,7 +405,7 @@ class PackNode(Node):
         self.output_preference_option = self.add_option('output pref', widget_type='combo')
         self.output_preference_option.widget.combo_items = ['list', 'array']
 
-    def custom_setup(self):
+    def custom_setup(self, from_file):
         for i in range(self.num_ins):
             self.inputs[i].receive_data(0)
 

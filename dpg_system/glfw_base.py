@@ -21,7 +21,7 @@ class MyGLContext:
                 return
             self.inited = True
 #        Create a windowed mode window and its OpenGL context
-        print(glfw.get_version())
+#         print(glfw.get_version())
         # print('glfw inited')
         self.rotation_angle = 0
         self.d_x = 0

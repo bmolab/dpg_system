@@ -319,7 +319,7 @@ class ValueNode(Node):
                 dpg.configure_item(self.output.uuid, label=self.variable_name)
                 self.variable_update()
 
-    def custom_setup(self):
+    def custom_setup(self, from_file):
         if self.variable_name != '':
             self.bind_to_variable(self.variable_name)
         if self.start_value is not None:
@@ -434,7 +434,7 @@ class VectorNode(Node):
         self.component_count_property = self.add_option('component count', widget_type='drag_int', default_value=self.current_component_count, callback=self.component_count_changed)
         self.format_option = self.add_option(label='number format', widget_type='text_input', default_value=self.format, callback=self.change_format)
 
-    def custom_setup(self):
+    def custom_setup(self, from_file):
         for i in range(self.max_component_count):
             if i < self.current_component_count:
                 dpg.show_item(self.component_properties[i].uuid)
@@ -684,7 +684,7 @@ class PlotNode(Node):
             dpg.add_plot_axis(dpg.mvXAxis, label="", tag=self.x_axis, no_tick_labels=True)
             dpg.add_plot_axis(dpg.mvYAxis, label="", tag=self.y_axis, no_tick_labels=True)
 
-    def custom_setup(self):
+    def custom_setup(self, from_file):
         self.reallocate_buffer()
 
         if self.style == 0:
