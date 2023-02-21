@@ -447,8 +447,8 @@ class NodeEditor:
             self.modified = True
             Node.app.loading = False
             Node.app.drag_create_nodes()
-        else:
-            print('no drag starts')
+        # else:
+        #     print('no drag starts')
 
     def global_pos_to_editor_pos(self, pos):
         panel_pos = dpg.get_item_pos(Node.app.center_panel)

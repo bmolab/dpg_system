@@ -821,6 +821,9 @@ class Node:
         self.displays = []
         self.ordered_elements = []
         self.message_handlers = {}
+        self.message_handlers['set_preset'] = self.set_preset_state
+        self.message_handlers['get_preset'] = self.get_preset_state
+
         self.property_registery = {}
 
         self._data = data
@@ -832,6 +835,7 @@ class Node:
         self.has_frame_task = False
         self.created = False
         self.parse_args()
+        self.my_editor = self.app.get_current_editor()
 
     def custom_cleanup(self):
         pass
@@ -841,6 +845,9 @@ class Node:
         self.custom_cleanup()
         for input_ in self.inputs:
             input_.delete_parents()
+
+    def post_load_callback(self):
+        pass
 
     def send_all(self):
         for output in self.outputs:
@@ -865,6 +872,13 @@ class Node:
         self.property_registery[label] = new_option
         self.message_handlers[label] = self.property_message
         return new_option
+
+    def get_preset_state(self):
+        preset = {}
+        return preset
+
+    def set_preset_state(self, preset):
+        pass
 
     def add_display(self, label: str = "", uuid=None, width=80, callback=None):
         new_display = DisplayNodeAttribute(label, uuid, self, width)
@@ -1496,7 +1510,7 @@ class PatcherNode(Node):
         if self.patch_editor is not None:
             self.connect()
         else:
-            print('patch editor not loaded yet')
+            # print('patch editor not loaded yet')
             self.app.loaded_patcher_nodes.append(self)
             # patch not yet loaded so will be attached when it loads
 

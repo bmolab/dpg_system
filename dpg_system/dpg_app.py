@@ -406,7 +406,6 @@ class App:
         return container
 
     def save_patch(self, save_path):
-        print('save_patch')
         current_editor = self.get_current_editor()
         if len(current_editor.subpatches) == 0:
             current_editor.save(save_path)
@@ -424,7 +423,6 @@ class App:
                             patch_name = parts[0]
 
                 self.patches_name = patch_name
-                print(self.patches_name)
                 file_container = {}
                 file_container['name'] = self.patches_name
                 file_container['path'] = self.patches_path
@@ -906,6 +904,11 @@ class App:
                                 if dest_input_index < len(dest_node.inputs):
                                     dest_input = dest_node.inputs[dest_input_index]
                                     source_output.add_child(dest_input, node_editor_uuid)
+
+                for uuid in self.created_nodes:
+                    node = self.created_nodes[uuid]
+                    if node is not None:
+                        node.post_load_callback()
 
                 for uuid in self.created_nodes:
                     node = self.created_nodes[uuid]

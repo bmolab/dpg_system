@@ -25,10 +25,10 @@ def register_interface_nodes():
     Node.app.register_node('load_action', LoadActionNode.factory)
     Node.app.register_node('color', ColorPickerNode.factory)
     Node.app.register_node('vector', VectorNode.factory)
-    Node.app.register_node('draw', DrawNode.factory)
     Node.app.register_node('radio', RadioButtonsNode.factory)
     Node.app.register_node('radio_h', RadioButtonsNode.factory)
     Node.app.register_node('radio_v', RadioButtonsNode.factory)
+    Node.app.register_node('presets', PresetsNode.factory)
 
 
 
@@ -90,6 +90,16 @@ class MenuNode(Node):
         self.choice_input.widget.combo_items = self.choices
 
         self.output = self.add_output("")
+
+    def get_preset_state(self):
+        preset = {}
+        preset['value'] = self.choice_input.get_widget_value()
+        return preset
+
+    def set_preset_state(self, preset):
+        if 'value' in preset:
+            self.choice_input.widget.set(preset['value'])
+            self.execute()
 
     def set_choice(self, input=None):
         do_execute = True
@@ -172,6 +182,110 @@ class MouseNode(Node):
             self.output_x.set_value(self.mouse_pos[0])
         self.send_all()
 
+
+class PresetsNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = PresetsNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.preset_count = 8
+        self.buttons = []
+
+        if len(args) > 0:
+            v, t = decode_arg(args, 0)
+            if t in [float, int]:
+                self.preset_count = int(v)
+        self.input = self.add_input('', triggers_execution=True)
+        for i in range(self.preset_count):
+            self.buttons.append(i + 1)
+        self.radio_group = self.add_property(widget_type='radio_group', callback=self.preset_click)
+        self.radio_group.widget.combo_items = self.buttons
+
+        self.output = self.add_output('')
+        # if label == 'radio_h':
+        #     self.radio_group.widget.horizontal = True
+        # else:
+        self.radio_group.widget.horizontal = False
+        self.presets = [None] * self.preset_count
+
+    def preset_click(self):
+        if dpg.is_key_down(dpg.mvKey_Shift):
+            self.save_preset()
+        else:
+            self.load_preset()
+
+    def save_preset(self):
+        editor = self.my_editor
+        current_preset_index = string_to_int(self.radio_group.get_widget_value()) - 1
+        if len(self.presets) > current_preset_index + 1:
+            if self.presets[current_preset_index] is None:
+                self.presets[current_preset_index] = {}
+            kids = self.output.get_children()
+            if len(kids) > 0:
+                for kid in kids:
+                    node = kid.node
+                    if node is not None:
+                        self.presets[current_preset_index][node.uuid] = node.get_preset_state()
+            else:
+                for node in editor._nodes:
+                    self.presets[current_preset_index][node.uuid] = node.get_preset_state()
+
+    def load_preset(self):
+        editor = self.my_editor
+        current_preset_index = string_to_int(self.radio_group.get_widget_value()) - 1
+        if len(self.presets) > current_preset_index + 1:
+            if self.presets[current_preset_index] is None:
+                return
+            kids = self.output.get_children()
+            if len(kids) > 0:
+                for kid in kids:
+                    node = kid.node
+                    if node is not None:
+                        node.set_preset_state(self.presets[current_preset_index][node.uuid])
+            else:
+                for node in editor._nodes:
+                    if node.uuid in self.presets[current_preset_index]:
+                        node.set_preset_state(self.presets[current_preset_index][node.uuid])
+
+    def save_custom_setup(self, container):
+        container['presets'] = self.presets
+
+    def load_custom_setup(self, container):
+        if 'presets' in container:
+            self.presets = container['presets']
+
+    def post_load_callback(self):
+        editor = self.my_editor
+        translation_table = {}
+        for preset in self.presets:
+            if preset is not None:
+                for node_preset_uuid in preset:
+                    node_preset_uuid_int = int(node_preset_uuid)
+                    if node_preset_uuid_int not in translation_table:
+                        for node in editor._nodes:
+                            if node.loaded_uuid == node_preset_uuid_int:
+                                translation_table[node_preset_uuid_int] = node.uuid
+        adjusted_presets = [None] * self.preset_count
+        for index, preset in enumerate(self.presets):
+            if preset is not None:
+                adjusted_presets[index] = {}
+                for node_preset_uuid in preset:
+                    node_preset_uuid_int = int(node_preset_uuid)
+                    if node_preset_uuid_int in translation_table:
+                        new_uuid = translation_table[node_preset_uuid_int]
+                        adjusted_presets[index][new_uuid] = preset[node_preset_uuid]
+        self.presets = adjusted_presets.copy()
+
+    def execute(self):
+        if self.input.fresh_input:
+            data = self.input.get_received_data()
+            self.radio_group.widget.set(data)
+            self.load_preset()
+
 class RadioButtonsNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -181,7 +295,6 @@ class RadioButtonsNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.value = False
         self.buttons = []
         if args is not None and len(args) > 0:
             for i in range(len(args)):
@@ -194,6 +307,16 @@ class RadioButtonsNode(Node):
         else:
             self.radio_group.widget.horizontal = False
         self.output = self.add_output("")
+
+    def get_preset_state(self):
+        preset = {}
+        preset['value'] = self.radio_group.get_widget_value()
+        return preset
+
+    def set_preset_state(self, preset):
+        if 'value' in preset:
+            self.radio_group.widget.set(preset['value'])
+            self.execute()
 
     def call_execute(self, input=None):
         self.execute()
@@ -214,6 +337,16 @@ class ToggleNode(Node):
         self.value = False
         self.input = self.add_input("", triggers_execution=True, widget_type='checkbox', widget_width=40, callback=self.call_execute)
         self.output = self.add_output("")
+
+    def get_preset_state(self):
+        preset = {}
+        preset['value'] = self.input.get_widget_value()
+        return preset
+
+    def set_preset_state(self, preset):
+        if 'value' in preset:
+            self.input.widget.set(preset['value'])
+            self.execute()
 
     def call_execute(self, input=None):
         self.execute()
@@ -321,6 +454,16 @@ class ValueNode(Node):
             self.max_property = self.add_option('max', widget_type='drag_float', default_value=self.max, callback=self.options_changed)
         if widget_type in ['drag_float', 'slider_float', 'drag_int', 'knob_int', 'input_int']:
             self.format_property = self.add_option('format', widget_type='text_input', default_value=self.format, callback=self.options_changed)
+
+    def get_preset_state(self):
+        preset = {}
+        preset['value'] = self.input.get_widget_value()
+        return preset
+
+    def set_preset_state(self, preset):
+        if 'value' in preset:
+            self.input.widget.set(preset['value'])
+            self.execute()
 
     def binding_changed(self):
         binding = self.variable_binding_property.get_widget_value()
@@ -465,6 +608,25 @@ class VectorNode(Node):
 
         self.component_count_property = self.add_option('component count', widget_type='drag_int', default_value=self.current_component_count, callback=self.component_count_changed)
         self.format_option = self.add_option(label='number format', widget_type='text_input', default_value=self.format, callback=self.change_format)
+
+    def get_preset_state(self):
+        preset = {}
+        values = []
+        for i in range(self.current_component_count):
+            values.append(self.component_properties[i].get_widget_value())
+        preset['values'] = values
+        return preset
+
+    def set_preset_state(self, preset):
+        if 'values' in preset:
+            values = preset['values']
+            count = len(values)
+            if count != self.current_component_count:
+                self.component_count_property.set(count)
+                self.component_count_changed()
+            for i in range(self.current_component_count):
+                self.component_properties[i].widget.set(values[i])
+            self.execute()
 
     def custom_setup(self, from_file):
         for i in range(self.max_component_count):
@@ -1022,6 +1184,21 @@ class PlotNode(Node):
         if self.style >= 4:
             dpg.configure_item(self.plot_data_tag, format=self.format)
 
+    def get_preset_state(self):
+        preset = {}
+        data = self.y_data.get_buffer()[0]
+        preset['data'] = data.tolist()
+        self.y_data.release_buffer()
+        return preset
+
+    def set_preset_state(self, preset):
+        if 'data' in preset:
+            data = preset['data']
+            data = np.array(data, dtype=np.float)
+            self.y_data.set_write_pos(0)
+            self.y_data.update(data)
+            self.execute()
+
     def execute(self):
         self.lock.acquire(blocking=True)
         if self.input.fresh_input:   # standard plot
@@ -1182,6 +1359,17 @@ class ColorPickerNode(Node):
     def color_changed(self, input=None):
         self.execute()
 
+    def get_preset_state(self):
+        preset = {}
+        preset['color'] = list(self.input.get_widget_value())
+        return preset
+
+    def set_preset_state(self, preset):
+        if 'color' in preset:
+            color_val = preset['color']
+            self.input.widget.set(tuple(color_val))
+            self.execute()
+
     def execute(self):
         if self.input.fresh_input:
             data = self.input.get_received_data()
@@ -1189,19 +1377,5 @@ class ColorPickerNode(Node):
         else:
             data = list(self.input.get_widget_value())
         self.output.send(data)
-
-class DrawNode(Node):
-    @staticmethod
-    def factory(name, data, args=None):
-        node = DrawNode(name, data, args)
-        return node
-
-    def __init__(self, label: str, data, args):
-        super().__init__(label, data, args)
-        self.add_spacer(width=100, height=100)
-        self.add_frame_task()
-
-    def frame_task(self):
-        dpg.draw_circle((10, 10), 10, color=(255, 0, 0, 255))
 
 
