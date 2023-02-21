@@ -1670,16 +1670,19 @@ class PlaceholderNode(Node):
             selection = dpg.get_value(self.node_list_box.widget.uuid)
             dpg.focus_item(self.node_list_box.widget.uuid)
             dpg.configure_item(self.name_property.widget.uuid, enabled=False)
-            dpg.configure_item(self.node_list_box.widget.uuid, items=[], show=False)
-            dpg.configure_item(self.name_property.widget.uuid, show=False)
             dpg.configure_item(self.static_name.widget.uuid, show=True)
             dpg.configure_item(self.args_property.widget.uuid, show=True, on_enter=True)
             self.static_name.set(selection)
             dpg.focus_item(self.args_property.widget.uuid)
+            dpg.configure_item(self.node_list_box.widget.uuid, items=[], show=False)
+            dpg.configure_item(self.name_property.widget.uuid, show=False)
 
     def on_deactivate(self, widget):
         if widget in [self.args_property.widget, self.name_property.widget]:
-            self.execute()
+            if dpg.is_item_hovered(self.node_list_box.widget.uuid) or dpg.is_item_clicked(self.node_list_box.widget.uuid):
+                pass
+            else:
+                self.execute()
 
     def execute(self):
         if dpg.is_item_active(self.name_property.widget.uuid):

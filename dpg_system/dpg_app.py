@@ -115,36 +115,40 @@ def widget_hovered(source, data, user_data):
 
 
 def widget_activated(source, data, user_data):
-    item_type = dpg.get_item_type(data)
-    # print(item_type, type(item_type))
-    if item_type not in ['mvAppItemType::mvCombo', 'mvAppItemType::mvButton']:
-        Node.app.active_widget = data
+    if dpg.does_item_exist(data):
+        item_type = dpg.get_item_type(data)
+        # print(item_type, type(item_type))
+        if item_type not in ['mvAppItemType::mvCombo', 'mvAppItemType::mvButton']:
+            Node.app.active_widget = data
+        else:
+            Node.app.active_widget = -1
+        # print("activated", Node.app.active_widget)
     else:
         Node.app.active_widget = -1
-    # print("activated", Node.app.active_widget)
 
 
 def widget_deactive(source, data, user_data):
-    node = None
-    if Node.app.return_pressed:
-        Node.app.return_pressed = False
-        item = dpg.get_item_user_data(data)
-        if item is not None:
-            if isinstance(item, Node):
-                node = item
-            else:
-                node = item.node
-            if node is not None and node.label == 'New Node':
-                node.execute()
-    elif dpg.is_item_ok(data):
-        item = dpg.get_item_user_data(data)
-        if item is not None:
-            if isinstance(item, Node):
-                node = item
-            else:
-                node = item.node
-            if node is not None:
-                node.on_deactivate(item)
+    if dpg.does_item_exist(data):
+        node = None
+        if Node.app.return_pressed:
+            Node.app.return_pressed = False
+            item = dpg.get_item_user_data(data)
+            if item is not None:
+                if isinstance(item, Node):
+                    node = item
+                else:
+                    node = item.node
+                if node is not None and node.label == 'New Node':
+                    node.execute()
+        elif dpg.is_item_ok(data):
+            item = dpg.get_item_user_data(data)
+            if item is not None:
+                if isinstance(item, Node):
+                    node = item
+                else:
+                    node = item.node
+                if node is not None:
+                    node.on_deactivate(item)
     Node.app.active_widget = -1
     Node.app.focussed_widget = -1
 

@@ -29,6 +29,14 @@ def register_numpy_nodes():
     Node.app.register_node('np.ones', NumpyGeneratorNode.factory)
     Node.app.register_node('np.zeros', NumpyGeneratorNode.factory)
     Node.app.register_node('np.linspace', NumpyLinSpaceNode.factory)
+    Node.app.register_node('np.squeeze', NumpySqueezeNode.factory)
+    Node.app.register_node('np.expand_dims', NumpyExpandDimsNode.factory)
+    Node.app.register_node('np.unsqueeze', NumpyExpandDimsNode.factory)
+    Node.app.register_node('np.repeat', NumpyRepeatNode.factory)
+    Node.app.register_node('np.flip', NumpyFlipNode.factory)
+    Node.app.register_node('np.roll', NumpyRollNode.factory)
+    Node.app.register_node('np.rotate', NumpyRotateNode.factory)
+    Node.app.register_node('np.rot90', NumpyRotateNode.factory)
 
 
 class NumpyGeneratorNode(Node):
@@ -51,16 +59,16 @@ class NumpyGeneratorNode(Node):
         if len(self.shape) == 0:
             self.shape = [1]
 
-        self.input = self.add_input('trigger', triggers_execution=True)
-        self.output = self.add_output('out')
+        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
 
-        self.shape_options = []
+        self.shape_properties = []
         for i in range(len(self.shape)):
-            self.shape_options.append(self.add_option('dim ' + str(i), widget_type='drag_int', default_value=self.shape[i]))
+            self.shape_properties.append(self.add_property('dim ' + str(i), widget_type='input_int', default_value=self.shape[i]))
+        self.output = self.add_output('out')
 
     def execute(self):
         for i in range(len(self.shape)):
-            self.shape[i] = self.shape_options[i].get_widget_value()
+            self.shape[i] = self.shape_properties[i].get_widget_value()
         out_array = self.op(tuple(self.shape))
         self.output.send(out_array)
 
@@ -91,7 +99,7 @@ class NumpyLinSpaceNode(Node):
             d, t = decode_arg(args, 2)
             self.steps = any_to_int(d)
 
-        self.input = self.add_input('trigger', triggers_execution=True)
+        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
         self.start_property = self.add_property('start', widget_type='drag_float', default_value=self.start)
         self.stop_property = self.add_property('stop', widget_type='drag_float', default_value=self.stop)
         self.steps_property = self.add_property('steps', widget_type='drag_int', default_value=self.steps)
@@ -234,6 +242,171 @@ class NumpyCrossProductNode(Node):
         self.output.send(output_value)
 
 
+class NumpySqueezeNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpySqueezeNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        axis = 0
+        if len(args) > 0:
+            v, t = decode_arg(args, 0)
+            if t in [int, float]:
+                axis = int(v)
+        self.input = self.add_input("input", triggers_execution=True)
+        self.axis_property = self.add_property('axis', widget_type='input_int', default_value=axis)
+        self.output = self.add_output("output")
+
+    def execute(self):
+        if self.input.fresh_input:
+            data = any_to_array(self.input.get_received_data())
+            axis = self.axis_property.get_widget_value()
+            if 0 <= axis < len(data.shape):
+                if data.shape[axis] == 1:
+                    data = np.squeeze(data, axis=axis)
+                    self.output.send(data)
+                else:
+                    print('axis to squeeze has a size not equal to 1')
+            else:
+                print('axis to squeeze is out of range')
+
+
+class NumpyExpandDimsNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyExpandDimsNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        axis = 0
+        if len(args) > 0:
+            v, t = decode_arg(args, 0)
+            if t in [int, float]:
+                axis = int(v)
+        self.input = self.add_input("input", triggers_execution=True)
+        self.axis_property = self.add_property('axis', widget_type='input_int', default_value=axis)
+        self.output = self.add_output("output")
+
+    def execute(self):
+        if self.input.fresh_input:
+            data = any_to_array(self.input.get_received_data())
+            axis = axis = self.axis_property.get_widget_value()
+            if axis < 0:
+                axis = 0
+            elif axis > len(data.shape):
+                axis = len(data.shape)
+            data = np.expand_dims(data, axis=axis)
+            self.output.send(data)
+
+class NumpyRepeatNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyRepeatNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        axis = 0
+        repeats = 2
+        if len(args) > 0:
+            v, t = decode_arg(args, 0)
+            if t in [int, float]:
+                repeats = int(v)
+        if len(args) > 1:
+            v, t = decode_arg(args, 1)
+            if t in [int, float]:
+                axis = int(v)
+        self.input = self.add_input("input", triggers_execution=True)
+        self.repeats_input = self.add_input('repeats', widget_type='input_int', default_value=repeats)
+        self.axis_input = self.add_input('axis', widget_type='input_int', default_value=axis)
+
+        self.output = self.add_output("output")
+
+    def execute(self):
+        if self.input.fresh_input:
+            data = any_to_array(self.input.get_received_data())
+            axis = self.axis_input.get_widget_value()
+            repeats = self.repeats_input.get_widget_value()
+            if axis < 0:
+                axis = 0
+            elif axis >= len(data.shape):
+                axis = len(data.shape) - 1
+            repeated_data = np.repeat(data, repeats=repeats, axis=axis)
+            self.output.send(repeated_data)
+
+
+class NumpyRollNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyRollNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        axis = 0
+        shifts = 2
+        if len(args) > 0:
+            v, t = decode_arg(args, 0)
+            if t in [int, float]:
+                shifts = int(v)
+        if len(args) > 1:
+            v, t = decode_arg(args, 1)
+            if t in [int, float]:
+                axis = int(v)
+        self.input = self.add_input("input", triggers_execution=True)
+        self.shifts_input = self.add_input('shifts', widget_type='input_int', default_value=shifts)
+        self.axis_input = self.add_input('axis', widget_type='input_int', default_value=axis)
+
+        self.output = self.add_output("output")
+
+    def execute(self):
+        if self.input.fresh_input:
+            data = any_to_array(self.input.get_received_data())
+            axis = self.axis_input.get_widget_value()
+            shifts = self.shifts_input.get_widget_value()
+            if axis < 0:
+                axis = 0
+            elif axis >= len(data.shape):
+                axis = len(data.shape) - 1
+            repeated_data = np.roll(data, shift=shifts, axis=axis)
+            self.output.send(repeated_data)
+
+class NumpyFlipNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyFlipNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        axis = 0
+        if len(args) > 0:
+            v, t = decode_arg(args, 0)
+            if t in [int, float]:
+                axis = int(v)
+        self.input = self.add_input("input", triggers_execution=True)
+        self.axis_input = self.add_input('axis', widget_type='input_int', default_value=axis)
+
+        self.output = self.add_output("output")
+
+    def execute(self):
+        if self.input.fresh_input:
+            data = any_to_array(self.input.get_received_data())
+            axis = self.axis_input.get_widget_value()
+            if axis < 0:
+                axis = 0
+            elif axis >= len(data.shape):
+                axis = len(data.shape) - 1
+            flipped_data = np.flip(data, axis=axis)
+            self.output.send(flipped_data)
+
+
+
+
+
 class FlattenMatrixNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -248,12 +421,15 @@ class FlattenMatrixNode(Node):
             if t == str and order in ['C', 'F', 'A', 'K']:
                 self.order = order
         self.input = self.add_input("input", triggers_execution=True)
+        self.order_property = self.add_property('order', widget_type='combo', default_value='C')
+        self.order_property.widget.combo_items = ['C', 'F', 'A', 'K']
         self.output = self.add_output("output")
 
     def execute(self):
         if self.input.fresh_input:
+            order = self.order_property.get_widget_value()
             data = any_to_array(self.input.get_received_data())
-            data = np.ravel(data, order=self.order)
+            data = np.ravel(data, order=order)
             self.output.send(data)
 
 
@@ -296,3 +472,56 @@ class NumpyShapeNode(Node):
             data = any_to_array(data)
             shape = list(data.shape)
             self.output.send(shape)
+
+
+class NumpyRotateNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyRotateNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        k = 1
+        axis1 = 0
+        axis2 = 1
+        if len(args) > 0:
+            v, t = decode_arg(args, 0)
+            if t in [int, float]:
+                k = int(v)
+        if len(args) > 1:
+            v, t = decode_arg(args, 1)
+            if t in [int, float]:
+                axis1 = int(v)
+        if len(args) > 2:
+            v, t = decode_arg(args, 2)
+            if t in [int, float]:
+                axis2 = int(v)
+
+        self.input = self.add_input("input", triggers_execution=True)
+        self.k_input = self.add_input('k', widget_type='input_int', default_value=k)
+        self.axis1_input = self.add_input('axis 1', widget_type='input_int', default_value=axis1)
+        self.axis2_input = self.add_input('axis 2', widget_type='input_int', default_value=axis2)
+
+        self.output = self.add_output("output")
+
+    def execute(self):
+        if self.input.fresh_input:
+            data = any_to_array(self.input.get_received_data())
+            if len(data.shape) == 1:
+                data = np.expand_dims(data, axis=0)
+
+            axis1 = self.axis1_input.get_widget_value()
+            if axis1 < 0:
+                axis1 = 0
+            elif axis1 >= len(data.shape):
+                axis1 = len(data.shape) - 1
+            axis2 = self.axis2_input.get_widget_value()
+            if axis2 < 0:
+                axis2 = 0
+            elif axis2 >= len(data.shape):
+                axis2 = len(data.shape) - 1
+            if axis1 != axis2:
+                count = self.k_option.get_widget_value()
+                rotated_data = np.rot90(data, k=count, axes=(axis1, axis2))
+                self.output.send(rotated_data)

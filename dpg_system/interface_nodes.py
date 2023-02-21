@@ -793,7 +793,7 @@ class PlotNode(Node):
             self.update_style = 'input is stream of samples'
             default_color_map = 'deep'
         elif label == 'heat_scroll':
-            self.style = 5
+            self.style = self.heat_scroll_style
             self.style_type = label
             self.update_style = 'input is multi-channel sample'
         elif label == 'heat_map':
@@ -870,10 +870,15 @@ class PlotNode(Node):
         self.was_drawing = False
         self.add_frame_task()
         self.last_pos = [0, 0]
+        self.heat_map_style = 6
+        self.heat_scroll_style = 5
+        self.plot_style = 0
+        self.xy_plot_style = 1
+        self.hold_format = self.format
 
     def submit_display(self):
         with dpg.plot(label='', tag=self.plot_tag, height=self.height, width=self.width, no_title=True) as self.plotter:
-            if self.style in [6, 5]:
+            if self.style in [self.heat_map_style, self.heat_scroll_style]:
                 dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Viridis)
             dpg.add_plot_axis(dpg.mvXAxis, label="", tag=self.x_axis, no_tick_labels=True)
             dpg.add_plot_axis(dpg.mvYAxis, label="", tag=self.y_axis, no_tick_labels=True)
@@ -881,7 +886,7 @@ class PlotNode(Node):
     def custom_setup(self, from_file):
         self.reallocate_buffer()
 
-        if self.style == 0:
+        if self.style in [self.plot_style, self.xy_plot_style]:
             if self.style_type == 'bar':
                 self.min_y = 0.0
             else:
@@ -896,7 +901,7 @@ class PlotNode(Node):
                 dpg.add_line_series(self.x_data, buffer.ravel(), parent=self.y_axis, tag=self.plot_data_tag)
             self.y_data.release_buffer()
             dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Deep)
-        elif self.style == 5:
+        elif self.style == self.heat_scroll_style:
             self.min_y = 0.0
             self.min_y_option.set(0.0)
             self.max_y = 1.0
@@ -910,7 +915,7 @@ class PlotNode(Node):
                 self.y_data.release_buffer()
             dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Viridis)
             self.change_range()
-        elif self.style == 6:
+        elif self.style == self.heat_map_style:
             self.min_y = 0.0
             self.min_y_option.set(0.0)
             self.max_y = 1.0
@@ -1105,13 +1110,13 @@ class PlotNode(Node):
     def change_style_property(self):
         self.style_type = self.style_property.get_widget_value()
         if self.style_type == 'heat_map':
-            self.style = 6
+            self.style = self.heat_map_style
             self.update_style = 'buffer holds one sample of input'
         elif self.style_type == 'heat_scroll':
-            self.style = 5
+            self.style = self.heat_scroll_style
             self.update_style = 'input is multi-channel sample'
         else:
-            self.style = 0
+            self.style = self.plot_style
             self.heat_map_colour_property.set('deep')
             self.update_style = 'input is stream of samples'
         self.y_data.set_update_style(self.update_style)
@@ -1136,7 +1141,7 @@ class PlotNode(Node):
         dpg.delete_item(self.plot_data_tag)
         buffer = self.y_data.get_buffer(block=True)
         if buffer is not None:
-            if self.style < 4:
+            if self.style == self.plot_style:
                 if self.style_type == 'line':
                     dpg.add_line_series(self.x_data, buffer, parent=self.y_axis, tag=self.plot_data_tag)
                 elif self.style_type == 'scatter':
@@ -1159,8 +1164,7 @@ class PlotNode(Node):
         self.lock.release()
 
     def change_range(self):
-        if self.style >= 4:
-#            dpg.set_axis_limits(self.y_axis, 0, 1)
+        if self.style in [self.heat_map_style, self.heat_scroll_style]:
             self.max_y = self.max_y_option.get_widget_value()
             self.min_y = self.min_y_option.get_widget_value()
             self.range = self.max_y - self.min_y
@@ -1181,7 +1185,7 @@ class PlotNode(Node):
 
     def change_format(self):
         self.format = self.format_option.get_widget_value()
-        if self.style >= 4:
+        if self.style in [self.heat_scroll_style, self.heat_map_style]:
             dpg.configure_item(self.plot_data_tag, format=self.format)
 
     def get_preset_state(self):
@@ -1208,7 +1212,7 @@ class PlotNode(Node):
                 if data == 'dump':
                     self.output.send(self.y_data.get_buffer()[0])
                     self.y_data.release_buffer()
-            if self.style == 0:
+            if self.style == self.plot_style:
                 if t in [float, np.double, int, np.int64, bool, np.bool_]:
                     ii = any_to_array(float(data))
                     self.y_data.update(ii)
@@ -1221,7 +1225,7 @@ class PlotNode(Node):
                 elif t == np.ndarray:
                     if len(data.shape) == 1:
                         self.y_data.update(data)
-            elif self.style == 5:  # heat_scroll ... input might be list or array
+            elif self.style == self.heat_scroll_style:  # heat_scroll ... input might be list or array
                 if t not in [list, np.ndarray]:
                     ii = any_to_array(data)
                     ii = (ii + self.offset) / self.range
@@ -1240,7 +1244,8 @@ class PlotNode(Node):
                         self.rows = rows
                     ii = (data.reshape((rows, 1)) + self.offset) / self.range
                     self.y_data.update(ii)
-            elif self.style == 6:  # heat map
+
+            elif self.style == self.heat_map_style:  # heat map
                 if t not in [list, np.ndarray]:
                     rows = 1
                     sample_count = 1
@@ -1269,17 +1274,45 @@ class PlotNode(Node):
                         self.sample_count = sample_count
                     self.y_data.update(data)
 
-        if self.style == 1:
+        if self.style == self.xy_plot_style:
             if self.input_x.fresh_input:
                 self.x_data[1:] = self.x_data[0:-1]
                 self.x_data[0] = self.input_x.get_received_data()
-        if self.style == 0:
+        if self.style == self.plot_style:
             buffer = self.y_data.get_buffer()
             if buffer is not None:
                 dpg.set_value(self.plot_data_tag, [self.x_data, buffer.ravel()])
                 self.y_data.release_buffer()
-        elif self.style in [5, 6]:
+        elif self.style in [self.heat_scroll_style, self.heat_map_style]:
             buffer = self.y_data.get_buffer()
+            forced_format = False
+            if len(buffer.shape) == 1:
+                if self.width / self.sample_count < 40:
+                    forced_format = True
+                    if len(self.format) > 0:
+                        self.hold_format = self.format
+                        self.format_option.set('')
+                        self.change_format()
+            else:
+                if self.width / self.sample_count < 40:
+                    forced_format = True
+                    if len(self.format) > 0:
+                        self.hold_format = self.format
+                        self.format_option.set('')
+                        self.change_format()
+
+                elif len(buffer.shape) > 1 and (self.height / buffer.shape[0]) < 16:
+                    forced_format = True
+                    if len(self.format) > 0:
+                        self.hold_format = self.format
+                        self.format_option.set('')
+                        self.change_format()
+
+            if not forced_format and self.hold_format != self.format:
+                self.format = self.hold_format
+                self.format_option.set(self.hold_format)
+                self.change_format()
+
             if buffer is not None:
                 dpg.set_value(self.plot_data_tag, [buffer.ravel(), self.x_data])
                 self.y_data.release_buffer()
@@ -1288,16 +1321,16 @@ class PlotNode(Node):
         self.send_all()
 
     def update_plot(self):
-        if self.style == 1:
+        if self.style == self.xy_plot_style:
             if self.input_x.fresh_input:
                 self.x_data[1:] = self.x_data[0:-1]
                 self.x_data[0] = self.input_x.get_received_data()
-        if self.style == 0:
+        if self.style == self.plot_style:
             buffer = self.y_data.get_buffer()
             if buffer is not None:
                 dpg.set_value(self.plot_data_tag, [self.x_data, buffer.ravel()])
                 self.y_data.release_buffer()
-        elif self.style in [5, 6]:
+        elif self.style in [self.heat_scroll_style, self.heat_map_style]:
             buffer = self.y_data.get_buffer()
             if buffer is not None:
                 dpg.set_value(self.plot_data_tag, [buffer.ravel(), self.x_data])
