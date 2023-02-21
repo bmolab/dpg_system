@@ -782,6 +782,11 @@ class PlotNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
+        self.heat_map_style = 6
+        self.heat_scroll_style = 5
+        self.plot_style = 0
+        self.xy_plot_style = 1
+
         self.sample_count = 200
         self.min_y = -1.0
         self.max_y = 1.0
@@ -870,10 +875,6 @@ class PlotNode(Node):
         self.was_drawing = False
         self.add_frame_task()
         self.last_pos = [0, 0]
-        self.heat_map_style = 6
-        self.heat_scroll_style = 5
-        self.plot_style = 0
-        self.xy_plot_style = 1
         self.hold_format = self.format
 
     def submit_display(self):
