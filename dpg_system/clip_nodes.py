@@ -99,5 +99,4 @@ class CosineSimilarityNode(Node):
         vector_1 = torch.tensor(any_to_array(self.input1.get_received_data()))
         if self.vector_2 is not None:
             similarity = self.cos(vector_1, self.vector_2)
-
             self.output.send(similarity.item())

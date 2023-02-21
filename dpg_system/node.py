@@ -1574,30 +1574,30 @@ class PlaceholderNode(Node):
         scores = {}
         for index, node_name in enumerate(self.node_list):
             ratio = fuzz.partial_ratio(node_name.lower(), test.lower())
-            if ratio == 100:
-                len_diff = abs(len(test.lower()) - len(node_name.lower()))
-                full_ratio = fuzz.ratio(node_name.lower(), test.lower())
-                ratio = (ratio * len_diff + full_ratio) / (1 + len_diff)
-                if test.lower() == node_name.lower()[:len(test)]:
-                    ratio += 10
+            full_ratio = fuzz.ratio(node_name.lower(), test.lower())        # partial matchi should be less important if size diff is big
+            len_ratio = len(test) / len(node_name)
+            if len_ratio > 1:
+                len_ratio = 1 / len_ratio
+            len_ratio = len_ratio * .5 + 0.5  # 0.25 - 0.75
+            ratio = (ratio * (1 - len_ratio) + full_ratio * len_ratio)
             scores[node_name] = ratio
         for index, variable_name in enumerate(self.variable_list):
             ratio = fuzz.partial_ratio(variable_name.lower(), test.lower())
-            if ratio == 100:
-                len_diff = abs(len(test.lower()) - len(variable_name.lower()))
-                full_ratio = fuzz.ratio(variable_name.lower(), test.lower())
-                ratio = (ratio * len_diff + full_ratio) / (1 + len_diff)
-                if test.lower() == variable_name.lower()[:len(test)]:
-                    ratio += 10
+            full_ratio = fuzz.ratio(variable_name.lower(), test.lower())
+            len_ratio = len(test) / len(node_name)
+            if len_ratio > 1:
+                len_ratio = 1 / len_ratio
+            len_ratio = len_ratio * .5 + 0.5  # 0.25 - 0.75
+            ratio = (ratio * (1 - len_ratio) + full_ratio * len_ratio)
             scores[variable_name] = ratio
         for index, patcher_name in enumerate(self.patcher_list):
             ratio = fuzz.partial_ratio(patcher_name.lower(), test.lower())
-            if ratio == 100:
-                len_diff = abs(len(test.lower()) - len(patcher_name.lower()))
-                full_ratio = fuzz.ratio(patcher_name.lower(), test.lower())
-                ratio = (ratio * len_diff + full_ratio) / (1 + len_diff)
-                if test.lower() == patcher_name.lower()[:len(test)]:
-                    ratio += 10
+            full_ratio = fuzz.ratio(patcher_name.lower(), test.lower())
+            len_ratio = len(test) / len(node_name)
+            if len_ratio > 1:
+                len_ratio = 1 / len_ratio
+            len_ratio = len_ratio * .5 + 0.5  # 0.25 - 0.75
+            ratio = (ratio * (1 - len_ratio) + full_ratio * len_ratio)
             scores[patcher_name] = ratio
         sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
         self.filtered_list = []
