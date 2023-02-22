@@ -319,6 +319,7 @@ class App:
             dpg.add_item_hover_handler(callback=widget_hovered)
         self.action = self.add_action('do_it', self.reset_frame_count)
 
+
     def reset_frame_count(self):
         self.frame_number = 0
 
@@ -384,7 +385,10 @@ class App:
         return None
 
     def get_current_editor(self):
-        return self.node_editors[self.current_node_editor]
+        if len(self.node_editors) > 0:
+            return self.node_editors[self.current_node_editor]
+        else:
+            return None
 
     def set_verbose(self):
         if self.verbose_menu_item != -1:
@@ -393,7 +397,9 @@ class App:
     def show_minimap(self):
         if self.minimap_menu_item != -1:
             show = dpg.get_value(self.minimap_menu_item)
-            self.get_current_editor().show_minimap(show)
+            editor = self.get_current_editor()
+            if editor is not None:
+                editor.show_minimap(show)
 
     def containerize_patch(self, editor, container=None):
         if container is None:
@@ -408,28 +414,28 @@ class App:
 
     def save_patch(self, save_path):
         current_editor = self.get_current_editor()
-        if len(current_editor.subpatches) == 0:
-            current_editor.save(save_path)
-            self.patches_name = self.get_current_editor().patch_name
-            print(self.patches_name)
-        else:
-            with open(save_path, 'w') as f:
-                self.patches_path = save_path
+        if current_editor is not None:
+            if len(current_editor.subpatches) == 0:
+                current_editor.save(save_path)
+                self.patches_name = self.get_current_editor().patch_name
+            else:
+                with open(save_path, 'w') as f:
+                    self.patches_path = save_path
 
-                patch_name = save_path.split('/')[-1]
-                if '.' in patch_name:
-                    parts = patch_name.split('.')
-                    if len(parts) == 2:
-                        if parts[1] == 'json':
-                            patch_name = parts[0]
+                    patch_name = save_path.split('/')[-1]
+                    if '.' in patch_name:
+                        parts = patch_name.split('.')
+                        if len(parts) == 2:
+                            if parts[1] == 'json':
+                                patch_name = parts[0]
 
-                self.patches_name = patch_name
-                file_container = {}
-                file_container['name'] = self.patches_name
-                file_container['path'] = self.patches_path
-                file_container['patches'] = self.containerize_patch(current_editor)
+                    self.patches_name = patch_name
+                    file_container = {}
+                    file_container['name'] = self.patches_name
+                    file_container['path'] = self.patches_path
+                    file_container['patches'] = self.containerize_patch(current_editor)
 
-                json.dump(file_container, f, indent=4)
+                    json.dump(file_container, f, indent=4)
 
     def save_setup(self, save_path):
         with open(save_path, 'w') as f:
@@ -462,6 +468,9 @@ class App:
                 dpg.add_menu_item(label="Open (O)", callback=self.load_nodes)
                 dpg.add_menu_item(label='Close Current Patch (W)', callback=self.close_current_node_editor)
                 dpg.add_separator()
+                dpg.add_menu_item(label='Set As Default Patch', callback=self.set_as_default_patch)
+                dpg.add_menu_item(label='No Default Patch', callback=self.clear_default_patch)
+                dpg.add_separator()
                 dpg.add_menu_item(label="Save Patch (S)", callback=self.save_nodes)
                 dpg.add_menu_item(label="Save Patch As", callback=self.save_as_nodes)
                 dpg.add_separator()
@@ -475,7 +484,7 @@ class App:
                 dpg.add_menu_item(label="Paste (V)", callback=self.paste_selected)
                 dpg.add_menu_item(label="Duplicate (D)", callback=self.duplicate_handler)
                 dpg.add_separator()
-                dpg.add_menu_item(label="Connect Selected", callback=self.connect_selected)
+                dpg.add_menu_item(label="Connect Selected (K)", callback=self.connect_selected)
                 dpg.add_menu_item(label="Align Selected", callback=self.align_selected)
                 dpg.add_menu_item(label="Align and Distribute Selected", callback=self.align_distribute_selected)
                 dpg.add_menu_item(label="Space Out Selected", callback=self.space_out_selected)
@@ -610,13 +619,17 @@ class App:
         else:
             new_node = self.create_var_node_for_variable(node_name, pos)
         if placeholder:
-            self.get_current_editor().remove_node(placeholder)
+            editor = self.get_current_editor()
+            if editor is not None:
+                self.get_current_editor().remove_node(placeholder)
         return new_node
 
     def create_node_from_model(self, model, pos, name=None, args=[], from_file=False):
         node = model.create(name, args)
-        node.submit(self.get_current_editor().uuid, pos=pos, from_file=from_file)
-        self.get_current_editor().add_node(node)
+        editor = self.get_current_editor()
+        if editor is not None:
+            node.submit(editor.uuid, pos=pos, from_file=from_file)
+            editor.add_node(node)
         return node
 
     def remove_frame_task(self, remove_node):
@@ -626,16 +639,18 @@ class App:
 
     def del_handler(self):
         if self.active_widget == -1:
-            node_uuids = dpg.get_selected_nodes(self.get_current_editor().uuid)
-            for node_uuid in node_uuids:
-                # somehow we have to connect to the actual Node object
-                self.get_current_editor().node_cleanup(node_uuid)
-            link_uuids = dpg.get_selected_links(self.get_current_editor().uuid)
-            for link_uuid in link_uuids:
-                dat = dpg.get_item_user_data(link_uuid)
-                out = dat[0]
-                child = dat[1]
-                out.remove_link(link_uuid, child)
+            editor = self.get_current_editor()
+            if editor is not None:
+                node_uuids = dpg.get_selected_nodes(editor.uuid)
+                for node_uuid in node_uuids:
+                    # somehow we have to connect to the actual Node object
+                    editor.node_cleanup(node_uuid)
+                link_uuids = dpg.get_selected_links(editor.uuid)
+                for link_uuid in link_uuids:
+                    dat = dpg.get_item_user_data(link_uuid)
+                    out = dat[0]
+                    child = dat[1]
+                    out.remove_link(link_uuid, child)
 
     def return_handler(self):
         # print('return')
@@ -647,8 +662,10 @@ class App:
         panel_pos = dpg.get_item_pos(self.center_panel)
         mouse_pos[0] -= (panel_pos[0] + 8)
         mouse_pos[1] -= (panel_pos[1] + 8)
-        node.submit(self.get_current_editor().uuid, pos=mouse_pos)
-        self.get_current_editor().add_node(node)
+        editor = self.get_current_editor()
+        if editor is not None:
+            node.submit(editor.uuid, pos=mouse_pos)
+            editor.add_node(node)
 
     def int_handler(self):
         if self.active_widget == -1:
@@ -694,11 +711,13 @@ class App:
 
     def C_handler(self):
         if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
-            self.clipboard = self.get_current_editor().copy_selection()
+            if self.get_current_editor() is not None:
+                self.clipboard = self.get_current_editor().copy_selection()
 
     def X_handler(self):
         if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
-            self.clipboard = self.get_current_editor().cut_selection()
+            if self.get_current_editor() is not None:
+                self.clipboard = self.get_current_editor().cut_selection()
 
     def S_handler(self):
         if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
@@ -709,6 +728,14 @@ class App:
             self.load_nodes()
         else:
             self.options_handler()
+
+    def K_handler(self):
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+            self.connect_selected()
+
+    def Y_handler(self):
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+            self.align_distribute_selected()
 
     def N_handler(self):
         if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
@@ -729,18 +756,23 @@ class App:
     def D_handler(self):
         if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
             if self.active_widget == -1:
-                self.get_current_editor().duplicate_selection()
+                if self.get_current_editor() is not None:
+                    self.get_current_editor().duplicate_selection()
 
     def duplicate_handler(self):
         if self.active_widget == -1:
-            self.get_current_editor().duplicate_selection()
+            if self.get_current_editor() is not None:
+                self.get_current_editor().duplicate_selection()
+
     def cut_selected(self):
         if self.active_widget == -1:
-            self.get_current_editor().cut_selection()
+            if self.get_current_editor() is not None:
+                self.get_current_editor().cut_selection()
 
     def copy_selected(self):
         if self.active_widget == -1:
-            self.get_current_editor().copy_selection()
+            if self.get_current_editor() is not None:
+                self.get_current_editor().copy_selection()
 
     def mouse_down_handler(self):
         self.dragging_created_nodes = False
@@ -811,20 +843,21 @@ class App:
                             widget.callback()
 
     def new_handler(self):
-        origin = self.get_current_editor().origin
+        if self.get_current_editor() is not None:
+            origin = self.get_current_editor().origin
 
-        if self.active_widget == -1:
-            node = PlaceholderNode.factory("New Node", None)
-            mouse_pos = dpg.get_mouse_pos(local=False)
-            panel_pos = dpg.get_item_pos(self.center_panel)
-            origin_pos = dpg.get_item_pos(origin.ref_property.widget.uuid)
-            origin_node_pos = dpg.get_item_pos(origin.uuid)
+            if self.active_widget == -1:
+                node = PlaceholderNode.factory("New Node", None)
+                mouse_pos = dpg.get_mouse_pos(local=False)
+                panel_pos = dpg.get_item_pos(self.center_panel)
+                origin_pos = dpg.get_item_pos(origin.ref_property.widget.uuid)
+                origin_node_pos = dpg.get_item_pos(origin.uuid)
 
-            mouse_pos[0] -= (panel_pos[0] + 8 + (origin_pos[0] - origin_node_pos[0]) - 4)
-            mouse_pos[1] -= (panel_pos[1] + 8 + (origin_pos[1] - origin_node_pos[1]) - 15)
-            node.submit(self.get_current_editor().uuid, pos=mouse_pos)
-            self.get_current_editor().add_node(node)
-            self.set_widget_focus(node.name_property.widget.uuid)
+                mouse_pos[0] -= (panel_pos[0] + 8 + (origin_pos[0] - origin_node_pos[0]) - 4)
+                mouse_pos[1] -= (panel_pos[1] + 8 + (origin_pos[1] - origin_node_pos[1]) - 15)
+                node.submit(self.get_current_editor().uuid, pos=mouse_pos)
+                self.get_current_editor().add_node(node)
+                self.set_widget_focus(node.name_property.widget.uuid)
 
     def update(self):
         pass
@@ -868,16 +901,19 @@ class App:
                     self.patches_path = path
                     self.patches_name = patch_name
                     patches_container = file_container['patches']
-
                     patch_count = len(patch_assign)
                     for index, patch_index in enumerate(patches_container):
                         nodes_container = patches_container[patch_index]
-                        editor_index, editor = patch_assign[patch_count - index - 1]
-
+                        if len(patch_assign) > 0:
+                            editor_index, editor = patch_assign[patch_count - index - 1]
+                        else:
+                            editor = None
                         if editor is not None:
                             self.current_node_editor = editor_index
                             editor.load_(nodes_container)
                 else:  # single patch
+                    if self.get_current_editor() is None:
+                        self.add_node_editor()
                     self.get_current_editor().load_(file_container, path, patch_name)
 
                 for node_editor_uuid in self.links_containers:
@@ -923,11 +959,14 @@ class App:
         self.load('')
 
     def load(self, path=''):
+
         if path != '':
-            self.get_current_editor().load(path)
-            return
+            if self.get_current_editor() is None:
+                self.add_node_editor()
+            if self.get_current_editor() is not None:
+                self.get_current_editor().load(path)
+                return
         self.active_widget = 1
-        # print('before file_dialog')
         with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, callback=load_patches_callback, cancel_callback=cancel_callback, tag="file_dialog_id"):
             dpg.add_file_extension(".json")
 
@@ -945,10 +984,11 @@ class App:
 
     def save_nodes(self):
         # needs to save sub-patches
-        if exists(self.get_current_editor().file_path):
-            self.get_current_editor().save(self.get_current_editor().file_path)
-        else:
-            self.save_as_nodes()
+        if self.get_current_editor() is not None:
+            if exists(self.get_current_editor().file_path):
+                self.get_current_editor().save(self.get_current_editor().file_path)
+            else:
+                self.save_as_nodes()
 
     def save_as_patches(self):
         self.save_patches('')
@@ -964,16 +1004,20 @@ class App:
             print('clipboard is empty')
 
     def align_selected(self):
-        self.get_current_editor().align_selected()
+        if self.get_current_editor() is not None:
+            self.get_current_editor().align_selected()
 
     def space_out_selected(self):
-        self.get_current_editor().space_out_selected(1.1)
+        if self.get_current_editor() is not None:
+            self.get_current_editor().space_out_selected(1.1)
 
     def tighten_selected(self):
-        self.get_current_editor().space_out_selected(0.9)
+        if self.get_current_editor() is not None:
+            self.get_current_editor().space_out_selected(0.9)
 
     def align_distribute_selected(self):
-        self.get_current_editor().align_and_distribute_selected()
+        if self.get_current_editor() is not None:
+            self.get_current_editor().align_and_distribute_selected()
 
     def show_style(self):
         dpg.show_style_editor()
@@ -982,9 +1026,10 @@ class App:
         dpg.show_imgui_demo()
 
     def save_with_path(self, sender, data):
-        filename = os.sep.join(data)
-        for i in open(filename, "rt"):
-            self.get_current_editor().save(filename)
+        if self.get_current_editor() is not None:
+            filename = os.sep.join(data)
+            for i in open(filename, "rt"):
+                self.get_current_editor().save(filename)
 
     def save(self, path='', default_directory=''):
         self.active_widget = 1
@@ -1015,7 +1060,8 @@ class App:
         chosen_tab_uuid = dpg.get_value(self.tab_bar)
         chosen_tab_index = dpg.get_item_user_data(chosen_tab_uuid)
         self.current_node_editor = chosen_tab_index
-        dpg.set_value(self.minimap_menu_item, self.get_current_editor().mini_map)
+        if self.get_current_editor() is not None:
+            dpg.set_value(self.minimap_menu_item, self.get_current_editor().mini_map)
 
     def remove_node_editor(self, stale_editor):
         if stale_editor is None:
@@ -1036,8 +1082,40 @@ class App:
                     self.current_node_editor = len(self.node_editors) - 1
                 break
 
+    def clear_default_patch(self):
+        if self.get_current_editor() is not None:
+            patch = self.get_current_editor()
+            if patch.file_path != '':
+                default_patcher_path = patch.file_path
+                default_patcher_dict = {}
+                default_patcher_dict['path'] = ''
+                with open('default_patcher.json', 'w') as f:
+                    json.dump(default_patcher_dict, f, indent=4)
+
+    def set_as_default_patch(self):
+        if self.get_current_editor() is not None:
+            patch = self.get_current_editor()
+            if patch.file_path != '':
+                default_patcher_path = patch.file_path
+                default_patcher_dict = {}
+                default_patcher_dict['path'] = default_patcher_path
+                with open('default_patcher.json', 'w') as f:
+                    json.dump(default_patcher_dict, f, indent=4)
+
+    def open_default_patch(self):
+        if os.path.exists('default_patcher.json'):
+            with open('default_patcher.json', 'r') as f:
+                default_patcher_dict = json.load(f)
+                if 'path' in default_patcher_dict:
+                    default_patcher_path = default_patcher_dict['path']
+                    if default_patcher_path != '' and default_patcher_path is not None:
+                        self.load_from_file(default_patcher_path)
+                        return True
+        return False
+
     def close_current_node_editor(self):
-        self.remove_node_editor(self.get_current_editor())
+        if self.get_current_editor() is not None:
+            self.remove_node_editor(self.get_current_editor())
 
     def add_node_editor(self, editor_name=None):
         if editor_name is None:
@@ -1072,14 +1150,11 @@ class App:
                             # dpg.add_mouse_drag_handler(callback=self.mouse_drag_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Up, callback=self.up_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Down, callback=self.down_handler)
-                            # dpg.add_key_press_handler(dpg.mvKey_N, callback=self.new_handler)
                             dpg.add_key_press_handler(dpg.mvKey_I, callback=self.int_handler)
                             dpg.add_key_press_handler(dpg.mvKey_F, callback=self.float_handler)
                             dpg.add_key_press_handler(dpg.mvKey_T, callback=self.toggle_handler)
                             dpg.add_key_press_handler(dpg.mvKey_B, callback=self.button_handler)
                             dpg.add_key_press_handler(dpg.mvKey_M, callback=self.message_handler)
-                            # dpg.add_key_press_handler(dpg.mvKey_V, callback=self.vector_handler)
-                            # dpg.add_key_press_handler(dpg.mvKey_O, callback=self.options_handler)
 
                             dpg.add_key_press_handler(dpg.mvKey_D, callback=self.D_handler)
                             dpg.add_key_press_handler(dpg.mvKey_C, callback=self.C_handler)
@@ -1089,6 +1164,8 @@ class App:
                             dpg.add_key_press_handler(dpg.mvKey_O, callback=self.O_handler)
                             dpg.add_key_press_handler(dpg.mvKey_S, callback=self.S_handler)
                             dpg.add_key_press_handler(dpg.mvKey_N, callback=self.N_handler)
+                            dpg.add_key_press_handler(dpg.mvKey_K, callback=self.K_handler)
+                            dpg.add_key_press_handler(dpg.mvKey_Y, callback=self.Y_handler)
 
                             dpg.add_key_press_handler(dpg.mvKey_Back, callback=self.del_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Return, callback=self.return_handler)
@@ -1097,6 +1174,8 @@ class App:
 
         dpg.set_primary_window(main_window, True)
         dpg.show_viewport()
+        self.open_default_patch()
+
 
     def run_loop(self):
         elapsed = 0

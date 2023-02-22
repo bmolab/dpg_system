@@ -525,10 +525,12 @@ class PropertyWidget:
             val = any_to_string(data)
             dpg.set_value(self.uuid, val)
             self.value = val
+            width = self.widget_width
             size = dpg.get_text_size(self.value, font=dpg.get_item_font(self.uuid))
-            width = size[0]
-            if width > 1024:
-                width = 1024
+            if size is not None: # might be none before first frame!!!!
+                width = size[0]
+            if width > 2048:
+                width = 2048
             if width > dpg.get_item_width(self.uuid):
                 dpg.set_item_width(self.uuid, width)
         elif self.widget in ['drag_int', 'input_int', 'slider_int', 'knob_int']:
@@ -1164,7 +1166,7 @@ class Node:
                         property_label = property_container['name']
                         found = False
                         for input in self.inputs:
-                            if input.widget:
+                            if input.widget is not None:
                                 a_label = dpg.get_item_label(input.widget.uuid)
                                 if a_label == property_label:
                                     if 'value' in property_container:
@@ -1175,7 +1177,7 @@ class Node:
                                     break
                         if not found:
                             for property in self.properties:
-                                if property.widget:
+                                if property.widget is not None:
                                     a_label = dpg.get_item_label(property.widget.uuid)
                                     if a_label == property_label:
                                         if 'value' in property_container:
@@ -1263,6 +1265,8 @@ class PatcherInputNode(Node):
                 self.input_name = s
 
         text_width = dpg.get_text_size('source')
+        if text_width is None:
+            text_width = [80, 14]
         self.go_property = self.add_property('source', widget_type='button', width=text_width[0] + 8, callback=self.jump_to_patcher)
         self.input_out = self.add_output(self.input_name)
         self.patcher_node = self.app.get_current_editor().patcher_node
@@ -1307,6 +1311,8 @@ class PatcherOutputNode(Node):
             if t == str:
                 self.output_name = s
         text_width = dpg.get_text_size('dest')
+        if text_width is None:
+            text_width = [80, 14]
         self.go_property = self.add_property('dest', widget_type='button', width=text_width[0] + 8, callback=self.jump_to_patcher)
         self.output_in = self.add_input(self.output_name, callback=self.send_to_patcher)
         self.patcher_node = self.app.get_current_editor().patcher_node
@@ -1319,6 +1325,7 @@ class PatcherOutputNode(Node):
                 data = input.get_received_data()
                 if data is not None:
                     self.target_output.send(data)
+
     def jump_to_patcher(self):
         parent_patcher = self.app.get_current_editor().parent_patcher
         if parent_patcher is not None:
@@ -1387,7 +1394,8 @@ class PatcherNode(Node):
         # self.patch_editor.patcher_node = self
         # self.patch_editor.parent_patcher = self.home_editor
         text_size = dpg.get_text_size(self.patcher_name)
-
+        if text_size is None:
+            text_size = [80, 14]
         self.add_property(self.patcher_name, widget_type='button', width=text_size[0] + 8, callback=self.open_patcher)
         self.show_input = [False] * self.max_input_count
         self.show_output = [False] * self.max_output_count

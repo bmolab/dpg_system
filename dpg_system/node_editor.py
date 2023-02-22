@@ -14,7 +14,9 @@ class NodeEditor:
         input_attr = dpg.get_item_user_data(input_attr_uuid)
         output_attr = dpg.get_item_user_data(output_attr_uuid)
         output_attr.add_child(input_attr, sender)
-        Node.app.get_current_editor().modified = True
+        editor = Node.app.get_current_editor()
+        if editor is not None:
+            editor.modified = True
 
     @staticmethod
     def _unlink_callback(sender, app_data, user_data):
@@ -668,6 +670,7 @@ class NodeEditor:
         if 'nodes' in file_container:
             nodes_container = file_container['nodes']
             for index, node_index in enumerate(nodes_container):
+
                 node_container = nodes_container[node_index]
                 if 'name' in node_container:
                     if node_container['name'] == '':
@@ -681,6 +684,8 @@ class NodeEditor:
                 if 'init' in node_container:
                     args_container = node_container['init']
                     args = args_container.split(' ')
+
+
                 if len(args) > 1:
                     new_node = Node.app.create_node_by_name_from_file(args[0], pos, args[1:])
                 elif len(args) > 0:
@@ -689,6 +694,7 @@ class NodeEditor:
                     l = node_container['name']
                     new_node = Node.app.create_node_by_name_from_file(l, pos, )
                 if new_node != None:
+
                     new_node.load(node_container, offset=offset)
                     Node.app.created_nodes[new_node.loaded_uuid] = new_node
                     dpg.focus_item(new_node.uuid)

@@ -84,6 +84,8 @@ class ButtonNode(Node):
                 self.input.attach_to_action(a)
                 if self.message_option.get_widget_value() == 'bang':
                     size = dpg.get_text_size(self.action_name, font=dpg.get_item_font(self.input.widget.uuid))
+                    if size is None:
+                        size = [80, 14]
                     dpg.set_item_width(self.input.widget.uuid, int(size[0]) + 8)
                     dpg.set_item_label(self.input.widget.uuid, self.action_name)
             else:
@@ -662,6 +664,8 @@ class ValueNode(Node):
                 self.variable.set(value, from_client=self)
         if self.input.widget.widget == 'text_input':
             size = dpg.get_text_size(self.input.get_widget_value(), font=dpg.get_item_font(self.input.widget.uuid))
+            if size is None:
+                size = [80, 14]
             width = size[0]
             if width > 2048:
                 width = 2048
@@ -680,6 +684,8 @@ class ValueNode(Node):
 
         if self.input.widget.widget == 'text_input':
             size = dpg.get_text_size(self.input.get_widget_value(), font=dpg.get_item_font(self.input.widget.uuid))
+            if size is None:
+                size = [80, 14]
             width = size[0]
             if width > 1024:
                 width = 1024
@@ -985,6 +991,7 @@ class PlotNode(Node):
     def submit_display(self):
         with dpg.plot(label='', tag=self.plot_tag, height=self.height, width=self.width, no_title=True) as self.plotter:
             if self.style in [self.heat_map_style, self.heat_scroll_style]:
+
                 dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Viridis)
             dpg.add_plot_axis(dpg.mvXAxis, label="", tag=self.x_axis, no_tick_labels=True)
             dpg.add_plot_axis(dpg.mvYAxis, label="", tag=self.y_axis, no_tick_labels=True)
@@ -1107,36 +1114,37 @@ class PlotNode(Node):
                     PlotNode.mousing_plot = None
                 else:
                     editor = self.app.get_current_editor()
-                    node_padding = editor.node_scalers[dpg.mvNodeStyleVar_NodePadding]
-                    window_padding = self.app.window_padding
-                    plot_padding = 10
-                    mouse = dpg.get_mouse_pos(local=True)
-                    pos_x = dpg.get_item_pos(self.plotter)[0] + plot_padding + node_padding[0] + window_padding[0]
-                    pos_y = dpg.get_item_pos(self.plotter)[1] + plot_padding + node_padding[1] + window_padding[1] + 4  # 4 is from unknown source
+                    if editor is not None:
+                        node_padding = editor.node_scalers[dpg.mvNodeStyleVar_NodePadding]
+                        window_padding = self.app.window_padding
+                        plot_padding = 10
+                        mouse = dpg.get_mouse_pos(local=True)
+                        pos_x = dpg.get_item_pos(self.plotter)[0] + plot_padding + node_padding[0] + window_padding[0]
+                        pos_y = dpg.get_item_pos(self.plotter)[1] + plot_padding + node_padding[1] + window_padding[1] + 4  # 4 is from unknown source
 
-                    size = dpg.get_item_rect_size(self.plotter)
-                    size[0] -= (2 * plot_padding)
-                    size[1] -= (2 * plot_padding)
-                    x_scale = self.sample_count / size[0]
-                    y_scale = self.range / size[1]
+                        size = dpg.get_item_rect_size(self.plotter)
+                        size[0] -= (2 * plot_padding)
+                        size[1] -= (2 * plot_padding)
+                        x_scale = self.sample_count / size[0]
+                        y_scale = self.range / size[1]
 
-                    off_x = mouse[0] - pos_x
-                    off_y = mouse[1] - pos_y
-                    unit_x = off_x * x_scale
-                    unit_y = off_y * y_scale
-                    unit_y = self.max_y - unit_y
-                    if unit_x < 0:
-                        unit_x = 0
-                    elif unit_x >= self.sample_count:
-                        unit_x = self.sample_count - 1
-                    if unit_y < self.min_y:
-                        unit_y = self.min_y
-                    elif unit_y > self.max_y:
-                        unit_y = self.max_y
-                    x = unit_x
-                    y = unit_y
-                    ref_pos = [x, y]
-                    x = int(x)
+                        off_x = mouse[0] - pos_x
+                        off_y = mouse[1] - pos_y
+                        unit_x = off_x * x_scale
+                        unit_y = off_y * y_scale
+                        unit_y = self.max_y - unit_y
+                        if unit_x < 0:
+                            unit_x = 0
+                        elif unit_x >= self.sample_count:
+                            unit_x = self.sample_count - 1
+                        if unit_y < self.min_y:
+                            unit_y = self.min_y
+                        elif unit_y > self.max_y:
+                            unit_y = self.max_y
+                        x = unit_x
+                        y = unit_y
+                        ref_pos = [x, y]
+                        x = int(x)
 
             if dpg.is_item_hovered(self.plotter):
                 if dpg.is_mouse_button_down(0):
