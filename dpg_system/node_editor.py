@@ -701,7 +701,7 @@ class NodeEditor:
         if 'links' in file_container:
             Node.app.links_containers[self.uuid] = file_container['links']
 
-        dpg.configure_viewport(0, height=height, width=width, x_pos=int(position[0]), y_pos=int(position[1]))
+        dpg.configure_viewport(0, height=height, width=width)
         # dpg.configure_viewport(0, height=height, width=width, x_pos=int(position[0]), y_pos=int(position[1]))
         # dpg.set_viewport_pos(position)
         self.modified = False

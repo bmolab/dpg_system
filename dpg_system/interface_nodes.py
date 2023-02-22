@@ -82,7 +82,10 @@ class ButtonNode(Node):
                 self.action_name = action_name
                 self.action = a
                 self.input.attach_to_action(a)
-                self.input.widget._label = action_name
+                if self.message_option.get_widget_value() == 'bang':
+                    size = dpg.get_text_size(self.action_name, font=dpg.get_item_font(self.input.widget.uuid))
+                    dpg.set_item_width(self.input.widget.uuid, int(size[0]) + 8)
+                    dpg.set_item_label(self.input.widget.uuid, self.action_name)
             else:
                 self.input.attach_to_action(None)
         else:
@@ -490,6 +493,9 @@ class ValueNode(Node):
         if widget_type in ['drag_float', 'slider_float', "knob_float"]:
             self.min_property = self.add_option('min', widget_type='drag_float', default_value=self.min, callback=self.options_changed)
             self.max_property = self.add_option('max', widget_type='drag_float', default_value=self.max, callback=self.options_changed)
+
+        self.width_option = self.add_option('width', widget_type='drag_int', default_value=widget_width, callback=self.options_changed)
+        # self.height_option = self.add_option('height', widget_type='drag_int', default_value=14, callback=self.options_changed)
         if widget_type in ['drag_float', 'slider_float', 'drag_int', 'knob_int', 'input_int']:
             self.format_property = self.add_option('format', widget_type='text_input', default_value=self.format, callback=self.options_changed)
 
@@ -547,6 +553,11 @@ class ValueNode(Node):
         if self.format_property is not None:
             self.format = self.format_property.get_widget_value()
             self.input.widget.set_format(self.format)
+
+        width = self.width_option.get_widget_value()
+        dpg.set_item_width(self.input.widget.uuid, width)
+        # height = self.height_option.get_widget_value()
+        # dpg.set_item_height(self.input.widget.uuid, height)
 
     def value_changed(self):
         pass

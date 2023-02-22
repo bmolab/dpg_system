@@ -86,21 +86,22 @@ for entry in os.scandir('dpg_system'):
                 string = f'from dpg_system.{name} import *'
                 exec(string)
 
-for entry in os.scandir('dpg_system/plugins'):
-    if entry.is_file():
-        if entry.name[-8:] == 'nodes.py':
-            if entry.name not in imported:
-                name = entry.name[:-3]
-                string = f'from dpg_system.plugins.{name} import *'
-                exec(string)
-    else:
-        for subentry in os.scandir('dpg_system/plugins/' + entry.name):
-            if subentry.is_file():
-                if subentry.name[-8:] == 'nodes.py':
-                    if subentry.name not in imported:
-                        name = subentry.name[:-3]
-                        string = f'from dpg_system.plugins.{entry.name}.{subentry} import *'
-                        exec(string)
+if os.path.exists('dpg_system/plugins'):
+    for entry in os.scandir('dpg_system/plugins'):
+        if entry.is_file():
+            if entry.name[-8:] == 'nodes.py':
+                if entry.name not in imported:
+                    name = entry.name[:-3]
+                    string = f'from dpg_system.plugins.{name} import *'
+                    exec(string)
+        else:
+            for subentry in os.scandir('dpg_system/plugins/' + entry.name):
+                if subentry.is_file():
+                    if subentry.name[-8:] == 'nodes.py':
+                        if subentry.name not in imported:
+                            name = subentry.name[:-3]
+                            string = f'from dpg_system.plugins.{entry.name}.{subentry} import *'
+                            exec(string)
 
 
 
@@ -338,10 +339,11 @@ class App:
         self.patchers.append(name)
 
     def register_patchers(self):
-        for entry in os.scandir('dpg_system/patcher_library'):
-            if entry.is_file():
-                if entry.name[-5:] == '.json':
-                    self.register_patcher(entry.name[:-5])
+        if os.path.exists('dpg_system/patcher_library'):
+            for entry in os.scandir('dpg_system/patcher_library'):
+                if entry.is_file():
+                    if entry.name[-5:] == '.json':
+                        self.register_patcher(entry.name[:-5])
 
     def position_viewport(self, x, y):
         dpg.configure_viewport(self.viewport, x_pos=x, y_pos=y)
@@ -903,7 +905,6 @@ class App:
                     node = self.created_nodes[uuid]
                     if node is not None:
                         node.post_load_callback()
-
                 for uuid in self.created_nodes:
                     node = self.created_nodes[uuid]
                     node.loaded_uuid = -1
@@ -934,9 +935,12 @@ class App:
         self.save('')
 
     def save_to_library(self):
-        self.saving_to_lib = True
-        self.save('', default_directory='dpg_system/patcher_library')
-        self.patchers.append(self.patches_name)
+        if not os.path.exists('dpg_system/patcher_library'):
+            os.makedirs('dpg_system/patcher_library')
+        if os.path.exists('dpg_system/patcher_library'):
+            self.saving_to_lib = True
+            self.save('', default_directory='dpg_system/patcher_library')
+            self.patchers.append(self.patches_name)
 
 
     def save_nodes(self):
