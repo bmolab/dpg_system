@@ -376,8 +376,16 @@ class ToggleNode(Node):
         super().__init__(label, data, args)
 
         self.value = False
+        self.variable = None
+        self.variable_name = ''
         self.input = self.add_input("", triggers_execution=True, widget_type='checkbox', widget_width=40, callback=self.call_execute)
         self.output = self.add_output("")
+        self.variable_binding_property = self.add_option('bind to', widget_type='text_input', width=120, default_value=self.variable_name, callback=self.binding_changed)
+        if self.ordered_args is not None and len(self.ordered_args) > 0:
+            for i in range(len(self.ordered_args)):
+                var_name, t = decode_arg(self.ordered_args, i)
+                if t == str:
+                    self.variable_name = var_name
 
     def get_preset_state(self):
         preset = {}
@@ -388,6 +396,53 @@ class ToggleNode(Node):
         if 'value' in preset:
             self.input.widget.set(preset['value'])
             self.execute()
+
+    def binding_changed(self):
+        binding = self.variable_binding_property.get_widget_value()
+        self.bind_to_variable(binding)
+
+    def bind_to_variable(self, variable_name):
+        # change name
+        if self.variable is not None:
+            self.variable.detach_client(self)
+            self.variable = None
+        if variable_name != '':
+            v = Node.app.find_variable(variable_name)
+            if v is None:
+                default = False
+                v = Node.app.add_variable(variable_name, default_value=default)
+            if v:
+                self.variable_name = variable_name
+                self.variable = v
+                self.input.attach_to_variable(v)
+                self.variable.attach_client(self)
+                self.output._label = self.variable_name
+                dpg.configure_item(self.output.uuid, label=self.variable_name)
+                self.variable_update()
+
+    def custom_setup(self, from_file):
+        if self.variable_name != '':
+            self.bind_to_variable(self.variable_name)
+
+    def variable_update(self):
+        if self.variable is not None:
+            data = self.variable.get_value()
+            self.input.set(data, propagate=False)
+        self.update(propagate=False)
+
+    def update(self, propagate=True):
+        value = dpg.get_value(self.value)
+        if type(value) == str:
+            value = value.split(' ')
+            if len(value) == 1:
+                value = value[0]
+        if self.variable is not None and propagate:
+            self.variable.set(value, from_client=self)
+        self.outputs[0].send(value)
+
+    def custom_cleanup(self):
+        if self.variable is not None:
+            self.variable.detach_client(self)
 
     def call_execute(self, input=None):
         self.execute()
@@ -401,7 +456,8 @@ class ToggleNode(Node):
                     self.input.set(self.value)
         else:
             self.value = self.input.get_widget_value()
-
+        if self.variable is not None:
+            self.variable.set(self.value, from_client=self)
         self.output.send(self.value)
 
 
