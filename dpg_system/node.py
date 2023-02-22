@@ -183,6 +183,7 @@ class PropertyNodeAttribute:
         self.user_data = None
         self.node_attribute = None
         self.variable = None
+        self.action = None
         self.node = node
 
     def submit(self, parent):
@@ -204,6 +205,10 @@ class PropertyNodeAttribute:
         self.variable = variable
         self.variable.property = self
         self.widget.attach_to_variable(variable)
+
+    def attach_to_action(self, action):
+        self.action = action
+        self.widget.attach_to_action(action)
 
     def load(self, property_container):
         self.widget.load(property_container)
@@ -264,6 +269,7 @@ class PropertyWidget:
         else:
             self.step = 1
         self.variable = None
+        self.action = None
         self.node = node
 
     def submit(self):
@@ -429,12 +435,17 @@ class PropertyWidget:
     def attach_to_variable(self, variable):
         self.variable = variable
 
+    def attach_to_action(self, action):
+        self.action = action
+
     def value_changed(self, uuid=-1, force=False):
         if not dpg.is_mouse_button_down(0) and not force:
             return
         self.value = dpg.get_value(self.uuid)
         if self.variable:
             self.variable.set_value(self.value)
+        if self.action is not None:
+            self.action()
         if self.callback is not None:
             self.callback()
         if self.triggers_execution:
@@ -444,6 +455,8 @@ class PropertyWidget:
         self.value = dpg.get_value(self.uuid)
         if self.variable:
             self.variable.set_value(self.value)
+        if self.action is not None:
+            self.action()
         if self.callback is not None:
             self.callback()
         if self.triggers_execution:
@@ -611,6 +624,7 @@ class InputNodeAttribute:
         self.callback = None
         self.user_data = None
         self.variable = None
+        self.action = None
 
     def get_label(self):
         return self._label
@@ -661,6 +675,10 @@ class InputNodeAttribute:
         self.variable = variable
         self.variable.property = self
         self.widget.attach_to_variable(variable)
+
+    def attach_to_action(self, action):
+        self.action = action
+        self.widget.attach_to_action(action)
 
     def delete_parents(self):
         # print(self._parents)
@@ -796,15 +814,29 @@ class Variable:
             self.clients.remove(client)
 
     def set_value(self, data):  # does not notify_clients_of_value_change
+        self.value = data
         if self.set_callback:
             self.set_callback(data)
-        else:
-            self.value = data
 
     def get_value(self):
         if self.get_callback:
             return self.get_callback()
         return self.value
+
+
+# Action allows you to set a function in your python code that will be called
+# if bound button is clicked or bound menu option is selected
+class Action:
+    def __init__(self, label: str, action_function):
+        self.label = label
+        self.property = None
+        self.clients = []
+        self.action_function = action_function
+
+    def perform(self):
+        if self.action_function is not None:
+            self.action_function()
+
 
 
 class Node:

@@ -43,10 +43,16 @@ class ButtonNode(Node):
 
         self.target_time = 0
         self.flash_duration = .100
+        self.action_name = ''
+        self.action = None
 
         self.input = self.add_input('', triggers_execution=True, widget_type='button', widget_width=14, callback=self.clicked_function)
         self.output = self.add_output("")
 
+        self.action_binding_property = self.add_option('bind to', widget_type='text_input', width=120, default_value=self.action_name, callback=self.binding_changed)
+        self.message_option = self.add_option('message', widget_type='text_input', default_value='bang', callback=self.message_changed)
+        self.width_option = self.add_option('width', widget_type='input_int', default_value='14', callback=self.size_changed)
+        self.height_option = self.add_option('height', widget_type='input_int', default_value='14', callback=self.size_changed)
         self.flash_duration_option = self.add_option('flash duration', widget_type='drag_float', min=0, max=1.0, default_value=self.flash_duration)
 
         with dpg.theme() as self.active_theme:
@@ -58,6 +64,35 @@ class ButtonNode(Node):
         with dpg.theme() as self.inactive_theme:
             with dpg.theme_component(dpg.mvAll):
                 dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
+
+    def size_changed(self):
+        width = self.width_option.get_widget_value()
+        height = self.height_option.get_widget_value()
+        dpg.set_item_width(self.input.widget.uuid, width)
+        dpg.set_item_height(self.input.widget.uuid, height)
+
+    def binding_changed(self):
+        binding = self.action_binding_property.get_widget_value()
+        self.bind_to_action(binding)
+
+    def bind_to_action(self, action_name):
+        if action_name != '':
+            a = Node.app.find_action(action_name)
+            if a is not None:
+                self.action_name = action_name
+                self.action = a
+                self.input.attach_to_action(a)
+                self.input.widget._label = action_name
+            else:
+                self.input.attach_to_action(None)
+        else:
+            self.input.attach_to_action(None)
+
+    def message_changed(self):
+        new_name = self.message_option.get_widget_value()
+        size = dpg.get_text_size(new_name, font=dpg.get_item_font(self.input.widget.uuid))
+        dpg.set_item_width(self.input.widget.uuid, int(size[0]) + 8)
+        dpg.set_item_label(self.input.widget.uuid, new_name)
 
     def clicked_function(self, input=None):
         self.flash_duration = self.flash_duration_option.get_widget_value()
@@ -72,7 +107,10 @@ class ButtonNode(Node):
             self.remove_frame_tasks()
 
     def execute(self):
-        self.output.send('bang')
+        # if self.action is not None:
+        #     print('execute', self.action)
+        #     self.action()
+        self.output.send(self.message_option.get_widget_value())
 
 
 class MenuNode(Node):
@@ -558,8 +596,8 @@ class ValueNode(Node):
         if self.input.widget.widget == 'text_input':
             size = dpg.get_text_size(self.input.get_widget_value(), font=dpg.get_item_font(self.input.widget.uuid))
             width = size[0]
-            if width > 1024:
-                width = 1024
+            if width > 2048:
+                width = 2048
             if width > dpg.get_item_width(self.input.widget.uuid):
                 dpg.set_item_width(self.input.widget.uuid, width)
         self.outputs[0].send(value)

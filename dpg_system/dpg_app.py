@@ -276,6 +276,7 @@ class App:
         self.frame_tasks = []
         self.variables = {}
         self.conduits = {}
+        self.actions = {}
         self.loaded_patcher_nodes = []
 
         self.osc_manager = OSCManager(label='osc_manager', data=0, args=None)
@@ -315,6 +316,10 @@ class App:
             dpg.add_item_focus_handler(callback=widget_focus)
             dpg.add_item_clicked_handler(callback=widget_clicked)
             dpg.add_item_hover_handler(callback=widget_hovered)
+        self.action = self.add_action('do_it', self.reset_frame_count)
+
+    def reset_frame_count(self):
+        self.frame_number = 0
 
     def setup_dpg(self):
         dpg.create_context()
@@ -387,16 +392,6 @@ class App:
         if self.minimap_menu_item != -1:
             show = dpg.get_value(self.minimap_menu_item)
             self.get_current_editor().show_minimap(show)
-
-    # def containerize_sub_patches(self, editor, container=None):
-    #     if container is None:
-    #         container = {}
-    #     start_length = len(container)
-    #     for index, node_editor in enumerate(editor.subpatches):
-    #         patch_container = {}
-    #         node_editor.save_into(patch_container)
-    #         container[index + start_length] = patch_container
-    #     return container
 
     def containerize_patch(self, editor, container=None):
         if container is None:
@@ -570,9 +565,18 @@ class App:
         self.variables[variable_name] = v
         return v
 
+    def add_action(self, action_name, action_function):
+        a = Action(label=action_name, action_function=action_function)
+        self.actions[action_name] = action_function
+
     def find_variable(self, variable_name):
         if variable_name in self.variables:
             return self.variables[variable_name]
+        return None
+
+    def find_action(self, action_name):
+        if action_name in self.actions:
+            return self.actions[action_name]
         return None
 
     def create_node_by_name_from_file(self, node_name, pos, args=[]):
@@ -845,7 +849,6 @@ class App:
                     patch_count = len(patches_container)
 
                 patch_assign = {}
-                # sub_patch_assign = {}
                 available_editors = {}
 
                 for editor_index, editor in enumerate(self.node_editors):
@@ -858,19 +861,6 @@ class App:
                         del available_editors[0]
                     else:
                         patch_assign[i] = (len(self.node_editors), self.add_node_editor())
-
-                # if 'subpatches' in file_container:
-                #     self.patches_path = path
-                #     self.patches_name = patch_name
-                #     patches_container = file_container['subpatches']
-                #
-                #     for index, patch_index in enumerate(patches_container):
-                #         nodes_container = patches_container[patch_index]
-                #         editor_index, editor = sub_patch_assign[index]
-                #
-                #         if editor is not None:
-                #             self.current_node_editor = editor_index
-                #             editor.load_(nodes_container)
 
                 if 'patches' in file_container:
                     self.patches_path = path
