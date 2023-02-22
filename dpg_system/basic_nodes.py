@@ -38,6 +38,7 @@ def register_basic_nodes():
     Node.app.register_node('receive', ConduitReceiveNode.factory)
     Node.app.register_node('s', ConduitSendNode.factory)
     Node.app.register_node('r', ConduitReceiveNode.factory)
+    Node.app.register_node('ramp', RampNode.factory)
 
 
 class MetroNode(Node):
@@ -110,6 +111,99 @@ class MetroNode(Node):
 
     def execute(self):
         self.output.send('bang')
+
+
+class RampNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = RampNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.base_time = time.time()
+        default_units = 'seconds'
+        self.units = 1
+        self.units_dict = {'seconds': 1, 'milliseconds': 1000, 'minutes': 1.0/60.0, 'hours': 1.0/60.0/60.0}
+        self.update_time_base()
+
+        self.start_value = 0
+        self.current_value = 0
+        self.target = 0
+        self.duration = 1.0
+        self.elapsed = 0.0
+
+        if len(self.ordered_args) > 0:
+            if self.ordered_args[0] in self.units_dict:
+                self.units = self.units_dict[self.ordered_args[0]]
+                default_units = self.ordered_args[0]
+
+        self.input = self.add_input('in', triggers_execution=True)
+        self.units_property = self.add_option('units', widget_type='combo', default_value=default_units, callback=self.set_units)
+        self.units_property.widget.combo_items = ['seconds', 'milliseconds', 'minutes', 'hours']
+        self.output_always_option = self.add_option('output_always', widget_type='checkbox', default_value=False)
+        self.output = self.add_output("out")
+        self.ramp_done_out = self.add_output("done")
+
+        self.lock = threading.Lock()
+        self.add_frame_task()
+
+    def go_to_value(self, value):
+        self.start_value = value
+        self.current_value = value
+        self.target = value
+        self.duration = 0
+
+    def set_units(self):
+        units_string = self.units_property.get_widget_value()
+        if units_string in self.units_dict:
+            self.units = self.units_dict[units_string]
+
+    def update_time_base(self):
+        self.base_time = time.time()
+        self.calc_time()
+
+    def calc_time(self):
+        current_time = time.time()
+        self.elapsed = (current_time - self.base_time) * self.units
+
+    def frame_task(self):
+        if self.lock.acquire(blocking=False):
+            if self.current_value != self.target:
+                self.calc_time()
+                if self.duration != 0.0:
+                    fraction = self.elapsed / self.duration
+                else:
+                    fraction = 1.0
+                if fraction > 1.0:
+                    fraction = 1.0
+                self.current_value = self.target * fraction + self.start_value * (1.0 - fraction)
+
+                if self.current_value == self.target:
+                    self.ramp_done_out.send('bang')
+                    self.start_value = self.current_value
+                self.output.send(self.current_value)
+            elif self.output_always_option.get_widget_value():
+                self.output.send(self.current_value)
+            self.lock.release()
+
+    def execute(self):
+        # if we receive a list... target time... esle fo
+        if self.input.fresh_input:
+            data = self.input.get_received_data()
+            t = type(data)
+            self.lock.acquire(blocking=True)
+            if t == list:
+                if len(data) == 2:
+                    self.target = float(data[0])
+                    self.duration = float(data[1])
+                    self.start_value = self.current_value
+                    self.update_time_base()
+
+            elif t in [int, float]:
+                self.go_to_value(data)
+            self.lock.release()
 
 
 class TimerNode(Node):

@@ -46,6 +46,11 @@ class ButtonNode(Node):
         self.action_name = ''
         self.action = None
 
+        if args is not None and len(args) > 0:
+            v, t = decode_arg(args, 0)
+            if t == str:
+                self.action_name = v
+
         self.input = self.add_input('', triggers_execution=True, widget_type='button', widget_width=14, callback=self.clicked_function)
         self.output = self.add_output("")
 
@@ -72,6 +77,7 @@ class ButtonNode(Node):
         dpg.set_item_height(self.input.widget.uuid, height)
 
     def binding_changed(self):
+        print('binding_changed')
         binding = self.action_binding_property.get_widget_value()
         self.bind_to_action(binding)
 
@@ -82,11 +88,13 @@ class ButtonNode(Node):
                 self.action_name = action_name
                 self.action = a
                 self.input.attach_to_action(a)
+                print('about to test bang name')
                 if self.message_option.get_widget_value() == 'bang':
+                    print('getting_text_size')
                     size = dpg.get_text_size(self.action_name, font=dpg.get_item_font(self.input.widget.uuid))
                     if size is None:
                         size = [80, 14]
-                    dpg.set_item_width(self.input.widget.uuid, int(size[0]) + 8)
+                    dpg.set_item_width(self.input.widget.uuid, int(size[0]) + 12)
                     dpg.set_item_label(self.input.widget.uuid, self.action_name)
             else:
                 self.input.attach_to_action(None)
@@ -95,15 +103,21 @@ class ButtonNode(Node):
 
     def message_changed(self):
         new_name = self.message_option.get_widget_value()
-        size = dpg.get_text_size(new_name, font=dpg.get_item_font(self.input.widget.uuid))
-        dpg.set_item_width(self.input.widget.uuid, int(size[0]) + 8)
-        dpg.set_item_label(self.input.widget.uuid, new_name)
+        print(new_name)
+        if new_name != 'bang':
+            size = dpg.get_text_size(new_name, font=dpg.get_item_font(self.input.widget.uuid))
+            dpg.set_item_width(self.input.widget.uuid, int(size[0]) + 12)
+            dpg.set_item_label(self.input.widget.uuid, new_name)
 
     def clicked_function(self, input=None):
         self.flash_duration = self.flash_duration_option.get_widget_value()
         self.target_time = time.time() + self.flash_duration
         dpg.bind_item_theme(self.input.widget.uuid, self.active_theme)
         self.add_frame_task()
+
+    def custom_setup(self, from_file):
+        if self.action_name != '':
+            self.binding_changed()
 
     def frame_task(self):
         now = time.time()
@@ -418,8 +432,7 @@ class ToggleNode(Node):
                 self.variable = v
                 self.input.attach_to_variable(v)
                 self.variable.attach_client(self)
-                self.output._label = self.variable_name
-                dpg.configure_item(self.output.uuid, label=self.variable_name)
+                self.output.set_label(self.variable_name)
                 self.variable_update()
 
     def custom_setup(self, from_file):
@@ -592,8 +605,7 @@ class ValueNode(Node):
                 self.variable = v
                 self.input.attach_to_variable(v)
                 self.variable.attach_client(self)
-                self.output._label = self.variable_name
-                dpg.configure_item(self.output.uuid, label=self.variable_name)
+                self.output.set_label(self.variable_name)
                 self.variable_update()
 
     def custom_setup(self, from_file):
