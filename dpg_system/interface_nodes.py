@@ -88,9 +88,7 @@ class ButtonNode(Node):
                 self.action_name = action_name
                 self.action = a
                 self.input.attach_to_action(a)
-                print('about to test bang name')
                 if self.message_option.get_widget_value() == 'bang':
-                    print('getting_text_size')
                     size = dpg.get_text_size(self.action_name, font=dpg.get_item_font(self.input.widget.uuid))
                     if size is None:
                         size = [80, 14]
@@ -106,6 +104,8 @@ class ButtonNode(Node):
         print(new_name)
         if new_name != 'bang':
             size = dpg.get_text_size(new_name, font=dpg.get_item_font(self.input.widget.uuid))
+            if size is None:
+                size = [80, 14]
             dpg.set_item_width(self.input.widget.uuid, int(size[0]) + 12)
             dpg.set_item_label(self.input.widget.uuid, new_name)
 
