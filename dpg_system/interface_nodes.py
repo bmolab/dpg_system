@@ -77,7 +77,6 @@ class ButtonNode(Node):
         dpg.set_item_height(self.input.widget.uuid, height)
 
     def binding_changed(self):
-        print('binding_changed')
         binding = self.action_binding_property.get_widget_value()
         self.bind_to_action(binding)
 
