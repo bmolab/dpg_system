@@ -131,8 +131,9 @@ class RampNode(Node):
         self.start_value = 0
         self.current_value = 0
         self.target = 0
-        self.duration = 1.0
+        self.duration = 0.0
         self.elapsed = 0.0
+        self.new_target = False
 
         if len(self.ordered_args) > 0:
             if self.ordered_args[0] in self.units_dict:
@@ -184,8 +185,13 @@ class RampNode(Node):
                     self.ramp_done_out.send('bang')
                     self.start_value = self.current_value
                 self.output.send(self.current_value)
-            elif self.output_always_option.get_widget_value():
-                self.output.send(self.current_value)
+            else:
+                if self.new_target:
+                    self.ramp_done_out.send('bang')
+                    self.output.send(self.current_value)
+                elif self.output_always_option.get_widget_value():
+                    self.output.send(self.current_value)
+            self.new_target = False
             self.lock.release()
 
     def execute(self):
@@ -196,12 +202,13 @@ class RampNode(Node):
             self.lock.acquire(blocking=True)
             if t == list:
                 if len(data) == 2:
-                    self.target = float(data[0])
-                    self.duration = float(data[1])
+                    self.new_target = True
+                    self.target = any_to_float(data[0])
+                    self.duration = any_to_float(data[1])
                     self.start_value = self.current_value
                     self.update_time_base()
-
             elif t in [int, float]:
+                self.new_target = True
                 self.go_to_value(data)
             self.lock.release()
 

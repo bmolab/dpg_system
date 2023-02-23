@@ -1180,24 +1180,23 @@ class App:
     def run_loop(self):
         elapsed = 0
         while dpg.is_dearpygui_running():
-            now = time.time()
-            for node_editor in self.node_editors:
-                node_editor.reset_pins()
-            jobs = dpg.get_callback_queue()  # retrieves and clears queue
             try:
+                now = time.time()
+                for node_editor in self.node_editors:
+                    node_editor.reset_pins()
+                jobs = dpg.get_callback_queue()  # retrieves and clears queue
                 for task in self.frame_tasks:
                     if task.created:
                         task.frame_task()
                 dpg.run_callbacks(jobs)
+                self.frame_number += 1
+                self.frame_variable.set(self.frame_number)
+                self.frame_time_variable.set(elapsed)
+                dpg.render_dearpygui_frame()
+                then = time.time()
+                elapsed = then - now
+                if 'GLContextNode' in globals():
+                    GLContextNode.maintenance_loop()
             except Exception as exc_:
                 print(exc_)
-            self.frame_number += 1
-            self.frame_variable.set(self.frame_number)
-            self.frame_time_variable.set(elapsed)
-            dpg.render_dearpygui_frame()
-            then = time.time()
-            elapsed = then - now
-
-            if 'GLContextNode' in globals():
-                GLContextNode.maintenance_loop()
 
