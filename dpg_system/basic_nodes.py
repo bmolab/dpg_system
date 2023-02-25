@@ -210,6 +210,7 @@ class RampNode(Node):
             elif t in [int, float]:
                 self.new_target = True
                 self.go_to_value(data)
+                self.update_time_base()
             self.lock.release()
 
 
@@ -724,8 +725,12 @@ class TriggerNode(Node):
         self.triggers = []
         self.trigger_options = []
         self.trigger_pass = []
+        self.force_trigger = False
+        self.target_time = 0
+        self.flash_duration = .100
 
-        self.input = self.add_input("", triggers_execution=True)
+
+        self.input = self.add_input("", widget_type='button', widget_width=14, triggers_execution=True, callback=self.call_execution)
 
         for i in range(self.trigger_count):
             self.add_output(any_to_string(args[i]))
@@ -738,6 +743,16 @@ class TriggerNode(Node):
             self.trigger_pass.append(0)
 
         self.new_triggers = True
+
+        with dpg.theme() as self.active_theme:
+            with dpg.theme_component(dpg.mvAll):
+                dpg.add_theme_color(dpg.mvThemeCol_Button, (255, 255, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, (255, 255, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, (255, 255, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
+        with dpg.theme() as self.inactive_theme:
+            with dpg.theme_component(dpg.mvAll):
+                dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
 
     def triggers_changed(self):
 #        print('trigger changed')
@@ -772,12 +787,26 @@ class TriggerNode(Node):
             sel, t = decode_arg(new_triggers, i)
             self.triggers[i] = sel
 
+    def call_execution(self, value=0):
+        self.force_trigger = True
+        self.target_time = time.time() + self.flash_duration
+        dpg.bind_item_theme(self.input.widget.uuid, self.active_theme)
+        self.add_frame_task()
+        self.execute()
+
+    def frame_task(self):
+        now = time.time()
+        if now >= self.target_time:
+            dpg.bind_item_theme(self.input.widget.uuid, self.inactive_theme)
+            self.remove_frame_tasks()
+
     def execute(self):
         if self.new_triggers:
             self.update_triggers()
             self.new_triggers = False
 
-        if self.input.fresh_input:
+        if self.input.fresh_input or self.force_trigger:
+            self.force_trigger = False
             in_data = self.input.get_received_data()
             for i in range(self.trigger_count):
                 j = self.trigger_count - i - 1

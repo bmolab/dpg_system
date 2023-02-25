@@ -2,7 +2,7 @@ from pythonosc import osc_server
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.dispatcher import Dispatcher
 from dpg_system.conversion_utils import *
-
+import asyncio
 from dpg_system.node import Node
 import threading
 
@@ -11,6 +11,7 @@ import threading
 
 def register_osc_nodes():
     Node.app.register_node('osc_source', OSCSourceNode.factory)
+    Node.app.register_node('osc_source_async', OSCAsyncIOSourceNode.factory)
     Node.app.register_node('osc_receive', OSCReceiveNode.factory)
     Node.app.register_node('osc_target', OSCTargetNode.factory)
     Node.app.register_node('osc_send', OSCSendNode.factory)
@@ -41,6 +42,7 @@ class OSCManager:
 
         OSCReceiveNode.osc_manager = self
         OSCSource.osc_manager = self
+        OSCAsyncIOSourceNode.osc_manager = self
         OSCSendNode.osc_manager = self
         OSCTarget.osc_manager = self
         # if not self.started:
@@ -341,6 +343,91 @@ def stop_server():
     global server_to_stop
     server_to_stop.destroy_server()
 
+def start_async():
+    loop = asyncio.new_event_loop()
+    threading.Thread(target=loop.run_forever).start()
+    return loop
+
+def submit_async(awaitable, looper):
+    return asyncio.run_coroutine_threadsafe(awaitable, looper)
+
+def stop_async(looper):
+    looper.call_soon_threadsafe(looper.stop)
+
+class OSCAsyncIOSource:
+    osc_manager = None
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.server = None
+        self.server_thread = None
+        self.dispatcher = None
+        self.receive_nodes = {}
+        self.transport = None
+        self.protocol = None
+        self.pending_dead_loop = []
+
+        self.name = ''
+        self.port = 2500
+        if args is not None:
+            if len(args) > 0:
+                self.name = args[0]
+            if len(args) > 1:
+                p, t = decode_arg(args, 1)
+                self.port = any_to_int(p)
+        self.osc_manager.register_source(self)
+        self.start_serving()
+        # asyncio.run(self.init_main())
+
+    def start_serving(self):
+        self.dispatcher = Dispatcher()
+        self.dispatcher.set_default_handler(self.osc_handler)
+        self.async_loop = start_async()
+        submit_async(self.loop_coroutine(), self.async_loop)
+
+    async def loop_coroutine(self):
+        self.server = osc_server.AsyncIOOSCUDPServer(('0.0.0.0', self.port), self.dispatcher, asyncio.get_event_loop())
+        self.transport, self.protocol = await self.server.create_serve_endpoint()
+        try:
+            while True:
+                await asyncio.sleep(1)
+        except asyncio.CancelledError:
+            for i in range(len(self.pending_dead_loop)):
+                self.pending_dead_loop[i] = None
+            self.pending_dead_loop = []
+
+
+    def stop_serving(self):
+        for address in self.receive_nodes:
+            receive_node = self.receive_nodes[address]
+            receive_node.source_going_away(self)
+        if self.dispatcher:
+            self.dispatcher = None
+        if self.transport is not None:
+            self.transport.close()
+        if self.async_loop:
+            self.pending_dead_loop.append(self.async_loop)
+            stop_async(self.async_loop)
+            self.async_loop = None
+
+
+    def osc_handler(self, address, *args):
+        if address in self.receive_nodes:
+            self.receive_nodes[address].receive(args)
+        else:
+            self.output_message_directly(address, args)
+
+    def output_message_directly(self, address, args):
+        pass
+
+    def register_receive_node(self, receive_node):
+        self.receive_nodes[receive_node.address] = receive_node
+
+    def unregister_receive_node(self, receive_node):
+        if receive_node.address in self.receive_nodes:
+            self.receive_nodes.pop(receive_node.address)
+
 
 class OSCSourceNode(OSCSource, Node):
     @staticmethod
@@ -381,6 +468,74 @@ class OSCSourceNode(OSCSource, Node):
             self.destroy_server()
             self.port = port
             self.create_server()
+
+        if name != self.name:
+            poppers = []
+            for address in self.receive_nodes:
+                receive_node = self.receive_nodes[address]
+                if receive_node is not None:
+                    receive_node.source_going_away(self)
+                    poppers.append(address)
+            for address in poppers:
+                self.receive_nodes.pop(address)
+            self.osc_manager.remove_source(self)
+            self.name = name
+            self.osc_manager.register_source(self)
+
+        # go to osc_manager and see if any existing receiveNodes refer to this new name
+
+    def cleanup(self):
+        self.osc_manager.remove_source(self)
+        global server_to_stop
+        server_to_stop = self
+        stop_thread = threading.Thread(target=stop_server)
+        stop_thread.start()
+        i = 0
+        while self.server is not None:
+            i += 1
+
+
+class OSCAsyncIOSourceNode(OSCAsyncIOSource, Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = OSCAsyncIOSourceNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.name = ''
+        self.port = 2500
+
+        if args is not None and len(args) > 0:
+            for i in range(len(args)):
+                arg, t = decode_arg(args, i)
+                if t == int:
+                    self.port = arg
+                elif t == str:
+                    self.name = arg
+
+        self.source_name_property = self.add_property('name', widget_type='text_input', default_value=self.name, callback=self.source_changed)
+        self.source_port_property = self.add_property('port', widget_type='text_input', default_value=str(self.port), callback=self.source_changed)
+        self.output = self.add_output("osc received")
+        # asyncio.run(self.init_main())
+
+    def output_message_directly(self, address, args):
+        if self.output:
+            out_list = [address]
+            if args is not None and len(args) > 0:
+                out_list.append(list(args))
+            self.output.send(out_list)
+
+    def source_changed(self):
+        name = self.source_name_property.get_widget_value()
+        port = any_to_int(self.source_port_property.get_widget_value())
+
+        if port != self.port:
+            self.stop_serving()
+
+            self.port = port
+            self.start_serving()
+            # self.create_server()
 
         if name != self.name:
             poppers = []
