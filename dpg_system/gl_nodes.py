@@ -1089,10 +1089,10 @@ class GLTextNode(GLNode):
                 self.font_size = v
             elif t == str:
                 self.font_path = v
-
-        self.face = freetype.Face(self.font_path)
-        size = self.font_size * 256.0
-        self.face.set_char_size(int(size))
+        self.face = None
+        # self.face = freetype.Face(self.font_path)
+        # size = self.font_size * 256.0
+        # self.face.set_char_size(int(size))
 
         self.text_input = self.add_input('text', widget_type='text_input', default_value='text')
         self.position_x_input = self.add_input('position_x', widget_type='drag_float', default_value=0.0)
@@ -1101,6 +1101,7 @@ class GLTextNode(GLNode):
         self.scale_input = self.add_input('scale', widget_type='drag_float', default_value=1.0)
         self.text_color = self.add_option('alpha', widget_type='color_picker', default_value=[1.0, 1.0, 1.0, 1.0], callback=self.color_changed)
         self.text_font = self.add_option('font', widget_type='text_input', default_value=self.font_path, callback=self.font_changed)
+        self.text_size = self.add_option('size', widget_type='drag_int', default_value=self.font_size, callback=self.size_changed)
         self.ready = True
         self.context = None
 
@@ -1114,8 +1115,19 @@ class GLTextNode(GLNode):
         self.color[1] /= 255.0
         self.color[2] /= 255.0
 
+    def size_changed(self):
+        size = self.text_size.get_widget_value()
+        if size != self.font_size:
+            self.font_size = size
+            self.initialized = False
+
     def font_changed(self):
-        self.font_path = self.text_font.get_widget_value()
+        path = self.text_font.get_widget_value()
+        if self.font_path != path:
+            self.font_path = path
+            self.initialized = False
+
+    def update_font(self):
         hold_context = glfw.get_current_context()
         glfw.make_context_current(self.context)
 
@@ -1125,9 +1137,11 @@ class GLTextNode(GLNode):
             character = self.characters[ch]
             # delete textures
             t.append(character.texture)
-        glDeleteTextures(len(t), t)
+        if len(t) > 0:
+            glDeleteTextures(len(t), t)
         self.characters = {}
-        del self.face
+        if self.face is not None:
+            del self.face
         self.face = freetype.Face(self.font_path)
         size = self.font_size * 256.0
         self.face.set_char_size(int(size))
@@ -1139,33 +1153,35 @@ class GLTextNode(GLNode):
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
 
         for i in range(0, 128):
-            self.face.load_char(chr(i))
-            glyph = self.face.glyph
+            a = chr(i)
+            if a.isprintable():
+                self.face.load_char(chr(i))
+                glyph = self.face.glyph
 
-            bm = glyph.bitmap.buffer
-            rgb_bm = [0.0] * (glyph.bitmap.rows * glyph.bitmap.width * 4)
+                bm = glyph.bitmap.buffer
+                rgb_bm = [0.0] * (glyph.bitmap.rows * glyph.bitmap.width * 4)
 
-            for k in range(glyph.bitmap.rows):
+                for k in range(glyph.bitmap.rows):
 
-                for j in range(glyph.bitmap.width):
-                    rgb_bm[(k * glyph.bitmap.width + j) * 4] = 1.0
-                    rgb_bm[(k * glyph.bitmap.width + j) * 4 + 1] = 1.0
-                    rgb_bm[(k * glyph.bitmap.width + j) * 4 + 2] = 1.0
-                    rgb_bm[(k * glyph.bitmap.width + j) * 4 + 3] = float(bm[k * glyph.bitmap.width + j]) / 255.0
+                    for j in range(glyph.bitmap.width):
+                        rgb_bm[(k * glyph.bitmap.width + j) * 4] = 1.0
+                        rgb_bm[(k * glyph.bitmap.width + j) * 4 + 1] = 1.0
+                        rgb_bm[(k * glyph.bitmap.width + j) * 4 + 2] = 1.0
+                        rgb_bm[(k * glyph.bitmap.width + j) * 4 + 3] = float(bm[k * glyph.bitmap.width + j]) / 255.0
 
-            texture = glGenTextures(1)
-            glBindTexture(GL_TEXTURE_2D, texture)
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, glyph.bitmap.width, glyph.bitmap.rows, 0,
-                         GL_RGBA, GL_FLOAT, rgb_bm)
+                texture = glGenTextures(1)
+                glBindTexture(GL_TEXTURE_2D, texture)
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, glyph.bitmap.width, glyph.bitmap.rows, 0,
+                             GL_RGBA, GL_FLOAT, rgb_bm)
 
-            # texture options
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+                # texture options
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
 
-            # now store character for later use
-            self.characters[chr(i)] = CharacterSlot(texture, glyph)
+                # now store character for later use
+                self.characters[chr(i)] = CharacterSlot(texture, glyph)
         glBindTexture(GL_TEXTURE_2D, 0)
 
     def get_rendering_buffer(self, xpos, ypos, width, height, zfix=0.):
@@ -1182,9 +1198,9 @@ class GLTextNode(GLNode):
         if not self.ready:
             return
         if not self.initialized:
-            self.create_glyph_textures()
-            self.initialized = True
             self.context = glfw.get_current_context()
+            self.update_font()
+            self.initialized = True
         glActiveTexture(GL_TEXTURE0)
         glPushMatrix()
         glTranslatef(0, 0, -2)
