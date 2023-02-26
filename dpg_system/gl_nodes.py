@@ -1077,6 +1077,7 @@ class GLTextNode(GLNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+        self.ready = False
         self.characters = {}
         self.initialized = False
         self.font_size = 24
@@ -1097,8 +1098,11 @@ class GLTextNode(GLNode):
         self.position_x_input = self.add_input('position_x', widget_type='drag_float', default_value=0.0)
         self.position_y_input = self.add_input('position_y', widget_type='drag_float', default_value=0.0)
         self.text_alpha_input = self.add_input('alpha', widget_type='drag_float', default_value=1.0)
-        self.text_color = self.add_option('alpha', widget_type='color_picker', default_value=[1.0, 1.0, 1.0, 1.0], callback=self.color_changed)
         self.scale_input = self.add_input('scale', widget_type='drag_float', default_value=1.0)
+        self.text_color = self.add_option('alpha', widget_type='color_picker', default_value=[1.0, 1.0, 1.0, 1.0], callback=self.color_changed)
+        self.text_font = self.add_option('font', widget_type='text_input', default_value=self.font_path, callback=self.font_changed)
+        self.ready = True
+        self.context = None
 
     def custom_setup(self, from_file):
         dpg.configure_item(self.text_color.widget.uuid, no_alpha=True)
@@ -1109,6 +1113,27 @@ class GLTextNode(GLNode):
         self.color[0] /= 255.0
         self.color[1] /= 255.0
         self.color[2] /= 255.0
+
+    def font_changed(self):
+        self.font_path = self.text_font.get_widget_value()
+        hold_context = glfw.get_current_context()
+        glfw.make_context_current(self.context)
+
+        self.ready = False
+        t = []
+        for ch in self.characters:
+            character = self.characters[ch]
+            # delete textures
+            t.append(character.texture)
+        glDeleteTextures(len(t), t)
+        self.characters = {}
+        del self.face
+        self.face = freetype.Face(self.font_path)
+        size = self.font_size * 256.0
+        self.face.set_char_size(int(size))
+        self.create_glyph_textures()
+        self.ready = True
+        glfw.make_context_current(hold_context)
 
     def create_glyph_textures(self):
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
@@ -1154,9 +1179,12 @@ class GLTextNode(GLNode):
         ], np.float32)
 
     def draw(self):
+        if not self.ready:
+            return
         if not self.initialized:
             self.create_glyph_textures()
             self.initialized = True
+            self.context = glfw.get_current_context()
         glActiveTexture(GL_TEXTURE0)
         glPushMatrix()
         glTranslatef(0, 0, -2)
