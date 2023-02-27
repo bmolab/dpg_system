@@ -23,6 +23,8 @@ conda install pyglfw -c conda-forge
 pip install matplotlib
 pip install numpy-quaternion
 pip install scipy
+conda install freetype
+pip install freetype-py
 ```
 
 for the clip nodes, you also need to install CLIP by installing huggingface transformers

@@ -318,7 +318,7 @@ class App:
             dpg.add_item_clicked_handler(callback=widget_clicked)
             dpg.add_item_hover_handler(callback=widget_hovered)
         self.action = self.add_action('do_it', self.reset_frame_count)
-
+        self.window_context = None
 
     def reset_frame_count(self):
         self.frame_number = 0
@@ -1138,6 +1138,7 @@ class App:
 
         with dpg.window() as main_window:
             global dpg_app
+            self.window_context = glfw.get_current_context()
             self.main_window_id = main_window
             dpg.bind_item_theme(main_window, self.global_theme)
             dpg.add_spacer(height=14)
@@ -1181,6 +1182,8 @@ class App:
         elapsed = 0
         while dpg.is_dearpygui_running():
             try:
+                hold_context = glfw.get_current_context()
+                glfw.make_context_current(self.window_context)
                 now = time.time()
                 for node_editor in self.node_editors:
                     node_editor.reset_pins()
@@ -1197,6 +1200,7 @@ class App:
                 elapsed = then - now
                 if 'GLContextNode' in globals():
                     GLContextNode.maintenance_loop()
+                glfw.make_context_current(hold_context)
             except Exception as exc_:
                 print(exc_)
 

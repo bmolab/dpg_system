@@ -1744,6 +1744,7 @@ class PlaceholderNode(Node):
                 new_node_args = [new_node_name]
             node_model = None
             found = False
+            v = None
             if new_node_args[0] in self.node_list:
                 found = True
             elif selection_name in self.node_list:
@@ -1781,6 +1782,9 @@ class PlaceholderNode(Node):
                     found = True
                 elif t == bool:
                     new_node_args = ['toggle', new_node_args[0]]
+                    found = True
+                elif t == list:
+                    new_node_args = ['message', new_node_args[0]]
                     found = True
                 if found:
                     if len(additional) > 0:
