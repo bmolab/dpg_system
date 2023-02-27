@@ -881,6 +881,8 @@ class CombineFIFONode(Node):
         self.combine_list = [''] * self.count
 
         self.input = self.add_input("in", triggers_execution=True)
+        self.order = self.add_property('order', widget_type='combo', width=150, default_value='newest_at_end')
+        self.order.widget.combo_items = ['newest_at_end', 'newest_at_start']
         self.output = self.add_output("out")
 
     def execute(self):
@@ -888,10 +890,16 @@ class CombineFIFONode(Node):
             self.combine_list[self.pointer] = self.input.get_received_data()
             self.pointer = (self.pointer - 1) % self.count
         output_string = ''
-        for i in range(self.count):
-            j = (self.pointer - i) % self.count
-            if self.combine_list[j] != '':
-                output_string += (any_to_string(self.combine_list[j]) + ', ')
+        if self.order.get_widget_value() == 'newest_at_end':
+            for i in range(self.count):
+                j = (self.pointer - i) % self.count
+                if self.combine_list[j] != '':
+                    output_string += (any_to_string(self.combine_list[j]) + ', ')
+        else:
+            for i in range(self.count):
+                j = (self.pointer + i + 1) % self.count
+                if self.combine_list[j] != '':
+                    output_string += (any_to_string(self.combine_list[j]) + ', ')
         self.output.send(output_string)
 
 class TypeNode(Node):
