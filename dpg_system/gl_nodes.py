@@ -1214,7 +1214,6 @@ class GLTextNode(GLNode):
             width, height = ch.textureSize
             width = width * scale
             height = height * scale
-            origin = ch.origin[1] * scale
             vertices = self.get_rendering_buffer(pos[0] + ch.bearing[0] * scale, pos[1] + ch.bearing[1] * scale, width, height)
             glBindTexture(GL_TEXTURE_2D, ch.texture)
 

@@ -39,6 +39,9 @@ def register_basic_nodes():
     Node.app.register_node('s', ConduitSendNode.factory)
     Node.app.register_node('r', ConduitReceiveNode.factory)
     Node.app.register_node('ramp', RampNode.factory)
+    Node.app.register_node('fifo_string', CombineFIFONode.factory)
+
+
 
 
 class MetroNode(Node):
@@ -859,6 +862,37 @@ class CombineNode(Node):
             output_string += any_to_string(self.inputs[i]._data)
         self.output.send(output_string)
 
+class CombineFIFONode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = CombineFIFONode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.count = 4
+        self.pointer = 0
+        if len(args) > 0:
+            v, t = decode_arg(args, 0)
+            if t == int:
+                self.count = v
+
+        self.combine_list = [''] * self.count
+
+        self.input = self.add_input("in", triggers_execution=True)
+        self.output = self.add_output("out")
+
+    def execute(self):
+        if self.input.fresh_input:
+            self.combine_list[self.pointer] = self.input.get_received_data()
+            self.pointer = (self.pointer - 1) % self.count
+        output_string = ''
+        for i in range(self.count):
+            j = (self.pointer - i) % self.count
+            if self.combine_list[j] != '':
+                output_string += (any_to_string(self.combine_list[j]) + ', ')
+        self.output.send(output_string)
 
 class TypeNode(Node):
     @staticmethod
