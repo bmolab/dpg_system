@@ -991,10 +991,10 @@ class GLAlignNode(GLNode):
     def __init__(self, label: str, data, args):
         self.ready = False
         super().__init__(label, data, args)
-
-    def initialize(self, args):
         self.axis = np.array([0.0, 1.0, 0.0])
         self.up = np.array([0.0, 1.0, 0.0])
+
+    def initialize(self, args):
         if args is not None:
             float_count = 0
             for i in range(len(args)):
@@ -1049,7 +1049,6 @@ class GLAlignNode(GLNode):
                   0.0, 0.0, 0.0, 1.0])
         self.alignment_matrix.reshape((4, 4))
 
-
 class CharacterSlot:
     def __init__(self, texture, glyph):
         self.texture = texture
@@ -1066,8 +1065,6 @@ class CharacterSlot:
             self.origin = [glyph.bitmap_left, glyph.bitmap.rows - glyph.bitmap_top]
         else:
             raise RuntimeError('unknown glyph type')
-
-
 
 class GLTextNode(GLNode):
     @staticmethod
@@ -1090,9 +1087,6 @@ class GLTextNode(GLNode):
             elif t == str:
                 self.font_path = v
         self.face = None
-        # self.face = freetype.Face(self.font_path)
-        # size = self.font_size * 256.0
-        # self.face.set_char_size(int(size))
 
         self.text_input = self.add_input('text', widget_type='text_input', default_value='text')
         self.position_x_input = self.add_input('position_x', widget_type='drag_float', default_value=0.0)
