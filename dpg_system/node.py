@@ -509,6 +509,7 @@ class PropertyWidget:
             self.callback()
 
     def set(self, data, propagate=True):
+        print('set')
         if self.widget == 'checkbox':
             val = any_to_bool(data)
             dpg.set_value(self.uuid, val)
@@ -564,6 +565,9 @@ class PropertyWidget:
             self.value = val
         if self.variable and propagate:
             self.variable.set_value(self.value)
+        if self.action and propagate:
+            self.action()
+
 
     def load(self, widget_container):
         if 'value' in widget_container:
@@ -1602,7 +1606,7 @@ class PlaceholderNode(Node):
             self.node_list = self.app.node_factory_container.get_node_list()
         self.variable_list = self.app.get_variable_list()
         self.patcher_list = self.app.patchers
-
+        self.action_list = list(self.app.actions.keys())
         self.node_list_box = self.add_property('###options', widget_type='list_box', width=180)
         self.list_box_arrowed = False
         self.current_name = ''
@@ -1641,6 +1645,15 @@ class PlaceholderNode(Node):
             len_ratio = len_ratio * .5 + 0.5  # 0.25 - 0.75
             ratio = (ratio * (1 - len_ratio) + full_ratio * len_ratio)
             scores[patcher_name] = ratio
+        for index, action_name in enumerate(self.action_list):
+            ratio = fuzz.partial_ratio(action_name.lower(), test.lower())
+            full_ratio = fuzz.ratio(action_name.lower(), test.lower())
+            len_ratio = len(test) / len(node_name)
+            if len_ratio > 1:
+                len_ratio = 1 / len_ratio
+            len_ratio = len_ratio * .5 + 0.5  # 0.25 - 0.75
+            ratio = (ratio * (1 - len_ratio) + full_ratio * len_ratio)
+            scores[action_name] = ratio
         sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
         self.filtered_list = []
         for index, item in enumerate(sorted_scores):
@@ -1745,6 +1758,7 @@ class PlaceholderNode(Node):
             node_model = None
             found = False
             v = None
+            action = False
             if new_node_args[0] in self.node_list:
                 found = True
             elif selection_name in self.node_list:
@@ -1765,26 +1779,37 @@ class PlaceholderNode(Node):
                 v = self.app.find_variable(new_node_args[0])
                 if v is not None:
                     found = True
+            elif selection_name in self.action_list:
+                new_node_args[0] = selection_name
+                v = self.app.find_action(new_node_args[0])
+                if v is not None:
+                    found = True
+                    action = True
             if found:
                 additional = []
                 if len(new_node_args) > 1:
                     additional = new_node_args[1:]
-                t = type(v.value)
                 found = False
-                if t == int:
-                    new_node_args = ['int', new_node_args[0]]
-                    found = True
-                elif t == float:
-                    new_node_args = ['float', new_node_args[0]]
-                    found = True
-                elif t == str:
-                    new_node_args = ['message', new_node_args[0]]
-                    found = True
-                elif t == bool:
-                    new_node_args = ['toggle', new_node_args[0]]
-                    found = True
-                elif t == list:
-                    new_node_args = ['message', new_node_args[0]]
+
+                if not action:
+                    t = type(v.value)
+                    if t == int:
+                        new_node_args = ['int', new_node_args[0]]
+                        found = True
+                    elif t == float:
+                        new_node_args = ['float', new_node_args[0]]
+                        found = True
+                    elif t == str:
+                        new_node_args = ['message', new_node_args[0]]
+                        found = True
+                    elif t == bool:
+                        new_node_args = ['toggle', new_node_args[0]]
+                        found = True
+                    elif t == list:
+                        new_node_args = ['message', new_node_args[0]]
+                        found = True
+                else:
+                    new_node_args = ['button', new_node_args[0]]
                     found = True
                 if found:
                     if len(additional) > 0:
