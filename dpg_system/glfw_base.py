@@ -64,6 +64,7 @@ class MyGLContext:
     def prepare_draw(self):
         if self.window:
             glfw.make_context_current(self.window)
+            gl.glClearColor(0, 0, 0, 1)
             gl.glClear(gl.GL_COLOR_BUFFER_BIT)
             gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
 #            self.update_fov()

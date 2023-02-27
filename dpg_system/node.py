@@ -554,10 +554,12 @@ class PropertyWidget:
             dpg.set_value(self.uuid, val)
             self.value = val
         elif self.widget == 'color_picker':
+            print(data, type(data))
             if type(data) != tuple:
-                val = tuple(any_to_list(data))
+                val = tuple(any_to_array(data))
             else:
                 val = data
+            print(data, type(data))
             dpg.set_value(self.uuid, val)
             self.value = val
         if self.variable and propagate:
@@ -704,11 +706,11 @@ class InputNodeAttribute:
     def receive_data(self, data):
         if not self.node.check_for_messages(data):
             if type(data) == str and data == 'bang':
-                if self.widget:
-                    if self.widget.widget != 'text_input':
+                if self.bang_repeats_previous:
+                    if self.widget:
                         data = self.get_widget_value()
-                elif self.bang_repeats_previous:
-                    data = self._data
+                    else:
+                        data = self._data
             self._data = data
             self.fresh_input = True
             dpg.bind_item_theme(self.uuid, self._pin_active_theme)

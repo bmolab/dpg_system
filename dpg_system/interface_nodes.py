@@ -662,7 +662,7 @@ class ValueNode(Node):
                 value = in_data
             else:
                 if self.input.widget.widget == 'text_input':
-                    value = str(in_data)
+                    value = any_to_string(in_data)
             if self.variable is not None:
                 self.variable.set(value, from_client=self)
         else:
@@ -1506,10 +1506,10 @@ class ColorPickerNode(Node):
                 dpg.configure_item(self.input.widget.uuid, no_alpha=False)
                 dpg.configure_item(self.input.widget.uuid, alpha_preview=dpg.mvColorEdit_AlphaPreviewHalf)
             else:
-                data = self.input.get_widget_value()
+                data = list(self.input.get_widget_value())
                 if data is not None:
                     data[3] = 255
-                    self.input.widget.set(data)
+                    self.input.widget.set(tuple(data))
                 dpg.configure_item(self.input.widget.uuid, no_alpha=True)
                 dpg.configure_item(self.input.widget.uuid, alpha_preview=dpg.mvColorEdit_AlphaPreviewNone)
             self.alpha = alpha
@@ -1529,11 +1529,13 @@ class ColorPickerNode(Node):
             self.execute()
 
     def execute(self):
-        if self.input.fresh_input:
-            data = self.input.get_received_data()
-            self.input.widget.set(tuple(data))
-        else:
-            data = list(self.input.get_widget_value())
+        # if self.input.fresh_input:
+        #     data = self.input.get_received_data()
+        #     if type(data) != tuple:
+        #         data = tuple(any_to_array(data))
+        #     self.input.widget.set(data)
+        # else:
+        data = list(self.input.get_widget_value())
         self.output.send(data)
 
 

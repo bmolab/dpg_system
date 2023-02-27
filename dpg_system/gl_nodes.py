@@ -2,6 +2,7 @@ import numpy as np
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
 import quaternion
+import freetype
 from dpg_system.open_gl_base import *
 from dpg_system.glfw_base import *
 
@@ -20,6 +21,7 @@ def register_gl_nodes():
     Node.app.register_node('gl_material', GLMaterialNode.factory)
     Node.app.register_node('gl_align', GLAlignNode.factory)
     Node.app.register_node('gl_quaternion_rotate', GLQuaternionRotateNode.factory)
+    Node.app.register_node('gl_text', GLTextNode.factory)
 
 
 class GLCommandParser:
@@ -1047,4 +1049,145 @@ class GLAlignNode(GLNode):
                   0.0, 0.0, 0.0, 1.0])
         self.alignment_matrix.reshape((4, 4))
 
+
+class CharacterSlot:
+    def __init__(self, texture, glyph):
+        self.texture = texture
+        self.textureSize = (glyph.bitmap.width, glyph.bitmap.rows)
+        self.origin = [0, 0]
+
+        if isinstance(glyph, freetype.GlyphSlot):
+            self.bearing = (glyph.bitmap_left, glyph.bitmap_top)
+            self.advance = glyph.advance.x
+            self.origin = [glyph.bitmap_left, glyph.bitmap.rows - glyph.bitmap_top]
+        elif isinstance(glyph, freetype.BitmapGlyph):
+            self.bearing = (glyph.left, glyph.top)
+            self.advance = None
+            self.origin = [glyph.bitmap_left, glyph.bitmap.rows - glyph.bitmap_top]
+        else:
+            raise RuntimeError('unknown glyph type')
+
+
+
+class GLTextNode(GLNode):
+    @staticmethod
+    def factory(node_name, data, args=None):
+        node = GLTextNode(node_name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.characters = {}
+        self.initialized = False
+        self.font_size = 24
+        self.color = [1.0, 1.0, 1.0, 1.0]
+        self.font_path = "Inconsolata-g.otf"
+        for i in range(len(args)):
+            v, t = decode_arg(args, i)
+            if t in [float, int]:
+                self.font_size = v
+            elif t == str:
+                self.font_path = v
+
+        self.face = freetype.Face(self.font_path)
+        size = self.font_size * 256.0
+        self.face.set_char_size(int(size))
+
+        self.text_input = self.add_input('text', widget_type='text_input', default_value='text')
+        self.position_x_input = self.add_input('position_x', widget_type='drag_float', default_value=0.0)
+        self.position_y_input = self.add_input('position_y', widget_type='drag_float', default_value=0.0)
+        self.text_alpha_input = self.add_input('alpha', widget_type='drag_float', default_value=1.0)
+        self.text_color = self.add_option('alpha', widget_type='color_picker', default_value=[1.0, 1.0, 1.0, 1.0], callback=self.color_changed)
+        self.scale_input = self.add_input('scale', widget_type='drag_float', default_value=1.0)
+
+    def custom_setup(self, from_file):
+        dpg.configure_item(self.text_color.widget.uuid, no_alpha=True)
+        dpg.configure_item(self.text_color.widget.uuid, alpha_preview=dpg.mvColorEdit_AlphaPreviewNone)
+
+    def color_changed(self):
+        self.color = self.text_color.get_widget_value()
+        self.color[0] /= 255.0
+        self.color[1] /= 255.0
+        self.color[2] /= 255.0
+
+    def create_glyph_textures(self):
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
+
+        for i in range(0, 128):
+            self.face.load_char(chr(i))
+            glyph = self.face.glyph
+
+            bm = glyph.bitmap.buffer
+            rgb_bm = [0.0] * (glyph.bitmap.rows * glyph.bitmap.width * 4)
+
+            for k in range(glyph.bitmap.rows):
+
+                for j in range(glyph.bitmap.width):
+                    rgb_bm[(k * glyph.bitmap.width + j) * 4] = 1.0
+                    rgb_bm[(k * glyph.bitmap.width + j) * 4 + 1] = 1.0
+                    rgb_bm[(k * glyph.bitmap.width + j) * 4 + 2] = 1.0
+                    rgb_bm[(k * glyph.bitmap.width + j) * 4 + 3] = float(bm[k * glyph.bitmap.width + j]) / 255.0
+
+            texture = glGenTextures(1)
+            glBindTexture(GL_TEXTURE_2D, texture)
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, glyph.bitmap.width, glyph.bitmap.rows, 0,
+                         GL_RGBA, GL_FLOAT, rgb_bm)
+
+            # texture options
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+
+            # now store character for later use
+            self.characters[chr(i)] = CharacterSlot(texture, glyph)
+        glBindTexture(GL_TEXTURE_2D, 0)
+
+    def get_rendering_buffer(self, xpos, ypos, width, height, zfix=0.):
+        return np.asarray([
+            xpos, ypos - height, 0, 1,
+            xpos, ypos, 0, 0,
+                  xpos + width, ypos, 1, 0,
+            xpos, ypos - height, 0, 1,
+                  xpos + width, ypos, 1, 0,
+                  xpos + width, ypos - height, 1, 1
+        ], np.float32)
+
+    def draw(self):
+        if not self.initialized:
+            self.create_glyph_textures()
+            self.initialized = True
+        glActiveTexture(GL_TEXTURE0)
+        glPushMatrix()
+        glTranslatef(0, 0, -2)
+        glDisable(GL_COLOR_MATERIAL)
+        glEnable(GL_BLEND)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        glEnable(GL_TEXTURE_2D)
+        glColor4f(self.color[0], self.color[1], self.color[2], self.text_alpha_input.get_widget_value())
+
+        pos = [self.position_x_input.get_widget_value(), self.position_y_input.get_widget_value()]
+        scale = self.scale_input.get_widget_value() / 100
+        text = self.text_input.get_widget_value()
+
+        for c in text:
+            ch = self.characters[c]
+            width, height = ch.textureSize
+            width = width * scale
+            height = height * scale
+            origin = ch.origin[1] * scale
+            vertices = self.get_rendering_buffer(pos[0] + ch.bearing[0] * scale, pos[1] + ch.bearing[1] * scale, width, height)
+            glBindTexture(GL_TEXTURE_2D, ch.texture)
+
+            glBegin(GL_TRIANGLES)
+            for i in range(6):
+                glTexCoord2f(vertices[i * 4 + 2], vertices[i * 4 + 3])
+                glVertex2f(vertices[i * 4], vertices[i * 4 + 1])
+            glEnd()
+
+            pos[0] += (ch.advance >> 6) * scale
+        glBindTexture(GL_TEXTURE_2D, 0)
+        glEnable(GL_COLOR_MATERIAL)
+
+        glPopMatrix()
 
