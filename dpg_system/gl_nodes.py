@@ -1208,6 +1208,7 @@ class GLTextNode(GLNode):
         scale = self.scale_input.get_widget_value() / 100
         text = self.text_input.get_widget_value()
 
+
         for c in text:
             ch = self.characters[c]
             width, height = ch.textureSize
