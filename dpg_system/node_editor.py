@@ -733,6 +733,7 @@ class NodeEditor:
                         if len(parts) == 2:
                             if parts[1] == 'json':
                                 self.patch_name = parts[0]
+                    Node.app.add_to_recent(self.patch_name, path)
                     self.uncontainerize(file_container)
                     self.file_path = path
                     self.patch_name = self.file_path.split('/')[-1]

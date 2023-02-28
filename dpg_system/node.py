@@ -509,7 +509,6 @@ class PropertyWidget:
             self.callback()
 
     def set(self, data, propagate=True):
-        print('set')
         if self.widget == 'checkbox':
             val = any_to_bool(data)
             dpg.set_value(self.uuid, val)

@@ -279,9 +279,11 @@ class App:
         self.conduits = {}
         self.actions = {}
         self.loaded_patcher_nodes = []
-
+        self.recent_files = {}
+        self.recent_menus = []
         self.osc_manager = OSCManager(label='osc_manager', data=0, args=None)
 
+        self.recent_menu = None
         self.setup_menus()
         self.patches_path = ''
         self.patches_name = ''
@@ -319,6 +321,11 @@ class App:
             dpg.add_item_hover_handler(callback=widget_hovered)
         self.action = self.add_action('do_it', self.reset_frame_count)
         self.window_context = None
+        self.fresh_patcher = True
+        if os.path.exists('recent_patchers.json'):
+            with open('recent_patchers.json', 'r') as f:
+                self.recent_files = json.load(f)
+            self.update_recent_menu()
 
     def reset_frame_count(self):
         self.frame_number = 0
@@ -461,11 +468,66 @@ class App:
             file_container['patches'] = patches_container
             json.dump(file_container, f, indent=4)
 
+    def recent_1_callback(self):
+        self.recent_callback(0)
+
+    def recent_2_callback(self):
+        self.recent_callback(1)
+
+    def recent_3_callback(self):
+        self.recent_callback(2)
+
+    def recent_4_callback(self):
+        self.recent_callback(3)
+
+    def recent_5_callback(self):
+        self.recent_callback(4)
+
+    def recent_6_callback(self):
+        self.recent_callback(5)
+
+    def recent_7_callback(self):
+        self.recent_callback(6)
+
+    def recent_8_callback(self):
+        self.recent_callback(7)
+
+    def recent_9_callback(self):
+        self.recent_callback(8)
+
+    def recent_10_callback(self):
+        self.recent_callback(9)
+
+    def recent_callback(self, which):
+        recents = list(self.recent_files.keys())
+        name = recents[which]
+        if name != '':
+            path = self.recent_files[name]
+            self.load_from_file(path)
+
     def setup_menus(self):
+        recent_callback = []
+        recent_callback.append(self.recent_1_callback)
+        recent_callback.append(self.recent_2_callback)
+        recent_callback.append(self.recent_3_callback)
+        recent_callback.append(self.recent_4_callback)
+        recent_callback.append(self.recent_5_callback)
+        recent_callback.append(self.recent_6_callback)
+        recent_callback.append(self.recent_7_callback)
+        recent_callback.append(self.recent_8_callback)
+        recent_callback.append(self.recent_9_callback)
+        recent_callback.append(self.recent_10_callback)
         with dpg.viewport_menu_bar():
             with dpg.menu(label="File"):
                 dpg.add_menu_item(label='New Patch (N)', callback=self.add_node_editor)
-                dpg.add_menu_item(label="Open (O)", callback=self.load_nodes)
+                dpg.add_menu_item(label="Open in this Patcher", callback=self.load_nodes_in_patcher)
+                dpg.add_menu_item(label="Open in new Patcher (O)", callback=self.load_nodes)
+                with dpg.menu(label='Recent') as self.recent_menu:
+                    for i in range(10):
+                        self.recent_menus.append(dpg.add_menu_item(label="...", show=False, callback=recent_callback[i]))
+                    dpg.add_separator()
+                    dpg.add_menu_item(label="Clear Recent", callback=self.clear_recent)
+
                 dpg.add_menu_item(label='Close Current Patch (W)', callback=self.close_current_node_editor)
                 dpg.add_separator()
                 dpg.add_menu_item(label='Set As Default Patch', callback=self.set_as_default_patch)
@@ -900,6 +962,8 @@ class App:
                 if 'patches' in file_container:
                     self.patches_path = path
                     self.patches_name = patch_name
+                    self.add_to_recent(patch_name, path)
+
                     patches_container = file_container['patches']
                     patch_count = len(patch_assign)
                     for index, patch_index in enumerate(patches_container):
@@ -912,8 +976,21 @@ class App:
                             self.current_node_editor = editor_index
                             editor.load_(nodes_container)
                 else:  # single patch
-                    if self.get_current_editor() is None:
-                        self.add_node_editor()
+                    print('patch assign', patch_assign)
+                    if self.fresh_patcher:
+                        if len(patch_assign) > 0:
+                            editor_index, editor = patch_assign[0]
+                            self.current_node_editor = editor_index
+                        else:
+                            self.add_node_editor()
+                            self.current_node_editor = len(self.node_editors) - 1
+
+                    else:
+                        if self.get_current_editor() is None:
+                            self.add_node_editor()
+                            self.current_node_editor = len(self.node_editors) - 1
+                    self.add_to_recent(patch_name, path)
+                    dpg.set_value(self.tab_bar, self.tabs[self.current_node_editor])
                     self.get_current_editor().load_(file_container, path, patch_name)
 
                 for node_editor_uuid in self.links_containers:
@@ -956,19 +1033,55 @@ class App:
         self.loading = False
 
     def load_nodes(self):
-        self.load('')
+        self.load('', fresh_patcher=True)
 
-    def load(self, path=''):
+    def load_nodes_in_patcher(self):
+        self.load('', fresh_patcher=False)
 
+    def clear_recent(self):
+        self.recent_files = {}
+        with open('recent_patchers.json', 'w') as f:
+            json.dump(self.recent_files, f, indent=4)
+        self.update_recent_menu()
+    def add_to_recent(self, name, path):
+        if name in self.recent_files:
+            self.recent_files[name] = path
+        elif len(self.recent_files) > 10:
+            keys = list(self.recent_files.keys())
+            del self.recent_files[keys[0]]
+            self.recent_files[name] = path
+        else:
+            self.recent_files[name] = path
+        with open('recent_patchers.json', 'w') as f:
+            json.dump(self.recent_files, f, indent=4)
+        self.update_recent_menu()
+
+    def update_recent_menu(self):
+        names = list(self.recent_files.keys())
+        for i in range(10):
+            if i < len(self.recent_files):
+                dpg.configure_item(self.recent_menus[i], label=names[i], show=True)
+            else:
+                dpg.configure_item(self.recent_menus[i], show=False)
+
+    def load(self, path='', fresh_patcher=True):
         if path != '':
-            if self.get_current_editor() is None:
+            if self.get_current_editor() is None or fresh_patcher:
                 self.add_node_editor()
             if self.get_current_editor() is not None:
                 self.get_current_editor().load(path)
                 return
         self.active_widget = 1
+        self.fresh_patcher = fresh_patcher
         with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, callback=load_patches_callback, cancel_callback=cancel_callback, tag="file_dialog_id"):
             dpg.add_file_extension(".json")
+            # recents = list(self.recent_files.keys())
+            # dpg.add_combo(recents, label='recent files')
+            # with dpg.menu(label='recent', width=120):
+            #     recents = list(self.recent_files.keys())
+            #     print(recents)
+            #     # for recent in recents:
+            #     #     dpg.add_menu_item(label=recent)
 
     def save_as_nodes(self):
         self.save('')
