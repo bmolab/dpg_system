@@ -468,6 +468,8 @@ class ToggleNode(Node):
                 if received == 'bang':
                     self.value = not self.value
                     self.input.set(self.value)
+            else:
+                self.value = self.input.get_widget_value()
         else:
             self.value = self.input.get_widget_value()
         if self.variable is not None:
