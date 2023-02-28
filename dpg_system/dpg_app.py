@@ -1192,6 +1192,7 @@ class App:
                     if task.created:
                         task.frame_task()
                 dpg.run_callbacks(jobs)
+                self.osc_manager.relay_pending_messages()
                 self.frame_number += 1
                 self.frame_variable.set(self.frame_number)
                 self.frame_time_variable.set(elapsed)
