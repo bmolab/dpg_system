@@ -307,6 +307,7 @@ class App:
         self.dragging_ref = [0, 0]
         self.clipboard = None
         self.saving_to_lib = False
+        self.project_name = 'dpg_system'
 
         self.register_patchers()
         self.handler = dpg.item_handler_registry(tag="widget handler")
@@ -322,8 +323,8 @@ class App:
         self.action = self.add_action('do_it', self.reset_frame_count)
         self.window_context = None
         self.fresh_patcher = True
-        if os.path.exists('recent_patchers.json'):
-            with open('recent_patchers.json', 'r') as f:
+        if os.path.exists(self.project_name + '_recent_patchers.json'):
+            with open(self.project_name + '_recent_patchers.json', 'r') as f:
                 self.recent_files = json.load(f)
             self.update_recent_menu()
 
@@ -982,8 +983,10 @@ class App:
                             editor_index, editor = patch_assign[0]
                             self.current_node_editor = editor_index
                         else:
-                            self.add_node_editor()
-                            self.current_node_editor = len(self.node_editors) - 1
+                            editor = self.get_current_editor()
+                            if editor.num_nodes > 1:
+                                self.add_node_editor()
+                                self.current_node_editor = len(self.node_editors) - 1
 
                     else:
                         if self.get_current_editor() is None:
@@ -1040,9 +1043,10 @@ class App:
 
     def clear_recent(self):
         self.recent_files = {}
-        with open('recent_patchers.json', 'w') as f:
+        with open(self.project_name + '_recent_patchers.json', 'w') as f:
             json.dump(self.recent_files, f, indent=4)
         self.update_recent_menu()
+
     def add_to_recent(self, name, path):
         if name in self.recent_files:
             self.recent_files[name] = path
@@ -1052,7 +1056,7 @@ class App:
             self.recent_files[name] = path
         else:
             self.recent_files[name] = path
-        with open('recent_patchers.json', 'w') as f:
+        with open(self.project_name + '_recent_patchers.json', 'w') as f:
             json.dump(self.recent_files, f, indent=4)
         self.update_recent_menu()
 
@@ -1066,8 +1070,12 @@ class App:
 
     def load(self, path='', fresh_patcher=True):
         if path != '':
-            if self.get_current_editor() is None or fresh_patcher:
+            if self.get_current_editor() is None:
                 self.add_node_editor()
+            elif fresh_patcher:
+                editor = self.get_current_editor()
+                if editor.num_nodes > 1:
+                    self.add_node_editor()
             if self.get_current_editor() is not None:
                 self.get_current_editor().load(path)
                 return
@@ -1075,13 +1083,6 @@ class App:
         self.fresh_patcher = fresh_patcher
         with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, callback=load_patches_callback, cancel_callback=cancel_callback, tag="file_dialog_id"):
             dpg.add_file_extension(".json")
-            # recents = list(self.recent_files.keys())
-            # dpg.add_combo(recents, label='recent files')
-            # with dpg.menu(label='recent', width=120):
-            #     recents = list(self.recent_files.keys())
-            #     print(recents)
-            #     # for recent in recents:
-            #     #     dpg.add_menu_item(label=recent)
 
     def save_as_nodes(self):
         self.save('')
@@ -1199,10 +1200,9 @@ class App:
         if self.get_current_editor() is not None:
             patch = self.get_current_editor()
             if patch.file_path != '':
-                default_patcher_path = patch.file_path
                 default_patcher_dict = {}
                 default_patcher_dict['path'] = ''
-                with open('default_patcher.json', 'w') as f:
+                with open(self.project_name + '_default_patcher.json', 'w') as f:
                     json.dump(default_patcher_dict, f, indent=4)
 
     def set_as_default_patch(self):
@@ -1212,12 +1212,12 @@ class App:
                 default_patcher_path = patch.file_path
                 default_patcher_dict = {}
                 default_patcher_dict['path'] = default_patcher_path
-                with open('default_patcher.json', 'w') as f:
+                with open(self.project_name + '_default_patcher.json', 'w') as f:
                     json.dump(default_patcher_dict, f, indent=4)
 
     def open_default_patch(self):
-        if os.path.exists('default_patcher.json'):
-            with open('default_patcher.json', 'r') as f:
+        if os.path.exists(self.project_name + '_default_patcher.json'):
+            with open(self.project_name + '_default_patcher.json', 'r') as f:
                 default_patcher_dict = json.load(f)
                 if 'path' in default_patcher_dict:
                     default_patcher_path = default_patcher_dict['path']
