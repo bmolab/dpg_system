@@ -217,6 +217,10 @@ class RampNode(Node):
                     self.target = any_to_float(data[1])
                     self.duration = any_to_float(data[2])
                     self.update_time_base()
+                elif len(data) == 1:
+                    self.new_target = True
+                    self.go_to_value(any_to_float(data[0]))
+                    self.update_time_base()
             elif t in [int, float]:
                 self.new_target = True
                 self.go_to_value(data)
