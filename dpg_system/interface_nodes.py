@@ -29,6 +29,8 @@ def register_interface_nodes():
     Node.app.register_node('radio_h', RadioButtonsNode.factory)
     Node.app.register_node('radio_v', RadioButtonsNode.factory)
     Node.app.register_node('presets', PresetsNode.factory)
+    Node.app.register_node('snapshots', PresetsNode.factory)
+    Node.app.register_node('gain', GainNode.factory)
 
 
 
@@ -266,6 +268,12 @@ class PresetsNode(Node):
         #     self.radio_group.widget.horizontal = True
         # else:
         self.radio_group.widget.horizontal = False
+        self.remember_all = (label == 'snapshots')
+        self.remember_all_properties = self.add_option('remember_all_properties', widget_type='checkbox', default_value=self.remember_all, callback=self.remember_all_changed)
+        self.presets = [None] * self.preset_count
+
+    def remember_all_changed(self):
+        self.remember_all = self.remember_all_properties.get_widget_value()
         self.presets = [None] * self.preset_count
 
     def preset_click(self):
@@ -285,10 +293,20 @@ class PresetsNode(Node):
                 for kid in kids:
                     node = kid.node
                     if node is not None:
-                        self.presets[current_preset_index][node.uuid] = node.get_preset_state()
+                        if self.remember_all:
+                            properties = {}
+                            node.store_properties(properties)
+                            self.presets[current_preset_index][node.uuid] = properties
+                        else:
+                            self.presets[current_preset_index][node.uuid] = node.get_preset_state()
             else:
                 for node in editor._nodes:
-                    self.presets[current_preset_index][node.uuid] = node.get_preset_state()
+                    if self.remember_all:
+                        properties = {}
+                        node.store_properties(properties)
+                        self.presets[current_preset_index][node.uuid] = properties
+                    else:
+                        self.presets[current_preset_index][node.uuid] = node.get_preset_state()
 
     def load_preset(self):
         editor = self.my_editor
@@ -301,11 +319,17 @@ class PresetsNode(Node):
                 for kid in kids:
                     node = kid.node
                     if node is not None:
-                        node.set_preset_state(self.presets[current_preset_index][node.uuid])
+                        if self.remember_all:
+                            node.restore_properties(self.presets[current_preset_index][node.uuid])
+                        else:
+                            node.set_preset_state(self.presets[current_preset_index][node.uuid])
             else:
                 for node in editor._nodes:
                     if node.uuid in self.presets[current_preset_index]:
-                        node.set_preset_state(self.presets[current_preset_index][node.uuid])
+                        if self.remember_all:
+                            node.restore_properties(self.presets[current_preset_index][node.uuid])
+                        else:
+                            node.set_preset_state(self.presets[current_preset_index][node.uuid])
 
     def save_custom_setup(self, container):
         container['presets'] = self.presets
@@ -475,6 +499,47 @@ class ToggleNode(Node):
         if self.variable is not None:
             self.variable.set(self.value, from_client=self)
         self.output.send(self.value)
+
+
+class GainNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = GainNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        widget_type = 'slider_float'
+        widget_width = 200
+        self.value = dpg.generate_uuid()
+        self.horizontal = True
+        self.max = None
+
+        if self.ordered_args is not None:
+            for i in range(len(self.ordered_args)):
+                val, t = decode_arg(self.ordered_args, i)
+                if t in [float, int]:
+                    self.max = val
+        if self.max is None:
+            self.max = 1.0
+        self.input = self.add_input("", triggers_execution=True)
+        self.gain_property = self.add_property('', widget_type=widget_type, width=widget_width, max=self.max)
+        self.output = self.add_output('')
+        self.max_option = self.add_option('max', widget_type='drag_float', callback=self.max_changed, default_value=self.max)
+
+    def max_changed(self):
+        self.max = self.max_option.get_widget_value()
+        self.gain_property.widget.set_limits(0.0, self.max)
+        # dpg.configure_item(self.max_option.widget.uuid, max=self.max)
+    def execute(self):
+        if self.input.fresh_input:
+            data = self.input.get_received_data()
+            gain = self.gain_property.get_widget_value()
+            t = type(data)
+            if t is not str:
+                out_data = data * gain
+                self.output.send(out_data)
 
 
 class ValueNode(Node):

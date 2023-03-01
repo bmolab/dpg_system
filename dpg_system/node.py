@@ -1120,26 +1120,27 @@ class Node:
             size = dpg.get_item_rect_size(self.uuid)
             node_container['width'] = size[0]
             node_container['height'] = size[1]
-            properties_container = {}
-            property_number = 0
-            for index, _input in enumerate(self.inputs):
-                input_container = {}
-                if _input.save(input_container):
-                    properties_container[property_number] = input_container
-                    property_number += 1
-            for index, _property in enumerate(self.properties):
-                property_container = {}
-                _property.save(property_container)
-                properties_container[property_number] = property_container
-                property_number += 1
-            for index, _option in enumerate(self.options):
-                option_container = {}
-                _option.save(option_container)
-                properties_container[property_number] = option_container
-                property_number += 1
-            if property_number > 0:
-                node_container['properties'] = properties_container
-            self.save_custom_setup(node_container)
+            self.store_properties(node_container)
+            # properties_container = {}
+            # property_number = 0
+            # for index, _input in enumerate(self.inputs):
+            #     input_container = {}
+            #     if _input.save(input_container):
+            #         properties_container[property_number] = input_container
+            #         property_number += 1
+            # for index, _property in enumerate(self.properties):
+            #     property_container = {}
+            #     _property.save(property_container)
+            #     properties_container[property_number] = property_container
+            #     property_number += 1
+            # for index, _option in enumerate(self.options):
+            #     option_container = {}
+            #     _option.save(option_container)
+            #     properties_container[property_number] = option_container
+            #     property_number += 1
+            # if property_number > 0:
+            #     node_container['properties'] = properties_container
+            # self.save_custom_setup(node_container)
 
     def load(self, node_container, offset=None):
         if offset is None:
@@ -1157,53 +1158,114 @@ class Node:
                 pos[0] = node_container['position_x'] + offset[0]
                 pos[1] = node_container['position_y'] + offset[1]
                 dpg.set_item_pos(self.uuid, pos)
-            # if 'width' in node_container and 'height' in node_container:
-            #     size = [0, 0]
-            #     size[0] = node_container['width']
-            #     size[1] = node_container['height']
-            #     dpg.set_item_width(self.uuid, size[0])
-            #     dpg.set_item_height(self.uuid, size[1])
-            if 'properties' in node_container:
-                properties_container = node_container['properties']
-                for index, property_index in enumerate(properties_container):
-                    property_container = properties_container[property_index]
-                    if 'name' in property_container:
-                        property_label = property_container['name']
-                        found = False
-                        for input in self.inputs:
-                            if input.widget is not None:
-                                a_label = dpg.get_item_label(input.widget.uuid)
+            self.restore_properties(node_container)
+            # if 'properties' in node_container:
+            #     properties_container = node_container['properties']
+            #     for index, property_index in enumerate(properties_container):
+            #         property_container = properties_container[property_index]
+            #         if 'name' in property_container:
+            #             property_label = property_container['name']
+            #             found = False
+            #             for input in self.inputs:
+            #                 if input.widget is not None:
+            #                     a_label = dpg.get_item_label(input.widget.uuid)
+            #                     if a_label == property_label:
+            #                         if 'value' in property_container:
+            #                             value = property_container['value']
+            #                             input.widget.set(value)
+            #                             input.widget.value_changed(force=True)
+            #                         found = True
+            #                         break
+            #             if not found:
+            #                 for property in self.properties:
+            #                     if property.widget is not None:
+            #                         a_label = dpg.get_item_label(property.widget.uuid)
+            #                         if a_label == property_label:
+            #                             if 'value' in property_container:
+            #                                 value = property_container['value']
+            #                                 if property.widget.widget != 'button':
+            #                                     property.widget.set(value)
+            #                                     property.widget.value_changed(force=True)
+            #                             found = True
+            #                             break
+            #             if not found:
+            #                 for option in self.options:
+            #                     if option.widget:
+            #                         a_label = dpg.get_item_label(option.widget.uuid)
+            #                         if a_label == property_label:
+            #                             if 'value' in property_container:
+            #                                 value = property_container['value']
+            #                                 option.widget.set(value)
+            #                                 option.widget.value_changed(force=True)
+            #                             found = True
+            #                             break
+            # self.load_custom_setup(node_container)
+            # self.update_parameters_from_widgets()
+
+    def store_properties(self, node_container):
+        properties_container = {}
+        property_number = 0
+        for index, _input in enumerate(self.inputs):
+            input_container = {}
+            if _input.save(input_container):
+                properties_container[property_number] = input_container
+                property_number += 1
+        for index, _property in enumerate(self.properties):
+            property_container = {}
+            _property.save(property_container)
+            properties_container[property_number] = property_container
+            property_number += 1
+        for index, _option in enumerate(self.options):
+            option_container = {}
+            _option.save(option_container)
+            properties_container[property_number] = option_container
+            property_number += 1
+        if property_number > 0:
+            node_container['properties'] = properties_container
+        self.save_custom_setup(node_container)
+
+    def restore_properties(self, node_container):
+        if 'properties' in node_container:
+            properties_container = node_container['properties']
+            for index, property_index in enumerate(properties_container):
+                property_container = properties_container[property_index]
+                if 'name' in property_container:
+                    property_label = property_container['name']
+                    found = False
+                    for input in self.inputs:
+                        if input.widget is not None:
+                            a_label = dpg.get_item_label(input.widget.uuid)
+                            if a_label == property_label:
+                                if 'value' in property_container:
+                                    value = property_container['value']
+                                    input.widget.set(value)
+                                    input.widget.value_changed(force=True)
+                                found = True
+                                break
+                    if not found:
+                        for property in self.properties:
+                            if property.widget is not None:
+                                a_label = dpg.get_item_label(property.widget.uuid)
                                 if a_label == property_label:
                                     if 'value' in property_container:
                                         value = property_container['value']
-                                        input.widget.set(value)
-                                        input.widget.value_changed(force=True)
+                                        if property.widget.widget != 'button':
+                                            property.widget.set(value)
+                                            property.widget.value_changed(force=True)
                                     found = True
                                     break
-                        if not found:
-                            for property in self.properties:
-                                if property.widget is not None:
-                                    a_label = dpg.get_item_label(property.widget.uuid)
-                                    if a_label == property_label:
-                                        if 'value' in property_container:
-                                            value = property_container['value']
-                                            if property.widget.widget != 'button':
-                                                property.widget.set(value)
-                                                property.widget.value_changed(force=True)
-                                        found = True
-                                        break
-                        if not found:
-                            for option in self.options:
-                                if option.widget:
-                                    a_label = dpg.get_item_label(option.widget.uuid)
-                                    if a_label == property_label:
-                                        if 'value' in property_container:
-                                            value = property_container['value']
-                                            option.widget.set(value)
-                                            option.widget.value_changed(force=True)
-                                        found = True
-                                        break
-            self.load_custom_setup(node_container)
+                    if not found:
+                        for option in self.options:
+                            if option.widget:
+                                a_label = dpg.get_item_label(option.widget.uuid)
+                                if a_label == property_label:
+                                    if 'value' in property_container:
+                                        value = property_container['value']
+                                        option.widget.set(value)
+                                        option.widget.value_changed(force=True)
+                                    found = True
+                                    break
+        self.load_custom_setup(node_container)
         self.update_parameters_from_widgets()
 
     def update_parameters_from_widgets(self):
