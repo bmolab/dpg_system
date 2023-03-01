@@ -266,6 +266,12 @@ class PresetsNode(Node):
         #     self.radio_group.widget.horizontal = True
         # else:
         self.radio_group.widget.horizontal = False
+        self.remember_all = False
+        self.remember_all_properties = self.add_option('remember_all_properties', widget_type='checkbox', callback=self.remember_all_changed)
+        self.presets = [None] * self.preset_count
+
+    def remember_all_changed(self):
+        self.remember_all = self.remember_all_properties.get_widget_value()
         self.presets = [None] * self.preset_count
 
     def preset_click(self):
@@ -285,10 +291,20 @@ class PresetsNode(Node):
                 for kid in kids:
                     node = kid.node
                     if node is not None:
-                        self.presets[current_preset_index][node.uuid] = node.get_preset_state()
+                        if self.remember_all:
+                            properties = {}
+                            node.store_properties(properties)
+                            self.presets[current_preset_index][node.uuid] = properties
+                        else:
+                            self.presets[current_preset_index][node.uuid] = node.get_preset_state()
             else:
                 for node in editor._nodes:
-                    self.presets[current_preset_index][node.uuid] = node.get_preset_state()
+                    if self.remember_all:
+                        properties = {}
+                        node.store_properties(properties)
+                        self.presets[current_preset_index][node.uuid] = properties
+                    else:
+                        self.presets[current_preset_index][node.uuid] = node.get_preset_state()
 
     def load_preset(self):
         editor = self.my_editor
@@ -301,11 +317,17 @@ class PresetsNode(Node):
                 for kid in kids:
                     node = kid.node
                     if node is not None:
-                        node.set_preset_state(self.presets[current_preset_index][node.uuid])
+                        if self.remember_all:
+                            node.restore_properties(self.presets[current_preset_index][node.uuid])
+                        else:
+                            node.set_preset_state(self.presets[current_preset_index][node.uuid])
             else:
                 for node in editor._nodes:
                     if node.uuid in self.presets[current_preset_index]:
-                        node.set_preset_state(self.presets[current_preset_index][node.uuid])
+                        if self.remember_all:
+                            node.restore_properties(self.presets[current_preset_index][node.uuid])
+                        else:
+                            node.set_preset_state(self.presets[current_preset_index][node.uuid])
 
     def save_custom_setup(self, container):
         container['presets'] = self.presets
