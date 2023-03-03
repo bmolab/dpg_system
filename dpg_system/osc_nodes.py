@@ -39,6 +39,8 @@ class OSCManager:
         self.sources = {}
         self.send_nodes = []
         self.receive_nodes = []
+        self.pending_messages = [[], []]
+        self.pending_message_buffer = 0
 
         OSCReceiveNode.osc_manager = self
         OSCSource.osc_manager = self
@@ -66,6 +68,26 @@ class OSCManager:
         if name != '' and name in self.targets:
             return self.targets[name]
         return None
+
+    def receive_pending_message(self, source, message, args):
+        self.pending_messages[self.pending_message_buffer].append([source, message, args])
+
+    def swap_pending_message_buffer(self):
+        self.pending_message_buffer = 1 - self.pending_message_buffer
+
+    def relay_pending_messages(self):
+        self.swap_pending_message_buffer()
+        for osc_message in self.pending_messages[1 - self.pending_message_buffer]:
+            source = osc_message[0]
+            address = osc_message[1]
+            args = osc_message[2]
+
+            if address in source.receive_nodes:
+                source.receive_nodes[address].receive(args)
+            else:
+                source.output_message_directly(address, args)
+        self.pending_messages[1 - self.pending_message_buffer] = []
+
 
     def get_target_list(self):
         return list(self.targets.keys())
@@ -367,7 +389,7 @@ class OSCAsyncIOSource:
         self.transport = None
         self.protocol = None
         self.pending_dead_loop = []
-
+        self.handle_in_loop = True
         self.name = ''
         self.port = 2500
         if args is not None:
@@ -413,6 +435,10 @@ class OSCAsyncIOSource:
 
 
     def osc_handler(self, address, *args):
+        # alternatively... pass message to buffer to be handled in loop
+        if self.handle_in_loop:
+            self.osc_manager.receive_pending_message(self, address, args)
+            return
         if address in self.receive_nodes:
             self.receive_nodes[address].receive(args)
         else:
