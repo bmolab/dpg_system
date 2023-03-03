@@ -319,8 +319,8 @@ class CounterNode(Node):
 
         self.current_value = 0
 
-        self.max_count = self.arg_as_int(default_value=255)
-        self.step = self.arg_as_int(default_value=1)
+        self.max_count = self.arg_as_int(default_value=255, index=0)
+        self.step = self.arg_as_int(default_value=1, index=1)
 
         self.input = self.add_input("input", triggers_execution=True)
         self.max_input = self.add_input('count', widget_type='drag_int', default_value=self.max_count, callback=self.update_max_count_from_widget)
