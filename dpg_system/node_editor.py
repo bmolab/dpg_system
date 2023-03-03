@@ -48,6 +48,7 @@ class NodeEditor:
         self.parent_patcher = None
         self.modified = False
         self.duplicated_subpatch_nodes = {}
+        self.saving_preset = False
 
     def add_subpatch(self, subpatch_editor):
         self.subpatches.append(subpatch_editor)
@@ -261,12 +262,19 @@ class NodeEditor:
         self.modified = True
 
     def remove_all_nodes(self):
+        Node.app.clear_remembered_ids()
         for node in self._nodes:
             node.cleanup()
             dpg.delete_item(node.uuid)
         self._nodes = []
         self.num_nodes = len(self._nodes)
         self.modified = True
+        for link_uuid in self._links:
+            dat = dpg.get_item_user_data(link_uuid)
+            out = dat[0]
+            child = dat[1]
+            out.remove_link(link_uuid, child)
+        self.active_pins = []
 
     def node_cleanup(self, node_uuid):
         # print('deleting', node_uuid)
@@ -288,12 +296,21 @@ class NodeEditor:
         for n in self._nodes:
             if n == node:
                 # need to remove links as well
+                self.remove_active_pins(node)
                 node.cleanup()
                 self._nodes.remove(node)
                 dpg.delete_item(node.uuid)
                 self.num_nodes = len(self._nodes)
                 self.modified = True
                 break
+
+    def remove_active_pins(self, node):
+        for input in node.inputs:
+            if input.uuid in self.active_pins:
+                self.active_pins.remove(input.uuid)
+        for output in node.outputs:
+            if output.uuid in self.active_pins:
+                self.active_pins.remove(output.uuid)
 
     def submit(self, parent):
         with dpg.child_window(width=0, parent=parent, user_data=self):
@@ -304,13 +321,9 @@ class NodeEditor:
         dpg.bind_theme(self.node_theme)
         # add invisible node that is reference for panning
 
-        self.origin = OriginNode.factory("origin", None)
+        self.origin = OriginNode.factory('origin', None)
         self.origin.submit(self.uuid, pos=[0, 0])
         self.add_node(self.origin)
-#        print('origin', dpg.get_item_pos(self.origin.ref_property.widget.uuid))
- #        dpg.hide_item(self.origin.uuid)
-#        dpg.configure_item(self.origin.uuid, show=False)
-#        print(dpg.get_item_configuration(self.origin.uuid))
 
     def add_active_pin(self, uuid):
         self.active_pins.append(uuid)
@@ -395,24 +408,51 @@ class NodeEditor:
         Node.app.loading = False
         return file_container
 
-    def paste(self, file_container):
-        Node.app.created_nodes = {}
+    def clear_loaded_uuids(self):
+        # for uuid in Node.app.created_nodes:
+        #     node = Node.app.created_nodes[uuid]
+        #     if node is not None:
+        #         node.post_load_callback()
+        for uuid in Node.app.created_nodes:
+            node = Node.app.created_nodes[uuid]
+            node.loaded_uuid = -1
+
+        for editor in Node.app.node_editors:
+            editor.loaded_uuid = -1
+            editor.loaded_parent_node_uuid = -1
+
+    def paste(self, file_container, drag=True, origin=False, clear_loaded_uuids=True, previously_created_nodes=None):
+        if previously_created_nodes is None:
+            Node.app.created_nodes = {}
+        else:
+            Node.app.created_nodes = previously_created_nodes
         Node.app.loading = True
         if len(file_container) == 0:
             return
-        self.uncontainerize(file_container)
+
+        # print('about to uncontainerize in paste')
+        self.uncontainerize(file_container, create_origin=origin)
+        # print('done uncontainerize in paste')
+        # print('establishing links')
         for node_editor_uuid in Node.app.links_containers:
+            new_links = {}
             links_container = Node.app.links_containers[node_editor_uuid]
+            # print(links_container)
+            # print(Node.app.created_nodes)
             for index, link_index in enumerate(links_container):
                 source_node = None
                 dest_node = None
                 link_container = links_container[link_index]
+                new_link = link_container
+
                 source_node_loaded_uuid = link_container['source_node']
                 if source_node_loaded_uuid in Node.app.created_nodes:
                     source_node = Node.app.created_nodes[source_node_loaded_uuid]
+                    new_link['source_node'] = source_node.uuid
                 dest_node_loaded_uuid = link_container['dest_node']
                 if dest_node_loaded_uuid in Node.app.created_nodes:
                     dest_node = Node.app.created_nodes[dest_node_loaded_uuid]
+                    new_link['dest_node'] = dest_node.uuid
                 if source_node is not None and dest_node is not None:
                     source_output_index = link_container['source_output_index']
                     dest_input_index = link_container['dest_input_index']
@@ -421,34 +461,44 @@ class NodeEditor:
                         if dest_input_index < len(dest_node.inputs):
                             dest_input = dest_node.inputs[dest_input_index]
                             source_output.add_child(dest_input, node_editor_uuid)
+                new_links[link_index] = new_link
+                Node.app.links_containers[node_editor_uuid] = new_links.copy()
+            # print('adjusted links', new_links)
 
-        for uuid in Node.app.created_nodes:
-            node = Node.app.created_nodes[uuid]
-            node.loaded_uuid = -1
-        for editor in Node.app.node_editors:
-            editor.loaded_uuid = -1
-            editor.loaded_parent_node_uuid = -1
+        # print('links established')
+        if clear_loaded_uuids:
+            for uuid in Node.app.created_nodes:
+                node = Node.app.created_nodes[uuid]
+                if node is not None:
+                    node.post_load_callback()
+
+            self.clear_loaded_uuids()
+            # print('uuids cleared')
 
         # now Node.app.created_nodes dict has all created nodes
-        Node.app.dragging_created_nodes = True
-        Node.app.drag_starts = {}
-        for node_uuid in self.duplicated_subpatch_nodes:
-            if node_uuid in Node.app.created_nodes:
-                del Node.app.created_nodes[node_uuid]
-        for created_node in Node.app.created_nodes:
-            node = Node.app.created_nodes[created_node]
-            Node.app.drag_starts[created_node] = dpg.get_item_pos(node.uuid)
-            # but top left most node should be at mouse...
-        if len(Node.app.drag_starts) > 0:
-            sort = sorted(Node.app.drag_starts.items(), key=lambda item: item[1][0])
-            left_most = sort[0][1][0]
-            sort = sorted(Node.app.drag_starts.items(), key=lambda item: item[1][1])
-            top_most = sort[0][1][1]
-            left_top = [left_most, top_most]
-            Node.app.dragging_ref = self.editor_pos_to_global_pos(left_top)
-            self.modified = True
-            Node.app.loading = False
-            Node.app.drag_create_nodes()
+        if drag:
+            Node.app.dragging_created_nodes = True
+            Node.app.drag_starts = {}
+
+            # we do not drag subpatch nodes
+            for node_uuid in self.duplicated_subpatch_nodes:
+                if node_uuid in Node.app.created_nodes:
+                    del Node.app.created_nodes[node_uuid]
+
+            for created_node in Node.app.created_nodes:
+                node = Node.app.created_nodes[created_node]
+                Node.app.drag_starts[created_node] = dpg.get_item_pos(node.uuid)
+                # but top left most node should be at mouse...
+            if len(Node.app.drag_starts) > 0:
+                sort = sorted(Node.app.drag_starts.items(), key=lambda item: item[1][0])
+                left_most = sort[0][1][0]
+                sort = sorted(Node.app.drag_starts.items(), key=lambda item: item[1][1])
+                top_most = sort[0][1][1]
+                left_top = [left_most, top_most]
+                Node.app.dragging_ref = self.editor_pos_to_global_pos(left_top)
+                self.modified = True
+                Node.app.loading = False
+                Node.app.drag_create_nodes()
         # else:
         #     print('no drag starts')
 
@@ -471,101 +521,12 @@ class NodeEditor:
         return global_pos
 
     def duplicate_selection(self):
-        Node.app.loading = True
-        Node.app.created_nodes = {}
-        file_container = {}
-        nodes_container = {}
-        selected_node_objects = []
-        selected_nodes = dpg.get_selected_nodes(self.uuid)
-        subpatch_container = {}
+        clipboard = self.copy_selection()
+        self.paste(clipboard)
 
-        # NOTE - sub-patcher objects should not move with mouse
-        for index, node in enumerate(self._nodes):
-            if node.uuid in selected_nodes:
-                if node.label == 'patcher':
-                    if node.patch_editor is not None:
-                        patch_container = {}
-                        node.patch_editor.containerize(patch_container)
-                        subpatch_container[index] = patch_container
-                        # we need to remove all subpatch nodes from drag list...
-
-        if len(subpatch_container) > 0:
-            file_container['patches'] = subpatch_container
-        for index, node in enumerate(self._nodes):
-            if node.uuid in selected_nodes:
-                selected_node_objects.append(node)
-                node_container = {}
-                node.save(node_container, index)
-                nodes_container[index] = node_container
-        file_container['nodes'] = nodes_container
-
-        links_container = {}
-        link_index = 0
-
-        for node_index, node in enumerate(selected_node_objects):
-            # save links
-            for out_index, output in enumerate(node.outputs):
-                if len(output._children) > 0:
-                    for in_index, input in enumerate(output._children):
-                        link_container = {}
-                        link_container['source_node'] = node.uuid
-                        link_container['source_output_index'] = out_index
-                        dest_node = input.node
-                        link_container['dest_node'] = dest_node.uuid
-                        for node_in_index, test_input in enumerate(dest_node.inputs):
-                            if test_input.uuid == input.uuid:
-                                link_container['dest_input_index'] = node_in_index
-                                links_container[link_index] = link_container
-                                link_index += 1
-                                break
-        file_container['links'] = links_container
-        dpg.clear_selected_nodes(self.uuid)
-
-        self.uncontainerize(file_container)
-
-        for node_editor_uuid in Node.app.links_containers:
-            links_container = Node.app.links_containers[node_editor_uuid]
-            for index, link_index in enumerate(links_container):
-                source_node = None
-                dest_node = None
-                link_container = links_container[link_index]
-                source_node_loaded_uuid = link_container['source_node']
-                if source_node_loaded_uuid in Node.app.created_nodes:
-                    source_node = Node.app.created_nodes[source_node_loaded_uuid]
-                dest_node_loaded_uuid = link_container['dest_node']
-                if dest_node_loaded_uuid in Node.app.created_nodes:
-                    dest_node = Node.app.created_nodes[dest_node_loaded_uuid]
-                if source_node is not None and dest_node is not None:
-                    source_output_index = link_container['source_output_index']
-                    dest_input_index = link_container['dest_input_index']
-                    if source_output_index < len(source_node.outputs):
-                        source_output = source_node.outputs[source_output_index]
-                        if dest_input_index < len(dest_node.inputs):
-                            dest_input = dest_node.inputs[dest_input_index]
-                            source_output.add_child(dest_input, node_editor_uuid)
-
-        for uuid in Node.app.created_nodes:
-            node = Node.app.created_nodes[uuid]
-            node.loaded_uuid = -1
-        for editor in Node.app.node_editors:
-            editor.loaded_uuid = -1
-            editor.loaded_parent_node_uuid = -1
-
-        # now Node.app.created_nodes dict has all created nodes
-        Node.app.dragging_created_nodes = True
-        Node.app.dragging_ref = dpg.get_mouse_pos()
-        Node.app.drag_starts = {}
-        for node_uuid in self.duplicated_subpatch_nodes:
-            if node_uuid in Node.app.created_nodes:
-                del Node.app.created_nodes[node_uuid]
-        for created_node in Node.app.created_nodes:
-            node = Node.app.created_nodes[created_node]
-            Node.app.drag_starts[created_node] = dpg.get_item_pos(node.uuid)
-        # what if we create a list of teh duplicated nodes and move all node positions by mouse until clicked?
-        self.modified = True
-        Node.app.loading = False
-
-    def containerize(self, patch_container=None):
+    def containerize(self, patch_container=None, exclude_list=None):
+        if exclude_list is None:
+            exclude_list = []
         if patch_container is None:
             patch_container = {}
         nodes_container = {}
@@ -581,9 +542,12 @@ class NodeEditor:
             patch_container['path'] = self.file_path
 
         for index, node in enumerate(self._nodes):
+            if node in exclude_list:
+                continue
             node_container = {}
             node.save(node_container, index)
             nodes_container[index] = node_container
+
         patch_container['nodes'] = nodes_container
 
         links_container = {}
@@ -591,6 +555,7 @@ class NodeEditor:
 
         for node_index, node in enumerate(self._nodes):
             # save links
+
             for out_index, output in enumerate(node.outputs):
                 if len(output._children) > 0:
                     for in_index, input in enumerate(output._children):
@@ -619,7 +584,6 @@ class NodeEditor:
         if path is None:
             return
         self.patch_name = path.split('/')[-1]
- #       print(path, self.patch_name)
         if '.' in self.patch_name:
             parts = self.patch_name.split('.')
             if len(parts) == 2:
@@ -628,11 +592,12 @@ class NodeEditor:
         self.file_path = path
         with open(path, 'w') as f:
             file_container = self.containerize()
+            # print(file_container)
             json.dump(file_container, f, indent=4)
         Node.app.set_current_tab_title(self.patch_name)
         self.modified = False
 
-    def uncontainerize(self, file_container, offset=None):
+    def uncontainerize(self, file_container, offset=None, create_origin=False):
         if offset is None:
             offset = [0, 0]
         hold_editor = Node.app.current_node_editor
@@ -667,14 +632,23 @@ class NodeEditor:
         if 'position' in file_container:
             position = file_container['position']
 
+        node_name = ''
         if 'nodes' in file_container:
             nodes_container = file_container['nodes']
             for index, node_index in enumerate(nodes_container):
-
                 node_container = nodes_container[node_index]
-                if 'name' in node_container:
+                if not create_origin and 'name' in node_container:
                     if node_container['name'] == '':
+                        # origin
                         continue
+                    else:
+                        node_name = node_container['name']
+                elif create_origin:
+                    if 'name' in node_container:
+                        if node_container['name'] == '':
+                            node_name = 'origin'
+                        else:
+                            node_name = node_container['name']
                 pos = [0, 0]
                 if 'position_x' in node_container:
                     pos[0] = node_container['position_x'] + offset[0]
@@ -685,16 +659,18 @@ class NodeEditor:
                     args_container = node_container['init']
                     args = args_container.split(' ')
 
-
                 if len(args) > 1:
                     new_node = Node.app.create_node_by_name_from_file(args[0], pos, args[1:])
                 elif len(args) > 0:
                     new_node = Node.app.create_node_by_name_from_file(args[0], pos, )
                 else:
-                    l = node_container['name']
-                    new_node = Node.app.create_node_by_name_from_file(l, pos, )
+                    if node_name == 'origin':
+                        self.origin = OriginNode.factory('origin', None)
+                        self.origin.submit(self.uuid, pos=pos)
+                        new_node = self.add_node(self.origin)
+                    else:
+                        new_node = Node.app.create_node_by_name_from_file(node_name, pos, )
                 if new_node != None:
-
                     new_node.load(node_container, offset=offset)
                     Node.app.created_nodes[new_node.loaded_uuid] = new_node
                     dpg.focus_item(new_node.uuid)

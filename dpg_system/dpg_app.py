@@ -327,9 +327,22 @@ class App:
             with open(self.project_name + '_recent_patchers.json', 'r') as f:
                 self.recent_files = json.load(f)
             self.update_recent_menu()
+        self.pausing = False
+
+    def clear_remembered_ids(self):
+        self.active_widget = -1
+        self.focussed_widget = -1
+        self.hovered_item = None
+        self.return_pressed = False
 
     def reset_frame_count(self):
         self.frame_number = 0
+
+    def pause(self):
+        self.pausing = True
+
+    def resume(self):
+        self.pausing = False
 
     def setup_dpg(self):
         dpg.create_context()
@@ -977,7 +990,7 @@ class App:
                             self.current_node_editor = editor_index
                             editor.load_(nodes_container)
                 else:  # single patch
-                    print('patch assign', patch_assign)
+                    # print('patch assign', patch_assign)
                     if self.fresh_patcher:
                         if len(patch_assign) > 0:
                             editor_index, editor = patch_assign[0]
@@ -1113,6 +1126,7 @@ class App:
 
     def paste_selected(self):
         if self.clipboard is not None:
+            self.clear_remembered_ids()
             self.get_current_editor().paste(self.clipboard)
         else:
             print('clipboard is empty')
@@ -1295,25 +1309,28 @@ class App:
         elapsed = 0
         while dpg.is_dearpygui_running():
             try:
-                hold_context = glfw.get_current_context()
-                glfw.make_context_current(self.window_context)
-                now = time.time()
-                for node_editor in self.node_editors:
-                    node_editor.reset_pins()
-                jobs = dpg.get_callback_queue()  # retrieves and clears queue
-                for task in self.frame_tasks:
-                    if task.created:
-                        task.frame_task()
-                dpg.run_callbacks(jobs)
-                self.frame_number += 1
-                self.frame_variable.set(self.frame_number)
-                self.frame_time_variable.set(elapsed)
-                dpg.render_dearpygui_frame()
-                then = time.time()
-                elapsed = then - now
-                if 'GLContextNode' in globals():
-                    GLContextNode.maintenance_loop()
-                glfw.make_context_current(hold_context)
+                if not self.pausing:
+                    hold_context = glfw.get_current_context()
+                    glfw.make_context_current(self.window_context)
+                    now = time.time()
+                    for node_editor in self.node_editors:
+                        node_editor.reset_pins()
+                    for task in self.frame_tasks:
+                        if task.created:
+                            task.frame_task()
+                    jobs = dpg.get_callback_queue()  # retrieves and clears queue
+                    dpg.run_callbacks(jobs)
+                    self.frame_number += 1
+                    self.frame_variable.set(self.frame_number)
+                    self.frame_time_variable.set(elapsed)
+                    dpg.render_dearpygui_frame()
+                    then = time.time()
+                    elapsed = then - now
+                    if 'GLContextNode' in globals():
+                        GLContextNode.maintenance_loop()
+                    glfw.make_context_current(hold_context)
+                # else:
+                #     print('p', end='')
             except Exception as exc_:
                 print(exc_)
 

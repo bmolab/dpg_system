@@ -554,12 +554,12 @@ class PropertyWidget:
             dpg.set_value(self.uuid, val)
             self.value = val
         elif self.widget == 'color_picker':
-            print(data, type(data))
+            # print(data, type(data))
             if type(data) != tuple:
                 val = tuple(any_to_array(data))
             else:
                 val = data
-            print(data, type(data))
+            # print(data, type(data))
             dpg.set_value(self.uuid, val)
             self.value = val
         if self.variable and propagate:
@@ -884,6 +884,16 @@ class Node:
         self.custom_cleanup()
         for input_ in self.inputs:
             input_.delete_parents()
+            if input_.widget is not None:
+                dpg.delete_item(input_.widget.uuid)
+            dpg.delete_item(input_.uuid)
+        for output_ in self.outputs:
+            dpg.delete_item(output_.uuid)
+        for property_ in self.properties:
+            if property_.widget:
+                dpg.delete_item(property_.widget.uuid)
+            dpg.delete_item(property_.uuid)
+
 
     def post_load_callback(self):
         pass
@@ -1103,6 +1113,14 @@ class Node:
             if property.widget.callback is not None:
                 property.widget.callback()
 
+    def copy_to_clipboard(self):
+        node_container = {}
+        self.save(node_container, 0)
+        nodes_container = {self.label: node_container}
+        clipboard_container = {'nodes': nodes_container}
+        return clipboard_container
+
+
     def save(self, node_container, index):
         if node_container is not None:
             if self.unparsed_args and len(self.unparsed_args) > 0:
@@ -1121,26 +1139,6 @@ class Node:
             node_container['width'] = size[0]
             node_container['height'] = size[1]
             self.store_properties(node_container)
-            # properties_container = {}
-            # property_number = 0
-            # for index, _input in enumerate(self.inputs):
-            #     input_container = {}
-            #     if _input.save(input_container):
-            #         properties_container[property_number] = input_container
-            #         property_number += 1
-            # for index, _property in enumerate(self.properties):
-            #     property_container = {}
-            #     _property.save(property_container)
-            #     properties_container[property_number] = property_container
-            #     property_number += 1
-            # for index, _option in enumerate(self.options):
-            #     option_container = {}
-            #     _option.save(option_container)
-            #     properties_container[property_number] = option_container
-            #     property_number += 1
-            # if property_number > 0:
-            #     node_container['properties'] = properties_container
-            # self.save_custom_setup(node_container)
 
     def load(self, node_container, offset=None):
         if offset is None:
@@ -1220,6 +1218,7 @@ class Node:
             _option.save(option_container)
             properties_container[property_number] = option_container
             property_number += 1
+        # print(properties_container)
         if property_number > 0:
             node_container['properties'] = properties_container
         self.save_custom_setup(node_container)

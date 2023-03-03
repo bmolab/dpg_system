@@ -30,6 +30,7 @@ def register_interface_nodes():
     Node.app.register_node('radio_v', RadioButtonsNode.factory)
     Node.app.register_node('presets', PresetsNode.factory)
     Node.app.register_node('snapshots', PresetsNode.factory)
+    Node.app.register_node('archive', PresetsNode.factory)
     Node.app.register_node('gain', GainNode.factory)
 
 
@@ -102,7 +103,7 @@ class ButtonNode(Node):
 
     def message_changed(self):
         new_name = self.message_option.get_widget_value()
-        print(new_name)
+        # print(new_name)
         if new_name != 'bang':
             size = dpg.get_text_size(new_name, font=dpg.get_item_font(self.input.widget.uuid))
             if size is None:
@@ -241,7 +242,11 @@ class MouseNode(Node):
         self.send_all()
 
 
+# presets can hold UI state, Nodes state, Patch state
+
 class PresetsNode(Node):
+    restoring_patch = False
+
     @staticmethod
     def factory(name, data, args=None):
         node = PresetsNode(name, data, args)
@@ -268,18 +273,34 @@ class PresetsNode(Node):
         #     self.radio_group.widget.horizontal = True
         # else:
         self.radio_group.widget.horizontal = False
-        self.remember_all = (label == 'snapshots')
-        self.remember_all_properties = self.add_option('remember_all_properties', widget_type='checkbox', default_value=self.remember_all, callback=self.remember_all_changed)
+
+        self.remember_mode = 'ui'
+        if label == 'snapshots':
+            self.remember_mode = 'nodes'
+        if label == 'archive':
+            self.remember_mode = 'patch'
+
+        self.remember_all_properties = self.add_option('remember', widget_type='combo', default_value=self.remember_mode, callback=self.remember_all_changed)
+        self.remember_all_properties.widget.combo_items = ['ui', 'nodes', 'patch']
         self.presets = [None] * self.preset_count
+        self.capturing_patch = False
+        self.patch_preset_paste_pending = False
+        self.created_nodes = None
+        self.preset_clipboard = None
 
     def remember_all_changed(self):
-        self.remember_all = self.remember_all_properties.get_widget_value()
+        self.remember_mode = self.remember_all_properties.get_widget_value()
         self.presets = [None] * self.preset_count
 
     def preset_click(self):
+        # print('clicking preset', PresetsNode.restoring_patch)
+        if PresetsNode.restoring_patch:
+            return
         if dpg.is_key_down(dpg.mvKey_Shift):
+            # print('store preset')
             self.save_preset()
         else:
+            # print('load preset from click')
             self.load_preset()
 
     def save_preset(self):
@@ -288,80 +309,200 @@ class PresetsNode(Node):
         if len(self.presets) > current_preset_index + 1:
             if self.presets[current_preset_index] is None:
                 self.presets[current_preset_index] = {}
-            kids = self.output.get_children()
-            if len(kids) > 0:
-                for kid in kids:
-                    node = kid.node
-                    if node is not None:
-                        if self.remember_all:
+            if self.remember_mode == 'patch':
+                patch_container = {}
+                editor = Node.app.get_current_editor()
+                if editor is not None:
+                    editor.containerize(patch_container, exclude_list=[self])
+                    self.presets[current_preset_index] = patch_container
+            else:
+                kids = self.output.get_children()
+                if len(kids) > 0:
+                    for kid in kids:
+                        node = kid.node
+                        if node is not None:
+                            if self.remember_mode == 'nodes':
+                                properties = {}
+                                node.store_properties(properties)
+                                self.presets[current_preset_index][node.uuid] = properties
+                            elif self.remember_mode == 'ui':
+                                self.presets[current_preset_index][node.uuid] = node.get_preset_state()
+                else:
+                    for node in editor._nodes:
+                        if self.remember_mode == 'nodes':
                             properties = {}
                             node.store_properties(properties)
                             self.presets[current_preset_index][node.uuid] = properties
-                        else:
+                        elif self.remember_mode == 'ui':
                             self.presets[current_preset_index][node.uuid] = node.get_preset_state()
-            else:
-                for node in editor._nodes:
-                    if self.remember_all:
-                        properties = {}
-                        node.store_properties(properties)
-                        self.presets[current_preset_index][node.uuid] = properties
-                    else:
-                        self.presets[current_preset_index][node.uuid] = node.get_preset_state()
+
+    def frame_task(self):
+        # print('preset frame task')
+        if self.patch_preset_paste_pending:
+
+            self.do_pending_archive_paste()
+        self.remove_frame_tasks()
+
+    def do_pending_archive_paste(self):
+        # print('about to paste', self.preset_clipboard)
+        self.patch_preset_paste_pending = False
+        editor = Node.app.get_current_editor()
+        # here is where the error now resides - intermittent error on this next paste
+        current_preset_index = string_to_int(self.radio_group.get_widget_value()) - 1
+        editor.paste(self.presets[current_preset_index], drag=False, origin=True, clear_loaded_uuids=False)
+        # on paste, the link ids in the preset will no longer reflect the node id's
+        # so they must be updated
+        self.created_nodes = self.app.created_nodes.copy()
+        editor.paste(self.preset_clipboard, drag=False, origin=True, previously_created_nodes=self.created_nodes)
+        # print('preset pasted', self.presets)
+        editor.clear_loaded_uuids()
 
     def load_preset(self):
+        # print('restoring preset')
         editor = self.my_editor
+        # preset_container = {}
+        # self.save(preset_container, 0)
+        # print('saved preset')
+        # nodes_container = {}
+        # nodes_container[self.label] = preset_container
+        # faux_container = {}
+        # faux_container['nodes'] = nodes_container
+        self.preset_clipboard = self.copy_to_clipboard()
         current_preset_index = string_to_int(self.radio_group.get_widget_value()) - 1
         if len(self.presets) > current_preset_index + 1:
             if self.presets[current_preset_index] is None:
                 return
-            kids = self.output.get_children()
-            if len(kids) > 0:
-                for kid in kids:
-                    node = kid.node
-                    if node is not None:
-                        if self.remember_all:
-                            node.restore_properties(self.presets[current_preset_index][node.uuid])
-                        else:
-                            node.set_preset_state(self.presets[current_preset_index][node.uuid])
+            if self.remember_mode == 'patch':
+                # clear patch
+                PresetsNode.restoring_patch = True
+                # self.app.pause()
+                try:
+                    editor = Node.app.get_current_editor()
+                    if editor is not None:
+                        editor.remove_all_nodes()
+                        self.add_frame_task()
+                        self.patch_preset_paste_pending = True
+
+                        #perhaps we need to spread this acrosstask calls?
+                        # print('about to paste', self.preset_clipboard)
+                        # self.patch_preset_paste_pending = False
+                        #
+                        # # here is where the error now resides - intermittent error on this next paste
+                        #
+                        #
+                        # editor.paste(self.preset_clipboard, drag=False, origin=True, previously_created_nodes=self.created_nodes)
+                        # print('preset pasted', self.presets)
+                        # editor.clear_loaded_uuids()
+                except Exception as e:
+                    print('error restoring patch', e)
+                # self.app.resume()
+                PresetsNode.restoring_patch = False
             else:
-                for node in editor._nodes:
-                    if node.uuid in self.presets[current_preset_index]:
-                        if self.remember_all:
-                            node.restore_properties(self.presets[current_preset_index][node.uuid])
-                        else:
-                            node.set_preset_state(self.presets[current_preset_index][node.uuid])
+                kids = self.output.get_children()
+                if len(kids) > 0:
+                    for kid in kids:
+                        node = kid.node
+                        if node is not None:
+                            if self.remember_mode == 'nodes' and node != self:
+                                node.restore_properties(self.presets[current_preset_index][node.uuid])
+                            elif self.remember_mode == 'ui':
+                                node.set_preset_state(self.presets[current_preset_index][node.uuid])
+                else:
+                    for node in editor._nodes:
+                        if node.uuid in self.presets[current_preset_index]:
+                            if self.remember_mode == 'nodes' and node != self:
+                                node.restore_properties(self.presets[current_preset_index][node.uuid])
+                            elif self.remember_mode == 'ui':
+                                node.set_preset_state(self.presets[current_preset_index][node.uuid])
+        # self.app.resume()
 
     def save_custom_setup(self, container):
-        container['presets'] = self.presets
+        # note this only works for save with the copy()
+        # but it does not work for preset action with the copy()
+        # problem is that the presets are actually empty when the preset is set
+        container['presets'] = self.presets.copy()
 
     def load_custom_setup(self, container):
+        # print('load custom')
         if 'presets' in container:
-            self.presets = container['presets']
+            self.presets = container['presets'].copy()
+            # print('load custom', self.presets)
 
     def post_load_callback(self):
+        # print('post load')
         editor = self.my_editor
         translation_table = {}
-        for preset in self.presets:
-            if preset is not None:
-                for node_preset_uuid in preset:
-                    node_preset_uuid_int = int(node_preset_uuid)
-                    if node_preset_uuid_int not in translation_table:
-                        for node in editor._nodes:
-                            if node.loaded_uuid == node_preset_uuid_int:
-                                translation_table[node_preset_uuid_int] = node.uuid
-        adjusted_presets = [None] * self.preset_count
-        for index, preset in enumerate(self.presets):
-            if preset is not None:
-                adjusted_presets[index] = {}
-                for node_preset_uuid in preset:
-                    node_preset_uuid_int = int(node_preset_uuid)
-                    if node_preset_uuid_int in translation_table:
-                        new_uuid = translation_table[node_preset_uuid_int]
-                        adjusted_presets[index][new_uuid] = preset[node_preset_uuid]
-        self.presets = adjusted_presets.copy()
+        if self.presets is not None:
+            # print(self.presets)
+            for preset in self.presets:
+                if preset is not None:
+                    if self.remember_mode == 'patch':
+                        if 'nodes' in preset:
+                            nodes_container = preset['nodes']
+                            for index in nodes_container:
+                                node_container = nodes_container[index]
+                                # print('prepping translation table', node_container)
+                                if 'id' in node_container:
+                                    node_preset_uuid_int = int(node_container['id'])
+                                    if node_preset_uuid_int not in translation_table:
+                                        for node in editor._nodes:
+                                            # print(node.loaded_uuid, node_preset_uuid_int)
+                                            if node.loaded_uuid == node_preset_uuid_int:
+                                                translation_table[node_preset_uuid_int] = node.uuid
+                    else:
+                        for node_preset_uuid in preset:
+                            # print('uuid', node_preset_uuid)
+                            node_preset_uuid_int = int(node_preset_uuid)
+                            if node_preset_uuid_int not in translation_table:
+                                for node in editor._nodes:
+                                    # print(node.loaded_uuid, node_preset_uuid_int)
+                                    if node.loaded_uuid == node_preset_uuid_int:
+                                        translation_table[node_preset_uuid_int] = node.uuid
+
+            # print('translation table built', translation_table)
+            adjusted_presets = [None] * self.preset_count
+            for index, preset in enumerate(self.presets):
+                if preset is not None:
+                    if self.remember_mode == 'patch':
+                        if 'nodes' in preset:
+                            adjusted_presets[index] = self.presets[index].copy()
+                            adjusted_presets[index]['nodes'] = {}
+
+                            # print('got nodes')
+                            nodes_container = preset['nodes']
+                            for index_key in nodes_container:
+                                node_container = nodes_container[index_key]
+                                # print('got node container')
+                                if 'id' in node_container:
+                                    node_preset_uuid_int = int(node_container['id'])
+                                    # print('node_preset_uuid_int', node_preset_uuid_int)
+                                    if node_preset_uuid_int in translation_table:
+                                        # print('is in table')
+                                        new_uuid = translation_table[node_preset_uuid_int]
+                                        node_container['id'] = new_uuid
+                                        # print(new_uuid, node_container)
+                                        adjusted_presets[index]['nodes'][new_uuid] = node_container
+                                        # print('adjusted_presets', new_uuid)
+                                    else:
+                                        # print('not in table, save as is')
+                                        adjusted_presets[index]['nodes'][node_preset_uuid_int] = node_container
+                    else:
+                        adjusted_presets[index] = []
+                        for node_preset_uuid in preset:
+                            node_preset_uuid_int = int(node_preset_uuid)
+                            if node_preset_uuid_int in translation_table:
+                                new_uuid = translation_table[node_preset_uuid_int]
+                                adjusted_presets[index][new_uuid] = preset[node_preset_uuid_int]
+
+            # print('presets adjusted')
+            self.presets = adjusted_presets.copy()
+            # print('adjusted presets saved', self.presets)
+        else:
+            print('None presets')
 
     def execute(self):
         if self.input.fresh_input:
+            # print('load preset from external input')
             data = self.input.get_received_data()
             self.radio_group.widget.set(data)
             self.load_preset()
@@ -532,6 +673,7 @@ class GainNode(Node):
         self.max = self.max_option.get_widget_value()
         self.gain_property.widget.set_limits(0.0, self.max)
         # dpg.configure_item(self.max_option.widget.uuid, max=self.max)
+
     def execute(self):
         if self.input.fresh_input:
             data = self.input.get_received_data()
@@ -1132,9 +1274,11 @@ class PlotNode(Node):
         self.lock.release()
 
     def load_custom_setup(self, container):
+        # print('load plot')
         self.lock.acquire(blocking=True)
         if 'data' in container:
             data = np.array(container['data'])
+            # print(data)
             if len(data.shape) == 1:
                 self.y_data.update(data)
             elif len(data.shape) == 2 and data.shape[0] == 1:
@@ -1382,9 +1526,10 @@ class PlotNode(Node):
 
     def get_preset_state(self):
         preset = {}
-        data = self.y_data.get_buffer()[0]
-        preset['data'] = data.tolist()
-        self.y_data.release_buffer()
+        if self.label == 'profile':
+            data = self.y_data.get_buffer()[0]
+            preset['data'] = data.tolist()
+            self.y_data.release_buffer()
         return preset
 
     def set_preset_state(self, preset):
