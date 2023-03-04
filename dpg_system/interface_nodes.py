@@ -776,6 +776,15 @@ class ValueNode(Node):
         # self.height_option = self.add_option('height', widget_type='drag_int', default_value=14, callback=self.options_changed)
         if widget_type in ['drag_float', 'slider_float', 'drag_int', 'knob_int', 'input_int']:
             self.format_property = self.add_option('format', widget_type='text_input', default_value=self.format, callback=self.options_changed)
+        if widget_type != 'knob':
+            self.large_text_option = self.add_option('large_font', widget_type='checkbox', default_value=False, callback=self.large_font_changed)
+
+    def large_font_changed(self):
+        use_large = self.large_text_option.get_widget_value()
+        if use_large:
+            dpg.bind_item_font(self.input.widget.uuid, self.app.large_font)
+        else:
+            dpg.bind_item_font(self.input.widget.uuid, self.app.default_font)
 
     def get_preset_state(self):
         preset = {}
@@ -820,6 +829,7 @@ class ValueNode(Node):
             self.bind_to_variable(self.variable_name)
         if self.start_value is not None:
             self.input.set(self.start_value)
+        dpg.bind_item_font(self.input.widget.uuid, self.app.default_font)
 
     def options_changed(self):
         if self.min_property is not None and self.max_property is not None:
@@ -886,10 +896,12 @@ class ValueNode(Node):
             if size is None:
                 size = [80, 14]
             width = size[0]
-            if width > 2048:
-                width = 2048
+            scaled_width = width * self.app.font_scale_variable.get()
+            if scaled_width > 2048:
+                scaled_width = 2048
             if width > dpg.get_item_width(self.input.widget.uuid):
-                dpg.set_item_width(self.input.widget.uuid, width)
+                self.width_option.set(scaled_width)
+                dpg.set_item_width(self.input.widget.uuid, scaled_width)
         self.outputs[0].send(value)
 
     def update(self, propagate=True):
