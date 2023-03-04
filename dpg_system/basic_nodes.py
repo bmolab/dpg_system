@@ -70,6 +70,14 @@ class CommentNode(Node):
                     dpg.add_theme_color(dpg.mvNodeCol_TitleBar, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
             CommentNode.inited = True
         self.comment_text_option = self.add_option('text', widget_type='text_input', width=200, default_value=self.comment_text, callback=self.comment_changed)
+        self.large_text_option = self.add_option('large', widget_type='checkbox', default_value=False, callback=self.large_font_changed)
+
+    def large_font_changed(self):
+        use_large = self.large_text_option.get_widget_value()
+        if use_large:
+            dpg.bind_item_font(self.uuid, self.app.large_font)
+        else:
+            dpg.bind_item_font(self.uuid, self.app.default_font)
 
     def comment_changed(self):
         self.comment_text = self.comment_text_option.get_widget_value()

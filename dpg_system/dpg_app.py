@@ -252,6 +252,8 @@ class App:
         self.viewport = None
         self.main_window_id = -1
         self.loading = False
+        self.large_font = None
+        self.default_font = None
         self.setup_dpg()
         self.verbose = False
         self.verbose_menu_item = -1
@@ -350,9 +352,10 @@ class App:
         if 'macOS' in platform_.platform():
             with dpg.font_registry():
                 if os.path.exists('Inconsolata-g.otf'):
-                    default_font = dpg.add_font("Inconsolata-g.otf", 24)
-                    dpg.bind_font(default_font)
+                    self.default_font = dpg.add_font("Inconsolata-g.otf", 24)
+                    dpg.bind_font(self.default_font)
                     dpg.set_global_font_scale(0.5)
+                    self.large_font = dpg.add_font("Inconsolata-g.otf", 48)
         self.viewport = dpg.create_viewport()
         # print(self.viewport)
         dpg.setup_dearpygui()
