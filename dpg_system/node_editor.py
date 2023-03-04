@@ -39,6 +39,7 @@ class NodeEditor:
         self.active_pins = []
         self.num_nodes = 0
         self.node_theme = None
+        self.comment_theme = None
         self.setup_theme()
         self.patch_name = ''
         self.file_path = ''
@@ -742,6 +743,7 @@ class NodeEditor:
                 self.node_scalers[dpg.mvNodeCol_Pin] = [30, 100, 150]
                 dpg.add_theme_color(dpg.mvNodeCol_Pin, self.node_scalers[dpg.mvNodeCol_Pin], category=dpg.mvThemeCat_Nodes)
 
+
     # def scale_nodes(self, scale):
     #     with dpg.theme() as self.node_theme:
     #         with dpg.theme_component(dpg.mvAll):
@@ -806,7 +808,7 @@ class NodeFactory:
 
     def submit(self, parent):
         dpg.add_button(label=self.label, parent=parent, width=-1)
-#        dpg.bind_item_theme(dpg.last_item(), global_theme)
+        # dpg.bind_item_theme(dpg.last_item(), global_theme)
 
         with dpg.drag_payload(parent=dpg.last_item(), drag_data=(self, self._generator, self._data)):
             dpg.add_text(f"Name: {self.label}")

@@ -41,7 +41,69 @@ def register_basic_nodes():
     Node.app.register_node('ramp', RampNode.factory)
     Node.app.register_node('fifo_string', CombineFIFONode.factory)
     Node.app.register_node('bucket_brigade', BucketBrigadeNode.factory)
+    Node.app.register_node('tick', TickNode.factory)
+    Node.app.register_node('comment', CommentNode.factory)
 
+
+class CommentNode(Node):
+    comment_theme = None
+    inited = False
+    @staticmethod
+    def factory(name, data, args=None):
+        node = CommentNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.comment_text = 'comment'
+        if args is not None and len(args) > 0:
+            self.comment_text = ' '.join(args)
+        if not CommentNode.inited:
+            with dpg.theme() as CommentNode.comment_theme:
+                with dpg.theme_component(dpg.mvAll):
+                    dpg.add_theme_color(dpg.mvNodeCol_NodeBackground, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundHovered, [0, 0, 0, 0],
+                                        category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundSelected, [0, 0, 0, 0],
+                                        category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_NodeOutline, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_TitleBar, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+            CommentNode.inited = True
+        self.comment_text_option = self.add_option('text', widget_type='text_input', width=200, default_value=self.comment_text, callback=self.comment_changed)
+
+    def comment_changed(self):
+        self.comment_text = self.comment_text_option.get_widget_value()
+        dpg.configure_item(self.uuid, label=self.comment_text)
+        width = dpg.get_text_size(self.comment_text)
+        if width is not None:
+            dpg.configure_item(self.comment_text_option.widget.uuid, width=width[0])
+
+    def custom_setup(self, from_file):
+        dpg.bind_item_theme(self.uuid, CommentNode.comment_theme)
+        dpg.configure_item(self.uuid, label=self.comment_text)
+
+    def save_custom_setup(self, container):
+        container['name'] = 'comment'
+        container['comment'] = self.comment_text
+
+    def load_custom_setup(self, container):
+        self.comment_text = container['comment']
+
+class TickNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TickNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('', widget_type='checkbox', default_value=True)
+        self.output = self.add_output('')
+        self.add_frame_task()
+
+    def frame_task(self):
+        if self.input.get_widget_value():
+            self.output.send('bang')
 
 class MetroNode(Node):
     @staticmethod

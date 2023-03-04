@@ -770,6 +770,11 @@ class App:
             self.place_node(node)
             self.set_widget_focus(node.uuid)
 
+    def comment_handler(self):
+        if self.active_widget == -1:
+            self.new_handler('comment')
+
+
     def toggle_handler(self):
         if self.active_widget == -1:
             node = ToggleNode.factory("toggle", None)
@@ -797,6 +802,8 @@ class App:
         if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
             if self.get_current_editor() is not None:
                 self.clipboard = self.get_current_editor().copy_selection()
+        else:
+            self.comment_handler()
 
     def X_handler(self):
         if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
@@ -926,7 +933,7 @@ class App:
                         if widget.callback is not None:
                             widget.callback()
 
-    def new_handler(self):
+    def new_handler(self, name=None):
         if self.get_current_editor() is not None:
             origin = self.get_current_editor().origin
 
@@ -941,7 +948,13 @@ class App:
                 mouse_pos[1] -= (panel_pos[1] + 8 + (origin_pos[1] - origin_node_pos[1]) - 15)
                 node.submit(self.get_current_editor().uuid, pos=mouse_pos)
                 self.get_current_editor().add_node(node)
-                self.set_widget_focus(node.name_property.widget.uuid)
+                if name is not None:
+                    self.set_widget_focus(node.name_property.widget.uuid)
+                    dpg.set_value(node.name_property.widget.uuid, name)
+                    node.node_list = [name]
+                    node.prompt_for_args()
+                else:
+                    self.set_widget_focus(node.name_property.widget.uuid)
 
     def update(self):
         pass

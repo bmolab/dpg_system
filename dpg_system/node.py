@@ -1004,11 +1004,14 @@ class Node:
         with dpg.node(parent=parent, label=self.label, tag=self.uuid, pos=pos):
             dpg.set_item_pos(self.uuid, pos)
             self.handle_parsed_args()
+
             if len(self.ordered_elements) > 0:
                 for attribute in self.ordered_elements:
                     attribute.submit(self.uuid)
                 self.custom_setup(from_file)
                 self.update_parsed_args()
+            else:
+                self.custom_setup(from_file)
 
         dpg.set_item_user_data(self.uuid, self)
         self.add_handler_to_widgets()
@@ -1755,6 +1758,19 @@ class PlaceholderNode(Node):
                 filter_name = self.filtered_list[index]
                 # print(filter_name)
                 self.node_list_box.set(filter_name)
+
+    def prompt_for_args(self):
+        filter_name = dpg.get_value(self.name_property.widget.uuid)
+        if len(filter_name) > 0:
+            selection = filter_name
+            dpg.focus_item(self.node_list_box.widget.uuid)
+            dpg.configure_item(self.name_property.widget.uuid, enabled=False)
+            dpg.configure_item(self.node_list_box.widget.uuid, items=[], show=False)
+            dpg.configure_item(self.name_property.widget.uuid, show=False)
+            dpg.configure_item(self.static_name.widget.uuid, show=True)
+            dpg.configure_item(self.args_property.widget.uuid, show=True, on_enter=True)
+            self.static_name.set(selection)
+            dpg.focus_item(self.args_property.widget.uuid)
 
     def on_edit(self, widget):
         if widget == self.static_name:
