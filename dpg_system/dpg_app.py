@@ -439,6 +439,8 @@ class App:
             if len(current_editor.subpatches) == 0:
                 current_editor.save(save_path)
                 self.patches_name = self.get_current_editor().patch_name
+                self.patches_path = save_path
+                self.add_to_recent(self.patches_name, self.patches_path)
             else:
                 with open(save_path, 'w') as f:
                     self.patches_path = save_path
@@ -457,6 +459,7 @@ class App:
                     file_container['patches'] = self.containerize_patch(current_editor)
 
                     json.dump(file_container, f, indent=4)
+                    self.add_to_recent(self.patches_name, self.patches_path)
 
     def save_setup(self, save_path):
         with open(save_path, 'w') as f:
@@ -481,6 +484,7 @@ class App:
 
             file_container['patches'] = patches_container
             json.dump(file_container, f, indent=4)
+            self.add_to_recent(self.patches_name, self.patches_path)
 
     def recent_1_callback(self):
         self.recent_callback(0)
@@ -718,15 +722,19 @@ class App:
             editor = self.get_current_editor()
             if editor is not None:
                 node_uuids = dpg.get_selected_nodes(editor.uuid)
-                for node_uuid in node_uuids:
-                    # somehow we have to connect to the actual Node object
-                    editor.node_cleanup(node_uuid)
                 link_uuids = dpg.get_selected_links(editor.uuid)
+
+                for node_uuid in node_uuids:
+                    node = dpg.get_item_user_data(node_uuid)
+                    if node is not None:
+                        editor.remove_node(node)
                 for link_uuid in link_uuids:
-                    dat = dpg.get_item_user_data(link_uuid)
-                    out = dat[0]
-                    child = dat[1]
-                    out.remove_link(link_uuid, child)
+                    if dpg.does_item_exist(link_uuid):
+                        dat = dpg.get_item_user_data(link_uuid)
+                        out = dat[0]
+                        child = dat[1]
+                        out.remove_link(link_uuid, child)
+
 
     def return_handler(self):
         # print('return')
@@ -1244,10 +1252,9 @@ class App:
         if self.get_current_editor() is not None:
             self.remove_node_editor(self.get_current_editor())
 
-    def add_node_editor(self, editor_name=None):
-        if editor_name is None:
-            editor_number = len(self.node_editors)
-            editor_name = 'editor ' + str(editor_number)
+    def add_node_editor(self):
+        editor_number = len(self.node_editors)
+        editor_name = 'editor ' + str(editor_number)
         with dpg.tab(label=editor_name, parent=self.tab_bar, user_data=len(self.tabs)) as tab:
             self.tabs.append(tab)
             panel_uuid = dpg.generate_uuid()

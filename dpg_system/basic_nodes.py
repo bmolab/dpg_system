@@ -40,8 +40,7 @@ def register_basic_nodes():
     Node.app.register_node('r', ConduitReceiveNode.factory)
     Node.app.register_node('ramp', RampNode.factory)
     Node.app.register_node('fifo_string', CombineFIFONode.factory)
-
-
+    Node.app.register_node('bucket_brigade', BucketBrigadeNode.factory)
 
 
 class MetroNode(Node):
@@ -545,6 +544,36 @@ class PackNode(Node):
                     out_list.append(value)
             out_list, _ = list_to_array_or_list_if_hetero(out_list)
             self.output.send(out_list)
+
+
+class BucketBrigadeNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = BucketBrigadeNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.bucket_count = self.arg_as_int(default_value=8)
+        self.buckets = [0] * self.bucket_count
+        self.head = 0
+
+        self.input = self.add_input("in", triggers_execution=True)
+        self.outs = []
+        for i in range(self.bucket_count):
+            self.outs.append(self.add_output("out " + str(i)))
+
+    def execute(self):
+        if self.input.fresh_input:
+            self.head = (self.head + 1) % self.bucket_count
+            data = self.input.get_received_data()
+            self.buckets[self.head] = data
+            for i in range(self.bucket_count):
+                rev_i = self.bucket_count - i - 1
+                source = (self.head - rev_i) % self.bucket_count
+                self.outs[rev_i].send(self.buckets[source])
+
 
 
 class DelayNode(Node):

@@ -704,7 +704,8 @@ class InputNodeAttribute:
         self._parents = []
 
     def remove_parent(self, parent):
-        self._parents.remove(parent)
+        if parent in self._parents:
+            self._parents.remove(parent)
 
     def receive_data(self, data):
         if not self.node.check_for_messages(data):
@@ -888,6 +889,7 @@ class Node:
                 dpg.delete_item(input_.widget.uuid)
             dpg.delete_item(input_.uuid)
         for output_ in self.outputs:
+            output_.remove_links()
             dpg.delete_item(output_.uuid)
         for property_ in self.properties:
             if property_.widget:

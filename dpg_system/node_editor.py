@@ -228,6 +228,7 @@ class NodeEditor:
             sorted_dest = dict(sorted(dest_dict.items()))
             source_keys = list(sorted_source.keys())
             dest_keys = list(sorted_dest.keys())
+            print(sorted_source, sorted_dest, source_keys, dest_keys)
             for index, source in enumerate(source_keys):
                 source_output = sorted_source[source].outputs[0]
                 dest_input = sorted_dest[dest_keys[index]].inputs[0]
@@ -295,7 +296,6 @@ class NodeEditor:
     def remove_node(self, node):
         for n in self._nodes:
             if n == node:
-                # need to remove links as well
                 self.remove_active_pins(node)
                 node.cleanup()
                 self._nodes.remove(node)

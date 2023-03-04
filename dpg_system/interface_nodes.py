@@ -34,7 +34,6 @@ def register_interface_nodes():
     Node.app.register_node('gain', GainNode.factory)
 
 
-
 class ButtonNode(Node):
     @staticmethod
     def factory(name, data, args=None):
