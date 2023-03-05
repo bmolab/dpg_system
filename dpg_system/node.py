@@ -814,6 +814,9 @@ class InputNodeAttribute:
         if parent not in self._parents:
             self._parents.append(parent)
 
+    def get_parents(self):
+        return self._parents
+
     def save(self, input_container):
         if self.widget:
             self.widget.save(input_container)
@@ -1292,7 +1295,6 @@ class Node:
             if 'visibility' in node_container:
                 self.set_visibility(node_container['visibility'])
             if 'draggable' in node_container:
-                print('set draggable from container')
                 self.set_draggable(node_container['draggable'])
             self.restore_properties(node_container)
 
@@ -1417,6 +1419,7 @@ class PatcherInputNode(Node):
     def factory(name, data, args=None):
         node = PatcherInputNode(name, data, args)
         return node
+
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         # print('create in')
@@ -1432,6 +1435,14 @@ class PatcherInputNode(Node):
         self.go_property = self.add_property('source', widget_type='button', width=text_width[0] + 8, callback=self.jump_to_patcher)
         self.input_out = self.add_output(self.input_name)
         self.patcher_node = self.app.get_current_editor().patcher_node
+        self.name_option = self.add_option('input name', widget_type='text_input', default_value=self.input_name, callback=self.name_changed)
+
+    def name_changed(self):
+        self.input_name = self.name_option.get_widget_value()
+        old_name = self.input_out.get_label()
+        self.input_out.set_label(self.input_name)
+        if self.patcher_node:
+            self.patcher_node.change_input_name(old_name, self.input_name)
 
     def jump_to_patcher(self):
         parent_patcher = self.app.get_current_editor().parent_patcher
@@ -1454,6 +1465,7 @@ class PatcherInputNode(Node):
             if self.input_name == '':
                 self.input_name = remote_input.get_label()
                 self.input_out.set_label(self.input_name)
+                self.name_option.set(self.input_name)
 
     def custom_cleanup(self):
         if self.patcher_node is not None:
@@ -1479,6 +1491,15 @@ class PatcherOutputNode(Node):
         self.output_in = self.add_input(self.output_name, callback=self.send_to_patcher)
         self.patcher_node = self.app.get_current_editor().patcher_node
         self.target_output = None
+        self.name_option = self.add_option('output name', widget_type='text_input', default_value=self.output_name, callback=self.name_changed)
+
+    def name_changed(self):
+        self.output_name = self.name_option.get_widget_value()
+        old_name = self.output_in.get_label()
+        self.output_in.set_label(self.output_name)
+        if self.patcher_node:
+            self.patcher_node.change_output_name(old_name, self.output_name)
+
 
     def send_to_patcher(self, input=None):
         if self.target_output is not None and input is not None:
@@ -1509,6 +1530,7 @@ class PatcherOutputNode(Node):
             if self.output_name == '':
                 self.output_name = self.target_output.get_label()
                 self.output_in.set_label(self.output_name)
+                self.name_option.set(self.output_name)
 
     def custom_cleanup(self):
         if self.patcher_node is not None:
@@ -1555,10 +1577,10 @@ class PatcherNode(Node):
         #     self.reattached = True
         # self.patch_editor.patcher_node = self
         # self.patch_editor.parent_patcher = self.home_editor
-        text_size = dpg.get_text_size(self.patcher_name)
+        text_size = dpg.get_text_size(text=self.patcher_name)
         if text_size is None:
             text_size = [80, 14]
-        self.add_property(self.patcher_name, widget_type='button', width=text_size[0] + 8, callback=self.open_patcher)
+        self.button = self.add_property(self.patcher_name, widget_type='button', width=text_size[0] + 8, callback=self.open_patcher)
         self.show_input = [False] * self.max_input_count
         self.show_output = [False] * self.max_output_count
         self.patcher_inputs = [None] * self.max_input_count
@@ -1571,6 +1593,27 @@ class PatcherNode(Node):
         for i in range(self.max_output_count):
             out_temp = self.add_output('out ' + str(i))
             self.patcher_outputs[i] = out_temp
+        self.name_option = self.add_option('patcher name', widget_type='text_input', default_value=self.patcher_name, callback=self.name_changed)
+
+    def name_changed(self):
+        new_name = self.name_option.get_widget_value()
+        dpg.set_item_label(self.button.widget.uuid, new_name)
+        size = dpg.get_text_size('new_name', font=self.app.default_font)
+        if size is not None:
+            dpg.set_item_width(self.button.widget.uuid, int(size[0] + 12))
+
+        if self.patch_editor:
+            self.patch_editor.set_name(new_name)
+
+    def change_input_name(self, old_name, new_name):
+        for in_ in self.inputs:
+            if in_.get_label() is old_name:
+                in_.set_label(new_name)
+
+    def change_output_name(self, old_name, new_name):
+        for out_ in self.outputs:
+            if out_.get_label() == old_name:
+                out_.set_label(new_name)
 
     def receive_(self, input=None):
         if input is not None:
@@ -1648,7 +1691,7 @@ class PatcherNode(Node):
 
     def custom_setup(self, from_file):
         if not from_file:
-            self.patch_editor = self.app.add_node_editor(self.patcher_name)
+            self.patch_editor = self.app.add_node_editor()
             self.app.set_tab_title(len(self.app.node_editors) - 1, self.patcher_name)
             # self.home_editor.add_subpatch(self.patch_editor)
             self.connect()

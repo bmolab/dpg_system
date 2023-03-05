@@ -271,7 +271,7 @@ class App:
         self.tabs = []
         Node.app = self
         self.register_nodes()
-
+        self.new_patcher_index = 1
         self.patchers = []
 
         self.node_editors = []
@@ -626,6 +626,7 @@ class App:
                 dpg.add_menu_item(label="Copy (C)", callback=self.copy_selected)
                 dpg.add_menu_item(label="Paste (V)", callback=self.paste_selected)
                 dpg.add_menu_item(label="Duplicate (D)", callback=self.duplicate_handler)
+                dpg.add_menu_item(label="Patchify (P)", callback=self.patchify_handler)
                 dpg.add_separator()
                 dpg.add_menu_item(label="Connect Selected (K)", callback=self.connect_selected)
                 dpg.add_menu_item(label="Align Selected", callback=self.align_selected)
@@ -788,6 +789,50 @@ class App:
             if node == remove_node:
                 self.frame_tasks[index:] = self.frame_tasks[index + 1:]
 
+    def get_links_into_selection(self):
+        editor = self.get_current_editor()
+        external_sources = []
+        external_targets = []
+        if editor is not None:
+            node_uuids = dpg.get_selected_nodes(editor.uuid)
+            for uuid in node_uuids:
+                node = dpg.get_item_user_data(uuid)
+                if node is not None:
+                    for index, in_ in enumerate(node.inputs):
+                        parents = in_.get_parents()
+                        if parents is not None and len(parents) > 0:
+                            for parent in parents:
+                                source_output = dpg.get_item_user_data(parent.uuid)
+                                source_node = source_output.node
+                                if source_node.uuid not in node_uuids:
+                                    external_sources.append([parent, in_, uuid, index])
+                    for index, out_ in enumerate(node.outputs):
+                        children = out_.get_children()
+                        if children is not None and len(children) > 0:
+                            for child in children:
+                                dest_input = dpg.get_item_user_data(child.uuid)
+                                dest_node = dest_input.node
+                                if dest_node.uuid not in node_uuids:
+                                    external_targets.append([child, out_, uuid, index])
+        return external_sources, external_targets
+
+
+    def centre_of_selection(self):
+        editor = self.get_current_editor()
+        if editor is not None:
+            node_uuids = dpg.get_selected_nodes(editor.uuid)
+            centre_acc = [0, 0]
+            centre_count = 0
+            for uuid in node_uuids:
+                pos = dpg.get_item_pos(uuid)
+                size = [dpg.get_item_width(uuid), dpg.get_item_height(uuid)]
+                centre = [pos[0] + size[0] / 2, pos[1] + size[1] / 2]
+                centre_acc[0] += centre[0]
+                centre_acc[1] += centre[1]
+                centre_count += 1
+            if centre_count > 0:
+                return [centre_acc[0] / centre_count, centre_acc[1] / centre_count]
+
     def del_handler(self):
         if self.active_widget == -1:
             editor = self.get_current_editor()
@@ -876,6 +921,11 @@ class App:
         else:
             self.comment_handler()
 
+    def P_handler(self):
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+            if self.get_current_editor() is not None:
+                self.clipboard = self.get_current_editor().patchify_selection()
+
     def hide_selected(self):
         # if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
         if self.get_current_editor() is not None:
@@ -963,6 +1013,10 @@ class App:
         if self.active_widget == -1:
             if self.get_current_editor() is not None:
                 self.get_current_editor().duplicate_selection()
+
+    def patchify_handler(self):
+        if self.get_current_editor() is not None:
+            self.get_current_editor().patchify_selection()
 
     def cut_selected(self):
         if self.active_widget == -1:
@@ -1314,6 +1368,11 @@ class App:
         if len(self.tabs) > tab_index >= 0:
             dpg.configure_item(self.tabs[tab_index], label=title)
 
+    def set_editor_tab_title(self, editor, name):
+        for index, ed in enumerate(self.node_editors):
+            if ed is editor:
+                self.set_tab_title(index, name)
+
     def selected_tab(self):
         chosen_tab_uuid = dpg.get_value(self.tab_bar)
         chosen_tab_index = dpg.get_item_user_data(chosen_tab_uuid)
@@ -1375,8 +1434,8 @@ class App:
             self.remove_node_editor(self.get_current_editor())
 
     def add_node_editor(self):
-        editor_number = len(self.node_editors)
-        editor_name = 'editor ' + str(editor_number)
+        editor_name = 'patch ' + str(self.new_patcher_index)
+        self.new_patcher_index += 1
         with dpg.tab(label=editor_name, parent=self.tab_bar, user_data=len(self.tabs)) as tab:
             self.tabs.append(tab)
             panel_uuid = dpg.generate_uuid()
@@ -1389,7 +1448,7 @@ class App:
         return new_editor
 
     def start(self):
-        dpg.set_viewport_title("Untitled")
+        dpg.set_viewport_title("Patchers")
         self.node_editors = [NodeEditor()]
 
         with dpg.window() as main_window:
@@ -1399,7 +1458,8 @@ class App:
             dpg.bind_item_theme(main_window, self.global_theme)
             dpg.add_spacer(height=14)
             with dpg.tab_bar(callback=self.selected_tab) as self.tab_bar:
-                with dpg.tab(label='node editor', user_data=len(self.tabs)) as tab:
+                with dpg.tab(label='patch ' + str(self.new_patcher_index), user_data=len(self.tabs)) as tab:
+                    self.new_patcher_index += 1
                     self.tabs.append(tab)
                     with dpg.group(id=self.center_panel):
                         self.node_editors[0].submit(self.center_panel)
@@ -1423,6 +1483,7 @@ class App:
                             dpg.add_key_press_handler(dpg.mvKey_N, callback=self.N_handler)
                             dpg.add_key_press_handler(dpg.mvKey_K, callback=self.K_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Y, callback=self.Y_handler)
+                            dpg.add_key_press_handler(dpg.mvKey_P, callback=self.P_handler)
 
                             dpg.add_key_press_handler(dpg.mvKey_Back, callback=self.del_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Return, callback=self.return_handler)

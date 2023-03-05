@@ -3,7 +3,7 @@ import math
 import time
 import numpy as np
 import random
-from dpg_system.node import Node, OriginNode
+from dpg_system.node import Node, OriginNode, PatcherNode
 import json
 
 
@@ -51,6 +51,9 @@ class NodeEditor:
         self.duplicated_subpatch_nodes = {}
         self.saving_preset = False
 
+    def set_name(self, name):
+        self.patch_name = name
+        Node.app.set_editor_tab_title(self, name)
     def add_subpatch(self, subpatch_editor):
         self.subpatches.append(subpatch_editor)
 
@@ -524,6 +527,88 @@ class NodeEditor:
         for node in self._nodes:
             node.set_visibility('show_all')
 
+    def patchify_selection(self):
+        #  find centre of patch
+        #  create patcher at centre
+        #  find outside links
+        Node.app.created_nodes = {}
+        centre = Node.app.centre_of_selection()
+        external_sources, external_targets = Node.app.get_links_into_selection()
+        clipboard = self.cut_selection()
+        source_patch_tab = Node.app.current_node_editor
+        patcher_node = Node.app.create_node_by_name('patcher', placeholder=None, args=['embedded_' + str(Node.app.new_patcher_index)], pos=centre)
+        # patcher_node.uuid
+        Node.app.current_node_editor = len(Node.app.node_editors) - 1
+        sub_patch_tab = Node.app.current_node_editor
+        sub_patch_editor = Node.app.get_current_editor()
+        sub_patch_editor.uncontainerize(clipboard)
+        if 'links' in clipboard:
+            links_container = clipboard['links']
+            for index, link_index in enumerate(links_container):
+                source_node = None
+                dest_node = None
+                link_container = links_container[link_index]
+                source_node_loaded_uuid = link_container['source_node']
+                if source_node_loaded_uuid in Node.app.created_nodes:
+                    source_node = Node.app.created_nodes[source_node_loaded_uuid]
+                dest_node_loaded_uuid = link_container['dest_node']
+                if dest_node_loaded_uuid in Node.app.created_nodes:
+                    dest_node = Node.app.created_nodes[dest_node_loaded_uuid]
+                if source_node is not None and dest_node is not None:
+                    source_output_index = link_container['source_output_index']
+                    dest_input_index = link_container['dest_input_index']
+                    if source_output_index < len(source_node.outputs):
+                        source_output = source_node.outputs[source_output_index]
+                        if dest_input_index < len(dest_node.inputs):
+                            dest_input = dest_node.inputs[dest_input_index]
+                            source_output.add_child(dest_input, sub_patch_editor.uuid)
+        dpg.set_value(Node.app.tab_bar, sub_patch_tab)
+
+        input_node_index = 0
+        for source in external_sources:
+            source_output = source[0]
+            dest_input = source[1]
+            dest_node_uuid = source[2]
+            dest_input_index_in_node = source[3]
+
+            source_pos = dpg.get_item_pos(source_output.node.uuid)
+            input_node = Node.app.create_node_by_name('in', placeholder=None, args=[], pos=source_pos)
+            for create_node_uuid in Node.app.created_nodes:
+                node = Node.app.created_nodes[create_node_uuid]
+
+                if node.loaded_uuid == dest_node_uuid:
+                    if dest_input_index_in_node < len(node.inputs):
+                        new_dest_input = node.inputs[dest_input_index_in_node]
+                        input_node.input_out.add_child(new_dest_input, sub_patch_editor.uuid)
+            Node.app.current_node_editor = source_patch_tab
+            source_output.add_child(patcher_node.inputs[input_node_index], Node.app.get_current_editor().uuid)
+            input_node_index += 1
+            Node.app.current_node_editor = sub_patch_tab
+
+
+        output_node_index = 0
+        for target in external_targets:
+            target_input = target[0]
+            source_output = target[1]
+            source_node_uuid = target[2]
+            source_output_index_in_node = target[3]
+
+            target_pos = dpg.get_item_pos(target_input.node.uuid)
+            output_node = Node.app.create_node_by_name('out', placeholder=None, args=[], pos=target_pos)
+            for create_node_uuid in Node.app.created_nodes:
+                node = Node.app.created_nodes[create_node_uuid]
+
+                if node.loaded_uuid == source_node_uuid:
+                    if source_output_index_in_node < len(node.outputs):
+                        new_source_output = node.outputs[source_output_index_in_node]
+                        new_source_output.add_child(output_node.output_in, sub_patch_editor.uuid)
+            Node.app.current_node_editor = source_patch_tab
+            patcher_node.outputs[output_node_index].add_child(target_input, Node.app.get_current_editor().uuid)
+            output_node_index += 1
+            Node.app.current_node_editor = sub_patch_tab
+
+        Node.app.current_node_editor = source_patch_tab
+
     def duplicate_selection(self):
         clipboard = self.copy_selection()
         self.paste(clipboard)
@@ -678,7 +763,6 @@ class NodeEditor:
                     new_node.load(node_container, offset=offset)
                     Node.app.created_nodes[new_node.loaded_uuid] = new_node
                     dpg.focus_item(new_node.uuid)
-                    print(dpg.get_item_configuration(new_node.uuid))
 
         if self.loaded_parent_node_uuid != -1:
             parent_node = Node.app.find_loaded_parent(self.loaded_parent_node_uuid)
