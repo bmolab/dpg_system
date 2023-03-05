@@ -50,6 +50,14 @@ class OutputNodeAttribute:
             with dpg.theme_component(0):
                 dpg.add_theme_color(dpg.mvNodeCol_Pin, (153, 212, 255), category=dpg.mvThemeCat_Nodes)
 
+    def set_visibility(self, visibility_state='show_all'):
+        if visibility_state == 'show_all':
+            dpg.bind_item_theme(self.uuid, theme=Node.app.global_theme)
+        elif visibility_state == 'widgets_only':
+            dpg.bind_item_theme(self.uuid, theme=Node.app.invisible_theme)
+        else:
+            dpg.bind_item_theme(self.uuid, theme=Node.app.invisible_theme)
+
     def add_child(self, child, parent):
         link_uuid = dpg.add_node_link(self.uuid, child.uuid, parent=parent)
         # print('added link', link_uuid, self.uuid, child.uuid, self.node.label)
@@ -93,11 +101,12 @@ class OutputNodeAttribute:
         if data is not None:
             self.set_value(data)
         if self.output_always or self.new_output:
-            if len(self._children) > 0:
-                dpg.bind_item_theme(self.uuid, self._pin_active_and_connected_theme)
-            else:
-                dpg.bind_item_theme(self.uuid, self._pin_active_theme)
-            Node.app.get_current_editor().add_active_pin(self.uuid)
+            if self.node.visibility == 'show_all':
+                if len(self._children) > 0:
+                    dpg.bind_item_theme(self.uuid, self._pin_active_and_connected_theme)
+                else:
+                    dpg.bind_item_theme(self.uuid, self._pin_active_theme)
+                Node.app.get_current_editor().add_active_pin(self.uuid)
             for child in self._children:
                 child.trigger()
         self.new_output = False
@@ -153,6 +162,14 @@ class DisplayNodeAttribute:
                 dpg.set_item_callback(self.widget.uuid, self.callback)
                 dpg.set_item_user_data(self.widget.uuid, self.user_data)
 
+    def set_visibility(self, visibility_state='show_all'):
+        if visibility_state == 'show_all':
+            dpg.bind_item_theme(self.uuid, theme=Node.app.global_theme)
+        elif visibility_state == 'widgets_only':
+            dpg.bind_item_theme(self.uuid, theme=Node.app.widget_only_theme)
+        else:
+            dpg.bind_item_theme(self.uuid, theme=Node.app.invisible_theme)
+
     def load(self, property_container):
         pass
 
@@ -201,6 +218,17 @@ class PropertyNodeAttribute:
     def set_default_value(self, data):
         self.widget.set_default_value(data)
 
+    def set_visibility(self, visibility_state='show_all'):
+        if visibility_state == 'show_all':
+            dpg.bind_item_theme(self.uuid, theme=Node.app.global_theme)
+        elif visibility_state == 'widgets_only':
+            dpg.bind_item_theme(self.uuid, theme=Node.app.widget_only_theme)
+        else:
+            dpg.bind_item_theme(self.uuid, theme=Node.app.invisible_theme)
+
+        if self.widget is not None:
+            self.widget.set_visibility(visibility_state)
+
     def attach_to_variable(self, variable):
         self.variable = variable
         self.variable.property = self
@@ -248,6 +276,7 @@ class PropertyWidget:
         else:
             self.uuid = uuid
         self.widget_has_trigger = trigger_button
+        self.trigger_widget = None
         self.widget = widget_type
         self.widget_width = width
         self.triggers_execution = triggers_execution
@@ -271,6 +300,32 @@ class PropertyWidget:
         self.variable = None
         self.action = None
         self.node = node
+
+    def set_visibility(self, visibility_state='show_all'):
+        if visibility_state == 'show_all':
+            dpg.bind_item_theme(self.uuid, theme=Node.app.global_theme)
+            dpg.enable_item(self.uuid)
+            if self.trigger_widget is not None:
+                with dpg.theme() as item_theme:
+                    with dpg.theme_component(dpg.mvAll):
+                        dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
+                dpg.bind_item_theme(self.trigger_widget, item_theme)
+                dpg.enable_item(self.trigger_widget)
+        elif visibility_state == 'widgets_only':
+            dpg.bind_item_theme(self.uuid, theme=Node.app.widget_only_theme)
+            dpg.enable_item(self.uuid)
+            if self.trigger_widget is not None:
+                with dpg.theme() as item_theme:
+                    with dpg.theme_component(dpg.mvAll):
+                        dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
+                dpg.bind_item_theme(self.trigger_widget, item_theme)
+                dpg.enable_item(self.trigger_widget)
+        else:
+            dpg.bind_item_theme(self.uuid, theme=Node.app.invisible_theme)
+            dpg.disable_item(self.uuid)
+            if self.trigger_widget is not None:
+                dpg.bind_item_theme(self.trigger_widget, theme=Node.app.invisible_theme)
+                dpg.disable_item(self.trigger_widget)
 
     def submit(self):
         if self.widget in ['drag_float', 'slider_float', 'input_float', 'knob_float']:
@@ -405,11 +460,11 @@ class PropertyWidget:
                 dpg.set_item_user_data(self.uuid, user_data=self)
                 dpg.set_item_callback(self.uuid, callback=lambda s, a, u: self.value_changed(a))
             if self.widget_has_trigger:
-                button = dpg.add_button(label='', width=14, callback=value_trigger_callback, user_data=self.node)
+                self.trigger_widget = dpg.add_button(label='', width=14, callback=value_trigger_callback, user_data=self.node)
                 with dpg.theme() as item_theme:
                     with dpg.theme_component(dpg.mvAll):
                         dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
-                dpg.bind_item_theme(button, item_theme)
+                dpg.bind_item_theme(self.trigger_widget, item_theme)
         return
 
     def set_default_value(self, data):
@@ -508,6 +563,24 @@ class PropertyWidget:
         if self.callback is not None:
             self.callback()
 
+    def get_text_width(self, pad=12, minimum_width=100):
+        ttt = any_to_string(self.value)
+        size = dpg.get_text_size(ttt, font=dpg.get_item_font(self.uuid))
+        width = minimum_width
+        if size is not None:
+            width = size[0] + pad
+        font_scale = Node.app.font_scale_variable.get()
+        if width < minimum_width / font_scale:
+            width = minimum_width / font_scale
+        return width * font_scale
+        # return (dpg.get_text_size(self.value, font=dpg.get_item_font(self.uuid)) + pad) * Node.app.font_scale_variable.get()
+
+    def adjust_to_text_width(self, max=0):
+        width = self.get_text_width()
+        if width is not None:
+            dpg.configure_item(self.uuid, width=width)
+        return width
+
     def set(self, data, propagate=True):
         if self.widget == 'checkbox':
             val = any_to_bool(data)
@@ -525,14 +598,7 @@ class PropertyWidget:
             val = any_to_string(data)
             dpg.set_value(self.uuid, val)
             self.value = val
-            width = self.widget_width
-            size = dpg.get_text_size(self.value, font=dpg.get_item_font(self.uuid))
-            if size is not None: # might be none before first frame!!!!
-                width = size[0]
-            if width > 2048:
-                width = 2048
-            if width > dpg.get_item_width(self.uuid):
-                dpg.set_item_width(self.uuid, width)
+            # self.adjust_to_text_width(max=2048)
         elif self.widget in ['drag_int', 'input_int', 'slider_int', 'knob_int']:
             val = any_to_int(data)
             if val:
@@ -601,6 +667,8 @@ class PropertyWidget:
     def get_as_array(self, data):
         return any_to_array(data)
 
+    def set_font(self, font):
+        dpg.bind_item_font(self.uuid, font)
 
 class InputNodeAttribute:
     _pin_active_theme = None
@@ -642,6 +710,19 @@ class InputNodeAttribute:
             dpg.set_value(self.label_uuid, self._label)
         else:
             dpg.set_item_label(self.widget.uuid, self._label)
+
+    def set_visibility(self, visibility_state='show_all'):
+        if visibility_state == 'show_all':
+            dpg.bind_item_theme(self.uuid, theme=Node.app.global_theme)
+        elif visibility_state == 'widgets_only':
+            if self.widget is None:
+                dpg.bind_item_theme(self.uuid, theme=Node.app.invisible_theme)
+            else:
+                dpg.bind_item_theme(self.uuid, theme=Node.app.widget_only_theme)
+        else:
+            dpg.bind_item_theme(self.uuid, theme=Node.app.invisible_theme)
+        if self.widget is not None:
+            self.widget.set_visibility(visibility_state)
 
     def create_pin_themes(self):
         self._pin_inactive_theme = dpg.theme()
@@ -717,8 +798,9 @@ class InputNodeAttribute:
                         data = self._data
             self._data = data
             self.fresh_input = True
-            dpg.bind_item_theme(self.uuid, self._pin_active_theme)
-            Node.app.get_current_editor().add_active_pin(self.uuid)
+            if self.node.visibility == 'show_all':
+                dpg.bind_item_theme(self.uuid, self._pin_active_theme)
+                Node.app.get_current_editor().add_active_pin(self.uuid)
             if self.widget:
                 self.widget.set(data)
             if self.callback:
@@ -760,6 +842,11 @@ class InputNodeAttribute:
             self.widget.set(data, False)
         if self.variable and propagate:
             self.variable.set_value(data)
+
+    def set_font(self, font):
+        dpg.bind_item_font(self.uuid, font)
+        if self.widget:
+            self.widget.set_font(font)
 
     @property
     def data(self):
@@ -876,6 +963,8 @@ class Node:
         self.created = False
         self.parse_args()
         self.my_editor = self.app.get_current_editor()
+        self.draggable = True
+        self.visibility = 'show_all'
 
     def custom_cleanup(self):
         pass
@@ -896,6 +985,43 @@ class Node:
                 dpg.delete_item(property_.widget.uuid)
             dpg.delete_item(property_.uuid)
 
+    def set_draggable(self, can_drag):
+        self.draggable = can_drag
+        dpg.configure_item(self.uuid, draggable=self.draggable)
+
+    def set_visibility(self, visibility_state='show_all'):
+        self.visibility = visibility_state
+        if visibility_state == 'show_all':
+            dpg.bind_item_theme(self.uuid, theme=self.app.global_theme)
+            dpg.configure_item(self.uuid, draggable=True)
+            dpg.configure_item(self.uuid, label=self.label)
+        elif visibility_state == 'widgets_only':
+            dpg.bind_item_theme(self.uuid, theme=self.app.widget_only_theme)
+            dpg.configure_item(self.uuid, draggable=True)
+            dpg.configure_item(self.uuid, label='')
+        else:
+            dpg.bind_item_theme(self.uuid, theme=self.app.invisible_theme)
+            dpg.configure_item(self.uuid, draggable=False)
+
+        for in_ in self.inputs:
+            in_.set_visibility(visibility_state)
+        for out_ in self.outputs:
+            out_.set_visibility(visibility_state)
+        for property_ in self.properties:
+            property_.set_visibility(visibility_state)
+        for display_ in self.displays:
+            display_.set_visibility(visibility_state)
+
+        self.set_custom_visibility()
+
+    def set_custom_visibility(self):
+        pass
+
+    def set_font(self, font):
+        dpg.bind_item_font(self.uuid, font)
+
+    def set_title(self, title):
+        dpg.configure_item(self.uuid, label=title)
 
     def post_load_callback(self):
         pass
@@ -1143,6 +1269,8 @@ class Node:
             size = dpg.get_item_rect_size(self.uuid)
             node_container['width'] = size[0]
             node_container['height'] = size[1]
+            node_container['visibility'] = self.visibility
+            node_container['draggable'] = self.draggable
             self.store_properties(node_container)
 
     def load(self, node_container, offset=None):
@@ -1161,49 +1289,12 @@ class Node:
                 pos[0] = node_container['position_x'] + offset[0]
                 pos[1] = node_container['position_y'] + offset[1]
                 dpg.set_item_pos(self.uuid, pos)
+            if 'visibility' in node_container:
+                self.set_visibility(node_container['visibility'])
+            if 'draggable' in node_container:
+                print('set draggable from container')
+                self.set_draggable(node_container['draggable'])
             self.restore_properties(node_container)
-            # if 'properties' in node_container:
-            #     properties_container = node_container['properties']
-            #     for index, property_index in enumerate(properties_container):
-            #         property_container = properties_container[property_index]
-            #         if 'name' in property_container:
-            #             property_label = property_container['name']
-            #             found = False
-            #             for input in self.inputs:
-            #                 if input.widget is not None:
-            #                     a_label = dpg.get_item_label(input.widget.uuid)
-            #                     if a_label == property_label:
-            #                         if 'value' in property_container:
-            #                             value = property_container['value']
-            #                             input.widget.set(value)
-            #                             input.widget.value_changed(force=True)
-            #                         found = True
-            #                         break
-            #             if not found:
-            #                 for property in self.properties:
-            #                     if property.widget is not None:
-            #                         a_label = dpg.get_item_label(property.widget.uuid)
-            #                         if a_label == property_label:
-            #                             if 'value' in property_container:
-            #                                 value = property_container['value']
-            #                                 if property.widget.widget != 'button':
-            #                                     property.widget.set(value)
-            #                                     property.widget.value_changed(force=True)
-            #                             found = True
-            #                             break
-            #             if not found:
-            #                 for option in self.options:
-            #                     if option.widget:
-            #                         a_label = dpg.get_item_label(option.widget.uuid)
-            #                         if a_label == property_label:
-            #                             if 'value' in property_container:
-            #                                 value = property_container['value']
-            #                                 option.widget.set(value)
-            #                                 option.widget.value_changed(force=True)
-            #                             found = True
-            #                             break
-            # self.load_custom_setup(node_container)
-            # self.update_parameters_from_widgets()
 
     def store_properties(self, node_container):
         properties_container = {}
@@ -1562,8 +1653,6 @@ class PatcherNode(Node):
             # self.home_editor.add_subpatch(self.patch_editor)
             self.connect()
 
-
-
         # note that this happens before custom load setup... so 'self.subpatcher_loaded_uuid' is not yet valid
         # self.patch_editor = self.app.find_orphaned_subpatch(self.patcher_name, self.subpatcher_loaded_uuid)
         # # note that patch_editor may not have been opened yet if opening from file
@@ -1639,17 +1728,27 @@ class OriginNode(Node):
     def custom_setup(self, from_file):
         with dpg.theme() as item_theme:
             with dpg.theme_component(dpg.mvAll):
-                dpg.add_theme_style(dpg.mvStyleVar_FramePadding, 0, category=dpg.mvThemeCat_Core)
-#                dpg.add_theme_style(dpg.mvStyleVar_WindowMinSize, (0, 0), category=dpg.mvThemeCat_Core)
-                dpg.add_theme_style(dpg.mvStyleVar_FrameBorderSize, 0, category=dpg.mvThemeCat_Core)
+                # dpg.add_theme_style(dpg.mvStyleVar_FramePadding, 0, category=dpg.mvThemeCat_Core)
+                # dpg.add_theme_style(dpg.mvStyleVar_FrameBorderSize, 0, category=dpg.mvThemeCat_Core)
 
-                dpg.add_theme_color(dpg.mvNodeCol_TitleBar, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
-                dpg.add_theme_color(dpg.mvNodeCol_TitleBarHovered, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
-                dpg.add_theme_color(dpg.mvNodeCol_TitleBarSelected, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvNodeCol_NodeBackground, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundHovered, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundSelected, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
 
-                dpg.add_theme_color(dpg.mvThemeCol_FrameBg, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
-                dpg.add_theme_color(dpg.mvThemeCol_FrameBgActive, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
-                dpg.add_theme_color(dpg.mvThemeCol_FrameBgHovered, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvNodesCol_MiniMapNodeBackground, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodesCol_MiniMapBackgroundHovered, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodesCol_MiniMapNodeBackgroundSelected, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+
+                dpg.add_theme_color(dpg.mvNodeCol_NodeOutline, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodesCol_MiniMapNodeOutline, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+
+                dpg.add_theme_color(dpg.mvNodeCol_TitleBar, (0, 0, 0, 0), category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_TitleBarHovered, (0, 0, 0, 0), category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_TitleBarSelected, (0, 0, 0, 0), category=dpg.mvThemeCat_Nodes)
+
+                # dpg.add_theme_color(dpg.mvThemeCol_FrameBg, (0, 0, 0, 0), category=dpg.mvThemeCat_Nodes)
+                # dpg.add_theme_color(dpg.mvThemeCol_FrameBgActive, (0, 0, 0, 0), category=dpg.mvThemeCat_Nodes)
+                # dpg.add_theme_color(dpg.mvThemeCol_FrameBgHovered, (0, 0, 0, 0), category=dpg.mvThemeCat_Nodes)
         dpg.bind_item_theme(self.ref_property.uuid, item_theme)
         dpg.bind_item_theme(self.uuid, item_theme)
 

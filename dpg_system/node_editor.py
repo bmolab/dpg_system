@@ -229,7 +229,6 @@ class NodeEditor:
             sorted_dest = dict(sorted(dest_dict.items()))
             source_keys = list(sorted_source.keys())
             dest_keys = list(sorted_dest.keys())
-            print(sorted_source, sorted_dest, source_keys, dest_keys)
             for index, source in enumerate(source_keys):
                 source_output = sorted_source[source].outputs[0]
                 dest_input = sorted_dest[dest_keys[index]].inputs[0]
@@ -521,6 +520,10 @@ class NodeEditor:
         global_pos[1] += (panel_pos[1] + 8 + (origin_pos[1] - origin_node_pos[1]) - 30)
         return global_pos
 
+    def reveal_hidden(self):
+        for node in self._nodes:
+            node.set_visibility('show_all')
+
     def duplicate_selection(self):
         clipboard = self.copy_selection()
         self.paste(clipboard)
@@ -675,6 +678,7 @@ class NodeEditor:
                     new_node.load(node_container, offset=offset)
                     Node.app.created_nodes[new_node.loaded_uuid] = new_node
                     dpg.focus_item(new_node.uuid)
+                    print(dpg.get_item_configuration(new_node.uuid))
 
         if self.loaded_parent_node_uuid != -1:
             parent_node = Node.app.find_loaded_parent(self.loaded_parent_node_uuid)

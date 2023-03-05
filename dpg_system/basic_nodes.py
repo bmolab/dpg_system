@@ -75,16 +75,17 @@ class CommentNode(Node):
     def large_font_changed(self):
         use_large = self.large_text_option.get_widget_value()
         if use_large:
-            dpg.bind_item_font(self.uuid, self.app.large_font)
+            self.set_font(self.app.large_font)
+            self.comment_text_option.widget.set_font(self.app.default_font)
+            self.large_text_option.widget.set_font(self.app.default_font)
+            self.comment_text_option.widget.adjust_to_text_width()
         else:
-            dpg.bind_item_font(self.uuid, self.app.default_font)
+            self.set_font(self.app.default_font)
 
     def comment_changed(self):
         self.comment_text = self.comment_text_option.get_widget_value()
-        dpg.configure_item(self.uuid, label=self.comment_text)
-        width = dpg.get_text_size(self.comment_text)
-        if width is not None:
-            dpg.configure_item(self.comment_text_option.widget.uuid, width=width[0])
+        self.set_title(self.comment_text)
+        self.comment_text_option.widget.adjust_to_text_width()
 
     def custom_setup(self, from_file):
         dpg.bind_item_theme(self.uuid, CommentNode.comment_theme)

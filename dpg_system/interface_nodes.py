@@ -30,7 +30,9 @@ def register_interface_nodes():
     Node.app.register_node('radio_v', RadioButtonsNode.factory)
     Node.app.register_node('presets', PresetsNode.factory)
     Node.app.register_node('snapshots', PresetsNode.factory)
+    Node.app.register_node('states', PresetsNode.factory)
     Node.app.register_node('archive', PresetsNode.factory)
+    Node.app.register_node('versions', PresetsNode.factory)
     Node.app.register_node('gain', GainNode.factory)
 
 
@@ -93,7 +95,7 @@ class ButtonNode(Node):
                     size = dpg.get_text_size(self.action_name, font=dpg.get_item_font(self.input.widget.uuid))
                     if size is None:
                         size = [80, 14]
-                    dpg.set_item_width(self.input.widget.uuid, int(size[0]) + 12)
+                    dpg.set_item_width(self.input.widget.uuid, int(size[0] * self.app.font_scale_variable.get()) + 12)
                     dpg.set_item_label(self.input.widget.uuid, self.action_name)
             else:
                 self.input.attach_to_action(None)
@@ -104,11 +106,12 @@ class ButtonNode(Node):
         new_name = self.message_option.get_widget_value()
         # print(new_name)
         if new_name != 'bang':
-            size = dpg.get_text_size(new_name, font=dpg.get_item_font(self.input.widget.uuid))
-            if size is None:
-                size = [80, 14]
-            dpg.set_item_width(self.input.widget.uuid, int(size[0]) + 12)
             dpg.set_item_label(self.input.widget.uuid, new_name)
+            width = self.input.widget.get_text_width()
+            # size = dpg.get_text_size(new_name, font=dpg.get_item_font(self.input.widget.uuid))
+            # if size is None:
+            #     size = [80, 14]
+            dpg.set_item_width(self.input.widget.uuid, width)
 
     def clicked_function(self, input=None):
         self.flash_duration = self.flash_duration_option.get_widget_value()
@@ -146,7 +149,8 @@ class MenuNode(Node):
         self.choices = self.args_as_list()
         self.choice_input = self.add_input('##choice', widget_type='combo', default_value=self.choice, callback=self.set_choice)
         self.choice_input.widget.combo_items = self.choices
-
+        self.large_text_option = self.add_option('large_font', widget_type='checkbox', default_value=False,
+                                                 callback=self.large_font_changed)
         self.output = self.add_output("")
 
     def get_preset_state(self):
@@ -158,6 +162,20 @@ class MenuNode(Node):
         if 'value' in preset:
             self.choice_input.widget.set(preset['value'])
             self.execute()
+
+    def large_font_changed(self):
+        use_large = self.large_text_option.get_widget_value()
+        if use_large:
+            self.choice_input.set_font(self.app.large_font)
+        else:
+            self.choice_input.set_font(self.app.default_font)
+        adjusted_width = self.choice_input.widget.adjust_to_text_width()
+        # self.width_option.widget.set(adjusted_width)
+        # if self.choice_input.widget.trigger_widget is not None:
+        #     if use_large:
+        #         dpg.set_item_width(self.choice_input.widget.trigger_widget, 28)
+        #     else:
+        #         dpg.set_item_width(self.choice_input.widget.trigger_widget, 14)
 
     def set_choice(self, input=None):
         do_execute = True
@@ -274,9 +292,9 @@ class PresetsNode(Node):
         self.radio_group.widget.horizontal = False
 
         self.remember_mode = 'ui'
-        if label == 'snapshots':
+        if label in ['snapshots', 'states']:
             self.remember_mode = 'nodes'
-        if label == 'archive':
+        if label in ['archive', 'versions']:
             self.remember_mode = 'patch'
 
         self.remember_all_properties = self.add_option('remember', widget_type='combo', default_value=self.remember_mode, callback=self.remember_all_changed)
@@ -773,7 +791,6 @@ class ValueNode(Node):
             self.max_property = self.add_option('max', widget_type='drag_float', default_value=self.max, callback=self.options_changed)
 
         self.width_option = self.add_option('width', widget_type='drag_int', default_value=widget_width, callback=self.options_changed)
-        # self.height_option = self.add_option('height', widget_type='drag_int', default_value=14, callback=self.options_changed)
         if widget_type in ['drag_float', 'slider_float', 'drag_int', 'knob_int', 'input_int']:
             self.format_property = self.add_option('format', widget_type='text_input', default_value=self.format, callback=self.options_changed)
         if widget_type != 'knob':
@@ -782,9 +799,16 @@ class ValueNode(Node):
     def large_font_changed(self):
         use_large = self.large_text_option.get_widget_value()
         if use_large:
-            dpg.bind_item_font(self.input.widget.uuid, self.app.large_font)
+            self.input.set_font(self.app.large_font)
         else:
-            dpg.bind_item_font(self.input.widget.uuid, self.app.default_font)
+            self.input.set_font(self.app.default_font)
+        adjusted_width = self.input.widget.adjust_to_text_width()
+        self.width_option.widget.set(adjusted_width)
+        if self.input.widget.trigger_widget is not None:
+            if use_large:
+                dpg.set_item_width(self.input.widget.trigger_widget, 28)
+            else:
+                dpg.set_item_width(self.input.widget.trigger_widget, 14)
 
     def get_preset_state(self):
         preset = {}
@@ -829,7 +853,7 @@ class ValueNode(Node):
             self.bind_to_variable(self.variable_name)
         if self.start_value is not None:
             self.input.set(self.start_value)
-        dpg.bind_item_font(self.input.widget.uuid, self.app.default_font)
+        self.input.set_font(self.app.default_font)
 
     def options_changed(self):
         if self.min_property is not None and self.max_property is not None:
@@ -892,16 +916,8 @@ class ValueNode(Node):
             if self.variable is not None:
                 self.variable.set(value, from_client=self)
         if self.input.widget.widget == 'text_input':
-            size = dpg.get_text_size(self.input.get_widget_value(), font=dpg.get_item_font(self.input.widget.uuid))
-            if size is None:
-                size = [80, 14]
-            width = size[0]
-            scaled_width = width * self.app.font_scale_variable.get()
-            if scaled_width > 2048:
-                scaled_width = 2048
-            if width > dpg.get_item_width(self.input.widget.uuid):
-                self.width_option.set(scaled_width)
-                dpg.set_item_width(self.input.widget.uuid, scaled_width)
+            adjusted_width = self.input.widget.adjust_to_text_width(max=2048)
+            self.width_option.set(adjusted_width)
         self.outputs[0].send(value)
 
     def update(self, propagate=True):
@@ -914,14 +930,7 @@ class ValueNode(Node):
             self.variable.set(value, from_client=self)
 
         if self.input.widget.widget == 'text_input':
-            size = dpg.get_text_size(self.input.get_widget_value(), font=dpg.get_item_font(self.input.widget.uuid))
-            if size is None:
-                size = [80, 14]
-            width = size[0]
-            if width > 1024:
-                width = 1024
-            if width > dpg.get_item_width(self.input.widget.uuid):
-                dpg.set_item_width(self.input.widget.uuid, width)
+            self.input.widget.adjust_to_text_width(max=2048)
         self.outputs[0].send(value)
 
 
@@ -1226,6 +1235,28 @@ class PlotNode(Node):
                 dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Viridis)
             dpg.add_plot_axis(dpg.mvXAxis, label="", tag=self.x_axis, no_tick_labels=True)
             dpg.add_plot_axis(dpg.mvYAxis, label="", tag=self.y_axis, no_tick_labels=True)
+
+    def set_custom_visibility(self):
+        if self.visibility == 'show_all':
+            dpg.bind_item_theme(self.plot_tag, self.app.global_theme)
+            dpg.bind_item_theme(self.plot_data_tag, self.app.global_theme)
+            dpg.bind_item_theme(self.y_axis, self.app.global_theme)
+            dpg.bind_item_theme(self.x_axis, self.app.global_theme)
+            dpg.configure_item(self.plot_tag, show=True)
+            self.change_colormap()
+        elif self.visibility == 'widgets_only':
+            dpg.bind_item_theme(self.plot_tag, self.app.global_theme)
+            dpg.bind_item_theme(self.plot_data_tag, self.app.global_theme)
+            dpg.bind_item_theme(self.y_axis, self.app.global_theme)
+            dpg.bind_item_theme(self.x_axis, self.app.global_theme)
+            dpg.configure_item(self.plot_tag, show=True)
+            self.change_colormap()
+        else:
+            dpg.bind_item_theme(self.plot_data_tag, self.app.invisible_theme)
+            dpg.bind_item_theme(self.plot_tag, self.app.invisible_theme)
+            dpg.bind_item_theme(self.y_axis, self.app.invisible_theme)
+            dpg.bind_item_theme(self.x_axis, self.app.invisible_theme)
+            dpg.configure_item(self.plot_tag, show=False)
 
     def custom_setup(self, from_file):
         self.reallocate_buffer()

@@ -380,10 +380,70 @@ class App:
                 dpg.add_theme_style(dpg.mvStyleVar_FramePadding, self.frame_padding[0], self.frame_padding[1], category=dpg.mvThemeCat_Core)
                 dpg.add_theme_style(dpg.mvStyleVar_CellPadding, self.cell_padding[0], self.cell_padding[1], category=dpg.mvThemeCat_Core)
                 dpg.add_theme_style(dpg.mvStyleVar_ItemSpacing, self.item_spacing[0], self.item_spacing[1], category=dpg.mvThemeCat_Core)
+                # dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 255, 255, 255), category=dpg.mvThemeCat_Plots)
 
         with dpg.theme() as self.borderless_child_theme:
             with dpg.theme_component(dpg.mvChildWindow):
                 dpg.add_theme_color(dpg.mvThemeCol_Border, [0, 0, 0, 0])
+
+        with dpg.theme() as self.invisible_theme:
+            with dpg.theme_component(dpg.mvAll):
+                dpg.add_theme_color(dpg.mvNodeCol_NodeBackground, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundHovered, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundSelected, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_NodeOutline, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+
+                dpg.add_theme_color(dpg.mvNodeCol_TitleBar, (0, 0, 0, 0), category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_TitleBarHovered, (0, 0, 0, 0), category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_TitleBarSelected, (0, 0, 0, 0), category=dpg.mvThemeCat_Nodes)
+
+                dpg.add_theme_color(dpg.mvThemeCol_FrameBg, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_FrameBgActive, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_FrameBgHovered, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_Button, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_SliderGrab, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_SliderGrabActive, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
+
+                dpg.add_theme_color(dpg.mvThemeCol_Text, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
+
+                dpg.add_theme_color(dpg.mvNodeCol_Pin, (0, 0, 0, 0), category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_PinHovered, (0, 0, 0, 0), category=dpg.mvThemeCat_Nodes)
+
+                dpg.add_theme_color(dpg.mvPlotCol_PlotBorder, (0, 0, 0, 0), category=dpg.mvThemeCat_Plots)
+                dpg.add_theme_color(dpg.mvPlotCol_PlotBg, (0, 0, 0, 0), category=dpg.mvThemeCat_Plots)
+                dpg.add_theme_color(dpg.mvPlotCol_Line, (0, 0, 0, 0), category=dpg.mvThemeCat_Plots)
+
+                dpg.add_theme_color(dpg.mvNodeCol_GridBackground, (0, 0, 0, 0), category=dpg.mvThemeCat_Plots)
+
+        with dpg.theme() as self.widget_only_theme:
+            with dpg.theme_component(dpg.mvAll):
+                dpg.add_theme_color(dpg.mvNodeCol_NodeBackground, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundHovered, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundSelected, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_NodeOutline, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+
+                dpg.add_theme_color(dpg.mvNodeCol_TitleBar, (0, 0, 0, 0), category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_TitleBarHovered, (0, 0, 0, 0), category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_Pin, (0, 0, 0, 0), category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_PinHovered, (0, 0, 0, 0), category=dpg.mvThemeCat_Nodes)
+
+        with dpg.theme() as self.widget_only_node_theme:
+            with dpg.theme_component(dpg.mvAll):
+                dpg.add_theme_color(dpg.mvNodeCol_NodeBackground, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundHovered, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundSelected, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_NodeOutline, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+
+                dpg.add_theme_color(dpg.mvNodeCol_TitleBar, (0, 0, 0, 0), category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_TitleBarHovered, (0, 0, 0, 0), category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_TitleBarSelected, (0, 0, 0, 0), category=dpg.mvThemeCat_Nodes)
+
+                dpg.add_theme_color(dpg.mvThemeCol_Text, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
+
+                dpg.add_theme_color(dpg.mvNodeCol_Pin, (0, 0, 0, 0), category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_PinHovered, (0, 0, 0, 0), category=dpg.mvThemeCat_Nodes)
 
     def find_loaded_parent(self, loaded_parent_node_uuid):
         for loaded_patcher_node in self.loaded_patcher_nodes:
@@ -572,6 +632,14 @@ class App:
                 dpg.add_menu_item(label="Align and Distribute Selected", callback=self.align_distribute_selected)
                 dpg.add_menu_item(label="Space Out Selected", callback=self.space_out_selected)
                 dpg.add_menu_item(label="Tighten Selected", callback=self.tighten_selected)
+                dpg.add_separator()
+                dpg.add_menu_item(label="Hide Selected", callback=self.hide_selected)
+                dpg.add_menu_item(label="Widget Only for Selected", callback=self.show_widget_only_for_selected)
+                dpg.add_menu_item(label="Reveal Hidden", callback=self.reveal_hidden)
+                dpg.add_separator()
+                dpg.add_menu_item(label="Toggle Lock Position for Selected", callback=self.lock_position_for_selected)
+                dpg.add_menu_item(label="Show / Hide Options for Selected", callback=self.options_for_selected)
+
 
             with dpg.menu(label='Options'):
                 dpg.add_menu_item(label="Show Style Editor", callback=self.show_style)
@@ -807,6 +875,44 @@ class App:
                 self.clipboard = self.get_current_editor().copy_selection()
         else:
             self.comment_handler()
+
+    def hide_selected(self):
+        # if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+        if self.get_current_editor() is not None:
+            selected_nodes_uuids = dpg.get_selected_nodes(self.get_current_editor().uuid)
+            for selected_nodes_uuid in selected_nodes_uuids:
+                node = dpg.get_item_user_data(selected_nodes_uuid)
+                if node is not None:
+                    node.set_visibility('hidden')
+
+    def lock_position_for_selected(self):
+        if self.get_current_editor() is not None:
+            selected_nodes_uuids = dpg.get_selected_nodes(self.get_current_editor().uuid)
+            for selected_nodes_uuid in selected_nodes_uuids:
+                node = dpg.get_item_user_data(selected_nodes_uuid)
+                node.set_draggable(not node.draggable)
+
+    def options_for_selected(self):
+        if self.get_current_editor() is not None:
+            selected_nodes_uuids = dpg.get_selected_nodes(self.get_current_editor().uuid)
+            for selected_nodes_uuid in selected_nodes_uuids:
+                node = dpg.get_item_user_data(selected_nodes_uuid)
+                node.toggle_show_hide_options()
+
+    def show_widget_only_for_selected(self):
+        # if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+        if self.get_current_editor() is not None:
+            selected_nodes_uuids = dpg.get_selected_nodes(self.get_current_editor().uuid)
+            for selected_nodes_uuid in selected_nodes_uuids:
+                node = dpg.get_item_user_data(selected_nodes_uuid)
+                print(node)
+
+                if node is not None:
+                    node.set_visibility('widgets_only')
+
+    def reveal_hidden(self):
+        if self.get_current_editor() is not None:
+            self.get_current_editor().reveal_hidden()
 
     def X_handler(self):
         if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
