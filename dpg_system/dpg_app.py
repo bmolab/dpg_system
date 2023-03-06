@@ -637,9 +637,9 @@ class App:
                 dpg.add_separator()
                 dpg.add_menu_item(label="Connect Selected (K)", callback=self.connect_selected)
                 dpg.add_menu_item(label="Align Selected", callback=self.align_selected)
-                dpg.add_menu_item(label="Align and Distribute Selected", callback=self.align_distribute_selected)
-                dpg.add_menu_item(label="Space Out Selected", callback=self.space_out_selected)
-                dpg.add_menu_item(label="Tighten Selected", callback=self.tighten_selected)
+                dpg.add_menu_item(label="Align and Distribute Selected (Y)", callback=self.align_distribute_selected)
+                dpg.add_menu_item(label="Space Out Selected (+)", callback=self.space_out_selected)
+                dpg.add_menu_item(label="Tighten Selected (-)", callback=self.tighten_selected)
             with dpg.menu(label='Visibility'):
                 dpg.add_menu_item(label="Hide Selected", callback=self.hide_selected)
                 dpg.add_menu_item(label="Widget Only for Selected", callback=self.show_widget_only_for_selected)
@@ -930,6 +930,14 @@ class App:
                 self.clipboard = self.get_current_editor().copy_selection()
         else:
             self.comment_handler()
+
+    def plus_handler(self):
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+            self.space_out_selected()
+
+    def minus_handler(self):
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+            self.tighten_selected()
 
     def P_handler(self):
         if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
@@ -1508,6 +1516,8 @@ class App:
                             dpg.add_key_press_handler(dpg.mvKey_K, callback=self.K_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Y, callback=self.Y_handler)
                             dpg.add_key_press_handler(dpg.mvKey_P, callback=self.P_handler)
+                            dpg.add_key_press_handler(dpg.mvKey_Plus, callback=self.plus_handler)
+                            dpg.add_key_press_handler(dpg.mvKey_Minus, callback=self.minus_handler)
 
                             dpg.add_key_press_handler(dpg.mvKey_Back, callback=self.del_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Return, callback=self.return_handler)
