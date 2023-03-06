@@ -254,6 +254,11 @@ class PropertyNodeAttribute:
     def get_widget_value(self):
         return self.widget.value
 
+    def set_label(self, new_name):
+        self.label = new_name
+        if self.widget:
+            self.widget.set_label(new_name)
+
     def set(self, data, propagate=True):
         if type(data) == list:
             if len(data) == 1:
@@ -505,6 +510,10 @@ class PropertyWidget:
             self.callback()
         if self.triggers_execution:
             self.node.execute()
+
+    def set_label(self, name):
+        self._label = name
+        dpg.set_item_label(self.uuid, name)
 
     def clickable_changed(self):
         self.value = dpg.get_value(self.uuid)
@@ -968,6 +977,7 @@ class Node:
         self.my_editor = self.app.get_current_editor()
         self.draggable = True
         self.visibility = 'show_all'
+        self.presentation_state = 'show_all'
 
     def custom_cleanup(self):
         pass
@@ -1274,6 +1284,8 @@ class Node:
             node_container['height'] = size[1]
             node_container['visibility'] = self.visibility
             node_container['draggable'] = self.draggable
+            node_container['presentation_state'] = self.presentation_state
+
             self.store_properties(node_container)
 
     def load(self, node_container, offset=None):
@@ -1296,6 +1308,8 @@ class Node:
                 self.set_visibility(node_container['visibility'])
             if 'draggable' in node_container:
                 self.set_draggable(node_container['draggable'])
+            if 'presentation_state' in node_container:
+                self.presentation_state = node_container['presentation_state']
             self.restore_properties(node_container)
 
     def store_properties(self, node_container):
@@ -1567,16 +1581,6 @@ class PatcherNode(Node):
                 self.patcher_name = s
         self.home_editor = self.app.get_current_editor()
         self.patch_editor = None
-        # if there is an editor with self.patcher_name that has no parents, use it instead of creating
-        # self.patch_editor = self.app.find_orphaned_subpatch(self.patcher_name)
-        # self.reattached = False
-        # if self.patch_editor is None:
-        #     self.patch_editor = self.app.add_node_editor()
-        #     self.app.set_current_tab_title(self.patcher_name)
-        # else:
-        #     self.reattached = True
-        # self.patch_editor.patcher_node = self
-        # self.patch_editor.parent_patcher = self.home_editor
         text_size = dpg.get_text_size(text=self.patcher_name)
         if text_size is None:
             text_size = [80, 14]
@@ -1597,8 +1601,9 @@ class PatcherNode(Node):
 
     def name_changed(self):
         new_name = self.name_option.get_widget_value()
-        dpg.set_item_label(self.button.widget.uuid, new_name)
-        size = dpg.get_text_size('new_name', font=self.app.default_font)
+        self.unparsed_args = [new_name]
+        self.button.set_label(new_name)
+        size = dpg.get_text_size(new_name, font=self.app.default_font)
         if size is not None:
             dpg.set_item_width(self.button.widget.uuid, int(size[0] + 12))
 
@@ -1632,7 +1637,6 @@ class PatcherNode(Node):
                 break
 
     def add_patcher_output(self, output_name, output):
-        # print('add patcher output', output_name)
         for i in range(self.max_output_count):
             if self.output_ins[i] is None:
                 self.output_ins[i] = output
@@ -1649,9 +1653,7 @@ class PatcherNode(Node):
                 self.output_ins[i] = None
                 self.show_output[i] = False
                 self.patcher_outputs[i].set_label('out ' + str(i))
-                # dpg.set_value(self.patcher_outputs[i].label_uuid, 'out ' + str(i))
                 self.patcher_outputs[i].remove_links()
- #               self.patcher_outputs[i].delet()
             # must remove connections!
         self.update_outputs()
 
@@ -1744,7 +1746,7 @@ class PatcherNode(Node):
         self.patch_editor = self.app.find_orphaned_subpatch(self.patcher_name, self.subpatcher_loaded_uuid)
         # note that patch_editor may not have been opened yet if opening from file
         if self.patch_editor is None:
-            self.patch_editor = self.app.add_node_editor(self.patcher_name)
+            self.patch_editor = self.app.add_node_editor()
             self.app.set_tab_title(len(self.app.node_editors) - 1, self.patcher_name)
         elif self.patch_editor is not None:
             self.update_inputs()

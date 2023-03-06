@@ -270,6 +270,7 @@ class App:
         self.node_list = []
         self.tabs = []
         Node.app = self
+        NodeEditor.app = self
         self.register_nodes()
         self.new_patcher_index = 1
         self.patchers = []
@@ -286,6 +287,7 @@ class App:
         self.osc_manager = OSCManager(label='osc_manager', data=0, args=None)
 
         self.recent_menu = None
+        self.presentation_edit_menu_item = -1
         self.setup_menus()
         self.patches_path = ''
         self.patches_name = ''
@@ -330,6 +332,7 @@ class App:
                 self.recent_files = json.load(f)
             self.update_recent_menu()
         self.pausing = False
+
 
     def clear_remembered_ids(self):
         self.active_widget = -1
@@ -633,10 +636,13 @@ class App:
                 dpg.add_menu_item(label="Align and Distribute Selected", callback=self.align_distribute_selected)
                 dpg.add_menu_item(label="Space Out Selected", callback=self.space_out_selected)
                 dpg.add_menu_item(label="Tighten Selected", callback=self.tighten_selected)
-                dpg.add_separator()
+            with dpg.menu(label='Visibility'):
                 dpg.add_menu_item(label="Hide Selected", callback=self.hide_selected)
                 dpg.add_menu_item(label="Widget Only for Selected", callback=self.show_widget_only_for_selected)
                 dpg.add_menu_item(label="Reveal Hidden", callback=self.reveal_hidden)
+                dpg.add_separator()
+                dpg.add_menu_item(label="Set As Presentation", callback=self.set_presentation)
+                self.presentation_edit_menu_item = dpg.add_menu_item(label="Presentation Mode", callback=self.toggle_presentation)
                 dpg.add_separator()
                 dpg.add_menu_item(label="Toggle Lock Position for Selected", callback=self.lock_position_for_selected)
                 dpg.add_menu_item(label="Show / Hide Options for Selected", callback=self.options_for_selected)
@@ -963,6 +969,20 @@ class App:
     def reveal_hidden(self):
         if self.get_current_editor() is not None:
             self.get_current_editor().reveal_hidden()
+
+    def set_presentation(self):
+        if self.get_current_editor() is not None:
+            self.get_current_editor().remember_presentation()
+
+    def toggle_presentation(self):
+        if self.get_current_editor() is not None:
+            editor = self.get_current_editor()
+            if editor.presenting:
+                editor.enter_edit_state()
+                dpg.set_item_label(self.presentation_edit_menu_item, 'Enter Presentation Mode')
+            else:
+                editor.enter_presentation_state()
+                dpg.set_item_label(self.presentation_edit_menu_item, 'Enter Edit Mode')
 
     def X_handler(self):
         if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
