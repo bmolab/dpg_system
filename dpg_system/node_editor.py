@@ -539,11 +539,15 @@ class NodeEditor:
         for node in self._nodes:
             node.set_visibility(node.presentation_state)
             node.set_draggable(False)
+        dpg.bind_theme(self.node_presentation_theme)
+
     def enter_edit_state(self):
         self.presenting = False
         for node in self._nodes:
             node.set_visibility('show_all')
             node.set_draggable(True)
+        dpg.bind_theme(self.node_theme)
+
 
     def patchify_selection(self):
         #  find centre of patch
@@ -844,6 +848,21 @@ class NodeEditor:
                 dpg.add_theme_style(dpg.mvNodeStyleVar_NodePadding,  self.node_scalers[dpg.mvNodeStyleVar_NodePadding][0],  self.node_scalers[dpg.mvNodeStyleVar_NodePadding][1], category=dpg.mvThemeCat_Nodes)
                 self.node_scalers[dpg.mvNodeStyleVar_PinOffset] = 2
                 dpg.add_theme_style(dpg.mvNodeStyleVar_PinOffset, self.node_scalers[dpg.mvNodeStyleVar_PinOffset], category=dpg.mvThemeCat_Nodes)
+                self.node_scalers[dpg.mvNodeStyleVar_LinkThickness] = 1
+                dpg.add_theme_style(dpg.mvNodeStyleVar_LinkThickness, self.node_scalers[dpg.mvNodeStyleVar_LinkThickness], category=dpg.mvThemeCat_Nodes)
+                self.node_scalers[dpg.mvNodeCol_Pin] = [30, 100, 150]
+                dpg.add_theme_color(dpg.mvNodeCol_Pin, self.node_scalers[dpg.mvNodeCol_Pin], category=dpg.mvThemeCat_Nodes)
+        with dpg.theme() as self.node_presentation_theme:
+            with dpg.theme_component(dpg.mvAll):
+                self.node_scalers[dpg.mvNodeStyleVar_GridSpacing] = 16
+                dpg.add_theme_style(dpg.mvNodeStyleVar_GridSpacing, self.node_scalers[dpg.mvNodeStyleVar_GridSpacing], category=dpg.mvThemeCat_Nodes)
+                self.node_scalers[dpg.mvNodeCol_GridLine] = [60, 60, 60]
+                dpg.add_theme_color(dpg.mvNodeCol_GridLine, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                self.node_scalers[dpg.mvNodeStyleVar_NodePadding] = [4, 1]
+                dpg.add_theme_style(dpg.mvNodeStyleVar_NodePadding,  self.node_scalers[dpg.mvNodeStyleVar_NodePadding][0],  self.node_scalers[dpg.mvNodeStyleVar_NodePadding][1], category=dpg.mvThemeCat_Nodes)
+                self.node_scalers[dpg.mvNodeStyleVar_PinOffset] = 2
+                dpg.add_theme_style(dpg.mvNodeStyleVar_PinOffset, self.node_scalers[dpg.mvNodeStyleVar_PinOffset], category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_Link, [0.0, 0.0, 0.0, 0.0], category=dpg.mvThemeCat_Nodes)
                 self.node_scalers[dpg.mvNodeStyleVar_LinkThickness] = 1
                 dpg.add_theme_style(dpg.mvNodeStyleVar_LinkThickness, self.node_scalers[dpg.mvNodeStyleVar_LinkThickness], category=dpg.mvThemeCat_Nodes)
                 self.node_scalers[dpg.mvNodeCol_Pin] = [30, 100, 150]

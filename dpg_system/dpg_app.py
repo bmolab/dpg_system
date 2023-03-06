@@ -604,21 +604,24 @@ class App:
         with dpg.viewport_menu_bar():
             with dpg.menu(label="File"):
                 dpg.add_menu_item(label='New Patch (N)', callback=self.add_node_editor)
+                dpg.add_separator()
+
                 dpg.add_menu_item(label="Open in this Patcher", callback=self.load_nodes_in_patcher)
                 dpg.add_menu_item(label="Open in new Patcher (O)", callback=self.load_nodes)
-                with dpg.menu(label='Recent') as self.recent_menu:
+                with dpg.menu(label='Open Recent') as self.recent_menu:
                     for i in range(10):
                         self.recent_menus.append(dpg.add_menu_item(label="...", show=False, callback=recent_callback[i]))
                     dpg.add_separator()
                     dpg.add_menu_item(label="Clear Recent", callback=self.clear_recent)
 
-                dpg.add_menu_item(label='Close Current Patch (W)', callback=self.close_current_node_editor)
                 dpg.add_separator()
-                dpg.add_menu_item(label='Set As Default Patch', callback=self.set_as_default_patch)
-                dpg.add_menu_item(label='No Default Patch', callback=self.clear_default_patch)
+                dpg.add_menu_item(label='Close Current Patch (W)', callback=self.close_current_node_editor)
                 dpg.add_separator()
                 dpg.add_menu_item(label="Save Patch (S)", callback=self.save_nodes)
                 dpg.add_menu_item(label="Save Patch As", callback=self.save_as_nodes)
+                dpg.add_separator()
+                dpg.add_menu_item(label='Set As Default Patch', callback=self.set_as_default_patch)
+                dpg.add_menu_item(label='No Default Patch', callback=self.clear_default_patch)
                 dpg.add_separator()
                 dpg.add_menu_item(label="Save to Library", callback=self.save_to_library)
                 dpg.add_separator()
@@ -629,6 +632,7 @@ class App:
                 dpg.add_menu_item(label="Copy (C)", callback=self.copy_selected)
                 dpg.add_menu_item(label="Paste (V)", callback=self.paste_selected)
                 dpg.add_menu_item(label="Duplicate (D)", callback=self.duplicate_handler)
+                dpg.add_separator()
                 dpg.add_menu_item(label="Patchify (P)", callback=self.patchify_handler)
                 dpg.add_separator()
                 dpg.add_menu_item(label="Connect Selected (K)", callback=self.connect_selected)
@@ -641,11 +645,11 @@ class App:
                 dpg.add_menu_item(label="Widget Only for Selected", callback=self.show_widget_only_for_selected)
                 dpg.add_menu_item(label="Reveal Hidden", callback=self.reveal_hidden)
                 dpg.add_separator()
-                dpg.add_menu_item(label="Set As Presentation", callback=self.set_presentation)
-                self.presentation_edit_menu_item = dpg.add_menu_item(label="Presentation Mode", callback=self.toggle_presentation)
-                dpg.add_separator()
                 dpg.add_menu_item(label="Toggle Lock Position for Selected", callback=self.lock_position_for_selected)
                 dpg.add_menu_item(label="Show / Hide Options for Selected", callback=self.options_for_selected)
+                dpg.add_separator()
+                dpg.add_menu_item(label="Set As Presentation", callback=self.set_presentation)
+                self.presentation_edit_menu_item = dpg.add_menu_item(label="Presentation Mode", callback=self.toggle_presentation)
 
 
             with dpg.menu(label='Options'):
