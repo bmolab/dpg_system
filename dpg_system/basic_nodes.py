@@ -993,14 +993,24 @@ class CombineFIFONode(Node):
 
             self.input = self.add_input("in", triggers_execution=True)
             self.clear_input = self.add_input('clear', callback=self.clear_fifo)
+            self.drop_oldest_input = self.add_input('dump_oldest', callback=self.dump_oldest)
             self.order = self.add_property('order', widget_type='combo', width=150, default_value='newest_at_end')
             self.order.widget.combo_items = ['newest_at_end', 'newest_at_start']
             self.output = self.add_output("out")
+
+        def dump_oldest(self, value):
+            for i in range(self.count):
+                j = (self.pointer - i) % self.count
+                if self.combine_list[j] != '':
+                    self.combine_list[j] = ''
+                    break
+            self.execute()
 
         def clear_fifo(self, value):
             self.combine_list = [''] * self.count
             output_string = ''
             self.output.send(output_string)
+
         def execute(self):
             if self.input.fresh_input:
                 self.combine_list[self.pointer] = self.input.get_received_data()
