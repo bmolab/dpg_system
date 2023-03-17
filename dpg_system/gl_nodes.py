@@ -41,7 +41,9 @@ class GLContextCommandParser(GLCommandParser):
         self.dict['perspective'] = self.set_perspective
 
     def set_frustum(self, context, args):  # context must be established
+        hold_context = glfw.get_current_context()
         if args is not None and len(args) > 0:
+            glfw.make_context_current(context.window)
             near = .1
             far = 1000
             focal_length = 2.0
@@ -61,12 +63,20 @@ class GLContextCommandParser(GLCommandParser):
             gl.glLoadIdentity()
             gl.glFrustum(-f, f, -h, h, near, far)
             gl.glMatrixMode(current_matrix_mode)
+        glfw.make_context_current(hold_context)
 
     def set_ortho(self, context, args):  # context must be established
+        hold_context = glfw.get_current_context()
+        glfw.make_context_current(context.window)
         if args is not None and len(args) > 3:
             near = .1
             far = 1000
-            dest_rect = [any_to_float(args[0]), any_to_float(args[1]), any_to_float(args[2]), any_to_float(args[3])]
+            left = any_to_float(args[0])
+            right = any_to_float(args[1])
+            bottom = any_to_float(args[2])
+            top = any_to_float(args[3])
+            print(left, right, bottom, top)
+            dest_rect = [left, right, bottom, top]
             if len(args) > 4:
                 near = any_to_float(args[4])
             if len(args) > 5:
@@ -78,8 +88,11 @@ class GLContextCommandParser(GLCommandParser):
             gl.glLoadIdentity()
             gl.glOrtho(-width / 2.0, width / 2.0, height / 2.0, -height / 2.0, near, far)
             gl.glMatrixMode(current_matrix_mode)
+        glfw.make_context_current(hold_context)
 
     def set_perspective(self, context, args):  # context must be established
+        hold_context = glfw.get_current_context()
+        glfw.make_context_current(context.window)
         aspect = context.width / context.height
         if args is not None and len(args) > 0:
             fov = 50.0
@@ -100,6 +113,7 @@ class GLContextCommandParser(GLCommandParser):
             m = m.reshape((4, 4))
             gl.glMultMatrixd(m)
             gl.glMatrixMode(current_matrix_mode)
+        glfw.make_context_current(hold_context)
 
 
 class GLContextNode(Node):
@@ -191,9 +205,12 @@ class GLContextNode(Node):
 
     def draw(self):
         if self.context and self.ready:
-            if len(self.pending_commands) > 0:
-                for command in self.pending_commands:
-                    self.command_parser.perform(command[0], self.context, command[1:])
+            try:
+                if len(self.pending_commands) > 0:
+                    for command in self.pending_commands:
+                        self.command_parser.perform(command[0], self.context, command[1:])
+            except:
+                self.pending_commands = []
             self.pending_commands = []
             self.context.prepare_draw()
             self.output.send('draw')
@@ -1140,13 +1157,8 @@ class GLTextNode(GLNode):
         glfw.make_context_current(self.context)
 
         self.ready = False
-        t = []
-        for ch in self.characters:
-            character = self.characters[ch]
-            # delete textures
-            t.append(character.texture)
-        if len(t) > 0:
-            glDeleteTextures(len(t), t)
+        if self.texture != -1:
+            glDeleteTextures(1, self.texture)
         self.characters = {}
         if self.face is not None:
             del self.face
@@ -1180,7 +1192,6 @@ class GLTextNode(GLNode):
                     right = glyph.bitmap.rows + glyph.bitmap_left
                 if glyph.bitmap_top - glyph.bitmap.rows < bottom:
                     bottom = glyph.bitmap_top - glyph.bitmap.rows
-                box = [glyph.bitmap_left, glyph.bitmap_top - glyph.bitmap.rows, glyph.bitmap_left + glyph.bitmap.width, glyph.bitmap_top]
 
         self.glyph_shape = [0, 0]
         self.glyph_shape[0] = right - left
@@ -1198,7 +1209,6 @@ class GLTextNode(GLNode):
                 glyph = self.face.glyph
                 bm = glyph.bitmap.buffer
                 rgb_bm = [0.0] * (glyph.bitmap.rows * glyph.bitmap.width * 4)
-                # print(glyph.bitmap.width, glyph.advance, glyph.bitmap.rows, glyph.bitmap_top, glyph.bitmap_left)
                 for k in range(glyph.bitmap.rows):
                     for j in range(glyph.bitmap.width):
                         rgb_bm[(k * glyph.bitmap.width + j) * 4] = 1.0
@@ -1226,25 +1236,12 @@ class GLTextNode(GLNode):
             glDisable(GL_DEPTH_TEST)
         glPushMatrix()
 
-        # glDisable(GL_COLOR_MATERIAL)
-        #
-        # self.hold_material.ambient = gl.glGetMaterialfv(gl.GL_FRONT, gl.GL_AMBIENT)
-        # self.hold_material.diffuse = gl.glGetMaterialfv(gl.GL_FRONT, gl.GL_DIFFUSE)
-        # self.hold_material.specular = gl.glGetMaterialfv(gl.GL_FRONT, gl.GL_SPECULAR)
-        # self.hold_material.emission = gl.glGetMaterialfv(gl.GL_FRONT, gl.GL_EMISSION)
-        # self.hold_material.shininess = gl.glGetMaterialfv(gl.GL_FRONT, gl.GL_SHININESS)
-
     def restore_state(self):
         glPopMatrix()
         if self.was_lit:
             glEnable(GL_LIGHTING)
         if self.was_depth:
             glEnable(GL_DEPTH_TEST)
-        # gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_AMBIENT, self.hold_material.ambient)
-        # gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_DIFFUSE, self.hold_material.diffuse)
-        # gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_SPECULAR, self.hold_material.specular)
-        # gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_EMISSION, self.hold_material.emission)
-        # gl.glMaterialf(gl.GL_FRONT_AND_BACK, gl.GL_SHININESS, self.hold_material.shininess)
 
     def draw(self):
         if not self.ready:
@@ -1282,7 +1279,6 @@ class GLTextNode(GLNode):
         glBindTexture(GL_TEXTURE_2D, 0)
 
         glColor4f(1.0, 1.0, 1.0, 1.0)
-        # glEnable(GL_DEPTH_TEST)
 
 
     def get_rendering_buffer(self, xpos, ypos, width, height, texture_coords, zfix=0.):
@@ -1293,10 +1289,4 @@ class GLTextNode(GLNode):
             xpos, ypos - height, texture_coords[0], texture_coords[3],
             xpos + width, ypos, texture_coords[2], texture_coords[1],
             xpos + width, ypos - height, texture_coords[2], texture_coords[3]
-            # xpos, ypos - height, 0, 1,
-            # xpos, ypos, 0, 0,
-            # xpos + width, ypos, 1, 0,
-            # xpos, ypos - height, 0, 1,
-            # xpos + width, ypos, 1, 0,
-            # xpos + width, ypos - height, 1, 1
         ], np.float32)

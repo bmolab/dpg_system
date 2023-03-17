@@ -61,6 +61,7 @@ class MyGLContext:
         # else:
         #     glfw.terminate()
 
+
     def prepare_draw(self):
         if self.window:
             glfw.make_context_current(self.window)
