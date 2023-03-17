@@ -1111,6 +1111,7 @@ class GLTextNode(GLNode):
         self.context = None
         self.texture = -1
         self.was_lit = False
+        self.was_depth = False
 
     def custom_setup(self, from_file):
         dpg.configure_item(self.text_color.widget.uuid, no_alpha=True)
@@ -1220,6 +1221,11 @@ class GLTextNode(GLNode):
         self.was_lit = glGetBoolean(GL_LIGHTING)
         if self.was_lit:
             glDisable(GL_LIGHTING)
+        self.was_depth = glGetBoolean(GL_DEPTH_TEST)
+        if self.was_depth:
+            glDisable(GL_DEPTH_TEST)
+        glPushMatrix()
+
         # glDisable(GL_COLOR_MATERIAL)
         #
         # self.hold_material.ambient = gl.glGetMaterialfv(gl.GL_FRONT, gl.GL_AMBIENT)
@@ -1229,9 +1235,11 @@ class GLTextNode(GLNode):
         # self.hold_material.shininess = gl.glGetMaterialfv(gl.GL_FRONT, gl.GL_SHININESS)
 
     def restore_state(self):
+        glPopMatrix()
         if self.was_lit:
             glEnable(GL_LIGHTING)
-        pass
+        if self.was_depth:
+            glEnable(GL_DEPTH_TEST)
         # gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_AMBIENT, self.hold_material.ambient)
         # gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_DIFFUSE, self.hold_material.diffuse)
         # gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_SPECULAR, self.hold_material.specular)
@@ -1246,13 +1254,11 @@ class GLTextNode(GLNode):
             self.update_font()
             self.initialized = True
         glActiveTexture(GL_TEXTURE0)
-        glPushMatrix()
         glTranslatef(0, 0, -2)
 
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         glEnable(GL_TEXTURE_2D)
-        glDisable(GL_DEPTH_TEST)
         glColor4f(self.color[0], self.color[1], self.color[2], self.text_alpha_input.get_widget_value())
 
         pos = [self.position_x_input.get_widget_value(), self.position_y_input.get_widget_value()]
@@ -1276,9 +1282,8 @@ class GLTextNode(GLNode):
         glBindTexture(GL_TEXTURE_2D, 0)
 
         glColor4f(1.0, 1.0, 1.0, 1.0)
-        glEnable(GL_DEPTH_TEST)
+        # glEnable(GL_DEPTH_TEST)
 
-        glPopMatrix()
 
     def get_rendering_buffer(self, xpos, ypos, width, height, texture_coords, zfix=0.):
         return np.asarray([
