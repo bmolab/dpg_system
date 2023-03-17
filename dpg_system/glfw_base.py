@@ -67,6 +67,8 @@ class MyGLContext:
             gl.glClearColor(0, 0, 0, 1)
             gl.glClear(gl.GL_COLOR_BUFFER_BIT)
             gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
+            gl.glColor4f(1.0, 1.0, 1.0, 1.0)
+
 #            self.update_fov()
 
     def end_draw(self):

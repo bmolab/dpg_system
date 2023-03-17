@@ -52,7 +52,10 @@ You can select a link between nodes by clicking on it, and you can delete it by 
 
 You can select multiple nodes by dragging across them.
 
-The selected node(s) can be duplicated by pressing 'd'.
+The selected node(s) can be duplicated by pressing command or control 'd'.
+Copy is command or control 'c'
+Cut is command or control 'x'
+Paste is command or control 'v'
 
 Other shortcuts:
 -'i' creates an integer ui node 

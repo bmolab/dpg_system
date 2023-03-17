@@ -108,6 +108,8 @@ class ButtonNode(Node):
         if new_name != 'bang':
             dpg.set_item_label(self.input.widget.uuid, new_name)
             width = self.input.widget.get_text_width()
+            if width < 14:
+                width = 14
             # size = dpg.get_text_size(new_name, font=dpg.get_item_font(self.input.widget.uuid))
             # if size is None:
             #     size = [80, 14]
