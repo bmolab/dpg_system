@@ -1103,9 +1103,14 @@ class GLTextNode(GLNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.ready = False
+        self.new_text = False
+        self.display_list = -1
         self.characters = {}
         self.initialized = False
         self.font_size = 24
+        self.coords = None
+        self.text_buffer = -1
+        self.text_vertex_buffer = -1
         self.color = [1.0, 1.0, 1.0, 1.0]
         self.font_path = "Inconsolata-g.otf"
         for i in range(len(args)):
@@ -1116,11 +1121,11 @@ class GLTextNode(GLNode):
                 self.font_path = v
         self.face = None
 
-        self.text_input = self.add_input('text', widget_type='text_input', default_value='text')
+        self.text_input = self.add_input('text', widget_type='text_input', default_value='text', callback=self.text_changed)
         self.position_x_input = self.add_input('position_x', widget_type='drag_float', default_value=0.0)
         self.position_y_input = self.add_input('position_y', widget_type='drag_float', default_value=0.0)
         self.text_alpha_input = self.add_input('alpha', widget_type='drag_float', default_value=1.0)
-        self.scale_input = self.add_input('scale', widget_type='drag_float', default_value=1.0)
+        self.scale_input = self.add_input('scale', widget_type='drag_float', default_value=1.0, callback=self.text_changed)
         self.text_color = self.add_option('alpha', widget_type='color_picker', default_value=[1.0, 1.0, 1.0, 1.0], callback=self.color_changed)
         self.text_font = self.add_option('font', widget_type='text_input', default_value=self.font_path, callback=self.font_changed)
         self.text_size = self.add_option('size', widget_type='drag_int', default_value=self.font_size, callback=self.size_changed)
@@ -1131,8 +1136,13 @@ class GLTextNode(GLNode):
         self.was_depth = False
 
     def custom_setup(self, from_file):
+        print('setup')
         dpg.configure_item(self.text_color.widget.uuid, no_alpha=True)
         dpg.configure_item(self.text_color.widget.uuid, alpha_preview=dpg.mvColorEdit_AlphaPreviewNone)
+
+    def text_changed(self):
+        print('text changed')
+        self.new_text = True
 
     def color_changed(self):
         self.color = self.text_color.get_widget_value()
@@ -1145,14 +1155,17 @@ class GLTextNode(GLNode):
         if size != self.font_size:
             self.font_size = size
             self.initialized = False
+            self.new_text = True
 
     def font_changed(self):
         path = self.text_font.get_widget_value()
         if self.font_path != path:
             self.font_path = path
             self.initialized = False
+            self.new_text = True
 
     def update_font(self):
+        print('update font')
         hold_context = glfw.get_current_context()
         glfw.make_context_current(self.context)
 
@@ -1243,6 +1256,40 @@ class GLTextNode(GLNode):
         if self.was_depth:
             glEnable(GL_DEPTH_TEST)
 
+    def render_text(self):
+        if self.initialized:
+            self.new_text = False
+            if self.display_list != -1:
+                glDeleteLists(self.display_list, 1)
+            self.display_list = glGenLists(1)
+
+            pos = [self.position_x_input.get_widget_value(), self.position_y_input.get_widget_value()]
+            scale = self.scale_input.get_widget_value() / 100
+            text = self.text_input.get_widget_value()
+
+            glNewList(self.display_list, GL_COMPILE)
+
+            glEnable(GL_BLEND)
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+            glEnable(GL_TEXTURE_2D)
+
+            # self.coords = np.ndarray((len(text), 24))
+            for index, c in enumerate(text):
+                ch = self.characters[c]
+                width = self.glyph_shape[0] * scale
+                height = self.glyph_shape[1] * scale
+                vertices = self.get_rendering_buffer(pos[0], pos[1], width, height, ch.texture_coords)
+                glBegin(GL_TRIANGLES)
+                for i in range(6):
+                    glTexCoord2f(vertices[i * 4 + 2], vertices[i * 4 + 3])
+                    glVertex2f(vertices[i * 4], vertices[i * 4 + 1])
+                glEnd()
+                # self.coords[index] = vertices.copy()
+                pos[0] += ((ch.advance >> 6) * scale)
+
+            glEndList()
+
+# figure out drawing the text using drawlists or vertex_arrays
     def draw(self):
         if not self.ready:
             return
@@ -1250,32 +1297,49 @@ class GLTextNode(GLNode):
             self.context = glfw.get_current_context()
             self.update_font()
             self.initialized = True
+        if self.new_text:
+            self.render_text()
+        # if self.coords is None:
+        #     self.render_text()
+        # if self.text_buffer == -1:
+        #     self.text_buffer = glGenBuffers(1)
+        #     self.text_vertex_buffer = glGenVertexArrays(1)
+        #     glBindVertexArray(self.text_vertex_buffer)
+
         glActiveTexture(GL_TEXTURE0)
+        glBindTexture(GL_TEXTURE_2D, self.texture)
         glTranslatef(0, 0, -2)
 
-        glEnable(GL_BLEND)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        glEnable(GL_TEXTURE_2D)
+        # glEnable(GL_BLEND)
+        # glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        # glEnable(GL_TEXTURE_2D)
         glColor4f(self.color[0], self.color[1], self.color[2], self.text_alpha_input.get_widget_value())
+        if self.display_list != -1:
+            glCallList(self.display_list)
+        # pos = [self.position_x_input.get_widget_value(), self.position_y_input.get_widget_value()]
+        # scale = self.scale_input.get_widget_value() / 100
+        # text = self.text_input.get_widget_value()
+        # glBindTexture(GL_TEXTURE_2D, self.texture)
+        #
+        # for c in text:
+        #     ch = self.characters[c]
+        #     width = self.glyph_shape[0] * scale
+        #     height = self.glyph_shape[1] * scale
+        #     vertices = self.get_rendering_buffer(pos[0], pos[1], width, height, ch.texture_coords)
+        #
+        #     glBegin(GL_TRIANGLES)
+        #     for i in range(6):
+        #         glTexCoord2f(vertices[i * 4 + 2], vertices[i * 4 + 3])
+        #         glVertex2f(vertices[i * 4], vertices[i * 4 + 1])
+        #     glEnd()
+        #
+        #     pos[0] += ((ch.advance >> 6) * scale)
+        # glBindBuffer(GL_ARRAY_BUFFER, self.text_buffer)
+        # glBufferData(GL_ARRAY_BUFFER, self.coords.size * self.coords.itemsize, self.coords.data, GL_DYNAMIC_DRAW)
+        # glBindBuffer(GL_ARRAY_BUFFER, 0)
+        #
+        # glDrawArrays(GL_TRIANGLES, 0, self.coords.shape[0] * 6)
 
-        pos = [self.position_x_input.get_widget_value(), self.position_y_input.get_widget_value()]
-        scale = self.scale_input.get_widget_value() / 100
-        text = self.text_input.get_widget_value()
-        glBindTexture(GL_TEXTURE_2D, self.texture)
-
-        for c in text:
-            ch = self.characters[c]
-            width = self.glyph_shape[0] * scale
-            height = self.glyph_shape[1] * scale
-            vertices = self.get_rendering_buffer(pos[0], pos[1], width, height, ch.texture_coords)
-
-            glBegin(GL_TRIANGLES)
-            for i in range(6):
-                glTexCoord2f(vertices[i * 4 + 2], vertices[i * 4 + 3])
-                glVertex2f(vertices[i * 4], vertices[i * 4 + 1])
-            glEnd()
-
-            pos[0] += ((ch.advance >> 6) * scale)
         glBindTexture(GL_TEXTURE_2D, 0)
 
         glColor4f(1.0, 1.0, 1.0, 1.0)
@@ -1290,3 +1354,13 @@ class GLTextNode(GLNode):
             xpos + width, ypos, texture_coords[2], texture_coords[1],
             xpos + width, ypos - height, texture_coords[2], texture_coords[3]
         ], np.float32)
+
+    # def get_rendering_buffer(self, xpos, ypos, width, height, texture_coords, zfix=0.):
+    #     return np.asarray([
+    #         xpos, ypos - height, texture_coords[0], texture_coords[3],
+    #         xpos, ypos, texture_coords[0], texture_coords[1],
+    #         # xpos, ypos - height, texture_coords[0], texture_coords[3],
+    #         # xpos + width, ypos, texture_coords[2], texture_coords[1],
+    #         xpos + width, ypos - height, texture_coords[2], texture_coords[3],
+    #         xpos + width, ypos, texture_coords[2], texture_coords[1]
+    #     ], np.float32)
