@@ -1122,8 +1122,8 @@ class GLTextNode(GLNode):
         self.face = None
 
         self.text_input = self.add_input('text', widget_type='text_input', default_value='text', callback=self.text_changed)
-        self.position_x_input = self.add_input('position_x', widget_type='drag_float', default_value=0.0)
-        self.position_y_input = self.add_input('position_y', widget_type='drag_float', default_value=0.0)
+        self.position_x_input = self.add_input('position_x', widget_type='drag_float', default_value=0.0, callback=self.text_changed)
+        self.position_y_input = self.add_input('position_y', widget_type='drag_float', default_value=0.0, callback=self.text_changed)
         self.text_alpha_input = self.add_input('alpha', widget_type='drag_float', default_value=1.0)
         self.scale_input = self.add_input('scale', widget_type='drag_float', default_value=1.0, callback=self.text_changed)
         self.text_color = self.add_option('alpha', widget_type='color_picker', default_value=[1.0, 1.0, 1.0, 1.0], callback=self.color_changed)
@@ -1140,7 +1140,7 @@ class GLTextNode(GLNode):
         dpg.configure_item(self.text_color.widget.uuid, no_alpha=True)
         dpg.configure_item(self.text_color.widget.uuid, alpha_preview=dpg.mvColorEdit_AlphaPreviewNone)
 
-    def text_changed(self):
+    def text_changed(self, value=''):
         print('text changed')
         self.new_text = True
 
