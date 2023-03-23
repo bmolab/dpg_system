@@ -1068,13 +1068,11 @@ class CombineFIFONode(Node):
                     j = (pointer - i) % self.count
                     if self.combine_list[j] != '':
                         output_string_list.append([any_to_string(self.combine_list[j]), self.age[j]])
-                print(output_string_list)
             else:
                 for i in range(self.count):
                     j = (pointer + i + 1) % self.count
                     if self.combine_list[j] != '':
                         output_string_list.append([any_to_string(self.combine_list[j]), self.age[j]])
-                print(output_string_list)
             self.output.send(output_string_list)
 
 class TypeNode(Node):
