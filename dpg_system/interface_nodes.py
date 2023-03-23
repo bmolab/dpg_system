@@ -1062,11 +1062,11 @@ class PrintNode(Node):
             self.precision_option.set(0)
         self.format_string = '{:.' + str(self.precision) + 'f}'
 
-    def print_list(self, list):
+    def print_list(self, in_list):
         print('[', end='')
-        n = len(list)
+        n = len(in_list)
         end = ' '
-        for i, d in enumerate(list):
+        for i, d in enumerate(in_list):
             if i == n - 1:
                 end = ''
             tt = type(d)
@@ -1076,7 +1076,7 @@ class PrintNode(Node):
                 print(self.format_string.format(d), end=end)
             elif tt == list:
                 self.print_list(d)
-        print(']')
+        print(']', end=end)
 
     def execute(self):
         data = self.input.get_received_data()
@@ -1087,6 +1087,7 @@ class PrintNode(Node):
             print(self.format_string.format(data))
         elif t == list:
             self.print_list(data)
+            print('')
         elif t == np.ndarray:
             np.set_printoptions(precision=self.precision)
             print(data)

@@ -549,6 +549,7 @@ class UnpackNode(Node):
                     self.outputs[i].set_value(listing[i])
             elif t == list:
                 listing, _, _ = list_to_hybrid_list(value)
+                print(listing)
                 out_count = len(listing)
                 if out_count > self.num_outs:
                     out_count = self.num_outs
@@ -606,11 +607,12 @@ class PackNode(Node):
             for i in range(self.num_ins):
                 value = self.inputs[i].get_data()
                 t = type(value)
+                print(t)
                 if t in [list, tuple]:
-                    out_list += value
+                    out_list += [value]
                 elif t == np.ndarray:
                     array_list = any_to_list(value)
-                    out_list += array_list
+                    out_list += [array_list]
                 else:
                     out_list.append(value)
             out_list, _ = list_to_array_or_list_if_hetero(out_list)
@@ -990,12 +992,16 @@ class CombineFIFONode(Node):
                     self.count = v
 
             self.combine_list = [''] * self.count
+            self.age = [1.0] * self.count
+            self.last_time = time.time()
+            self.decay_rate = .01
 
             self.input = self.add_input("in", triggers_execution=True)
             self.clear_input = self.add_input('clear', callback=self.clear_fifo)
             self.drop_oldest_input = self.add_input('dump_oldest', callback=self.dump_oldest)
             self.order = self.add_property('order', widget_type='combo', width=150, default_value='newest_at_end')
             self.order.widget.combo_items = ['newest_at_end', 'newest_at_start']
+            self.decay_rate_property = self.add_property('decay_rate', widget_type='drag_float', default_value=self.decay_rate)
             self.output = self.add_output("out")
 
         def dump_oldest(self, value):
@@ -1013,20 +1019,33 @@ class CombineFIFONode(Node):
 
         def execute(self):
             if self.input.fresh_input:
+                now = time.time()
+                elapsed = now - self.last_time
+                self.last_time = now
+                decay = self.decay_rate_property.get_widget_value() * elapsed
+                for i in range(len(self.age)):
+                    self.age[i] -= decay
+                    if self.age[i] < 0:
+                        self.age[i] = 0
+
                 self.combine_list[self.pointer] = self.input.get_received_data()
+
+                self.age[self.pointer] = 1.0
                 self.pointer = (self.pointer - 1) % self.count
-            output_string = ''
+            output_string_list = []
             if self.order.get_widget_value() == 'newest_at_end':
                 for i in range(self.count):
                     j = (self.pointer - i) % self.count
                     if self.combine_list[j] != '':
-                        output_string += (any_to_string(self.combine_list[j]) + ', ')
+                        output_string_list.append([any_to_string(self.combine_list[j]), self.age[j]])
+                print(output_string_list)
             else:
                 for i in range(self.count):
                     j = (self.pointer + i + 1) % self.count
                     if self.combine_list[j] != '':
-                        output_string += (any_to_string(self.combine_list[j]) + ', ')
-            self.output.send(output_string)
+                        output_string_list.append([any_to_string(self.combine_list[j]), self.age[j]])
+                print(output_string_list)
+            self.output.send(output_string_list)
 
 class TypeNode(Node):
     @staticmethod

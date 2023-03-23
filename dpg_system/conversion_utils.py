@@ -498,6 +498,8 @@ def decode_arg(args, index):
                     except:
                         return arg, str
             return arg, str
+        elif t == list:
+            return arg, list
     return None, type(None)
 
 
