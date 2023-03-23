@@ -1032,16 +1032,20 @@ class CombineFIFONode(Node):
 
         def execute(self):
             if self.progress_input.fresh_input:
-                self.advance_age()
+                if self.progress_input.get_received_data() != '':
+                    self.advance_age()
 
-                # if not self.last_was_progress:
-                #     self.pointer = (self.pointer - 1) % self.count
+                    # if not self.last_was_progress:
+                    #     self.pointer = (self.pointer - 1) % self.count
 
-                p = self.pointer
+                    p = self.pointer
 
-                self.combine_list[p] = self.progress_input.get_received_data()
-                self.age[p] = 1.0
-                self.last_was_progress = True
+                    self.combine_list[p] = self.progress_input.get_received_data()
+                    self.age[p] = 1.0
+                    self.last_was_progress = True
+                else:
+                    if not self.input.fresh_input:
+                        return
 
             if self.input.fresh_input:
                 # if self.last_was_progress:
