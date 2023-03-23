@@ -1032,7 +1032,9 @@ class CombineFIFONode(Node):
 
         def execute(self):
             if self.progress_input.fresh_input:
+                print('progress', self.progress_input.get_received_data())
                 if self.progress_input.get_received_data() != '':
+                    print('do process')
                     self.advance_age()
 
                     # if not self.last_was_progress:
