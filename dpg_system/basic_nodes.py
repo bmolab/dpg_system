@@ -997,12 +997,15 @@ class CombineFIFONode(Node):
             self.decay_rate = .01
 
             self.input = self.add_input("in", triggers_execution=True)
+            self.progress_input = self.add_input("progress", triggers_execution=True)
+
             self.clear_input = self.add_input('clear', callback=self.clear_fifo)
             self.drop_oldest_input = self.add_input('dump_oldest', callback=self.dump_oldest)
             self.order = self.add_property('order', widget_type='combo', width=150, default_value='newest_at_end')
             self.order.widget.combo_items = ['newest_at_end', 'newest_at_start']
             self.decay_rate_property = self.add_property('decay_rate', widget_type='drag_float', default_value=self.decay_rate)
             self.output = self.add_output("out")
+            self.last_was_progress = False
 
         def dump_oldest(self, value):
             for i in range(self.count):
@@ -1017,31 +1020,54 @@ class CombineFIFONode(Node):
             output_string = ''
             self.output.send(output_string)
 
+        def advance_age(self):
+            now = time.time()
+            elapsed = now - self.last_time
+            self.last_time = now
+            decay = self.decay_rate_property.get_widget_value() * elapsed
+            for i in range(len(self.age)):
+                self.age[i] -= decay
+                if self.age[i] < 0:
+                    self.age[i] = 0
+
         def execute(self):
+            if self.progress_input.fresh_input:
+                self.advance_age()
+
+                # if not self.last_was_progress:
+                #     self.pointer = (self.pointer - 1) % self.count
+
+                p = self.pointer
+
+                self.combine_list[p] = self.progress_input.get_received_data()
+                self.age[p] = 1.0
+                self.last_was_progress = True
+
             if self.input.fresh_input:
-                now = time.time()
-                elapsed = now - self.last_time
-                self.last_time = now
-                decay = self.decay_rate_property.get_widget_value() * elapsed
-                for i in range(len(self.age)):
-                    self.age[i] -= decay
-                    if self.age[i] < 0:
-                        self.age[i] = 0
+                # if self.last_was_progress:
+                #     self.pointer = (self.pointer - 1) % self.count
+                self.last_was_progress = False
+                self.advance_age()
 
                 self.combine_list[self.pointer] = self.input.get_received_data()
 
                 self.age[self.pointer] = 1.0
                 self.pointer = (self.pointer - 1) % self.count
+
             output_string_list = []
+            pointer = self.pointer
+            if self.last_was_progress:
+                pointer = (self.pointer - 1) % self.count
+
             if self.order.get_widget_value() == 'newest_at_end':
                 for i in range(self.count):
-                    j = (self.pointer - i) % self.count
+                    j = (pointer - i) % self.count
                     if self.combine_list[j] != '':
                         output_string_list.append([any_to_string(self.combine_list[j]), self.age[j]])
                 print(output_string_list)
             else:
                 for i in range(self.count):
-                    j = (self.pointer + i + 1) % self.count
+                    j = (pointer + i + 1) % self.count
                     if self.combine_list[j] != '':
                         output_string_list.append([any_to_string(self.combine_list[j]), self.age[j]])
                 print(output_string_list)
