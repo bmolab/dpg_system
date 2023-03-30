@@ -1004,7 +1004,8 @@ class CombineFIFONode(Node):
             self.order = self.add_property('order', widget_type='combo', width=150, default_value='newest_at_end')
             self.order.widget.combo_items = ['newest_at_end', 'newest_at_start']
             self.decay_rate_property = self.add_property('decay_rate', widget_type='drag_float', default_value=self.decay_rate)
-            self.output = self.add_output("out")
+            self.output = self.add_output("weighted out")
+            self.string_output = self.add_output("string out")
             self.last_was_progress = False
 
         def dump_oldest(self, value):
@@ -1039,7 +1040,7 @@ class CombineFIFONode(Node):
                     p = self.pointer
 
                     self.combine_list[p] = self.progress_input.get_received_data()
-                    self.age[p] = 1.0
+                    self.age[p] = 2.0
                     self.last_was_progress = True
                 else:
                     if not self.input.fresh_input:
@@ -1054,10 +1055,11 @@ class CombineFIFONode(Node):
 
                 self.combine_list[self.pointer] = phrase
 
-                self.age[self.pointer] = 1.0
+                self.age[self.pointer] = 2.0
                 self.pointer = (self.pointer - 1) % self.count
 
             output_string_list = []
+            output_string = ''
             pointer = self.pointer
             if self.last_was_progress:
                 pointer = (self.pointer - 1) % self.count
@@ -1067,12 +1069,15 @@ class CombineFIFONode(Node):
                     j = (pointer - i) % self.count
                     if self.combine_list[j] != '':
                         output_string_list.append([any_to_string(self.combine_list[j]), self.age[j]])
+                        output_string += (self.combine_list[j] + ' ')
             else:
                 for i in range(self.count):
                     j = (pointer + i + 1) % self.count
                     if self.combine_list[j] != '':
                         output_string_list.append([any_to_string(self.combine_list[j]), self.age[j]])
+                        output_string += (self.combine_list[j] + ' ')
             self.output.send(output_string_list)
+            self.string_output.send(output_string)
 
 class TypeNode(Node):
     @staticmethod
