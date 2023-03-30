@@ -1038,7 +1038,6 @@ class CombineFIFONode(Node):
                     self.advance_age()
 
                     p = self.pointer
-
                     self.combine_list[p] = progress
                     self.age[p] = 2.0
                     self.last_was_progress = True
