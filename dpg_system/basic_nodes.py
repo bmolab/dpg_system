@@ -1064,6 +1064,7 @@ class CombineFIFONode(Node):
             if self.last_was_progress:
                 pointer = (self.pointer - 1) % self.count
 
+            # added string out
             if self.order.get_widget_value() == 'newest_at_end':
                 for i in range(self.count):
                     j = (pointer - i) % self.count
