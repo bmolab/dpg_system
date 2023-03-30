@@ -1039,7 +1039,7 @@ class CombineFIFONode(Node):
 
                     p = self.pointer
 
-                    self.combine_list[p] = self.progress_input.get_received_data()
+                    self.combine_list[p] = progress
                     self.age[p] = 2.0
                     self.last_was_progress = True
                 else:
