@@ -1039,7 +1039,7 @@ class CombineFIFONode(Node):
 
                     p = self.pointer
                     self.combine_list[p] = progress
-                    self.age[p] = 1.3
+                    self.age[p] = 1.0
                     self.last_was_progress = True
                 else:
                     if not self.input.fresh_input:
@@ -1054,7 +1054,7 @@ class CombineFIFONode(Node):
 
                 self.combine_list[self.pointer] = phrase
 
-                self.age[self.pointer] = 1.3
+                self.age[self.pointer] = 1.0
                 self.pointer = (self.pointer - 1) % self.count
 
             output_string_list = []
