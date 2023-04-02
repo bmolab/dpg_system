@@ -25,6 +25,7 @@ def register_signal_nodes():
     Node.app.register_node('band_pass', BandPassFilterNode.factory)
     Node.app.register_node('filter_bank', FilterBankNode.factory)
     Node.app.register_node('spectrum', SpectrumNode.factory)
+    Node.app.register_node('ranger', RangerNode.factory)
 
 
 class DifferentiateNode(Node):
@@ -456,6 +457,94 @@ class ThresholdTriggerNode(Node):
                         self.output.send('bang')
                     else:
                         self.release_output.send('bang')
+
+
+class RangerNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = RangerNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.inMin = 0.0
+        self.inMax = 1.0
+        self.outMin = 0.0
+        self.outMax = 1.0
+        self.calibrating_min = math.inf
+        self.calibrating_max = -math.inf
+        self.calibrating = False
+        self.was_calibrating = False
+        if len(args) > 0:
+            self.inMin = any_to_float(args[0])
+        if len(args) > 1:
+            self.inMax = any_to_float(args[1])
+        if len(args) > 2:
+            self.outMin = any_to_float(args[2])
+        if len(args) > 3:
+            self.outMax = any_to_float(args[3])
+
+        self.input = self.add_input('in', triggers_execution=True)
+        self.in_min_input = self.add_input('input_min', widget_type='drag_float', default_value=self.inMin)
+        self.in_max_input = self.add_input('input_max', widget_type='drag_float', default_value=self.inMax)
+        self.out_min_input = self.add_input('output_min', widget_type='drag_float', default_value=self.outMin)
+        self.out_max_input = self.add_input('output_max', widget_type='drag_float', default_value=self.outMax)
+        self.calibrate_input = self.add_input('calibrate', widget_type='checkbox', default_value=self.calibrating)
+        self.output = self.add_output('rescaled')
+
+    def execute(self):
+        self.calibrating = self.calibrate_input.get_widget_value()
+        if self.calibrating != self.was_calibrating:
+            if self.calibrating:
+                self.calibrating_min = math.inf
+                self.calibrating_max = -math.inf
+                self.was_calibrating = True
+            else:
+                self.inMin = self.calibrating_min
+                self.in_min_input.set(self.inMin)
+                self.inMax = self.calibrating_max
+                self.in_max_input.set(self.inMax)
+                self.was_calibrating = False
+        out = 0.0
+        if self.input.fresh_input:
+            inData = self.input.get_received_data()
+
+            t = type(inData)
+            if t in [int, float]:
+                in_value = any_to_float(inData)
+                if self.calibrating:
+                    if in_value > self.calibrating_max:
+                        self.calibrating_max = in_value
+                    elif in_value < self.calibrating_min:
+                        self.calibrating_min = in_value
+                self.inMin = self.in_min_input.get_widget_value()
+                self.inMax = self.in_max_input.get_widget_value()
+                self.outMin = self.out_min_input.get_widget_value()
+                self.outMax = self.out_max_input.get_widget_value()
+
+                range = self.inMax - self.inMin
+                if range == 0:
+                    range = 1e-5
+                out = (in_value - self.inMin) / range
+                out = (self.outMax - self.outMin) * out + self.outMin
+                self.output.send(out)
+            elif t == list:
+                inData = list_to_array(inData)
+                t = np.ndarray
+            if t == np.ndarray:
+                if self.calibrating:
+                    min = inData.min()
+                    max = inData.max()
+                    if max > self.calibrating_max:
+                        self.calibrating_max = max
+                    if min < self.calibrating_min:
+                        self.calibrating_min = min
+                range = self.inMax - self.inMin
+                if range == 0:
+                    range = 1e-5
+                out = (in_value - self.inMin) / range
+                out = (self.outMax - self.outMin) * out + self.outMin
+                self.output.send(out)
 
 
 class MultiDiffFilterNode(Node):
