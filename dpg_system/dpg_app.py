@@ -76,6 +76,12 @@ try:
 except ModuleNotFoundError:
     pass
 
+try:
+    from dpg_system.elevenlabs_node import *
+    imported.append('elevenlabs_node.py')
+except ModuleNotFoundError:
+    pass
+
 # import additional node files in folder
 
 for entry in os.scandir('dpg_system'):
@@ -673,6 +679,9 @@ class App:
 
         if 'register_gl_nodes' in globals():
             register_gl_nodes()
+
+        if 'register_elevenlab_nodes' in globals():
+            register_elevenlab_nodes()
 
         if 'register_interface_nodes' in globals():
             register_interface_nodes()

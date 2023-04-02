@@ -37,6 +37,10 @@ def register_math_nodes():
     Node.app.register_node("!=", ComparisonNode.factory)
     Node.app.register_node("<", ComparisonNode.factory)
     Node.app.register_node("<=", ComparisonNode.factory)
+    Node.app.register_node('pass', ComparisonAndPassNode.factory)
+    Node.app.register_node('change', ComparisonAndPassNode.factory)
+    Node.app.register_node('increasing', ComparisonAndPassNode.factory)
+    Node.app.register_node('decreasing', ComparisonAndPassNode.factory)
 
 
 class ArithmeticNode(Node):
@@ -218,6 +222,126 @@ class ComparisonNode(Node):
     def not_equal(self, a, b):
         return a != b
 
+class ComparisonAndPassNode(Node):
+    output_op = bool
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ComparisonAndPassNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.simple = True
+        force_int = False
+        self.operation = 'always'
+        self.operations = {'!=': self.not_equal, '==': self.equal, '>': self.greater, '>=': self.greater_equal,
+                           '<': self.less, '<=': self.less_equal, 'always': self.no_op}
+        if label == 'change':
+            self.operation = '!='
+            force_int = True
+        elif label == 'increasing':
+            self.operation = '>'
+        elif label == 'decreasing':
+            self.operation = '<'
+        if len(args) > 0:
+            self.simple = False
+            if args[0] in self.operations:
+                self.operation = args[0]
+        self.operand = 0
+        self_compare = False
+        if self.simple:
+            if len(args) > 1:
+                self.operand = self.arg_as_number(default_value=0.0, index=1)
+            else:
+                self_compare = True
+        else:
+            if len(args) > 2:
+                self.operand = self.arg_as_number(default_value=0.0, index=2)
+            else:
+                self_compare = True
+
+        self.input = self.add_input('in', triggers_execution=True)
+        if self.simple:
+            self.comparison_property = self.add_option('', widget_type='combo', default_value=self.operation, callback=self.comparison_changed)
+            self.comparison_property.widget.combo_items = list(self.operations)
+            self.operand_property = self.add_option('', widget_type='drag_float', default_value=self.operand,
+                                                callback=self.operand_changed)
+            self.self_compare_property = self.add_option('self_compare', widget_type='checkbox', default_value=self_compare)
+            self.force_int_property = self.add_option('force_int', widget_type='checkbox', default_value=force_int)
+        else:
+            self.comparison_property = self.add_property('', widget_type='combo', default_value=self.operation, callback=self.comparison_changed)
+            self.comparison_property.widget.combo_items = list(self.operations)
+            self.operand_property = self.add_input('', widget_type='drag_float', default_value=self.operand,
+                                                callback=self.operand_changed)
+            self.self_compare_property = self.add_property('self_compare', widget_type='checkbox')
+            self.force_int_property = self.add_property('force_int', widget_type='checkbox')
+
+        self.output = self.add_output("")
+
+    def comparison_changed(self, input=None):
+        self.operation = self.comparison_property.get_widget_value()
+    def operand_changed(self, input=None):
+        self.operand = self.operand_property.get_widget_value()
+
+    def execute(self):
+        if not self.simple and self.operand_property.fresh_input:
+            self.operand = self.operand_property.get_received_data()
+            if type(self.operand) == list:
+                self.operand = list_to_array(self.operand)
+
+        input_value = self.input.get_data()
+        t = type(input_value)
+        if t == list:
+            input_value = list_to_array(input_value)
+        if type(input_value) == np.ndarray:
+
+            if type(self.operand) != np.ndarray:
+                self.operand = np.zeros_like(input_value)
+                self.operand_property.set(input_value)
+                print(self.operand, input_value)
+            if self.force_int_property.get_widget_value():
+                input_value = input_value.round()
+                op = self.operand.round()
+            else:
+                op = self.operand
+            output_value = self.operations[self.operation](input_value, op)
+            if output_value.any():
+                self.output.send(input_value)
+        else:
+            if type(self.operand) == np.ndarray:
+                self.operand = 0
+            if self.force_int_property.get_widget_value():
+                input_value = int(input_value)
+                op = int(self.operand)
+            else:
+                op = self.operand
+            output_value = self.operations[self.operation](input_value, op)
+            if output_value:
+                self.output.send(input_value)
+        if self.self_compare_property.get_widget_value():
+            self.operand = input_value
+            self.operand_property.set(input_value)
+
+    def greater(self, a, b):
+        return a > b
+
+    def greater_equal(self, a, b):
+        return a >= b
+
+    def less(self, a, b):
+        return a < b
+
+    def less_equal(self, a, b):
+        return a <= b
+
+    def equal(self, a, b):
+        return a == b
+
+    def not_equal(self, a, b):
+        return a != b
+
+    def no_op(self, a, b):
+        return True
 
 class OpSingleNode(Node):
     @staticmethod

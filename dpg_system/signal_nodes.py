@@ -385,7 +385,6 @@ class ThresholdTriggerNode(Node):
         super().__init__(label, data, args)
 
         self.threshold = self.arg_as_float(default_value=0.1)
-        self.bipolar = False
         self.release_threshold = self.arg_as_float(index=1, default_value=0.1)
         if label == 'hysteresis':
             self.threshold = 0.2
@@ -400,6 +399,7 @@ class ThresholdTriggerNode(Node):
         self.threshold_property = self.add_property('threshold', widget_type='drag_float', default_value=self.threshold, callback=self.option_changed)
         self.release_threshold_property = self.add_property('threshold', widget_type='drag_float', default_value=self.release_threshold, callback=self.option_changed)
         self.output = self.add_output("out")
+        self.release_output = self.add_output("release")
         self.output_mode_option = self.add_option('trigger mode', widget_type='combo', default_value='output toggle', width=100, callback=self.option_changed)
         self.output_mode_option.widget.combo_items = ['output toggle', 'output bang']
         self.retrigger_delay_option = self.add_option('retrig delay', widget_type='drag_float', default_value=self.retrigger_delay, callback=self.option_changed)
@@ -424,6 +424,9 @@ class ThresholdTriggerNode(Node):
                     self.state = False
                     if self.output_mode == 0:
                         self.output.send(0)
+                        self.release_output.send(1)
+                    else:
+                        self.release_output.send('bang')
             else:
                 if data > self.threshold:
                     now = time.time()
@@ -431,6 +434,7 @@ class ThresholdTriggerNode(Node):
                         self.state = True
                         if self.output_mode == 0:
                             self.output.send(1)
+                            self.release_output.send(0)
                         else:
                             self.output.send('bang')
                         self.last_trigger_time = now
@@ -444,7 +448,14 @@ class ThresholdTriggerNode(Node):
                 self.state = np.logical_or(self.state, on)
                 self.state = np.logical_and(self.state, not_off)
             if np.any(self.state != prev_state):
-                self.output.send(self.state)
+                if self.output_mode == 0:
+                    self.output.send(self.state)
+                    self.release_output.send(not self.state)
+                else:
+                    if self.state:
+                        self.output.send('bang')
+                    else:
+                        self.release_output.send('bang')
 
 
 class MultiDiffFilterNode(Node):
