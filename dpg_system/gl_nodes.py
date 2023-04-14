@@ -1275,17 +1275,18 @@ class GLTextNode(GLNode):
 
                 # self.coords = np.ndarray((len(text), 24))
                 for index, c in enumerate(text):
-                    ch = self.characters[c]
-                    width = self.glyph_shape[0] * scale
-                    height = self.glyph_shape[1] * scale
-                    vertices = self.get_rendering_buffer(pos[0], pos[1], width, height, ch.texture_coords)
-                    glBegin(GL_TRIANGLES)
-                    for i in range(6):
-                        glTexCoord2f(vertices[i * 4 + 2], vertices[i * 4 + 3])
-                        glVertex2f(vertices[i * 4], vertices[i * 4 + 1])
-                    glEnd()
-                    # self.coords[index] = vertices.copy()
-                    pos[0] += ((ch.advance >> 6) * scale)
+                    if c in self.characters:
+                        ch = self.characters[c]
+                        width = self.glyph_shape[0] * scale
+                        height = self.glyph_shape[1] * scale
+                        vertices = self.get_rendering_buffer(pos[0], pos[1], width, height, ch.texture_coords)
+                        glBegin(GL_TRIANGLES)
+                        for i in range(6):
+                            glTexCoord2f(vertices[i * 4 + 2], vertices[i * 4 + 3])
+                            glVertex2f(vertices[i * 4], vertices[i * 4 + 1])
+                        glEnd()
+                        # self.coords[index] = vertices.copy()
+                        pos[0] += ((ch.advance >> 6) * scale)
 
                 glEndList()
             elif type(text) == list:
@@ -1302,17 +1303,18 @@ class GLTextNode(GLNode):
                     elif type(fragment) == str:
                         this_text = fragment + ' '
                     for index, c in enumerate(this_text):
-                        ch = self.characters[c]
-                        width = self.glyph_shape[0] * scale
-                        height = self.glyph_shape[1] * scale
-                        vertices = self.get_rendering_buffer(pos[0], pos[1], width, height, ch.texture_coords)
-                        glBegin(GL_TRIANGLES)
-                        for i in range(6):
-                            glTexCoord2f(vertices[i * 4 + 2], vertices[i * 4 + 3])
-                            glVertex2f(vertices[i * 4], vertices[i * 4 + 1])
-                        glEnd()
-                        # self.coords[index] = vertices.copy()
-                        pos[0] += ((ch.advance >> 6) * scale)
+                        if c in self.characters:
+                            ch = self.characters[c]
+                            width = self.glyph_shape[0] * scale
+                            height = self.glyph_shape[1] * scale
+                            vertices = self.get_rendering_buffer(pos[0], pos[1], width, height, ch.texture_coords)
+                            glBegin(GL_TRIANGLES)
+                            for i in range(6):
+                                glTexCoord2f(vertices[i * 4 + 2], vertices[i * 4 + 3])
+                                glVertex2f(vertices[i * 4], vertices[i * 4 + 1])
+                            glEnd()
+                            # self.coords[index] = vertices.copy()
+                            pos[0] += ((ch.advance >> 6) * scale)
 
                 glEndList()
 
