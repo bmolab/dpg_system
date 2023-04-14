@@ -7,6 +7,7 @@ import quaternion
 
 def register_quaternion_nodes():
     Node.app.register_node('quaternion_to_euler', QuaternionToEulerNode.factory)
+    Node.app.register_node('euler_to_quaternion', EulerToQuaternionNode.factory)
     Node.app.register_node('quaternion_to_matrix', QuaternionToRotationMatrixNode.factory)
     Node.app.register_node('quaternion_distance', QuaternionDistanceNode.factory)
 
@@ -49,6 +50,38 @@ class QuaternionToEulerNode(Node):
             else:
                 if self.app.verbose:
                     print('quaternion_to_euler received improperly formatted input')
+
+
+class EulerToQuaternionNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = EulerToQuaternionNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.degree_factor = 180.0 / math.pi
+
+        self.input = self.add_input("xyz rotation", triggers_execution=True)
+        self.output = self.add_output("quaternion rotation")
+        self.degrees_option = self.add_option('degrees', widget_type='checkbox', default_value=True)
+
+    def execute(self):
+        degrees = self.degrees_option.get_widget_value()
+
+        if self.input.fresh_input:
+            data = self.input.get_received_data()
+            data = any_to_array(data)
+            if data.shape[-1] % 3 == 0:
+                if degrees:
+                    data /= self.degree_factor
+
+                q = quaternion.from_euler_angles(alpha_beta_gamma=data)
+                self.output.send(quaternion.as_float_array(q))
+            else:
+                if self.app.verbose:
+                    print('euler_to_quaternion received improperly formatted input')
 
 
 class QuaternionToRotationMatrixNode(Node):

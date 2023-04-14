@@ -10,6 +10,7 @@ def register_mocap_nodes():
     Node.app.register_node('gl_body', MoCapGLBody.factory)
     Node.app.register_node('take', MoCapTakeNode.factory)
     Node.app.register_node('body_to_joints', MoCapBody.factory)
+    Node.app.register_node('pose', PoseNode.factory)
 
 
 class MoCapNode(Node):
@@ -182,6 +183,41 @@ class MoCapTakeNode(MoCapNode):
     #
     #     torch.save(d, path + '.pt')
 
+
+class PoseNode(MoCapNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = PoseNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.joint_offsets = []
+        for key in self.joint_map:
+            index = self.joint_map[key]
+            self.joint_offsets.append(index)
+
+        self.joint_inputs = []
+        for key in self.joint_map:
+            stripped_key = key.replace('_', ' ')
+            input = self.add_input(stripped_key, triggers_execution=True)
+            self.joint_inputs.append(input)
+
+        self.output = self.add_output('pose out')
+
+    def execute(self):
+        # we need to know the size of the pose vector...
+        pose = np.array([[1.0, 0.0, 0.0, 0.0]] * 37)
+        print(pose)
+        for index, input in enumerate(self.joint_inputs):
+            incoming = input.get_received_data()
+            t = type(incoming)
+
+            if t == np.ndarray:
+                offset = self.joint_offsets[index]
+                pose[offset] = incoming
+        self.output.send(pose)
 
 class MoCapBody(MoCapNode):
     @staticmethod

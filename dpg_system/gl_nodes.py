@@ -1121,7 +1121,7 @@ class GLTextNode(GLNode):
                 self.font_path = v
         self.face = None
 
-        self.text_input = self.add_input('text', widget_type='text_input', default_value='text', callback=self.text_changed)
+        self.text_input = self.add_input('text', callback=self.text_changed)
         self.position_x_input = self.add_input('position_x', widget_type='drag_float', default_value=0.0, callback=self.text_changed)
         self.position_y_input = self.add_input('position_y', widget_type='drag_float', default_value=0.0, callback=self.text_changed)
         self.text_alpha_input = self.add_input('alpha', widget_type='drag_float', default_value=1.0)
@@ -1141,7 +1141,6 @@ class GLTextNode(GLNode):
         dpg.configure_item(self.text_color.widget.uuid, alpha_preview=dpg.mvColorEdit_AlphaPreviewNone)
 
     def text_changed(self, value=''):
-        print('text changed')
         self.new_text = True
 
     def color_changed(self):
@@ -1265,31 +1264,59 @@ class GLTextNode(GLNode):
 
             pos = [self.position_x_input.get_widget_value(), self.position_y_input.get_widget_value()]
             scale = self.scale_input.get_widget_value() / 100
-            text = self.text_input.get_widget_value()
+            text = self.text_input.get_received_data()
 
-            glNewList(self.display_list, GL_COMPILE)
+            if type(text) == str:
+                glNewList(self.display_list, GL_COMPILE)
 
-            glEnable(GL_BLEND)
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-            glEnable(GL_TEXTURE_2D)
+                glEnable(GL_BLEND)
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+                glEnable(GL_TEXTURE_2D)
 
-            # self.coords = np.ndarray((len(text), 24))
-            for index, c in enumerate(text):
-                ch = self.characters[c]
-                width = self.glyph_shape[0] * scale
-                height = self.glyph_shape[1] * scale
-                vertices = self.get_rendering_buffer(pos[0], pos[1], width, height, ch.texture_coords)
-                glBegin(GL_TRIANGLES)
-                for i in range(6):
-                    glTexCoord2f(vertices[i * 4 + 2], vertices[i * 4 + 3])
-                    glVertex2f(vertices[i * 4], vertices[i * 4 + 1])
-                glEnd()
-                # self.coords[index] = vertices.copy()
-                pos[0] += ((ch.advance >> 6) * scale)
+                # self.coords = np.ndarray((len(text), 24))
+                for index, c in enumerate(text):
+                    ch = self.characters[c]
+                    width = self.glyph_shape[0] * scale
+                    height = self.glyph_shape[1] * scale
+                    vertices = self.get_rendering_buffer(pos[0], pos[1], width, height, ch.texture_coords)
+                    glBegin(GL_TRIANGLES)
+                    for i in range(6):
+                        glTexCoord2f(vertices[i * 4 + 2], vertices[i * 4 + 3])
+                        glVertex2f(vertices[i * 4], vertices[i * 4 + 1])
+                    glEnd()
+                    # self.coords[index] = vertices.copy()
+                    pos[0] += ((ch.advance >> 6) * scale)
 
-            glEndList()
+                glEndList()
+            elif type(text) == list:
+                glNewList(self.display_list, GL_COMPILE)
 
-# figure out drawing the text using drawlists or vertex_arrays
+                glEnable(GL_BLEND)
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+                glEnable(GL_TEXTURE_2D)
+                for fragment in text:
+                    if type(fragment) == list:
+                        this_text = fragment[0] + ' '
+                        this_alpha = fragment[1]
+                        glColor4f(self.color[0], self.color[1], self.color[2], self.text_alpha_input.get_widget_value() * this_alpha)
+                    elif type(fragment) == str:
+                        this_text = fragment + ' '
+                    for index, c in enumerate(this_text):
+                        ch = self.characters[c]
+                        width = self.glyph_shape[0] * scale
+                        height = self.glyph_shape[1] * scale
+                        vertices = self.get_rendering_buffer(pos[0], pos[1], width, height, ch.texture_coords)
+                        glBegin(GL_TRIANGLES)
+                        for i in range(6):
+                            glTexCoord2f(vertices[i * 4 + 2], vertices[i * 4 + 3])
+                            glVertex2f(vertices[i * 4], vertices[i * 4 + 1])
+                        glEnd()
+                        # self.coords[index] = vertices.copy()
+                        pos[0] += ((ch.advance >> 6) * scale)
+
+                glEndList()
+
+    # figure out drawing the text using drawlists or vertex_arrays
     def draw(self):
         if not self.ready:
             return
