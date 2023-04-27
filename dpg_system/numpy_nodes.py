@@ -40,7 +40,7 @@ def register_numpy_nodes():
 
 
 class NumpyGeneratorNode(Node):
-    operations = {'np.rand': np.random.random, 'np.ones': np.ones, 'np.zeros': np.zeros}
+    operations = {'np.rand': np.random.Generator.random, 'np.ones': np.ones, 'np.zeros': np.zeros}
     @staticmethod
     def factory(name, data, args=None):
         node = NumpyGeneratorNode(name, data, args)
@@ -48,7 +48,7 @@ class NumpyGeneratorNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.op = np.random.random
+        self.op = np.random.Generator.random
         if label in self.operations:
             self.op = self.operations[label]
         self.shape = []
@@ -59,17 +59,27 @@ class NumpyGeneratorNode(Node):
         if len(self.shape) == 0:
             self.shape = [1]
 
+        self.rng = None
+        if self.label == 'np.rand':
+            self.rng = np.random.default_rng(seed=None)
+
         self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
 
         self.shape_properties = []
         for i in range(len(self.shape)):
             self.shape_properties.append(self.add_property('dim ' + str(i), widget_type='input_int', default_value=self.shape[i]))
+        # self.dtype_option = self.add_option('dtype', widget_type='combo', default_value='float32')
+        # options = ['float32', 'float']
         self.output = self.add_output('out')
 
     def execute(self):
         for i in range(len(self.shape)):
             self.shape[i] = self.shape_properties[i].get_widget_value()
-        out_array = self.op(tuple(self.shape))
+        if self.label == 'np.rand':
+            size = tuple(self.shape)
+            out_array = self.rng.random(size=size, dtype=np.float32)
+        else:
+            out_array = self.op(tuple(self.shape), dtype=np.float)
         self.output.send(out_array)
 
 

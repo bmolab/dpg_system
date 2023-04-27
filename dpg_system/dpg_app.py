@@ -82,6 +82,12 @@ try:
 except ModuleNotFoundError:
     pass
 
+try:
+    from dpg_system.movesense_nodes import *
+    imported.append('movesense_nodes.py')
+except ModuleNotFoundError:
+    pass
+
 # import additional node files in folder
 
 for entry in os.scandir('dpg_system'):
@@ -682,6 +688,9 @@ class App:
 
         if 'register_elevenlab_nodes' in globals():
             register_elevenlab_nodes()
+
+        if 'register_movesense_nodes' in globals():
+            register_movesense_nodes()
 
         if 'register_interface_nodes' in globals():
             register_interface_nodes()

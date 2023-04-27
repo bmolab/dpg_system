@@ -7,6 +7,7 @@ from dpg_system.node import Node
 import threading
 from dpg_system.conversion_utils import *
 import json
+from fuzzywuzzy import fuzz
 
 
 def register_basic_nodes():
@@ -43,6 +44,7 @@ def register_basic_nodes():
     Node.app.register_node('bucket_brigade', BucketBrigadeNode.factory)
     Node.app.register_node('tick', TickNode.factory)
     Node.app.register_node('comment', CommentNode.factory)
+    Node.app.register_node('fuzzy_match', FuzzyMatchNode.factory)
 
 
 class CommentNode(Node):
@@ -1601,14 +1603,115 @@ class VariableNode(Node):
             data = self.get_variable_value()
             self.output.send(data)
 
-#  get variable
+class FuzzyMatchNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = FuzzyMatchNode(name, data, args)
+        return node
 
-#   must be an easy way to declare a value which:
-#       when value changes, outputs from nodes
-#       or streams continuously
-#   can be attached easily to a value in the code / cleanly instantiated
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('string in', triggers_execution=True)
+        self.threshold = self.add_property('threshold', widget_type='drag_float', default_value=60)
+        self.output = self.add_output('string out')
+        self.score_output = self.add_output('score out')
 
+        self.filtered_list = []
+        self.option_list = []
+        self.best_score = 0
+        print(args)
+        if len(args) > 0:
+            f = open(args[0])
+            data = json.load(f)
+            for artist in data:
+                self.option_list.append(artist)
 
+        print(self.option_list)
+
+    def execute(self):
+        if self.input.fresh_input:
+            start = time.time()
+            prestring = ''
+            substring = ''
+            post_string = ''
+            pass_data = False
+            found = False
+            data = self.input.get_received_data()
+            if type(data) == list:
+                data = ' '.join(data)
+            if type(data) == str:
+                index = data.find('by ')
+                if index != -1:
+                    index += 3
+                    substring = data[index:]
+                    prestring = data[:index]
+                    index = substring.find(' of ')
+                    index2 = substring.find(' from ')
+                    if index != -1:
+                        if index2 != -1:
+                            if index < index2:
+                                post_string = substring[index:]
+                                substring = substring[:index]
+                                found = True
+                            else:
+                                post_string = substring[index2:]
+                                substring = substring[:index2]
+                                found = True
+                        else:
+                            post_string = substring[index:]
+                            substring = substring[:index]
+                            found = True
+                    elif index2 != -1:
+                        post_string = substring[index2:]
+                        substring = substring[:index2]
+                        found = True
+                if not found:
+                    index = data.find('style of ')
+                    if index != -1:
+                        post_string = substring[index:]
+                        substring = substring[:index]
+                        found = True
+                elif len(data) > 32 or data.count(' ') > 5:
+                    substring = data
+                    pass_data = True
+                else:
+                    substring = data
+                if not pass_data:
+                    self.fuzzy_score(substring)
+
+                    self.score_output.send(self.best_score)
+                    if len(self.filtered_list) > 0 and self.best_score > self.threshold.get_widget_value():
+                        self.output.send(prestring + self.filtered_list[0] + post_string)
+                    else:
+                        self.output.send(data)
+                else:
+                    self.output.send(data)
+                elapsed = time.time() - start
+                print(elapsed)
+
+    def fuzzy_score(self, test):
+        scores = {}
+        for index, node_name in enumerate(self.option_list):
+            ratio = fuzz.partial_ratio(node_name.lower(), test.lower())
+            full_ratio = fuzz.ratio(node_name.lower(), test.lower())        # partial matchi should be less important if size diff is big
+            len_ratio = len(test) / len(node_name)
+            if len_ratio > 1:
+                len_ratio = 1 / len_ratio
+            len_ratio = len_ratio * .5 + 0.5  # 0.25 - 0.75
+            ratio = (ratio * (1 - len_ratio) + full_ratio * len_ratio)
+            scores[node_name] = ratio
+
+        sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+        print(sorted_scores)
+        self.filtered_list = []
+        self.best_score = 20
+        for index, item in enumerate(sorted_scores):
+            if item[1] == 100:
+                self.filtered_list.append(item[0])
+                self.best_score = item[1]
+            elif item[1] > self.best_score and len(self.filtered_list) < 10:
+                self.filtered_list.append(item[0])
+                self.best_score = item[1]
 
 
 

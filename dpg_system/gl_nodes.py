@@ -22,6 +22,7 @@ def register_gl_nodes():
     Node.app.register_node('gl_align', GLAlignNode.factory)
     Node.app.register_node('gl_quaternion_rotate', GLQuaternionRotateNode.factory)
     Node.app.register_node('gl_text', GLTextNode.factory)
+    Node.app.register_node('gl_plane', GLTexturedPlaneNode.factory)
 
 
 class GLCommandParser:
@@ -75,7 +76,6 @@ class GLContextCommandParser(GLCommandParser):
             right = any_to_float(args[1])
             bottom = any_to_float(args[2])
             top = any_to_float(args[3])
-            print(left, right, bottom, top)
             dest_rect = [left, right, bottom, top]
             if len(args) > 4:
                 near = any_to_float(args[4])
@@ -280,6 +280,154 @@ class GLQuadricCommandParser(GLCommandParser):
                 gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_LINE)
             elif mode == 'point':
                 gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_POINT)
+
+class GLNumpyTexture:
+    def __init__(self, texture_array):
+        self.texture = -1
+        self.width = 256
+        self.height = 256
+        self.channels = 3
+        self.type = GL_UNSIGNED_BYTE
+
+        self.allocate(texture_array)
+
+    def allocate(self, texture_array):
+        self.width = texture_array.shape[0]
+        self.height = texture_array.shape[1]
+        num_dims = len(texture_array.shape)
+        if num_dims == 3:
+            self.channels = texture_array.shape[2]
+        else:
+            self.channels = 1
+        # self.type = GL_UNSIGNED_BYTE
+        if texture_array.dtype == np.float32:
+            self.type = GL_FLOAT
+        elif texture_array.dtype == np.uint8:
+            self.type = GL_UNSIGNED_BYTE
+
+        if self.texture == -1:
+            self.texture = glGenTextures(1)
+
+
+        data = texture_array.data
+        glEnable(GL_TEXTURE_2D)
+        glBindTexture(GL_TEXTURE_2D, self.texture)
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL)
+
+        if self.type == GL_FLOAT:
+            if self.channels == 3:
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, self.width, self.height, 0, GL_RGB, GL_FLOAT, texture_array)
+            elif self.channels == 4:
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, self.width, self.height, 0, GL_RGBA, GL_FLOAT, texture_array)
+            elif self.channels == 1:
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, self.width, self.height, 0, GL_LUMINANCE, GL_FLOAT, texture_array)
+        elif self.type == GL_UNSIGNED_BYTE:
+            if self.channels == 3:
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, self.width, self.height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture_array)
+            elif self.channels == 4:
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, self.width, self.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_array)
+            elif self.channels == 1:
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, self.width, self.height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+                             texture_array)
+        glBindTexture(GL_TEXTURE_2D, 0)
+
+    def update(self, texture_array):
+        reshape = False
+        if self.width != texture_array.shape[0]:
+            reshape = True
+        if self.height != texture_array.shape[1]:
+            reshape = True
+        num_dims = len(texture_array.shape)
+        if num_dims == 3:
+            channels = texture_array.shape[2]
+        else:
+            channels = 1
+        if self.channels != channels:
+            reshape = True
+
+        if reshape:
+            self.allocate(texture_array)
+        else:
+            glEnable(GL_TEXTURE_2D)
+            glBindTexture(GL_TEXTURE_2D, self.texture)
+            data = texture_array.data
+            if self.type == GL_FLOAT:
+                if self.channels == 3:
+                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_RGB, GL_FLOAT, texture_array)
+                elif self.channels == 4:
+                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_RGBA, GL_FLOAT, texture_array)
+                elif self.channels == 1:
+                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_LUMINANCE, GL_FLOAT, texture_array)
+
+            elif self.type == GL_UNSIGNED_BYTE:
+                if self.channels == 3:
+                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_RGB, GL_UNSIGNED_BYTE, texture_array)
+                elif self.channels == 4:
+                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_RGBA, GL_UNSIGNED_BYTE, texture_array)
+                elif self.channels == 1:
+                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_LUMINANCE, GL_UNSIGNED_BYTE, texture_array)
+            glBindTexture(GL_TEXTURE_2D, 0)
+
+class GLTexturedPlaneNode(GLNode):
+    @staticmethod
+    def factory(node_name, data, args=None):
+        node = GLTexturedPlaneNode(node_name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.size = [2, 2]
+        self.width_property = self.add_input('width', widget_type='drag_float', default_value=1.6)
+        self.height_property = self.add_input('height', widget_type='drag_float', default_value=0.9)
+        self.texture_input = self.add_input('texture')
+        self.texture_shape = None
+        self.numpy_texture = None
+        self.texture_data_pending = None
+
+    def execute(self):
+        if self.texture_input.fresh_input:
+            self.texture_data_pending = self.texture_input.get_received_data() #  * 255.0
+        super().execute()
+
+    def draw(self):
+        # self.process_pending_commands()
+        # self.size = self.size_property.get_widget_value()
+        if self.texture_data_pending is not None:
+            if self.numpy_texture is None:
+                self.numpy_texture = GLNumpyTexture(self.texture_data_pending)
+            else:
+                self.numpy_texture.update(self.texture_data_pending)
+            self.texture_data_pending = None
+        if self.numpy_texture is not None and self.numpy_texture.texture != -1:
+            glEnable(GL_TEXTURE_2D)
+            glBindTexture(GL_TEXTURE_2D, self.numpy_texture.texture)
+            self.size[0] = self.width_property.get_widget_value()
+            self.size[1] = self.height_property.get_widget_value()
+            gl.glBegin(gl.GL_TRIANGLE_STRIP)
+            glTexCoord2f(0, 0)
+            gl.glVertex2f(-self.size[0] / 2, self.size[1] / 2)
+            glTexCoord2f(0, 1)
+            gl.glVertex2f(-self.size[0] / 2, -self.size[1] / 2)
+            glTexCoord2f(1, 0)
+            gl.glVertex2f(self.size[0] / 2, self.size[1] / 2)
+            glTexCoord2f(1, 1)
+            gl.glVertex2f(self.size[0] / 2, -self.size[1] / 2)
+            gl.glEnd()
+            glBindTexture(GL_TEXTURE_2D, 0)
+        else:
+            self.size[0] = self.width_property.get_widget_value()
+            self.size[1] = self.height_property.get_widget_value()
+            gl.glBegin(gl.GL_TRIANGLE_STRIP)
+            gl.glVertex2f(-self.size[0] / 2, -self.size[1] / 2)
+            gl.glVertex2f(-self.size[0] / 2, self.size[1] / 2)
+            gl.glVertex2f(self.size[0] / 2, -self.size[1] / 2)
+            gl.glVertex2f(self.size[0] / 2, self.size[1] / 2)
+            gl.glEnd()
 
 
 class GLQuadricNode(GLNode):
@@ -1136,7 +1284,6 @@ class GLTextNode(GLNode):
         self.was_depth = False
 
     def custom_setup(self, from_file):
-        print('setup')
         dpg.configure_item(self.text_color.widget.uuid, no_alpha=True)
         dpg.configure_item(self.text_color.widget.uuid, alpha_preview=dpg.mvColorEdit_AlphaPreviewNone)
 
@@ -1213,6 +1360,10 @@ class GLTextNode(GLNode):
         self.texture = glGenTextures(1)
         glBindTexture(GL_TEXTURE_2D, self.texture)
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, font_atlas_shape[0], font_atlas_shape[1], 0, GL_RGBA, GL_FLOAT, None)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
 
         for i in range(32, 255):
             a = chr(i)
@@ -1232,10 +1383,6 @@ class GLTextNode(GLNode):
                 glyph_offset = [cell[0] * self.glyph_shape[0], cell[1] * self.glyph_shape[1]]
                 glTexSubImage2D(GL_TEXTURE_2D, 0, glyph_offset[0] + glyph.bitmap_left, glyph_offset[1] + (self.glyph_shape[1] - glyph.bitmap_top) + bottom, glyph.bitmap.width, glyph.bitmap.rows, GL_RGBA, GL_FLOAT, rgb_bm)
                 self.characters[chr(i)] = CharacterSlot(cell, self.glyph_shape, glyph, font_atlas_shape)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
 
         glBindTexture(GL_TEXTURE_2D, 0)
 
