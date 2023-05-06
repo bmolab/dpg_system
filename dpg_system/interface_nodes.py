@@ -1629,12 +1629,15 @@ class PlotNode(Node):
 
             elif self.style == self.heat_map_style:  # heat map
                 if t not in [list, np.ndarray]:
+                    ii = any_to_array(data)
+                    if self.range != 1.0 or self.offset != 0:
+                        ii = (ii + self.offset) / self.range
                     rows = 1
                     sample_count = 1
                     if rows != self.rows or sample_count != self.sample_count:
                         self.rows = rows
                         self.sample_count = sample_count
-                    self.y_data.update(np.array([data]))
+                    self.y_data.update(ii)
 
                 elif t == list:
                     h_data, _, _ = list_to_hybrid_list(data)
@@ -1643,6 +1646,8 @@ class PlotNode(Node):
                         self.rows = rows
                         self.sample_count = 1
                     ii = list_to_array(h_data).reshape((rows, self.sample_count))
+                    if self.range != 1.0 or self.offset != 0:
+                        ii = (ii + self.offset) / self.range
                     self.y_data.update(ii)
 
                 elif t == np.ndarray:
@@ -1654,7 +1659,11 @@ class PlotNode(Node):
                     if rows != self.rows or self.sample_count != sample_count:
                         self.rows = rows
                         self.sample_count = sample_count
-                    self.y_data.update(data)
+                    if self.range != 1.0 or self.offset != 0:
+                        ii = (data + self.offset) / self.range
+                        self.y_data.update(ii)
+                    else:
+                        self.y_data.update(data)
 
         if self.style == self.xy_plot_style:
             if self.input_x.fresh_input:
@@ -1763,10 +1772,6 @@ class ColorPickerNode(Node):
                 dpg.configure_item(self.input.widget.uuid, no_alpha=False)
                 dpg.configure_item(self.input.widget.uuid, alpha_preview=dpg.mvColorEdit_AlphaPreviewHalf)
             else:
-                data = list(self.input.get_widget_value())
-                if data is not None:
-                    data[3] = 255
-                    self.input.widget.set(tuple(data))
                 dpg.configure_item(self.input.widget.uuid, no_alpha=True)
                 dpg.configure_item(self.input.widget.uuid, alpha_preview=dpg.mvColorEdit_AlphaPreviewNone)
             self.alpha = alpha

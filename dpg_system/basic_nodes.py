@@ -14,6 +14,7 @@ def register_basic_nodes():
     Node.app.register_node('prepend', PrependNode.factory)
     Node.app.register_node('append', AppendNode.factory)
     Node.app.register_node("type", TypeNode.factory)
+    Node.app.register_node("info", TypeNode.factory)
     Node.app.register_node("array", ArrayNode.factory)
     Node.app.register_node("string", StringNode.factory)
     Node.app.register_node("list", ListNode.factory)
@@ -1093,37 +1094,137 @@ class TypeNode(Node):
         super().__init__(label, data, args)
 
         self.input = self.add_input("in", triggers_execution=True)
-        self.type_property = self.add_property('type', widget_type='text_input', width=120)
+        width = 128
+        if label == 'info':
+            width = 192
+        self.type_property = self.add_property(self.label, widget_type='text_input', width=width)
 
     def execute(self):
         input = self.input.get_received_data()
-        t = type(input)
-        if t == float:
-            self.type_property.set('float')
-        elif t == int:
-            self.type_property.set('int')
-        elif t == str:
-            self.type_property.set('string')
-        elif t == list:
-            self.type_property.set('list[' + str(len(input)) + ']')
-        elif t == bool:
-            self.type_property.set('bool')
-        elif t == np.ndarray:
-            shape = input.shape
-            if len(shape) == 1:
-                self.type_property.set('array[' + str(shape[0]) + ']')
-            elif len(shape) == 2:
-                self.type_property.set('array[' + str(shape[0]) + ', ' + str(shape[1]) + ']')
-            elif len(shape) == 3:
-                self.type_property.set('array[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + ']')
-            elif len(shape) == 4:
-                self.type_property.set('array[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + ', ' + str(shape[3]) + ']')
-        elif t == np.double:
-            self.type_property.set('numpy.double')
-        elif t == np.int64:
-            self.type_property.set('numpy.int64')
-        elif t == np.bool_:
-            self.type_property.set('numpy.bool_')
+        if self.label == 'type':
+            t = type(input)
+            if t == float:
+                self.type_property.set('float')
+            elif t == int:
+                self.type_property.set('int')
+            elif t == str:
+                self.type_property.set('string')
+            elif t == list:
+                self.type_property.set('list[' + str(len(input)) + ']')
+            elif t == bool:
+                self.type_property.set('bool')
+            elif t == np.ndarray:
+                shape = input.shape
+                if len(shape) == 1:
+                    self.type_property.set('array[' + str(shape[0]) + ']')
+                elif len(shape) == 2:
+                    self.type_property.set('array[' + str(shape[0]) + ', ' + str(shape[1]) + ']')
+                elif len(shape) == 3:
+                    self.type_property.set('array[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + ']')
+                elif len(shape) == 4:
+                    self.type_property.set('array[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + ', ' + str(shape[3]) + ']')
+            elif t == torch.Tensor:
+                shape = input.shape
+                if len(shape) == 1:
+                    self.type_property.set('tensor[' + str(shape[0]) + ']')
+                elif len(shape) == 2:
+                    self.type_property.set('tensor[' + str(shape[0]) + ', ' + str(shape[1]) + ']')
+                elif len(shape) == 3:
+                    self.type_property.set('tensor[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + ']')
+                elif len(shape) == 4:
+                    self.type_property.set(
+                        'tensor[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + ', ' + str(
+                            shape[3]) + ']')
+            elif t == np.double:
+                self.type_property.set('numpy.double')
+            elif t == np.float:
+                self.type_property.set('numpy.float')
+            elif t == np.float32:
+                self.type_property.set('numpy.float32')
+            elif t == np.int64:
+                self.type_property.set('numpy.int64')
+            elif t == np.bool_:
+                self.type_property.set('numpy.bool_')
+        else:
+            t = type(input)
+            if t == float:
+                self.type_property.set('float')
+            elif t == int:
+                self.type_property.set('int')
+            elif t == str:
+                self.type_property.set('string')
+            elif t == list:
+                self.type_property.set('list[' + str(len(input)) + ']')
+            elif t == bool:
+                self.type_property.set('bool')
+            elif t == np.ndarray:
+                shape = input.shape
+
+                if input.dtype == np.float:
+                    comp = 'float'
+                elif input.dtype == np.double:
+                    comp = 'double'
+                elif input.dtype == np.float32:
+                    comp = 'float32'
+                elif input.dtype == np.int64:
+                    comp = 'int64'
+                elif input.dtype == np.bool_:
+                    comp = 'bool'
+                elif input.dtype == np.uint8:
+                    comp = 'uint8'
+
+                if len(shape) == 1:
+                    self.type_property.set('array[' + str(shape[0]) + '] ' + comp)
+                elif len(shape) == 2:
+                    self.type_property.set('array[' + str(shape[0]) + ', ' + str(shape[1]) + '] ' + comp)
+                elif len(shape) == 3:
+                    self.type_property.set('array[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + '] ' + comp)
+                elif len(shape) == 4:
+                    self.type_property.set(
+                        'array[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + ', ' + str(
+                            shape[3]) + '] ' + comp)
+            elif t == torch.Tensor:
+                shape = input.shape
+                if input.dtype == torch.float:
+                    comp = 'float'
+                elif input.dtype == torch.double:
+                    comp = 'double'
+                elif input.dtype == torch.float32:
+                    comp = 'float32'
+                elif input.dtype == torch.int64:
+                    comp = 'int64'
+                elif input.dtype == torch.bool:
+                    comp = 'bool'
+                elif input.dtype == torch.uint8:
+                    comp = 'uint8'
+
+                device = 'cpu'
+                if input.is_cuda:
+                    device = 'cuda'
+                elif input.is_mps:
+                    device = 'mps'
+
+                if len(shape) == 1:
+                    self.type_property.set('tensor[' + str(shape[0]) + '] ' + comp + ' ' + device)
+                elif len(shape) == 2:
+                    self.type_property.set('tensor[' + str(shape[0]) + ', ' + str(shape[1]) + '] ' + comp + ' ' + device)
+                elif len(shape) == 3:
+                    self.type_property.set(
+                        'tensor[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + '] ' + comp + ' ' + device)
+                elif len(shape) == 4:
+                    self.type_property.set(
+                        'tensor[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + ', ' + str(
+                            shape[3]) + '] ' + comp + ' ' + device)
+            elif t == np.float:
+                self.type_property.set('numpy.float')
+            elif t == np.float32:
+                self.type_property.set('numpy.float32')
+            elif t == np.double:
+                self.type_property.set('numpy.double')
+            elif t == np.int64:
+                self.type_property.set('numpy.int64')
+            elif t == np.bool_:
+                self.type_property.set('numpy.bool_')
 
 
 class ArrayNode(Node):
@@ -1619,14 +1720,11 @@ class FuzzyMatchNode(Node):
         self.filtered_list = []
         self.option_list = []
         self.best_score = 0
-        print(args)
         if len(args) > 0:
             f = open(args[0])
             data = json.load(f)
             for artist in data:
                 self.option_list.append(artist)
-
-        print(self.option_list)
 
     def execute(self):
         if self.input.fresh_input:

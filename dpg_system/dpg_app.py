@@ -55,21 +55,31 @@ try:
     imported.append('matrix_nodes.py')
 except ModuleNotFoundError:
     pass
+
 try:
     from dpg_system.gl_nodes import *
     imported.append('gl_nodes.py')
 except ModuleNotFoundError:
     pass
+
+try:
+    from dpg_system.opencv_nodes import *
+    imported.append('opencv_nodes.py')
+except ModuleNotFoundError:
+    pass
+
 try:
     from dpg_system.clip_nodes import *
     imported.append('clip_nodes.py')
 except ModuleNotFoundError:
     pass
+
 try:
     from dpg_system.numpy_nodes import *
     imported.append('numpy_nodes.py')
 except ModuleNotFoundError:
     pass
+
 try:
     from dpg_system.torch_nodes import *
     imported.append('torch_nodes.py')
@@ -685,6 +695,9 @@ class App:
 
         if 'register_gl_nodes' in globals():
             register_gl_nodes()
+
+        if 'register_opencv_nodes' in globals():
+            register_opencv_nodes()
 
         if 'register_elevenlab_nodes' in globals():
             register_elevenlab_nodes()

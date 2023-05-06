@@ -22,7 +22,7 @@ def register_gl_nodes():
     Node.app.register_node('gl_align', GLAlignNode.factory)
     Node.app.register_node('gl_quaternion_rotate', GLQuaternionRotateNode.factory)
     Node.app.register_node('gl_text', GLTextNode.factory)
-    Node.app.register_node('gl_plane', GLTexturedPlaneNode.factory)
+    Node.app.register_node('gl_billboard', GLBillboard.factory)
 
 
 class GLCommandParser:
@@ -292,8 +292,8 @@ class GLNumpyTexture:
         self.allocate(texture_array)
 
     def allocate(self, texture_array):
-        self.width = texture_array.shape[0]
-        self.height = texture_array.shape[1]
+        self.width = texture_array.shape[1]
+        self.height = texture_array.shape[0]
         num_dims = len(texture_array.shape)
         if num_dims == 3:
             self.channels = texture_array.shape[2]
@@ -308,39 +308,37 @@ class GLNumpyTexture:
         if self.texture == -1:
             self.texture = glGenTextures(1)
 
-
-        data = texture_array.data
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
         glEnable(GL_TEXTURE_2D)
         glBindTexture(GL_TEXTURE_2D, self.texture)
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
         glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL)
-
+        contiguous_texture = np.ascontiguousarray(texture_array)
         if self.type == GL_FLOAT:
             if self.channels == 3:
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, self.width, self.height, 0, GL_RGB, GL_FLOAT, texture_array)
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, self.width, self.height, 0, GL_RGB, GL_FLOAT, contiguous_texture)
             elif self.channels == 4:
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, self.width, self.height, 0, GL_RGBA, GL_FLOAT, texture_array)
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, self.width, self.height, 0, GL_RGBA, GL_FLOAT, contiguous_texture)
             elif self.channels == 1:
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, self.width, self.height, 0, GL_LUMINANCE, GL_FLOAT, texture_array)
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, self.width, self.height, 0, GL_LUMINANCE, GL_FLOAT, contiguous_texture)
         elif self.type == GL_UNSIGNED_BYTE:
             if self.channels == 3:
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, self.width, self.height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture_array)
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, self.width, self.height, 0, GL_RGB, GL_UNSIGNED_BYTE, contiguous_texture)
             elif self.channels == 4:
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, self.width, self.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_array)
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, self.width, self.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, contiguous_texture)
             elif self.channels == 1:
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, self.width, self.height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
-                             texture_array)
+                             contiguous_texture)
         glBindTexture(GL_TEXTURE_2D, 0)
 
     def update(self, texture_array):
         reshape = False
-        if self.width != texture_array.shape[0]:
+        if self.width != texture_array.shape[1]:
             reshape = True
-        if self.height != texture_array.shape[1]:
+        if self.height != texture_array.shape[0]:
             reshape = True
         num_dims = len(texture_array.shape)
         if num_dims == 3:
@@ -354,29 +352,32 @@ class GLNumpyTexture:
             self.allocate(texture_array)
         else:
             glEnable(GL_TEXTURE_2D)
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
+
             glBindTexture(GL_TEXTURE_2D, self.texture)
-            data = texture_array.data
+            contiguous_texture = np.ascontiguousarray(texture_array)
             if self.type == GL_FLOAT:
                 if self.channels == 3:
-                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_RGB, GL_FLOAT, texture_array)
+                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_RGB, GL_FLOAT, contiguous_texture)
                 elif self.channels == 4:
-                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_RGBA, GL_FLOAT, texture_array)
+                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_RGBA, GL_FLOAT, contiguous_texture)
                 elif self.channels == 1:
-                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_LUMINANCE, GL_FLOAT, texture_array)
+                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_LUMINANCE, GL_FLOAT, contiguous_texture)
 
             elif self.type == GL_UNSIGNED_BYTE:
                 if self.channels == 3:
-                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_RGB, GL_UNSIGNED_BYTE, texture_array)
+                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_RGB, GL_UNSIGNED_BYTE, contiguous_texture)
                 elif self.channels == 4:
-                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_RGBA, GL_UNSIGNED_BYTE, texture_array)
+                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_RGBA, GL_UNSIGNED_BYTE, contiguous_texture)
                 elif self.channels == 1:
-                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_LUMINANCE, GL_UNSIGNED_BYTE, texture_array)
+                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_LUMINANCE, GL_UNSIGNED_BYTE, contiguous_texture)
             glBindTexture(GL_TEXTURE_2D, 0)
 
-class GLTexturedPlaneNode(GLNode):
+
+class GLBillboard(GLNode):
     @staticmethod
     def factory(node_name, data, args=None):
-        node = GLTexturedPlaneNode(node_name, data, args)
+        node = GLBillboard(node_name, data, args)
         return node
 
     def __init__(self, label: str, data, args):
@@ -391,7 +392,60 @@ class GLTexturedPlaneNode(GLNode):
 
     def execute(self):
         if self.texture_input.fresh_input:
-            self.texture_data_pending = self.texture_input.get_received_data() #  * 255.0
+            data = self.texture_input.get_received_data()
+            if type(data) == np.ndarray:
+                self.texture_data_pending = self.texture_input.get_received_data() #  * 255.0
+            elif type(data) == torch.Tensor:
+                self.texture_data_pending = self.texture_input.get_received_data().cpu().numpy()
+            elif type(data) == float:
+                self.texture_data_pending = np.ones((16, 16, 1), dtype=np.float32) * data
+            elif type(data) == int:
+                self.texture_data_pending = np.ones((16, 16, 1), dtype=np.uint8) * data
+            elif type(data) == list:
+                component_count = len(data)
+                if component_count == 3:
+                    if type(data[0]) == float:
+                        self.texture_data_pending = np.ones((16, 16, 3), dtype=np.float32)
+                        multiplier = np.array(data)
+                        multiplier = np.expand_dims(multiplier, axis=0)
+                        multiplier = np.expand_dims(multiplier, axis=0)
+                        self.texture_data_pending = self.texture_data_pending * multiplier
+                    if type(data[0]) == int:
+                        self.texture_data_pending = np.ones((16, 16, 3), dtype=np.uint8)
+                        multiplier = np.array(data)
+                        multiplier = np.expand_dims(multiplier, axis=0)
+                        multiplier = np.expand_dims(multiplier, axis=0)
+                        self.texture_data_pending = self.texture_data_pending * multiplier
+                elif component_count == 4:
+                    if type(data[0]) == float:
+                        self.texture_data_pending = np.ones((16, 16, 4), dtype=np.float32)
+                        multiplier = np.array(data)
+                        multiplier = np.expand_dims(multiplier, axis=0)
+                        multiplier = np.expand_dims(multiplier, axis=0)
+                        self.texture_data_pending = self.texture_data_pending * multiplier
+                    if type(data[0]) == int:
+                        self.texture_data_pending = np.ones((16, 16, 4), dtype=np.uint8)
+                        multiplier = np.array(data)
+                        multiplier = np.expand_dims(multiplier, axis=0)
+                        multiplier = np.expand_dims(multiplier, axis=0)
+                        self.texture_data_pending = self.texture_data_pending * multiplier
+                elif component_count == 1:
+                    if type(data[0]) == float:
+                        self.texture_data_pending = np.ones((16, 16, 1), dtype=np.float32)
+                        multiplier = np.array(data)
+                        multiplier = np.expand_dims(multiplier, axis=0)
+                        multiplier = np.expand_dims(multiplier, axis=0)
+                        self.texture_data_pending = self.texture_data_pending * multiplier
+                    if type(data[0]) == int:
+                        self.texture_data_pending = np.ones((16, 16, 1), dtype=np.uint8)
+                        multiplier = np.array(data)
+                        multiplier = np.expand_dims(multiplier, axis=0)
+                        multiplier = np.expand_dims(multiplier, axis=0)
+                        self.texture_data_pending = self.texture_data_pending * multiplier
+                    # if type(data[0]) == float:
+                    #     self.texture_data_pending = np.ones((16, 16, 3), dtype=np.float32)
+                    #     multiplier = np.array(data).expand_dims(0).expand_dims(0)
+                    #     self.texture_data_pending = self.texture_data_pending * multiplier
         super().execute()
 
     def draw(self):

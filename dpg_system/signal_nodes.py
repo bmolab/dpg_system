@@ -41,42 +41,61 @@ class DifferentiateNode(Node):
         self.previousType = None
 
         self.input = self.add_input("", triggers_execution=True)
+        self.absolute_property = self.add_input("absolute", widget_type='checkbox', default_value=False)
         self.output = self.add_output("")
 
-    def float_diff(self, received):
+    def float_diff(self, received, absolute):
         if float == self.previousType:
             output = received - self.previous_value
         else:
             prev = any_to_float(self.previous_value)
             output = received - prev
+        if absolute:
+            return abs(output)
         return output
 
-    def array_diff(self, received):
+    def array_diff(self, received, absolute):
         if np.ndarray == self.previousType:
             output = received - self.previous_value
         else:
             prev = any_to_array(self.previous_value)
             output = received - prev
+        if absolute:
+            return np.abs(output)
         return output
 
-    def list_diff(self, received):
+    def tensor_diff(self, received, absolute):
+        if torch.Tensor == self.previousType:
+            output = received - self.previous_value
+        else:
+            prev = any_to_tensor(self.previous_value)
+            output = received - prev
+        if absolute:
+            return torch.abs(output)
+        return output
+
+    def list_diff(self, received, absolute):
         received = any_to_array(received)
         if np.ndarray == self.previousType:
             output = received - self.previous_value
         else:
             prev = any_to_array(self.previous_value)
             output = received - prev
+        if absolute:
+            return abs(output), received
         return output, received
 
-    def int_diff(self, received):
+    def int_diff(self, received, absolute):
         if int == self.previousType:
             output = received - self.previous_value
         else:
             prev = any_to_int(self.previous_value)
             output = received - prev
+        if absolute:
+            return abs(output)
         return output
 
-    def bool_diff(self, received):
+    def bool_diff(self, received, absolute):
         if bool == self.previousType:
             output = received != self.previous_value
         else:
@@ -88,18 +107,22 @@ class DifferentiateNode(Node):
         received = self.input.get_received_data()
         t = type(received)
         output = None
+        absolute = self.absolute_property.get_widget_value()
         if self.previous_value is not None:
             if t == float:
-                output = self.float_diff(received)
+                output = self.float_diff(received, absolute)
             elif t == int:
-                output = self.int_diff(received)
+                output = self.int_diff(received, absolute)
             elif t == bool:
-                output = self.bool_diff(received)
+                output = self.bool_diff(received, absolute)
             elif t == list:
-                output, received = self.list_diff(received)
+                output, received = self.list_diff(received, absolute)
                 t = np.ndarray
             if t == np.ndarray:
-                output = self.array_diff(received)
+                output = self.array_diff(received, absolute)
+            elif t == torch.Tensor:
+                output = self.tensor_diff(received, absolute)
+
             self.output.send(output)
 
         self.previous_value = received
@@ -372,6 +395,20 @@ class NoiseGateNode(Node):
                 if not self.squeeze:
                     output_data = output_data + self.threshold * mask
 
+        elif t == torch.Tensor:
+            if self.bipolar:
+                sign_ = torch.sign(output_data)
+                output_data = torch.clamp(torch.abs(output_data) - self.threshold, 0, None)
+                mask = output_data != 0
+                if not self.squeeze:
+                    output_data += self.threshold * mask
+                output_data *= sign_
+            else:
+                output_data = torch.clip(output_data - self.threshold, 0, None)
+                mask = output_data > 0
+                if not self.squeeze:
+                    output_data = output_data + self.threshold * mask
+
         if output_data is not None:
             self.output.send(output_data)
 
@@ -458,6 +495,25 @@ class ThresholdTriggerNode(Node):
                     else:
                         self.release_output.send('bang')
 
+        elif t == torch.Tensor:
+            prev_state = self.state
+            on = data > self.threshold
+            not_off = data >= self.release_threshold
+            if type(self.state) is not torch.Tensor:
+                self.state = on
+            else:
+                self.state = torch.logical_or(self.state, on)
+                self.state = torch.logical_and(self.state, not_off)
+            if torch.any(self.state != prev_state):
+                if self.output_mode == 0:
+                    self.output.send(self.state)
+                    self.release_output.send(torch.logical_not(self.state))
+                else:
+                    if self.state:
+                        self.output.send('bang')
+                    else:
+                        self.release_output.send('bang')
+
 
 class RangerNode(Node):
     @staticmethod
@@ -532,6 +588,20 @@ class RangerNode(Node):
                 inData = list_to_array(inData)
                 t = np.ndarray
             if t == np.ndarray:
+                if self.calibrating:
+                    min = inData.min()
+                    max = inData.max()
+                    if max > self.calibrating_max:
+                        self.calibrating_max = max
+                    if min < self.calibrating_min:
+                        self.calibrating_min = min
+                range = self.inMax - self.inMin
+                if range == 0:
+                    range = 1e-5
+                out = (in_value - self.inMin) / range
+                out = (self.outMax - self.outMin) * out + self.outMin
+                self.output.send(out)
+            if t == torch.Tensor:
                 if self.calibrating:
                     min = inData.min()
                     max = inData.max()
@@ -639,6 +709,12 @@ class FilterNode(Node):
 
     def execute(self):
         input_value = self.input.get_data()
+        if type(self.accum) != type(input_value):
+            self.accum = any_to_match(self.accum, input_value)
+        elif type(input_value) == torch.Tensor:
+            if input_value.device != self.accum.device:
+                self.accum = any_to_match(self.accum, input_value)
+
         self.accum = self.accum * self.degree + input_value * (1.0 - self.degree)
         self.output.send(self.accum)
 
