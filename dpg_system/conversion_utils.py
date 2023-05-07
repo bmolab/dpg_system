@@ -1,5 +1,6 @@
 import numpy as np
 import re
+import ast
 torch_available = False
 try:
     import torch
@@ -39,13 +40,12 @@ def any_to_string(data):
         out_string = str(data)
         out_string = out_string.replace('\n', '')
         return out_string
-    elif torch_available:
-        if type == torch.Tensor:
-            data = data.numpy()
-            np.set_printoptions(precision=3)
-            out_string = str(data)
-            out_string = out_string.replace('\n', '')
-            return out_string
+    elif torch_available and t == torch.Tensor:
+        data = data.cpu().numpy()
+        np.set_printoptions(precision=3)
+        out_string = str(data)
+        out_string = out_string.replace('\n', '')
+        return out_string
     return ''
 
 
@@ -179,18 +179,23 @@ def any_to_array(data):
     return np.ndarray([0])
 
 
+def tensor_to_list(input):
+    if torch_available:
+        return input.tolist()
+    return []
+
 def tensor_to_float(input):
     value = 0.0
     if torch_available:
         if type(input) == torch.Tensor:
             if len(input.shape) == 1:
-                value = input[0]
+                value = input[0].item()
             elif len(input.shape) == 2:
-                value = input[0, 0]
+                value = input[0, 0].item()
             elif len(input.shape) == 3:
-                value = input[0, 0, 0]
+                value = input[0, 0, 0].item()
             elif len(input.shape) == 4:
-                value = input[0, 0, 0, 0]
+                value = input[0, 0, 0, 0].item()
     return float(value)
 
 def tensor_to_int(input):
@@ -198,13 +203,13 @@ def tensor_to_int(input):
     if torch_available:
         if type(input) == torch.Tensor:
             if len(input.shape) == 1:
-                value = input[0]
+                value = input[0].item()
             elif len(input.shape) == 2:
-                value = input[0, 0]
+                value = input[0, 0].item()
             elif len(input.shape) == 3:
-                value = input[0, 0, 0]
+                value = input[0, 0, 0].item()
             elif len(input.shape) == 4:
-                value = input[0, 0, 0, 0]
+                value = input[0, 0, 0, 0].item()
     return int(value)
 
 
@@ -213,13 +218,13 @@ def tensor_to_bool(input):
     if torch_available:
         if type(input) == torch.Tensor:
             if len(input.shape) == 1:
-                value = input[0]
+                value = input[0].item()
             elif len(input.shape) == 2:
-                value = input[0, 0]
+                value = input[0, 0].item()
             elif len(input.shape) == 3:
-                value = input[0, 0, 0]
+                value = input[0, 0, 0].item()
             elif len(input.shape) == 4:
-                value = input[0, 0, 0, 0]
+                value = input[0, 0, 0, 0].item()
     return bool(value)
 
 def tensor_to_array(input):
@@ -289,8 +294,12 @@ def int_to_string(input):
     return ''
 
 
-def string_to_list(input):
-    substrings = input.split(' ')
+def string_to_list(input_string):
+    if input_string[0] == '[':
+        arr_str = input_string.replace(" ]", "]").replace("][", "],[").replace(", ", ",").replace(" ", ",").replace("\n", "")
+        substrings = ast.literal_eval(arr_str)
+    else:
+        substrings = input_string.split(' ')
     return substrings
 
 
@@ -299,40 +308,56 @@ def string_to_hybrid_list(input):
     return list_to_hybrid_list(substrings)
 
 
-def string_to_array(input):
-    out_list = np.ndarray(0)
-    try:
-        hybrid_list, homogenous, types = string_to_hybrid_list(input)
-        if homogenous:
-            t = type(hybrid_list[0])
-            if t in [float, int, bool, np.int64, np.float, np.double, np.float32, np.bool_]:
-                out_list = np.array(hybrid_list)
-        else:
-            if len(types) == 2:
-                if str not in types:
-                    out_list = np.array(hybrid_list)
-    except:
-        pass
-    return out_list
+# def string_to_array(input):
+#     out_array = np.ndarray(0)
+#     try:
+#         out_array = np.asarray(np.matrix(input))
+#
+#
+#         # hybrid_list, homogenous, types = string_to_hybrid_list(input)
+#         # if homogenous:
+#         #     t = type(hybrid_list[0])
+#         #     if t in [float, int, bool, np.int64, np.float, np.double, np.float32, np.bool_]:
+#         #         out_list = np.array(hybrid_list)
+#         # else:
+#         #     if len(types) == 2:
+#         #         if str not in types:
+#         #             out_list = np.array(hybrid_list)
+#     except:
+#         pass
+#     return out_array
 
 
 def string_to_tensor(input):
     if torch_available:
         out_tensor = torch.Tensor(0)
         try:
-            hybrid_list, homogenous, types = string_to_hybrid_list(input)
-            if homogenous:
-                t = type(hybrid_list[0])
-                if t in [float, int, bool, np.int64, np.float, np.double, np.float32, np.bool_]:
-                    out_tensor = torch.Tensor(hybrid_list)
-            else:
-                if len(types) == 2:
-                    if str not in types:
-                        out_tensor = torch.Tensor(hybrid_list)
+            out_array = string_to_array(input)
+            out_tensor = torch.from_numpy(out_array)
+
+            # hybrid_list, homogenous, types = string_to_hybrid_list(input)
+            # if homogenous:
+            #     t = type(hybrid_list[0])
+            #     if t in [float, int, bool, np.int64, np.float, np.double, np.float32, np.bool_]:
+            #         out_tensor = torch.Tensor(hybrid_list)
+            # else:
+            #     if len(types) == 2:
+            #         if str not in types:
+            #             out_tensor = torch.Tensor(hybrid_list)
             return out_tensor
         except:
             pass
     return None
+
+def string_to_array(input_string):
+    arr = np.zeros((1))
+    try:
+        input_string = " ".join(input_string.split())
+        arr_str = input_string.replace(" ]", "]").replace(" ", ",").replace("\n", "")
+        arr = np.array(ast.literal_eval(arr_str))
+    except:
+        print('invalid string to cast as array')
+    return arr
 
 def list_to_hybrid_list(in_list):
     hybrid_list = []
@@ -357,7 +382,7 @@ def list_to_array(input):
     hybrid_list, homogenous, types = list_to_hybrid_list(input)
     if homogenous:
         t = type(hybrid_list[0])
-        if t in [float, int, bool]:
+        if t in [float, int, bool, list]:
             return np.array(hybrid_list)
     else:
         if str not in types:

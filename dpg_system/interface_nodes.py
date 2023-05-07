@@ -899,7 +899,7 @@ class ValueNode(Node):
     def execute(self):
         value = None
         if self.inputs[0].fresh_input:
-            in_data = self.inputs[0].get_data()
+            in_data = self.inputs[0].get_received_data()
             t = type(in_data)
             if t == str:
                 value = in_data.split(' ')
@@ -909,15 +909,29 @@ class ValueNode(Node):
                 value = in_data
             else:
                 if self.input.widget.widget == 'text_input':
-                    value = any_to_string(in_data)
+                    if t == np.ndarray:
+                        value = in_data.tolist()
+                    elif Node.app.torch_available and t == torch.Tensor:
+                        value = in_data.tolist()
+                    else:
+                        value = any_to_string(in_data)
             if self.variable is not None:
                 self.variable.set(value, from_client=self)
         else:
             value = dpg.get_value(self.value)
             if type(value) == str:
-                value = value.split(' ')
-                if len(value) == 1:
-                    value = value[0]
+                is_list = False
+                if value[0] == '[':
+                    try:
+                        value = string_to_list(value)
+                        is_list = True
+                        print('is_list')
+                    except:
+                        pass
+                if not is_list:
+                    value = value.split(' ')
+                    if len(value) == 1:
+                        value = value[0]
             if self.variable is not None:
                 self.variable.set(value, from_client=self)
         if self.input.widget.widget == 'text_input':
@@ -1158,15 +1172,19 @@ class PlotNode(Node):
             self.style = 0
             self.update_style = 'input is stream of samples'
             default_color_map = 'deep'
+            self.format = ''
         elif label == 'heat_scroll':
             self.style = self.heat_scroll_style
             self.style_type = label
             self.update_style = 'input is multi-channel sample'
+            self.format = ''
         elif label == 'heat_map':
             self.style = 6
             self.style_type = label
             self.update_style = 'buffer holds one sample of input'
+            self.format = '%.3f'
         elif label == 'profile':
+            self.format = ''
             self.style_type = 'bar'
             self.sample_count = 16
             self.min_y = 0
@@ -1179,7 +1197,6 @@ class PlotNode(Node):
         self.height = 128
         self.min_x = 0
         self.max_x = self.sample_count
-        self.format = ''
         self.rows = 1
         self.elapser = 0
 
@@ -1221,10 +1238,10 @@ class PlotNode(Node):
         self.max_x_option = self.add_option(label='max x', widget_type='drag_float', default_value=self.max_x, max=3840, callback=self.change_range)
         self.max_x_option.widget.speed = .01
 
-        self.min_y_option = self.add_option(label='min y', widget_type='drag_float', default_value=self.min_y, max=3840, callback=self.change_range)
+        self.min_y_option = self.add_option(label='min y', widget_type='drag_float', default_value=self.min_y, callback=self.change_range)
         self.min_y_option.widget.speed = .01
 
-        self.max_y_option = self.add_option(label='max y', widget_type='drag_float', default_value=self.max_y, max=3840, callback=self.change_range)
+        self.max_y_option = self.add_option(label='max y', widget_type='drag_float', default_value=self.max_y, callback=self.change_range)
         self.max_y_option.widget.speed = .01
 
         self.format_option = self.add_option(label='number format', widget_type='text_input', default_value='', callback=self.change_format)
@@ -1573,6 +1590,7 @@ class PlotNode(Node):
 
     def change_format(self):
         self.format = self.format_option.get_widget_value()
+        self.hold_format = self.format
         if self.style in [self.heat_scroll_style, self.heat_map_style]:
             dpg.configure_item(self.plot_data_tag, format=self.format)
 
@@ -1593,7 +1611,7 @@ class PlotNode(Node):
             self.execute()
 
     def execute(self):
-        if self.pending_sample_count != self.sample_count:
+        if self.pending_sample_count != self.sample_count and self.style != self.heat_map_style:
             self.sample_count_option.set(self.pending_sample_count)
             self.change_sample_count()
         self.lock.acquire(blocking=True)
@@ -1608,6 +1626,9 @@ class PlotNode(Node):
                 if data == 'dump':
                     self.output.send(self.y_data.get_buffer()[0])
                     self.y_data.release_buffer()
+                else:
+                    data = any_to_array(data)
+                    t = np.ndarray
             if self.style == self.plot_style:
                 if t in [float, np.double, int, np.int64, bool, np.bool_]:
                     ii = any_to_array(float(data))
@@ -1638,11 +1659,12 @@ class PlotNode(Node):
                     ii = (ii + self.offset) / self.range
                     self.y_data.update(ii)
                 elif t == np.ndarray:
-                    rows = data.size
-                    if rows != self.rows:
-                        self.rows = rows
-                    ii = (data.reshape((rows, 1)) + self.offset) / self.range
-                    self.y_data.update(ii)
+                    if data.dtype in [np.float, np.float32, np.double, np.int, np.int64, np.bool_]:
+                        rows = data.size
+                        if rows != self.rows:
+                            self.rows = rows
+                        ii = (data.reshape((rows, 1)) + self.offset) / self.range
+                        self.y_data.update(ii)
 
             elif self.style == self.heat_map_style:  # heat map
                 if t not in [list, np.ndarray]:
@@ -1657,31 +1679,24 @@ class PlotNode(Node):
                     self.y_data.update(ii)
 
                 elif t == list:
-                    h_data, _, _ = list_to_hybrid_list(data)
-                    rows = len(h_data)
-                    if rows != self.rows or self.sample_count != 1:
-                        self.rows = rows
-                        self.sample_count = 1
-                    ii = list_to_array(h_data).reshape((rows, self.sample_count))
-                    if self.range != 1.0 or self.offset != 0:
-                        ii = (ii + self.offset) / self.range
-                    self.y_data.update(ii)
+                    data = list_to_array(data)
+                    t = np.ndarray
 
-                elif t == np.ndarray:
-                    dims = len(data.shape)
-                    sample_count = 1
-                    rows = data.shape[0]
-                    if dims > 1:
-                        sample_count = data.shape[1]
-                    if rows != self.rows or self.sample_count != sample_count:
-                        self.rows = rows
-                        self.sample_count = sample_count
-                    if self.range != 1.0 or self.offset != 0:
-                        ii = (data + self.offset) / self.range
-                        self.y_data.update(ii)
-                    else:
-                        self.y_data.update(data)
-
+                if t == np.ndarray:
+                    if data.dtype in [np.float, np.float32, np.double, np.int, np.int64, np.uint8, np.bool_]:
+                        dims = len(data.shape)
+                        sample_count = 1
+                        rows = data.shape[0]
+                        if dims > 1:
+                            sample_count = data.shape[1]
+                        if rows != self.rows or self.sample_count != sample_count:
+                            self.rows = rows
+                            self.sample_count = sample_count
+                        if self.range != 1.0 or self.offset != 0:
+                            ii = (data + self.offset) / self.range
+                            self.y_data.update(ii)
+                        else:
+                            self.y_data.update(data)
 
         if self.style == self.xy_plot_style:
             if self.input_x.fresh_input:

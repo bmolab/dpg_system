@@ -76,8 +76,22 @@ class NumpyGeneratorNode(Node):
         self.shape_properties = []
         for i in range(len(self.shape)):
             self.shape_properties.append(self.add_property('dim ' + str(i), widget_type='input_int', default_value=self.shape[i]))
-        # self.dtype_option = self.add_option('dtype', widget_type='combo', default_value='float32')
-        # options = ['float32', 'float']
+        if self.label == 'np.rand':
+            self.min = 0
+            self.max = 1
+            self.min_input = self.add_input('min', widget_type='drag_float', default_value=self.min, callback=self.range_changed)
+            self.max_input = self.add_input('max', widget_type='drag_float', default_value=self.max, callback=self.range_changed)
+
+        self.dtype_dict = {}
+        self.dtype_dict['float32'] = np.float32
+        self.dtype_dict['float'] = np.float
+        self.dtype_dict['double'] = np.double
+        self.dtype_dict['int64'] = np.int64
+        self.dtype_dict['uint8'] = np.uint8
+        self.dtype_dict['bool'] = np.bool_
+        self.dtype_option = self.add_option('dtype', widget_type='combo', default_value='float32', callback=self.dtype_changed)
+        self.dtype_option.widget.combo_items = list(self.dtype_dict.keys())
+        self.dtype = np.float32
         out_label = 'random array'
         if self.label == 'np.ones':
             out_label = 'array of ones'
@@ -85,14 +99,50 @@ class NumpyGeneratorNode(Node):
             out_label = 'array of zeros'
         self.output = self.add_output(out_label)
 
+    def range_changed(self, val=None):
+        self.min = self.min_input.get_widget_value()
+        self.max = self.max_input.get_widget_value()
+
+    def dtype_changed(self):
+        dtype = self.dtype_option.get_widget_value()
+        if dtype in self.dtype_dict:
+            self.dtype = self.dtype_dict[dtype]
+            if self.label == 'np.rand':
+                if self.dtype == np.uint8:
+                    if self.min < 0:
+                        self.min_input.set(0.0)
+                    if self.max == 1.0 or self.max < 255:
+                        self.max_input.set(255.0)
+                elif self.dtype == np.int64:
+                    if self.min < -32768:
+                        self.min_input.set(-32768)
+                    if self.max == 1.0:
+                        self.max_input.set(32767)
+                elif self.dtype in [np.float, np.double, np.float32]:
+                    if self.min == -32768:
+                        self.min_input.set(0.0)
+                    if self.max == 255:
+                        self.max_input.set(1.0)
+                    elif self.max == 32767:
+                        self.max_input.set(1.0)
+                self.range_changed()
+
     def execute(self):
         for i in range(len(self.shape)):
             self.shape[i] = self.shape_properties[i].get_widget_value()
         if self.label == 'np.rand':
             size = tuple(self.shape)
-            out_array = self.rng.random(size=size, dtype=np.float32)
+            if self.dtype in [np.float, np.float32, np.double]:
+                range_ = self.max - self.min
+                out_array = self.rng.random(size=size, dtype=self.dtype) * range_ + self.min
+            elif self.dtype == np.int64:
+                out_array = self.rng.integers(low=self.min, high=self.max, size=size, dtype=self.dtype, endpoint=True)
+            elif self.dtype == np.uint8:
+                out_array = self.rng.integers(low=self.min, high=self.max, size=size, dtype=self.dtype, endpoint=True)
+            elif self.dtype == np.bool_:
+                out_array = self.rng.integers(low=0, high=1, size=size, dtype=self.dtype, endpoint=True)
         else:
-            out_array = self.op(tuple(self.shape), dtype=np.float)
+            out_array = self.op(tuple(self.shape), dtype=self.dtype)
         self.output.send(out_array)
 
 
@@ -126,13 +176,27 @@ class NumpyLinSpaceNode(Node):
         self.start_property = self.add_property('start', widget_type='drag_float', default_value=self.start)
         self.stop_property = self.add_property('stop', widget_type='drag_float', default_value=self.stop)
         self.steps_property = self.add_property('steps', widget_type='drag_int', default_value=self.steps)
+        self.dtype_dict = {}
+        self.dtype_dict['float32'] = np.float32
+        self.dtype_dict['float'] = np.float
+        self.dtype_dict['double'] = np.double
+        self.dtype_dict['int64'] = np.int64
+        self.dtype_dict['uint8'] = np.uint8
+        self.dtype_option = self.add_property('dtype', widget_type='combo', default_value='float32', callback=self.dtype_changed)
+        self.dtype_option.widget.combo_items = list(self.dtype_dict.keys())
+        self.dtype = np.float32
         self.output = self.add_output('linspace out')
+
+    def dtype_changed(self):
+        dtype = self.dtype_option.get_widget_value()
+        if dtype in self.dtype_dict:
+            self.dtype = self.dtype_dict[dtype]
 
     def execute(self):
         self.start = self.start_property.get_widget_value()
         self.stop = self.stop_property.get_widget_value()
         self.steps = self.steps_property.get_widget_value()
-        out_array = self.op(self.start, self.stop, self.steps)
+        out_array = self.op(self.start, self.stop, self.steps, dtype=self.dtype)
         self.output.send(out_array)
 
 class NumpyUnaryNode(Node):

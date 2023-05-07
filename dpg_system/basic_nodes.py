@@ -1197,6 +1197,10 @@ class TypeNode(Node):
                     comp = 'bool'
                 elif input.dtype == torch.uint8:
                     comp = 'uint8'
+                elif input.dtype == torch.float16:
+                    comp = 'float16'
+                elif input.dtype == torch.bfloat16:
+                    comp = 'bfloat16'
 
                 device = 'cpu'
                 if input.is_cuda:
