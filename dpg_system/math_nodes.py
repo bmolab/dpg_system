@@ -96,7 +96,7 @@ class ArithmeticNode(Node):
     def min(self, a, b):
         if type(a) == np.ndarray:
             return np.minimum(a, b)
-        elif type(a) == torch.Tensor:
+        elif self.app.torch_available and type(a) == torch.Tensor:
             return torch.minimum(a, b)
         if a > b:
             return b
@@ -105,7 +105,7 @@ class ArithmeticNode(Node):
     def max(self, a, b):
         if type(a) == np.ndarray:
             return np.maximum(a, b)
-        elif type(a) == torch.Tensor:
+        elif self.app.torch_available and type(a) == torch.Tensor:
             return torch.maximum(a, b)
         if a < b:
             return b
@@ -129,7 +129,7 @@ class ArithmeticNode(Node):
             out = np.divide(a, b)
             np.seterr(**old_errs)
             return out
-        elif type(a) == torch.Tensor:
+        elif self.app.torch_available and type(a) == torch.Tensor:
             return a / b
         if b == 0:
             return a / 1e-8
@@ -146,7 +146,7 @@ class ArithmeticNode(Node):
             out = np.divide(b, a)
             np.seterr(**old_errs)
             return out
-        elif type(a) == torch.Tensor:
+        elif self.app.torch_available and type(a) == torch.Tensor:
             return b / a
         if a == 0:
             return b / 1e-8
@@ -155,7 +155,7 @@ class ArithmeticNode(Node):
     def power(self, a, b):
         if type(a) == np.ndarray:
             return np.power(a, b)
-        elif type(a) == torch.Tensor:
+        elif self.app.torch_available and type(a) == torch.Tensor:
             return torch.pow(a, b)
         else:
             return math.pow(a, b)
@@ -317,7 +317,7 @@ class ComparisonAndPassNode(Node):
             output_value = self.operations[self.operation](input_value, op)
             if output_value.any():
                 self.output.send(input_value)
-        elif type(input_value) == torch.Tensor:
+        elif self.app.torch_available and type(input_value) == torch.Tensor:
             if type(self.operand) != torch.Tensor:
                 self.operand = torch.zeros_like(input_value)
                 self.operand_property.set(input_value)
@@ -401,7 +401,7 @@ class OpSingleNode(Node):
             with np.errstate(divide='ignore'):
                 result = np.divide(a, np.linalg.norm(a))
             return result
-        elif type(a) == torch.Tensor:
+        elif self.app.torch_available and type(a) == torch.Tensor:
             result = torch.divide(a, torch.linalg.norm(a))
             return result
         return 1.0
@@ -411,7 +411,7 @@ class OpSingleNode(Node):
             with np.errstate(divide='ignore'):
                 result = np.log10(np.abs(a))
             return result
-        elif type(a) == torch.Tensor:
+        elif self.app.torch_available and type(a) == torch.Tensor:
             result = torch.log10(torch.abs(a))
             return result
         if a > 0.0:
@@ -423,7 +423,7 @@ class OpSingleNode(Node):
             with np.errstate(divide='ignore'):
                 result = np.log2(np.abs(a))
             return result
-        elif type(a) == torch.Tensor:
+        elif self.app.torch_available and type(a) == torch.Tensor:
             result = torch.log2(torch.abs(a))
             return result
         if a > 0.0:
@@ -435,7 +435,7 @@ class OpSingleNode(Node):
             with np.errstate(divide='ignore'):
                 result = np.divide(1, a)
             return result
-        elif type(a) == torch.Tensor:
+        elif self.app.torch_available and type(a) == torch.Tensor:
             result = torch.divide(1, a)
             return result
         if a == 0:
@@ -445,14 +445,14 @@ class OpSingleNode(Node):
     def exp(self, a):
         if type(a) == np.ndarray:
             return np.exp(a)
-        elif type(a) == torch.Tensor:
+        elif self.app.torch_available and type(a) == torch.Tensor:
             return torch.exp(a)
         return math.exp(a)
 
     def abs(self, a):
         if type(a) == np.ndarray:
             return np.abs(a)
-        elif type(a) == torch.Tensor:
+        elif self.app.torch_available and type(a) == torch.Tensor:
             return torch.abs(a)
         if a >= 0:
             return a
@@ -463,7 +463,7 @@ class OpSingleNode(Node):
             signs = np.sign(a)
             result = np.sqrt(np.abs(a))
             return result * signs
-        elif type(a) == torch.Tensor:
+        elif self.app.torch_available and type(a) == torch.Tensor:
             signs = torch.sign(a)
             result = torch.sqrt(torch.abs(a))
             return result * signs
@@ -514,7 +514,7 @@ class OpSingleTrigNode(Node):
                 return np.sin(a * self.degrees_to_radians)
             else:
                 return np.sin(a)
-        elif t == torch.Tensor:
+        elif self.app.torch_available and t == torch.Tensor:
             if self.use_degrees:
                 return torch.sin(torch.rad2deg(a))
             else:
@@ -532,7 +532,7 @@ class OpSingleTrigNode(Node):
                 return np.cos(a * self.degrees_to_radians)
             else:
                 return np.cos(a)
-        elif t == torch.Tensor:
+        elif self.app.torch_available and t == torch.Tensor:
             if self.use_degrees:
                 return torch.cos(torch.rad2deg(a))
             else:
@@ -550,7 +550,7 @@ class OpSingleTrigNode(Node):
                 return np.tan(a * self.degrees_to_radians)
             else:
                 return np.tan(a)
-        elif t == torch.Tensor:
+        elif self.app.torch_available and t == torch.Tensor:
             if self.use_degrees:
                 return torch.tan(torch.rad2deg(a))
             else:
@@ -569,7 +569,7 @@ class OpSingleTrigNode(Node):
                 return np.arcsin(a) / self.degrees_to_radians
             else:
                 return np.arcsin(a)
-        elif t == torch.Tensor:
+        elif self.app.torch_available and t == torch.Tensor:
             a = torch.clamp(a, -1.0, 1.0)
             if self.use_degrees:
                 return torch.deg2rad(torch.arcsin(a))
@@ -593,7 +593,7 @@ class OpSingleTrigNode(Node):
                 return np.arccos(a) / self.degrees_to_radians
             else:
                 return np.arccos(a)
-        elif t == torch.Tensor:
+        elif self.app.torch_available and t == torch.Tensor:
             a = torch.clamp(a, -1.0, 1.0)
             if self.use_degrees:
                 return torch.deg2rad(torch.arccos(a))
@@ -616,7 +616,7 @@ class OpSingleTrigNode(Node):
                 return np.arctan(a) / self.degrees_to_radians
             else:
                 return np.arctan(a)
-        elif t == torch.Tensor:
+        elif self.app.torch_available and t == torch.Tensor:
             if self.use_degrees:
                 return torch.deg2rad(torch.arctan(a))
             else:

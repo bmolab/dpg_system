@@ -1,5 +1,8 @@
 import dearpygui.dearpygui as dpg
 import time
+
+import torch
+
 from dpg_system.node import Node
 import threading
 from dpg_system.conversion_utils import *
@@ -1091,6 +1094,9 @@ class PrintNode(Node):
         elif t == np.ndarray:
             np.set_printoptions(precision=self.precision)
             print(data)
+        elif self.app.torch_available and t == torch.Tensor:
+            torch.set_printoptions(precision=self.precision)
+            print(data)
 
 
 class LoadActionNode(Node):
@@ -1142,6 +1148,7 @@ class PlotNode(Node):
         self.xy_plot_style = 1
 
         self.sample_count = 200
+        self.pending_sample_count = self.sample_count
         self.min_y = -1.0
         self.max_y = 1.0
         default_color_map = 'viridis'
@@ -1586,10 +1593,17 @@ class PlotNode(Node):
             self.execute()
 
     def execute(self):
+        if self.pending_sample_count != self.sample_count:
+            self.sample_count_option.set(self.pending_sample_count)
+            self.change_sample_count()
         self.lock.acquire(blocking=True)
         if self.input.fresh_input:   # standard plot
             data = self.input.get_received_data()
+
             t = type(data)
+            if self.app.torch_available and t == torch.Tensor:
+                data = any_to_array(data)
+                t = np.ndarray
             if t == str:
                 if data == 'dump':
                     self.output.send(self.y_data.get_buffer()[0])
@@ -1606,7 +1620,10 @@ class PlotNode(Node):
                     self.y_data.update(ii)
                 elif t == np.ndarray:
                     if len(data.shape) == 1:
-                        self.y_data.update(data)
+                        if data.shape[0] > self.sample_count:
+                            self.pending_sample_count = data.shape[0]
+                        else:
+                            self.y_data.update(data)
             elif self.style == self.heat_scroll_style:  # heat_scroll ... input might be list or array
                 if t not in [list, np.ndarray]:
                     ii = any_to_array(data)
@@ -1664,6 +1681,7 @@ class PlotNode(Node):
                         self.y_data.update(ii)
                     else:
                         self.y_data.update(data)
+
 
         if self.style == self.xy_plot_style:
             if self.input_x.fresh_input:

@@ -271,6 +271,7 @@ def save_patches_callback(sender, app_data):
 
 class App:
     def __init__(self):
+        self.torch_available = False
         self.viewport = None
         self.main_window_id = -1
         self.loading = False

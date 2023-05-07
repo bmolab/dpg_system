@@ -120,7 +120,7 @@ class DifferentiateNode(Node):
                 t = np.ndarray
             if t == np.ndarray:
                 output = self.array_diff(received, absolute)
-            elif t == torch.Tensor:
+            elif self.app.torch_available and t == torch.Tensor:
                 output = self.tensor_diff(received, absolute)
 
             self.output.send(output)
@@ -395,7 +395,7 @@ class NoiseGateNode(Node):
                 if not self.squeeze:
                     output_data = output_data + self.threshold * mask
 
-        elif t == torch.Tensor:
+        elif self.app.torch_available and t == torch.Tensor:
             if self.bipolar:
                 sign_ = torch.sign(output_data)
                 output_data = torch.clamp(torch.abs(output_data) - self.threshold, 0, None)
@@ -495,7 +495,7 @@ class ThresholdTriggerNode(Node):
                     else:
                         self.release_output.send('bang')
 
-        elif t == torch.Tensor:
+        elif self.app.torch_available and t == torch.Tensor:
             prev_state = self.state
             on = data > self.threshold
             not_off = data >= self.release_threshold
@@ -601,7 +601,7 @@ class RangerNode(Node):
                 out = (in_value - self.inMin) / range
                 out = (self.outMax - self.outMin) * out + self.outMin
                 self.output.send(out)
-            if t == torch.Tensor:
+            if self.app.torch_available and t == torch.Tensor:
                 if self.calibrating:
                     min = inData.min()
                     max = inData.max()
@@ -711,7 +711,7 @@ class FilterNode(Node):
         input_value = self.input.get_data()
         if type(self.accum) != type(input_value):
             self.accum = any_to_match(self.accum, input_value)
-        elif type(input_value) == torch.Tensor:
+        elif self.app.torch_available and type(input_value) == torch.Tensor:
             if input_value.device != self.accum.device:
                 self.accum = any_to_match(self.accum, input_value)
 

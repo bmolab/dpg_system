@@ -129,7 +129,7 @@ def any_to_bool(data):
     return False
 
 
-def any_to_tensor(data, device):
+def any_to_tensor(data, device='cpu'):
     if torch_available:
         t = type(data)
         tensor_ = None
