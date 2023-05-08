@@ -212,6 +212,7 @@ class GLContextNode(Node):
             except:
                 self.pending_commands = []
             self.pending_commands = []
+            glTranslatef(0.0, 0.0, -1.0)
             self.context.prepare_draw()
             self.output.send('draw')
             self.context.end_draw()

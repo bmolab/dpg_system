@@ -129,10 +129,9 @@ def any_to_bool(data):
     return False
 
 
-def any_to_tensor(data, device='cpu'):
+def any_to_tensor(data, device='cpu', dtype=torch.float32):
     if torch_available:
         t = type(data)
-        tensor_ = None
         if t == torch.Tensor:
             tensor_ = data
         elif t == np.ndarray:
@@ -151,10 +150,17 @@ def any_to_tensor(data, device='cpu'):
             tensor_ = torch.tensor(data)
         else:
             tensor_ = torch.tensor([0])
+
         if tensor_.device == device:
+            if dtype != tensor_.dtype:
+                tensor_ = tensor_.to(dtype=dtype)
             return tensor_
         else:
-            return tensor_.to(device=device)
+            if dtype != tensor_.dtype:
+                tensor_ = tensor_.to(dtype=dtype, device=device)
+            else:
+                tensor_.to(device=device)
+            return tensor_
     return None
 
 def any_to_array(data):

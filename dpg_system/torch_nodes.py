@@ -9,64 +9,69 @@ import torchvision
 
 def register_torch_nodes():
     Node.app.torch_available = True
-    Node.app.register_node('torch.cdist', TorchCDistanceNode.factory)
-    Node.app.register_node('torch.dist', TorchDistanceNode.factory)
-    Node.app.register_node('torch.length', TorchDistanceNode.factory)
-    Node.app.register_node('cosine_similarity', CosineSimilarityNode.factory)
-    Node.app.register_node('torch.rand', TorchGeneratorNode.factory)
-    Node.app.register_node('torch.ones', TorchGeneratorNode.factory)
-    Node.app.register_node('torch.zeros', TorchGeneratorNode.factory)
     Node.app.register_node('tensor', TensorNode.factory)
-    Node.app.register_node('torch.permute', TorchPermuteNode.factory)
-    Node.app.register_node('torch.flip', TorchFlipNode.factory)
+    Node.app.register_node('t.to', TensorNode.factory)
     Node.app.register_node('torch[]', TorchSubtensorNode.factory)
-    Node.app.register_node('torch.select', TorchSelectNode.factory)
-    Node.app.register_node('torch.squeeze', TorchSqueezeNode.factory)
-    Node.app.register_node('torch.unsqueeze', TorchUnsqueezeNode.factory)
-    Node.app.register_node('torch.nn.Threshold', TorchNNThresholdNode.factory)
-    Node.app.register_node('torch.nn.relu', TorchActivationNode.factory)
-    Node.app.register_node('torch.nn.hardswish', TorchActivationNode.factory)
-    Node.app.register_node('torch.nn.relu6', TorchActivationNode.factory)
-    Node.app.register_node('torch.nn.selu', TorchActivationNode.factory)
-    Node.app.register_node('torch.nn.glu', TorchActivationNode.factory)
-    Node.app.register_node('torch.nn.gelu', TorchActivationNode.factory)
-    Node.app.register_node('torch.nn.logsigmoid', TorchActivationNode.factory)
-    Node.app.register_node('torch.nn.tanhshrink', TorchActivationNode.factory)
-    Node.app.register_node('torch.nn.softsign', TorchActivationNode.factory)
-    Node.app.register_node('torch.nn.tanh', TorchActivationNode.factory)
-    Node.app.register_node('torch.nn.sigmoid', TorchActivationNode.factory)
-    Node.app.register_node('torch.nn.hardsigmoid', TorchActivationNode.factory)
-    Node.app.register_node('torch.nn.silu', TorchActivationNode.factory)
-    Node.app.register_node('torch.nn.mish', TorchActivationNode.factory)
-    Node.app.register_node('torch.nn.elu', TorchActivationOneParamNode.factory)
-    Node.app.register_node('torch.nn.celu', TorchActivationOneParamNode.factory)
-    Node.app.register_node('torch.nn.leaky_relu', TorchActivationOneParamNode.factory)
-    # Node.app.register_node('torch.nn.prelu', TorchActivationOneParamNode.factory)
-    Node.app.register_node('torch.nn.hardshrink', TorchActivationOneParamNode.factory)
-    Node.app.register_node('torch.nn.softshrink', TorchActivationOneParamNode.factory)
-    Node.app.register_node('torch.nn.hardtanh', TorchActivationTwoParamNode.factory)
-    Node.app.register_node('torch.nn.rrelu', TorchActivationTwoParamNode.factory)
-    Node.app.register_node('torch.nn.softplus', TorchActivationTwoParamNode.factory)
 
-    Node.app.register_node('torch.nn.softmax', TorchSoftmaxNode.factory)
-    Node.app.register_node('torch.nn.softmin', TorchSoftmaxNode.factory)
-    Node.app.register_node('torch.nn.log_softmax', TorchSoftmaxNode.factory)
+    Node.app.register_node('t.cdist', TorchCDistanceNode.factory)
+    Node.app.register_node('t.dist', TorchDistanceNode.factory)
+    Node.app.register_node('t.length', TorchDistanceNode.factory)
+    Node.app.register_node('t.cosine_similarity', CosineSimilarityNode.factory)
 
-    Node.app.register_node('torch.nn.gumbel_softmax', TorchActivationThreeParamNode.factory)
-    Node.app.register_node('torch.linspace', TorchLinSpaceNode.factory)
+    Node.app.register_node('t.rand', TorchGeneratorNode.factory)
+    Node.app.register_node('t.ones', TorchGeneratorNode.factory)
+    Node.app.register_node('t.zeros', TorchGeneratorNode.factory)
+    Node.app.register_node('t.linspace', TorchLinSpaceNode.factory)
 
-    Node.app.register_node('torch.argmax', TorchArgMaxNode.factory)
+    Node.app.register_node('t.rand_like', TorchGeneratorLikeNode.factory)
+    Node.app.register_node('t.ones_like', TorchGeneratorLikeNode.factory)
+    Node.app.register_node('t.zeros_like', TorchGeneratorLikeNode.factory)
 
-    Node.app.register_node('torchvision.Grayscale', TorchvisionGrayscaleNode.factory)
-    Node.app.register_node('torchvision.gaussian_blur', TorchvisionGaussianBlurNode.factory)
-    Node.app.register_node('torchvision.adjust_hue', TorchvisionAdjustOneParamNode.factory)
-    Node.app.register_node('torchvision.adjust_saturation', TorchvisionAdjustOneParamNode.factory)
-    Node.app.register_node('torchvision.adjust_contrast', TorchvisionAdjustOneParamNode.factory)
-    Node.app.register_node('torchvision.adjust_sharpness', TorchvisionAdjustOneParamNode.factory)
-    Node.app.register_node('torchvision.adjust_brightness', TorchvisionAdjustOneParamNode.factory)
+    Node.app.register_node('t.permute', TorchPermuteNode.factory)
+    Node.app.register_node('t.transpose', TorchTransposeNode.factory)
+    Node.app.register_node('t.flip', TorchFlipNode.factory)
+    Node.app.register_node('t.select', TorchSelectNode.factory)
+    Node.app.register_node('t.squeeze', TorchSqueezeNode.factory)
+    Node.app.register_node('t.unsqueeze', TorchUnsqueezeNode.factory)
 
+    Node.app.register_node('t.nn.Threshold', TorchNNThresholdNode.factory)
+    Node.app.register_node('t.nn.relu', TorchActivationNode.factory)
+    Node.app.register_node('t.nn.hardswish', TorchActivationNode.factory)
+    Node.app.register_node('t.nn.relu6', TorchActivationNode.factory)
+    Node.app.register_node('t.nn.selu', TorchActivationNode.factory)
+    Node.app.register_node('t.nn.glu', TorchActivationNode.factory)
+    Node.app.register_node('t.nn.gelu', TorchActivationNode.factory)
+    Node.app.register_node('t.nn.logsigmoid', TorchActivationNode.factory)
+    Node.app.register_node('t.nn.tanhshrink', TorchActivationNode.factory)
+    Node.app.register_node('t.nn.softsign', TorchActivationNode.factory)
+    Node.app.register_node('t.nn.tanh', TorchActivationNode.factory)
+    Node.app.register_node('t.nn.sigmoid', TorchActivationNode.factory)
+    Node.app.register_node('t.nn.hardsigmoid', TorchActivationNode.factory)
+    Node.app.register_node('t.nn.silu', TorchActivationNode.factory)
+    Node.app.register_node('t.nn.mish', TorchActivationNode.factory)
+    Node.app.register_node('t.nn.elu', TorchActivationOneParamNode.factory)
+    Node.app.register_node('t.nn.celu', TorchActivationOneParamNode.factory)
+    Node.app.register_node('t.nn.leaky_relu', TorchActivationOneParamNode.factory)
+    # Node.app.register_node('t.nn.prelu', TorchActivationOneParamNode.factory)
+    Node.app.register_node('t.nn.hardshrink', TorchActivationOneParamNode.factory)
+    Node.app.register_node('t.nn.softshrink', TorchActivationOneParamNode.factory)
+    Node.app.register_node('t.nn.hardtanh', TorchActivationTwoParamNode.factory)
+    Node.app.register_node('t.nn.rrelu', TorchActivationTwoParamNode.factory)
+    Node.app.register_node('t.nn.softplus', TorchActivationTwoParamNode.factory)
+    Node.app.register_node('t.nn.softmax', TorchSoftmaxNode.factory)
+    Node.app.register_node('t.nn.softmin', TorchSoftmaxNode.factory)
+    Node.app.register_node('t.nn.log_softmax', TorchSoftmaxNode.factory)
+    Node.app.register_node('t.nn.gumbel_softmax', TorchActivationThreeParamNode.factory)
 
+    Node.app.register_node('t.argmax', TorchArgMaxNode.factory)
 
+    Node.app.register_node('tv.Grayscale', TorchvisionGrayscaleNode.factory)
+    Node.app.register_node('tv.gaussian_blur', TorchvisionGaussianBlurNode.factory)
+    Node.app.register_node('tv.adjust_hue', TorchvisionAdjustOneParamNode.factory)
+    Node.app.register_node('tv.adjust_saturation', TorchvisionAdjustOneParamNode.factory)
+    Node.app.register_node('tv.adjust_contrast', TorchvisionAdjustOneParamNode.factory)
+    Node.app.register_node('tv.adjust_sharpness', TorchvisionAdjustOneParamNode.factory)
+    Node.app.register_node('tv.adjust_brightness', TorchvisionAdjustOneParamNode.factory)
 
 class TorchNode(Node):
     def __init__(self, label: str, data, args):
@@ -105,15 +110,16 @@ class TorchNode(Node):
     def input_to_torchvision_tensor(self):
         if self.input is not None:
             input_tensor = self.input.get_received_data()
-        if input_tensor is None:
+            if input_tensor is None:
+                return input_tensor
+            if type(input_tensor) != torch.Tensor:
+                input_tensor = any_to_tensor(input_tensor)
+            if len(input_tensor.shape) > 2:
+                if input_tensor.shape[-3] > 5:
+                    if input_tensor.shape[-1] <= 5:
+                        input_tensor = input_tensor.transpose(-1, -3).transpose(-1, -2)
             return input_tensor
-        if type(input_tensor) != torch.Tensor:
-            input_tensor = any_to_tensor(input_tensor)
-        if len(input_tensor.shape) > 2:
-            if input_tensor.shape[-3] > 5:
-                if input_tensor.shape[-1] <= 5:
-                    input_tensor = input_tensor.transpose(-1, -3).transpose(-1, -2)
-        return input_tensor
+        return None
 
 
 class TensorNode(TorchNode):
@@ -124,48 +130,46 @@ class TensorNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-
-        shape_text = ''
-        self.shape = None
-        if args is not None and len(args) > 0:
-            shape_text = ' '.join(args)
-            shape_split = re.findall(r'\d+', shape_text)
-            shape_list, _, _ = list_to_hybrid_list(shape_split)
-            self.shape = shape_list
-
         self.input = self.add_input("in", triggers_execution=True)
         self.device = torch.device('cpu')
         self.device_property = self.add_property('device', widget_type='combo', default_value='cpu', callback=self.device_changed)
         self.device_property.widget.combo_items = ['cpu']
         if torch.backends.mps.is_available():
             self.device_property.widget.combo_items.append('mps')
+            self.device = torch.device('mps')
         if torch.cuda.is_available():
             self.device_property.widget.combo_items.append('cuda')
+            self.device = torch.device('cuda')
+        self.dtype_dict = {}
+        self.dtype_dict['float32'] = torch.float32
+        self.dtype_dict['float'] = torch.float
+        self.dtype_dict['float16'] = torch.float16
+        self.dtype_dict['bfloat16'] = torch.bfloat16
+        self.dtype_dict['double'] = torch.double
+        self.dtype_dict['int64'] = torch.int64
+        self.dtype_dict['uint8'] = torch.uint8
+        self.dtype_dict['bool'] = torch.bool
+        self.dtype_option = self.add_property('dtype', widget_type='combo', default_value='float32', callback=self.dtype_changed)
+        self.dtype_option.widget.combo_items = list(self.dtype_dict.keys())
+        self.dtype = torch.float32
         self.output = self.add_output('tensor out')
-
-        self.shape_property = self.add_option('shape', widget_type='text_input', default_value=shape_text, callback=self.shape_changed)
-
-    def shape_changed(self):
-        shape_text = self.shape_property.get_widget_value()
-        shape_split = re.findall(r'\d+', shape_text)
-        shape_list, _, _ = list_to_hybrid_list(shape_split)
-        self.shape = shape_list
 
     def device_changed(self):
         device_name = self.device_property.get_widget_value()
         self.device = torch.device(device_name)
 
+    def dtype_changed(self):
+        dtype = self.dtype_option.get_widget_value()
+        if dtype in self.dtype_dict:
+            self.dtype = self.dtype_dict[dtype]
+
     def execute(self):
         in_data = self.input_to_tensor()
         if in_data is not None:
-            out_array = any_to_tensor(in_data, self.device)
-            if self.shape is not None:
-                out_array = torch.reshape(out_array, tuple(self.shape))
+            out_array = any_to_tensor(in_data, self.device, self.dtype)
             self.output.send(out_array)
 
 class TorchGeneratorNode(TorchNode):
-    # operations = {'np.rand': np.random.Generator.random, 'np.ones': np.ones, 'np.zeros': np.zeros}
-
     @staticmethod
     def factory(name, data, args=None):
         node = TorchGeneratorNode(name, data, args)
@@ -272,6 +276,106 @@ class TorchGeneratorNode(TorchNode):
             out_array = torch.zeros(size=size, device=self.device, dtype=self.dtype)
         self.output.send(out_array)
 
+class TorchGeneratorLikeNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchGeneratorLikeNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.device = torch.device('cpu')
+        self.device_property = self.add_property('device', widget_type='combo', default_value='cpu', callback=self.device_changed)
+        self.device_property.widget.combo_items = ['cpu']
+        if torch.backends.mps.is_available():
+            self.device_property.widget.combo_items.append('mps')
+            self.device = 'mps'
+        if torch.cuda.is_available():
+            self.device_property.widget.combo_items.append('cuda')
+            self.device = 'cuda'
+
+        if self.label == 't.rand_like':
+            self.min = 0
+            self.max = 1
+            self.min_input = self.add_input('min', widget_type='drag_float', default_value=self.min,
+                                            callback=self.range_changed)
+            self.max_input = self.add_input('max', widget_type='drag_float', default_value=self.max,
+                                            callback=self.range_changed)
+
+        self.dtype_dict = {}
+        self.dtype_dict['float32'] = torch.float32
+        self.dtype_dict['float'] = torch.float
+        self.dtype_dict['float16'] = torch.float16
+        self.dtype_dict['bfloat16'] = torch.bfloat16
+        self.dtype_dict['double'] = torch.double
+        self.dtype_dict['int64'] = torch.int64
+        self.dtype_dict['uint8'] = torch.uint8
+        self.dtype_dict['bool'] = torch.bool
+        self.dtype_option = self.add_option('dtype', widget_type='combo', default_value='float32', callback=self.dtype_changed)
+        self.dtype_option.widget.combo_items = list(self.dtype_dict.keys())
+        self.dtype = torch.float32
+
+        out_label = 'random tensor'
+        if self.label == 't.ones_like':
+            out_label = 'tensor of ones'
+        elif self.label == 't.zeros_like':
+            out_label = 'tensor of zeros'
+        self.output = self.add_output(out_label)
+
+    def device_changed(self):
+        device_name = self.device_property.get_widget_value()
+        self.device = torch.device(device_name)
+
+    def range_changed(self, val=None):
+        self.min = self.min_input.get_widget_value()
+        self.max = self.max_input.get_widget_value()
+
+    def dtype_changed(self):
+        dtype = self.dtype_option.get_widget_value()
+        if dtype in self.dtype_dict:
+            self.dtype = self.dtype_dict[dtype]
+            if self.label == 't.rand':
+                if self.dtype == torch.uint8:
+                    if self.min < 0:
+                        self.min_input.set(0.0)
+                    if self.max == 1.0 or self.max < 255:
+                        self.max_input.set(255.0)
+                elif self.dtype == torch.int64:
+                    if self.min < -32768:
+                        self.min_input.set(-32768)
+                    if self.max == 1.0:
+                        self.max_input.set(32767)
+                elif self.dtype in [torch.float, torch.double, torch.float32, torch.float16, torch.bfloat16]:
+                    if self.min == -32768:
+                        self.min_input.set(0.0)
+                    if self.max == 255:
+                        self.max_input.set(1.0)
+                    elif self.max == 32767:
+                        self.max_input.set(1.0)
+                self.range_changed()
+
+    def execute(self):
+        if self.input.fresh_input:
+            data = self.input.get_received_data()
+            if type(data) == torch.Tensor:
+                shape = data.shape
+                size = tuple(shape)
+                if self.label == 't.rand_like':
+                    if self.dtype in [torch.float, torch.float32, torch.double, torch.float16, torch.bfloat16]:
+                        range_ = self.max - self.min
+                        out_array = torch.rand(size=size, device=self.device, dtype=self.dtype) * range_ + self.min
+                    elif self.dtype in [torch.int64, torch.uint8]:
+                        out_array = torch.randint(low=int(self.min), high=int(self.max), size=size, device=self.device, dtype=self.dtype)
+                    elif self.dtype == torch.bool:
+                        out_array = torch.randint(low=0, high=1, size=size, device=self.device, dtype=self.dtype)
+                elif self.label == 't.ones_like':
+                    out_array = torch.ones(size=size, device=self.device, dtype=self.dtype)
+                elif self.label == 't.zeros_like':
+                    out_array = torch.zeros(size=size, device=self.device, dtype=self.dtype)
+                self.output.send(out_array)
+
 
 class TorchLinSpaceNode(TorchNode):
     @staticmethod
@@ -368,7 +472,7 @@ class TorchDistanceNode(TorchNode):
         out_label = 'length'
         self.input2 = None
         self.input = self.add_input("tensor in", triggers_execution=True)
-        if self.label == 'torch.dist':
+        if self.label == 't.dist':
             self.input2 = self.add_input("tensor 2 in")
             out_label = 'distance'
 
@@ -607,35 +711,35 @@ class TorchActivationNode(TorchNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.op = None
-        if self.label == 'torch.nn.relu':
+        if self.label == 't.nn.relu':
             self.op = torch.nn.functional.relu
-        elif self.label == 'torch.nn.hardswish':
+        elif self.label == 't.nn.hardswish':
             self.op = torch.nn.functional.hardswish
-        elif self.label == 'torch.nn.hardtanh':
+        elif self.label == 't.nn.hardtanh':
             self.op = torch.nn.functional.hardtanh
-        elif self.label == 'torch.nn.relu6':
+        elif self.label == 't.nn.relu6':
             self.op = torch.nn.functional.relu6
-        elif self.label == 'torch.nn.selu':
+        elif self.label == 't.nn.selu':
             self.op = torch.nn.functional.selu
-        elif self.label == 'torch.nn.glu':
+        elif self.label == 't.nn.glu':
             self.op = torch.nn.functional.glu
-        elif self.label == 'torch.nn.gelu':
+        elif self.label == 't.nn.gelu':
             self.op = torch.nn.functional.gelu
-        elif self.label == 'torch.nn.logsigmoid':
+        elif self.label == 't.nn.logsigmoid':
             self.op = torch.nn.functional.logsigmoid
-        elif self.label == 'torch.nn.tanhshrink':
+        elif self.label == 't.nn.tanhshrink':
             self.op = torch.nn.functional.tanhshrink
-        elif self.label == 'torch.nn.softsign':
+        elif self.label == 't.nn.softsign':
             self.op = torch.nn.functional.softsign
-        elif self.label == 'torch.nn.tanh':
+        elif self.label == 't.nn.tanh':
             self.op = torch.nn.functional.tanh
-        elif self.label == 'torch.nn.sigmoid':
+        elif self.label == 't.nn.sigmoid':
             self.op = torch.nn.functional.sigmoid
-        elif self.label == 'torch.nn.hardsigmoid':
+        elif self.label == 't.nn.hardsigmoid':
             self.op = torch.nn.functional.hardsigmoid
-        elif self.label == 'torch.nn.silu':
+        elif self.label == 't.nn.silu':
             self.op = torch.nn.functional.silu
-        elif self.label == 'torch.nn.mish':
+        elif self.label == 't.nn.mish':
             self.op = torch.nn.functional.mish
 
         self.input = self.add_input("tensor in", triggers_execution=True)
@@ -660,15 +764,15 @@ class TorchActivationTwoParamNode(TorchNode):
         self.parameter_1 = -1
         self.parameter_2 = 1
 
-        if self.label == 'torch.nn.hardtanh':
+        if self.label == 't.nn.hardtanh':
             self.op = torch.nn.functional.hardtanh
-        if self.label == 'torch.nn.rrelu':
+        if self.label == 't.nn.rrelu':
             self.op = torch.nn.functional.rrelu
             param_1_name = 'lower'
             param_2_name = 'upper'
             self.parameter_1 = 0.125
             self.parameter_2 = 0.3333333333333
-        if self.label == 'torch.nn.softplus':
+        if self.label == 't.nn.softplus':
             self.op = torch.nn.functional.softplus
             param_1_name = 'beta'
             param_2_name = 'threshold'
@@ -706,7 +810,7 @@ class TorchActivationThreeParamNode(TorchNode):
         self.parameter_2 = False
         self.parameter_3 = -1
 
-        if self.label == 'torch.nn.gumbel_softmax':
+        if self.label == 't.nn.gumbel_softmax':
             self.op = torch.nn.functional.gumbel_softmax
 
         self.input = self.add_input("tensor in", triggers_execution=True)
@@ -736,11 +840,11 @@ class TorchSoftmaxNode(TorchNode):
         self.op = None
         self.dim = 0
 
-        if self.label == 'torch.nn.softmax':
+        if self.label == 't.nn.softmax':
             self.op = torch.nn.functional.softmax
-        if self.label == 'torch.nn.softmin':
+        if self.label == 't.nn.softmin':
             self.op = torch.nn.functional.softmin
-        if self.label == 'torch.nn.log_softmax':
+        if self.label == 't.nn.log_softmax':
             self.op = torch.nn.functional.log_softmax
 
         if len(args) > 0:
@@ -770,27 +874,27 @@ class TorchActivationOneParamNode(TorchNode):
         self.op = None
         param_name = ''
         self.parameter = 1
-        if self.label == 'torch.nn.elu':
+        if self.label == 't.nn.elu':
             self.op = torch.nn.functional.elu
             param_name = 'alpha'
             self.parameter = 1.0
-        elif self.label == 'torch.nn.celu':
+        elif self.label == 't.nn.celu':
             self.op = torch.nn.functional.celu
             param_name = 'alpha'
             self.parameter = 1.0
-        elif self.label == 'torch.nn.leaky_relu':
+        elif self.label == 't.nn.leaky_relu':
             self.op = torch.nn.functional.leaky_relu
             param_name = 'negative slope'
             self.parameter = 0.01
-        # elif self.label == 'torch.nn.prelu':
+        # elif self.label == 't.nn.prelu':
         #     self.op = torch.nn.functional.prelu
         #     param_name = 'weight'
         #     self.parameter = 1.0
-        elif self.label == 'torch.nn.hardshrink':
+        elif self.label == 't.nn.hardshrink':
             self.op = torch.nn.functional.hardshrink
             param_name = 'lambda'
             self.parameter = 0.5
-        elif self.label == 'torch.nn.softshrink':
+        elif self.label == 't.nn.softshrink':
             self.op = torch.nn.functional.softshrink
             param_name = 'lambda'
             self.parameter = 0.5
@@ -840,9 +944,6 @@ class TorchNNThresholdNode(TorchNode):
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-        # input_tensor = self.input.get_received_data()
-        # if type(input_tensor) != torch.Tensor:
-        #     input_tensor = any_to_tensor(self.input.get_received_data())
             self.output.send(self.op(input_tensor))
 
 
@@ -860,15 +961,9 @@ class TorchvisionGrayscaleNode(TorchNode):
 
     def execute(self):
         input_tensor = self.input_to_torchvision_tensor()
-        # input_tensor = self.input.get_received_data()
-        # if type(input_tensor) != torch.Tensor:
-        #     input_tensor = any_to_tensor(self.input.get_received_data())
-        # if len(input_tensor.shape) > 2:
-        #     if input_tensor.shape[-3] > 5:
-        #         if input_tensor.shape[-1] <= 5:
-        #             input_tensor = input_tensor.transpose(-1, -3).transpose(-1, -2)
-        output_tensor = self.op(input_tensor)
-        self.output.send(output_tensor)
+        if input_tensor is not None:
+            output_tensor = self.op(input_tensor)
+            self.output.send(output_tensor)
 
 class TorchvisionGaussianBlurNode(TorchNode):
     @staticmethod
@@ -896,15 +991,9 @@ class TorchvisionGaussianBlurNode(TorchNode):
         self.op = torchvision.transforms.functional.gaussian_blur
     def execute(self):
         input_tensor = self.input_to_torchvision_tensor()
-        # input_tensor = self.input.get_received_data()
-        # if type(input_tensor) != torch.Tensor:
-        #     input_tensor = any_to_tensor(self.input.get_received_data())
-        # if len(input_tensor.shape) > 2:
-        #     if input_tensor.shape[-3] > 5:
-        #         if input_tensor.shape[-1] <= 5:
-        #             input_tensor = input_tensor.transpose(-1, -3).transpose(-1, -2)
-        output_tensor = self.op(input_tensor, self.kernel_size, self.sigma)
-        self.output.send(output_tensor)
+        if input_tensor is not None:
+            output_tensor = self.op(input_tensor, self.kernel_size, self.sigma)
+            self.output.send(output_tensor)
 
 
 class TorchvisionAdjustOneParamNode(TorchNode):
@@ -962,15 +1051,9 @@ class TorchvisionAdjustOneParamNode(TorchNode):
 
     def execute(self):
         input_tensor = self.input_to_torchvision_tensor()
-        #
-        # if type(input_tensor) != torch.Tensor:
-        #     input_tensor = any_to_tensor(self.input.get_received_data())
-        # if len(input_tensor.shape) > 2:
-        #     if input_tensor.shape[-3] > 5:
-        #         if input_tensor.shape[-1] <= 5:
-        #             input_tensor = input_tensor.transpose(-1, -3).transpose(-1, -2)
-        output_tensor = self.op(input_tensor, self.param)
-        self.output.send(output_tensor)
+        if input_tensor is not None:
+            output_tensor = self.op(input_tensor, self.param)
+            self.output.send(output_tensor)
 
 
 class TorchSubtensorNode(TorchNode):
@@ -1059,12 +1142,15 @@ class TorchPermuteNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.permute = [1, 0]
+        self.permute = []
+        if len(args) > 0:
+            for i in range(len(args)):
+                self.permute.append(any_to_int(args[i]))
         self.input = self.add_input('tensor in', triggers_execution=True)
-        self.permute_property = self.add_property('permute', widget_type='text_input', default_value='1, 0', callback=self.permute_changed)
+        self.permute_property = self.add_input('permute', widget_type='text_input', default_value=self.permute, callback=self.permute_changed)
         self.output = self.add_output('permuted tensor out')
 
-    def permute_changed(self):
+    def permute_changed(self, val=None):
         permute_text = self.permute_property.get_widget_value()
         permute_split = re.findall(r'\d+', permute_text)
         permute_list, _, _ = list_to_hybrid_list(permute_split)
@@ -1073,11 +1159,47 @@ class TorchPermuteNode(TorchNode):
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            if len(input_tensor.shape) < len(self.permute):
+            if len(input_tensor.shape) != len(self.permute):
                 self.output.send(input_tensor)
+                if self.app.verbose:
+                    print('WARNING: torch.permute - permute list and channel count mismatch')
             else:
                 permuted = torch.permute(input_tensor, self.permute)
                 self.output.send(permuted)
+
+class TorchTransposeNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchTransposeNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.transpose1 = 0
+        self.transpose2 = 1
+        if len(args) > 0:
+            self.transpose1 = any_to_int(args[0])
+        if len(args) > 1:
+            self.transpose2 = any_to_int(args[1])
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.transpose1_property = self.add_input('dim 1', widget_type='input_int', default_value=self.transpose1, callback=self.transpose_changed)
+        self.transpose2_property = self.add_input('dim 2', widget_type='input_int', default_value=self.transpose2, callback=self.transpose_changed)
+        self.output = self.add_output('permuted tensor out')
+
+    def transpose_changed(self, val=None):
+        self.transpose1 = self.transpose1_property.get_widget_value()
+        self.transpose2 = self.transpose2_property.get_widget_value()
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            if len(input_tensor.shape) <= 1:
+                self.output.send(input_tensor)
+                if self.app.verbose:
+                    print('WARNING: torch.transpose - too few dims to transpose')
+            else:
+                transposed = torch.transpose(input_tensor, self.transpose1, self.transpose2)
+                self.output.send(transposed)
 
 class CosineSimilarityNode(TorchNode):
     cos = None

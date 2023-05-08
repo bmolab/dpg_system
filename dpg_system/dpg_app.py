@@ -504,6 +504,10 @@ class App:
         if self.verbose_menu_item != -1:
             self.verbose = dpg.get_value(self.verbose_menu_item)
 
+    def show_log(self):
+        if self.show_log_menu_item != -1:
+            show = dpg.get_value(self.show_log_menu_item)
+
     def show_minimap(self):
         if self.minimap_menu_item != -1:
             show = dpg.get_value(self.minimap_menu_item)
