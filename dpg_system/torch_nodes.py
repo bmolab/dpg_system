@@ -5,7 +5,7 @@ from dpg_system.node import Node
 from dpg_system.conversion_utils import *
 
 import torch
-
+import torchvision
 
 def register_torch_nodes():
     Node.app.torch_available = True
@@ -57,9 +57,66 @@ def register_torch_nodes():
 
     Node.app.register_node('torch.argmax', TorchArgMaxNode.factory)
 
+    Node.app.register_node('torchvision.Grayscale', TorchvisionGrayscaleNode.factory)
+    Node.app.register_node('torchvision.gaussian_blur', TorchvisionGaussianBlurNode.factory)
+    Node.app.register_node('torchvision.adjust_hue', TorchvisionAdjustOneParamNode.factory)
+    Node.app.register_node('torchvision.adjust_saturation', TorchvisionAdjustOneParamNode.factory)
+    Node.app.register_node('torchvision.adjust_contrast', TorchvisionAdjustOneParamNode.factory)
+    Node.app.register_node('torchvision.adjust_sharpness', TorchvisionAdjustOneParamNode.factory)
+    Node.app.register_node('torchvision.adjust_brightness', TorchvisionAdjustOneParamNode.factory)
 
 
-class TensorNode(Node):
+
+
+class TorchNode(Node):
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = None
+        self.output = None
+
+    def input_to_tensor(self):
+        if self.input is not None:
+            input_tensor = self.input.get_received_data()
+            if input_tensor is None:
+                return input_tensor
+            if type(input_tensor) != torch.Tensor:
+                input_tensor = any_to_tensor(input_tensor)
+            return input_tensor
+        return None
+
+    def data_to_tensor(self, input_tensor):
+        if input_tensor is None:
+            return input_tensor
+        if type(input_tensor) != torch.Tensor:
+            input_tensor = any_to_tensor(input_tensor)
+        return input_tensor
+
+    def data_to_torchvision_tensor(self, input_tensor):
+        if input_tensor is None:
+            return input_tensor
+        if type(input_tensor) != torch.Tensor:
+            input_tensor = any_to_tensor(input_tensor)
+        if len(input_tensor.shape) > 2:
+            if input_tensor.shape[-3] > 5:
+                if input_tensor.shape[-1] <= 5:
+                    input_tensor = input_tensor.transpose(-1, -3).transpose(-1, -2)
+        return input_tensor
+
+    def input_to_torchvision_tensor(self):
+        if self.input is not None:
+            input_tensor = self.input.get_received_data()
+        if input_tensor is None:
+            return input_tensor
+        if type(input_tensor) != torch.Tensor:
+            input_tensor = any_to_tensor(input_tensor)
+        if len(input_tensor.shape) > 2:
+            if input_tensor.shape[-3] > 5:
+                if input_tensor.shape[-1] <= 5:
+                    input_tensor = input_tensor.transpose(-1, -3).transpose(-1, -2)
+        return input_tensor
+
+
+class TensorNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
         node = TensorNode(name, data, args)
@@ -99,13 +156,14 @@ class TensorNode(Node):
         self.device = torch.device(device_name)
 
     def execute(self):
-        in_data = self.input.get_received_data()
-        out_array = any_to_tensor(in_data, self.device)
-        if self.shape is not None:
-            out_array = torch.reshape(out_array, tuple(self.shape))
-        self.output.send(out_array)
+        in_data = self.input_to_tensor()
+        if in_data is not None:
+            out_array = any_to_tensor(in_data, self.device)
+            if self.shape is not None:
+                out_array = torch.reshape(out_array, tuple(self.shape))
+            self.output.send(out_array)
 
-class TorchGeneratorNode(Node):
+class TorchGeneratorNode(TorchNode):
     # operations = {'np.rand': np.random.Generator.random, 'np.ones': np.ones, 'np.zeros': np.zeros}
 
     @staticmethod
@@ -214,7 +272,8 @@ class TorchGeneratorNode(Node):
             out_array = torch.zeros(size=size, device=self.device, dtype=self.dtype)
         self.output.send(out_array)
 
-class TorchLinSpaceNode(Node):
+
+class TorchLinSpaceNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
         node = TorchLinSpaceNode(name, data, args)
@@ -277,7 +336,7 @@ class TorchLinSpaceNode(Node):
         out_array = torch.linspace(self.start, self.stop, self.steps, dtype=self.dtype, device=self.device)
         self.output.send(out_array)
 
-class TorchCDistanceNode(Node):
+class TorchCDistanceNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
         node = TorchCDistanceNode(name, data, args)
@@ -290,14 +349,14 @@ class TorchCDistanceNode(Node):
         self.output = self.add_output("output")
 
     def execute(self):
-        input_ = self.input.get_received_data()
-        input_tensor = torch.tensor(input_)
-        input_tensor = input_tensor.unsqueeze(dim=0)
-        euclidean_length = torch.cdist(input_tensor, torch.zeros_like(input_tensor))
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            input_tensor = input_tensor.unsqueeze(dim=0)
+            euclidean_length = torch.cdist(input_tensor, torch.zeros_like(input_tensor))
 
-        self.output.send(euclidean_length.item())
+            self.output.send(euclidean_length.item())
 
-class TorchDistanceNode(Node):
+class TorchDistanceNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
         node = TorchCDistanceNode(name, data, args)
@@ -313,22 +372,23 @@ class TorchDistanceNode(Node):
             self.input2 = self.add_input("tensor 2 in")
             out_label = 'distance'
 
-        self.output = self.add_output("output")
+        self.output = self.add_output(out_label)
 
     def execute(self):
-        input_tensor = self.input.get_received_data()
-        if self.input2 is not None:
-            input2 = self.input2.get_received_data()
-            if input2 is not None:
-                euclidean_length = torch.dist(input_tensor, torch.zeros_like(input_tensor))
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            if self.input2 is not None:
+                input2 = self.data_to_tensor(self.input2.get_received_data())
+                if input2 is not None:
+                    euclidean_length = torch.dist(input_tensor, torch.zeros_like(input_tensor))
+                else:
+                    euclidean_length = torch.dist(input_tensor, input_tensor)
             else:
-                euclidean_length = torch.dist(input_tensor, input_tensor)
-        else:
-            euclidean_length = torch.dist(input_tensor, torch.zeros_like(input_tensor))
+                euclidean_length = torch.dist(input_tensor, torch.zeros_like(input_tensor))
 
-        self.output.send(euclidean_length.item())
+            self.output.send(euclidean_length.item())
 
-class TorchArgMaxNode(Node):
+class TorchArgMaxNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
         node = TorchArgMaxNode(name, data, args)
@@ -350,18 +410,17 @@ class TorchArgMaxNode(Node):
         self.dim = self.dim_input.get_widget_value()
 
     def execute(self):
-        input_tensor = self.input.get_received_data()
-        if type(input_tensor) != torch.Tensor:
-            input_tensor = any_to_tensor(self.input.get_received_data())
-        if self.dim_specified:
-            output_tensor = torch.argmax(input_tensor, dim=self.dim)
-        else:
-            output_tensor = torch.argmax(input_tensor)
-        print(output_tensor)
-        self.output.send(output_tensor)
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            if self.dim_specified:
+                output_tensor = torch.argmax(input_tensor, dim=self.dim)
+            else:
+                output_tensor = torch.argmax(input_tensor)
+            print(output_tensor)
+            self.output.send(output_tensor)
 
 
-class TorchFlipNode(Node):
+class TorchFlipNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
         node = TorchFlipNode(name, data, args)
@@ -383,12 +442,13 @@ class TorchFlipNode(Node):
         self.flip_list = flip_list
 
     def execute(self):
-        input_tensor = self.input.get_received_data()
-        if len(input_tensor.shape) < len(self.flip_list) or len(self.flip_list) == 0:
-            self.output.send(input_tensor)
-        else:
-            permuted = torch.flip(input_tensor, self.flip_list)
-            self.output.send(permuted)
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            if len(input_tensor.shape) < len(self.flip_list) or len(self.flip_list) == 0:
+                self.output.send(input_tensor)
+            else:
+                permuted = torch.flip(input_tensor, self.flip_list)
+                self.output.send(permuted)
 
 
 # class TorchCropNode(Node):
@@ -412,7 +472,7 @@ class TorchFlipNode(Node):
 #                                                   callback=self.dim_changed)
 #         self.output = self.add_output("output")
 
-class TorchSqueezeNode(Node):
+class TorchSqueezeNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
         node = TorchSqueezeNode(name, data, args)
@@ -434,17 +494,16 @@ class TorchSqueezeNode(Node):
         self.dim = self.dim_input.get_widget_value()
 
     def execute(self):
-        input_tensor = self.input.get_received_data()
-        if type(input_tensor) != torch.Tensor:
-            input_tensor = any_to_tensor(self.input.get_received_data())
-        if -1 - len(input_tensor.shape) < self.dim < len(input_tensor.shape):
-            if self.dim_specified:
-                self.output.send(torch.squeeze(input_tensor, self.dim))
-            else:
-                self.output.send(torch.squeeze(input_tensor))
-            return
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            if -1 - len(input_tensor.shape) < self.dim < len(input_tensor.shape):
+                if self.dim_specified:
+                    self.output.send(torch.squeeze(input_tensor, self.dim))
+                else:
+                    self.output.send(torch.squeeze(input_tensor))
+                return
 
-class TorchUnsqueezeNode(Node):
+class TorchUnsqueezeNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
         node = TorchUnsqueezeNode(name, data, args)
@@ -463,14 +522,13 @@ class TorchUnsqueezeNode(Node):
         self.dim = self.dim_input.get_widget_value()
 
     def execute(self):
-        input_tensor = self.input.get_received_data()
-        if type(input_tensor) != torch.Tensor:
-            input_tensor = any_to_tensor(self.input.get_received_data())
-        if -1 - len(input_tensor.shape) < self.dim < len(input_tensor.shape):
-            self.output.send(torch.unsqueeze(input_tensor, self.dim))
-            return
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            if -1 - len(input_tensor.shape) < self.dim < len(input_tensor.shape):
+                self.output.send(torch.unsqueeze(input_tensor, self.dim))
+                return
 
-class TorchSelectNode(Node):
+class TorchSelectNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
         node = TorchSelectNode(name, data, args)
@@ -497,16 +555,15 @@ class TorchSelectNode(Node):
         self.index = self.index_input.get_widget_value()
 
     def execute(self):
-        input_tensor = self.input.get_received_data()
-        if type(input_tensor) != torch.Tensor:
-            input_tensor = any_to_tensor(self.input.get_received_data())
-        if -1 - len(input_tensor.shape) < self.dim < len(input_tensor.shape):
-            if -1 - input_tensor.shape[self.dim] < self.index < input_tensor.shape[self.dim]:
-                self.output.send(torch.select(input_tensor, self.dim, self.index))
-                return
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            if -1 - len(input_tensor.shape) < self.dim < len(input_tensor.shape):
+                if -1 - input_tensor.shape[self.dim] < self.index < input_tensor.shape[self.dim]:
+                    self.output.send(torch.select(input_tensor, self.dim, self.index))
+                    return
 
 
-class TorchNNThresholdNode(Node):
+class TorchNNThresholdNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
         node = TorchNNThresholdNode(name, data, args)
@@ -536,13 +593,12 @@ class TorchNNThresholdNode(Node):
         self.op = torch.nn.Threshold(self.threshold, self.replace)
 
     def execute(self):
-        input_tensor = self.input.get_received_data()
-        if type(input_tensor) != torch.Tensor:
-            input_tensor = any_to_tensor(self.input.get_received_data())
-        self.output.send(self.op(input_tensor))
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            self.output.send(self.op(input_tensor))
 
 
-class TorchActivationNode(Node):
+class TorchActivationNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
         node = TorchActivationNode(name, data, args)
@@ -586,12 +642,11 @@ class TorchActivationNode(Node):
         self.output = self.add_output("output")
 
     def execute(self):
-        input_tensor = self.input.get_received_data()
-        if type(input_tensor) != torch.Tensor:
-            input_tensor = any_to_tensor(self.input.get_received_data())
-        self.output.send(self.op(input_tensor))
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            self.output.send(self.op(input_tensor))
 
-class TorchActivationTwoParamNode(Node):
+class TorchActivationTwoParamNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
         node = TorchActivationTwoParamNode(name, data, args)
@@ -630,13 +685,12 @@ class TorchActivationTwoParamNode(Node):
         self.parameter_2 = self.parameter_2_input.get_widget_value()
 
     def execute(self):
-        input_tensor = self.input.get_received_data()
-        if type(input_tensor) != torch.Tensor:
-            input_tensor = any_to_tensor(self.input.get_received_data())
-        self.output.send(self.op(input_tensor, self.parameter_1, self.parameter_2))
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            self.output.send(self.op(input_tensor, self.parameter_1, self.parameter_2))
 
 
-class TorchActivationThreeParamNode(Node):
+class TorchActivationThreeParamNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
         node = TorchActivationThreeParamNode(name, data, args)
@@ -667,12 +721,11 @@ class TorchActivationThreeParamNode(Node):
         self.parameter_3 = self.parameter_3_input.get_widget_value()
 
     def execute(self):
-        input_tensor = self.input.get_received_data()
-        if type(input_tensor) != torch.Tensor:
-            input_tensor = any_to_tensor(self.input.get_received_data())
-        self.output.send(self.op(input_tensor, self.parameter_1, self.parameter_2, self.parameter_3))
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            self.output.send(self.op(input_tensor, self.parameter_1, self.parameter_2, self.parameter_3))
 
-class TorchSoftmaxNode(Node):
+class TorchSoftmaxNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
         node = TorchSoftmaxNode(name, data, args)
@@ -701,13 +754,12 @@ class TorchSoftmaxNode(Node):
         self.dim = self.dim_input.get_widget_value()
 
     def execute(self):
-        input_tensor = self.input.get_received_data()
-        if type(input_tensor) != torch.Tensor:
-            input_tensor = any_to_tensor(self.input.get_received_data())
-        self.output.send(self.op(input_tensor, self.dim))
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            self.output.send(self.op(input_tensor, self.dim))
 
 
-class TorchActivationOneParamNode(Node):
+class TorchActivationOneParamNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
         node = TorchActivationOneParamNode(name, data, args)
@@ -751,13 +803,12 @@ class TorchActivationOneParamNode(Node):
         self.parameter = self.parameter_input.get_widget_value()
 
     def execute(self):
-        input_tensor = self.input.get_received_data()
-        if type(input_tensor) != torch.Tensor:
-            input_tensor = any_to_tensor(self.input.get_received_data())
-        self.output.send(self.op(input_tensor, self.parameter))
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            self.output.send(self.op(input_tensor, self.parameter))
 
 
-class TorchNNThresholdNode(Node):
+class TorchNNThresholdNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
         node = TorchNNThresholdNode(name, data, args)
@@ -787,16 +838,142 @@ class TorchNNThresholdNode(Node):
         self.op = torch.nn.Threshold(self.threshold, self.replace)
 
     def execute(self):
-        input_tensor = self.input.get_received_data()
-        if type(input_tensor) != torch.Tensor:
-            input_tensor = any_to_tensor(self.input.get_received_data())
-        self.output.send(self.op(input_tensor))
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+        # input_tensor = self.input.get_received_data()
+        # if type(input_tensor) != torch.Tensor:
+        #     input_tensor = any_to_tensor(self.input.get_received_data())
+            self.output.send(self.op(input_tensor))
 
 
+class TorchvisionGrayscaleNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchvisionGrayscaleNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.output = self.add_output("output")
+        self.op = torchvision.transforms.Grayscale()
+
+    def execute(self):
+        input_tensor = self.input_to_torchvision_tensor()
+        # input_tensor = self.input.get_received_data()
+        # if type(input_tensor) != torch.Tensor:
+        #     input_tensor = any_to_tensor(self.input.get_received_data())
+        # if len(input_tensor.shape) > 2:
+        #     if input_tensor.shape[-3] > 5:
+        #         if input_tensor.shape[-1] <= 5:
+        #             input_tensor = input_tensor.transpose(-1, -3).transpose(-1, -2)
+        output_tensor = self.op(input_tensor)
+        self.output.send(output_tensor)
+
+class TorchvisionGaussianBlurNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchvisionGaussianBlurNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.kernel_size = 9
+        self.sigma = 0.5
+
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.kernel_size_property = self.add_property('kernel size', widget_type='combo', default_value=self.kernel_size, callback=self.params_changed)
+        self.kernel_size_property.widget.combo_items = [3, 5, 7, 9, 11, 13, 15, 17, 19]
+        self.sigma_property = self.add_property('sigma', widget_type='drag_float', default_value=self.sigma, callback=self.params_changed)
+        self.output = self.add_output("output")
+        self.op = torchvision.transforms.functional.gaussian_blur
+
+    def params_changed(self):
+        self.sigma = self.sigma_property.get_widget_value()
+        if self.sigma <= 0:
+            self.sigma = 0.1
+        self.kernel_size = int(self.kernel_size_property.get_widget_value())
+        self.op = torchvision.transforms.functional.gaussian_blur
+    def execute(self):
+        input_tensor = self.input_to_torchvision_tensor()
+        # input_tensor = self.input.get_received_data()
+        # if type(input_tensor) != torch.Tensor:
+        #     input_tensor = any_to_tensor(self.input.get_received_data())
+        # if len(input_tensor.shape) > 2:
+        #     if input_tensor.shape[-3] > 5:
+        #         if input_tensor.shape[-1] <= 5:
+        #             input_tensor = input_tensor.transpose(-1, -3).transpose(-1, -2)
+        output_tensor = self.op(input_tensor, self.kernel_size, self.sigma)
+        self.output.send(output_tensor)
 
 
+class TorchvisionAdjustOneParamNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchvisionAdjustOneParamNode(name, data, args)
+        return node
 
-class TorchSubtensorNode(Node):
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.param = 0.0
+        param_name = 'hue offset'
+        min = -.5
+        max = .5
+
+        if self.label == 'torchvision.adjust_hue':
+            self.param = 0.0
+            param_name = 'hue offset'
+            min = -.5
+            max = .5
+            self.op = torchvision.transforms.functional.adjust_hue
+        elif self.label == 'torchvision.adjust_saturation':
+            self.param = 1.0
+            param_name = 'saturation'
+            min = 0
+            max = 10
+            self.op = torchvision.transforms.functional.adjust_saturation
+        elif self.label == 'torchvision.adjust_sharpness':
+            self.param = 1.0
+            param_name = 'sharpness'
+            min = 0
+            max = 10
+            self.op = torchvision.transforms.functional.adjust_sharpness
+        elif self.label == 'torchvision.adjust_contrast':
+            self.param = 1.0
+            param_name = 'contrast'
+            min = 0
+            max = 10
+            self.op = torchvision.transforms.functional.adjust_contrast
+        elif self.label == 'torchvision.adjust_brightness':
+            self.param = 1.0
+            param_name = 'brightness'
+            min = 0
+            max = 10
+            self.op = torchvision.transforms.functional.adjust_brightness
+
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.param_input = self.add_input(param_name, widget_type='drag_float', default_value=self.param, min=min, max=max, callback=self.params_changed)
+        self.output = self.add_output("output")
+        print(self.op)
+
+    def params_changed(self):
+        self.param = self.param_input.get_widget_value()
+
+    def execute(self):
+        input_tensor = self.input_to_torchvision_tensor()
+        #
+        # if type(input_tensor) != torch.Tensor:
+        #     input_tensor = any_to_tensor(self.input.get_received_data())
+        # if len(input_tensor.shape) > 2:
+        #     if input_tensor.shape[-3] > 5:
+        #         if input_tensor.shape[-1] <= 5:
+        #             input_tensor = input_tensor.transpose(-1, -3).transpose(-1, -2)
+        output_tensor = self.op(input_tensor, self.param)
+        self.output.send(output_tensor)
+
+
+class TorchSubtensorNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
         node = TorchSubtensorNode(name, data, args)
@@ -846,34 +1023,35 @@ class TorchSubtensorNode(Node):
         self.dim_list = dimmers
 
     def execute(self):
-        input_tensor = self.input.get_received_data()
-        if self.dim_list is None:
-            self.dim_changed()
-        if len(input_tensor.shape) < len(self.dim_list) or len(self.dim_list) == 0:
-            self.output.send(input_tensor)
-        else:
-            dim_list_now = []
-            for i in range(len(self.dim_list)):
-                dim_dim = self.dim_list[i]
-                dim_list_now.append(dim_dim[0][0])
-                if dim_dim[1][0] == 1000000:
-                    dim_list_now.append(input_tensor.shape[i])
-                else:
-                    dim_list_now.append(dim_dim[1][0])
-            sub_tensor = input_tensor
-            if len(dim_list_now) == 2:
-                sub_tensor = input_tensor[dim_list_now[0]:dim_list_now[1]]
-            elif len(dim_list_now) == 4:
-                sub_tensor = input_tensor[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3]]
-            elif len(dim_list_now) == 6:
-                sub_tensor = input_tensor[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3], dim_list_now[4]:dim_list_now[5]]
-            elif len(dim_list_now) == 8:
-                sub_tensor = input_tensor[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3],
-                         dim_list_now[4]:dim_list_now[5], dim_list_now[6]:dim_list_now[7]]
-            self.output.send(sub_tensor)
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            if self.dim_list is None:
+                self.dim_changed()
+            if len(input_tensor.shape) < len(self.dim_list) or len(self.dim_list) == 0:
+                self.output.send(input_tensor)
+            else:
+                dim_list_now = []
+                for i in range(len(self.dim_list)):
+                    dim_dim = self.dim_list[i]
+                    dim_list_now.append(dim_dim[0][0])
+                    if dim_dim[1][0] == 1000000:
+                        dim_list_now.append(input_tensor.shape[i])
+                    else:
+                        dim_list_now.append(dim_dim[1][0])
+                sub_tensor = input_tensor
+                if len(dim_list_now) == 2:
+                    sub_tensor = input_tensor[dim_list_now[0]:dim_list_now[1]]
+                elif len(dim_list_now) == 4:
+                    sub_tensor = input_tensor[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3]]
+                elif len(dim_list_now) == 6:
+                    sub_tensor = input_tensor[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3], dim_list_now[4]:dim_list_now[5]]
+                elif len(dim_list_now) == 8:
+                    sub_tensor = input_tensor[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3],
+                             dim_list_now[4]:dim_list_now[5], dim_list_now[6]:dim_list_now[7]]
+                self.output.send(sub_tensor)
 
 
-class TorchPermuteNode(Node):
+class TorchPermuteNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
         node = TorchPermuteNode(name, data, args)
@@ -893,14 +1071,15 @@ class TorchPermuteNode(Node):
         self.permute = permute_list
 
     def execute(self):
-        input_tensor = self.input.get_received_data()
-        if len(input_tensor.shape) < len(self.permute):
-            self.output.send(input_tensor)
-        else:
-            permuted = torch.permute(input_tensor, self.permute)
-            self.output.send(permuted)
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            if len(input_tensor.shape) < len(self.permute):
+                self.output.send(input_tensor)
+            else:
+                permuted = torch.permute(input_tensor, self.permute)
+                self.output.send(permuted)
 
-class CosineSimilarityNode(Node):
+class CosineSimilarityNode(TorchNode):
     cos = None
     inited = False
 
@@ -915,15 +1094,14 @@ class CosineSimilarityNode(Node):
         if not self.inited:
             self.cos = torch.nn.CosineSimilarity(dim=0, eps=1e-6)
             self.inited = True
-        self.input1 = self.add_input("input 1", triggers_execution=True)
+        self.input = self.add_input("input 1", triggers_execution=True)
         self.input2 = self.add_input("input 2")
         self.output = self.add_output("output")
 
     def execute(self):
         if self.input2.fresh_input:
-            self.vector_2 = torch.tensor(any_to_array(self.input2.get_received_data()))
-        vector_1 = torch.tensor(any_to_array(self.input1.get_received_data()))
-        if self.vector_2 is not None:
+            self.vector_2 = self.data_to_tensor(self.input2.get_received_data())
+        vector_1 = self.input_to_tensor()
+        if self.vector_2 is not None and vector_1 is not None:
             similarity = self.cos(vector_1, self.vector_2)
-
             self.output.send(similarity.item())

@@ -396,7 +396,12 @@ class GLBillboard(GLNode):
             if type(data) == np.ndarray:
                 self.texture_data_pending = self.texture_input.get_received_data() #  * 255.0
             elif self.app.torch_available and type(data) == torch.Tensor:
-                self.texture_data_pending = self.texture_input.get_received_data().cpu().numpy()
+                texture_data = self.texture_input.get_received_data()
+                if len(texture_data.shape) > 2:
+                    if texture_data.shape[-3] <= 5:
+                        if texture_data.shape[-1] > 5:
+                            texture_data = texture_data.permute(-2, -1, -3)
+                self.texture_data_pending = texture_data.cpu().numpy()
             elif type(data) == float:
                 self.texture_data_pending = np.ones((16, 16, 1), dtype=np.float32) * data
             elif type(data) == int:

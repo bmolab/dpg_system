@@ -1590,7 +1590,8 @@ class PlotNode(Node):
 
     def change_format(self):
         self.format = self.format_option.get_widget_value()
-        self.hold_format = self.format
+        if self.format != '':
+            self.hold_format = self.format
         if self.style in [self.heat_scroll_style, self.heat_map_style]:
             dpg.configure_item(self.plot_data_tag, format=self.format)
 
@@ -1716,6 +1717,7 @@ class PlotNode(Node):
                     if len(self.format) > 0:
                         self.hold_format = self.format
                         self.format_option.set('')
+                        self.format = ''
                         self.change_format()
             else:
                 if self.width / self.sample_count < 40:
@@ -1723,6 +1725,7 @@ class PlotNode(Node):
                     if len(self.format) > 0:
                         self.hold_format = self.format
                         self.format_option.set('')
+                        self.format = ''
                         self.change_format()
 
                 elif len(buffer.shape) > 1 and (self.height / buffer.shape[0]) < 16:
@@ -1730,6 +1733,7 @@ class PlotNode(Node):
                     if len(self.format) > 0:
                         self.hold_format = self.format
                         self.format_option.set('')
+                        self.format = ''
                         self.change_format()
 
             if not forced_format and self.hold_format != self.format:
