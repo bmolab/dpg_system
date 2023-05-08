@@ -21,7 +21,9 @@ def register_torch_nodes():
     Node.app.register_node('t.rand', TorchGeneratorNode.factory)
     Node.app.register_node('t.ones', TorchGeneratorNode.factory)
     Node.app.register_node('t.zeros', TorchGeneratorNode.factory)
+    Node.app.register_node('t.full', TorchFullNode.factory)
     Node.app.register_node('t.linspace', TorchLinSpaceNode.factory)
+    Node.app.register_node('t.logspace', TorchLinSpaceNode.factory)
 
     Node.app.register_node('t.rand_like', TorchGeneratorLikeNode.factory)
     Node.app.register_node('t.ones_like', TorchGeneratorLikeNode.factory)
@@ -33,6 +35,9 @@ def register_torch_nodes():
     Node.app.register_node('t.select', TorchSelectNode.factory)
     Node.app.register_node('t.squeeze', TorchSqueezeNode.factory)
     Node.app.register_node('t.unsqueeze', TorchUnsqueezeNode.factory)
+    Node.app.register_node('t.cat', TorchCatNode.factory)
+    Node.app.register_node('t.stack', TorchStackNode.factory)
+    Node.app.register_node('t.repeat', TorchRepeatNode.factory)
 
     Node.app.register_node('t.nn.Threshold', TorchNNThresholdNode.factory)
     Node.app.register_node('t.nn.relu', TorchActivationNode.factory)
@@ -169,6 +174,7 @@ class TensorNode(TorchNode):
             out_array = any_to_tensor(in_data, self.device, self.dtype)
             self.output.send(out_array)
 
+
 class TorchGeneratorNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -197,8 +203,7 @@ class TorchGeneratorNode(TorchNode):
             self.device_property.widget.combo_items.append('mps')
         if torch.cuda.is_available():
             self.device_property.widget.combo_items.append('cuda')
-
-        if self.label == 'torch.rand':
+        if self.label == 't.rand':
             self.min = 0
             self.max = 1
             self.min_input = self.add_input('min', widget_type='drag_float', default_value=self.min,
@@ -275,6 +280,72 @@ class TorchGeneratorNode(TorchNode):
         elif self.label == 'torch.zeros':
             out_array = torch.zeros(size=size, device=self.device, dtype=self.dtype)
         self.output.send(out_array)
+
+class TorchFullNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchFullNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.shape = []
+        for i in range(len(args)):
+            d, t = decode_arg(args, i)
+            if t == int:
+                self.shape += (d,)
+        if len(self.shape) == 0:
+            self.shape = [1]
+
+        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+        self.value = 1.0
+        self.value_input = self.add_input('value', widget_type='drag_float', default_value=self.value, callback=self.val_changed)
+        self.shape_properties = []
+        for i in range(len(self.shape)):
+            self.shape_properties.append(self.add_property('dim ' + str(i), widget_type='input_int', default_value=self.shape[i]))
+        self.device = torch.device('cpu')
+        self.device_property = self.add_property('device', widget_type='combo', default_value='cpu', callback=self.device_changed)
+        self.device_property.widget.combo_items = ['cpu']
+        if torch.backends.mps.is_available():
+            self.device_property.widget.combo_items.append('mps')
+        if torch.cuda.is_available():
+            self.device_property.widget.combo_items.append('cuda')
+
+        self.dtype_dict = {}
+        self.dtype_dict['float32'] = torch.float32
+        self.dtype_dict['float'] = torch.float
+        self.dtype_dict['float16'] = torch.float16
+        self.dtype_dict['bfloat16'] = torch.bfloat16
+        self.dtype_dict['double'] = torch.double
+        self.dtype_dict['int64'] = torch.int64
+        self.dtype_dict['uint8'] = torch.uint8
+        self.dtype_dict['bool'] = torch.bool
+        self.dtype_option = self.add_option('dtype', widget_type='combo', default_value='float32', callback=self.dtype_changed)
+        self.dtype_option.widget.combo_items = list(self.dtype_dict.keys())
+        self.dtype = torch.float32
+
+        out_label = 'filled tensor'
+        self.output = self.add_output(out_label)
+
+    def val_changed(self, val=None):
+        self.value = self.value_input.get_widget_value()
+    def device_changed(self):
+        device_name = self.device_property.get_widget_value()
+        self.device = torch.device(device_name)
+
+    def dtype_changed(self):
+        dtype = self.dtype_option.get_widget_value()
+        if dtype in self.dtype_dict:
+            self.dtype = self.dtype_dict[dtype]
+
+    def execute(self):
+        for i in range(len(self.shape)):
+            self.shape[i] = self.shape_properties[i].get_widget_value()
+        size = tuple(self.shape)
+        out_array = torch.full(size=size, fill_value=self.value, device=self.device, dtype=self.dtype)
+        self.output.send(out_array)
+
 
 class TorchGeneratorLikeNode(TorchNode):
     @staticmethod
@@ -389,6 +460,12 @@ class TorchLinSpaceNode(TorchNode):
         self.start = 0.0
         self.stop = 1.0
         self.steps = 50
+        self.op = torch.linspace
+        out_label = 'linspace out'
+        if self.label == 't.logspace':
+            self.op = torch.logspace
+            out_label = 'logspace out'
+
         if len(args) > 0:
             d, t = decode_arg(args, 0)
             self.start = any_to_float(d)
@@ -437,8 +514,9 @@ class TorchLinSpaceNode(TorchNode):
         self.start = self.start_property.get_widget_value()
         self.stop = self.stop_property.get_widget_value()
         self.steps = self.steps_property.get_widget_value()
-        out_array = torch.linspace(self.start, self.stop, self.steps, dtype=self.dtype, device=self.device)
+        out_array = self.op(self.start, self.stop, self.steps, dtype=self.dtype, device=self.device)
         self.output.send(out_array)
+
 
 class TorchCDistanceNode(TorchNode):
     @staticmethod
@@ -628,9 +706,111 @@ class TorchUnsqueezeNode(TorchNode):
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            if -1 - len(input_tensor.shape) < self.dim < len(input_tensor.shape):
+            if -1 - len(input_tensor.shape) < self.dim <= len(input_tensor.shape):
                 self.output.send(torch.unsqueeze(input_tensor, self.dim))
                 return
+
+class TorchCatNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchCatNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input_count = 2
+        self.dim = 0
+        if len(args) > 0:
+            self.input_count = string_to_int(args[0])
+        self.other_inputs = []
+        self.input = self.add_input("tensor 1", triggers_execution=True)
+        for i in range(self.input_count - 1):
+            self.other_inputs.append(self.add_input('tensor ' + str(i + 2)))
+        self.dim_input = self.add_input('dim', widget_type='input_int', default_value=self.dim, callback=self.dim_changed)
+        self.output = self.add_output("output")
+
+    def dim_changed(self, val=None):
+        self.dim = self.dim_input.get_widget_value()
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            cat_list = [input_tensor]
+            for i in range(self.input_count - 1):
+                an_in = self.other_inputs[i]
+                a_tensor = self.data_to_tensor(an_in.get_received_data())
+                if a_tensor is not None:
+                    if len(a_tensor.shape) == len(input_tensor.shape):
+                        ok_shape = True
+                        for j in range(len(a_tensor.shape)):
+                            if j != self.dim:
+                                if a_tensor.shape[j] != input_tensor.shape[j]:
+                                    ok_shape = False
+                                    if self.app.verbose:
+                                        print('torch.cat input tensor ' + str(i) + ' has wrong shape')
+                                    break
+                        if ok_shape:
+                            cat_list.append(a_tensor)
+                    else:
+                        if self.app.verbose:
+                            print('torch.cat input tensor ' + str(i) + ' has wrong number of dimensions')
+            if self.dim < len(input_tensor.shape):
+                output_tensor = torch.cat(cat_list, self.dim)
+                self.output.send(output_tensor)
+            else:
+                if self.app.verbose:
+                    print('torch.cat dim is out of range', self.dim)
+
+
+class TorchStackNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchStackNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input_count = 2
+        self.dim = 0
+        if len(args) > 0:
+            self.input_count = string_to_int(args[0])
+        self.other_inputs = []
+        self.input = self.add_input("tensor 1", triggers_execution=True)
+        for i in range(self.input_count - 1):
+            self.other_inputs.append(self.add_input('tensor ' + str(i + 2)))
+        self.dim_input = self.add_input('dim', widget_type='input_int', default_value=self.dim, callback=self.dim_changed)
+        self.output = self.add_output("output")
+
+    def dim_changed(self, val=None):
+        self.dim = self.dim_input.get_widget_value()
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            stack_list = [input_tensor]
+            for i in range(self.input_count - 1):
+                an_in = self.other_inputs[i]
+                a_tensor = self.data_to_tensor(an_in.get_received_data())
+                if a_tensor is not None:
+                    if len(a_tensor.shape) == len(input_tensor.shape):
+                        ok_shape = True
+                        for j in range(len(a_tensor.shape)):
+                            if a_tensor.shape[j] != input_tensor.shape[j]:
+                                ok_shape = False
+                                if self.app.verbose:
+                                    print('torch.stack input tensor ' + str(i) + ' has wrong shape')
+                                break
+                        if ok_shape:
+                            stack_list.append(a_tensor)
+                    else:
+                        if self.app.verbose:
+                            print('torch.stack input tensor ' + str(i) + ' has wrong number of dimensions')
+            if -len(input_tensor.shape) <= self.dim <= len(input_tensor.shape):
+                output_tensor = torch.stack(stack_list, self.dim)
+                self.output.send(output_tensor)
+            else:
+                if self.app.verbose:
+                    print('torch.stack dim is out of range', self.dim)
 
 class TorchSelectNode(TorchNode):
     @staticmethod
@@ -1166,6 +1346,40 @@ class TorchPermuteNode(TorchNode):
             else:
                 permuted = torch.permute(input_tensor, self.permute)
                 self.output.send(permuted)
+
+class TorchRepeatNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchRepeatNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.repeat = []
+        if len(args) > 0:
+            for i in range(len(args)):
+                self.repeat.append(any_to_int(args[i]))
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.repeat_property = self.add_input('repeats', widget_type='text_input', default_value=self.repeat, callback=self.repeat_changed)
+        self.output = self.add_output('repeated tensor out')
+
+    def repeat_changed(self, val=None):
+        repeat_text = self.repeat_property.get_widget_value()
+        repeat_split = re.findall(r'\d+', repeat_text)
+        repeat_list, _, _ = list_to_hybrid_list(repeat_split)
+        self.repeat = repeat_list
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        repeat = self.repeat
+        if input_tensor is not None:
+            if len(input_tensor.shape) > len(repeat):
+                for i in range(len(repeat), len(input_tensor.shape)):
+                    repeat.append(1)
+            elif len(input_tensor.shape) < len(repeat):
+                repeat = repeat[:len(input_tensor.shape)]
+            repeated = input_tensor.repeat(repeat)
+            self.output.send(repeated)
 
 class TorchTransposeNode(TorchNode):
     @staticmethod
