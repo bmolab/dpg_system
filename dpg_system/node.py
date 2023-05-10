@@ -438,7 +438,7 @@ class PropertyWidget:
                     self.max = 100
                 dpg.add_input_int(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node, default_value=self.default_value, step=self.step, min_value=min, max_value=max)
             elif self.widget == 'checkbox':
-                dpg.add_checkbox(label=self._label, tag=self.uuid, default_value=self.default_value, user_data=self)
+                check = dpg.add_checkbox(label=self._label, tag=self.uuid, default_value=self.default_value, user_data=self)
                 dpg.set_item_user_data(self.uuid, user_data=self)
                 dpg.set_item_callback(self.uuid, callback=lambda: self.clickable_changed())
             elif self.widget == 'radio_group':
@@ -461,7 +461,11 @@ class PropertyWidget:
                 dpg.set_item_callback(self.uuid, callback=lambda: self.clickable_changed())
             elif self.widget == 'list_box':
                 dpg.add_listbox(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node, num_items=8)
-            if self.widget not in ['checkbox', 'button', 'combo', 'radio_group']:
+            elif self.widget == 'spacer':
+                dpg.add_spacer(label='', height=13)
+            elif self.widget == 'label':
+                dpg.add_text(self._label)
+            if self.widget not in ['checkbox', 'button', 'combo', 'radio_group', 'spacer', 'label']:
                 dpg.set_item_user_data(self.uuid, user_data=self)
                 dpg.set_item_callback(self.uuid, callback=lambda s, a, u: self.value_changed(a))
             if self.widget_has_trigger:
@@ -873,7 +877,7 @@ class Conduit:
     def transmit(self, data, from_client=None):
         for client in self.clients:
             if client != from_client:
-                client.receive(data)
+                client.receive(self.label, data)
 
     def attach_client(self, client):
         if client not in self.clients:
@@ -1043,6 +1047,18 @@ class Node:
         for output in self.outputs:
             output.send()  # should not always trigger!!! make flag to indicate trigger always or trigger on change...
 
+    def add_label(self, label: str = ""):
+        new_property = PropertyNodeAttribute(label, widget_type='label')
+        # self.properties.append(new_property)
+        self.ordered_elements.append(new_property)
+        return new_property
+
+    def add_spacer(self):
+        new_property = PropertyNodeAttribute('', widget_type='spacer')
+        # self.properties.append(new_property)
+        self.ordered_elements.append(new_property)
+        return new_property
+
     def add_property(self, label: str = "", uuid=None, widget_type=None, width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, callback=None):
         new_property = PropertyNodeAttribute(label, uuid, self, widget_type, width, triggers_execution, trigger_button, default_value, min, max)
         self.properties.append(new_property)
@@ -1102,7 +1118,7 @@ class Node:
             if input_.widget and input_.widget.widget not in['button', 'combo', 'knob_float', 'knob_int']:
                 dpg.bind_item_handler_registry(input_.widget.uuid, "widget handler")
         for property_ in self.properties:
-            if property_.widget.widget != 'button':
+            if property_.widget.widget not in ['button', 'spacer', 'label']:
                 dpg.bind_item_handler_registry(property_.widget.uuid, "widget handler")
         for option in self.options:
             dpg.bind_item_handler_registry(option.widget.uuid, "widget handler")

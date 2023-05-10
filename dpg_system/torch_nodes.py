@@ -38,6 +38,8 @@ def register_torch_nodes():
     Node.app.register_node('t.cat', TorchCatNode.factory)
     Node.app.register_node('t.stack', TorchStackNode.factory)
     Node.app.register_node('t.repeat', TorchRepeatNode.factory)
+    Node.app.register_node('t.chunk', TorchChunkNode.factory)
+    Node.app.register_node('t.tensor_split', TorchChunkNode.factory)
 
     Node.app.register_node('t.nn.Threshold', TorchNNThresholdNode.factory)
     Node.app.register_node('t.nn.relu', TorchActivationNode.factory)
@@ -136,27 +138,43 @@ class TensorNode(TorchNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.input = self.add_input("in", triggers_execution=True)
-        self.device = torch.device('cpu')
-        self.device_property = self.add_property('device', widget_type='combo', default_value='cpu', callback=self.device_changed)
-        self.device_property.widget.combo_items = ['cpu']
+        device_string = 'cpu'
+        device_list = [device_string]
         if torch.backends.mps.is_available():
-            self.device_property.widget.combo_items.append('mps')
-            self.device = torch.device('mps')
+            device_string = 'mps'
+            device_list.append(device_string)
         if torch.cuda.is_available():
-            self.device_property.widget.combo_items.append('cuda')
-            self.device = torch.device('cuda')
+            device_string = 'cuda'
+            device_list.append(device_string)
+
+        dtype_string = 'float32'
         self.dtype_dict = {}
         self.dtype_dict['float32'] = torch.float32
         self.dtype_dict['float'] = torch.float
         self.dtype_dict['float16'] = torch.float16
-        self.dtype_dict['bfloat16'] = torch.bfloat16
-        self.dtype_dict['double'] = torch.double
+        # self.dtype_dict['bfloat16'] = torch.bfloat16
+        # self.dtype_dict['double'] = torch.double
         self.dtype_dict['int64'] = torch.int64
         self.dtype_dict['uint8'] = torch.uint8
         self.dtype_dict['bool'] = torch.bool
-        self.dtype_option = self.add_property('dtype', widget_type='combo', default_value='float32', callback=self.dtype_changed)
+
+        for i in range(len(args)):
+            if args[i] in device_list:
+                device_string = args[i]
+            elif args[i] in list(self.dtype_dict.keys()):
+                dtype_string = args[i]
+
+        self.device = torch.device(device_string)
+        self.dtype = self.dtype_dict[dtype_string]
+
+        self.device_property = self.add_property('device', widget_type='combo', default_value=device_string,
+                                                 callback=self.device_changed)
+        self.device_property.widget.combo_items = device_list
+
+        self.dtype_option = self.add_property('dtype', widget_type='combo', default_value=dtype_string,
+                                              callback=self.dtype_changed)
         self.dtype_option.widget.combo_items = list(self.dtype_dict.keys())
-        self.dtype = torch.float32
+
         self.output = self.add_output('tensor out')
 
     def device_changed(self):
@@ -845,6 +863,45 @@ class TorchSelectNode(TorchNode):
                 if -1 - input_tensor.shape[self.dim] < self.index < input_tensor.shape[self.dim]:
                     self.output.send(torch.select(input_tensor, self.dim, self.index))
                     return
+
+class TorchChunkNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchChunkNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.dim = 0
+        self.splits = 2
+        self.op = torch.tensor_split
+        if self.label == 't.chunk':
+            self.op = torch.chunk
+        if len(args) > 0:
+            self.splits = any_to_int(args[0])
+        if len(args) > 1:
+            self.dim = any_to_int(args[1])
+
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.dim_input = self.add_input('dim', widget_type='input_int', default_value=self.dim, callback=self.dim_changed)
+        self.split_count_option = self.add_option('split', widget_type='input_int', default_value=self.splits)
+        self.tensor_outputs = []
+
+        for i in range(self.splits):
+            self.tensor_outputs.append(self.add_output("tensor " + str(i)))
+
+    def dim_changed(self, val=None):
+        self.dim = self.dim_input.get_widget_value()
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            if -1 - len(input_tensor.shape) < self.dim < len(input_tensor.shape):
+                if self.splits < input_tensor.shape[self.dim]:
+                    tensors = self.op(input_tensor, self.splits, self.dim)
+                    for idx, tensor_ in enumerate(tensors):
+                        if idx < len(self.outputs):
+                            self.tensor_outputs[idx].send(tensor_)
 
 
 class TorchNNThresholdNode(TorchNode):

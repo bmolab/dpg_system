@@ -57,6 +57,7 @@ class NodeEditor:
     def set_name(self, name):
         self.patch_name = name
         self.app.set_editor_tab_title(self, name)
+
     def add_subpatch(self, subpatch_editor):
         self.subpatches.append(subpatch_editor)
 
@@ -852,6 +853,7 @@ class NodeEditor:
                 dpg.add_theme_style(dpg.mvNodeStyleVar_LinkThickness, self.node_scalers[dpg.mvNodeStyleVar_LinkThickness], category=dpg.mvThemeCat_Nodes)
                 self.node_scalers[dpg.mvNodeCol_Pin] = [30, 100, 150]
                 dpg.add_theme_color(dpg.mvNodeCol_Pin, self.node_scalers[dpg.mvNodeCol_Pin], category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvThemeCol_CheckMark, [255, 255, 0, 255], category=dpg.mvThemeCat_Core)
         with dpg.theme() as self.node_presentation_theme:
             with dpg.theme_component(dpg.mvAll):
                 self.node_scalers[dpg.mvNodeStyleVar_GridSpacing] = 16

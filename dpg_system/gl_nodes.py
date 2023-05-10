@@ -40,6 +40,22 @@ class GLContextCommandParser(GLCommandParser):
         self.dict['ortho'] = self.set_ortho
         self.dict['frustum'] = self.set_frustum
         self.dict['perspective'] = self.set_perspective
+        self.dict['size'] = self.set_size
+        self.dict['position'] = self.set_position
+
+    def set_size(self, context, args):
+        if args is not None and len(args) > 0:
+            if len(args) > 1:
+                width = any_to_int(args[0])
+                height = any_to_int(args[1])
+                glfw.set_window_size(context.window, width, height)
+
+    def set_position(self, context, args):
+        if args is not None and len(args) > 0:
+            if len(args) > 1:
+                x = any_to_int(args[0])
+                y = any_to_int(args[1])
+                glfw.set_window_pos(context.window, x, y)
 
     def set_frustum(self, context, args):  # context must be established
         hold_context = glfw.get_current_context()

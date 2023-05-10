@@ -1641,7 +1641,7 @@ class ConduitReceiveNode(Node):
         if self.conduit is not None:
             self.conduit.detach_client(self)
 
-    def receive(self, data):
+    def receive(self, name, data):
         self.output.send(data)
 
     def execute(self):

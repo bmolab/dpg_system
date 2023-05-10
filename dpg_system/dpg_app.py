@@ -87,6 +87,13 @@ except ModuleNotFoundError:
     pass
 
 try:
+    from dpg_system.kornia_nodes import *
+    imported.append('kornia_nodes.py')
+except ModuleNotFoundError:
+    pass
+
+
+try:
     from dpg_system.elevenlabs_node import *
     imported.append('elevenlabs_node.py')
 except ModuleNotFoundError:
@@ -383,7 +390,6 @@ class App:
                     dpg.set_global_font_scale(0.5)
                     self.large_font = dpg.add_font("Inconsolata-g.otf", 48)
         self.viewport = dpg.create_viewport()
-        # print(self.viewport)
         dpg.setup_dearpygui()
 
     def register_patcher(self, name):
@@ -406,7 +412,9 @@ class App:
                 dpg.add_theme_style(dpg.mvStyleVar_FramePadding, self.frame_padding[0], self.frame_padding[1], category=dpg.mvThemeCat_Core)
                 dpg.add_theme_style(dpg.mvStyleVar_CellPadding, self.cell_padding[0], self.cell_padding[1], category=dpg.mvThemeCat_Core)
                 dpg.add_theme_style(dpg.mvStyleVar_ItemSpacing, self.item_spacing[0], self.item_spacing[1], category=dpg.mvThemeCat_Core)
-                # dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 255, 255, 255), category=dpg.mvThemeCat_Plots)
+                # dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (200, 200, 0, 255), category=dpg.mvThemeCat_Core)
+                # dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (200, 200, 0, 255), category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
 
         with dpg.theme() as self.borderless_child_theme:
             with dpg.theme_component(dpg.mvChildWindow):
@@ -431,6 +439,7 @@ class App:
                 dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
                 dpg.add_theme_color(dpg.mvThemeCol_SliderGrab, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
                 dpg.add_theme_color(dpg.mvThemeCol_SliderGrabActive, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (0, 0, 0, 0), category=dpg.mvThemeCat_Nodes)
 
                 dpg.add_theme_color(dpg.mvThemeCol_Text, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
 
@@ -616,6 +625,9 @@ class App:
             path = self.recent_files[name]
             self.load_from_file(path)
 
+    def add_ui(self):
+        pass
+
     def setup_menus(self):
         recent_callback = []
         recent_callback.append(self.recent_1_callback)
@@ -631,6 +643,7 @@ class App:
         with dpg.viewport_menu_bar():
             with dpg.menu(label="File"):
                 dpg.add_menu_item(label='New Patch (N)', callback=self.add_node_editor)
+                dpg.add_menu_item(label='Add UI', callback=self.add_ui)
                 dpg.add_separator()
 
                 dpg.add_menu_item(label="Open in this Patcher", callback=self.load_nodes_in_patcher)
@@ -739,6 +752,9 @@ class App:
 
         if 'register_torch_nodes' in globals():
             register_torch_nodes()
+
+        if 'register_kornia_nodes' in globals():
+            register_kornia_nodes()
 
         if 'register_base_nodes' in globals():
             register_base_nodes()
@@ -1514,6 +1530,8 @@ class App:
                 self.node_editors.append(new_editor)
                 self.node_editors[len(self.node_editors) - 1].submit(panel_uuid)
         return new_editor
+
+
 
     def start(self):
         dpg.set_viewport_title("Patchers")
