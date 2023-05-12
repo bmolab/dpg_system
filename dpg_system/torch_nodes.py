@@ -37,6 +37,11 @@ def register_torch_nodes():
     Node.app.register_node('t.unsqueeze', TorchUnsqueezeNode.factory)
     Node.app.register_node('t.cat', TorchCatNode.factory)
     Node.app.register_node('t.stack', TorchStackNode.factory)
+    Node.app.register_node('t.hstack', TorchHStackNode.factory)
+    Node.app.register_node('t.row_stack', TorchHStackNode.factory)
+    Node.app.register_node('t.vstack', TorchHStackNode.factory)
+    Node.app.register_node('t.column_stack', TorchHStackNode.factory)
+    Node.app.register_node('t.dstack', TorchHStackNode.factory)
     Node.app.register_node('t.repeat', TorchRepeatNode.factory)
     Node.app.register_node('t.chunk', TorchChunkNode.factory)
     Node.app.register_node('t.tensor_split', TorchChunkNode.factory)
@@ -128,8 +133,69 @@ class TorchNode(Node):
             return input_tensor
         return None
 
+class TorchDeviceDtypeNode(TorchNode):
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.device_string = 'cpu'
+        self.dtype_string = 'float32'
+        self.device_property = None
+        self.dtype_property = None
+        self.dtype_dict = self.create_dtype_dict()
+        self.device_list = self.create_device_list()
+        self.device = torch.device(self.device_string)
+        self.dtype = self.dtype_dict[self.dtype_string]
 
-class TensorNode(TorchNode):
+    def parse_args_for_dtype_and_device(self, args):
+        for i in range(len(args)):
+            if args[i] in self.device_list:
+                self.device_string = args[i]
+            elif args[i] in list(self.dtype_dict.keys()):
+                self.dtype_string = args[i]
+
+    def create_device_property(self):
+        self.device_property = self.add_property('device', widget_type='combo', default_value=self.device_string,
+                                                 callback=self.device_changed)
+        self.device_property.widget.combo_items = self.device_list
+
+    def create_dtype_property(self):
+        self.dtype_property = self.add_property('dtype', widget_type='combo', default_value=self.dtype_string,
+                                              callback=self.dtype_changed)
+        self.dtype_property.widget.combo_items = list(self.dtype_dict.keys())
+
+    def device_changed(self):
+        device_name = self.device_property.get_widget_value()
+        self.device = torch.device(device_name)
+
+    def dtype_changed(self):
+        dtype = self.dtype_property.get_widget_value()
+        if dtype in self.dtype_dict:
+            self.dtype = self.dtype_dict[dtype]
+            print(self.dtype)
+
+    def create_dtype_dict(self):
+        dtype_dict = {}
+        dtype_dict['float32'] = torch.float32
+        dtype_dict['float'] = torch.float
+        dtype_dict['float16'] = torch.float16
+        # dtype_dict['bfloat16'] = torch.bfloat16
+        # dtype_dict['double'] = torch.double
+        dtype_dict['int64'] = torch.int64
+        dtype_dict['uint8'] = torch.uint8
+        dtype_dict['bool'] = torch.bool
+        return dtype_dict
+
+    def create_device_list(self):
+        device_list = ['cpu']
+        if torch.backends.mps.is_available():
+            device_string = 'mps'
+            device_list.append(device_string)
+        if torch.cuda.is_available():
+            device_string = 'cuda'
+            device_list.append(device_string)
+        return device_list
+
+
+class TensorNode(TorchDeviceDtypeNode):
     @staticmethod
     def factory(name, data, args=None):
         node = TensorNode(name, data, args)
@@ -137,54 +203,16 @@ class TensorNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+
         self.input = self.add_input("in", triggers_execution=True)
-        device_string = 'cpu'
-        device_list = [device_string]
-        if torch.backends.mps.is_available():
-            device_string = 'mps'
-            device_list.append(device_string)
-        if torch.cuda.is_available():
-            device_string = 'cuda'
-            device_list.append(device_string)
 
-        dtype_string = 'float32'
-        self.dtype_dict = {}
-        self.dtype_dict['float32'] = torch.float32
-        self.dtype_dict['float'] = torch.float
-        self.dtype_dict['float16'] = torch.float16
-        # self.dtype_dict['bfloat16'] = torch.bfloat16
-        # self.dtype_dict['double'] = torch.double
-        self.dtype_dict['int64'] = torch.int64
-        self.dtype_dict['uint8'] = torch.uint8
-        self.dtype_dict['bool'] = torch.bool
-
-        for i in range(len(args)):
-            if args[i] in device_list:
-                device_string = args[i]
-            elif args[i] in list(self.dtype_dict.keys()):
-                dtype_string = args[i]
-
-        self.device = torch.device(device_string)
-        self.dtype = self.dtype_dict[dtype_string]
-
-        self.device_property = self.add_property('device', widget_type='combo', default_value=device_string,
-                                                 callback=self.device_changed)
-        self.device_property.widget.combo_items = device_list
-
-        self.dtype_option = self.add_property('dtype', widget_type='combo', default_value=dtype_string,
-                                              callback=self.dtype_changed)
-        self.dtype_option.widget.combo_items = list(self.dtype_dict.keys())
+        self.parse_args_for_dtype_and_device(args)
+        self.device = torch.device(self.device_string)
+        self.dtype = self.dtype_dict[self.dtype_string]
+        self.create_device_property()
+        self.create_dtype_property()
 
         self.output = self.add_output('tensor out')
-
-    def device_changed(self):
-        device_name = self.device_property.get_widget_value()
-        self.device = torch.device(device_name)
-
-    def dtype_changed(self):
-        dtype = self.dtype_option.get_widget_value()
-        if dtype in self.dtype_dict:
-            self.dtype = self.dtype_dict[dtype]
 
     def execute(self):
         in_data = self.input_to_tensor()
@@ -193,7 +221,7 @@ class TensorNode(TorchNode):
             self.output.send(out_array)
 
 
-class TorchGeneratorNode(TorchNode):
+class TorchGeneratorNode(TorchDeviceDtypeNode):
     @staticmethod
     def factory(name, data, args=None):
         node = TorchGeneratorNode(name, data, args)
@@ -211,16 +239,17 @@ class TorchGeneratorNode(TorchNode):
             self.shape = [1]
 
         self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+
         self.shape_properties = []
         for i in range(len(self.shape)):
             self.shape_properties.append(self.add_property('dim ' + str(i), widget_type='input_int', default_value=self.shape[i]))
-        self.device = torch.device('cpu')
-        self.device_property = self.add_property('device', widget_type='combo', default_value='cpu', callback=self.device_changed)
-        self.device_property.widget.combo_items = ['cpu']
-        if torch.backends.mps.is_available():
-            self.device_property.widget.combo_items.append('mps')
-        if torch.cuda.is_available():
-            self.device_property.widget.combo_items.append('cuda')
+
+        self.parse_args_for_dtype_and_device(args)
+        self.device = torch.device(self.device_string)
+        self.dtype = self.dtype_dict[self.dtype_string]
+        self.create_device_property()
+        self.create_dtype_property()
+
         if self.label == 't.rand':
             self.min = 0
             self.max = 1
@@ -229,63 +258,44 @@ class TorchGeneratorNode(TorchNode):
             self.max_input = self.add_input('max', widget_type='drag_float', default_value=self.max,
                                             callback=self.range_changed)
 
-        self.dtype_dict = {}
-        self.dtype_dict['float32'] = torch.float32
-        self.dtype_dict['float'] = torch.float
-        self.dtype_dict['float16'] = torch.float16
-        self.dtype_dict['bfloat16'] = torch.bfloat16
-        self.dtype_dict['double'] = torch.double
-        self.dtype_dict['int64'] = torch.int64
-        self.dtype_dict['uint8'] = torch.uint8
-        self.dtype_dict['bool'] = torch.bool
-        self.dtype_option = self.add_option('dtype', widget_type='combo', default_value='float32', callback=self.dtype_changed)
-        self.dtype_option.widget.combo_items = list(self.dtype_dict.keys())
-        self.dtype = torch.float32
-
         out_label = 'random tensor'
-        if self.label == 'torch.ones':
+        if self.label == 't.ones':
             out_label = 'tensor of ones'
-        elif self.label == 'torch.zeros':
+        elif self.label == 't.zeros':
             out_label = 'tensor of zeros'
         self.output = self.add_output(out_label)
-
-    def device_changed(self):
-        device_name = self.device_property.get_widget_value()
-        self.device = torch.device(device_name)
 
     def range_changed(self, val=None):
         self.min = self.min_input.get_widget_value()
         self.max = self.max_input.get_widget_value()
 
     def dtype_changed(self):
-        dtype = self.dtype_option.get_widget_value()
-        if dtype in self.dtype_dict:
-            self.dtype = self.dtype_dict[dtype]
-            if self.label == 'torch.rand':
-                if self.dtype == torch.uint8:
-                    if self.min < 0:
-                        self.min_input.set(0.0)
-                    if self.max == 1.0 or self.max < 255:
-                        self.max_input.set(255.0)
-                elif self.dtype == torch.int64:
-                    if self.min < -32768:
-                        self.min_input.set(-32768)
-                    if self.max == 1.0:
-                        self.max_input.set(32767)
-                elif self.dtype in [torch.float, torch.double, torch.float32, torch.float16, torch.bfloat16]:
-                    if self.min == -32768:
-                        self.min_input.set(0.0)
-                    if self.max == 255:
-                        self.max_input.set(1.0)
-                    elif self.max == 32767:
-                        self.max_input.set(1.0)
-                self.range_changed()
+        super().dtype_changed()
+        if self.label == 't.rand':
+            if self.dtype == torch.uint8:
+                if self.min < 0:
+                    self.min_input.set(0.0)
+                if self.max == 1.0 or self.max < 255:
+                    self.max_input.set(255.0)
+            elif self.dtype == torch.int64:
+                if self.min < -32768:
+                    self.min_input.set(-32768)
+                if self.max == 1.0:
+                    self.max_input.set(32767)
+            elif self.dtype in [torch.float, torch.double, torch.float32, torch.float16, torch.bfloat16]:
+                if self.min == -32768:
+                    self.min_input.set(0.0)
+                if self.max == 255:
+                    self.max_input.set(1.0)
+                elif self.max == 32767:
+                    self.max_input.set(1.0)
+            self.range_changed()
 
     def execute(self):
         for i in range(len(self.shape)):
             self.shape[i] = self.shape_properties[i].get_widget_value()
         size = tuple(self.shape)
-        if self.label == 'torch.rand':
+        if self.label == 't.rand':
             if self.dtype in [torch.float, torch.float32, torch.double, torch.float16, torch.bfloat16]:
                 range_ = self.max - self.min
                 out_array = torch.rand(size=size, device=self.device, dtype=self.dtype) * range_ + self.min
@@ -293,13 +303,13 @@ class TorchGeneratorNode(TorchNode):
                 out_array = torch.randint(low=int(self.min), high=int(self.max), size=size, device=self.device, dtype=self.dtype)
             elif self.dtype == torch.bool:
                 out_array = torch.randint(low=0, high=1, size=size, device=self.device, dtype=self.dtype)
-        elif self.label == 'torch.ones':
+        elif self.label == 't.ones':
             out_array = torch.ones(size=size, device=self.device, dtype=self.dtype)
-        elif self.label == 'torch.zeros':
+        elif self.label == 't.zeros':
             out_array = torch.zeros(size=size, device=self.device, dtype=self.dtype)
         self.output.send(out_array)
 
-class TorchFullNode(TorchNode):
+class TorchFullNode(TorchDeviceDtypeNode):
     @staticmethod
     def factory(name, data, args=None):
         node = TorchFullNode(name, data, args)
@@ -322,40 +332,18 @@ class TorchFullNode(TorchNode):
         self.shape_properties = []
         for i in range(len(self.shape)):
             self.shape_properties.append(self.add_property('dim ' + str(i), widget_type='input_int', default_value=self.shape[i]))
-        self.device = torch.device('cpu')
-        self.device_property = self.add_property('device', widget_type='combo', default_value='cpu', callback=self.device_changed)
-        self.device_property.widget.combo_items = ['cpu']
-        if torch.backends.mps.is_available():
-            self.device_property.widget.combo_items.append('mps')
-        if torch.cuda.is_available():
-            self.device_property.widget.combo_items.append('cuda')
 
-        self.dtype_dict = {}
-        self.dtype_dict['float32'] = torch.float32
-        self.dtype_dict['float'] = torch.float
-        self.dtype_dict['float16'] = torch.float16
-        self.dtype_dict['bfloat16'] = torch.bfloat16
-        self.dtype_dict['double'] = torch.double
-        self.dtype_dict['int64'] = torch.int64
-        self.dtype_dict['uint8'] = torch.uint8
-        self.dtype_dict['bool'] = torch.bool
-        self.dtype_option = self.add_option('dtype', widget_type='combo', default_value='float32', callback=self.dtype_changed)
-        self.dtype_option.widget.combo_items = list(self.dtype_dict.keys())
-        self.dtype = torch.float32
+        self.parse_args_for_dtype_and_device(args)
+        self.device = torch.device(self.device_string)
+        self.dtype = self.dtype_dict[self.dtype_string]
+        self.create_device_property()
+        self.create_dtype_property()
 
         out_label = 'filled tensor'
         self.output = self.add_output(out_label)
 
     def val_changed(self, val=None):
         self.value = self.value_input.get_widget_value()
-    def device_changed(self):
-        device_name = self.device_property.get_widget_value()
-        self.device = torch.device(device_name)
-
-    def dtype_changed(self):
-        dtype = self.dtype_option.get_widget_value()
-        if dtype in self.dtype_dict:
-            self.dtype = self.dtype_dict[dtype]
 
     def execute(self):
         for i in range(len(self.shape)):
@@ -365,7 +353,7 @@ class TorchFullNode(TorchNode):
         self.output.send(out_array)
 
 
-class TorchGeneratorLikeNode(TorchNode):
+class TorchGeneratorLikeNode(TorchDeviceDtypeNode):
     @staticmethod
     def factory(name, data, args=None):
         node = TorchGeneratorLikeNode(name, data, args)
@@ -375,15 +363,12 @@ class TorchGeneratorLikeNode(TorchNode):
         super().__init__(label, data, args)
 
         self.input = self.add_input('tensor in', triggers_execution=True)
-        self.device = torch.device('cpu')
-        self.device_property = self.add_property('device', widget_type='combo', default_value='cpu', callback=self.device_changed)
-        self.device_property.widget.combo_items = ['cpu']
-        if torch.backends.mps.is_available():
-            self.device_property.widget.combo_items.append('mps')
-            self.device = 'mps'
-        if torch.cuda.is_available():
-            self.device_property.widget.combo_items.append('cuda')
-            self.device = 'cuda'
+
+        self.parse_args_for_dtype_and_device(args)
+        self.device = torch.device(self.device_string)
+        self.dtype = self.dtype_dict[self.dtype_string]
+        self.create_device_property()
+        self.create_dtype_property()
 
         if self.label == 't.rand_like':
             self.min = 0
@@ -393,19 +378,6 @@ class TorchGeneratorLikeNode(TorchNode):
             self.max_input = self.add_input('max', widget_type='drag_float', default_value=self.max,
                                             callback=self.range_changed)
 
-        self.dtype_dict = {}
-        self.dtype_dict['float32'] = torch.float32
-        self.dtype_dict['float'] = torch.float
-        self.dtype_dict['float16'] = torch.float16
-        self.dtype_dict['bfloat16'] = torch.bfloat16
-        self.dtype_dict['double'] = torch.double
-        self.dtype_dict['int64'] = torch.int64
-        self.dtype_dict['uint8'] = torch.uint8
-        self.dtype_dict['bool'] = torch.bool
-        self.dtype_option = self.add_option('dtype', widget_type='combo', default_value='float32', callback=self.dtype_changed)
-        self.dtype_option.widget.combo_items = list(self.dtype_dict.keys())
-        self.dtype = torch.float32
-
         out_label = 'random tensor'
         if self.label == 't.ones_like':
             out_label = 'tensor of ones'
@@ -413,37 +385,31 @@ class TorchGeneratorLikeNode(TorchNode):
             out_label = 'tensor of zeros'
         self.output = self.add_output(out_label)
 
-    def device_changed(self):
-        device_name = self.device_property.get_widget_value()
-        self.device = torch.device(device_name)
-
     def range_changed(self, val=None):
         self.min = self.min_input.get_widget_value()
         self.max = self.max_input.get_widget_value()
 
     def dtype_changed(self):
-        dtype = self.dtype_option.get_widget_value()
-        if dtype in self.dtype_dict:
-            self.dtype = self.dtype_dict[dtype]
-            if self.label == 't.rand':
-                if self.dtype == torch.uint8:
-                    if self.min < 0:
-                        self.min_input.set(0.0)
-                    if self.max == 1.0 or self.max < 255:
-                        self.max_input.set(255.0)
-                elif self.dtype == torch.int64:
-                    if self.min < -32768:
-                        self.min_input.set(-32768)
-                    if self.max == 1.0:
-                        self.max_input.set(32767)
-                elif self.dtype in [torch.float, torch.double, torch.float32, torch.float16, torch.bfloat16]:
-                    if self.min == -32768:
-                        self.min_input.set(0.0)
-                    if self.max == 255:
-                        self.max_input.set(1.0)
-                    elif self.max == 32767:
-                        self.max_input.set(1.0)
-                self.range_changed()
+        super().dtype_changed()
+        if self.label == 't.rand':
+            if self.dtype == torch.uint8:
+                if self.min < 0:
+                    self.min_input.set(0.0)
+                if self.max == 1.0 or self.max < 255:
+                    self.max_input.set(255.0)
+            elif self.dtype == torch.int64:
+                if self.min < -32768:
+                    self.min_input.set(-32768)
+                if self.max == 1.0:
+                    self.max_input.set(32767)
+            elif self.dtype in [torch.float, torch.double, torch.float32, torch.float16, torch.bfloat16]:
+                if self.min == -32768:
+                    self.min_input.set(0.0)
+                if self.max == 255:
+                    self.max_input.set(1.0)
+                elif self.max == 32767:
+                    self.max_input.set(1.0)
+            self.range_changed()
 
     def execute(self):
         if self.input.fresh_input:
@@ -466,7 +432,7 @@ class TorchGeneratorLikeNode(TorchNode):
                 self.output.send(out_array)
 
 
-class TorchLinSpaceNode(TorchNode):
+class TorchLinSpaceNode(TorchDeviceDtypeNode):
     @staticmethod
     def factory(name, data, args=None):
         node = TorchLinSpaceNode(name, data, args)
@@ -478,6 +444,7 @@ class TorchLinSpaceNode(TorchNode):
         self.start = 0.0
         self.stop = 1.0
         self.steps = 50
+
         self.op = torch.linspace
         out_label = 'linspace out'
         if self.label == 't.logspace':
@@ -486,47 +453,29 @@ class TorchLinSpaceNode(TorchNode):
 
         if len(args) > 0:
             d, t = decode_arg(args, 0)
-            self.start = any_to_float(d)
+            if t in [float, int]:
+                self.start = any_to_float(d)
         if len(args) > 1:
             d, t = decode_arg(args, 1)
-            self.stop = any_to_float(d)
+            if t in [float, int]:
+                self.stop = any_to_float(d)
         if len(args) > 2:
             d, t = decode_arg(args, 2)
-            self.steps = any_to_int(d)
+            if t in [float, int]:
+                self.steps = any_to_int(d)
 
         self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
         self.start_property = self.add_property('start', widget_type='drag_float', default_value=self.start)
         self.stop_property = self.add_property('stop', widget_type='drag_float', default_value=self.stop)
         self.steps_property = self.add_property('steps', widget_type='drag_int', default_value=self.steps)
-        self.dtype_dict = {}
-        self.dtype_dict['float32'] = torch.float32
-        self.dtype_dict['float'] = torch.float
-        self.dtype_dict['float16'] = torch.float16
-        self.dtype_dict['bfloat16'] = torch.bfloat16
-        self.dtype_dict['double'] = torch.double
-        self.dtype_dict['int64'] = torch.int64
-        self.dtype_dict['uint8'] = torch.uint8
-        self.dtype_dict['bool'] = torch.bool
-        self.dtype_option = self.add_property('dtype', widget_type='combo', default_value='float32', callback=self.dtype_changed)
-        self.dtype_option.widget.combo_items = list(self.dtype_dict.keys())
-        self.dtype = torch.float32
-        self.device = torch.device('cpu')
-        self.device_property = self.add_property('device', widget_type='combo', default_value='cpu', callback=self.device_changed)
-        self.device_property.widget.combo_items = ['cpu']
-        if torch.backends.mps.is_available():
-            self.device_property.widget.combo_items.append('mps')
-        if torch.cuda.is_available():
-            self.device_property.widget.combo_items.append('cuda')
-        self.output = self.add_output('linspace out')
 
-    def device_changed(self):
-        device_name = self.device_property.get_widget_value()
-        self.device = torch.device(device_name)
+        self.parse_args_for_dtype_and_device(args)
+        self.device = torch.device(self.device_string)
+        self.dtype = self.dtype_dict[self.dtype_string]
+        self.create_device_property()
+        self.create_dtype_property()
 
-    def dtype_changed(self):
-        dtype = self.dtype_option.get_widget_value()
-        if dtype in self.dtype_dict:
-            self.dtype = self.dtype_dict[dtype]
+        self.output = self.add_output(out_label)
 
     def execute(self):
         self.start = self.start_property.get_widget_value()
@@ -588,7 +537,27 @@ class TorchDistanceNode(TorchNode):
 
             self.output.send(euclidean_length.item())
 
-class TorchArgMaxNode(TorchNode):
+
+class TorchWithDimNode(TorchNode):
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.dim_specified = False
+        self.dim_input = None
+        self.dim = 0
+        if len(args) > 0:
+            self.dim = any_to_int(args[0])
+            self.dim_specified = True
+
+    def add_dim_input(self):
+        if self.dim_specified:
+            self.dim_input = self.add_input('dim', widget_type='input_int', default_value=self.dim, callback=self.dim_changed)
+
+    def dim_changed(self, val=None):
+        if self.dim_input is not None:
+            self.dim = self.dim_input.get_widget_value()
+
+
+class TorchArgMaxNode(TorchWithDimNode):
     @staticmethod
     def factory(name, data, args=None):
         node = TorchArgMaxNode(name, data, args)
@@ -596,18 +565,10 @@ class TorchArgMaxNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.dim_specified = False
-        self.dim = 0
-        if len(args) > 0:
-            self.dim = any_to_int(args[0])
-            self.dim_specified = True
         self.input = self.add_input("tensor in", triggers_execution=True)
         if self.dim_specified:
-            self.dim_input = self.add_input('dim', widget_type='input_int', default_value=self.dim, callback=self.dim_changed)
+            self.add_dim_input()
         self.output = self.add_output("max index")
-
-    def dim_changed(self, val=None):
-        self.dim = self.dim_input.get_widget_value()
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -616,7 +577,6 @@ class TorchArgMaxNode(TorchNode):
                 output_tensor = torch.argmax(input_tensor, dim=self.dim)
             else:
                 output_tensor = torch.argmax(input_tensor)
-            print(output_tensor)
             self.output.send(output_tensor)
 
 
@@ -672,7 +632,7 @@ class TorchFlipNode(TorchNode):
 #                                                   callback=self.dim_changed)
 #         self.output = self.add_output("output")
 
-class TorchSqueezeNode(TorchNode):
+class TorchSqueezeNode(TorchWithDimNode):
     @staticmethod
     def factory(name, data, args=None):
         node = TorchSqueezeNode(name, data, args)
@@ -680,18 +640,10 @@ class TorchSqueezeNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.dim_specified = False
-        self.dim = 0
-        if len(args) > 0:
-            self.dim = any_to_int(args[0])
-            self.dim_specified = True
         self.input = self.add_input("tensor in", triggers_execution=True)
         if self.dim_specified:
-            self.dim_input = self.add_input('dim', widget_type='input_int', default_value=self.dim, callback=self.dim_changed)
+            self.add_dim_input()
         self.output = self.add_output("output")
-
-    def dim_changed(self, val=None):
-        self.dim = self.dim_input.get_widget_value()
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -703,7 +655,7 @@ class TorchSqueezeNode(TorchNode):
                     self.output.send(torch.squeeze(input_tensor))
                 return
 
-class TorchUnsqueezeNode(TorchNode):
+class TorchUnsqueezeNode(TorchWithDimNode):
     @staticmethod
     def factory(name, data, args=None):
         node = TorchUnsqueezeNode(name, data, args)
@@ -711,15 +663,10 @@ class TorchUnsqueezeNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.dim = 0
-        if len(args) > 0:
-            self.dim = any_to_int(args[0])
         self.input = self.add_input("tensor in", triggers_execution=True)
-        self.dim_input = self.add_input('dim', widget_type='input_int', default_value=self.dim, callback=self.dim_changed)
+        if self.dim_specified:
+            self.dim_input = self.add_input('dim', widget_type='input_int', default_value=self.dim, callback=self.dim_changed)
         self.output = self.add_output("output")
-
-    def dim_changed(self, val=None):
-        self.dim = self.dim_input.get_widget_value()
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -728,12 +675,28 @@ class TorchUnsqueezeNode(TorchNode):
                 self.output.send(torch.unsqueeze(input_tensor, self.dim))
                 return
 
-class TorchCatNode(TorchNode):
+class TorchCumSumNode(TorchWithDimNode):
     @staticmethod
     def factory(name, data, args=None):
-        node = TorchCatNode(name, data, args)
+        node = TorchCumSumNode(name, data, args)
         return node
 
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        if self.dim_specified:
+            self.add_dim_input()
+        self.output = self.add_output("output")
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            if -1 - len(input_tensor.shape) < self.dim <= len(input_tensor.shape):
+                self.output.send(torch.cumsum(input_tensor, self.dim))
+                return
+
+
+class TorchStackCatNode(TorchNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.input_count = 2
@@ -749,6 +712,50 @@ class TorchCatNode(TorchNode):
 
     def dim_changed(self, val=None):
         self.dim = self.dim_input.get_widget_value()
+
+class TorchStackNode(TorchStackCatNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchStackNode(name, data, args)
+        return node
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            stack_list = [input_tensor]
+            for i in range(self.input_count - 1):
+                an_in = self.other_inputs[i]
+                a_tensor = self.data_to_tensor(an_in.get_received_data())
+                if a_tensor is not None:
+                    if len(a_tensor.shape) == len(input_tensor.shape):
+                        ok_shape = True
+                        for j in range(len(a_tensor.shape)):
+                            if a_tensor.shape[j] != input_tensor.shape[j]:
+                                ok_shape = False
+                                if self.app.verbose:
+                                    print('t.stack input tensor ' + str(i + 1) + ' has wrong shape')
+                                break
+                        if ok_shape:
+                            stack_list.append(a_tensor)
+                    else:
+                        if self.app.verbose:
+                            print('t.stack input tensor ' + str(i + 1) + ' has wrong number of dimensions')
+            if -len(input_tensor.shape) <= self.dim <= len(input_tensor.shape):
+                output_tensor = torch.stack(stack_list, self.dim)
+                self.output.send(output_tensor)
+            else:
+                if self.app.verbose:
+                    print('t.stack dim is out of range', self.dim)
+
+class TorchCatNode(TorchStackCatNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchCatNode(name, data, args)
+        return node
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -765,42 +772,42 @@ class TorchCatNode(TorchNode):
                                 if a_tensor.shape[j] != input_tensor.shape[j]:
                                     ok_shape = False
                                     if self.app.verbose:
-                                        print('torch.cat input tensor ' + str(i) + ' has wrong shape')
+                                        print('t.cat input tensor ' + str(i) + ' has wrong shape')
                                     break
                         if ok_shape:
                             cat_list.append(a_tensor)
                     else:
                         if self.app.verbose:
-                            print('torch.cat input tensor ' + str(i) + ' has wrong number of dimensions')
+                            print('t.cat input tensor ' + str(i) + ' has wrong number of dimensions')
             if self.dim < len(input_tensor.shape):
                 output_tensor = torch.cat(cat_list, self.dim)
                 self.output.send(output_tensor)
             else:
                 if self.app.verbose:
-                    print('torch.cat dim is out of range', self.dim)
+                    print('t.cat dim is out of range', self.dim)
 
 
-class TorchStackNode(TorchNode):
+class TorchHStackNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
-        node = TorchStackNode(name, data, args)
+        node = TorchHStackNode(name, data, args)
         return node
-
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.input_count = 2
-        self.dim = 0
         if len(args) > 0:
             self.input_count = string_to_int(args[0])
+        self.op = torch.hstack
+        if self.label in ['t.vstack', 't.row_stack']:
+            self.op = torch.vstack
+        elif self.label == 't.dstack':
+            self.op = torch.dstack
+
         self.other_inputs = []
         self.input = self.add_input("tensor 1", triggers_execution=True)
         for i in range(self.input_count - 1):
             self.other_inputs.append(self.add_input('tensor ' + str(i + 2)))
-        self.dim_input = self.add_input('dim', widget_type='input_int', default_value=self.dim, callback=self.dim_changed)
-        self.output = self.add_output("output")
-
-    def dim_changed(self, val=None):
-        self.dim = self.dim_input.get_widget_value()
+        self.output = self.add_output("stacked tensors")
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -810,25 +817,15 @@ class TorchStackNode(TorchNode):
                 an_in = self.other_inputs[i]
                 a_tensor = self.data_to_tensor(an_in.get_received_data())
                 if a_tensor is not None:
-                    if len(a_tensor.shape) == len(input_tensor.shape):
-                        ok_shape = True
-                        for j in range(len(a_tensor.shape)):
-                            if a_tensor.shape[j] != input_tensor.shape[j]:
-                                ok_shape = False
-                                if self.app.verbose:
-                                    print('torch.stack input tensor ' + str(i) + ' has wrong shape')
-                                break
-                        if ok_shape:
-                            stack_list.append(a_tensor)
-                    else:
+                    if a_tensor.shape != input_tensor.shape:
                         if self.app.verbose:
-                            print('torch.stack input tensor ' + str(i) + ' has wrong number of dimensions')
-            if -len(input_tensor.shape) <= self.dim <= len(input_tensor.shape):
-                output_tensor = torch.stack(stack_list, self.dim)
-                self.output.send(output_tensor)
-            else:
-                if self.app.verbose:
-                    print('torch.stack dim is out of range', self.dim)
+                            print(self.label + ' input tensors must have the same shape')
+                        return
+                    else:
+                        stack_list.append(a_tensor)
+            print(stack_list)
+            output_tensor = self.op(tuple(stack_list))
+            self.output.send(output_tensor)
 
 class TorchSelectNode(TorchNode):
     @staticmethod
@@ -902,42 +899,6 @@ class TorchChunkNode(TorchNode):
                     for idx, tensor_ in enumerate(tensors):
                         if idx < len(self.outputs):
                             self.tensor_outputs[idx].send(tensor_)
-
-
-class TorchNNThresholdNode(TorchNode):
-    @staticmethod
-    def factory(name, data, args=None):
-        node = TorchNNThresholdNode(name, data, args)
-        return node
-
-    def __init__(self, label: str, data, args):
-        super().__init__(label, data, args)
-        self.threshold = 0
-        self.replace = 0
-        if len(args) > 0:
-            self.threshold = any_to_int(args[0])
-        if len(args) > 1:
-            self.replace = any_to_int(args[1])
-
-        self.input = self.add_input("tensor in", triggers_execution=True)
-        self.threshold_input = self.add_input('threshold', widget_type='drag_float', default_value=self.threshold, callback=self.threshold_changed)
-        self.replace_input = self.add_input('replacenent', widget_type='drag_float', default_value=self.replace, callback=self.replacement_changed)
-        self.op = torch.nn.Threshold(self.threshold, self.replace)
-        self.output = self.add_output("output")
-
-    def threshold_changed(self, val=None):
-        self.threshold = self.threshold_input.get_widget_value()
-        self.op = torch.nn.Threshold(self.threshold, self.replace)
-
-    def replacement_changed(self, val=None):
-        self.replace = self.replace_input.get_widget_value()
-        self.op = torch.nn.Threshold(self.threshold, self.replace)
-
-    def execute(self):
-        input_tensor = self.input_to_tensor()
-        if input_tensor is not None:
-            self.output.send(self.op(input_tensor))
-
 
 class TorchActivationNode(TorchNode):
     @staticmethod

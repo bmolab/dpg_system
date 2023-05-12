@@ -1635,9 +1635,6 @@ class PlotNode(Node):
                     ii = any_to_array(float(data))
                     self.y_data.update(ii)
                 elif t == list:
-                    length = len(data)
-                    if length > self.sample_count:
-                        length = self.sample_count
                     ii = list_to_array(data)
                     self.y_data.update(ii)
                 elif t == np.ndarray:
@@ -1711,8 +1708,9 @@ class PlotNode(Node):
         elif self.style in [self.heat_scroll_style, self.heat_map_style]:
             buffer = self.y_data.get_buffer()
             forced_format = False
+            print(buffer.shape, self.width, self.rows, self.sample_count)
             if len(buffer.shape) == 1:
-                if self.width / self.sample_count < 40:
+                if self.width / self.rows < 40:
                     forced_format = True
                     if len(self.format) > 0:
                         self.hold_format = self.format
@@ -1720,7 +1718,15 @@ class PlotNode(Node):
                         self.format = ''
                         self.change_format()
             else:
-                if self.width / self.sample_count < 40:
+                if self.sample_count == 1:
+                    if self.width / self.rows < 40:
+                        forced_format = True
+                        if len(self.format) > 0:
+                            self.hold_format = self.format
+                            self.format_option.set('')
+                            self.format = ''
+                            self.change_format()
+                elif self.width / self.sample_count < 40:
                     forced_format = True
                     if len(self.format) > 0:
                         self.hold_format = self.format
