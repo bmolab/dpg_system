@@ -95,6 +95,21 @@ def register_torch_nodes():
 
     Node.app.register_node('t.copysign', TorchCopySignNode.factory)
 
+    Node.app.register_node('t.linalg.qr', TorchLinalgRQNode.factory)
+    Node.app.register_node('t.linalg.svd', TorchLinalgSVDNode.factory)
+    Node.app.register_node('t.linalg.eig', TorchLinalgEigenNode.factory)
+
+    Node.app.register_node('t.window.blackman', TorchWindowNode.factory)
+    Node.app.register_node('t.window.bartlett', TorchWindowNode.factory)
+    Node.app.register_node('t.window.cosine', TorchWindowNode.factory)
+    Node.app.register_node('t.window.hamming', TorchWindowNode.factory)
+    Node.app.register_node('t.window.hann', TorchWindowNode.factory)
+    Node.app.register_node('t.window.nuttall', TorchWindowNode.factory)
+    Node.app.register_node('t.window.gaussian', TorchWindowOneParamNode.factory)
+    Node.app.register_node('t.window.general_hamming', TorchWindowOneParamNode.factory)
+    Node.app.register_node('t.window.kaiser', TorchWindowOneParamNode.factory)
+    Node.app.register_node('t.window.exponential', TorchWindowTwoParamNode.factory)
+
     Node.app.register_node('tv.Grayscale', TorchvisionGrayscaleNode.factory)
     Node.app.register_node('tv.gaussian_blur', TorchvisionGaussianBlurNode.factory)
     Node.app.register_node('tv.adjust_hue', TorchvisionAdjustOneParamNode.factory)
@@ -1738,3 +1753,236 @@ class CosineSimilarityNode(TorchNode):
         if self.vector_2 is not None and vector_1 is not None:
             similarity = self.cos(vector_1, self.vector_2)
             self.output.send(similarity.item())
+
+class TorchLinalgRQNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchLinalgRQNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.mode = 'reduced'
+        self.mode_property = self.add_property('mode', widget_type='combo', default_value=self.mode, callback=self.mode_changed)
+        self.mode_property.widget.combo_items = ['reduced', 'complete', 'r']
+        self.q_output = self.add_output('Q tensor out')
+        self.r_output = self.add_output('R tensor out')
+
+    def mode_changed(self, val='reduced'):
+        self.mode = self.mode_property.get_widget_value()
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            q, r = torch.linalg.qr(input_tensor, self.mode)
+            self.r_output.send(r)
+            self.q_output.send(q)
+
+class TorchLinalgSVDNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchLinalgSVDNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.full = True
+        self.full_property = self.add_property('full', widget_type='checkbox', default_value=self.full, callback=self.full_changed)
+        self.s_output = self.add_output('S tensor out')
+        self.v_output = self.add_output('V tensor out')
+        self.d_output = self.add_output('D tensor out')
+
+    def full_changed(self, val='reduced'):
+        self.full = self.full_property.get_widget_value()
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            s, v, d = torch.linalg.svd(input_tensor, self.full)
+            self.d_output.send(d)
+            self.v_output.send(v)
+            self.s_output.send(s)
+
+
+class TorchLinalgEigenNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchLinalgEigenNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.l_output = self.add_output('L tensor out')
+        self.v_output = self.add_output('V tensor out')
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            if len(input_tensor.shape) > 1:
+                if input_tensor.shape[-1] == input_tensor.shape[-1]:
+                    l, v = torch.linalg.eig(input_tensor)
+                    self.v_output.send(v)
+                    self.l_output.send(l)
+                else:
+                    if self.app.verbose:
+                        print(self.label, 'tensor is not square')
+            else:
+                if self.app.verbose:
+                    print(self.label, 'tensor has less than 2 dimensions')
+
+
+class TorchWindowNode(TorchDeviceDtypeNode):
+    op_dict = {'t.window.blackman': torch.signal.windows.blackman,
+               't.window.bartlett': torch.signal.windows.bartlett,
+               't.window.cosine': torch.signal.windows.cosine,
+               't.window.hamming': torch.signal.windows.hamming,
+               't.window.hann': torch.signal.windows.hann,
+               't.window.nuttall': torch.signal.windows.nuttall
+               }
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchWindowNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        if self.label in self.op_dict:
+            self.op = self.op_dict[self.label]
+        self.m = 256
+        self.sym = True
+        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+        self.m_input = self.add_input('m', widget_type='drag_int', default_value=self.m, callback=self.m_changed)
+        self.sym_input = self.add_input('sym', widget_type='checkbox', default_value=self.sym, callback=self.sym_changed)
+        self.parse_args_for_dtype_and_device(args)
+        self.device = torch.device(self.device_string)
+        self.dtype = self.dtype_dict[self.dtype_string]
+        self.create_device_property()
+        self.create_dtype_property()
+        self.output = self.add_output('window tensor out')
+
+    def m_changed(self, val=64):
+        self.m = self.m_input.get_widget_value()
+
+    def sym_changed(self, val=True):
+        self.sym = self.sym_input.get_widget_value()
+
+    def execute(self):
+        window_tensor = self.op(self.m, sym=self.sym, dtype=self.dtype, device=self.device)
+        self.output.send(window_tensor)
+
+
+class TorchWindowOneParamNode(TorchDeviceDtypeNode):
+    op_dict = {'t.window.gaussian': torch.signal.windows.gaussian,
+               't.window.general_hamming': torch.signal.windows.general_hamming,
+               't.window.kaiser': torch.signal.windows.kaiser
+               }
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchWindowOneParamNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        param_1_name = 'std'
+        self.param_1 = 1.0
+        if self.label in self.op_dict:
+            self.op = self.op_dict[self.label]
+            if self.label == 't.window.gaussian':
+                param_1_name = 'std'
+                self.param_1 = 1.0
+            elif self.label == 't.window.general_hamming':
+                param_1_name = 'alpha'
+                self.param_1 = 0.54
+            elif self.label == 't.window.kaiser':
+                param_1_name = 'beta'
+                self.param_1 = 12.0
+
+        self.m = 256
+        self.sym = True
+        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+        self.m_input = self.add_input('m', widget_type='drag_int', default_value=self.m, callback=self.m_changed)
+        self.param_input = self.add_input(param_1_name, widget_type='drag_float', default_value=self.param_1, callback=self.param_changed)
+        self.sym_input = self.add_input('sym', widget_type='checkbox', default_value=self.sym, callback=self.sym_changed)
+        self.parse_args_for_dtype_and_device(args)
+        self.device = torch.device(self.device_string)
+        self.dtype = self.dtype_dict[self.dtype_string]
+        self.create_device_property()
+        self.create_dtype_property()
+        self.output = self.add_output('window tensor out')
+
+    def m_changed(self, val=64):
+        self.m = self.m_input.get_widget_value()
+
+    def sym_changed(self, val=True):
+        self.sym = self.sym_input.get_widget_value()
+
+
+    def param_changed(self, val=64):
+        self.param_1 = self.param_input.get_widget_value()
+
+    def execute(self):
+        if self.label == 't.window.gaussian':
+            window_tensor = self.op(self.m, std=self.param_1, sym=self.sym, dtype=self.dtype, device=self.device)
+            self.output.send(window_tensor)
+        elif self.label == 't.window.general_hamming':
+            window_tensor = self.op(self.m, alpha=self.param_1, sym=self.sym, dtype=self.dtype, device=self.device)
+            self.output.send(window_tensor)
+        elif self.label == 't.window.kaiser':
+            window_tensor = self.op(self.m, beta=self.param_1, sym=self.sym, dtype=self.dtype, device=self.device)
+            self.output.send(window_tensor)
+
+class TorchWindowTwoParamNode(TorchDeviceDtypeNode):
+    op_dict = {'t.window.exponential': torch.signal.windows.exponential
+               }
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchWindowTwoParamNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        if self.label in self.op_dict:
+            self.op = self.op_dict[self.label]
+            if self.label == 't.window.exponential':
+                param_1_name = 'center'
+                param_2_name = 'tau'
+                self.param_1 = 1.0
+                self.param_2 = 1.0
+
+        self.m = 256
+        self.sym = True
+        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+        self.m_input = self.add_input('m', widget_type='drag_int', default_value=self.m, callback=self.m_changed)
+        self.param_input = self.add_input(param_1_name, widget_type='drag_float', default_value=self.param_1, callback=self.param_changed)
+        self.param_2_input = self.add_input(param_2_name, widget_type='drag_float', default_value=self.param_2, callback=self.param_changed)
+        self.sym_input = self.add_input('sym', widget_type='checkbox', default_value=self.sym, callback=self.sym_changed)
+        self.parse_args_for_dtype_and_device(args)
+        self.device = torch.device(self.device_string)
+        self.dtype = self.dtype_dict[self.dtype_string]
+        self.create_device_property()
+        self.create_dtype_property()
+        self.output = self.add_output('window tensor out')
+
+    def m_changed(self, val=64):
+        self.m = self.m_input.get_widget_value()
+
+    def sym_changed(self, val=True):
+        self.sym = self.sym_input.get_widget_value()
+
+    def param_changed(self, val=64):
+        self.param_1 = self.param_input.get_widget_value()
+        self.param_2 = self.param_2_input.get_widget_value()
+        if self.param_2 <= 0:
+            self.param_2 = 0
+
+    def execute(self):
+        if self.sym:
+            window_tensor = self.op(self.m, tau=self.param_2, sym=self.sym, dtype=self.dtype,
+                                    device=self.device)
+        else:
+            window_tensor = self.op(self.m, center=self.param_1, tau=self.param_2, sym=self.sym, dtype=self.dtype, device=self.device)
+
+        self.output.send(window_tensor)

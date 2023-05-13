@@ -402,6 +402,8 @@ def list_to_tensor(input):
             t = type(hybrid_list[0])
             if t in [float, int, bool, np.int64, np.float, np.double, np.float32, np.bool_]:
                 return torch.Tensor(hybrid_list)
+            elif str not in types:
+                return torch.Tensor(hybrid_list)
         else:
             if str not in types:
                 return torch.Tensor(hybrid_list)
