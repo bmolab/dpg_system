@@ -3,6 +3,9 @@ import math
 import numpy as np
 import random
 import time
+
+import torch
+
 from dpg_system.node import Node
 import threading
 from dpg_system.conversion_utils import *
@@ -1201,6 +1204,12 @@ class TypeNode(Node):
                     comp = 'float16'
                 elif input.dtype == torch.bfloat16:
                     comp = 'bfloat16'
+                elif input.dtype == torch.complex128:
+                    comp = 'complex128'
+                elif input.dtype == torch.complex64:
+                    comp = 'complex64'
+                elif input.dtype == torch.complex32:
+                    comp = 'complex32'
 
                 device = 'cpu'
                 if input.is_cuda:
@@ -1208,17 +1217,22 @@ class TypeNode(Node):
                 elif input.is_mps:
                     device = 'mps'
 
+                if input.requires_grad:
+                    grad = 'requires_grad'
+                else:
+                    grad = ''
+
                 if len(shape) == 1:
-                    self.type_property.set('tensor[' + str(shape[0]) + '] ' + comp + ' ' + device)
+                    self.type_property.set('tensor[' + str(shape[0]) + '] ' + comp + ' ' + device + ' ' + grad)
                 elif len(shape) == 2:
-                    self.type_property.set('tensor[' + str(shape[0]) + ', ' + str(shape[1]) + '] ' + comp + ' ' + device)
+                    self.type_property.set('tensor[' + str(shape[0]) + ', ' + str(shape[1]) + '] ' + comp + ' ' + device + ' ' + grad)
                 elif len(shape) == 3:
                     self.type_property.set(
-                        'tensor[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + '] ' + comp + ' ' + device)
+                        'tensor[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + '] ' + comp + ' ' + device + ' ' + grad)
                 elif len(shape) == 4:
                     self.type_property.set(
                         'tensor[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + ', ' + str(
-                            shape[3]) + '] ' + comp + ' ' + device)
+                            shape[3]) + '] ' + comp + ' ' + device + ' ' + grad)
             elif t == np.float:
                 self.type_property.set('numpy.float')
             elif t == np.float32:

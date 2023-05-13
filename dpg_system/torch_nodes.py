@@ -57,6 +57,10 @@ def register_torch_nodes():
     Node.app.register_node('t.chunk', TorchChunkNode.factory)
     Node.app.register_node('t.tensor_split', TorchChunkNode.factory)
 
+    Node.app.register_node('t.real', TorchRealImaginaryNode.factory)
+    Node.app.register_node('t.imag', TorchRealImaginaryNode.factory)
+    Node.app.register_node('t.complex', TorchComplexNode.factory)
+
     Node.app.register_node('t.nn.Threshold', TorchNNThresholdNode.factory)
     Node.app.register_node('t.nn.relu', TorchActivationNode.factory)
     Node.app.register_node('t.nn.hardswish', TorchActivationNode.factory)
@@ -177,6 +181,15 @@ class TorchDeviceDtypeNode(TorchNode):
         self.device_list = self.create_device_list()
         self.device = torch.device(self.device_string)
         self.dtype = self.dtype_dict[self.dtype_string]
+        self.requires_grad = False
+
+    def setup_dtype_device_grad(self, args):
+        self.parse_args_for_dtype_and_device(args)
+        self.device = torch.device(self.device_string)
+        self.dtype = self.dtype_dict[self.dtype_string]
+        self.create_device_property()
+        self.create_dtype_property()
+        self.create_requires_grad_property()
 
     def parse_args_for_dtype_and_device(self, args):
         for i in range(len(args)):
@@ -195,15 +208,21 @@ class TorchDeviceDtypeNode(TorchNode):
                                               callback=self.dtype_changed)
         self.dtype_property.widget.combo_items = list(self.dtype_dict.keys())
 
+    def create_requires_grad_property(self):
+        self.grad_property = self.add_property('requires_grad', widget_type='checkbox', default_value=self.requires_grad,
+                                              callback=self.requires_grad_changed)
+
     def device_changed(self):
         device_name = self.device_property.get_widget_value()
         self.device = torch.device(device_name)
+
+    def requires_grad_changed(self):
+        self.requires_grad = self.grad_property.get_widget_value()
 
     def dtype_changed(self):
         dtype = self.dtype_property.get_widget_value()
         if dtype in self.dtype_dict:
             self.dtype = self.dtype_dict[dtype]
-            print(self.dtype)
 
     def create_dtype_dict(self):
         dtype_dict = {}
@@ -239,18 +258,14 @@ class TensorNode(TorchDeviceDtypeNode):
 
         self.input = self.add_input("in", triggers_execution=True)
 
-        self.parse_args_for_dtype_and_device(args)
-        self.device = torch.device(self.device_string)
-        self.dtype = self.dtype_dict[self.dtype_string]
-        self.create_device_property()
-        self.create_dtype_property()
+        self.setup_dtype_device_grad(args)
 
         self.output = self.add_output('tensor out')
 
     def execute(self):
         in_data = self.input_to_tensor()
         if in_data is not None:
-            out_array = any_to_tensor(in_data, self.device, self.dtype)
+            out_array = any_to_tensor(in_data, self.device, self.dtype, self.requires_grad)
             self.output.send(out_array)
 
 
@@ -277,11 +292,7 @@ class TorchGeneratorNode(TorchDeviceDtypeNode):
         for i in range(len(self.shape)):
             self.shape_properties.append(self.add_property('dim ' + str(i), widget_type='input_int', default_value=self.shape[i]))
 
-        self.parse_args_for_dtype_and_device(args)
-        self.device = torch.device(self.device_string)
-        self.dtype = self.dtype_dict[self.dtype_string]
-        self.create_device_property()
-        self.create_dtype_property()
+        self.setup_dtype_device_grad(args)
 
         if self.label == 't.rand':
             self.min = 0
@@ -331,15 +342,15 @@ class TorchGeneratorNode(TorchDeviceDtypeNode):
         if self.label == 't.rand':
             if self.dtype in [torch.float, torch.float32, torch.double, torch.float16, torch.bfloat16]:
                 range_ = self.max - self.min
-                out_array = torch.rand(size=size, device=self.device, dtype=self.dtype) * range_ + self.min
+                out_array = torch.rand(size=size, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad) * range_ + self.min
             elif self.dtype in [torch.int64, torch.uint8]:
-                out_array = torch.randint(low=int(self.min), high=int(self.max), size=size, device=self.device, dtype=self.dtype)
+                out_array = torch.randint(low=int(self.min), high=int(self.max), size=size, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad)
             elif self.dtype == torch.bool:
-                out_array = torch.randint(low=0, high=1, size=size, device=self.device, dtype=self.dtype)
+                out_array = torch.randint(low=0, high=1, size=size, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad)
         elif self.label == 't.ones':
-            out_array = torch.ones(size=size, device=self.device, dtype=self.dtype)
+            out_array = torch.ones(size=size, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad)
         elif self.label == 't.zeros':
-            out_array = torch.zeros(size=size, device=self.device, dtype=self.dtype)
+            out_array = torch.zeros(size=size, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad)
         self.output.send(out_array)
 
 class TorchFullNode(TorchDeviceDtypeNode):
@@ -366,11 +377,7 @@ class TorchFullNode(TorchDeviceDtypeNode):
         for i in range(len(self.shape)):
             self.shape_properties.append(self.add_property('dim ' + str(i), widget_type='input_int', default_value=self.shape[i]))
 
-        self.parse_args_for_dtype_and_device(args)
-        self.device = torch.device(self.device_string)
-        self.dtype = self.dtype_dict[self.dtype_string]
-        self.create_device_property()
-        self.create_dtype_property()
+        self.setup_dtype_device_grad(args)
 
         out_label = 'filled tensor'
         self.output = self.add_output(out_label)
@@ -382,7 +389,7 @@ class TorchFullNode(TorchDeviceDtypeNode):
         for i in range(len(self.shape)):
             self.shape[i] = self.shape_properties[i].get_widget_value()
         size = tuple(self.shape)
-        out_array = torch.full(size=size, fill_value=self.value, device=self.device, dtype=self.dtype)
+        out_array = torch.full(size=size, fill_value=self.value, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad)
         self.output.send(out_array)
 
 
@@ -397,11 +404,7 @@ class TorchGeneratorLikeNode(TorchDeviceDtypeNode):
 
         self.input = self.add_input('tensor in', triggers_execution=True)
 
-        self.parse_args_for_dtype_and_device(args)
-        self.device = torch.device(self.device_string)
-        self.dtype = self.dtype_dict[self.dtype_string]
-        self.create_device_property()
-        self.create_dtype_property()
+        self.setup_dtype_device_grad(args)
 
         if self.label == 't.rand_like':
             self.min = 0
@@ -455,13 +458,13 @@ class TorchGeneratorLikeNode(TorchDeviceDtypeNode):
                         range_ = self.max - self.min
                         out_array = torch.rand(size=size, device=self.device, dtype=self.dtype) * range_ + self.min
                     elif self.dtype in [torch.int64, torch.uint8]:
-                        out_array = torch.randint(low=int(self.min), high=int(self.max), size=size, device=self.device, dtype=self.dtype)
+                        out_array = torch.randint(low=int(self.min), high=int(self.max), size=size, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad)
                     elif self.dtype == torch.bool:
-                        out_array = torch.randint(low=0, high=1, size=size, device=self.device, dtype=self.dtype)
+                        out_array = torch.randint(low=0, high=1, size=size, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad)
                 elif self.label == 't.ones_like':
-                    out_array = torch.ones(size=size, device=self.device, dtype=self.dtype)
+                    out_array = torch.ones(size=size, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad)
                 elif self.label == 't.zeros_like':
-                    out_array = torch.zeros(size=size, device=self.device, dtype=self.dtype)
+                    out_array = torch.zeros(size=size, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad)
                 self.output.send(out_array)
 
 
@@ -502,11 +505,7 @@ class TorchLinSpaceNode(TorchDeviceDtypeNode):
         self.stop_property = self.add_property('stop', widget_type='drag_float', default_value=self.stop)
         self.steps_property = self.add_property('steps', widget_type='drag_int', default_value=self.steps)
 
-        self.parse_args_for_dtype_and_device(args)
-        self.device = torch.device(self.device_string)
-        self.dtype = self.dtype_dict[self.dtype_string]
-        self.create_device_property()
-        self.create_dtype_property()
+        self.setup_dtype_device_grad(args)
 
         self.output = self.add_output(out_label)
 
@@ -514,7 +513,7 @@ class TorchLinSpaceNode(TorchDeviceDtypeNode):
         self.start = self.start_property.get_widget_value()
         self.stop = self.stop_property.get_widget_value()
         self.steps = self.steps_property.get_widget_value()
-        out_array = self.op(self.start, self.stop, self.steps, dtype=self.dtype, device=self.device)
+        out_array = self.op(self.start, self.stop, self.steps, dtype=self.dtype, device=self.device, requires_grad=self.requires_grad)
         self.output.send(out_array)
 
 
@@ -535,11 +534,7 @@ class TorchEyeNode(TorchDeviceDtypeNode):
         self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
         self.n_input = self.add_input('n', widget_type='input_int', default_value=self.n, callback=self.n_changed)
 
-        self.parse_args_for_dtype_and_device(args)
-        self.device = torch.device(self.device_string)
-        self.dtype = self.dtype_dict[self.dtype_string]
-        self.create_device_property()
-        self.create_dtype_property()
+        self.setup_dtype_device_grad(args)
 
         out_label = 'eye tensor'
         self.output = self.add_output(out_label)
@@ -548,7 +543,7 @@ class TorchEyeNode(TorchDeviceDtypeNode):
         self.n = self.n_input.get_widget_value()
 
     def execute(self):
-        out_array = torch.eye(n=self.n, device=self.device, dtype=self.dtype)
+        out_array = torch.eye(n=self.n, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad)
         self.output.send(out_array)
 
 
@@ -941,6 +936,75 @@ class TorchArgWhereNode(TorchNode):
         if input_tensor is not None:
             self.output.send(torch.argwhere(input_tensor))
 
+
+class TorchRealImaginaryNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchRealImaginaryNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.real = True
+        output_name = 'real tensor'
+        if self.label == 't.imag':
+            self.real = False
+            output_name = 'imaginary tensor'
+
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.output = self.add_output(output_name)
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            if input_tensor.dtype in [torch.complex32, torch.complex64, torch.complex128]:
+                if self.real:
+                    self.output.send(torch.real(input_tensor))
+                else:
+                    self.output.send(torch.imag(input_tensor))
+
+
+class TorchComplexNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchComplexNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.real = True
+        self.input = self.add_input("real tensor in", triggers_execution=True)
+        self.imag_input = self.add_input("imag tensor in", triggers_execution=True)
+        self.output = self.add_output('complex tensor out')
+
+    def execute(self):
+        real_tensor = self.input_to_tensor()
+        if real_tensor is not None:
+            data = self.imag_input.get_received_data()
+            if data is not None:
+                imag_tensor = self.data_to_tensor(data)
+                if imag_tensor is not None:
+                    if real_tensor.shape == imag_tensor.shape:
+                        if real_tensor.dtype in [torch.float16, torch.float32, torch.float64]:
+                            if real_tensor.dtype == imag_tensor.dtype:
+                                complex_tensor = torch.complex(real_tensor, imag_tensor)
+                                self.output.send(complex_tensor)
+                            else:
+                                if self.app.verbose:
+                                    print(self.label, 'real and imaginary tensor dtypes don\'t match', real_tensor.dtype, imag_tensor.dtype)
+                        else:
+                            if self.app.verbose:
+                                print(self.label, 'real tensor wrong dtype', real_tensor.dtype)
+                    else:
+                        if self.app.verbose:
+                            print(self.label, 'imaginary tensor is None')
+                else:
+                    if self.app.verbose:
+                        print(self.label, 'no input for imaginary tensor')
+        else:
+            if self.app.verbose:
+                print(self.label, 'real tensor is None')
+
 class TorchCopySignNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -984,6 +1048,7 @@ class TorchStackCatNode(TorchNode):
     def dim_changed(self, val=None):
         self.dim = self.dim_input.get_widget_value()
 
+
 class TorchStackNode(TorchStackCatNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -1019,6 +1084,7 @@ class TorchStackNode(TorchStackCatNode):
             else:
                 if self.app.verbose:
                     print('t.stack dim is out of range', self.dim)
+
 
 class TorchCatNode(TorchStackCatNode):
     @staticmethod
@@ -1098,6 +1164,7 @@ class TorchHStackNode(TorchNode):
             output_tensor = self.op(tuple(stack_list))
             self.output.send(output_tensor)
 
+
 class TorchSelectNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -1131,6 +1198,7 @@ class TorchSelectNode(TorchNode):
                 if -1 - input_tensor.shape[self.dim] < self.index < input_tensor.shape[self.dim]:
                     self.output.send(torch.select(input_tensor, self.dim, self.index))
                     return
+
 
 class TorchChunkNode(TorchNode):
     @staticmethod
@@ -1170,6 +1238,7 @@ class TorchChunkNode(TorchNode):
                     for idx, tensor_ in enumerate(tensors):
                         if idx < len(self.outputs):
                             self.tensor_outputs[idx].send(tensor_)
+
 
 class TorchActivationNode(TorchNode):
     @staticmethod
@@ -1218,6 +1287,7 @@ class TorchActivationNode(TorchNode):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
             self.output.send(self.op(input_tensor))
+
 
 class TorchActivationTwoParamNode(TorchNode):
     @staticmethod
@@ -1297,6 +1367,7 @@ class TorchActivationThreeParamNode(TorchNode):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
             self.output.send(self.op(input_tensor, self.parameter_1, self.parameter_2, self.parameter_3))
+
 
 class TorchSoftmaxNode(TorchNode):
     @staticmethod
@@ -1856,11 +1927,9 @@ class TorchWindowNode(TorchDeviceDtypeNode):
         self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
         self.m_input = self.add_input('m', widget_type='drag_int', default_value=self.m, callback=self.m_changed)
         self.sym_input = self.add_input('sym', widget_type='checkbox', default_value=self.sym, callback=self.sym_changed)
-        self.parse_args_for_dtype_and_device(args)
-        self.device = torch.device(self.device_string)
-        self.dtype = self.dtype_dict[self.dtype_string]
-        self.create_device_property()
-        self.create_dtype_property()
+
+        self.setup_dtype_device_grad(args)
+
         self.output = self.add_output('window tensor out')
 
     def m_changed(self, val=64):
@@ -1906,11 +1975,9 @@ class TorchWindowOneParamNode(TorchDeviceDtypeNode):
         self.m_input = self.add_input('m', widget_type='drag_int', default_value=self.m, callback=self.m_changed)
         self.param_input = self.add_input(param_1_name, widget_type='drag_float', default_value=self.param_1, callback=self.param_changed)
         self.sym_input = self.add_input('sym', widget_type='checkbox', default_value=self.sym, callback=self.sym_changed)
-        self.parse_args_for_dtype_and_device(args)
-        self.device = torch.device(self.device_string)
-        self.dtype = self.dtype_dict[self.dtype_string]
-        self.create_device_property()
-        self.create_dtype_property()
+
+        self.setup_dtype_device_grad(args)
+
         self.output = self.add_output('window tensor out')
 
     def m_changed(self, val=64):
@@ -1959,11 +2026,9 @@ class TorchWindowTwoParamNode(TorchDeviceDtypeNode):
         self.param_input = self.add_input(param_1_name, widget_type='drag_float', default_value=self.param_1, callback=self.param_changed)
         self.param_2_input = self.add_input(param_2_name, widget_type='drag_float', default_value=self.param_2, callback=self.param_changed)
         self.sym_input = self.add_input('sym', widget_type='checkbox', default_value=self.sym, callback=self.sym_changed)
-        self.parse_args_for_dtype_and_device(args)
-        self.device = torch.device(self.device_string)
-        self.dtype = self.dtype_dict[self.dtype_string]
-        self.create_device_property()
-        self.create_dtype_property()
+
+        self.setup_dtype_device_grad(args)
+
         self.output = self.add_output('window tensor out')
 
     def m_changed(self, val=64):

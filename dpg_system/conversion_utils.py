@@ -129,7 +129,7 @@ def any_to_bool(data):
     return False
 
 
-def any_to_tensor(data, device='cpu', dtype=torch.float32):
+def any_to_tensor(data, device='cpu', dtype=torch.float32, requires_grad=False):
     if torch_available:
         t = type(data)
         if t == torch.Tensor:
@@ -153,11 +153,22 @@ def any_to_tensor(data, device='cpu', dtype=torch.float32):
 
         if tensor_.device == device:
             if dtype != tensor_.dtype:
-                tensor_ = tensor_.to(dtype=dtype)
+                if tensor_.requires_grad != requires_grad:
+                    tensor_ = tensor_.to(dtype=dtype, requires_grad=requires_grad)
+                else:
+                    tensor_ = tensor_.to(dtype=dtype)
+            elif tensor_.requires_grad != requires_grad:
+                tensor_.to(requires_grad=requires_grad)
             return tensor_
         else:
             if dtype != tensor_.dtype:
-                tensor_ = tensor_.to(dtype=dtype, device=device)
+                if tensor_.requires_grad != requires_grad:
+                    tensor_ = tensor_.to(dtype=dtype, device=device, requires_grad=requires_grad)
+                else:
+                    tensor_ = tensor_.to(dtype=dtype, device=device)
+
+            elif tensor_.requires_grad != requires_grad:
+                tensor_.to(device=device, requires_grad=requires_grad)
             else:
                 tensor_.to(device=device)
             return tensor_
