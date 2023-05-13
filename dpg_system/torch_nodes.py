@@ -24,6 +24,7 @@ def register_torch_nodes():
     Node.app.register_node('t.full', TorchFullNode.factory)
     Node.app.register_node('t.linspace', TorchLinSpaceNode.factory)
     Node.app.register_node('t.logspace', TorchLinSpaceNode.factory)
+    Node.app.register_node('t.eye', TorchEyeNode.factory)
 
     Node.app.register_node('t.rand_like', TorchGeneratorLikeNode.factory)
     Node.app.register_node('t.ones_like', TorchGeneratorLikeNode.factory)
@@ -52,6 +53,7 @@ def register_torch_nodes():
     Node.app.register_node('t.column_stack', TorchHStackNode.factory)
     Node.app.register_node('t.dstack', TorchHStackNode.factory)
     Node.app.register_node('t.repeat', TorchRepeatNode.factory)
+    Node.app.register_node('t.tile', TorchTileNode.factory)
     Node.app.register_node('t.chunk', TorchChunkNode.factory)
     Node.app.register_node('t.tensor_split', TorchChunkNode.factory)
 
@@ -89,9 +91,9 @@ def register_torch_nodes():
     Node.app.register_node('t.non_zero', TorchArgWhereNode.factory)
     Node.app.register_node('t.cumsum', TorchCumSumNode.factory)
     Node.app.register_node('t.masked_select', TorchMaskedSelectNode.factory)
-#   torch.index_select
-#   torch.tile
-#   torch.copy_sign
+    Node.app.register_node('t.index_select', TorchIndexSelectNode.factory)
+
+    Node.app.register_node('t.copysign', TorchCopySignNode.factory)
 
     Node.app.register_node('tv.Grayscale', TorchvisionGrayscaleNode.factory)
     Node.app.register_node('tv.gaussian_blur', TorchvisionGaussianBlurNode.factory)
@@ -501,6 +503,41 @@ class TorchLinSpaceNode(TorchDeviceDtypeNode):
         self.output.send(out_array)
 
 
+class TorchEyeNode(TorchDeviceDtypeNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchEyeNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.shape = []
+        if len(args) > 0:
+            self.n = any_to_int(args[0])
+        else:
+            self.n = 4
+        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+        self.n_input = self.add_input('n', widget_type='input_int', default_value=self.n, callback=self.n_changed)
+
+        self.parse_args_for_dtype_and_device(args)
+        self.device = torch.device(self.device_string)
+        self.dtype = self.dtype_dict[self.dtype_string]
+        self.create_device_property()
+        self.create_dtype_property()
+
+        out_label = 'eye tensor'
+        self.output = self.add_output(out_label)
+
+    def n_changed(self, val=None):
+        self.n = self.n_input.get_widget_value()
+
+    def execute(self):
+        out_array = torch.eye(n=self.n, device=self.device, dtype=self.dtype)
+        self.output.send(out_array)
+
+
+
 class TorchDistributionNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -770,6 +807,40 @@ class TorchSqueezeNode(TorchWithDimNode):
                     self.output.send(torch.squeeze(input_tensor))
                 return
 
+class TorchIndexSelectNode(TorchWithDimNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchIndexSelectNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.index_input = self.add_input('indices in')
+        if self.dim_specified:
+            self.add_dim_input()
+
+        self.output = self.add_output("output")
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            data = self.index_input.get_received_data()
+            if data is not None:
+                index_tensor = self.data_to_tensor(data)
+                if index_tensor is not None:
+                    if -1 - len(input_tensor.shape) < self.dim < len(input_tensor.shape):
+                        self.output.send(torch.index_select(input_tensor, self.dim, index_tensor))
+                    else:
+                        if self.app.verbose:
+                            print('t.index_select dim is invalid', self.dim)
+                else:
+                    if self.app.verbose:
+                        print('t.index_select no index tensor')
+            else:
+                if self.app.verbose:
+                    print('t.index_select invalid input tensor')
+
 class TorchUnsqueezeNode(TorchWithDimNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -854,6 +925,31 @@ class TorchArgWhereNode(TorchNode):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
             self.output.send(torch.argwhere(input_tensor))
+
+class TorchCopySignNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchCopySignNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.sign_input = self.add_input("sign tensor")
+        self.output = self.add_output("tensor with copied sign")
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            data = self.sign_input.get_received_data()
+            if data is not None:
+                sign_tensor = self.data_to_tensor(data)
+                if sign_tensor is not None:
+                    if sign_tensor.device == input_tensor.device:
+                        try:
+                            self.output.send(torch.copysign(input_tensor, sign_tensor))
+                        except Exception as error:
+                            print('t.copysign:', error)
 
 
 class TorchStackCatNode(TorchNode):
@@ -1551,13 +1647,36 @@ class TorchRepeatNode(TorchNode):
         input_tensor = self.input_to_tensor()
         repeat = self.repeat
         if input_tensor is not None:
-            if len(input_tensor.shape) > len(repeat):
-                for i in range(len(repeat), len(input_tensor.shape)):
-                    repeat.append(1)
-            elif len(input_tensor.shape) < len(repeat):
-                repeat = repeat[:len(input_tensor.shape)]
             repeated = input_tensor.repeat(repeat)
             self.output.send(repeated)
+
+class TorchTileNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchTileNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.tile = []
+        if len(args) > 0:
+            for i in range(len(args)):
+                self.tile.append(any_to_int(args[i]))
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.tile_property = self.add_input('tiling', widget_type='text_input', default_value=self.tile, callback=self.tile_changed)
+        self.output = self.add_output('repeated tensor out')
+
+    def tile_changed(self, val=None):
+        tile_text = self.tile_property.get_widget_value()
+        tile_split = re.findall(r'\d+', tile_text)
+        tile_list, _, _ = list_to_hybrid_list(tile_split)
+        self.tile = tile_list
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            tiled = input_tensor.repeat(self.tile)
+            self.output.send(tiled)
 
 class TorchTransposeNode(TorchNode):
     @staticmethod

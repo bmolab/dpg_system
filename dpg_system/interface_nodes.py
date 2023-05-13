@@ -920,18 +920,19 @@ class ValueNode(Node):
         else:
             value = dpg.get_value(self.value)
             if type(value) == str:
-                is_list = False
-                if value[0] == '[':
-                    try:
-                        value = string_to_list(value)
-                        is_list = True
-                        print('is_list')
-                    except:
-                        pass
-                if not is_list:
-                    value = value.split(' ')
-                    if len(value) == 1:
-                        value = value[0]
+                if len(value) > 0:
+                    is_list = False
+                    if value[0] == '[':
+                        try:
+                            value = string_to_list(value)
+                            is_list = True
+                            print('is_list')
+                        except:
+                            pass
+                    if not is_list:
+                        value = value.split(' ')
+                        if len(value) == 1:
+                            value = value[0]
             if self.variable is not None:
                 self.variable.set(value, from_client=self)
         if self.input.widget.widget == 'text_input':
