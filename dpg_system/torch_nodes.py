@@ -8,7 +8,7 @@ import torch
 import torchvision
 
 # torch.fft
-# torch.special with two tensor in
+# t.count_non_zero
 
 def register_torch_nodes():
     Node.app.torch_available = True
@@ -60,6 +60,10 @@ def register_torch_nodes():
     Node.app.register_node('t.chunk', TorchChunkNode.factory)
     Node.app.register_node('t.tensor_split', TorchChunkNode.factory)
 
+    Node.app.register_node('t.adjoint', TorchViewNode.factory)
+    Node.app.register_node('t.detach', TorchViewNode.factory)
+    Node.app.register_node('t.t', TorchViewNode.factory)
+
     Node.app.register_node('t.real', TorchRealImaginaryNode.factory)
     Node.app.register_node('t.imag', TorchRealImaginaryNode.factory)
     Node.app.register_node('t.complex', TorchComplexNode.factory)
@@ -92,6 +96,10 @@ def register_torch_nodes():
     Node.app.register_node('t.nn.softmin', TorchSoftmaxNode.factory)
     Node.app.register_node('t.nn.log_softmax', TorchSoftmaxNode.factory)
     Node.app.register_node('t.nn.gumbel_softmax', TorchActivationThreeParamNode.factory)
+
+    Node.app.register_node('t.any', TorchAnyAllNode.factory)
+    Node.app.register_node('t.all', TorchAnyAllNode.factory)
+
 
     Node.app.register_node('t.argmax', TorchArgMaxNode.factory)
     Node.app.register_node('t.argwhere', TorchArgWhereNode.factory)
@@ -147,7 +155,12 @@ def register_torch_nodes():
     Node.app.register_node('t.special.polygamma', TorchSpecialPolygammaNode.factory)
     Node.app.register_node('t.special.logits', TorchSpecialLogitNode.factory)
     Node.app.register_node('t.special.multigammaln', TorchSpecialMultiGammaLnNode.factory)
-
+    Node.app.register_node('t.special.zeta', TorchSpecialTwoTensorOrNumberNode.factory)
+    Node.app.register_node('t.special.xlogy', TorchSpecialTwoTensorOrNumberNode.factory)
+    Node.app.register_node('t.special.xlog1py', TorchSpecialTwoTensorOrNumberNode.factory)
+    Node.app.register_node('t.special.xlog1py', TorchSpecialTwoTensorOrNumberNode.factory)
+    Node.app.register_node('t.special.gammainc', TorchSpecialTwoTensorNode.factory)
+    Node.app.register_node('t.special.gammaincc', TorchSpecialTwoTensorNode.factory)
 
     Node.app.register_node('tv.Grayscale', TorchvisionGrayscaleNode.factory)
     Node.app.register_node('tv.gaussian_blur', TorchvisionGaussianBlurNode.factory)
@@ -584,6 +597,54 @@ class TorchEyeNode(TorchDeviceDtypeNode):
         out_array = torch.eye(n=self.n, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad)
         self.output.send(out_array)
 
+class TorchViewNode(TorchNode):
+    op_dict = {
+        't.adjoint': torch.adjoint,
+        't.detach': torch.detach,
+        't.t': torch.t
+    }
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchViewNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.op = torch.t
+        if self.label in self.op_dict:
+            self.op = self.op_dict[self.label]
+
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.output = self.add_output('tensor out')
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            out_tensor = self.op(input_tensor)
+            self.output.send(out_tensor)
+
+class TorchAnyAllNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchAnyAllNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.op = torch.all
+        output_name = 'all'
+        if self.label == 't.any':
+            self.op = torch.any
+            output_name == 'any'
+
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.output = self.add_output('tensor out')
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            result = self.op(input_tensor)
+            self.output.send(result)
 
 
 class TorchDistributionNode(TorchNode):
@@ -1097,6 +1158,68 @@ class TorchSpecialLogitNode(TorchNode):
         if input_tensor is not None:
             self.output.send(torch.special.logit(input_tensor, self.eps))
 
+
+class TorchSpecialTwoTensorNode(TorchNode):
+    op_dict = {
+        't.special.gammainc': torch.special.gammainc,
+        't.special.gammaincc': torch.special.gammaincc
+    }
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchSpecialTwoTensorNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.op = torch.special.gammainc
+        if self.label in self.op_dict:
+            self.op = self.op_dict[self.label]
+        self.input = self.add_input("tensor 1 in", triggers_execution=True)
+        self.second_input = self.add_input('tensor 2 in')
+        self.output = self.add_output("tensor out")
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            data = self.second_input.get_received_data()
+            if data is not None:
+                second_tensor = self.data_to_tensor(data)
+                if second_tensor is not None:
+                    self.output.send(self.op(input_tensor, second_tensor))
+
+
+class TorchSpecialTwoTensorOrNumberNode(TorchNode):
+    op_dict = {
+        't.special.zeta': torch.special.zeta,
+        't.special.xlogy': torch.special.xlogy,
+        't.special.xlog1py': torch.special.xlog1py
+    }
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchSpecialTwoTensorOrNumberNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.op = torch.special.gammainc
+        if self.label in self.op_dict:
+            self.op = self.op_dict[self.label]
+        self.input = self.add_input("tensor 1 or number in", triggers_execution=True)
+        self.second_input = self.add_input('tensor 2 or number in')
+        self.output = self.add_output("tensor out")
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            data = self.second_input.get_received_data()
+            if data is not None:
+                second_tensor = self.data_to_tensor(data)
+                if second_tensor is not None:
+                    self.output.send(self.op(input_tensor, second_tensor))
 
 class TorchSpecialMultiGammaLnNode(TorchNode):
     @staticmethod

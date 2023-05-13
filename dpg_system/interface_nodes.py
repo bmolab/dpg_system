@@ -650,15 +650,16 @@ class ToggleNode(Node):
 
     def execute(self):
         if self.input.fresh_input:
-            received = self.input._data     # so that we can catch 'bang' ?
+            received = self.input.get_received_data()     # so that we can catch 'bang' ?
             if type(received) == str:
                 if received == 'bang':
                     self.value = not self.value
                     self.input.set(self.value)
             else:
-                self.value = self.input.get_widget_value()
+                self.value = any_to_bool(received)
+                self.input.set(self.value)
         else:
-            self.value = self.input.get_widget_value()
+            self.value = any_to_bool(self.input.get_widget_value())
         if self.variable is not None:
             self.variable.set(self.value, from_client=self)
         self.output.send(self.value)
@@ -926,7 +927,6 @@ class ValueNode(Node):
                         try:
                             value = string_to_list(value)
                             is_list = True
-                            print('is_list')
                         except:
                             pass
                     if not is_list:

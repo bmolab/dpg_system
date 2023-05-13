@@ -170,6 +170,9 @@ class ComparisonNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+        self.output_op = bool
+        self.torch_output_op = torch.bool
+        self.numpy_output_op = np.bool_
 
         self.operand = self.arg_as_number(default_value=0.0)
         self.input = self.add_input('in', triggers_execution=True)
@@ -191,12 +194,18 @@ class ComparisonNode(Node):
         output_type = self.output_type_option.get_widget_value()
  #       print('got output type ' + output_type)
         self.output_op = bool
+        self.torch_output_op = torch.bool
+        self.numpy_output_op = np.bool_
         if output_type == 'bool':
             self.output_op = bool
         elif output_type == 'int':
             self.output_op = int
+            self.torch_output_op = torch.int
+            self.numpy_output_op = np.int
         elif output_type == 'float':
             self.output_op = float
+            self.torch_output_op = torch.float
+            self.numpy_output_op = np.float
 
     def execute(self):
         if self.operand_input.fresh_input:
@@ -210,7 +219,9 @@ class ComparisonNode(Node):
             input_value = list_to_array(input_value)
 
         if type(input_value) == np.ndarray:
-            output_value = self.operation(input_value, self.operand).astype(self.output_op)
+            output_value = self.operation(input_value, self.operand).astype(self.numpy_output_op)
+        elif type(input_value) == torch.Tensor:
+            output_value = self.operation(input_value, self.operand).to(self.torch_output_op)
         else:
             output_value = self.output_op(self.operation(input_value, self.operand))
 

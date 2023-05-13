@@ -234,6 +234,8 @@ def tensor_to_bool(input):
     value = False
     if torch_available:
         if type(input) == torch.Tensor:
+            if len(input.shape) == 0:
+                value = input.item()
             if len(input.shape) == 1:
                 value = input[0].item()
             elif len(input.shape) == 2:
