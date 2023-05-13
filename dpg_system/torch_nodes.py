@@ -29,6 +29,15 @@ def register_torch_nodes():
     Node.app.register_node('t.ones_like', TorchGeneratorLikeNode.factory)
     Node.app.register_node('t.zeros_like', TorchGeneratorLikeNode.factory)
 
+    Node.app.register_node('t.bernoulli', TorchDistributionNode.factory)
+    Node.app.register_node('t.poisson', TorchDistributionNode.factory)
+    Node.app.register_node('t.exponential', TorchDistributionOneParamNode.factory)
+    Node.app.register_node('t.geometric', TorchDistributionOneParamNode.factory)
+    Node.app.register_node('t.cauchy', TorchDistributionTwoParamNode.factory)
+    Node.app.register_node('t.log_normal', TorchDistributionTwoParamNode.factory)
+    Node.app.register_node('t.normal', TorchDistributionTwoParamNode.factory)
+    Node.app.register_node('t.uniform', TorchDistributionTwoParamNode.factory)
+
     Node.app.register_node('t.permute', TorchPermuteNode.factory)
     Node.app.register_node('t.transpose', TorchTransposeNode.factory)
     Node.app.register_node('t.flip', TorchFlipNode.factory)
@@ -76,6 +85,13 @@ def register_torch_nodes():
     Node.app.register_node('t.nn.gumbel_softmax', TorchActivationThreeParamNode.factory)
 
     Node.app.register_node('t.argmax', TorchArgMaxNode.factory)
+    Node.app.register_node('t.argwhere', TorchArgWhereNode.factory)
+    Node.app.register_node('t.non_zero', TorchArgWhereNode.factory)
+    Node.app.register_node('t.cumsum', TorchCumSumNode.factory)
+    Node.app.register_node('t.masked_select', TorchMaskedSelectNode.factory)
+#   torch.index_select
+#   torch.tile
+#   torch.copy_sign
 
     Node.app.register_node('tv.Grayscale', TorchvisionGrayscaleNode.factory)
     Node.app.register_node('tv.gaussian_blur', TorchvisionGaussianBlurNode.factory)
@@ -485,6 +501,105 @@ class TorchLinSpaceNode(TorchDeviceDtypeNode):
         self.output.send(out_array)
 
 
+class TorchDistributionNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchDistributionNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        if self.label == 't.bernoulli':
+            self.op = torch.bernoulli
+        elif self.label == 't.poisson':
+            self.op = torch.poisson
+
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.output = self.add_output('tensor out')
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            out_tensor = self.op(input_tensor)
+            self.output.send(out_tensor)
+
+class TorchDistributionOneParamNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchDistributionOneParamNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        param_1_name = ''
+        self.param_1 = 1
+        if self.label == 't.exponential':
+            param_1_name = 'lambda'
+        elif self.label == 't.geometric':
+            param_1_name = 'p'
+
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.param_1_property = self.add_input(param_1_name, widget_type='drag_float', default_value=self.param_1, callback=self.params_changed)
+        self.output = self.add_output('tensor out')
+
+    def params_changed(self, val=0):
+        self.param_1 = self.param_1_property.get_widget_value()
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            out_tensor = input_tensor.clone()
+            if self.label == 't.exponential':
+                out_tensor.exponential_(self.param_1)
+            elif self.label == 't.geometric':
+                out_tensor.log_normal_(self.param_1)
+            self.output.send(out_tensor)
+
+class TorchDistributionTwoParamNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchDistributionTwoParamNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        param_1_name = ''
+        param_2_name = ''
+        self.param_1 = 0
+        self.param_2 = 1
+        if self.label == 't.cauchy':
+            param_1_name = 'median'
+            param_2_name = 'sigma'
+        elif self.label in ['t.log_normal', 't_normal']:
+            param_1_name = 'mean'
+            param_2_name = 'std'
+        elif self.label == 't.uniform':
+            param_1_name = 'from'
+            param_2_name = 'to'
+
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.param_1_property = self.add_input(param_1_name, widget_type='drag_float', default_value=self.param_1, callback=self.params_changed)
+        self.param_2_property = self.add_input(param_2_name, widget_type='drag_float', default_value=self.param_2, callback=self.params_changed)
+        self.output = self.add_output('tensor out')
+
+    def params_changed(self, val=0):
+        self.param_1 = self.param_1_property.get_widget_value()
+        self.param_2 = self.param_2_property.get_widget_value()
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            out_tensor = input_tensor.clone()
+            if self.label == 't.cauchy':
+                out_tensor.cauchy_(self.param_1, self.param_2)
+            elif self.label == 't.log_normal':
+                out_tensor.log_normal_(self.param_1, self.param_2)
+            elif self.label == 't.normal':
+                out_tensor.normal_(self.param_1, self.param_2)
+            elif self.label == 't.uniform':
+                out_tensor.uniform_(self.param_1, self.param_2)
+            self.output.send(out_tensor)
+
 class TorchCDistanceNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -675,6 +790,34 @@ class TorchUnsqueezeNode(TorchWithDimNode):
                 self.output.send(torch.unsqueeze(input_tensor, self.dim))
                 return
 
+
+class TorchMaskedSelectNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchMaskedSelectNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('source tensor', triggers_execution=True)
+        self.mask_input = self.add_input('mask')
+        self.out = self.add_output('selection tensor')
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            data = self.mask_input.get_received_data()
+            if data is not None:
+                mask_tensor = self.data_to_tensor(data)
+                if mask_tensor is not None:
+                    if mask_tensor.dtype is not torch.bool:
+                        mask_tensor.to(dtype=torch.bool)
+                    if mask_tensor.shape[0] == input_tensor.shape[0]:
+                        out_tensor = torch.masked_select(input_tensor, mask_tensor)
+                        self.out.send(out_tensor)
+
+
+
 class TorchCumSumNode(TorchWithDimNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -694,6 +837,23 @@ class TorchCumSumNode(TorchWithDimNode):
             if -1 - len(input_tensor.shape) < self.dim <= len(input_tensor.shape):
                 self.output.send(torch.cumsum(input_tensor, self.dim))
                 return
+
+
+class TorchArgWhereNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchArgWhereNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.output = self.add_output("index tensor where non-zero")
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            self.output.send(torch.argwhere(input_tensor))
 
 
 class TorchStackCatNode(TorchNode):

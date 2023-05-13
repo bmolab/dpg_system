@@ -1708,7 +1708,6 @@ class PlotNode(Node):
         elif self.style in [self.heat_scroll_style, self.heat_map_style]:
             buffer = self.y_data.get_buffer()
             forced_format = False
-            print(buffer.shape, self.width, self.rows, self.sample_count)
             if len(buffer.shape) == 1:
                 if self.width / self.rows < 40:
                     forced_format = True
