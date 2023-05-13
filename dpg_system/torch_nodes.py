@@ -7,6 +7,9 @@ from dpg_system.conversion_utils import *
 import torch
 import torchvision
 
+# torch.fft
+# torch.special with two tensor in
+
 def register_torch_nodes():
     Node.app.torch_available = True
     Node.app.register_node('tensor', TensorNode.factory)
@@ -101,6 +104,7 @@ def register_torch_nodes():
 
     Node.app.register_node('t.linalg.qr', TorchLinalgRQNode.factory)
     Node.app.register_node('t.linalg.svd', TorchLinalgSVDNode.factory)
+    Node.app.register_node('t.linalg.pca_low_rank', TorchPCALowRankNode.factory)
     Node.app.register_node('t.linalg.eig', TorchLinalgEigenNode.factory)
 
     Node.app.register_node('t.window.blackman', TorchWindowNode.factory)
@@ -113,6 +117,37 @@ def register_torch_nodes():
     Node.app.register_node('t.window.general_hamming', TorchWindowOneParamNode.factory)
     Node.app.register_node('t.window.kaiser', TorchWindowOneParamNode.factory)
     Node.app.register_node('t.window.exponential', TorchWindowTwoParamNode.factory)
+
+    Node.app.register_node('t.special.airy_ai', TorchSpecialNode.factory)
+    Node.app.register_node('t.special.bessel_j0', TorchSpecialNode.factory)
+    Node.app.register_node('t.special.bessel_j1', TorchSpecialNode.factory)
+    Node.app.register_node('t.special.digamma', TorchSpecialNode.factory)
+    Node.app.register_node('t.special.entr', TorchSpecialNode.factory)
+    Node.app.register_node('t.special.erf', TorchSpecialNode.factory)
+    Node.app.register_node('t.special.erfc', TorchSpecialNode.factory)
+    Node.app.register_node('t.special.erfcx', TorchSpecialNode.factory)
+    Node.app.register_node('t.special.erfinv', TorchSpecialNode.factory)
+    Node.app.register_node('t.special.exp2', TorchSpecialNode.factory)
+    Node.app.register_node('t.special.expit', TorchSpecialNode.factory)
+    Node.app.register_node('t.special.expm1', TorchSpecialNode.factory)
+    Node.app.register_node('t.special.gammaln', TorchSpecialNode.factory)
+    Node.app.register_node('t.special.i0', TorchSpecialNode.factory)
+    Node.app.register_node('t.special.i0e', TorchSpecialNode.factory)
+    Node.app.register_node('t.special.i1', TorchSpecialNode.factory)
+    Node.app.register_node('t.special.i1e', TorchSpecialNode.factory)
+    Node.app.register_node('t.special.log1p', TorchSpecialNode.factory)
+    Node.app.register_node('t.special.logndtr', TorchSpecialNode.factory)
+    Node.app.register_node('t.special.ndtr', TorchSpecialNode.factory)
+    Node.app.register_node('t.special.ndtri', TorchSpecialNode.factory)
+    Node.app.register_node('t.special.scaled_modified_bessel_k0', TorchSpecialNode.factory)
+    Node.app.register_node('t.special.sinc', TorchSpecialNode.factory)
+    Node.app.register_node('t.special.spherical_bessel_j0', TorchSpecialNode.factory)
+    Node.app.register_node('t.special.softmax', TorchSpecialDimNode.factory)
+    Node.app.register_node('t.special.log_softmax', TorchSpecialDimNode.factory)
+    Node.app.register_node('t.special.polygamma', TorchSpecialPolygammaNode.factory)
+    Node.app.register_node('t.special.logits', TorchSpecialLogitNode.factory)
+    Node.app.register_node('t.special.multigammaln', TorchSpecialMultiGammaLnNode.factory)
+
 
     Node.app.register_node('tv.Grayscale', TorchvisionGrayscaleNode.factory)
     Node.app.register_node('tv.gaussian_blur', TorchvisionGaussianBlurNode.factory)
@@ -234,6 +269,9 @@ class TorchDeviceDtypeNode(TorchNode):
         dtype_dict['int64'] = torch.int64
         dtype_dict['uint8'] = torch.uint8
         dtype_dict['bool'] = torch.bool
+        # dtype_dict['complex32'] = torch.complex32
+        dtype_dict['complex64'] = torch.complex64
+        dtype_dict['complex128'] = torch.complex128
         return dtype_dict
 
     def create_device_list(self):
@@ -340,7 +378,7 @@ class TorchGeneratorNode(TorchDeviceDtypeNode):
             self.shape[i] = self.shape_properties[i].get_widget_value()
         size = tuple(self.shape)
         if self.label == 't.rand':
-            if self.dtype in [torch.float, torch.float32, torch.double, torch.float16, torch.bfloat16]:
+            if self.dtype in [torch.float, torch.float32, torch.double, torch.float16, torch.bfloat16, torch.complex32, torch.complex64, torch.complex128]:
                 range_ = self.max - self.min
                 out_array = torch.rand(size=size, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad) * range_ + self.min
             elif self.dtype in [torch.int64, torch.uint8]:
@@ -454,7 +492,7 @@ class TorchGeneratorLikeNode(TorchDeviceDtypeNode):
                 shape = data.shape
                 size = tuple(shape)
                 if self.label == 't.rand_like':
-                    if self.dtype in [torch.float, torch.float32, torch.double, torch.float16, torch.bfloat16]:
+                    if self.dtype in [torch.float, torch.float32, torch.double, torch.float16, torch.bfloat16, torch.complex32, torch.complex64, torch.complex128]:
                         range_ = self.max - self.min
                         out_array = torch.rand(size=size, device=self.device, dtype=self.dtype) * range_ + self.min
                     elif self.dtype in [torch.int64, torch.uint8]:
@@ -935,6 +973,151 @@ class TorchArgWhereNode(TorchNode):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
             self.output.send(torch.argwhere(input_tensor))
+
+
+class TorchSpecialNode(TorchNode):
+    op_dict = {
+        't.special.airy_ai': torch.special.airy_ai,
+        't.special.bessel_j0': torch.special.bessel_j0,
+        't.special.bessel_j1': torch.special.bessel_j1,
+        't.special.digamma': torch.special.digamma,
+        't.special.entr': torch.special.entr,
+        't.special.erf': torch.special.erf,
+        't.special.erfc': torch.special.erfc,
+        't.special.erfcx': torch.special.erfcx,
+        't.special.erfinv': torch.special.erfinv,
+        't.special.exp2': torch.special.exp2,
+        't.special.expit': torch.special.expit,
+        't.special.expm1': torch.special.expm1,
+        't.special.gammaln': torch.special.gammaln,
+        't.special.i0': torch.special.i0,
+        't.special.i0e': torch.special.i0e,
+        't.special.i1': torch.special.i1,
+        't.special.i1e': torch.special.i1e,
+        't.special.log1p': torch.special.log1p,
+        't.special.logndtr': torch.special.log_ndtr,
+        't.special.ndtr': torch.special.ndtr,
+        't.special.ndtri': torch.special.ndtri,
+        't.special.scaled_modified_bessel_k0': torch.special.scaled_modified_bessel_k0,
+        't.special.sinc': torch.special.sinc,
+        't.special.spherical_bessel_j0': torch.special.spherical_bessel_j0
+    }
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchSpecialNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.op = torch.special.exp2
+        if self.label in self.op_dict:
+            self.op = self.op_dict[self.label]
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.output = self.add_output("tensor out")
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            self.output.send(self.op(input_tensor))
+
+
+class TorchSpecialDimNode(TorchWithDimNode):
+    op_dict = {
+        't.special.log_softmax': torch.special.log_softmax,
+        't.special.softmax': torch.special.softmax
+    }
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchSpecialDimNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.op = torch.special.log_softmax
+        if self.label in self.op_dict:
+            self.op = self.op_dict[self.label]
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        if self.dim_specified:
+            self.add_dim_input()
+        self.output = self.add_output("tensor out")
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            self.output.send(self.op(input_tensor, dim=self.dim))
+
+
+class TorchSpecialPolygammaNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchSpecialPolygammaNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.n = 0
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.n_input = self.add_input('n', widget_type='input_int', default_value=self.n, min=0, callback=self.n_changed)
+        self.output = self.add_output("tensor out")
+
+    def n_changed(self, val=0):
+        self.n = self.n_input.get_widget_value()
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            self.output.send(torch.special.polygamma(self.n, input_tensor))
+
+
+
+class TorchSpecialLogitNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchSpecialLogitNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.eps = 1e-8
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.eps_input = self.add_input('eps', widget_type='drag_float', default_value=self.eps, callback=self.eps_changed)
+
+        self.output = self.add_output("tensor out")
+
+    def custom_setup(self, from_file):
+        self.eps_input.widget.set_format('%.8f')
+
+    def eps_changed(self, val=0):
+        self.eps = self.eps_input.get_widget_value()
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            self.output.send(torch.special.logit(input_tensor, self.eps))
+
+
+class TorchSpecialMultiGammaLnNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchSpecialMultiGammaLnNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.p = 1e-8
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.p_input = self.add_input('p', widget_type='input_int', default_value=self.p, callback=self.p_changed)
+        self.output = self.add_output("tensor out")
+
+    def p_changed(self, val=0):
+        self.p = self.p_input.get_widget_value()
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            self.output.send(torch.special.multigammaln(input_tensor, self.p))
 
 
 class TorchRealImaginaryNode(TorchNode):
@@ -1707,6 +1890,7 @@ class TorchPermuteNode(TorchNode):
                 permuted = torch.permute(input_tensor, self.permute)
                 self.output.send(permuted)
 
+
 class TorchRepeatNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -1876,6 +2060,34 @@ class TorchLinalgSVDNode(TorchNode):
             self.v_output.send(v)
             self.s_output.send(s)
 
+class TorchPCALowRankNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchPCALowRankNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.center = False
+        self.center_property = self.add_property('center', widget_type='checkbox', default_value=self.center, callback=self.params_changed)
+        self.niter = 2
+        self.niter_property = self.add_property('full', widget_type='input_int', default_value=self.niter, callback=self.params_changed)
+        self.u_output = self.add_output('U tensor out')
+        self.s_output = self.add_output('S tensor out')
+        self.v_output = self.add_output('V tensor out')
+
+    def params_changed(self, val=2):
+        self.niter = self.niter_property.get_widget_value()
+        self.center = self.center_property.get_widget_value()
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            u, s, v = torch.pca.low_rank(input_tensor)
+            self.v_output.send(v)
+            self.s_output.send(s)
+            self.u_output.send(u)
 
 class TorchLinalgEigenNode(TorchNode):
     @staticmethod
