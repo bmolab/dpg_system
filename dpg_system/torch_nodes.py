@@ -26,6 +26,8 @@ def register_torch_nodes():
     Node.app.register_node('t.full', TorchFullNode.factory)
     Node.app.register_node('t.linspace', TorchLinSpaceNode.factory)
     Node.app.register_node('t.logspace', TorchLinSpaceNode.factory)
+    Node.app.register_node('t.range', TorchRangeNode.factory)
+    Node.app.register_node('t.arange', TorchRangeNode.factory)
     Node.app.register_node('t.eye', TorchEyeNode.factory)
 
     Node.app.register_node('t.rand_like', TorchGeneratorLikeNode.factory)
@@ -69,6 +71,11 @@ def register_torch_nodes():
     Node.app.register_node('t.real', TorchRealImaginaryNode.factory)
     Node.app.register_node('t.imag', TorchRealImaginaryNode.factory)
     Node.app.register_node('t.complex', TorchComplexNode.factory)
+    Node.app.register_node('t.round', TorchRoundNode.factory)
+    Node.app.register_node('t.floor', TorchFloorCeilingTruncNode.factory)
+    Node.app.register_node('t.ceil', TorchFloorCeilingTruncNode.factory)
+    Node.app.register_node('t.trunc', TorchFloorCeilingTruncNode.factory)
+    Node.app.register_node('t.frac', TorchFloorCeilingTruncNode.factory)
 
     Node.app.register_node('t.nn.Threshold', TorchNNThresholdNode.factory)
     Node.app.register_node('t.nn.relu', TorchActivationNode.factory)
@@ -572,6 +579,55 @@ class TorchLinSpaceNode(TorchDeviceDtypeNode):
         self.stop = self.stop_property.get_widget_value()
         self.steps = self.steps_property.get_widget_value()
         out_array = self.op(self.start, self.stop, self.steps, dtype=self.dtype, device=self.device, requires_grad=self.requires_grad)
+        self.output.send(out_array)
+
+
+class TorchRangeNode(TorchDeviceDtypeNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchRangeNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.shape = []
+        self.start = 0.0
+        self.stop = 1.0
+        self.step = .01
+
+        self.op = torch.arange
+        out_label = 'arange out'
+        if self.label == 't.range':
+            self.op = torch.range
+            out_label = 'range out'
+
+        if len(args) > 0:
+            d, t = decode_arg(args, 0)
+            if t in [float, int]:
+                self.start = any_to_float(d)
+        if len(args) > 1:
+            d, t = decode_arg(args, 1)
+            if t in [float, int]:
+                self.stop = any_to_float(d)
+        if len(args) > 2:
+            d, t = decode_arg(args, 2)
+            if t in [float, int]:
+                self.step = any_to_float(d)
+
+        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+        self.start_property = self.add_property('start', widget_type='drag_float', default_value=self.start)
+        self.stop_property = self.add_property('stop', widget_type='drag_float', default_value=self.stop)
+        self.step_property = self.add_property('step', widget_type='drag_float', default_value=self.step)
+
+        self.setup_dtype_device_grad(args)
+
+        self.output = self.add_output(out_label)
+
+    def execute(self):
+        self.start = self.start_property.get_widget_value()
+        self.stop = self.stop_property.get_widget_value()
+        self.step = self.step_property.get_widget_value()
+        out_array = self.op(self.start, self.stop, self.step, dtype=self.dtype, device=self.device, requires_grad=self.requires_grad)
         self.output.send(out_array)
 
 
@@ -1428,6 +1484,53 @@ class TorchComplexNode(TorchNode):
         else:
             if self.app.verbose:
                 print(self.label, 'real tensor is None')
+
+class TorchRoundNode(TorchWithDimNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchRoundNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.decimals = 0
+        self.decimals_input = self.add_input('decimals', widget_type='input_int', default_value=self.decimals, callback=self.decimals_changed)
+        self.output = self.add_output("output")
+
+    def decimals_changed(self, val=0):
+        self.decimals = self.decimals_input.get_widget_value()
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            self.output.send(torch.round(input_tensor, decimals=self.decimals))
+
+
+class TorchFloorCeilingTruncNode(TorchWithDimNode):
+    op_dict = {
+        't.floor': torch.floor,
+        't.ceil': torch.ceil,
+        't.trunc': torch.trunc,
+        't.frac': torch.frac
+    }
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchFloorCeilingTruncNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.op = torch.ceil
+        if self.label in self.op_dict:
+            self.op = self.op_dict[self.label]
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.output = self.add_output("output")
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            self.output.send(self.op(input_tensor))
+
 
 class TorchCopySignNode(TorchNode):
     @staticmethod

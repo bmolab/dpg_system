@@ -1036,6 +1036,9 @@ class VectorNode(Node):
                 self.current_component_count = 1
                 value = np.array([value])
                 t = np.ndarray
+            elif t == torch.Tensor:
+                value = value.detach().cpu().numpy()
+                t = np.ndarray
             if t == np.ndarray:
                 if self.current_component_count != value.size:
                     self.component_count_property.set(value.size)
