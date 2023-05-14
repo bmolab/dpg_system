@@ -41,7 +41,7 @@ def any_to_string(data):
         out_string = out_string.replace('\n', '')
         return out_string
     elif torch_available and t == torch.Tensor:
-        data = data.cpu().numpy()
+        data = data.detach().cpu().numpy()
         np.set_printoptions(precision=3)
         out_string = str(data)
         out_string = out_string.replace('\n', '')
@@ -192,7 +192,7 @@ def any_to_array(data):
     elif t in [np.int64, np.float, np.float32, np.double, np.bool_]:
         return np.array(data)
     elif torch_available and t == torch.Tensor:
-        return data.cpu().numpy()
+        return data.detach().cpu().numpy()
     return np.ndarray([0])
 
 
@@ -253,7 +253,7 @@ def tensor_to_bool(input):
 def tensor_to_array(input):
     if torch_available:
         if type(input) == torch.Tensor:
-            return input.cpu().numpy()
+            return input.detach().cpu().numpy()
     return None
 
 def array_to_float(input):

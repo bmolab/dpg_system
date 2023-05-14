@@ -8,6 +8,7 @@ import torch
 import torchvision
 
 # torch.fft
+# torch.numel
 
 def register_torch_nodes():
     Node.app.torch_available = True
@@ -62,6 +63,7 @@ def register_torch_nodes():
     Node.app.register_node('t.tensor_split', TorchChunkNode.factory)
     Node.app.register_node('t.view', TorchViewNode.factory)
     Node.app.register_node('t.reshape', TorchViewNode.factory)
+    Node.app.register_node('t.narrow', TorchNarrowNode.factory)
 
     Node.app.register_node('t.flatten', TorchViewVariousNode.factory)
     Node.app.register_node('t.adjoint', TorchViewVariousNode.factory)
@@ -121,6 +123,9 @@ def register_torch_nodes():
     Node.app.register_node('t.cumsum', TorchCumSumNode.factory)
     Node.app.register_node('t.masked_select', TorchMaskedSelectNode.factory)
     Node.app.register_node('t.index_select', TorchIndexSelectNode.factory)
+    Node.app.register_node('t.take', TorchTakeNode.factory)
+    Node.app.register_node('t.argsort', TorchArgSortNode.factory)
+    Node.app.register_node('t.take_along_dim', TorchTakeAlongDimNode.factory)
 
     Node.app.register_node('t.copysign', TorchCopySignNode.factory)
 
@@ -175,6 +180,9 @@ def register_torch_nodes():
     Node.app.register_node('t.special.xlog1py', TorchSpecialTwoTensorOrNumberNode.factory)
     Node.app.register_node('t.special.gammainc', TorchSpecialTwoTensorNode.factory)
     Node.app.register_node('t.special.gammaincc', TorchSpecialTwoTensorNode.factory)
+
+    Node.app.register_node('t.info', TorchInfoNode.factory)
+    Node.app.register_node('t.numel', TorchNumElNode.factory)
 
     Node.app.register_node('tv.Grayscale', TorchvisionGrayscaleNode.factory)
     Node.app.register_node('tv.gaussian_blur', TorchvisionGaussianBlurNode.factory)
@@ -237,12 +245,13 @@ class TorchDeviceDtypeNode(TorchNode):
         super().__init__(label, data, args)
         self.device_string = 'cpu'
         self.dtype_string = 'float32'
-        self.device_property = None
-        self.dtype_property = None
+        self.device_input = None
+        self.dtype_input = None
         self.dtype_dict = self.create_dtype_dict()
         self.device_list = self.create_device_list()
         self.device = torch.device(self.device_string)
         self.dtype = self.dtype_dict[self.dtype_string]
+        self.grad_input = None
         self.requires_grad = False
 
     def setup_dtype_device_grad(self, args):
@@ -261,44 +270,52 @@ class TorchDeviceDtypeNode(TorchNode):
                 self.dtype_string = args[i]
 
     def create_device_property(self):
-        self.device_property = self.add_property('device', widget_type='combo', default_value=self.device_string,
+        self.device_input = self.add_input('device', widget_type='combo', default_value=self.device_string,
                                                  callback=self.device_changed)
-        self.device_property.widget.combo_items = self.device_list
+        self.device_input.widget.combo_items = self.device_list
 
     def create_dtype_property(self):
-        self.dtype_property = self.add_property('dtype', widget_type='combo', default_value=self.dtype_string,
+        self.dtype_input = self.add_input('dtype', widget_type='combo', widget_width=120, default_value=self.dtype_string,
                                               callback=self.dtype_changed)
-        self.dtype_property.widget.combo_items = list(self.dtype_dict.keys())
+        self.dtype_input.widget.combo_items = list(self.dtype_dict.keys())
 
     def create_requires_grad_property(self):
-        self.grad_property = self.add_property('requires_grad', widget_type='checkbox', default_value=self.requires_grad,
+        self.grad_input = self.add_input('requires_grad', widget_type='checkbox', default_value=self.requires_grad,
                                               callback=self.requires_grad_changed)
 
-    def device_changed(self):
-        device_name = self.device_property.get_widget_value()
+    def device_changed(self, val='cpu'):
+        device_name = self.device_input.get_widget_value()
         self.device = torch.device(device_name)
 
-    def requires_grad_changed(self):
-        self.requires_grad = self.grad_property.get_widget_value()
+    def requires_grad_changed(self, val=False):
+        self.requires_grad = self.grad_input.get_widget_value()
 
-    def dtype_changed(self):
-        dtype = self.dtype_property.get_widget_value()
+    def dtype_changed(self, val='torch.float'):
+        dtype = self.dtype_input.get_widget_value()
         if dtype in self.dtype_dict:
             self.dtype = self.dtype_dict[dtype]
 
     def create_dtype_dict(self):
         dtype_dict = {}
         dtype_dict['float32'] = torch.float32
+        dtype_dict['torch.float32'] = torch.float32
         dtype_dict['float'] = torch.float
+        dtype_dict['torch.float'] = torch.float
         dtype_dict['float16'] = torch.float16
+        dtype_dict['torch.float16'] = torch.float16
         # dtype_dict['bfloat16'] = torch.bfloat16
         # dtype_dict['double'] = torch.double
         dtype_dict['int64'] = torch.int64
+        dtype_dict['torch.int64'] = torch.int64
         dtype_dict['uint8'] = torch.uint8
+        dtype_dict['torch.uint8'] = torch.uint8
         dtype_dict['bool'] = torch.bool
+        dtype_dict['torch.bool'] = torch.bool
         # dtype_dict['complex32'] = torch.complex32
         dtype_dict['complex64'] = torch.complex64
+        dtype_dict['torch.complex64'] = torch.complex64
         dtype_dict['complex128'] = torch.complex128
+        dtype_dict['torch.complex128'] = torch.complex128
         return dtype_dict
 
     def create_device_list(self):
@@ -310,6 +327,43 @@ class TorchDeviceDtypeNode(TorchNode):
             device_string = 'cuda'
             device_list.append(device_string)
         return device_list
+
+
+
+class TorchInfoNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchInfoNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input("in", triggers_execution=True)
+        self.shape_output = self.add_output('shape')
+        self.dtype_output = self.add_output('dtype')
+        self.device_output = self.add_output('device')
+        self.requires_grad_output = self.add_output('grad')
+
+    def execute(self):
+        in_data = self.input_to_tensor()
+        if in_data is not None:
+            rg = 'inference'
+            if in_data.requires_grad:
+                rg = 'grad'
+            self.requires_grad_output.set_label(rg)
+            self.requires_grad_output.send(in_data.requires_grad)
+
+            self.device_output.set_label(str(in_data.device))
+            self.device_output.send(str(in_data.device))
+
+            self.dtype_output.set_label(str(in_data.dtype))
+            self.dtype_output.send(str(in_data.dtype))
+
+            self.shape_output.set_label(str(list(in_data.shape)))
+            self.shape_output.send(list(in_data.shape))
+
+
 
 
 class TensorNode(TorchDeviceDtypeNode):
@@ -353,9 +407,10 @@ class TorchGeneratorNode(TorchDeviceDtypeNode):
 
         self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
 
-        self.shape_properties = []
-        for i in range(len(self.shape)):
-            self.shape_properties.append(self.add_property('dim ' + str(i), widget_type='input_int', default_value=self.shape[i]))
+        self.shape_input = self.add_input('shape', widget_type='text_input', default_value=str(self.shape), callback=self.shape_changed)
+        # self.shape_properties = []
+        # for i in range(len(self.shape)):
+        #     self.shape_properties.append(self.add_property('dim ' + str(i), widget_type='input_int', default_value=self.shape[i]))
 
         self.setup_dtype_device_grad(args)
 
@@ -378,8 +433,16 @@ class TorchGeneratorNode(TorchDeviceDtypeNode):
         self.min = self.min_input.get_widget_value()
         self.max = self.max_input.get_widget_value()
 
-    def dtype_changed(self):
-        super().dtype_changed()
+    def shape_changed(self, val=0):
+        shape_text = self.shape_input.get_widget_value()
+        shape_list = re.findall(r'[-+]?\d+', shape_text)
+        shape = []
+        for dim_text in shape_list:
+            shape.append(any_to_int(dim_text))
+        self.shape = shape
+
+    def dtype_changed(self, val='torch.float'):
+        super().dtype_changed(val)
         if self.label == 't.rand':
             if self.dtype == torch.uint8:
                 if self.min < 0:
@@ -401,8 +464,6 @@ class TorchGeneratorNode(TorchDeviceDtypeNode):
             self.range_changed()
 
     def execute(self):
-        for i in range(len(self.shape)):
-            self.shape[i] = self.shape_properties[i].get_widget_value()
         size = tuple(self.shape)
         if self.label == 't.rand':
             if self.dtype in [torch.float, torch.float32, torch.double, torch.float16, torch.bfloat16, torch.complex32, torch.complex64, torch.complex128]:
@@ -490,8 +551,8 @@ class TorchGeneratorLikeNode(TorchDeviceDtypeNode):
         self.min = self.min_input.get_widget_value()
         self.max = self.max_input.get_widget_value()
 
-    def dtype_changed(self):
-        super().dtype_changed()
+    def dtype_changed(self, val='torch.float'):
+        super().dtype_changed(val)
         if self.label == 't.rand':
             if self.dtype == torch.uint8:
                 if self.min < 0:
@@ -581,6 +642,22 @@ class TorchLinSpaceNode(TorchDeviceDtypeNode):
         out_array = self.op(self.start, self.stop, self.steps, dtype=self.dtype, device=self.device, requires_grad=self.requires_grad)
         self.output.send(out_array)
 
+
+class TorchNumElNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchNumElNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('tensor in',  triggers_execution=True)
+        self.output = self.add_output('numel out')
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            self.output.send(torch.numel(input_tensor))
 
 class TorchRangeNode(TorchDeviceDtypeNode):
     @staticmethod
@@ -930,6 +1007,36 @@ class TorchArgMaxNode(TorchWithDimNode):
             self.output.send(output_tensor)
 
 
+class TorchNarrowNode(TorchWithDimNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchNarrowNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.dim_specified = True
+        self.start = 0
+        self.length = 1
+        self.add_dim_input()
+        self.start_input = self.add_input('start', widget_type='drag_int', default_value=self.start, callback=self.params_changed)
+        self.length_input = self.add_input('length', widget_type='drag_int', default_value=self.length, callback=self.params_changed)
+        self.output = self.add_output("tensor out")
+
+    def params_changed(self, val=0):
+        self.start = self.start_input.get_widget_value()
+        self.length = self.length_input.get_widget_value()
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            if self.dim < len(input_tensor.shape):
+                critical_dim = input_tensor.shape[self.dim]
+                if -critical_dim <= self.start < critical_dim and self.start + self.length <= critical_dim:
+                    output_tensor = torch.narrow(input_tensor, dim=self.dim, start=self.start, length=self.length)
+                    self.output.send(output_tensor)
+
 class TorchMinMaxNode(TorchWithDimNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -1111,7 +1218,7 @@ class TorchIndexSelectNode(TorchWithDimNode):
             data = self.index_input.get_received_data()
             if data is not None:
                 index_tensor = self.data_to_tensor(data)
-                if index_tensor is not None:
+                if index_tensor is not None and index_tensor.dtype == torch.long:
                     if -1 - len(input_tensor.shape) < self.dim < len(input_tensor.shape):
                         self.output.send(torch.index_select(input_tensor, self.dim, index_tensor))
                     else:
@@ -1123,6 +1230,105 @@ class TorchIndexSelectNode(TorchWithDimNode):
             else:
                 if self.app.verbose:
                     print('t.index_select invalid input tensor')
+
+
+class TorchArgSortNode(TorchWithDimNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchArgSortNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.dim = -1
+        self.descending = False
+        self.stable = False
+        if self.dim_specified:
+            self.add_dim_input()
+        self.descending_input = self.add_input('descending', widget_type='checkbox', default_value=self.descending, callback=self.params_changed)
+        self.stable_input = self.add_input('stable', widget_type='checkbox', default_value=self.stable, callback=self.params_changed)
+        self.output = self.add_output("output")
+
+    def params_changed(self, val=0):
+        self.descending = self.descending_input.get_widget_value()
+        self.stable = self.stable_input.get_widget_value()
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            if self.dim_specified:
+                self.output.send(torch.argsort(input_tensor, dim=self.dim, descending=self.descending, stable=self.stable))
+            else:
+                self.output.send(torch.argsort(input_tensor, descending=self.descending, stable=self.stable))
+
+
+class TorchTakeAlongDimNode(TorchWithDimNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchTakeAlongDimNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.dim_specified = True
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.index_input = self.add_input('indices in')
+        self.add_dim_input()
+        self.output = self.add_output("output")
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            data = self.index_input.get_received_data()
+            if data is not None:
+                index_tensor = self.data_to_tensor(data)
+                if index_tensor is not None and index_tensor.dtype == torch.long:
+                    if -1 - len(input_tensor.shape) < self.dim <= len(input_tensor.shape):
+                        try:
+                            taken = torch.take_along_dim(input_tensor, indices=index_tensor, dim = self.dim)
+                            self.output.send(taken)
+                        except Exception as e:
+                            print(self.label, 'failed')
+                else:
+                    if self.app.verbose:
+                        print(self.label, ' no index tensor')
+            else:
+                if self.app.verbose:
+                    print(self.label, ' invalid input tensor')
+
+
+class TorchTakeNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchTakeNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.index_input = self.add_input('indices in')
+        self.output = self.add_output("output")
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            data = self.index_input.get_received_data()
+            if data is not None:
+                index_tensor = self.data_to_tensor(data)
+                if index_tensor is not None and index_tensor.dtype == torch.long:
+                    try:
+                        taken = torch.take(input_tensor, index_tensor)
+                        self.output.send(taken)
+                    except Exception as e:
+                        print(self.label, 'failed')
+                else:
+                    if self.app.verbose:
+                        print(self.label, ' no index tensor')
+            else:
+                if self.app.verbose:
+                    print(self.label, ' invalid input tensor')
+
 
 class TorchUnsqueezeNode(TorchWithDimNode):
     @staticmethod

@@ -49,6 +49,7 @@ def register_basic_nodes():
     Node.app.register_node('tick', TickNode.factory)
     Node.app.register_node('comment', CommentNode.factory)
     Node.app.register_node('fuzzy_match', FuzzyMatchNode.factory)
+    Node.app.register_node('length', LengthNode.factory)
 
 
 class CommentNode(Node):
@@ -1244,6 +1245,30 @@ class TypeNode(Node):
             elif t == np.bool_:
                 self.type_property.set('numpy.bool_')
 
+
+class LengthNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = LengthNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('input', triggers_execution=True)
+        self.output = self.add_output('length')
+
+    def execute(self):
+        if self.input.fresh_input:
+            data = self.input.get_received_data()
+            t = type(data)
+            if t in [list, tuple]:
+                self.output.send(len(data))
+            elif t == np.ndarray:
+                self.output.send(data.size)
+            elif self.app.torch_available and t == torch.Tensor:
+                self.output.send(data.numel())
+            else:
+                self.output.send(1)
 
 class ArrayNode(Node):
     @staticmethod
