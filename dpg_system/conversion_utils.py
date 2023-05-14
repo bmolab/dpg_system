@@ -205,7 +205,9 @@ def tensor_to_float(input):
     value = 0.0
     if torch_available:
         if type(input) == torch.Tensor:
-            if len(input.shape) == 1:
+            if len(input.shape) == 0:
+                value = input.item()
+            elif len(input.shape) == 1:
                 value = input[0].item()
             elif len(input.shape) == 2:
                 value = input[0, 0].item()
@@ -219,7 +221,9 @@ def tensor_to_int(input):
     value = 0
     if torch_available:
         if type(input) == torch.Tensor:
-            if len(input.shape) == 1:
+            if len(input.shape) == 0:
+                value = input.item()
+            elif len(input.shape) == 1:
                 value = input[0].item()
             elif len(input.shape) == 2:
                 value = input[0, 0].item()
@@ -236,7 +240,7 @@ def tensor_to_bool(input):
         if type(input) == torch.Tensor:
             if len(input.shape) == 0:
                 value = input.item()
-            if len(input.shape) == 1:
+            elif len(input.shape) == 1:
                 value = input[0].item()
             elif len(input.shape) == 2:
                 value = input[0, 0].item()

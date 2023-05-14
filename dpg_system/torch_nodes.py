@@ -8,13 +8,12 @@ import torch
 import torchvision
 
 # torch.fft
-# t.count_non_zero
 
 def register_torch_nodes():
     Node.app.torch_available = True
     Node.app.register_node('tensor', TensorNode.factory)
     Node.app.register_node('t.to', TensorNode.factory)
-    Node.app.register_node('torch[]', TorchSubtensorNode.factory)
+    Node.app.register_node('t[]', TorchSubtensorNode.factory)
 
     Node.app.register_node('t.cdist', TorchCDistanceNode.factory)
     Node.app.register_node('t.dist', TorchDistanceNode.factory)
@@ -59,10 +58,13 @@ def register_torch_nodes():
     Node.app.register_node('t.tile', TorchTileNode.factory)
     Node.app.register_node('t.chunk', TorchChunkNode.factory)
     Node.app.register_node('t.tensor_split', TorchChunkNode.factory)
+    Node.app.register_node('t.view', TorchViewNode.factory)
+    Node.app.register_node('t.reshape', TorchViewNode.factory)
 
-    Node.app.register_node('t.adjoint', TorchViewNode.factory)
-    Node.app.register_node('t.detach', TorchViewNode.factory)
-    Node.app.register_node('t.t', TorchViewNode.factory)
+    Node.app.register_node('t.flatten', TorchViewVariousNode.factory)
+    Node.app.register_node('t.adjoint', TorchViewVariousNode.factory)
+    Node.app.register_node('t.detach', TorchViewVariousNode.factory)
+    Node.app.register_node('t.t', TorchViewVariousNode.factory)
 
     Node.app.register_node('t.real', TorchRealImaginaryNode.factory)
     Node.app.register_node('t.imag', TorchRealImaginaryNode.factory)
@@ -99,8 +101,13 @@ def register_torch_nodes():
 
     Node.app.register_node('t.any', TorchAnyAllNode.factory)
     Node.app.register_node('t.all', TorchAnyAllNode.factory)
+    Node.app.register_node('t.count_nonzero', TorchCountNonZeroNode.factory)
+    Node.app.register_node('t.bincount', TorchBinCountNode.factory)
 
-
+    Node.app.register_node('t.max', TorchMinMaxNode.factory)
+    Node.app.register_node('t.min', TorchMinMaxNode.factory)
+    Node.app.register_node('t.minimum', TorchMinimumMaximumNode.factory)
+    Node.app.register_node('t.maximum', TorchMinimumMaximumNode.factory)
     Node.app.register_node('t.argmax', TorchArgMaxNode.factory)
     Node.app.register_node('t.argwhere', TorchArgWhereNode.factory)
     Node.app.register_node('t.non_zero', TorchArgWhereNode.factory)
@@ -597,15 +604,16 @@ class TorchEyeNode(TorchDeviceDtypeNode):
         out_array = torch.eye(n=self.n, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad)
         self.output.send(out_array)
 
-class TorchViewNode(TorchNode):
+class TorchViewVariousNode(TorchNode):
     op_dict = {
         't.adjoint': torch.adjoint,
         't.detach': torch.detach,
-        't.t': torch.t
+        't.t': torch.t,
+        't.flatten': torch.flatten
     }
     @staticmethod
     def factory(name, data, args=None):
-        node = TorchViewNode(name, data, args)
+        node = TorchViewVariousNode(name, data, args)
         return node
 
     def __init__(self, label: str, data, args):
@@ -622,6 +630,7 @@ class TorchViewNode(TorchNode):
         if input_tensor is not None:
             out_tensor = self.op(input_tensor)
             self.output.send(out_tensor)
+
 
 class TorchAnyAllNode(TorchNode):
     @staticmethod
@@ -818,6 +827,30 @@ class TorchWithDimNode(TorchNode):
             self.dim = self.dim_input.get_widget_value()
 
 
+class TorchCountNonZeroNode(TorchWithDimNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchCountNonZeroNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        if self.dim_specified:
+            self.add_dim_input()
+        self.output = self.add_output('tensor out')
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            if self.dim_specified:
+                result = torch.count_nonzero(input_tensor, dim=self.dim)
+            else:
+                result = torch.count_nonzero(input_tensor)
+            self.output.send(result)
+
+
 class TorchArgMaxNode(TorchWithDimNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -841,6 +874,71 @@ class TorchArgMaxNode(TorchWithDimNode):
             self.output.send(output_tensor)
 
 
+class TorchMinMaxNode(TorchWithDimNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchMinMaxNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        output_label = 'max tensor'
+        index_label = 'max indices'
+        self.op = torch.max
+        if self.label == 't.min':
+            output_label = 'min tensor'
+            index_label = 'min indices'
+            self.op = torch.min
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        if self.dim_specified:
+            self.add_dim_input()
+        self.output = self.add_output(output_label)
+        if self.dim_specified:
+            self.index_output = self.add_output(index_label)
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            if self.dim_specified:
+                output_tensor, index_tensor = self.op(input_tensor, dim=self.dim)
+                self.index_output.send(index_tensor)
+                self.output.send(output_tensor)
+            else:
+                output_tensor = self.op(input_tensor)
+                self.output.send(output_tensor)
+
+class TorchMinimumMaximumNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchMinimumMaximumNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        output_label = 'maximum tensor'
+        self.op = torch.maximum
+        if self.label == 't.minimum':
+            output_label = 'minimum tensor'
+            self.op = torch.minimum
+        self.input = self.add_input("tensor a in", triggers_execution=True)
+        self.input_2 = self.add_input("tensor b in")
+
+        self.output = self.add_output(output_label)
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            data = self.input_2.get_received_data()
+            if data is not None:
+                input_tensor_2 = self.data_to_tensor(data)
+                if input_tensor_2 is not None:
+                    output_tensor = self.op(input_tensor, input_tensor_2)
+                    self.output.send(output_tensor)
+
+
+
+
+
 class TorchFlipNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -858,7 +956,7 @@ class TorchFlipNode(TorchNode):
 
     def flip_changed(self):
         flip_text = self.flip_property.get_widget_value()
-        flip_split = re.findall(r'\d+', flip_text)
+        flip_split = re.findall(r'[-+]?\d+', flip_text)
         flip_list, _, _ = list_to_hybrid_list(flip_split)
         self.flip_list = flip_list
 
@@ -871,6 +969,26 @@ class TorchFlipNode(TorchNode):
                 permuted = torch.flip(input_tensor, self.flip_list)
                 self.output.send(permuted)
 
+class TorchBinCountNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchBinCountNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input("int tensor in", triggers_execution=True)
+        self.output = self.add_output("bin count tensor out")
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            if input_tensor.dtype not in [torch.int, torch.uint8, torch.int8, torch.int64, torch.int32, torch.int16]:
+                input_tensor = input_tensor.to(dtype=torch.int)
+            if len(input_tensor.shape) > 1:
+                input_tensor = torch.flatten(input_tensor)
+            output_tensor = torch.bincount(input_tensor)
+            self.output.send(output_tensor)
 
 # class TorchCropNode(Node):
 #     @staticmethod
@@ -1931,14 +2049,14 @@ class TorchSubtensorNode(TorchNode):
             dimmer = dimmer.split(':')
             dim_nums = []
             if len(dimmer) == 1:
-                dim_num = re.findall(r'\d+', dimmer[0])
+                dim_num = re.findall(r'[-+]?\d+', dimmer[0])
                 if len(dim_num) > 0:
                     dim_num = string_to_int(dim_num[0])
                     dim_nums.append([dim_num])
                     dim_nums.append([dim_num + 1])
             else:
                 for j in range(len(dimmer)):
-                    dim_num = re.findall(r'\d+', dimmer[j])
+                    dim_num = re.findall(r'[-+]?\d+', dimmer[j])
                     if len(dim_num) == 0:
                         if j == 0:
                             dim_nums.append([0])
@@ -1980,6 +2098,45 @@ class TorchSubtensorNode(TorchNode):
                 self.output.send(sub_tensor)
 
 
+class TorchViewNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchViewNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.shape = [-1]
+        if len(args) > 0:
+            self.shape = []
+            for arg in args:
+                self.shape.append(any_to_int(arg))
+        shape_string = str(self.shape)
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.shape_input = self.add_input('', widget_type='text_input', widget_width=200, default_value=shape_string,
+                                                  callback=self.shape_changed)
+        self.output = self.add_output("output")
+
+    def shape_changed(self, val=None):
+        shape_text = self.shape_input.get_widget_value()
+        shape_list = re.findall(r'[-+]?\d+', shape_text)
+        shape = []
+        for dim_text in shape_list:
+            shape.append(any_to_int(dim_text))
+        self.shape = shape
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            try:
+                if self.label == 't.view':
+                    view_tensor = input_tensor.view(self.shape)
+                else:
+                    view_tensor = input_tensor.reshape(self.shape)
+                self.output.send(view_tensor)
+            except Exception as e:
+                print(self.label, e)
+
 class TorchPermuteNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -1998,7 +2155,7 @@ class TorchPermuteNode(TorchNode):
 
     def permute_changed(self, val=None):
         permute_text = self.permute_property.get_widget_value()
-        permute_split = re.findall(r'\d+', permute_text)
+        permute_split = re.findall(r'[-+]?\d+', permute_text)
         permute_list, _, _ = list_to_hybrid_list(permute_split)
         self.permute = permute_list
 
