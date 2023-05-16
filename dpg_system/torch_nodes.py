@@ -9,8 +9,7 @@ import torchvision
 
 # torch.fft
 # torch.scatter / torch.gather
-# torch.bucketize
-# torch.corrcoeff
+# torch.cov
 
 def register_torch_nodes():
     Node.app.torch_available = True
@@ -45,6 +44,9 @@ def register_torch_nodes():
     Node.app.register_node('t.log_normal', TorchDistributionTwoParamNode.factory)
     Node.app.register_node('t.normal', TorchDistributionTwoParamNode.factory)
     Node.app.register_node('t.uniform', TorchDistributionTwoParamNode.factory)
+
+    Node.app.register_node('t.corrcoef', TorchCovarianceCoefficientNode.factory)
+    Node.app.register_node('t.diff', TorchDiffNode.factory)
 
     Node.app.register_node('t.permute', TorchPermuteNode.factory)
     Node.app.register_node('t.transpose', TorchTransposeNode.factory)
@@ -114,7 +116,8 @@ def register_torch_nodes():
     Node.app.register_node('t.all', TorchAnyAllNode.factory)
     Node.app.register_node('t.count_nonzero', TorchCountNonZeroNode.factory)
     Node.app.register_node('t.bincount', TorchBinCountNode.factory)
-
+    Node.app.register_node('t.bucketize', TorchBucketizeNode.factory)
+    Node.app.register_node('t.histc', TorchHistogramNode.factory)
     Node.app.register_node('t.max', TorchMinMaxNode.factory)
     Node.app.register_node('t.min', TorchMinMaxNode.factory)
     Node.app.register_node('t.minimum', TorchMinimumMaximumNode.factory)
@@ -142,6 +145,8 @@ def register_torch_nodes():
     Node.app.register_node('t.linalg.svd', TorchLinalgSVDNode.factory)
     Node.app.register_node('t.linalg.pca_low_rank', TorchPCALowRankNode.factory)
     Node.app.register_node('t.linalg.eig', TorchLinalgEigenNode.factory)
+
+    Node.app.register_node('t.gcd', TorchGCDNode.factory)
 
     Node.app.register_node('t.window.blackman', TorchWindowNode.factory)
     Node.app.register_node('t.window.bartlett', TorchWindowNode.factory)
@@ -774,6 +779,24 @@ class TorchViewVariousNode(TorchNode):
             self.output.send(out_tensor)
 
 
+class TorchCovarianceCoefficientNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchCovarianceCoefficientNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.output = self.add_output('tensor out')
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            result = torch.corrcoef(input_tensor)
+            self.output.send(result)
+
+
 class TorchAnyAllNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -993,6 +1016,41 @@ class TorchCountNonZeroNode(TorchWithDimNode):
             self.output.send(result)
 
 
+class TorchDiffNode(TorchWithDimNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchDiffNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.dim = -1
+        self.n = 1
+        self.n_input = self.add_input('n', widget_type='input_int', default_value=self.n, callback=self.n_changed)
+        if self.dim_specified:
+            self.add_dim_input()
+        self.output = self.add_output('tensor out')
+
+    def n_changed(self, val=0):
+        self.n = self.n_input.get_widget_value()
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            try:
+                if self.dim_specified:
+                    result = torch.diff(input_tensor, n=self.n, dim=self.dim)
+                else:
+                    result = torch.diff(input_tensor, n=self.n)
+                self.output.send(result)
+            except Exception as e:
+                if self.app.verbose:
+                    print(self.label, e)
+
+
+
 class TorchArgMaxNode(TorchWithDimNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -1108,6 +1166,30 @@ class TorchMinimumMaximumNode(TorchNode):
                     self.output.send(output_tensor)
 
 
+class TorchGCDNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchGCDNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input("tensor a in", triggers_execution=True)
+        self.input_2 = self.add_input("tensor b in")
+
+        self.output = self.add_output('gcd tensor out')
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            data = self.input_2.get_received_data()
+            if data is not None:
+                input_tensor_2 = any_to_tensor(data, dtype=torch.int64)
+                if input_tensor_2 is not None:
+                    output_tensor = torch.gcd(input_tensor, input_tensor_2)
+                    self.output.send(output_tensor)
+
+
 
 
 
@@ -1188,6 +1270,36 @@ class TorchBinCountNode(TorchNode):
                 input_tensor = torch.flatten(input_tensor)
             output_tensor = torch.bincount(input_tensor)
             self.output.send(output_tensor)
+
+
+class TorchBucketizeNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchBucketizeNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.output_int32 = False
+        self.right = False
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.boundaries_input = self.add_input("boundaries tensor in")
+        self.output_int32_input = self.add_input('int32 indices', widget_type='checkbox', default_value=self.output_int32, callback=self.params_changed)
+        self.right_input = self.add_input('right', widget_type='checkbox', default_value=self.right, callback=self.params_changed)
+        self.output = self.add_output("bin count tensor out")
+
+    def params_changed(self, val=0):
+        self.output_int32 = self.output_int32_input.get_widget_value()
+        self.right = self.right_input.get_widget_value()
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            data = self.boundaries_input.get_received_data()
+            boundaries_tensor = self.data_to_tensor(data)
+            output_tensor = torch.bucketize(input_tensor, boundaries_tensor, out_int32=self.output_int32, right=self.right)
+            self.output.send(output_tensor)
+
 
 # class TorchCropNode(Node):
 #     @staticmethod
@@ -2905,3 +3017,33 @@ class TorchWindowTwoParamNode(TorchDeviceDtypeNode):
             window_tensor = self.op(self.m, center=self.param_1, tau=self.param_2, sym=self.sym, dtype=self.dtype, device=self.device)
 
         self.output.send(window_tensor)
+
+
+class TorchHistogramNode(TorchDeviceDtypeNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchHistogramNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.bin_count = 100
+        self.min = 0
+        self.max = 0
+
+        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+        self.bin_count_input = self.add_input('bin count', widget_type='drag_int', default_value=self.bin_count, callback=self.param_changed)
+        self.min_input = self.add_input('min', widget_type='drag_float', default_value=self.min, callback=self.param_changed)
+        self.max_input = self.add_input('max', widget_type='drag_float', default_value=self.max, callback=self.param_changed)
+        self.output = self.add_output('histogram tensor out')
+
+    def param_changed(self, val=64):
+        self.bin_count = self.bin_count_input.get_widget_value()
+        self.min = self.min_input.get_widget_value()
+        self.max = self.max_input.get_widget_value()
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            histogram_tensor = torch.histc(input_tensor, bins=self.bin_count, min=self.min, max=self.max)
+            self.output.send(histogram_tensor)
