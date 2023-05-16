@@ -8,7 +8,9 @@ import torch
 import torchvision
 
 # torch.fft
-# torch.numel
+# torch.scatter / torch.gather
+# torch.bucketize
+# torch.corrcoeff
 
 def register_torch_nodes():
     Node.app.torch_available = True
@@ -120,7 +122,14 @@ def register_torch_nodes():
     Node.app.register_node('t.argmax', TorchArgMaxNode.factory)
     Node.app.register_node('t.argwhere', TorchArgWhereNode.factory)
     Node.app.register_node('t.non_zero', TorchArgWhereNode.factory)
+
     Node.app.register_node('t.cumsum', TorchCumSumNode.factory)
+    Node.app.register_node('t.cumprod', TorchCumSumNode.factory)
+    Node.app.register_node('t.cummax', TorchCumSumNode.factory)
+    Node.app.register_node('t.cummin', TorchCumSumNode.factory)
+
+    Node.app.register_node('t.diag', TorchDiagNode.factory)
+
     Node.app.register_node('t.masked_select', TorchMaskedSelectNode.factory)
     Node.app.register_node('t.index_select', TorchIndexSelectNode.factory)
     Node.app.register_node('t.take', TorchTakeNode.factory)
@@ -1132,6 +1141,33 @@ class TorchFlipNode(TorchNode):
                 permuted = torch.flip(input_tensor, self.flip_list)
                 self.output.send(permuted)
 
+
+class TorchDiagNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchDiagNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.flip_list = [0]
+        self.diag = 0
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.which_property = self.add_property('which diag', widget_type='input_int', default_value=self.diag,
+                                                  callback=self.diag_changed)
+        self.output = self.add_output("output")
+
+    def diag_changed(self):
+        self.diag = self.which_property.get_widget_value()
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            output_tensor = torch.diag(input_tensor, self.diag)
+            self.output.send(output_tensor)
+
+
 class TorchBinCountNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -1379,6 +1415,12 @@ class TorchMaskedSelectNode(TorchNode):
 
 
 class TorchCumSumNode(TorchWithDimNode):
+    op_dict = {
+        't.cumsum': torch.cumsum,
+        't.cumprod': torch.cumprod,
+        't.cummax': torch.cummax,
+        't.cummin': torch.cummin
+    }
     @staticmethod
     def factory(name, data, args=None):
         node = TorchCumSumNode(name, data, args)
@@ -1386,16 +1428,27 @@ class TorchCumSumNode(TorchWithDimNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+        self.op = torch.cumsum
+        if self.label in self.op_dict:
+            self.op = self.op_dict[self.label]
         self.input = self.add_input("tensor in", triggers_execution=True)
         if self.dim_specified:
             self.add_dim_input()
         self.output = self.add_output("output")
+        if self.label in ['t.cummax', 't.cummin']:
+            self.index_output = self.add_output("indices")
 
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
             if -1 - len(input_tensor.shape) < self.dim <= len(input_tensor.shape):
-                self.output.send(torch.cumsum(input_tensor, self.dim))
+                if self.label in ['t.cummax', 't.cummin']:
+                    output_tensor, indices_tensor = self.op(input_tensor, self.dim)
+                    self.index_output.send(indices_tensor)
+                    self.output.send(output_tensor)
+
+                else:
+                    self.output.send(self.op(input_tensor, self.dim))
                 return
 
 
