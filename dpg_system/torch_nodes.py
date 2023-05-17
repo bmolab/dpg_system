@@ -50,6 +50,13 @@ def register_torch_nodes():
     Node.app.register_node('t.corrcoef', TorchCovarianceCoefficientNode.factory)
     Node.app.register_node('t.diff', TorchDiffNode.factory)
 
+    Node.app.register_node('t.eq', TorchComparisonNode.factory)
+    Node.app.register_node('t.gt', TorchComparisonNode.factory)
+    Node.app.register_node('t.lt', TorchComparisonNode.factory)
+    Node.app.register_node('t.ge', TorchComparisonNode.factory)
+    Node.app.register_node('t.le', TorchComparisonNode.factory)
+    Node.app.register_node('t.ne', TorchComparisonNode.factory)
+
     Node.app.register_node('t.permute', TorchPermuteNode.factory)
     Node.app.register_node('t.transpose', TorchTransposeNode.factory)
     Node.app.register_node('t.flip', TorchFlipNode.factory)
@@ -159,6 +166,9 @@ def register_torch_nodes():
     Node.app.register_node('t.median', TorchMeanMedianNode.factory)
     Node.app.register_node('t.nanmean', TorchMeanMedianNode.factory)
     Node.app.register_node('t.nanmedian', TorchMeanMedianNode.factory)
+    Node.app.register_node('t.sum', TorchMeanMedianNode.factory)
+    Node.app.register_node('t.nansum', TorchMeanMedianNode.factory)
+    Node.app.register_node('t.prod', TorchMeanMedianNode.factory)
 
     Node.app.register_node('t.window.blackman', TorchWindowNode.factory)
     Node.app.register_node('t.window.bartlett', TorchWindowNode.factory)
@@ -1197,6 +1207,42 @@ class TorchMinimumMaximumNode(TorchNode):
                     self.output.send(output_tensor)
 
 
+class TorchComparisonNode(TorchNode):
+    op_dict = {
+        't.eq': torch.eq,
+        't.gt': torch.gt,
+        't.lt': torch.lt,
+        't.ge': torch.ge,
+        't.le': torch.le,
+        't.ne': torch.ne
+    }
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchComparisonNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        output_label = 'tensor result'
+        self.op = torch.eq
+        if self.label in self.op_dict:
+            self.op = self.op_dict[self.label]
+        self.input = self.add_input("tensor a in", triggers_execution=True)
+        self.input_2 = self.add_input("tensor b in")
+
+        self.output = self.add_output(output_label)
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            data = self.input_2.get_received_data()
+            if data is not None:
+                input_tensor_2 = self.data_to_tensor(data)
+                if input_tensor_2 is not None:
+                    output_tensor = self.op(input_tensor, input_tensor_2)
+                    self.output.send(output_tensor)
+
+
 class TorchLCMGCDNode(TorchNode):
     op_dict = {
         't.gcd': torch.gcd,
@@ -1499,10 +1545,13 @@ class TorchIndexSelectNode(TorchWithDimNode):
 
 class TorchMeanMedianNode(TorchWithDimNode):
     op_dict = {
+        't.sum': torch.sum,
         't.mean': torch.mean,
         't.median': torch.median,
+        't.nansum': torch.nansum,
         't.nanmean': torch.nanmean,
         't.nanmedian': torch.nanmedian,
+        't.prod': torch.prod,
         }
     @staticmethod
     def factory(name, data, args=None):
