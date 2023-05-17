@@ -219,6 +219,8 @@ def register_torch_nodes():
 
     Node.app.register_node('t.info', TorchInfoNode.factory)
     Node.app.register_node('t.numel', TorchNumElNode.factory)
+    Node.app.register_node('t.contiguous', TorchContiguousNode.factory)
+    Node.app.register_node('t.is_contiguous', TorchIsContiguousNode.factory)
 
     Node.app.register_node('tv.Grayscale', TorchvisionGrayscaleNode.factory)
     Node.app.register_node('tv.gaussian_blur', TorchvisionGaussianBlurNode.factory)
@@ -1090,6 +1092,41 @@ class TorchDiffNode(TorchWithDimNode):
                 if self.app.verbose:
                     print(self.label, e)
 
+
+class TorchContiguousNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchContiguousNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.output = self.add_output("max index")
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            output_tensor = input_tensor.contiguous()
+            self.output.send(output_tensor)
+
+
+class TorchIsContiguousNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchIsContiguousNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.output = self.add_output("result")
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            contiguous = input_tensor.is_contiguous()
+            self.output.send(contiguous)
 
 
 class TorchArgMaxNode(TorchWithDimNode):
