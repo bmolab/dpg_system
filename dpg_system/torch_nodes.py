@@ -1,6 +1,8 @@
 import dearpygui.dearpygui as dpg
 import math
 import numpy as np
+import torch.fft
+
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
 
@@ -216,6 +218,11 @@ def register_torch_nodes():
     Node.app.register_node('t.special.xlog1py', TorchSpecialTwoTensorOrNumberNode.factory)
     Node.app.register_node('t.special.gammainc', TorchSpecialTwoTensorNode.factory)
     Node.app.register_node('t.special.gammaincc', TorchSpecialTwoTensorNode.factory)
+
+    Node.app.register_node('t.rfft', TorchFFTNode.factory)
+    Node.app.register_node('t.irfft', TorchFFTNode.factory)
+    Node.app.register_node('t.fft', TorchFFTNode.factory)
+    Node.app.register_node('t.ifft', TorchFFTNode.factory)
 
     Node.app.register_node('t.info', TorchInfoNode.factory)
     Node.app.register_node('t.numel', TorchNumElNode.factory)
@@ -3127,6 +3134,7 @@ class TorchWindowNode(TorchDeviceDtypeNode):
                't.window.hann': torch.signal.windows.hann,
                't.window.nuttall': torch.signal.windows.nuttall
                }
+
     @staticmethod
     def factory(name, data, args=None):
         node = TorchWindowNode(name, data, args)
@@ -3295,3 +3303,39 @@ class TorchHistogramNode(TorchDeviceDtypeNode):
         if input_tensor is not None:
             histogram_tensor = torch.histc(input_tensor, bins=self.bin_count, min=self.min, max=self.max)
             self.output.send(histogram_tensor)
+
+
+class TorchFFTNode(TorchWithDimNode):
+    op_dict = {
+        't.rfft': torch.fft.rfft,
+        't.fft': torch.fft.fft,
+        't.irfft': torch.fft.irfft,
+        't.ifft': torch.fft.ifft
+    }
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchFFTNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.op = torch.fft.fft
+        if self.label in self.op_dict:
+            self.op = self.op_dict[self.label]
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.norm = 'backward'
+#        self.length_input = self.add_input('signal length', widget_type='drag_int', )
+        if self.dim_specified:
+            self.add_dim_input()
+        self.norm_input = self.add_input('norm', widget_type='combo', default_value=self.norm, callback=self.param_changed)
+        self.norm_input.widget.combo_items = ['forward', 'backward', 'ortho']
+        self.output = self.add_output('histogram tensor out')
+
+    def param_changed(self, val=64):
+        self.norm = self.norm_input.get_widget_value()
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            fft_tensor = self.op(input_tensor, norm=self.norm)
+            self.output.send(fft_tensor)

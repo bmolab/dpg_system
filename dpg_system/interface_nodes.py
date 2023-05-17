@@ -1232,14 +1232,14 @@ class PlotNode(Node):
         self.heat_map_colour_property = self.add_option('color', widget_type='combo', default_value=default_color_map, callback=self.change_colormap)
         self.heat_map_colour_property.widget.combo_items = ['deep', 'dark', 'pastel', 'paired', 'viridis', 'plasma', 'hot', 'cool', 'pink', 'jet', 'twilight', 'red-blue', 'brown-bluegreen', 'pink-yellowgreen', 'spectral', 'greys']
 
-        self.sample_count_option = self.add_option(label='sample count', widget_type='drag_int', default_value=self.sample_count, max=3840, callback=self.change_sample_count)
+        self.sample_count_option = self.add_option(label='sample count', widget_type='drag_int', default_value=self.sample_count, max=100000, callback=self.change_sample_count)
         self.width_option = self.add_option(label='width', widget_type='drag_int', default_value=self.width, max=3840, callback=self.change_size)
         self.height_option = self.add_option(label='height', widget_type='drag_int', default_value=self.height, max=3840, callback=self.change_size)
 
         self.min_x_option = self.add_option(label='min x', widget_type='drag_float', default_value=self.min_x, max=3840, callback=self.change_range)
         self.min_x_option.widget.speed = .01
 
-        self.max_x_option = self.add_option(label='max x', widget_type='drag_float', default_value=self.max_x, max=3840, callback=self.change_range)
+        self.max_x_option = self.add_option(label='max x', widget_type='drag_float', default_value=self.max_x, max=100000, callback=self.change_range)
         self.max_x_option.widget.speed = .01
 
         self.min_y_option = self.add_option(label='min y', widget_type='drag_float', default_value=self.min_y, callback=self.change_range)
