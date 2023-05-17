@@ -1551,7 +1551,7 @@ class TorchMeanMedianNode(TorchWithDimNode):
         't.nansum': torch.nansum,
         't.nanmean': torch.nanmean,
         't.nanmedian': torch.nanmedian,
-        't.prod': torch.prod,
+        't.prod': torch.prod
         }
     @staticmethod
     def factory(name, data, args=None):
