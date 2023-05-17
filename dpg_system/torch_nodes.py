@@ -10,6 +10,8 @@ import torchvision
 # torch.fft
 # torch.scatter / torch.gather
 # torch.cov
+# torch.renorm
+
 
 def register_torch_nodes():
     Node.app.torch_available = True
@@ -73,6 +75,8 @@ def register_torch_nodes():
     Node.app.register_node('t.adjoint', TorchViewVariousNode.factory)
     Node.app.register_node('t.detach', TorchViewVariousNode.factory)
     Node.app.register_node('t.t', TorchViewVariousNode.factory)
+    Node.app.register_node('t.ravel', TorchRavelNode.factory)
+    Node.app.register_node('t.roll', TorchRollNode.factory)
 
     Node.app.register_node('t.real', TorchRealImaginaryNode.factory)
     Node.app.register_node('t.imag', TorchRealImaginaryNode.factory)
@@ -130,8 +134,11 @@ def register_torch_nodes():
     Node.app.register_node('t.cumprod', TorchCumSumNode.factory)
     Node.app.register_node('t.cummax', TorchCumSumNode.factory)
     Node.app.register_node('t.cummin', TorchCumSumNode.factory)
+    Node.app.register_node('t.logcumsumexp', TorchCumSumNode.factory)
 
     Node.app.register_node('t.diag', TorchDiagNode.factory)
+    Node.app.register_node('t.tril', TorchTriangleNode.factory)
+    Node.app.register_node('t.triu', TorchTriangleNode.factory)
 
     Node.app.register_node('t.masked_select', TorchMaskedSelectNode.factory)
     Node.app.register_node('t.index_select', TorchIndexSelectNode.factory)
@@ -146,7 +153,12 @@ def register_torch_nodes():
     Node.app.register_node('t.linalg.pca_low_rank', TorchPCALowRankNode.factory)
     Node.app.register_node('t.linalg.eig', TorchLinalgEigenNode.factory)
 
-    Node.app.register_node('t.gcd', TorchGCDNode.factory)
+    Node.app.register_node('t.gcd', TorchLCMGCDNode.factory)
+    Node.app.register_node('t.lcm', TorchLCMGCDNode.factory)
+    Node.app.register_node('t.mean', TorchMeanMedianNode.factory)
+    Node.app.register_node('t.median', TorchMeanMedianNode.factory)
+    Node.app.register_node('t.nanmean', TorchMeanMedianNode.factory)
+    Node.app.register_node('t.nanmedian', TorchMeanMedianNode.factory)
 
     Node.app.register_node('t.window.blackman', TorchWindowNode.factory)
     Node.app.register_node('t.window.bartlett', TorchWindowNode.factory)
@@ -843,6 +855,25 @@ class TorchDistributionNode(TorchNode):
             out_tensor = self.op(input_tensor)
             self.output.send(out_tensor)
 
+
+class TorchRavelNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchRavelNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.output = self.add_output('ravelled tensor out')
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            out_tensor = torch.ravel(input_tensor)
+            self.output.send(out_tensor)
+
+
 class TorchDistributionOneParamNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -1166,18 +1197,28 @@ class TorchMinimumMaximumNode(TorchNode):
                     self.output.send(output_tensor)
 
 
-class TorchGCDNode(TorchNode):
+class TorchLCMGCDNode(TorchNode):
+    op_dict = {
+        't.gcd': torch.gcd,
+        't.lcm': torch.lcm
+    }
     @staticmethod
     def factory(name, data, args=None):
-        node = TorchGCDNode(name, data, args)
+        node = TorchLCMGCDNode(name, data, args)
         return node
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+
+        self.op = torch.gcd
+        output_name = 'gcd'
+        if self.label in self.op_dict:
+            self.op = self.op_dict[self.label]
+            output_name = 'lcm'
         self.input = self.add_input("tensor a in", triggers_execution=True)
         self.input_2 = self.add_input("tensor b in")
 
-        self.output = self.add_output('gcd tensor out')
+        self.output = self.add_output(output_name + ' tensor out')
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -1186,7 +1227,7 @@ class TorchGCDNode(TorchNode):
             if data is not None:
                 input_tensor_2 = any_to_tensor(data, dtype=torch.int64)
                 if input_tensor_2 is not None:
-                    output_tensor = torch.gcd(input_tensor, input_tensor_2)
+                    output_tensor = self.op(input_tensor, input_tensor_2)
                     self.output.send(output_tensor)
 
 
@@ -1224,6 +1265,48 @@ class TorchFlipNode(TorchNode):
                 self.output.send(permuted)
 
 
+class TorchRollNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchRollNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.dims_tuple = (-1,)
+        self.shifts_tuple = (1,)
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.dims_input = self.add_input('roll dims', widget_type='text_input', default_value='-1',
+                                                  callback=self.dims_changed)
+        self.shifts_input = self.add_input('roll shifts', widget_type='text_input', default_value='1',
+                                                  callback=self.shifts_changed)
+        self.output = self.add_output("rolled tensor")
+
+    def dims_changed(self):
+        dims_text = self.dims_input.get_widget_value()
+        dims_split = re.findall(r'[-+]?\d+', dims_text)
+        dims_list, _, _ = list_to_hybrid_list(dims_split)
+        self.dims_tuple = tuple(dims_list)
+
+    def shifts_changed(self):
+        shifts_text = self.shifts_input.get_widget_value()
+        shifts_split = re.findall(r'[-+]?\d+', shifts_text)
+        shifts_list, _, _ = list_to_hybrid_list(shifts_split)
+        self.shifts_tuple = tuple(shifts_list)
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            try:
+                rolled = torch.roll(input_tensor, self.shifts_tuple, self.dims_tuple)
+                self.output.send(rolled)
+            except Exception as e:
+                if self.app.verbose:
+                    print('self.label', e)
+
+
+
 class TorchDiagNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -1248,6 +1331,40 @@ class TorchDiagNode(TorchNode):
         if input_tensor is not None:
             output_tensor = torch.diag(input_tensor, self.diag)
             self.output.send(output_tensor)
+
+
+class TorchTriangleNode(TorchNode):
+    op_dict = {
+        't.tril': torch.tril,
+        't.triu': torch.triu
+    }
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchTriangleNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.op = torch.tril
+        if self.label in self.op_dict:
+            self.op = self.op_dict[self.label]
+
+        self.diag = 0
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.which_property = self.add_property('which diag', widget_type='input_int', default_value=self.diag,
+                                                  callback=self.diag_changed)
+        self.output = self.add_output("output")
+
+    def diag_changed(self):
+        self.diag = self.which_property.get_widget_value()
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            output_tensor = self.op(input_tensor, self.diag)
+            self.output.send(output_tensor)
+
 
 
 class TorchBinCountNode(TorchNode):
@@ -1378,6 +1495,50 @@ class TorchIndexSelectNode(TorchWithDimNode):
             else:
                 if self.app.verbose:
                     print('t.index_select invalid input tensor')
+
+
+class TorchMeanMedianNode(TorchWithDimNode):
+    op_dict = {
+        't.mean': torch.mean,
+        't.median': torch.median,
+        't.nanmean': torch.nanmean,
+        't.nanmedian': torch.nanmedian,
+        }
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchMeanMedianNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.op = torch.mean
+        if self.label in self.op_dict:
+            self.op = self.op_dict[self.label]
+        self.dim = -1
+        self.keep_dims = False
+        if self.dim_specified:
+            self.add_dim_input()
+            self.keep_dims_input = self.add_input('keep_dims', widget_type='checkbox', default_value=self.keep_dims, callback=self.params_changed)
+        self.output = self.add_output("output")
+        if self.label in ['t.median', 't.nanmedian'] and self.dim_specified:
+            self.index_out = self.add_output("index output")
+
+    def params_changed(self, val=False):
+        self.keep_dims = self.keep_dims_input.get_widget_value()
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            if self.dim_specified:
+                if self.label in ['t.median', 't.nanmedian']:
+                    out_tensor, index_tensor = self.op(input_tensor, dim=self.dim, keepdim=self.keep_dims)
+                    self.index_out.send(index_tensor)
+                    self.output.send(out_tensor)
+                else:
+                    self.output.send(self.op(input_tensor, dim=self.dim, keepdim=self.keep_dims))
+            else:
+                self.output.send(self.op(input_tensor))
 
 
 class TorchArgSortNode(TorchWithDimNode):
@@ -1531,7 +1692,8 @@ class TorchCumSumNode(TorchWithDimNode):
         't.cumsum': torch.cumsum,
         't.cumprod': torch.cumprod,
         't.cummax': torch.cummax,
-        't.cummin': torch.cummin
+        't.cummin': torch.cummin,
+        't.logcumsumexp': torch.logcumsumexp
     }
     @staticmethod
     def factory(name, data, args=None):
