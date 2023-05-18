@@ -724,6 +724,12 @@ class InputNodeAttribute:
         else:
             dpg.set_item_label(self.widget.uuid, self._label)
 
+    def show(self):
+        dpg.show_item(self.uuid)
+
+    def hide(self):
+        dpg.hide_item(self.uuid)
+
     def set_visibility(self, visibility_state='show_all'):
         if visibility_state == 'show_all':
             dpg.bind_item_theme(self.uuid, theme=Node.app.global_theme)

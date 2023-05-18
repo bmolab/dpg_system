@@ -91,9 +91,9 @@ class TorchWindowNode_(TorchDeviceDtypeNode):
 
     def custom_setup(self, from_file):
         if self.param_1_name == '':
-            dpg.hide_item(self.param_1_input.uuid)
+            self.param_1_input.hide()
         if self.param_2_name == '':
-            dpg.hide_item(self.param_2_input.uuid)
+            self.param_2_input.hide()
 
     def m_changed(self, val=64):
         self.m = self.m_input.get_widget_value()
@@ -103,30 +103,30 @@ class TorchWindowNode_(TorchDeviceDtypeNode):
         self.label = 't.window.' + self.type
         if self.label in self.op_dict:
             self.op = self.op_dict[self.label]
-        print('new_label', self.label)
-        dpg.configure_item(self.uuid, label=self.label)
+        self.set_title(self.label)
         param_list = []
         if self.type in self.param_dict:
             param_list = self.param_dict[self.type]
-        print('params', param_list)
         if len(param_list) > 0:
             self.param_1_name = param_list[0][0]
             self.param_1_input.set_label(self.param_1_name)
             self.default_1 = param_list[0][1]
             self.param_1_input.set(self.default_1)
-            dpg.show_item(self.param_1_input.uuid)
+            self.param_1_input.show()
         else:
-            self.param_1_input.set_label('')
-            dpg.hide_item(self.param_1_input.uuid)
+            self.param_1_name = ''
+            self.param_1_input.set_label(self.param_1_name)
+            self.param_1_input.hide()
         if len(param_list) > 1:
             self.param_2_name = param_list[1][0]
             self.param_2_input.set_label(self.param_2_name)
             self.default_2 = param_list[1][1]
             self.param_2_input.set(self.default_2)
-            dpg.show_item(self.param_2_input.uuid)
+            self.param_2_input.show()
         else:
-            self.param_2_input.set_label('')
-            dpg.hide_item(self.param_2_input.uuid)
+            self.param_2_name = ''
+            self.param_2_input.set_label(self.param_2_name)
+            self.param_2_input.hide()
 
         self.param_1 = self.default_1
         self.param_2 = self.default_2
@@ -134,7 +134,6 @@ class TorchWindowNode_(TorchDeviceDtypeNode):
     def param_changed(self, val=1.0):
         self.param_1 = self.param_1_input.get_widget_value()
         self.param_2 = self.param_2_input.get_widget_value()
-        print('param_changed', self.param_1, self.param_2)
 
     def sym_changed(self, val=True):
         self.sym = self.sym_input.get_widget_value()
