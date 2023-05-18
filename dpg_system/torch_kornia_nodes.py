@@ -1,10 +1,4 @@
-import dearpygui.dearpygui as dpg
-import math
-import numpy as np
-from dpg_system.node import Node
-from dpg_system.conversion_utils import *
-from dpg_system.torch_nodes import *
-import torch
+from dpg_system.torch_base_nodes import *
 import kornia as K
 
 def register_kornia_nodes():
@@ -32,6 +26,7 @@ class KorniaGrayscaleNode(TorchNode):
         if input_tensor is not None:
             output_tensor = K.color.rgb_to_grayscale(input_tensor)
             self.output.send(output_tensor)
+
 
 class KorniaRGBToHLSNode(TorchNode):
     @staticmethod
