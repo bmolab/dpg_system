@@ -336,7 +336,7 @@ class App:
         self.frame_variable = self.add_variable(variable_name='frame')
         self.font_scale_variable = self.add_variable(variable_name='font_scale', setter=self.update_font_scale, default_value=0.5)
         self.gui_scale_variable = self.add_variable(variable_name='gui_scale', setter=self.update_gui_scale, default_value=1.0)
-
+        self.link_thickness_variable = self.add_variable(variable_name='link_thickness', setter=self.update_link_thickness, default_value=1.0)
         self.dragging_created_nodes = False
         self.dragging_ref = [0, 0]
         self.clipboard = None
@@ -769,6 +769,11 @@ class App:
 
     def update_font_scale(self, value):
         dpg.set_global_font_scale(value)
+
+    def update_link_thickness(self, value):
+        for editor in self.node_editors:
+            editor.set_line_thickness(value)
+        pass
 
     def update_gui_scale(self, value):
         for editor in self.node_editors:

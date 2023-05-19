@@ -849,11 +849,12 @@ class NodeEditor:
                 dpg.add_theme_style(dpg.mvNodeStyleVar_NodePadding,  self.node_scalers[dpg.mvNodeStyleVar_NodePadding][0],  self.node_scalers[dpg.mvNodeStyleVar_NodePadding][1], category=dpg.mvThemeCat_Nodes)
                 self.node_scalers[dpg.mvNodeStyleVar_PinOffset] = 2
                 dpg.add_theme_style(dpg.mvNodeStyleVar_PinOffset, self.node_scalers[dpg.mvNodeStyleVar_PinOffset], category=dpg.mvThemeCat_Nodes)
-                self.node_scalers[dpg.mvNodeStyleVar_LinkThickness] = 1
+                self.node_scalers[dpg.mvNodeStyleVar_LinkThickness] = 2
                 dpg.add_theme_style(dpg.mvNodeStyleVar_LinkThickness, self.node_scalers[dpg.mvNodeStyleVar_LinkThickness], category=dpg.mvThemeCat_Nodes)
                 self.node_scalers[dpg.mvNodeCol_Pin] = [30, 100, 150]
                 dpg.add_theme_color(dpg.mvNodeCol_Pin, self.node_scalers[dpg.mvNodeCol_Pin], category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvThemeCol_CheckMark, [255, 255, 0, 255], category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvNodeCol_Link, [66, 150, 250, 100], category=dpg.mvThemeCat_Nodes)
         with dpg.theme() as self.node_presentation_theme:
             with dpg.theme_component(dpg.mvAll):
                 self.node_scalers[dpg.mvNodeStyleVar_GridSpacing] = 16

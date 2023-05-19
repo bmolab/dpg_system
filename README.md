@@ -1,7 +1,12 @@
 # dpg_system
 system for supporting ui and nodes using dearpygui
 
-dpg_system creates an enhanced dearpygui-based environment for building out node-based playgrounds for quick ui work in python.
+dpg_system creates an enhanced dearpygui-based environment for building out node-based playgrounds for quick ui work in python. 
+
+There is a growing collections of nodes for numpy functions, pytorch functions, torchvision, torchaudio, Kornia image processing, opencv image processing, spacy, and the framework can be expanded to support other libraries as well.
+
+![](../fft_sample_clip.jpg)
+*An example patch doing windowed fft and ifft using pytorch*
 
 __Requirements__
 
@@ -25,9 +30,14 @@ pip install numpy-quaternion
 pip install scipy
 conda install freetype
 pip install freetype-py
-```
 
-for the clip nodes, you also need to install CLIP by installing huggingface transformers
+```
+* To use the Pytorch nodes, you need to install Pytorch.
+* torchvision is required for the torchvision nodes
+* torchaudio is required for the torchaudio nodes
+* Kornia is required for the kornia image processing nodes (pip install kornia)
+* opencv is required for video camera access  (pip install opencv-python)
+* for the clip nodes, you also need to install CLIP by installing huggingface transformers
 
 __Simple Example__
 
@@ -84,10 +94,10 @@ class AdditionNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.input = self.add_input("in", trigger_node=self)
+        self.input = self.add_input("in", triggers_execution=True)
         self.operand = 0
-        if args is not None and len(args) > 0:
-            self.operand, value_type = decode_arg(args, 0)
+        if len(args) > 0:
+            self.operand = any_as_float(args[0])
         self.operand_input = self.add_input("operand", widget_type='drag_float', default_value=self.operand)
         self.output = self.add_output("sum")
 
@@ -97,6 +107,7 @@ class AdditionNode(Node):
             operand = self.operand_input.get_widget_value()
             sum = data + operand
             self.output.send(sum)
+            
 ```
 
 You would also have to register this node thus:
@@ -109,7 +120,7 @@ So that you can create this node by name.
 The static method at the start creates a 'factory' for creating these nodes. This will always be the same except that the name of the node being created must match the name of the class.
 
 ```
-    @staticmethod
+@staticmethod
 def factory(name, data, args=None):
     node = AdditionNode(name, data, args)
     return node
@@ -120,10 +131,10 @@ The init method must call __init__ for the superclass (Node), then creates input
 ```
 def __init__(self, label: str, data, args):
     super().__init__(label, data, args)
-    self.input = self.add_input("in", trigger_node=self)
+    self.input = self.add_input("in", triggers_execution=True)
     self.operand = 0
-    if args is not None and len(args) > 0:
-        self.operand, value_type = decode_arg(args, 0)
+    if len(args) > 0:
+        self.operand = any_to_float(args[0])
     self.operand_input = self.add_input("operand", widget_type='drag_float', default_value=self.operand)
     self.output = self.add_output("sum")
 ```
@@ -140,7 +151,7 @@ def execute(self):
         self.output.send(sum)
 ```
     
-Note also that the self.operand_input is not created with 'trigger_node=self', meaning that input received in this input does not cause the node to execute.
+Note also that the self.operand_input is not created with 'trigger_execution=True', meaning that input received in this input does not cause the node to execute.
 
 Much more complicated behaviours are of course possible. For example, If you define a 'frame_task(self)' method, it is called once per update of the dpg_system, which is usually at 60 hz.
 
@@ -156,3 +167,5 @@ Relatedly, when you create a new node you can add arguments that specify the val
 All this named property argument and message handling is done automatically. You only need to handle arguments yourself in the case that you want to accept a list of values without property names. In the case that arguments include named and unnamed arguments, the named arguments are collected separately and set, then any unnamed arguments are passed, in their relative order, as the 'args' to the node's '__init__' function for you to process.
 
 If you do not specify the property names, then the node assumes the values are in the order expected by any argument handling that the node does in its __init__ function.
+
+

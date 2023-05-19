@@ -316,6 +316,12 @@ class PropertyWidget:
                         dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
                 dpg.bind_item_theme(self.trigger_widget, item_theme)
                 dpg.enable_item(self.trigger_widget)
+            elif self.widget == 'button':
+                with dpg.theme() as item_theme:
+                    with dpg.theme_component(dpg.mvAll):
+                        dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
+                dpg.bind_item_theme(self.uuid, item_theme)
+
         elif visibility_state == 'widgets_only':
             dpg.bind_item_theme(self.uuid, theme=Node.app.widget_only_theme)
             dpg.enable_item(self.uuid)

@@ -109,6 +109,33 @@ def any_to_float(data):
         return tensor_to_float(data)
     return 0.0
 
+def any_to_float_or_int(data):
+    t = type(data)
+    if t == float:
+        return data
+    if t == str:
+        return string_to_float_or_int(data)
+    elif t == int:
+        return data
+    elif t == bool:
+        return float(data)
+    elif t in [list, tuple]:
+        return list_to_float(list(data))
+    elif t == np.ndarray:
+        if data.dtype in [np.int64, np.int]:
+            return array_to_int(data)
+        elif data.dtype == np.bool_:
+            return array_to_bool(data)
+        return array_to_float(data)
+    elif t in [np.int64, np.int]:
+        return int(data)
+    elif t in [np.float32, np.float, np.double, np.bool_]:
+        return float(data)
+    elif torch_available and t == torch.Tensor:
+        if data.dtype in [torch.uint8, torch.int8, torch.int32, torch.int64]:
+            return tensor_to_int(data)
+        return tensor_to_float(data)
+    return 0
 
 def any_to_bool(data):
     t = type(data)
@@ -557,6 +584,20 @@ def string_to_int(input):
                 return 0
     return 0
 
+def string_to_float_or_int(input):
+    if re.search(r'\d', input) is not None:
+        if '.' in input:
+            try:
+                v = float(input)
+                return v
+            except:
+                return 0.0
+        else:
+            try:
+                return int(input)
+            except:
+                return 0
+    return 0
 
 def string_to_bool(input):
     if input == 'True':

@@ -48,8 +48,8 @@ class ButtonNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.target_time = 0
         self.flash_duration = .100
+        self.target_time = time.time() - self.flash_duration
         self.action_name = ''
         self.action = None
 
@@ -63,8 +63,8 @@ class ButtonNode(Node):
 
         self.action_binding_property = self.add_option('bind to', widget_type='text_input', width=120, default_value=self.action_name, callback=self.binding_changed)
         self.message_option = self.add_option('message', widget_type='text_input', default_value='bang', callback=self.message_changed)
-        self.width_option = self.add_option('width', widget_type='input_int', default_value='14', callback=self.size_changed)
-        self.height_option = self.add_option('height', widget_type='input_int', default_value='14', callback=self.size_changed)
+        self.width_option = self.add_option('width', widget_type='input_int', default_value=14, callback=self.size_changed)
+        self.height_option = self.add_option('height', widget_type='input_int', default_value=14, callback=self.size_changed)
         self.flash_duration_option = self.add_option('flash duration', widget_type='drag_float', min=0, max=1.0, default_value=self.flash_duration)
 
         with dpg.theme() as self.active_theme:
@@ -78,6 +78,7 @@ class ButtonNode(Node):
                 dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
 
     def size_changed(self):
+        # print('button size changed')
         width = self.width_option.get_widget_value()
         height = self.height_option.get_widget_value()
         dpg.set_item_width(self.input.widget.uuid, width)
@@ -107,6 +108,7 @@ class ButtonNode(Node):
 
     def message_changed(self):
         new_name = self.message_option.get_widget_value()
+
         # print(new_name)
         if new_name != 'bang':
             dpg.set_item_label(self.input.widget.uuid, new_name)
@@ -1175,7 +1177,7 @@ class PlotNode(Node):
             self.style_type = 'line'
             self.style = 0
             self.update_style = 'input is stream of samples'
-            default_color_map = 'deep'
+            default_color_map = 'none'
             self.format = ''
         elif label == 'heat_scroll':
             self.style = self.heat_scroll_style
@@ -1195,7 +1197,7 @@ class PlotNode(Node):
             self.max_y = 1.0
             self.style = 0
             self.update_style = 'input is stream of samples'
-            default_color_map = 'deep'
+            default_color_map = 'none'
 
         self.width = 300
         self.height = 128
@@ -1230,7 +1232,7 @@ class PlotNode(Node):
         self.style_property.widget.combo_items = ['line', 'scatter', 'stair', 'stem', 'bar', 'heat_map', 'heat_scroll']
 
         self.heat_map_colour_property = self.add_option('color', widget_type='combo', default_value=default_color_map, callback=self.change_colormap)
-        self.heat_map_colour_property.widget.combo_items = ['deep', 'dark', 'pastel', 'paired', 'viridis', 'plasma', 'hot', 'cool', 'pink', 'jet', 'twilight', 'red-blue', 'brown-bluegreen', 'pink-yellowgreen', 'spectral', 'greys']
+        self.heat_map_colour_property.widget.combo_items = ['none', 'deep', 'dark', 'pastel', 'paired', 'viridis', 'plasma', 'hot', 'cool', 'pink', 'jet', 'twilight', 'red-blue', 'brown-bluegreen', 'pink-yellowgreen', 'spectral', 'greys']
 
         self.sample_count_option = self.add_option(label='sample count', widget_type='drag_int', default_value=self.sample_count, max=100000, callback=self.change_sample_count)
         self.width_option = self.add_option(label='width', widget_type='drag_int', default_value=self.width, max=3840, callback=self.change_size)
@@ -1259,10 +1261,13 @@ class PlotNode(Node):
         self.last_pos = [0, 0]
         self.hold_format = self.format
 
+        with dpg.theme() as self.line_theme:
+            with dpg.theme_component(dpg.mvLineSeries):
+                dpg.add_theme_color(dpg.mvPlotCol_Line, (200, 200, 0), category=dpg.mvThemeCat_Plots)
+
     def submit_display(self):
         with dpg.plot(label='', tag=self.plot_tag, height=self.height, width=self.width, no_title=True) as self.plotter:
             if self.style in [self.heat_map_style, self.heat_scroll_style]:
-
                 dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Viridis)
             dpg.add_plot_axis(dpg.mvXAxis, label="", tag=self.x_axis, no_tick_labels=True)
             dpg.add_plot_axis(dpg.mvYAxis, label="", tag=self.y_axis, no_tick_labels=True)
@@ -1305,8 +1310,9 @@ class PlotNode(Node):
             buffer = self.y_data.get_buffer(block=True)
             if buffer is not None:
                 dpg.add_line_series(self.x_data, buffer.ravel(), parent=self.y_axis, tag=self.plot_data_tag)
+                dpg.bind_item_theme(self.plot_data_tag, self.line_theme)
             self.y_data.release_buffer()
-            dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Deep)
+ #           dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Deep)
         elif self.style == self.heat_scroll_style:
             self.min_y = 0.0
             self.min_y_option.set(0.0)
@@ -1363,6 +1369,11 @@ class PlotNode(Node):
 
     def change_colormap(self):
         colormap = self.heat_map_colour_property.get_widget_value()
+        if colormap == 'none':
+            dpg.bind_colormap(self.plot_tag, None)
+            if self.style not in ['heat_map', 'heat_scroll']:
+                if dpg.does_item_exist(self.plot_data_tag):
+                    dpg.bind_item_theme(self.plot_data_tag, self.line_theme)
         if colormap == 'deep':
             dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Deep)
         elif colormap == 'dark':
@@ -1526,7 +1537,7 @@ class PlotNode(Node):
             self.update_style = 'input is multi-channel sample'
         else:
             self.style = self.plot_style
-            self.heat_map_colour_property.set('deep')
+            self.heat_map_colour_property.set('none')
             self.update_style = 'input is stream of samples'
         self.y_data.set_update_style(self.update_style)
         if self.style_type != 'heat_map' and self.sample_count_option.get_widget_value() == 1:
