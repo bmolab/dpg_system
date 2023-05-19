@@ -1756,6 +1756,7 @@ class FuzzyMatchNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.input = self.add_input('string in', triggers_execution=True)
+        self.load_button = self.add_property('load match file', width=120, widget_type='button', callback=self.load_match_file)
         self.threshold = self.add_property('threshold', widget_type='drag_float', default_value=60)
         self.output = self.add_output('string out')
         self.score_output = self.add_output('score out')
@@ -1766,6 +1767,27 @@ class FuzzyMatchNode(Node):
         if len(args) > 0:
             f = open(args[0])
             data = json.load(f)
+            for artist in data:
+                self.option_list.append(artist)
+
+    def load_match_file(self):
+        with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400,
+                             user_data=self, callback=self.load_match_file_callback, tag="file_dialog_id"):
+            dpg.add_file_extension(".json")
+
+    def load_match_file_callback(self, sender, app_data):
+        if 'file_path_name' in app_data:
+            self.load_path = app_data['file_path_name']
+            if self.load_path != '':
+                self.load_match_file_from_json(self.load_path)
+        else:
+            print('no file chosen')
+        dpg.delete_item(sender)
+
+    def load_match_file_from_json(self, path):
+        with open(path, 'r') as f:
+            data = json.load(f)
+            self.option_list = []
             for artist in data:
                 self.option_list.append(artist)
 
@@ -1809,14 +1831,15 @@ class FuzzyMatchNode(Node):
                 if not found:
                     index = data.find('style of ')
                     if index != -1:
-                        post_string = substring[index:]
-                        substring = substring[:index]
+                        index += len('style of ')
+                        substring = data[index:]
+                        prestring = data[:index]
                         found = True
-                elif len(data) > 32 or data.count(' ') > 5:
+                elif len(substring) > 32 or substring.count(' ') > 5:
                     substring = data
                     pass_data = True
-                else:
-                    substring = data
+                # else:
+                #     substring = data
                 if not pass_data:
                     self.fuzzy_score(substring)
 
