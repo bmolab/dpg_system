@@ -1178,16 +1178,19 @@ class PlotNode(Node):
             self.style = 0
             self.update_style = 'input is stream of samples'
             default_color_map = 'none'
+            self.array_fills_plot = True
             self.format = ''
         elif label == 'heat_scroll':
             self.style = self.heat_scroll_style
             self.style_type = label
             self.update_style = 'input is multi-channel sample'
+            self.array_fills_plot = False
             self.format = ''
         elif label == 'heat_map':
             self.style = 6
             self.style_type = label
             self.update_style = 'buffer holds one sample of input'
+            self.array_fills_plot = True
             self.format = '%.3f'
         elif label == 'profile':
             self.format = ''
@@ -1197,6 +1200,7 @@ class PlotNode(Node):
             self.max_y = 1.0
             self.style = 0
             self.update_style = 'input is stream of samples'
+            self.array_fills_plot = True
             default_color_map = 'none'
 
         self.width = 300
@@ -1235,6 +1239,7 @@ class PlotNode(Node):
         self.heat_map_colour_property.widget.combo_items = ['none', 'deep', 'dark', 'pastel', 'paired', 'viridis', 'plasma', 'hot', 'cool', 'pink', 'jet', 'twilight', 'red-blue', 'brown-bluegreen', 'pink-yellowgreen', 'spectral', 'greys']
 
         self.sample_count_option = self.add_option(label='sample count', widget_type='drag_int', default_value=self.sample_count, max=100000, callback=self.change_sample_count)
+        self.array_fills_plot_option = self.add_option(label='array fills plot', widget_type='checkbox', default_value=self.array_fills_plot, callback=self.array_fills_plot_changed)
         self.width_option = self.add_option(label='width', widget_type='drag_int', default_value=self.width, max=3840, callback=self.change_size)
         self.height_option = self.add_option(label='height', widget_type='drag_int', default_value=self.height, max=3840, callback=self.change_size)
 
@@ -1406,6 +1411,9 @@ class PlotNode(Node):
             dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Spectral)
         elif colormap == 'greys':
             dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Greys)
+
+    def array_fills_plot_changed(self, val=False):
+        self.array_fills_plot = self.array_fills_plot_option.get_widget_value()
 
     def frame_task(self):
         if PlotNode.mousing_plot == self.plotter or PlotNode.mousing_plot is None:
@@ -1580,6 +1588,7 @@ class PlotNode(Node):
                                     tag=self.plot_data_tag, format=self.format, scale_min=self.min_y, scale_max=self.max_y)
                 self.change_colormap()
             self.y_data.release_buffer()
+        self.pending_sample_count = self.sample_count
         self.change_range()
         self.lock.release()
 
@@ -1646,18 +1655,70 @@ class PlotNode(Node):
                     data = any_to_array(data)
                     t = np.ndarray
             if self.style == self.plot_style:
-                if t in [float, np.double, int, np.int64, bool, np.bool_]:
+                if t not in [list, np.ndarray, torch.Tensor]:
                     ii = any_to_array(float(data))
                     self.y_data.update(ii)
+                elif t == torch.Tensor:
+                    data = tensor_to_array(data)
+                    t = np.ndarray
                 elif t == list:
-                    ii = list_to_array(data)
-                    self.y_data.update(ii)
-                elif t == np.ndarray:
-                    if len(data.shape) == 1:
-                        if data.shape[0] > self.sample_count:
-                            self.pending_sample_count = data.shape[0]
+                    data = list_to_array(data)
+                    t = np.ndarray
+                if t == np.ndarray:
+                    if data.dtype in [np.csingle, np.cdouble, np.clongdouble]:
+                        data = data.real
+                    if data.dtype in [np.float, np.float32, np.double, np.int, np.int64, np.uint8, np.bool_, np.csingle, np.cdouble, np.clongdouble]:
+                        if self.array_fills_plot:
+                            if len(data.shape) == 1:
+                                if self.sample_count != data.shape[0]:
+                                    self.pending_sample_count = data.shape[0]
+                                else:
+                                    self.y_data.update(data)
                         else:
-                            self.y_data.update(data)
+                            if len(data.shape) == 1:
+                                if data.shape[0] > self.sample_count:
+                                    self.pending_sample_count = data.shape[0]
+                                else:
+                                    self.y_data.update(data)
+
+
+                # if self.count_follows_input_size:
+                #     if t not in [list, np.ndarray, torch.Tensor]:
+                #         ii = any_to_array(data)
+                #         if self.range != 1.0 or self.offset != 0:
+                #             ii = (ii + self.offset) / self.range
+                #         rows = 1
+                #         sample_count = 1
+                #         if rows != self.rows or sample_count != self.sample_count:
+                #             self.rows = rows
+                #             self.sample_count = sample_count
+                #         self.y_data.update(ii)
+                #     elif t == torch.Tensor:
+                #         data = tensor_to_array(data)
+                #         t = np.ndarray
+                #     elif t == list:
+                #         data = list_to_array(data)
+                #         t = np.ndarray
+                #     if t == np.ndarray:
+                #         if data.dtype in [np.float, np.float32, np.double, np.int, np.int64, np.uint8, np.bool_]:
+                #             if len(data.shape) == 1:
+                #                 if self.sample_count != data.shape[0]:
+                #                     self.pending_sample_count = data.shape[0]
+                #                 else:
+                #                     self.y_data.update(data)
+                # else:
+                #     if t in [float, np.double, int, np.int64, bool, np.bool_]:
+                #         ii = any_to_array(float(data))
+                #         self.y_data.update(ii)
+                #     elif t == list:
+                #         ii = list_to_array(data)
+                #         self.y_data.update(ii)
+                #     elif t == np.ndarray:
+                #         if len(data.shape) == 1:
+                #             if data.shape[0] > self.sample_count:
+                #                 self.pending_sample_count = data.shape[0]
+                #             else:
+                #                 self.y_data.update(data)
             elif self.style == self.heat_scroll_style:  # heat_scroll ... input might be list or array
                 if t not in [list, np.ndarray]:
                     ii = any_to_array(data)
@@ -1680,7 +1741,7 @@ class PlotNode(Node):
                         self.y_data.update(ii)
 
             elif self.style == self.heat_map_style:  # heat map
-                if t not in [list, np.ndarray]:
+                if t not in [list, np.ndarray, torch.Tensor]:
                     ii = any_to_array(data)
                     if self.range != 1.0 or self.offset != 0:
                         ii = (ii + self.offset) / self.range
@@ -1694,7 +1755,9 @@ class PlotNode(Node):
                 elif t == list:
                     data = list_to_array(data)
                     t = np.ndarray
-
+                elif t == torch.Tensor:
+                    data = tensor_to_array(data)
+                    t = np.ndarray
                 if t == np.ndarray:
                     if data.dtype in [np.float, np.float32, np.double, np.int, np.int64, np.uint8, np.bool_]:
                         dims = len(data.shape)
