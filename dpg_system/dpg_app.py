@@ -9,101 +9,166 @@ import json
 import os
 import platform as platform_
 
+osc_active = True
+opengl_active = True
+opencv_active = True
+elevenlabs_active = True
+movesense_active = True
+mocap_active = True
+spacy_active = True
+clip_active = True
+numpy_active = True
+pytorch_active = True
+
+print('Options active:', end=' ')
+with open('dpg_system/dpg_system_config.json', 'r') as f:
+    config = json.load(f)
+    if 'OSC' in config:
+        osc_active = config['OSC']
+        if osc_active:
+            print('OSC', end=' ')
+    if 'OpenGL' in config:
+        opengl_active = config['OpenGL']
+        if opengl_active:
+            print('OpenGL', end=' ')
+    if 'OpenCV' in config:
+        opencv_active = config['OpenCV']
+        if opencv_active:
+            print('OpenCV', end=' ')
+    if 'ElevenLabs' in config:
+        elevenlabs_active = config['ElevenLabs']
+        if elevenlabs_active:
+            print('ElevenLabs', end=' ')
+    if 'MoveSense' in config:
+        movesense_active = config['MoveSense']
+        if movesense_active:
+            print('MoveSense', end=' ')
+    if 'MoCap' in config:
+        mocap_active = config['MoCap']
+        if mocap_active:
+            print('MoCap', end=' ')
+    if 'SpaCy' in config:
+        spacy_active = config['SpaCy']
+        if spacy_active:
+            print('SpaCy', end=' ')
+    if 'CLIP' in config:
+        clip_active = config['CLIP']
+        if clip_active:
+            print('CLIP', end=' ')
+    if 'Numpy' in config:
+        numpy_active = config['Numpy']
+        if numpy_active:
+            print('Numpy', end=' ')
+    if 'Pytorch' in config:
+        pytorch_active = config['Pytorch']
+        if pytorch_active:
+            print('Pytorch', end=' ')
+
+print('')
+
 imported = []
+
 try:
     from dpg_system.basic_nodes import *
     imported.append('basic_nodes.py')
 except ModuleNotFoundError:
     pass
+
 try:
     from dpg_system.math_nodes import *
     imported.append('math_nodes.py')
 except ModuleNotFoundError:
     pass
+
 try:
     from dpg_system.signal_nodes import *
     imported.append('signal_nodes.py')
 except ModuleNotFoundError:
     pass
+
 try:
     from dpg_system.interface_nodes import *
     imported.append('interface_nodes.py')
 except ModuleNotFoundError:
     pass
+
 try:
     from dpg_system.quaternion_nodes import *
     imported.append('quaternion_nodes.py')
 except ModuleNotFoundError:
     pass
-try:
-    from dpg_system.osc_nodes import *
-    imported.append('osc_nodes.py')
-except ModuleNotFoundError:
-    pass
-try:
-    from dpg_system.spacy_nodes import *
-    imported.append('spacy_nodes.py')
-except ModuleNotFoundError:
-    pass
-try:
-    from dpg_system.motion_cap_nodes import *
-    imported.append('motion_cap_nodes.py')
-except ModuleNotFoundError:
-    pass
-try:
-    from dpg_system.matrix_nodes import *
-    imported.append('matrix_nodes.py')
-except ModuleNotFoundError:
-    pass
 
-try:
-    from dpg_system.gl_nodes import *
-    imported.append('gl_nodes.py')
-except ModuleNotFoundError:
-    pass
+if osc_active:
+    try:
+        from dpg_system.osc_nodes import *
+        imported.append('osc_nodes.py')
+    except ModuleNotFoundError:
+        osc_active = False
 
-try:
-    from dpg_system.opencv_nodes import *
-    imported.append('opencv_nodes.py')
-except ModuleNotFoundError:
-    pass
+if spacy_active:
+    try:
+        from dpg_system.spacy_nodes import *
+        imported.append('spacy_nodes.py')
+    except ModuleNotFoundError:
+        spacy_active = False
 
-try:
-    from dpg_system.clip_nodes import *
-    imported.append('clip_nodes.py')
-except ModuleNotFoundError:
-    pass
+if mocap_active:
+    try:
+        from dpg_system.motion_cap_nodes import *
+        imported.append('motion_cap_nodes.py')
+    except ModuleNotFoundError:
+        mocap_active = False
 
-try:
-    from dpg_system.numpy_nodes import *
-    imported.append('numpy_nodes.py')
-except ModuleNotFoundError:
-    pass
+if numpy_active:
+    try:
+        from dpg_system.matrix_nodes import *
+        imported.append('matrix_nodes.py')
+        from dpg_system.numpy_nodes import *
+        imported.append('numpy_nodes.py')
+    except ModuleNotFoundError:
+        numpy_active = False
 
-try:
-    from dpg_system.torch_nodes import *
-    imported.append('torch_nodes.py')
-except ModuleNotFoundError:
-    pass
+if opengl_active:
+    try:
+        from dpg_system.gl_nodes import *
+        imported.append('gl_nodes.py')
+    except ModuleNotFoundError:
+        opengl_active = False
 
-try:
-    from dpg_system.kornia_nodes import *
-    imported.append('kornia_nodes.py')
-except ModuleNotFoundError:
-    pass
+if opencv_active:
+    try:
+        from dpg_system.opencv_nodes import *
+        imported.append('opencv_nodes.py')
+    except ModuleNotFoundError:
+        opencv_active = False
 
+if clip_active:
+    try:
+        from dpg_system.clip_nodes import *
+        imported.append('clip_nodes.py')
+    except ModuleNotFoundError:
+        clip_active = False
 
-try:
-    from dpg_system.elevenlabs_node import *
-    imported.append('elevenlabs_node.py')
-except ModuleNotFoundError:
-    pass
+if pytorch_active:
+    try:
+        from dpg_system.torch_nodes import *
+        imported.append('torch_nodes.py')
+    except ModuleNotFoundError:
+        pytorch_active = False
 
-try:
-    from dpg_system.movesense_nodes import *
-    imported.append('movesense_nodes.py')
-except ModuleNotFoundError:
-    pass
+if elevenlabs_active:
+    try:
+        from dpg_system.elevenlabs_node import *
+        imported.append('elevenlabs_node.py')
+    except ModuleNotFoundError:
+        elevenlabs_active = False
+
+if movesense_active:
+    try:
+        from dpg_system.movesense_nodes import *
+        imported.append('movesense_nodes.py')
+    except ModuleNotFoundError:
+        movesense_active = False
 
 # import additional node files in folder
 
@@ -705,22 +770,25 @@ class App:
             self.osc_manager.print_state()
 
     def register_nodes(self):
+        if 'register_base_nodes' in globals():
+            register_base_nodes()
+
         if 'register_basic_nodes' in globals():
             register_basic_nodes()
 
-        if 'register_osc_nodes' in globals():
+        if osc_active and 'register_osc_nodes' in globals():
             register_osc_nodes()
 
-        if 'register_gl_nodes' in globals():
+        if opengl_active and 'register_gl_nodes' in globals():
             register_gl_nodes()
 
-        if 'register_opencv_nodes' in globals():
+        if opencv_active and 'register_opencv_nodes' in globals():
             register_opencv_nodes()
 
-        if 'register_elevenlab_nodes' in globals():
+        if elevenlabs_active and 'register_elevenlab_nodes' in globals():
             register_elevenlab_nodes()
 
-        if 'register_movesense_nodes' in globals():
+        if movesense_active and 'register_movesense_nodes' in globals():
             register_movesense_nodes()
 
         if 'register_interface_nodes' in globals():
@@ -729,10 +797,7 @@ class App:
         if 'register_math_nodes' in globals():
             register_math_nodes()
 
-        if 'register_matrix_nodes' in globals():
-            register_matrix_nodes()
-
-        if 'register_mocap_nodes' in globals():
+        if mocap_active and 'register_mocap_nodes' in globals():
             register_mocap_nodes()
 
         if 'register_quaternion_nodes' in globals():
@@ -741,23 +806,19 @@ class App:
         if 'register_signal_nodes' in globals():
             register_signal_nodes()
 
-        if 'register_spacy_nodes' in globals():
+        if spacy_active and 'register_spacy_nodes' in globals():
             register_spacy_nodes()
 
-        if 'register_clip_nodes' in globals():
+        if clip_active and 'register_clip_nodes' in globals():
             register_clip_nodes()
 
-        if 'register_numpy_nodes' in globals():
+        if numpy_active and 'register_numpy_nodes' in globals():
+            register_matrix_nodes()
             register_numpy_nodes()
 
-        if 'register_torch_nodes' in globals():
+        if pytorch_active and 'register_torch_nodes' in globals():
             register_torch_nodes()
 
-        if 'register_kornia_nodes' in globals():
-            register_kornia_nodes()
-
-        if 'register_base_nodes' in globals():
-            register_base_nodes()
 
     def get_variable_list(self):
         v_list = list(self.variables.keys())

@@ -1,0 +1,12 @@
+{
+  "OSC": true,
+  "OpenGL": true,
+  "OpenCV": true,
+  "ElevenLabs": true,
+  "MoveSense": true,
+  "MoCap": true,
+  "SpaCy": true,
+  "CLIP": true,
+  "Numpy": true,
+  "Pytorch": true
+}
