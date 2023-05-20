@@ -172,6 +172,102 @@ class NodeEditor:
                 pos = [x_mean, y_min + y_step * index]
                 dpg.set_item_pos(uuid, pos)
 
+    def connect_nodes_to_nodes(self, source_nodes, dest_nodes):
+        print('connect_nodes_to_nodes')
+        connect_count = len(dest_nodes)
+        if len(source_nodes) < connect_count:
+            connect_count = len(source_nodes)
+        source_dict = {}
+        dest_dict = {}
+        for i in range(connect_count):
+            pos = dpg.get_item_pos(source_nodes[i].uuid)
+            source_dict[pos[1]] = source_nodes[i]
+            pos = dpg.get_item_pos(dest_nodes[i].uuid)
+            dest_dict[pos[1]] = dest_nodes[i]
+        sorted_source = dict(sorted(source_dict.items()))
+        sorted_dest = dict(sorted(dest_dict.items()))
+        source_keys = list(sorted_source.keys())
+        dest_keys = list(sorted_dest.keys())
+        for index, source in enumerate(source_keys):
+            source_output = sorted_source[source].outputs[0]
+            dest_input = sorted_dest[dest_keys[index]].inputs[0]
+            source_output.add_child(dest_input, self.uuid)
+
+    def connect_single_node_output_to_nodes(self, source_nodes, dest_nodes):
+        print('connect_single_node_output_to_nodes')
+        out_count = len(source_nodes[0].outputs)
+        dest_count = len(dest_nodes)
+        connect_count = dest_count
+        dest_dict = {}
+        for i in range(connect_count):
+            pos = dpg.get_item_pos(dest_nodes[i].uuid)
+            dest_dict[pos[1]] = dest_nodes[i]
+        sorted_dest = dict(sorted(dest_dict.items()))
+        out_ = source_nodes[0].outputs[0]
+        for dest_key in sorted_dest:
+            in_ = sorted_dest[dest_key].inputs[0]
+            out_.add_child(in_, self.uuid)
+
+    def connect_single_node_multi_outputs_to_single_node_multi_inputs(self, source_nodes, dest_nodes):
+        print('connect_single_node_multi_outputs_to_single_node_multi_inputs')
+        input_count = len(dest_nodes[0].inputs)
+        output_count = len(source_nodes[0].outputs)
+        connect_count = input_count
+        if output_count < connect_count:
+            connect_count = output_count
+        for i in range(connect_count):
+            source_output = source_nodes[0].outputs[i]
+            dest_input = dest_nodes[0].inputs[i]
+            source_output.add_child(dest_input, self.uuid)
+
+    def connect_single_node_multi_outputs_to_nodes(self, source_nodes, dest_nodes):
+        print('connect_single_node_multi_outputs_to_nodes')
+        out_count = len(source_nodes[0].outputs)
+        dest_count = len(dest_nodes)
+        connect_count = out_count
+        if dest_count < connect_count:
+            connect_count = dest_count
+        dest_dict = {}
+        for i in range(connect_count):
+            pos = dpg.get_item_pos(dest_nodes[i].uuid)
+            dest_dict[pos[1]] = dest_nodes[i]
+        sorted_dest = dict(sorted(dest_dict.items()))
+        for index, dest_key in enumerate(sorted_dest):
+            out_ = source_nodes[0].outputs[index]
+            in_ = sorted_dest[dest_key].inputs[0]
+            out_.add_child(in_, self.uuid)
+
+    def connect_nodes_to_single_node_multi_output(self, source_nodes, dest_nodes):
+        print('connect_nodes_to_single_node_multi_output')
+        in_count = len(dest_nodes[0].inputs)
+        source_count = len(source_nodes)
+        connect_count = in_count
+        if source_count < connect_count:
+            connect_count = source_count
+        source_dict = {}
+        for i in range(connect_count):
+            pos = dpg.get_item_pos(source_nodes[i].uuid)
+            source_dict[pos[1]] = source_nodes[i]
+        sorted_source = dict(sorted(source_dict.items()))
+        for index, source_key in enumerate(sorted_source):
+            in_ = dest_nodes[0].inputs[index]
+            out_ = sorted_source[source_key].outputs[0]
+            out_.add_child(in_, self.uuid)
+
+    def connect_nodes_to_single_node_input(self, source_nodes, dest_nodes):
+        print('connect_nodes_to_single_node_input')
+        source_count = len(source_nodes)
+        connect_count = source_count
+        source_dict = {}
+        for i in range(connect_count):
+            pos = dpg.get_item_pos(source_nodes[i].uuid)
+            source_dict[pos[1]] = source_nodes[i]
+        sorted_source = dict(sorted(source_dict.items()))
+        in_ = dest_nodes[0].inputs[0]
+        for source_key in sorted_source:
+            out_ = sorted_source[source_key].outputs[0]
+            out_.add_child(in_, self.uuid)
+
     def connect_selected(self):
         selected_nodes = dpg.get_selected_nodes(self.uuid)
         if len(selected_nodes) <= 1:
@@ -195,51 +291,109 @@ class NodeEditor:
                 source_nodes.append(dpg.get_item_user_data(node_uuid))
             else:
                 dest_nodes.append(dpg.get_item_user_data(node_uuid))
-
-        if len(source_nodes) == 1:
-            out_count = len(source_nodes[0].outputs)
-            dest_count = len(dest_nodes)
-            connect_count = out_count
-            if dest_count < out_count:
-                connect_count = dest_count
-            dest_dict = {}
-            for i in range(connect_count):
-                pos = dpg.get_item_pos(dest_nodes[i].uuid)
-                dest_dict[pos[1]] = dest_nodes[i]
-            sorted_dest = dict(sorted(dest_dict.items()))
-            for index, dest_key in enumerate(sorted_dest):
-                out_ = source_nodes[0].outputs[index]
-                in_ = sorted_dest[dest_key].inputs[0]
-                out_.add_child(in_, self.uuid)
-        elif len(dest_nodes) == 1:
-            in_count = len(dest_nodes[0].inputs)
-            source_count = len(source_nodes)
-            connect_count = in_count
-            if source_count < in_count:
-                connect_count = source_count
-            for i in range(connect_count):
-                out_ = source_nodes[i].outputs[0]
-                in_ = dest_nodes[0].inputs[i]
-                out_.add_child(in_, self.uuid)
+#       if dest_nodes count > 0 and source_nodes count > 0
+#           connect first out of each source to first out of each dest
+        if len(source_nodes) > 1 and len(dest_nodes) > 1:
+            self.connect_nodes_to_nodes(source_nodes, dest_nodes)
         else:
-            connect_count = len(dest_nodes)
-            if len(source_nodes) < connect_count:
-                connect_count = len(source_nodes)
-            source_dict = {}
-            dest_dict = {}
-            for i in range(connect_count):
-                pos = dpg.get_item_pos(source_nodes[i].uuid)
-                source_dict[pos[1]] = source_nodes[i]
-                pos = dpg.get_item_pos(dest_nodes[i].uuid)
-                dest_dict[pos[1]] = dest_nodes[i]
-            sorted_source = dict(sorted(source_dict.items()))
-            sorted_dest = dict(sorted(dest_dict.items()))
-            source_keys = list(sorted_source.keys())
-            dest_keys = list(sorted_dest.keys())
-            for index, source in enumerate(source_keys):
-                source_output = sorted_source[source].outputs[0]
-                dest_input = sorted_dest[dest_keys[index]].inputs[0]
-                source_output.add_child(dest_input, self.uuid)
+            # if source_nodes count == 1
+            if len(source_nodes) == 1:
+                source_output_count = len(source_nodes[0].outputs)
+                dest_count = len(dest_nodes)
+                # if source_nodes output count == 1
+                if source_output_count == 1:
+                    # connect first out of source to first out of each dest
+                    self.connect_single_node_output_to_nodes(source_nodes, dest_nodes)
+                # else
+                else:
+                    # if dest_nodes count == 1
+                    if dest_count == 1:
+                        # if dest_nodes input count > 1
+                        if len(dest_nodes[0].inputs) > 1:
+                            # connect source outs to corresponding dest ins
+                            self.connect_single_node_multi_outputs_to_single_node_multi_inputs(source_nodes, dest_nodes)
+                        # else
+                        else:
+                            # connect first out of source to first in of dest
+                            self.connect_nodes_to_nodes(source_nodes, dest_nodes)
+                    # else
+                    else:
+                        # connect each out of source to first out of different dest
+                        self.connect_single_node_multi_outputs_to_nodes(source_nodes, dest_nodes)
+            # else (len(dest_nodes) == 1, len(source_nodes) > 1)
+            else:
+                # dest_nodes input count == 1
+                if len(dest_nodes[0].inputs) == 1:
+                    # connect first out of each source to first in of dest
+                    self.connect_nodes_to_single_node_input(source_nodes, dest_nodes)
+                # else (dest_nodes input count > 1)
+                else:
+                    # connect first out of each source to inputs of dest in order
+                    self.connect_nodes_to_single_node_multi_output(source_nodes, dest_nodes)
+
+
+        # if len(source_nodes) == 1:
+        #     out_count = len(source_nodes[0].outputs)
+        #     dest_count = len(dest_nodes)
+        #     if out_count > 1:
+        #         connect_count = out_count
+        #     else:
+        #         connect_count = dest_count
+        #     if dest_count < out_count:
+        #         connect_count = dest_count
+        #     dest_dict = {}
+        #     for i in range(connect_count):
+        #         pos = dpg.get_item_pos(dest_nodes[i].uuid)
+        #         dest_dict[pos[1]] = dest_nodes[i]
+        #     sorted_dest = dict(sorted(dest_dict.items()))
+        #     if out_count == 1:
+        #         for index, dest_key in enumerate(sorted_dest):
+        #             out_ = source_nodes[0].outputs[0]
+        #             in_ = sorted_dest[dest_key].inputs[0]
+        #             out_.add_child(in_, self.uuid)
+        #     else:
+        #         for index, dest_key in enumerate(sorted_dest):
+        #             out_ = source_nodes[0].outputs[index]
+        #             in_ = sorted_dest[dest_key].inputs[0]
+        #             out_.add_child(in_, self.uuid)
+        # elif len(dest_nodes) == 1:
+        #     in_count = len(dest_nodes[0].inputs)
+        #     source_count = len(source_nodes)
+        #     if in_count > 1:
+        #         connect_count = in_count
+        #     else:
+        #         connect_count = source_count
+        #     if source_count < in_count:
+        #         connect_count = source_count
+        #     if in_count == 1:
+        #         for i in range(connect_count):
+        #             out_ = source_nodes[i].outputs[0]
+        #             in_ = dest_nodes[0].inputs[0]
+        #             out_.add_child(in_, self.uuid)
+        #     else:
+        #         for i in range(connect_count):
+        #             out_ = source_nodes[i].outputs[0]
+        #             in_ = dest_nodes[0].inputs[i]
+        #             out_.add_child(in_, self.uuid)
+        # else:
+        #     connect_count = len(dest_nodes)
+        #     if len(source_nodes) < connect_count:
+        #         connect_count = len(source_nodes)
+        #     source_dict = {}
+        #     dest_dict = {}
+        #     for i in range(connect_count):
+        #         pos = dpg.get_item_pos(source_nodes[i].uuid)
+        #         source_dict[pos[1]] = source_nodes[i]
+        #         pos = dpg.get_item_pos(dest_nodes[i].uuid)
+        #         dest_dict[pos[1]] = dest_nodes[i]
+        #     sorted_source = dict(sorted(source_dict.items()))
+        #     sorted_dest = dict(sorted(dest_dict.items()))
+        #     source_keys = list(sorted_source.keys())
+        #     dest_keys = list(sorted_dest.keys())
+        #     for index, source in enumerate(source_keys):
+        #         source_output = sorted_source[source].outputs[0]
+        #         dest_input = sorted_dest[dest_keys[index]].inputs[0]
+        #         source_output.add_child(dest_input, self.uuid)
 
     def find_patcher_node(self, patcher_name):
         # print('find_patcher_node in ', self.patch_name, self._nodes)

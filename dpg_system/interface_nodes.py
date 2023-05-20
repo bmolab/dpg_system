@@ -731,6 +731,7 @@ class ValueNode(Node):
         self.max_property = None
         self.start_value = None
         self.format_property = None
+        self.grow_mode = 'grow_to_fit'
 
         if label == 'float':
             widget_type = 'drag_float'
@@ -799,6 +800,9 @@ class ValueNode(Node):
             self.max_property = self.add_option('max', widget_type='drag_float', default_value=self.max, callback=self.options_changed)
 
         self.width_option = self.add_option('width', widget_type='drag_int', default_value=widget_width, callback=self.options_changed)
+        if widget_type == 'text_input':
+            self.grow_option = self.add_option('adapt_width', widget_type='combo', default_value='grow_to_fit', callback=self.options_changed)
+            self.grow_option.widget.combo_items = ['grow_to_fit', 'grow_or_shrink_to_fit', 'fixed_width']
         if widget_type in ['drag_float', 'slider_float', 'drag_int', 'knob_int', 'input_int']:
             self.format_property = self.add_option('format', widget_type='text_input', default_value=self.format, callback=self.options_changed)
         if widget_type != 'knob':
@@ -875,10 +879,12 @@ class ValueNode(Node):
 
         width = self.width_option.get_widget_value()
         dpg.set_item_width(self.input.widget.uuid, width)
+
+        self.grow_mode = self.grow_option.get_widget_value()
         # height = self.height_option.get_widget_value()
         # dpg.set_item_height(self.input.widget.uuid, height)
 
-    def value_changed(self):
+    def value_changed(self, force=True):
         pass
 
     def increment_widget(self, widget):
@@ -938,8 +944,14 @@ class ValueNode(Node):
             if self.variable is not None:
                 self.variable.set(value, from_client=self)
         if self.input.widget.widget == 'text_input':
-            adjusted_width = self.input.widget.adjust_to_text_width(max=2048)
-            self.width_option.set(adjusted_width)
+            adjusted_width = self.input.widget.get_text_width()
+            if self.grow_mode == 'grow_to_fit':
+                if adjusted_width > self.width_option.get_widget_value():
+                    dpg.configure_item(self.input.widget.uuid, width=adjusted_width)
+                    self.width_option.set(adjusted_width)
+            elif self.grow_mode == 'grow_or_shrink_to_fit':
+                dpg.configure_item(self.input.widget.uuid, width=adjusted_width)
+                self.width_option.set(adjusted_width)
         self.outputs[0].send(value)
 
     def update(self, propagate=True):
