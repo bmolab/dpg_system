@@ -517,6 +517,60 @@ class NodeEditor:
             out.remove_link(link_uuid, child)
         return clip
 
+    def reset_origin(self):
+        area = self.calc_node_area()
+        offset_x = - (area[0] - 16)
+        offset_y = - (area[1] - 16)
+
+
+        for index, node in enumerate(self._nodes):
+            if node.label != '':
+                pos = dpg.get_item_pos(node.uuid)
+                pos[0] = pos[0] + offset_x
+                pos[1] = pos[1] + offset_y
+                dpg.set_item_pos(node.uuid, pos)
+            else:
+                dpg.set_item_pos(node.uuid, [0.0, 0.0])
+
+    def calc_node_area(self):
+        top = None
+        right = None
+        left = None
+        bottom = None
+
+        for index, node in enumerate(self._nodes):
+            if node.label != '':
+                pos = dpg.get_item_pos(node.uuid)
+                width = dpg.get_item_width(node.uuid)
+                height = dpg.get_item_height(node.uuid)
+                if top is None:
+                    top = pos[1]
+                else:
+                    if pos[1] < top:
+                        top = pos[1]
+
+                if left is None:
+                    left = pos[0]
+                else:
+                    if pos[0] < left:
+                        left = pos[0]
+
+                b = pos[1] + height
+                if bottom is None:
+                    bottom = b
+                else:
+                    if b > bottom:
+                        bottom = b
+
+                r = pos[0] + width
+                if right is None:
+                    right = r
+                else:
+                    if r > right:
+                        right = r
+
+        return [left, top, right, bottom]
+
     def copy_selection(self):
         self.app.loading = True
         file_container = {}

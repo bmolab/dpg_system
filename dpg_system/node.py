@@ -1801,9 +1801,6 @@ class OriginNode(Node):
     def custom_setup(self, from_file):
         with dpg.theme() as item_theme:
             with dpg.theme_component(dpg.mvAll):
-                # dpg.add_theme_style(dpg.mvStyleVar_FramePadding, 0, category=dpg.mvThemeCat_Core)
-                # dpg.add_theme_style(dpg.mvStyleVar_FrameBorderSize, 0, category=dpg.mvThemeCat_Core)
-
                 dpg.add_theme_color(dpg.mvNodeCol_NodeBackground, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundHovered, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundSelected, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
@@ -1819,11 +1816,8 @@ class OriginNode(Node):
                 dpg.add_theme_color(dpg.mvNodeCol_TitleBarHovered, (0, 0, 0, 0), category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvNodeCol_TitleBarSelected, (0, 0, 0, 0), category=dpg.mvThemeCat_Nodes)
 
-                # dpg.add_theme_color(dpg.mvThemeCol_FrameBg, (0, 0, 0, 0), category=dpg.mvThemeCat_Nodes)
-                # dpg.add_theme_color(dpg.mvThemeCol_FrameBgActive, (0, 0, 0, 0), category=dpg.mvThemeCat_Nodes)
-                # dpg.add_theme_color(dpg.mvThemeCol_FrameBgHovered, (0, 0, 0, 0), category=dpg.mvThemeCat_Nodes)
-        dpg.bind_item_theme(self.ref_property.uuid, item_theme)
-        dpg.bind_item_theme(self.uuid, item_theme)
+        dpg.bind_item_theme(self.ref_property.uuid, self.app.invisible_theme)
+        dpg.bind_item_theme(self.uuid, self.app.invisible_theme)
 
 class PlaceholderNode(Node):
     node_list = []

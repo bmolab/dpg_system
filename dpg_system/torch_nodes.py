@@ -1,4 +1,3 @@
-
 import math
 import numpy as np
 import torch.fft
@@ -57,11 +56,8 @@ class TensorNode(TorchDeviceDtypeNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-
         self.input = self.add_input("in", triggers_execution=True)
-
         self.setup_dtype_device_grad(args)
-
         self.output = self.add_output('tensor out')
 
     def execute(self):
@@ -69,7 +65,6 @@ class TensorNode(TorchDeviceDtypeNode):
         if in_data is not None:
             out_array = any_to_tensor(in_data, self.device, self.dtype, self.requires_grad)
             self.output.send(out_array)
-
 
 
 class TorchNumElNode(TorchNode):
@@ -87,8 +82,6 @@ class TorchNumElNode(TorchNode):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
             self.output.send(torch.numel(input_tensor))
-
-
 
 
 class TorchContiguousNode(TorchNode):
@@ -125,6 +118,7 @@ class TorchIsContiguousNode(TorchNode):
         if input_tensor is not None:
             contiguous = input_tensor.is_contiguous()
             self.output.send(contiguous)
+
 
 class TorchDetachNode(TorchNode):
 

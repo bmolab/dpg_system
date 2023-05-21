@@ -365,7 +365,6 @@ class TorchHStackNode(TorchNode):
                         return
                     else:
                         stack_list.append(a_tensor)
-            print(stack_list)
             output_tensor = self.op(tuple(stack_list))
             self.output.send(output_tensor)
 

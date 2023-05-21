@@ -432,6 +432,7 @@ class ConfusionMatrixNode(Node):
                         self.confusion_matrix[index2, index] = 0.0
             self.output.send(self.confusion_matrix)
 
+
 class WaveletNode(Node):
     @staticmethod
     def factory(name, data, args=None):
