@@ -742,7 +742,8 @@ class App:
                 dpg.add_separator()
                 dpg.add_menu_item(label="Connect Selected (K)", callback=self.connect_selected)
                 dpg.add_menu_item(label="Align Selected", callback=self.align_selected)
-                dpg.add_menu_item(label="Align and Distribute Selected (Y)", callback=self.align_distribute_selected)
+                dpg.add_menu_item(label="Align Center and Distribute Selected (Y)", callback=self.align_distribute_selected)
+                dpg.add_menu_item(label="Align Edge and Distribute Selected", callback=self.align_distribute_selected_top)
                 dpg.add_menu_item(label="Space Out Selected (+)", callback=self.space_out_selected)
                 dpg.add_menu_item(label="Tighten Selected (-)", callback=self.tighten_selected)
                 dpg.add_separator()
@@ -1486,7 +1487,11 @@ class App:
 
     def align_distribute_selected(self):
         if self.get_current_editor() is not None:
-            self.get_current_editor().align_and_distribute_selected()
+            self.get_current_editor().align_and_distribute_selected(0)
+
+    def align_distribute_selected_top(self):
+        if self.get_current_editor() is not None:
+            self.get_current_editor().align_and_distribute_selected(-1)
 
     def reset_node_editor_origin(self):
         if self.get_current_editor() is not None:

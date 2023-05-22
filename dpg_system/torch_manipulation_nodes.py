@@ -677,9 +677,11 @@ class TorchMaskedSelectNode(TorchNode):
                 if mask_tensor is not None:
                     if mask_tensor.dtype is not torch.bool:
                         mask_tensor.to(dtype=torch.bool)
-                    if mask_tensor.shape[0] == input_tensor.shape[0]:
+                    try:
                         out_tensor = torch.masked_select(input_tensor, mask_tensor)
                         self.out.send(out_tensor)
+                    except Exception as e:
+                        print(self.label, e)
 
 
 class TorchTakeNode(TorchNode):
@@ -705,7 +707,7 @@ class TorchTakeNode(TorchNode):
                         taken = torch.take(input_tensor, index_tensor)
                         self.output.send(taken)
                     except Exception as e:
-                        print(self.label, 'failed')
+                        print(self.label, e)
                 else:
                     if self.app.verbose:
                         print(self.label, ' no index tensor')
