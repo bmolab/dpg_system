@@ -145,7 +145,6 @@ class BodyData:
                 joint_name = shadow_limb_to_joint[node.attrib['id']]
                 joint_index = joint_name_to_index[joint_name]
                 self.joints[joint_index].bone_dim = y
-
         for joint in self.joints:
             joint.set_matrix()
             joint.set_mass()
@@ -348,9 +347,11 @@ class BodyData:
         transform = None
         glPushMatrix()
 
+        hold_shade = glGetInteger(GL_SHADE_MODEL)
+        glShadeModel(GL_FLAT)
+
         glScalef(scale, scale, 1.0)
         glTranslatef(0.0, -1.0, 0.0)
-
         # UI for showing closeness to captured, but also labels...???
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, self.base_material)
 
@@ -412,6 +413,7 @@ class BodyData:
         glPopMatrix()
         glPopMatrix()
         self.draw_joint_spheres(show_rotation_spheres, transform)
+        glShadeModel(hold_shade)
 
     def adjust_clear_colour(self):
         if self.has_captured_pose:

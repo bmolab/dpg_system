@@ -159,41 +159,42 @@ class Joint:
                 self.mass[2] += child.thickness[1]
 
     def set_matrix(self):
-        base_vector = np.array(self.ref_vector)
-        limb_vector = np.array(self.bone_dim)
-        # print(self.name, base_vector, limb_vector)
+        try:
+            base_vector = np.array(self.ref_vector)
+            limb_vector = np.array(self.bone_dim)
 
-        scale = np.linalg.norm(limb_vector)
-        limb_vector /= scale
-        W = np.cross(limb_vector, base_vector)
-        A_ = np.array([limb_vector, W, np.cross(limb_vector, W)])
-        A = A_.T
-        B_ = np.array([base_vector, W, np.cross(base_vector, W)])
-        B = B_.T
-        invA = inv(A)
-        M = np.dot(B, invA)
+            scale = np.linalg.norm(limb_vector)
+            limb_vector /= scale
+            w = np.cross(limb_vector, base_vector)
+            a_ = np.stack((limb_vector, w, np.cross(limb_vector, w)), axis=0)
+            a = a_.T
+            inv_a = np.linalg.pinv(a)
+            b_ = np.stack((base_vector, w, np.cross(base_vector, w)), axis=0)
+            b = b_.T
 
-        m = []
-        m.append(M[0][0])
-        m.append(M[0][1])
-        m.append(M[0][2])
-        m.append(0)
-        m.append(M[1][0])
-        m.append(M[1][1])
-        m.append(M[1][2])
-        m.append(0)
-        m.append(M[2][0])
-        m.append(M[2][1])
-        m.append(M[2][2])
-        m.append(0)
-        m.append(0)
-        m.append(0)
-        m.append(0)
-        m.append(1)
+            matrix_ = np.dot(b, inv_a)
 
-        self.matrix = m
-        self.length = scale
+            joint_matrix = []
+            joint_matrix.append(matrix_[0][0])
+            joint_matrix.append(matrix_[0][1])
+            joint_matrix.append(matrix_[0][2])
+            joint_matrix.append(0)
+            joint_matrix.append(matrix_[1][0])
+            joint_matrix.append(matrix_[1][1])
+            joint_matrix.append(matrix_[1][2])
+            joint_matrix.append(0)
+            joint_matrix.append(matrix_[2][0])
+            joint_matrix.append(matrix_[2][1])
+            joint_matrix.append(matrix_[2][2])
+            joint_matrix.append(0)
+            joint_matrix.append(0)
+            joint_matrix.append(0)
+            joint_matrix.append(0)
+            joint_matrix.append(1)
 
-        # print(self.name, self.matrix)
+            self.matrix = joint_matrix
+            self.length = scale
+        except Exception as e:
+            print(e)
 
 

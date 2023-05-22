@@ -41,8 +41,6 @@ with open('dpg_system/dpg_system_config.json', 'r') as f:
             print('ElevenLabs', end=' ')
     if 'MoveSense' in config:
         movesense_active = config['MoveSense']
-        print('movesense found - active =', movesense_active)
-
         if movesense_active:
             print('MoveSense', end=' ')
     if 'MoCap' in config:

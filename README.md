@@ -10,7 +10,7 @@ There is a growing collections of nodes for numpy functions, pytorch functions, 
 
 __Requirements__
 
-It is recommended to create a conda environment (python 3.9 is most tested)
+It is recommended to create a conda environment (python 3.10 is recommended. As of this writing, python 3.11 causes some issues)
 
 In initial testing, this was what else needed to be installed after a basic conda install:
 
