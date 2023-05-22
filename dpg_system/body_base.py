@@ -158,7 +158,7 @@ class BodyData:
         self.distance_sense = 1.0
         self.error_band = 0.00
         self.pose_similarity = 0
-        self.input_vector = np.zeros(80, dtype=np.float)
+        self.input_vector = np.zeros(80, dtype=float)
 
         self.__mutex = threading.Lock()
         for joint_index in joint_index_to_name:

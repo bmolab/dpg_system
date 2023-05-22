@@ -84,7 +84,7 @@ class NumpyGeneratorNode(Node):
 
         self.dtype_dict = {}
         self.dtype_dict['float32'] = np.float32
-        self.dtype_dict['float'] = np.float
+        self.dtype_dict['float'] = float
         self.dtype_dict['double'] = np.double
         self.dtype_dict['int64'] = np.int64
         self.dtype_dict['uint8'] = np.uint8
@@ -118,7 +118,7 @@ class NumpyGeneratorNode(Node):
                         self.min_input.set(-32768)
                     if self.max == 1.0:
                         self.max_input.set(32767)
-                elif self.dtype in [np.float, np.double, np.float32]:
+                elif self.dtype in [float, np.double, np.float32]:
                     if self.min == -32768:
                         self.min_input.set(0.0)
                     if self.max == 255:
@@ -132,7 +132,7 @@ class NumpyGeneratorNode(Node):
             self.shape[i] = self.shape_properties[i].get_widget_value()
         if self.label == 'np.rand':
             size = tuple(self.shape)
-            if self.dtype in [np.float, np.float32, np.double]:
+            if self.dtype in [float, np.float32, np.double]:
                 range_ = self.max - self.min
                 out_array = self.rng.random(size=size, dtype=self.dtype) * range_ + self.min
             elif self.dtype == np.int64:
@@ -178,7 +178,7 @@ class NumpyLinSpaceNode(Node):
         self.steps_property = self.add_property('steps', widget_type='drag_int', default_value=self.steps)
         self.dtype_dict = {}
         self.dtype_dict['float32'] = np.float32
-        self.dtype_dict['float'] = np.float
+        self.dtype_dict['float'] = float
         self.dtype_dict['double'] = np.double
         self.dtype_dict['int64'] = np.int64
         self.dtype_dict['uint8'] = np.uint8
@@ -700,7 +700,7 @@ class NumpyAsTypeNode(Node):
         super().__init__(label, data, args)
 
         self.input = self.add_input("input array", triggers_execution=True)
-        self.type_property = self.add_property('type', widget_type='combo', default_value='np.float')
+        self.type_property = self.add_property('type', widget_type='combo', default_value='float')
         self.type_property.widget.combo_items = ['bool', 'uint8', 'int8', 'int64', 'float', 'float32', 'double']
 
         self.output = self.add_output("converted array")
@@ -710,7 +710,7 @@ class NumpyAsTypeNode(Node):
             data = any_to_array(self.input.get_received_data())
             type = self.type_property.get_widget_value()
             if type == 'float':
-                self.output.send(data.astype(np.float))
+                self.output.send(data.astype(float))
             elif type == 'float32':
                 self.output.send(data.astype(np.float32))
             elif type == 'uint8':

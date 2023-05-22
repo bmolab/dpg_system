@@ -201,11 +201,11 @@ class ComparisonNode(Node):
         elif output_type == 'int':
             self.output_op = int
             self.torch_output_op = torch.int
-            self.numpy_output_op = np.int
+            self.numpy_output_op = int
         elif output_type == 'float':
             self.output_op = float
             self.torch_output_op = torch.float
-            self.numpy_output_op = np.float
+            self.numpy_output_op = float
 
     def execute(self):
         if self.operand_input.fresh_input:
@@ -244,6 +244,7 @@ class ComparisonNode(Node):
 
     def not_equal(self, a, b):
         return a != b
+
 
 class ComparisonAndPassNode(Node):
     output_op = bool
@@ -375,6 +376,7 @@ class ComparisonAndPassNode(Node):
 
     def no_op(self, a, b):
         return True
+
 
 class OpSingleNode(Node):
     @staticmethod

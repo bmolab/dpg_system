@@ -69,6 +69,7 @@ class NodeEditor:
         x_max = -100000
         y_min = 100000
         y_max = -100000
+
         for node_uuid in selected_nodes:
             pos = dpg.get_item_pos(node_uuid)
             if pos[0] < x_min:
@@ -79,6 +80,7 @@ class NodeEditor:
                 y_min = pos[1]
             if pos[1] > y_max:
                 y_max = pos[1]
+
         if (x_max - x_min) > (y_max - y_min):
             y_mean = (y_max + y_min) / 2
             for node_uuid in selected_nodes:
@@ -92,40 +94,8 @@ class NodeEditor:
                 pos[0] = x_mean
                 dpg.set_item_pos(node_uuid, pos)
 
-    def space_out_selected(self, scaler=1.1):
-        selected_nodes = dpg.get_selected_nodes(self.uuid)
-        x_min = 100000
-        x_max = -100000
-        y_min = 100000
-        y_max = -100000
-        for node_uuid in selected_nodes:
-            pos = dpg.get_item_pos(node_uuid)
-            if pos[0] < x_min:
-                x_min = pos[0]
-            if pos[0] > x_max:
-                x_max = pos[0]
-            if pos[1] < y_min:
-                y_min = pos[1]
-            if pos[1] > y_max:
-                y_max = pos[1]
-        y_mean = (y_max + y_min) / 2
-        x_mean = (x_max + x_min) / 2
-        x_step = (x_max - x_min) / len(selected_nodes)
-        y_step = (y_max - y_min) / len(selected_nodes)
 
-        count = len(selected_nodes)
-        x_step *= 1.2
-        y_step *= 1.2
-
-        for node_uuid in selected_nodes:
-            pos = dpg.get_item_pos(node_uuid)
-            x_off = pos[0] - x_mean
-            y_off = pos[1] - y_mean
-            pos[0] = x_mean + x_off * scaler
-            pos[1] = y_mean + y_off * scaler
-            dpg.set_item_pos(node_uuid, pos)
-
-    def align_and_distribute_selected(self, align):
+    def align_and_distribute_selected(self, align, spread_factor=1.0):
         # find dominant axis
         # align and distribute to that axis
         selected_nodes = dpg.get_selected_nodes(self.uuid)
@@ -150,7 +120,6 @@ class NodeEditor:
 
         if (x_max - x_min) > (y_max - y_min):
             y_mean = (y_max + y_min) / 2
-            x_step = (x_max - x_min) / (len(selected_nodes) - 1)
 
             dest_dict = {}
             total_node_width = 0
@@ -160,17 +129,18 @@ class NodeEditor:
             for index, node_uuid in enumerate(selected_nodes):
                 s = dpg.get_item_rect_size(node_uuid)
                 pos = dpg.get_item_pos(node_uuid)
-                dest_dict[index] = [pos[0], node_uuid, s]
+                dest_dict[index] = [pos, node_uuid, s]
                 total_node_width += s[0]
                 if pos[0] + s[0] > real_x_max:
                     real_x_max = pos[0] + s[0]
                 center_acc += (s[1] / 2 + pos[1])
                 bottom_acc += (s[1] + pos[1])
-            total_width = real_x_max - x_min
+
+            total_width = (real_x_max - x_min) * spread_factor
             total_gap = total_width - total_node_width
             gap = total_gap / (len(selected_nodes) - 1)
             center = center_acc / len(selected_nodes)
-            sorted_dest = sorted(dest_dict.items(), key=lambda item: item[1][0])
+            sorted_dest = sorted(dest_dict.items(), key=lambda item: item[1][0][0])
             x_acc = x_min
 
             for index, dest_data in enumerate(sorted_dest):
@@ -179,15 +149,15 @@ class NodeEditor:
                     pos = [x_acc, y_mean]
                 elif align == 0:
                     pos = [x_acc, center - dest_data[1][2][1] / 2]
-                else:
+                elif align == 1:
                     pos = [x_acc, bottom_acc - dest_data[1][2][1]]
+                else:
+                    pos = [x_acc, dest_data[1][0][1]]
 
                 x_acc += (dest_data[1][2][0] + gap)
-                # pos = [x_min + x_step * index, y_mean]
                 dpg.set_item_pos(uuid, pos)
         else:
             x_mean = (x_max + x_min) / 2
-            y_step = (y_max - y_min) / (len(selected_nodes) - 1)
 
             dest_dict = {}
             total_node_height = 0
@@ -197,16 +167,17 @@ class NodeEditor:
             for index, node_uuid in enumerate(selected_nodes):
                 s = dpg.get_item_rect_size(node_uuid)
                 pos = dpg.get_item_pos(node_uuid)
-                dest_dict[index] = [pos[1], node_uuid, s]
+                dest_dict[index] = [pos, node_uuid, s]
                 total_node_height += s[1]
                 if pos[1] + s[1] > real_y_max:
                     real_y_max = pos[1] + s[1]
                 center_acc += (s[0] / 2 + pos[0])
-            total_height = real_y_max - y_min
+
+            total_height = (real_y_max - y_min) * spread_factor
             total_gap = total_height - total_node_height
             gap = total_gap / (len(selected_nodes) - 1)
             center = center_acc / len(selected_nodes)
-            sorted_dest = sorted(dest_dict.items(), key=lambda item: item[1][0])
+            sorted_dest = sorted(dest_dict.items(), key=lambda item: item[1][0][1])
             y_acc = y_min
 
             for index, dest_data in enumerate(sorted_dest):
@@ -215,6 +186,8 @@ class NodeEditor:
                     pos = [x_mean, y_acc]
                 elif align == 0:
                     pos = [center - dest_data[1][2][0] / 2, y_acc]
+                elif align == -2:
+                    pos = [dest_data[1][0][0], y_acc]
                 y_acc += (dest_data[1][2][1] + gap)
                 dpg.set_item_pos(uuid, pos)
 

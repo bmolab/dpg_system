@@ -731,6 +731,7 @@ class ValueNode(Node):
         self.max_property = None
         self.start_value = None
         self.format_property = None
+        self.grow_option = None
         self.grow_mode = 'grow_to_fit'
 
         if label == 'float':
@@ -880,7 +881,8 @@ class ValueNode(Node):
         width = self.width_option.get_widget_value()
         dpg.set_item_width(self.input.widget.uuid, width)
 
-        self.grow_mode = self.grow_option.get_widget_value()
+        if self.grow_option is not None:
+            self.grow_mode = self.grow_option.get_widget_value()
         # height = self.height_option.get_widget_value()
         # dpg.set_item_height(self.input.widget.uuid, height)
 
@@ -1642,7 +1644,7 @@ class PlotNode(Node):
     def set_preset_state(self, preset):
         if 'data' in preset:
             data = preset['data']
-            data = np.array(data, dtype=np.float)
+            data = np.array(data, dtype=float)
             self.y_data.set_write_pos(0)
             self.y_data.update(data)
             self.execute()
@@ -1679,7 +1681,7 @@ class PlotNode(Node):
                 if t == np.ndarray:
                     if data.dtype in [np.csingle, np.cdouble, np.clongdouble]:
                         data = data.real
-                    if data.dtype in [np.float, np.float32, np.double, np.int, np.int64, np.uint8, np.bool_, np.csingle, np.cdouble, np.clongdouble]:
+                    if data.dtype in [float, np.float32, np.double, int, np.int64, np.uint8, np.bool_, np.csingle, np.cdouble, np.clongdouble]:
                         if self.array_fills_plot:
                             if len(data.shape) == 1:
                                 if self.sample_count != data.shape[0]:
@@ -1745,7 +1747,7 @@ class PlotNode(Node):
                     ii = (ii + self.offset) / self.range
                     self.y_data.update(ii)
                 elif t == np.ndarray:
-                    if data.dtype in [np.float, np.float32, np.double, np.int, np.int64, np.bool_]:
+                    if data.dtype in [float, np.float32, np.double, int, np.int64, np.bool_]:
                         rows = data.size
                         if rows != self.rows:
                             self.rows = rows
@@ -1771,7 +1773,7 @@ class PlotNode(Node):
                     data = tensor_to_array(data)
                     t = np.ndarray
                 if t == np.ndarray:
-                    if data.dtype in [np.float, np.float32, np.double, np.int, np.int64, np.uint8, np.bool_]:
+                    if data.dtype in [float, np.float32, np.double, int, np.int64, np.uint8, np.bool_]:
                         dims = len(data.shape)
                         sample_count = 1
                         rows = data.shape[0]

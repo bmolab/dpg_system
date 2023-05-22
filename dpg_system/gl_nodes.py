@@ -932,7 +932,7 @@ class GLMaterialNode(GLNode):
                     self.material.ambient = ambient
                 elif len(ambient) == 3:
                     self.material.ambient = ambient + [1.0]
-            elif t in [float, np.float, np.double]:
+            elif t in [float, np.double]:
                 self.material.ambient = [ambient, ambient, ambient, 1.0]
 
         if self.diffuse_input.fresh_input:
@@ -946,7 +946,7 @@ class GLMaterialNode(GLNode):
                     self.material.diffuse = diffuse
                 elif len(diffuse) == 3:
                     self.material.diffuse = diffuse + [1.0]
-            elif t in [float, np.float, np.double]:
+            elif t in [float, np.double]:
                 self.material.diffuse = [diffuse, diffuse, diffuse, 1.0]
 
         if self.specular_input.fresh_input:
@@ -960,7 +960,7 @@ class GLMaterialNode(GLNode):
                     self.material.specular = specular
                 elif len(specular) == 3:
                     self.material.specular = specular + [1.0]
-            elif t in [float, np.float, np.double]:
+            elif t in [float, np.double]:
                 self.material.specular = [specular, specular, specular, 1.0]
 
         if self.emission_input.fresh_input:
@@ -974,7 +974,7 @@ class GLMaterialNode(GLNode):
                     self.material.emission = emission
                 elif len(emission) == 3:
                     self.material.emission = emission + [1.0]
-            elif t in [float, np.float, np.double]:
+            elif t in [float, np.double]:
                 self.material.emission = [emission, emission, emission, 1.0]
 
         if self.shininess_input.fresh_input:

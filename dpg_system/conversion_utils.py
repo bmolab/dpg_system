@@ -63,7 +63,7 @@ def any_to_list(data):
         return data.tolist()
     elif t == np.int64:
         return [int(data)]
-    elif t in [np.float, np.double, np.float32]:
+    elif t in [np.double, np.float32]:
         return [float(data)]
     elif t == np.bool_:
         return [bool(data)]
@@ -84,7 +84,7 @@ def any_to_int(data):
         return list_to_int(list(data))
     elif t == np.ndarray:
         return array_to_int(data)
-    elif t in [np.int64, np.float, np.float32, np.double, np.bool_]:
+    elif t in [np.int64, np.float32, np.double, np.bool_]:
         return int(data)
     elif torch_available and t == torch.Tensor:
         return tensor_to_int(data)
@@ -103,7 +103,7 @@ def any_to_float(data):
         return list_to_float(list(data))
     elif t == np.ndarray:
         return array_to_float(data)
-    elif t in [np.int64, np.float32, np.float, np.double, np.bool_]:
+    elif t in [np.int64, np.float32, np.double, np.bool_]:
         return float(data)
     elif torch_available and t == torch.Tensor:
         return tensor_to_float(data)
@@ -122,14 +122,14 @@ def any_to_float_or_int(data):
     elif t in [list, tuple]:
         return list_to_float(list(data))
     elif t == np.ndarray:
-        if data.dtype in [np.int64, np.int]:
+        if data.dtype in [np.int64, int]:
             return array_to_int(data)
         elif data.dtype == np.bool_:
             return array_to_bool(data)
         return array_to_float(data)
-    elif t in [np.int64, np.int]:
+    elif t in [np.int64, int]:
         return int(data)
-    elif t in [np.float32, np.float, np.double, np.bool_]:
+    elif t in [np.float32, np.double, np.bool_]:
         return float(data)
     elif torch_available and t == torch.Tensor:
         if data.dtype in [torch.uint8, torch.int8, torch.int32, torch.int64]:
@@ -149,7 +149,7 @@ def any_to_bool(data):
         return list_to_bool(list(data))
     elif t == np.ndarray:
         return array_to_bool(data)
-    elif t in [np.int64, np.float, np.float32, np.double, np.bool_]:
+    elif t in [np.int64, np.float32, np.double, np.bool_]:
         return bool(data)
     elif torch_available and t == torch.Tensor:
         return tensor_to_bool(data)
@@ -173,7 +173,7 @@ def any_to_tensor(data, device='cpu', dtype=torch.float32, requires_grad=False):
             tensor_ = string_to_tensor(data)
         elif t in [list, tuple]:
             tensor_ = list_to_tensor(list(data))
-        elif t in [np.int64, np.float, np.float32, np.double, np.bool_]:
+        elif t in [np.int64, np.float32, np.double, np.bool_]:
             tensor_ = torch.tensor(data)
         else:
             tensor_ = torch.tensor([0])
@@ -216,7 +216,7 @@ def any_to_array(data):
         return string_to_array(data)
     elif t in [list, tuple]:
         return list_to_array(list(data))
-    elif t in [np.int64, np.float, np.float32, np.double, np.bool_]:
+    elif t in [np.int64, np.float32, np.double, np.bool_]:
         return np.array(data)
     elif torch_available and t == torch.Tensor:
         return data.detach().cpu().numpy()
@@ -333,13 +333,13 @@ def array_to_tensor(input):
 
 
 def float_to_string(input):
-    if type(input) in [float, int, bool, np.float, np.int64, np.bool_, np.double]:
+    if type(input) in [float, int, bool, np.int64, np.bool_, np.double]:
         return str(float(input))
     return ''
 
 
 def int_to_string(input):
-    if type(input) in [float, int, bool, np.float, np.int64, np.bool_, np.double]:
+    if type(input) in [float, int, bool, np.int64, np.bool_, np.double]:
         return str(int(input))
     return ''
 
@@ -444,7 +444,7 @@ def list_to_tensor(input):
         hybrid_list, homogenous, types = list_to_hybrid_list(input)
         if homogenous:
             t = type(hybrid_list[0])
-            if t in [float, int, bool, np.int64, np.float, np.double, np.float32, np.bool_]:
+            if t in [float, int, bool, np.int64, np.double, np.float32, np.bool_]:
                 return torch.Tensor(hybrid_list)
             elif str not in types:
                 return torch.Tensor(hybrid_list)
@@ -458,7 +458,7 @@ def list_to_array_or_list_if_hetero(input):
     hybrid_list, homogenous, types = list_to_hybrid_list(input)
     if homogenous:
         t = type(hybrid_list[0])
-        if t in [float, int, bool, np.int64, np.float, np.double, np.float32, np.bool_]:
+        if t in [float, int, bool, np.int64, np.double, np.float32, np.bool_]:
             return np.array(hybrid_list), True
     else:
         if len(types) == 2:
@@ -470,7 +470,7 @@ def list_to_tensor_or_list_if_hetero(input):
     hybrid_list, homogenous, types = list_to_hybrid_list(input)
     if homogenous:
         t = type(hybrid_list[0])
-        if t in [float, int, bool, np.int64, np.float, np.double, np.float32, np.bool_]:
+        if t in [float, int, bool, np.int64, np.double, np.float32, np.bool_]:
             if torch_available:
                 return torch.Tensor(hybrid_list), True
     else:
@@ -487,7 +487,7 @@ def list_to_int(input):
             t = type(val)
             if t == int:
                 output = val
-            elif t in [float, bool, np.int64, np.float, np.double, np.float32, np.bool_]:
+            elif t in [float, bool, np.int64, np.double, np.float32, np.bool_]:
                 output = int(val)
             elif t == str:
                 output = string_to_int(val)
@@ -502,7 +502,7 @@ def list_to_float(input):
         if len(input) > 0:
             val = input[0]
             t = type(val)
-            if t == [int, bool, np.int64, np.float, np.double, np.float32, np.bool_]:
+            if t == [int, bool, np.int64, np.double, np.float32, np.bool_]:
                 output = float(val)
             elif t == float:
                 output = val
@@ -520,7 +520,7 @@ def list_to_bool(input):
             return False
         val = input[0]
         t = type(val)
-        if t in [int, np.int64, float, np.float, np.double, np.float32, bool, np.bool_]:
+        if t in [int, np.int64, float, np.double, np.float32, bool, np.bool_]:
             return bool(val)
         elif t == str:
             return string_to_bool(val)
@@ -613,7 +613,7 @@ def decode_arg(args, index):
     if args is not None and 0 <= index < len(args):
         arg = args[index]
         t = type(arg)
-        if t in [float, np.float, np.double, np.float32]:
+        if t in [float, np.double, np.float32]:
             return float(arg), float
         elif t in [int, np.int64]:
             return int(arg), int

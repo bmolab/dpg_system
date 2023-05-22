@@ -41,6 +41,8 @@ with open('dpg_system/dpg_system_config.json', 'r') as f:
             print('ElevenLabs', end=' ')
     if 'MoveSense' in config:
         movesense_active = config['MoveSense']
+        print('movesense found - active =', movesense_active)
+
         if movesense_active:
             print('MoveSense', end=' ')
     if 'MoCap' in config:
@@ -172,13 +174,13 @@ if movesense_active:
 
 # import additional node files in folder
 
-for entry in os.scandir('dpg_system'):
-    if entry.is_file():
-        if entry.name[-8:] == 'nodes.py':
-            if entry.name not in imported:
-                name = entry.name[:-3]
-                string = f'from dpg_system.{name} import *'
-                exec(string)
+# for entry in os.scandir('dpg_system'):
+#     if entry.is_file():
+#         if entry.name[-8:] == 'nodes.py':
+#             if entry.name not in imported:
+#                 name = entry.name[:-3]
+#                 string = f'from dpg_system.{name} import *'
+#                 exec(string)
 
 if os.path.exists('dpg_system/plugins'):
     for entry in os.scandir('dpg_system/plugins'):
@@ -1479,11 +1481,11 @@ class App:
 
     def space_out_selected(self):
         if self.get_current_editor() is not None:
-            self.get_current_editor().space_out_selected(1.1)
+            self.get_current_editor().align_and_distribute_selected(align=-2, spread_factor=1.1)
 
     def tighten_selected(self):
         if self.get_current_editor() is not None:
-            self.get_current_editor().space_out_selected(0.9)
+            self.get_current_editor().align_and_distribute_selected(align=-2, spread_factor=0.9)
 
     def align_distribute_selected(self):
         if self.get_current_editor() is not None:

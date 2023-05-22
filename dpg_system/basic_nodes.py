@@ -566,10 +566,10 @@ class UnpackNode(Node):
                 out_count = value.size
                 if out_count > self.num_outs:
                     out_count = self.num_outs
-                if value.dtype in [np.double, np.float]:
+                if value.dtype in [np.double, float]:
                     for i in range(out_count):
                         self.outputs[i].set_value(float(value[i]))
-                elif value.dtype in [np.int64, np.int, np.bool_]:
+                elif value.dtype in [np.int64, int, np.bool_]:
                     for i in range(out_count):
                         self.outputs[i].set_value(int(value[i]))
             self.send_all()
@@ -1141,8 +1141,8 @@ class TypeNode(Node):
                             shape[3]) + ']')
             elif t == np.double:
                 self.type_property.set('numpy.double')
-            elif t == np.float:
-                self.type_property.set('numpy.float')
+            elif t == float:
+                self.type_property.set('float')
             elif t == np.float32:
                 self.type_property.set('numpy.float32')
             elif t == np.int64:
@@ -1164,7 +1164,7 @@ class TypeNode(Node):
             elif t == np.ndarray:
                 shape = input.shape
 
-                if input.dtype == np.float:
+                if input.dtype == float:
                     comp = 'float'
                 elif input.dtype == np.double:
                     comp = 'double'
@@ -1234,8 +1234,8 @@ class TypeNode(Node):
                     self.type_property.set(
                         'tensor[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + ', ' + str(
                             shape[3]) + '] ' + comp + ' ' + device + ' ' + grad)
-            elif t == np.float:
-                self.type_property.set('numpy.float')
+            elif t == float:
+                self.type_property.set('float')
             elif t == np.float32:
                 self.type_property.set('numpy.float32')
             elif t == np.double:
@@ -1835,11 +1835,21 @@ class FuzzyMatchNode(Node):
                         substring = data[index:]
                         prestring = data[:index]
                         found = True
+                    # if not found:
+                    #     print('else')
+                    #     if len(data) <= 32 and data.count(' ') <= 5:
+                    #         print('test upper')
+                    #         uppers = 0
+                    #         names = data.split(' ')
+                    #         for name in names:
+                    #             if name[0].isupper():
+                    #                 uppers += 1
+                    #         if uppers > 1:
+                    #             substring = data
                 elif len(substring) > 32 or substring.count(' ') > 5:
                     substring = data
                     pass_data = True
-                # else:
-                #     substring = data
+
                 if not pass_data:
                     self.fuzzy_score(substring)
 
@@ -1851,7 +1861,7 @@ class FuzzyMatchNode(Node):
                 else:
                     self.output.send(data)
                 elapsed = time.time() - start
-                print(elapsed)
+                # print(elapsed)
 
     def fuzzy_score(self, test):
         scores = {}
@@ -1866,7 +1876,7 @@ class FuzzyMatchNode(Node):
             scores[node_name] = ratio
 
         sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-        print(sorted_scores)
+        # print(sorted_scores)
         self.filtered_list = []
         self.best_score = 20
         for index, item in enumerate(sorted_scores):
