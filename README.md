@@ -5,7 +5,7 @@ dpg_system creates an enhanced dearpygui-based environment for building out node
 
 There is a growing collections of nodes for numpy functions, pytorch functions, torchvision, torchaudio, Kornia image processing, opencv image processing, spacy, and the framework can be expanded to support other libraries as well.
 
-![](../fft_sample_clip.jpg)
+![](fft_sample_clip.jpg)
 *An example patch doing windowed fft and ifft using pytorch*
 
 __Requirements__
