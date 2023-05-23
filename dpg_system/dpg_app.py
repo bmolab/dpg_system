@@ -911,7 +911,7 @@ class App:
         node = model.create(name, args)
         editor = self.get_current_editor()
         if editor is not None:
-            node.submit(editor.uuid, pos=pos, from_file=from_file)
+            node.create(editor.uuid, pos=pos, from_file=from_file)
             editor.add_node(node)
         return node
 
@@ -995,7 +995,7 @@ class App:
         mouse_pos[1] -= (panel_pos[1] + 8)
         editor = self.get_current_editor()
         if editor is not None:
-            node.submit(editor.uuid, pos=mouse_pos)
+            node.create(editor.uuid, pos=mouse_pos)
             editor.add_node(node)
 
     def int_handler(self):
@@ -1272,7 +1272,7 @@ class App:
 
                 mouse_pos[0] -= (panel_pos[0] + 8 + (origin_pos[0] - origin_node_pos[0]) - 4)
                 mouse_pos[1] -= (panel_pos[1] + 8 + (origin_pos[1] - origin_node_pos[1]) - 15)
-                node.submit(self.get_current_editor().uuid, pos=mouse_pos)
+                node.create(self.get_current_editor().uuid, pos=mouse_pos)
                 self.get_current_editor().add_node(node)
                 if name is not None:
                     self.set_widget_focus(node.name_property.widget.uuid)
@@ -1632,7 +1632,7 @@ class App:
                 if editor_name is not None:
                     new_editor.patch_name = editor_name
                 self.node_editors.append(new_editor)
-                self.node_editors[len(self.node_editors) - 1].submit(panel_uuid)
+                self.node_editors[len(self.node_editors) - 1].create(panel_uuid)
                 self.select_tab(tab)
         return new_editor
 
@@ -1651,7 +1651,7 @@ class App:
                     self.new_patcher_index += 1
                     self.tabs.append(tab)
                     with dpg.group(id=self.center_panel):
-                        self.node_editors[0].submit(self.center_panel)
+                        self.node_editors[0].create(self.center_panel)
                         with dpg.handler_registry():
                             # dpg.add_mouse_drag_handler(callback=self.mouse_drag_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Up, callback=self.up_handler)

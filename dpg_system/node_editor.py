@@ -492,17 +492,17 @@ class NodeEditor:
             if output.uuid in self.active_pins:
                 self.active_pins.remove(output.uuid)
 
-    def submit(self, parent):
+    def create(self, parent):
         with dpg.child_window(width=0, parent=parent, user_data=self):
             with dpg.node_editor(tag=self.uuid, callback=NodeEditor._link_callback, height=self.height, width=self.width, delink_callback=NodeEditor._unlink_callback):
                 for node in self._nodes:
-                    node.submit(self.uuid)
+                    node.create(self.uuid)
 
         dpg.bind_theme(self.node_theme)
         # add invisible node that is reference for panning
 
         self.origin = OriginNode.factory('origin', None)
-        self.origin.submit(self.uuid, pos=[0, 0])
+        self.origin.create(self.uuid, pos=[0, 0])
         self.add_node(self.origin)
 
     def add_active_pin(self, uuid):
@@ -1003,7 +1003,7 @@ class NodeEditor:
                 else:
                     if node_name == 'origin':
                         self.origin = OriginNode.factory('origin', None)
-                        self.origin.submit(self.uuid, pos=pos)
+                        self.origin.create(self.uuid, pos=pos)
                         new_node = self.add_node(self.origin)
                     else:
                         new_node = self.app.create_node_by_name_from_file(node_name, pos, )
@@ -1196,11 +1196,11 @@ class NodeFactoryContainer:
             list.append(child.label)
         return list
 
-    def submit(self, parent):
+    def create(self, parent):
         with dpg.child_window(parent=parent, width=self._width, height=self._height, tag=self._uuid,
                               menubar=True) as child_parent:
             with dpg.menu_bar():
                 dpg.add_menu(label=self._label)
 
             for child in self._children:
-                child.submit(child_parent)
+                child.create(child_parent)

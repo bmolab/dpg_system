@@ -196,7 +196,7 @@ class OSCTarget:
                     if not is_name:
                         self.ip = arg
 
-    def custom_setup(self, from_file):
+    def custom_create(self, from_file):
         self.create_client()
         self.osc_manager.register_target(self)
 
@@ -628,7 +628,7 @@ class OSCReceiveNode(Node):
         if new_address != self.address:
             self.osc_manager.receive_node_address_changed(self, new_address, self.source)
 
-    def custom_setup(self, from_file):
+    def custom_create(self, from_file):
         if self.name != '':
             self.find_source_node(self.name)
 
@@ -698,7 +698,7 @@ class OSCSendNode(Node):
             self.address = new_address
             self.find_target_node(self.name)
 
-    def custom_setup(self, from_file):
+    def custom_create(self, from_file):
         if self.name != '':
             self.find_target_node(self.name)
 

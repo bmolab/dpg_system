@@ -854,13 +854,13 @@ class GLMaterialNode(GLNode):
         self.presets = {}
         super().__init__(label, data, args)
 
-    def save_custom_setup(self, container):
+    def save_custom(self, container):
         container['ambient'] = list(self.material.ambient)
         container['diffuse'] = list(self.material.diffuse)
         container['specular'] = list(self.material.specular)
         container['emission'] = list(self.material.emission)
 
-    def load_custom_setup(self, container):
+    def load_custom(self, container):
         if 'ambient' in container:
             self.material.ambient = container['ambient']
         if 'diffuse' in container:
@@ -1359,7 +1359,7 @@ class GLTextNode(GLNode):
         self.was_lit = False
         self.was_depth = False
 
-    def custom_setup(self, from_file):
+    def custom_create(self, from_file):
         dpg.configure_item(self.text_color.widget.uuid, no_alpha=True)
         dpg.configure_item(self.text_color.widget.uuid, alpha_preview=dpg.mvColorEdit_AlphaPreviewNone)
 

@@ -80,7 +80,6 @@ class TorchCovarianceCoefficientNode(TorchNode):
             self.output.send(result)
 
 
-
 class TorchDistributionNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -104,7 +103,6 @@ class TorchDistributionNode(TorchNode):
             self.output.send(out_tensor)
 
 
-
 class TorchDistributionOneParamNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -114,28 +112,26 @@ class TorchDistributionOneParamNode(TorchNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         param_1_name = ''
-        self.param_1 = 1
+        param_1 = 1
         if self.label == 't.exponential':
             param_1_name = 'lambda'
         elif self.label == 't.geometric':
             param_1_name = 'p'
 
         self.input = self.add_input('tensor in', triggers_execution=True)
-        self.param_1_property = self.add_input(param_1_name, widget_type='drag_float', default_value=self.param_1, callback=self.params_changed)
+        self.param_1 = self.add_input(param_1_name, widget_type='drag_float', default_value=param_1)
         self.output = self.add_output('tensor out')
-
-    def params_changed(self, val=0):
-        self.param_1 = self.param_1_property.get_widget_value()
 
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
             out_tensor = input_tensor.clone()
             if self.label == 't.exponential':
-                out_tensor.exponential_(self.param_1)
+                out_tensor.exponential_(self.param_1())
             elif self.label == 't.geometric':
-                out_tensor.log_normal_(self.param_1)
+                out_tensor.log_normal_(self.param_1())
             self.output.send(out_tensor)
+
 
 class TorchDistributionTwoParamNode(TorchNode):
     @staticmethod
@@ -147,12 +143,12 @@ class TorchDistributionTwoParamNode(TorchNode):
         super().__init__(label, data, args)
         param_1_name = ''
         param_2_name = ''
-        self.param_1 = 0
-        self.param_2 = 1
+        param_1 = 0
+        param_2 = 1
         if self.label == 't.cauchy':
             param_1_name = 'median'
             param_2_name = 'sigma'
-        elif self.label in ['t.log_normal', 't_normal']:
+        elif self.label in ['t.log_normal', 't.normal']:
             param_1_name = 'mean'
             param_2_name = 'std'
         elif self.label == 't.uniform':
@@ -160,27 +156,24 @@ class TorchDistributionTwoParamNode(TorchNode):
             param_2_name = 'to'
 
         self.input = self.add_input('tensor in', triggers_execution=True)
-        self.param_1_property = self.add_input(param_1_name, widget_type='drag_float', default_value=self.param_1, callback=self.params_changed)
-        self.param_2_property = self.add_input(param_2_name, widget_type='drag_float', default_value=self.param_2, callback=self.params_changed)
+        self.param_1 = self.add_input(param_1_name, widget_type='drag_float', default_value=param_1)
+        self.param_2 = self.add_input(param_2_name, widget_type='drag_float', default_value=param_2)
         self.output = self.add_output('tensor out')
-
-    def params_changed(self, val=0):
-        self.param_1 = self.param_1_property.get_widget_value()
-        self.param_2 = self.param_2_property.get_widget_value()
 
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
             out_tensor = input_tensor.clone()
             if self.label == 't.cauchy':
-                out_tensor.cauchy_(self.param_1, self.param_2)
+                out_tensor.cauchy_(self.param_1(), self.param_2())
             elif self.label == 't.log_normal':
-                out_tensor.log_normal_(self.param_1, self.param_2)
+                out_tensor.log_normal_(self.param_1(), self.param_2())
             elif self.label == 't.normal':
-                out_tensor.normal_(self.param_1, self.param_2)
+                out_tensor.normal_(self.param_1(), self.param_2())
             elif self.label == 't.uniform':
-                out_tensor.uniform_(self.param_1, self.param_2)
+                out_tensor.uniform_(self.param_1(), self.param_2())
             self.output.send(out_tensor)
+
 
 class TorchCDistanceNode(TorchNode):
     @staticmethod
@@ -235,8 +228,6 @@ class TorchDistanceNode(TorchNode):
             self.output.send(euclidean_length.item())
 
 
-
-
 class TorchDiffNode(TorchWithDimNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -248,23 +239,20 @@ class TorchDiffNode(TorchWithDimNode):
 
         self.input = self.add_input('tensor in', triggers_execution=True)
         self.dim = -1
-        self.n = 1
-        self.n_input = self.add_input('n', widget_type='input_int', default_value=self.n, callback=self.n_changed)
+        n = 1
+        self.n = self.add_input('n', widget_type='input_int', default_value=n)
         if self.dim_specified:
             self.add_dim_input()
         self.output = self.add_output('tensor out')
-
-    def n_changed(self, val=0):
-        self.n = self.n_input.get_widget_value()
 
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
             try:
                 if self.dim_specified:
-                    result = torch.diff(input_tensor, n=self.n, dim=self.dim)
+                    result = torch.diff(input_tensor, n=self.n(), dim=self.dim)
                 else:
-                    result = torch.diff(input_tensor, n=self.n)
+                    result = torch.diff(input_tensor, n=self.n())
                 self.output.send(result)
             except Exception as e:
                 if self.app.verbose:
@@ -292,7 +280,7 @@ class TorchMinimumMaximumNode(TorchNode):
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            data = self.input_2.get_received_data()
+            data = self.input_2()
             if data is not None:
                 input_tensor_2 = self.data_to_tensor(data)
                 if input_tensor_2 is not None:
@@ -328,7 +316,7 @@ class TorchComparisonNode(TorchNode):
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            data = self.input_2.get_received_data()
+            data = self.input_2()
             if data is not None:
                 input_tensor_2 = self.data_to_tensor(data)
                 if input_tensor_2 is not None:
@@ -362,7 +350,7 @@ class TorchLCMGCDNode(TorchNode):
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            data = self.input_2.get_received_data()
+            data = self.input_2()
             if data is not None:
                 input_tensor_2 = any_to_tensor(data, dtype=torch.int64)
                 if input_tensor_2 is not None:
@@ -402,6 +390,7 @@ class TorchMeanMedianNode(TorchWithDimNode):
         't.nanmedian': torch.nanmedian,
         't.prod': torch.prod
         }
+
     @staticmethod
     def factory(name, data, args=None):
         node = TorchMeanMedianNode(name, data, args)
@@ -414,30 +403,26 @@ class TorchMeanMedianNode(TorchWithDimNode):
         if self.label in self.op_dict:
             self.op = self.op_dict[self.label]
         self.dim = -1
-        self.keep_dims = False
+        keep_dims = False
         if self.dim_specified:
             self.add_dim_input()
-            self.keep_dims_input = self.add_input('keep_dims', widget_type='checkbox', default_value=self.keep_dims, callback=self.params_changed)
+            self.keep_dims = self.add_input('keep_dims', widget_type='checkbox', default_value=keep_dims)
         self.output = self.add_output("output")
         if self.label in ['t.median', 't.nanmedian'] and self.dim_specified:
             self.index_out = self.add_output("index output")
-
-    def params_changed(self, val=False):
-        self.keep_dims = self.keep_dims_input.get_widget_value()
 
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
             if self.dim_specified:
                 if self.label in ['t.median', 't.nanmedian']:
-                    out_tensor, index_tensor = self.op(input_tensor, dim=self.dim, keepdim=self.keep_dims)
+                    out_tensor, index_tensor = self.op(input_tensor, dim=self.dim, keepdim=self.keep_dims())
                     self.index_out.send(index_tensor)
                     self.output.send(out_tensor)
                 else:
-                    self.output.send(self.op(input_tensor, dim=self.dim, keepdim=self.keep_dims))
+                    self.output.send(self.op(input_tensor, dim=self.dim, keepdim=self.keep_dims()))
             else:
                 self.output.send(self.op(input_tensor))
-
 
 
 class TorchCumSumNode(TorchWithDimNode):
@@ -476,9 +461,6 @@ class TorchCumSumNode(TorchWithDimNode):
 
                 else:
                     self.output.send(self.op(input_tensor, self.dim))
-                return
-
-
 
 class TorchRealImaginaryNode(TorchNode):
     @staticmethod
@@ -523,7 +505,7 @@ class TorchComplexNode(TorchNode):
     def execute(self):
         real_tensor = self.input_to_tensor()
         if real_tensor is not None:
-            data = self.imag_input.get_received_data()
+            data = self.imag_input()
             if data is not None:
                 imag_tensor = self.data_to_tensor(data)
                 if imag_tensor is not None:
@@ -548,6 +530,7 @@ class TorchComplexNode(TorchNode):
             if self.app.verbose:
                 print(self.label, 'real tensor is None')
 
+
 class TorchRoundNode(TorchWithDimNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -557,16 +540,14 @@ class TorchRoundNode(TorchWithDimNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.input = self.add_input("tensor in", triggers_execution=True)
-        self.decimals = 0
-        self.decimals_input = self.add_input('decimals', widget_type='input_int', default_value=self.decimals, callback=self.decimals_changed)
+        decimals = 0
+        self.decimals = self.add_input('decimals', widget_type='input_int', default_value=decimals)
         self.output = self.add_output("output")
 
-    def decimals_changed(self, val=0):
-        self.decimals = self.decimals_input.get_widget_value()
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            self.output.send(torch.round(input_tensor, decimals=self.decimals))
+            self.output.send(torch.round(input_tensor, decimals=self.decimals()))
 
 
 class TorchFloorCeilingTruncNode(TorchWithDimNode):
@@ -576,6 +557,7 @@ class TorchFloorCeilingTruncNode(TorchWithDimNode):
         't.trunc': torch.trunc,
         't.frac': torch.frac
     }
+
     @staticmethod
     def factory(name, data, args=None):
         node = TorchFloorCeilingTruncNode(name, data, args)
@@ -610,7 +592,7 @@ class TorchCopySignNode(TorchNode):
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            data = self.sign_input.get_received_data()
+            data = self.sign_input()
             if data is not None:
                 sign_tensor = self.data_to_tensor(data)
                 if sign_tensor is not None:
@@ -642,11 +624,12 @@ class CosineSimilarityNode(TorchNode):
 
     def execute(self):
         if self.input2.fresh_input:
-            self.vector_2 = self.data_to_tensor(self.input2.get_received_data())
+            self.vector_2 = self.data_to_tensor(self.input2())
         vector_1 = self.input_to_tensor()
         if self.vector_2 is not None and vector_1 is not None:
             similarity = self.cos(vector_1, self.vector_2)
             self.output.send(similarity.item())
+
 
 class TorchLinalgRQNode(TorchNode):
     @staticmethod
@@ -672,6 +655,7 @@ class TorchLinalgRQNode(TorchNode):
             q, r = torch.linalg.qr(input_tensor, self.mode)
             self.r_output.send(r)
             self.q_output.send(q)
+
 
 class TorchLinalgSVDNode(TorchNode):
     @staticmethod
@@ -699,6 +683,7 @@ class TorchLinalgSVDNode(TorchNode):
             self.v_output.send(v)
             self.s_output.send(s)
 
+
 class TorchPCALowRankNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -708,22 +693,18 @@ class TorchPCALowRankNode(TorchNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.input = self.add_input('tensor in', triggers_execution=True)
-        self.center = False
-        self.center_property = self.add_property('center', widget_type='checkbox', default_value=self.center, callback=self.params_changed)
-        self.niter = 2
-        self.niter_property = self.add_property('full', widget_type='input_int', default_value=self.niter, callback=self.params_changed)
+        center = False
+        self.center = self.add_property('center', widget_type='checkbox', default_value=center)
+        niter = 2
+        self.niter = self.add_property('full', widget_type='input_int', default_value=niter)
         self.u_output = self.add_output('U tensor out')
         self.s_output = self.add_output('S tensor out')
         self.v_output = self.add_output('V tensor out')
 
-    def params_changed(self, val=2):
-        self.niter = self.niter_property.get_widget_value()
-        self.center = self.center_property.get_widget_value()
-
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            u, s, v = torch.pca.low_rank(input_tensor)
+            u, s, v = torch.pca.low_rank(input_tensor, center=self.center(), niter=self.niter())
             self.v_output.send(v)
             self.s_output.send(s)
             self.u_output.send(u)

@@ -89,7 +89,7 @@ class TorchWindowNode_(TorchDeviceDtypeNode):
 
         self.output = self.add_output('window tensor out')
 
-    def custom_setup(self, from_file):
+    def custom_create(self, from_file):
         if self.param_1_name == '':
             self.param_1_input.hide()
         if self.param_2_name == '':

@@ -126,7 +126,7 @@ class ButtonNode(Node):
         dpg.bind_item_theme(self.input.widget.uuid, self.active_theme)
         self.add_frame_task()
 
-    def custom_setup(self, from_file):
+    def custom_create(self, from_file):
         if self.action_name != '':
             self.binding_changed()
 
@@ -440,13 +440,13 @@ class PresetsNode(Node):
                                 node.set_preset_state(self.presets[current_preset_index][node.uuid])
         # self.app.resume()
 
-    def save_custom_setup(self, container):
+    def save_custom(self, container):
         # note this only works for save with the copy()
         # but it does not work for preset action with the copy()
         # problem is that the presets are actually empty when the preset is set
         container['presets'] = self.presets.copy()
 
-    def load_custom_setup(self, container):
+    def load_custom(self, container):
         # print('load custom')
         if 'presets' in container:
             self.presets = container['presets'].copy()
@@ -530,6 +530,7 @@ class PresetsNode(Node):
             data = self.input.get_received_data()
             self.radio_group.widget.set(data)
             self.load_preset()
+
 
 class RadioButtonsNode(Node):
     @staticmethod
@@ -623,7 +624,7 @@ class ToggleNode(Node):
                 self.output.set_label(self.variable_name)
                 self.variable_update()
 
-    def custom_setup(self, from_file):
+    def custom_create(self, from_file):
         if self.variable_name != '':
             self.bind_to_variable(self.variable_name)
 
@@ -861,7 +862,7 @@ class ValueNode(Node):
                 self.output.set_label(self.variable_name)
                 self.variable_update()
 
-    def custom_setup(self, from_file):
+    def custom_create(self, from_file):
         if self.variable_name != '':
             self.bind_to_variable(self.variable_name)
         if self.start_value is not None:
@@ -1015,7 +1016,7 @@ class VectorNode(Node):
                 self.component_properties[i].widget.set(values[i])
             self.execute()
 
-    def custom_setup(self, from_file):
+    def custom_create(self, from_file):
         for i in range(self.max_component_count):
             if i < self.current_component_count:
                 dpg.show_item(self.component_properties[i].uuid)
@@ -1313,7 +1314,7 @@ class PlotNode(Node):
             dpg.bind_item_theme(self.x_axis, self.app.invisible_theme)
             dpg.configure_item(self.plot_tag, show=False)
 
-    def custom_setup(self, from_file):
+    def custom_create(self, from_file):
         self.reallocate_buffer()
 
         if self.style in [self.plot_style, self.xy_plot_style]:
@@ -1364,14 +1365,14 @@ class PlotNode(Node):
             self.format_option.set(self.format)
         self.change_style_property()
 
-    def save_custom_setup(self, container):
+    def save_custom(self, container):
         self.lock.acquire(blocking=True)
         if self.label == 'profile':
             container['data'] = self.y_data.get_buffer().tolist()
             self.y_data.release_buffer()
         self.lock.release()
 
-    def load_custom_setup(self, container):
+    def load_custom(self, container):
         # print('load plot')
         self.lock.acquire(blocking=True)
         if 'data' in container:

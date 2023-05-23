@@ -94,15 +94,15 @@ class CommentNode(Node):
         self.set_title(self.comment_text)
         self.comment_text_option.widget.adjust_to_text_width()
 
-    def custom_setup(self, from_file):
+    def custom_create(self, from_file):
         dpg.bind_item_theme(self.uuid, CommentNode.comment_theme)
         dpg.configure_item(self.uuid, label=self.comment_text)
 
-    def save_custom_setup(self, container):
+    def save_custom(self, container):
         container['name'] = 'comment'
         container['comment'] = self.comment_text
 
-    def load_custom_setup(self, container):
+    def load_custom(self, container):
         self.comment_text = container['comment']
 
 class TickNode(Node):
@@ -133,7 +133,7 @@ class MetroNode(Node):
         # NOTE: __init__ does not create the node, but it defines the components of the node.
         # the actual dearpygui widgets and nodes do not exist, therefore cannot be modified, etc.
         # until they are submitted for creation which happens after __init__ is complete
-        # custom_setup() is called after that creation routine, allowing you to do any
+        # custom_create() is called after that creation routine, allowing you to do any
         # special initialization that might be required that requires the UI elements to actually exist
 
         # set internal variables
@@ -599,7 +599,7 @@ class PackNode(Node):
         self.output_preference_option = self.add_option('output pref', widget_type='combo')
         self.output_preference_option.widget.combo_items = ['list', 'array']
 
-    def custom_setup(self, from_file):
+    def custom_create(self, from_file):
         for i in range(self.num_ins):
             self.inputs[i].receive_data(0)
 
@@ -1514,10 +1514,10 @@ class CollectionNode(Node):
         else:
             self.save_dialog()
 
-    def save_custom_setup(self, container):
+    def save_custom(self, container):
         container['collection'] = self.collection
 
-    def load_custom_setup(self, container):
+    def load_custom(self, container):
         if 'collection' in container:
             self.collection = container['collection']
 

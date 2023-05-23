@@ -111,7 +111,7 @@ class OutputNodeAttribute:
                 child.trigger()
         self.new_output = False
 
-    def submit(self, parent):
+    def create(self, parent):
         if self.pos is not None:
             with dpg.node_attribute(parent=parent, attribute_type=dpg.mvNode_Attr_Output,
                                     user_data=self, pos=self.pos) as self.uuid:
@@ -153,7 +153,7 @@ class DisplayNodeAttribute:
         self.node = node
         self.submit_callback = None
 
-    def submit(self, parent):
+    def create(self, parent):
         self.node_attribute = dpg.node_attribute(parent=parent, attribute_type=dpg.mvNode_Attr_Static, user_data=self, id=self.uuid)
         with self.node_attribute:
             if self.submit_callback is not None:
@@ -203,13 +203,13 @@ class PropertyNodeAttribute:
         self.action = None
         self.node = node
 
-    def submit(self, parent):
+    def create(self, parent):
         self.node_attribute = dpg.node_attribute(parent=parent, attribute_type=dpg.mvNode_Attr_Static, user_data=self, id=self.uuid)
         with self.node_attribute:
             if self.callback is not None:
                 self.widget.callback = self.callback
                 self.widget.user_data = self.user_data
-            self.widget.submit()
+            self.widget.create()
 
     # def set_node(self, node):
     #     self.node = node
@@ -250,6 +250,9 @@ class PropertyNodeAttribute:
         else:
             self.user_data = user_data
         self.callback = callback
+
+    def __call__(self):
+        return self.widget.value
 
     def get_widget_value(self):
         return self.widget.value
@@ -338,7 +341,7 @@ class PropertyWidget:
                 dpg.bind_item_theme(self.trigger_widget, theme=Node.app.invisible_theme)
                 dpg.disable_item(self.trigger_widget)
 
-    def submit(self):
+    def create(self):
         if self.widget in ['drag_float', 'slider_float', 'input_float', 'knob_float']:
             if self.default_value is None:
                 self.default_value = 0.0
@@ -446,34 +449,33 @@ class PropertyWidget:
             elif self.widget == 'checkbox':
                 check = dpg.add_checkbox(label=self._label, tag=self.uuid, default_value=self.default_value, user_data=self)
                 dpg.set_item_user_data(self.uuid, user_data=self)
-                dpg.set_item_callback(self.uuid, callback=lambda: self.clickable_changed())
             elif self.widget == 'radio_group':
                 dpg.add_radio_button(self.combo_items, label=self._label, tag=self.uuid, user_data=self.node, horizontal=self.horizontal)
-                dpg.set_item_callback(self.uuid, callback=self.clickable_changed)
             elif self.widget == 'button':
                 button = dpg.add_button(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node)
                 with dpg.theme() as item_theme:
                     with dpg.theme_component(dpg.mvAll):
                         dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
                 dpg.bind_item_theme(button, item_theme)
-                dpg.set_item_callback(self.uuid, callback=lambda: self.clickable_changed())
             elif self.widget == 'text_input':
                 dpg.add_input_text(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node, default_value=self.default_value, on_enter=True)
             elif self.widget == 'combo':
                 dpg.add_combo(self.combo_items, label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node, default_value=self.default_value)
-                dpg.set_item_callback(self.uuid, callback=lambda: self.clickable_changed())
             elif self.widget == 'color_picker':
                 dpg.add_color_picker(label='color', width=self.widget_width, display_type=dpg.mvColorEdit_uint8, tag=self.uuid, picker_mode=dpg.mvColorPicker_wheel, no_side_preview=False, no_alpha=False, alpha_bar=True, alpha_preview=dpg.mvColorEdit_AlphaPreviewHalf, user_data=self.node, no_inputs=True, default_value=self.default_value)
-                dpg.set_item_callback(self.uuid, callback=lambda: self.clickable_changed())
             elif self.widget == 'list_box':
                 dpg.add_listbox(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node, num_items=8)
             elif self.widget == 'spacer':
                 dpg.add_spacer(label='', height=13)
             elif self.widget == 'label':
                 dpg.add_text(self._label)
-            if self.widget not in ['checkbox', 'button', 'combo', 'radio_group', 'spacer', 'label']:
+
+            if self.widget in ['checkbox', 'radio_group', 'button', 'combo', 'color_picker']:
+                dpg.set_item_callback(self.uuid, callback=self.clickable_changed)
+            elif self.widget not in ['spacer', 'label']:
                 dpg.set_item_user_data(self.uuid, user_data=self)
                 dpg.set_item_callback(self.uuid, callback=lambda s, a, u: self.value_changed(a))
+
             if self.widget_has_trigger:
                 self.trigger_widget = dpg.add_button(label='', width=14, callback=value_trigger_callback, user_data=self.node)
                 with dpg.theme() as item_theme:
@@ -652,7 +654,6 @@ class PropertyWidget:
         if self.action and propagate:
             self.action()
 
-
     def load(self, widget_container):
         if 'value' in widget_container:
             val = widget_container['value']
@@ -688,6 +689,7 @@ class PropertyWidget:
 
     def set_font(self, font):
         dpg.bind_item_font(self.uuid, font)
+
 
 class InputNodeAttribute:
     _pin_active_theme = None
@@ -755,7 +757,7 @@ class InputNodeAttribute:
             with dpg.theme_component(0):
                 dpg.add_theme_color(dpg.mvNodeCol_Pin, (153, 212, 255), category=dpg.mvThemeCat_Nodes)
 
-    def submit(self, parent):
+    def create(self, parent):
         self.node_attribute = dpg.node_attribute(parent=parent, attribute_type=dpg.mvNode_Attr_Input, user_data=self, id=self.uuid)
         # print(self, self._label)
         with self.node_attribute:
@@ -765,7 +767,7 @@ class InputNodeAttribute:
                 if self.callback:
                     self.widget.callback = self.callback
                     self.widget.user_data = self.user_data
-                self.widget.submit()
+                self.widget.create()
 
     def set_default_value(self, data):
         if self.widget is not None:
@@ -775,11 +777,18 @@ class InputNodeAttribute:
         self.callback = callback
         self.user_data = user_data
 
+    def __call__(self):
+        self.fresh_input = False
+        if self.widget:
+            return self.get_widget_value()
+        return self._data
+
     def get_received_data(self):
         self.fresh_input = False
         return self._data
 
     def get_data(self):
+        self.fresh_input = False
         if self.widget:
             return self.get_widget_value()
         return self._data
@@ -898,6 +907,7 @@ class Conduit:
     def detach_client(self, client):
         if client in self.clients:
             self.clients.remove(client)
+
 
 class Variable:
     def __init__(self, label: str, default_value=0.0, setter=None, getter=None):
@@ -1146,7 +1156,7 @@ class Node:
             attribute.set_value(self._data)
         self.send_all()
 
-    def custom_setup(self, from_file):
+    def custom_create(self, from_file):
         pass
 
     def trigger(self):
@@ -1167,18 +1177,18 @@ class Node:
             Node.app.remove_frame_task(self)
             self.has_frame_task = False
 
-    def submit(self, parent, pos, from_file=False):
+    def create(self, parent, pos, from_file=False):
         with dpg.node(parent=parent, label=self.label, tag=self.uuid, pos=pos):
             dpg.set_item_pos(self.uuid, pos)
             self.handle_parsed_args()
 
             if len(self.ordered_elements) > 0:
                 for attribute in self.ordered_elements:
-                    attribute.submit(self.uuid)
-                self.custom_setup(from_file)
+                    attribute.create(self.uuid)
+                self.custom_create(from_file)
                 self.update_parsed_args()
             else:
-                self.custom_setup(from_file)
+                self.custom_create(from_file)
 
         dpg.set_item_user_data(self.uuid, self)
         self.add_handler_to_widgets()
@@ -1261,10 +1271,10 @@ class Node:
                         handled = True
         return handled
 
-    def save_custom_setup(self, container):
+    def save_custom(self, container):
         pass
 
-    def load_custom_setup(self, container):
+    def load_custom(self, container):
         pass
 
     def on_edit(self, widget):
@@ -1361,7 +1371,7 @@ class Node:
         # print(properties_container)
         if property_number > 0:
             node_container['properties'] = properties_container
-        self.save_custom_setup(node_container)
+        self.save_custom(node_container)
 
     def restore_properties(self, node_container):
         if 'properties' in node_container:
@@ -1404,7 +1414,7 @@ class Node:
                                         option.widget.value_changed(force=True)
                                     found = True
                                     break
-        self.load_custom_setup(node_container)
+        self.load_custom(node_container)
         self.update_parameters_from_widgets()
 
     def update_parameters_from_widgets(self):
@@ -1499,9 +1509,9 @@ class PatcherInputNode(Node):
     def connect_to_parent(self, patcher_node):
         # print('in connect to parent', self.input_name)
         self.patcher_node = patcher_node
-        self.custom_setup(False)  # ??
+        self.custom_create(False)  # ??
 
-    def custom_setup(self, from_file):
+    def custom_create(self, from_file):
         if self.patcher_node is not None:
             remote_input = self.patcher_node.add_patcher_input(self.input_name, self.input_out)
             if self.input_name == '':
@@ -1564,9 +1574,9 @@ class PatcherOutputNode(Node):
     def connect_to_parent(self, patcher_node):
         # print('out connect to parent', self.output_name)
         self.patcher_node = patcher_node
-        self.custom_setup(False)
+        self.custom_create(False)
 
-    def custom_setup(self, from_file):
+    def custom_create(self, from_file):
         if self.patcher_node is not None:
             self.target_output = self.patcher_node.add_patcher_output(self.output_name, self.output_in)
             if self.output_name == '':
@@ -1719,7 +1729,7 @@ class PatcherNode(Node):
             else:
                 dpg.hide_item(self.patcher_inputs[i].uuid)
 
-    def custom_setup(self, from_file):
+    def custom_create(self, from_file):
         if not from_file:
             self.patch_editor = self.app.add_node_editor()
             self.app.set_tab_title(len(self.app.node_editors) - 1, self.patcher_name)
@@ -1758,12 +1768,12 @@ class PatcherNode(Node):
     def custom_cleanup(self):  # should delete associated patcher
        self.app.remove_node_editor(self.patch_editor)
 
-    def save_custom_setup(self, container):
+    def save_custom(self, container):
         container['show inputs'] = self.show_input
         container['show outputs'] = self.show_output
         container['patcher id'] = self.patch_editor.uuid
 
-    def load_custom_setup(self, container):  # called after custom setup...
+    def load_custom(self, container):  # called after custom setup...
         if 'show inputs' in container:
             self.show_input = container['show inputs']
         if 'show outputs' in container:
@@ -1798,7 +1808,7 @@ class OriginNode(Node):
         super().__init__(label, data, args)
         self.ref_property = self.add_property('', widget_type='button', width=1)
 
-    def custom_setup(self, from_file):
+    def custom_create(self, from_file):
         with dpg.theme() as item_theme:
             with dpg.theme_component(dpg.mvAll):
                 dpg.add_theme_color(dpg.mvNodeCol_NodeBackground, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
@@ -1842,7 +1852,7 @@ class PlaceholderNode(Node):
         self.list_box_arrowed = False
         self.current_name = ''
 
-    def custom_setup(self, from_file):
+    def custom_create(self, from_file):
         dpg.configure_item(self.args_property.widget.uuid, show=False, on_enter=True)
         dpg.configure_item(self.static_name.widget.uuid, show=False)
         dpg.configure_item(self.node_list_box.widget.uuid, show=False)

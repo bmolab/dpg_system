@@ -424,7 +424,7 @@ class TorchSpecialLogitNode(TorchNode):
 
         self.output = self.add_output("tensor out")
 
-    def custom_setup(self, from_file):
+    def custom_create(self, from_file):
         self.eps_input.widget.set_format('%.8f')
 
     def eps_changed(self, val=0):
