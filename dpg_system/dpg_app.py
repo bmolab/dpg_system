@@ -1045,6 +1045,11 @@ class App:
                 node_object = dpg.get_item_user_data(selected_nodes_uuid)
                 node_object.toggle_show_hide_options()
 
+    def M_handler(self):
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+            if self.get_current_editor() is not None:
+                self.show_minimap()
+
     def C_handler(self):
         if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
             if self.get_current_editor() is not None:
@@ -1286,6 +1291,9 @@ class App:
         self.links_containers = {}
         self.created_nodes = {}
         hold_current_editor = self.current_node_editor
+        if len(self.node_editors) == 0:
+            self.add_node_editor()
+        parent_tab = self.get_current_tab()
         try:
             with open(path, 'r') as f:
                 patch_name = path.split('/')[-1]
@@ -1348,7 +1356,8 @@ class App:
                             self.add_node_editor()
                             self.current_node_editor = len(self.node_editors) - 1
                     self.add_to_recent(patch_name, path)
-                    dpg.set_value(self.tab_bar, self.tabs[self.current_node_editor])
+                    self.select_tab(self.tabs[self.current_node_editor])
+                    # dpg.set_value(self.tab_bar, self.tabs[self.current_node_editor])
                     self.get_current_editor().load_(file_container, path, patch_name)
 
                 for node_editor_uuid in self.links_containers:
@@ -1388,13 +1397,17 @@ class App:
             print(exc_)
             print('load failed')
         self.current_node_editor = hold_current_editor
+        self.select_editor_tab(self.current_node_editor)
         self.loading = False
 
     def load_nodes(self):
         self.load('', fresh_patcher=True)
 
     def load_nodes_in_patcher(self):
-        self.load('', fresh_patcher=False)
+        fresh = False
+        if len(self.patchers) == 0:
+            fresh = True
+        self.load('', fresh_patcher=fresh)
 
     def clear_recent(self):
         self.recent_files = {}
@@ -1526,6 +1539,15 @@ class App:
         self.node_factory_container.add_node_factory(NodeFactory(label, factory, data))
         self.node_list.append(label)
 
+    def select_tab(self, which_tab):
+        dpg.set_value(self.tab_bar, which_tab)
+
+    def select_editor_tab(self, which_editor):
+        if 0 <= which_editor < len(self.tabs):
+            self.select_tab(self.tabs[which_editor])
+    def get_current_tab(self):
+        return dpg.get_value(self.tab_bar)
+
     def set_current_tab_title(self, title):
         if len(self.tabs) > self.current_node_editor:
             dpg.configure_item(self.tabs[self.current_node_editor], label=title)
@@ -1611,9 +1633,8 @@ class App:
                     new_editor.patch_name = editor_name
                 self.node_editors.append(new_editor)
                 self.node_editors[len(self.node_editors) - 1].submit(panel_uuid)
+                self.select_tab(tab)
         return new_editor
-
-
 
     def start(self):
         dpg.set_viewport_title("Patchers")

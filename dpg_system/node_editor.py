@@ -540,7 +540,6 @@ class NodeEditor:
         area = self.calc_node_area()
         offset_x = - (area[0] - 16)
         offset_y = - (area[1] - 16)
-
         for index, node in enumerate(self._nodes):
             if node.label != '':
                 pos = dpg.get_item_pos(node.uuid)
