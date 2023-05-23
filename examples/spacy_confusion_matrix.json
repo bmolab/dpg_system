@@ -1,0 +1,211 @@
+{
+    "height": 1135,
+    "width": 1777,
+    "position": [
+        100,
+        100
+    ],
+    "id": 159,
+    "name": "spacy_confusion_matrix",
+    "path": "/Users/drokeby/PycharmProjects/dpg_system/examples/spacy_confusion_matrix.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 184,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 29,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "name": "spacy_confusion",
+            "id": 233,
+            "position_x": 601,
+            "position_y": 66,
+            "width": 101,
+            "height": 65,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "2": {
+            "name": "heat_map",
+            "id": 253,
+            "position_x": 737,
+            "position_y": 62,
+            "width": 263,
+            "height": 307,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 13,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 13.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "3": {
+            "name": "message",
+            "id": 312,
+            "position_x": 84,
+            "position_y": 27,
+            "width": 459,
+            "height": 47,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": "a medieval painting of the virgin mary riding a rocket in outer space",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 430,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "large_font",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "name": "message",
+            "id": 344,
+            "position_x": 20,
+            "position_y": 203,
+            "width": 638,
+            "height": 47,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": "the virgin mary riding her spaceship through a shopping mall in outer space in a medieval painting",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 608,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "large_font",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 233,
+            "source_output_index": 0,
+            "dest_node": 253,
+            "dest_input_index": 0
+        },
+        "1": {
+            "source_node": 312,
+            "source_output_index": 0,
+            "dest_node": 233,
+            "dest_input_index": 0
+        },
+        "2": {
+            "source_node": 344,
+            "source_output_index": 0,
+            "dest_node": 233,
+            "dest_input_index": 1
+        }
+    }
+}

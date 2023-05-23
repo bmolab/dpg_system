@@ -1,0 +1,294 @@
+{
+    "height": 800,
+    "width": 1280,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1286,
+    "name": "torch_roll",
+    "path": "/Users/drokeby/PycharmProjects/dpg_system/examples/torch_roll.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 1307,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "t.rand 8 8",
+            "name": "t.rand",
+            "id": 1330,
+            "position_x": 39,
+            "position_y": 19,
+            "width": 163,
+            "height": 156,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "shape",
+                    "value": "[8, 8]",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "2": {
+            "name": "t.roll",
+            "id": 1388,
+            "position_x": 248,
+            "position_y": 199,
+            "width": 160,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "roll dims",
+                    "value": "0 1",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "roll shifts",
+                    "value": "1 2",
+                    "value_type": "string"
+                }
+            }
+        },
+        "3": {
+            "name": "heat_map",
+            "id": 1415,
+            "position_x": 447,
+            "position_y": 5,
+            "width": 136,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 8.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "name": "heat_map",
+            "id": 1474,
+            "position_x": 446,
+            "position_y": 189,
+            "width": 136,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 8.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "5": {
+            "init": "comment t.roll",
+            "name": "comment",
+            "id": 1550,
+            "position_x": 55,
+            "position_y": 225,
+            "width": 82,
+            "height": 28,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.roll",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "large",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            },
+            "comment": "t.roll"
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 1330,
+            "source_output_index": 0,
+            "dest_node": 1388,
+            "dest_input_index": 0
+        },
+        "1": {
+            "source_node": 1330,
+            "source_output_index": 0,
+            "dest_node": 1415,
+            "dest_input_index": 0
+        },
+        "2": {
+            "source_node": 1388,
+            "source_output_index": 0,
+            "dest_node": 1474,
+            "dest_input_index": 0
+        }
+    }
+}

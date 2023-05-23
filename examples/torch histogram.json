@@ -1,0 +1,249 @@
+{
+    "height": 800,
+    "width": 1280,
+    "position": [
+        100,
+        100
+    ],
+    "id": 797,
+    "name": "torch histogram",
+    "path": "/Users/drokeby/PycharmProjects/dpg_system/examples/torch histogram.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 818,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "t.rand 64 64",
+            "name": "t.rand",
+            "id": 867,
+            "position_x": 50,
+            "position_y": 56,
+            "width": 163,
+            "height": 156,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "shape",
+                    "value": "[64, 64]",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "2": {
+            "name": "t.histc",
+            "id": 1019,
+            "position_x": 365,
+            "position_y": 56,
+            "width": 148,
+            "height": 102,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "bin count",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "3": {
+            "name": "plot",
+            "id": 1071,
+            "position_x": 557,
+            "position_y": 49,
+            "width": 308,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "bar",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 256.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 256.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "name": "pow",
+            "id": 1145,
+            "position_x": 246,
+            "position_y": 56,
+            "width": 88,
+            "height": 66,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 3.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "5": {
+            "init": "comment if min and max are 0, autoscale",
+            "name": "comment",
+            "id": 1182,
+            "position_x": 336,
+            "position_y": 170,
+            "width": 199,
+            "height": 16,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "if min and max are 0, autoscale",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "large",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "comment": "if min and max are 0, autoscale"
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 867,
+            "source_output_index": 0,
+            "dest_node": 1145,
+            "dest_input_index": 0
+        },
+        "1": {
+            "source_node": 1019,
+            "source_output_index": 0,
+            "dest_node": 1071,
+            "dest_input_index": 0
+        },
+        "2": {
+            "source_node": 1145,
+            "source_output_index": 0,
+            "dest_node": 1019,
+            "dest_input_index": 0
+        }
+    }
+}

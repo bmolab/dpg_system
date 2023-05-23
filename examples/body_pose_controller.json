@@ -1,0 +1,5073 @@
+{
+    "height": 1257,
+    "width": 1632,
+    "position": [
+        100,
+        100
+    ],
+    "id": 159,
+    "name": "body_pose_controller",
+    "path": "/Users/drokeby/PycharmProjects/dpg_system/examples/body_pose_controller.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 184,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "name": "pose",
+            "id": 233,
+            "position_x": 1209,
+            "position_y": 125,
+            "width": 131,
+            "height": 390,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "2": {
+            "name": "vector",
+            "id": 343,
+            "position_x": 505,
+            "position_y": 25,
+            "width": 88,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "3": {
+            "name": "gl_context",
+            "id": 460,
+            "position_x": 1097,
+            "position_y": 551,
+            "width": 70,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "fov",
+                    "value": 60.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "4": {
+            "name": "gl_body",
+            "id": 478,
+            "position_x": 1370,
+            "position_y": 569,
+            "width": 58,
+            "height": 66,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "show joint motion",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "joint motion scale",
+                    "value": 5.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "joint motion smoothing",
+                    "value": 0.800000011920929,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "joint motion alpha",
+                    "value": 0.5,
+                    "value_type": "float"
+                }
+            }
+        },
+        "5": {
+            "name": "gl_translate",
+            "id": 510,
+            "position_x": 1191,
+            "position_y": 567,
+            "width": 99,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "z",
+                    "value": -2.0399999618530273,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "reset",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "6": {
+            "name": "vector",
+            "id": 552,
+            "position_x": 502,
+            "position_y": 166,
+            "width": 88,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "7": {
+            "name": "vector",
+            "id": 669,
+            "position_x": 502,
+            "position_y": 310,
+            "width": 88,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "8": {
+            "init": "comment mid vert",
+            "name": "comment",
+            "id": 786,
+            "position_x": 506,
+            "position_y": 292,
+            "width": 58,
+            "height": 16,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "mid vert",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "large",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "comment": "mid vert"
+        },
+        "9": {
+            "init": "comment neck",
+            "name": "comment",
+            "id": 801,
+            "position_x": 506,
+            "position_y": 149,
+            "width": 33,
+            "height": 16,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "neck",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "large",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "comment": "neck"
+        },
+        "10": {
+            "init": "comment head",
+            "name": "comment",
+            "id": 809,
+            "position_x": 506,
+            "position_y": 6,
+            "width": 33,
+            "height": 16,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "head",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "large",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "comment": "head"
+        },
+        "11": {
+            "name": "vector",
+            "id": 817,
+            "position_x": 504,
+            "position_y": 454,
+            "width": 88,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "12": {
+            "init": "comment lower vert",
+            "name": "comment",
+            "id": 934,
+            "position_x": 506,
+            "position_y": 435,
+            "width": 70,
+            "height": 16,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "lower vert",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "large",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "comment": "lower vert"
+        },
+        "13": {
+            "name": "vector",
+            "id": 942,
+            "position_x": 505,
+            "position_y": 593,
+            "width": 88,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "14": {
+            "init": "comment spine pelvis",
+            "name": "comment",
+            "id": 1059,
+            "position_x": 506,
+            "position_y": 578,
+            "width": 82,
+            "height": 16,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "spine pelvis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "large",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "comment": "spine pelvis"
+        },
+        "15": {
+            "name": "vector",
+            "id": 1067,
+            "position_x": 505,
+            "position_y": 740,
+            "width": 88,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.05999999865889549,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "16": {
+            "init": "comment pelvis anchor",
+            "name": "comment",
+            "id": 1184,
+            "position_x": 506,
+            "position_y": 721,
+            "width": 88,
+            "height": 16,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "pelvis anchor",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "large",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "comment": "pelvis anchor"
+        },
+        "17": {
+            "name": "vector",
+            "id": 1192,
+            "position_x": 677,
+            "position_y": 753,
+            "width": 88,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "18": {
+            "name": "vector",
+            "id": 1309,
+            "position_x": 674,
+            "position_y": 894,
+            "width": 88,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "19": {
+            "name": "vector",
+            "id": 1426,
+            "position_x": 674,
+            "position_y": 1038,
+            "width": 88,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "20": {
+            "init": "comment left hip",
+            "name": "comment",
+            "id": 1543,
+            "position_x": 686,
+            "position_y": 733,
+            "width": 58,
+            "height": 16,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "left hip",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "large",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "comment": "left hip"
+        },
+        "21": {
+            "init": "comment left knee",
+            "name": "comment",
+            "id": 1551,
+            "position_x": 684,
+            "position_y": 876,
+            "width": 64,
+            "height": 16,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "left knee",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "large",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "comment": "left knee"
+        },
+        "22": {
+            "init": "comment left ankle",
+            "name": "comment",
+            "id": 1559,
+            "position_x": 681,
+            "position_y": 1019,
+            "width": 70,
+            "height": 16,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "left ankle",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "large",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "comment": "left ankle"
+        },
+        "23": {
+            "name": "vector",
+            "id": 1567,
+            "position_x": 341,
+            "position_y": 744,
+            "width": 88,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "24": {
+            "name": "vector",
+            "id": 1684,
+            "position_x": 338,
+            "position_y": 885,
+            "width": 88,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "25": {
+            "name": "vector",
+            "id": 1801,
+            "position_x": 338,
+            "position_y": 1029,
+            "width": 88,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "26": {
+            "init": "comment right hip",
+            "name": "comment",
+            "id": 1918,
+            "position_x": 348,
+            "position_y": 724,
+            "width": 64,
+            "height": 16,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "right hip",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "large",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "comment": "right hip"
+        },
+        "27": {
+            "init": "comment right knee",
+            "name": "comment",
+            "id": 1926,
+            "position_x": 346,
+            "position_y": 868,
+            "width": 70,
+            "height": 16,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "right knee",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "large",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "comment": "right knee"
+        },
+        "28": {
+            "init": "comment right ankle",
+            "name": "comment",
+            "id": 1934,
+            "position_x": 341,
+            "position_y": 1012,
+            "width": 76,
+            "height": 16,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "right ankle",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "large",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "comment": "right ankle"
+        },
+        "29": {
+            "name": "vector",
+            "id": 1942,
+            "position_x": 825,
+            "position_y": 345,
+            "width": 88,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "30": {
+            "name": "vector",
+            "id": 2059,
+            "position_x": 855,
+            "position_y": 497,
+            "width": 88,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.10999999940395355,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": -0.4699999988079071,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "31": {
+            "name": "vector",
+            "id": 2176,
+            "position_x": 855,
+            "position_y": 641,
+            "width": 88,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "32": {
+            "name": "vector",
+            "id": 2293,
+            "position_x": 663,
+            "position_y": 305,
+            "width": 88,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "33": {
+            "name": "vector",
+            "id": 2410,
+            "position_x": 159,
+            "position_y": 350,
+            "width": 88,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "34": {
+            "name": "vector",
+            "id": 2527,
+            "position_x": 129,
+            "position_y": 498,
+            "width": 88,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "35": {
+            "name": "vector",
+            "id": 2644,
+            "position_x": 129,
+            "position_y": 642,
+            "width": 88,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "36": {
+            "name": "vector",
+            "id": 2761,
+            "position_x": 322,
+            "position_y": 309,
+            "width": 88,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "37": {
+            "init": "comment left shoulder",
+            "name": "comment",
+            "id": 2878,
+            "position_x": 821,
+            "position_y": 324,
+            "width": 88,
+            "height": 16,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "left shoulder",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "large",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "comment": "left shoulder"
+        },
+        "38": {
+            "init": "comment left elbow",
+            "name": "comment",
+            "id": 2886,
+            "position_x": 862,
+            "position_y": 480,
+            "width": 70,
+            "height": 16,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "left elbow",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "large",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "comment": "left elbow"
+        },
+        "39": {
+            "init": "comment left wrist",
+            "name": "comment",
+            "id": 2894,
+            "position_x": 861,
+            "position_y": 625,
+            "width": 70,
+            "height": 16,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "left wrist",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "large",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "comment": "left wrist"
+        },
+        "40": {
+            "init": "comment left shoulderblade",
+            "name": "comment",
+            "id": 2902,
+            "position_x": 646,
+            "position_y": 279,
+            "width": 119,
+            "height": 16,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "left shoulderblade",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "large",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "comment": "left shoulderblade"
+        },
+        "41": {
+            "init": "comment right shouldervblade",
+            "name": "comment",
+            "id": 2910,
+            "position_x": 302,
+            "position_y": 290,
+            "width": 131,
+            "height": 16,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "right shouldervblade",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "large",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "comment": "right shouldervblade"
+        },
+        "42": {
+            "init": "comment right shoulder",
+            "name": "comment",
+            "id": 2918,
+            "position_x": 154,
+            "position_y": 333,
+            "width": 95,
+            "height": 16,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "right shoulder",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "large",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "comment": "right shoulder"
+        },
+        "43": {
+            "init": "comment right elbow",
+            "name": "comment",
+            "id": 2926,
+            "position_x": 134,
+            "position_y": 482,
+            "width": 76,
+            "height": 16,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "right elbow",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "large",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "comment": "right elbow"
+        },
+        "44": {
+            "init": "comment right wrist",
+            "name": "comment",
+            "id": 2934,
+            "position_x": 131,
+            "position_y": 626,
+            "width": 76,
+            "height": 16,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "right wrist",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "large",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "comment": "right wrist"
+        },
+        "45": {
+            "name": "quaternion_to_euler",
+            "id": 2942,
+            "position_x": 1136,
+            "position_y": 921,
+            "width": 125,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "offset x",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "offset y",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "offset x",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "degrees",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "46": {
+            "init": "vector 3",
+            "name": "vector",
+            "id": 2969,
+            "position_x": 1307,
+            "position_y": 937,
+            "width": 88,
+            "height": 102,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": -90.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 6.867260456085205,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 90.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 3,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "47": {
+            "init": "vector 4",
+            "name": "vector",
+            "id": 3086,
+            "position_x": 19,
+            "position_y": 20,
+            "width": 88,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 233,
+            "source_output_index": 0,
+            "dest_node": 478,
+            "dest_input_index": 0
+        },
+        "1": {
+            "source_node": 343,
+            "source_output_index": 0,
+            "dest_node": 233,
+            "dest_input_index": 0
+        },
+        "2": {
+            "source_node": 343,
+            "source_output_index": 0,
+            "dest_node": 2942,
+            "dest_input_index": 0
+        },
+        "3": {
+            "source_node": 460,
+            "source_output_index": 0,
+            "dest_node": 510,
+            "dest_input_index": 0
+        },
+        "4": {
+            "source_node": 510,
+            "source_output_index": 0,
+            "dest_node": 478,
+            "dest_input_index": 1
+        },
+        "5": {
+            "source_node": 552,
+            "source_output_index": 0,
+            "dest_node": 233,
+            "dest_input_index": 1
+        },
+        "6": {
+            "source_node": 552,
+            "source_output_index": 0,
+            "dest_node": 2942,
+            "dest_input_index": 0
+        },
+        "7": {
+            "source_node": 669,
+            "source_output_index": 0,
+            "dest_node": 233,
+            "dest_input_index": 2
+        },
+        "8": {
+            "source_node": 669,
+            "source_output_index": 0,
+            "dest_node": 2942,
+            "dest_input_index": 0
+        },
+        "9": {
+            "source_node": 817,
+            "source_output_index": 0,
+            "dest_node": 233,
+            "dest_input_index": 3
+        },
+        "10": {
+            "source_node": 817,
+            "source_output_index": 0,
+            "dest_node": 2942,
+            "dest_input_index": 0
+        },
+        "11": {
+            "source_node": 942,
+            "source_output_index": 0,
+            "dest_node": 233,
+            "dest_input_index": 4
+        },
+        "12": {
+            "source_node": 942,
+            "source_output_index": 0,
+            "dest_node": 2942,
+            "dest_input_index": 0
+        },
+        "13": {
+            "source_node": 1067,
+            "source_output_index": 0,
+            "dest_node": 233,
+            "dest_input_index": 5
+        },
+        "14": {
+            "source_node": 1067,
+            "source_output_index": 0,
+            "dest_node": 2942,
+            "dest_input_index": 0
+        },
+        "15": {
+            "source_node": 1192,
+            "source_output_index": 0,
+            "dest_node": 233,
+            "dest_input_index": 6
+        },
+        "16": {
+            "source_node": 1192,
+            "source_output_index": 0,
+            "dest_node": 2942,
+            "dest_input_index": 0
+        },
+        "17": {
+            "source_node": 1309,
+            "source_output_index": 0,
+            "dest_node": 233,
+            "dest_input_index": 7
+        },
+        "18": {
+            "source_node": 1309,
+            "source_output_index": 0,
+            "dest_node": 2942,
+            "dest_input_index": 0
+        },
+        "19": {
+            "source_node": 1426,
+            "source_output_index": 0,
+            "dest_node": 233,
+            "dest_input_index": 8
+        },
+        "20": {
+            "source_node": 1426,
+            "source_output_index": 0,
+            "dest_node": 2942,
+            "dest_input_index": 0
+        },
+        "21": {
+            "source_node": 1567,
+            "source_output_index": 0,
+            "dest_node": 233,
+            "dest_input_index": 9
+        },
+        "22": {
+            "source_node": 1567,
+            "source_output_index": 0,
+            "dest_node": 2942,
+            "dest_input_index": 0
+        },
+        "23": {
+            "source_node": 1684,
+            "source_output_index": 0,
+            "dest_node": 233,
+            "dest_input_index": 10
+        },
+        "24": {
+            "source_node": 1684,
+            "source_output_index": 0,
+            "dest_node": 2942,
+            "dest_input_index": 0
+        },
+        "25": {
+            "source_node": 1801,
+            "source_output_index": 0,
+            "dest_node": 233,
+            "dest_input_index": 11
+        },
+        "26": {
+            "source_node": 1801,
+            "source_output_index": 0,
+            "dest_node": 2942,
+            "dest_input_index": 0
+        },
+        "27": {
+            "source_node": 1942,
+            "source_output_index": 0,
+            "dest_node": 233,
+            "dest_input_index": 13
+        },
+        "28": {
+            "source_node": 1942,
+            "source_output_index": 0,
+            "dest_node": 2942,
+            "dest_input_index": 0
+        },
+        "29": {
+            "source_node": 2059,
+            "source_output_index": 0,
+            "dest_node": 233,
+            "dest_input_index": 14
+        },
+        "30": {
+            "source_node": 2059,
+            "source_output_index": 0,
+            "dest_node": 2942,
+            "dest_input_index": 0
+        },
+        "31": {
+            "source_node": 2176,
+            "source_output_index": 0,
+            "dest_node": 233,
+            "dest_input_index": 15
+        },
+        "32": {
+            "source_node": 2176,
+            "source_output_index": 0,
+            "dest_node": 2942,
+            "dest_input_index": 0
+        },
+        "33": {
+            "source_node": 2293,
+            "source_output_index": 0,
+            "dest_node": 233,
+            "dest_input_index": 12
+        },
+        "34": {
+            "source_node": 2293,
+            "source_output_index": 0,
+            "dest_node": 2942,
+            "dest_input_index": 0
+        },
+        "35": {
+            "source_node": 2410,
+            "source_output_index": 0,
+            "dest_node": 233,
+            "dest_input_index": 17
+        },
+        "36": {
+            "source_node": 2410,
+            "source_output_index": 0,
+            "dest_node": 2942,
+            "dest_input_index": 0
+        },
+        "37": {
+            "source_node": 2527,
+            "source_output_index": 0,
+            "dest_node": 233,
+            "dest_input_index": 18
+        },
+        "38": {
+            "source_node": 2527,
+            "source_output_index": 0,
+            "dest_node": 2942,
+            "dest_input_index": 0
+        },
+        "39": {
+            "source_node": 2644,
+            "source_output_index": 0,
+            "dest_node": 233,
+            "dest_input_index": 19
+        },
+        "40": {
+            "source_node": 2644,
+            "source_output_index": 0,
+            "dest_node": 2942,
+            "dest_input_index": 0
+        },
+        "41": {
+            "source_node": 2761,
+            "source_output_index": 0,
+            "dest_node": 233,
+            "dest_input_index": 16
+        },
+        "42": {
+            "source_node": 2761,
+            "source_output_index": 0,
+            "dest_node": 2942,
+            "dest_input_index": 0
+        },
+        "43": {
+            "source_node": 2942,
+            "source_output_index": 0,
+            "dest_node": 2969,
+            "dest_input_index": 0
+        },
+        "44": {
+            "source_node": 3086,
+            "source_output_index": 0,
+            "dest_node": 343,
+            "dest_input_index": 0
+        },
+        "45": {
+            "source_node": 3086,
+            "source_output_index": 0,
+            "dest_node": 552,
+            "dest_input_index": 0
+        },
+        "46": {
+            "source_node": 3086,
+            "source_output_index": 0,
+            "dest_node": 2761,
+            "dest_input_index": 0
+        },
+        "47": {
+            "source_node": 3086,
+            "source_output_index": 0,
+            "dest_node": 669,
+            "dest_input_index": 0
+        },
+        "48": {
+            "source_node": 3086,
+            "source_output_index": 0,
+            "dest_node": 817,
+            "dest_input_index": 0
+        },
+        "49": {
+            "source_node": 3086,
+            "source_output_index": 0,
+            "dest_node": 942,
+            "dest_input_index": 0
+        },
+        "50": {
+            "source_node": 3086,
+            "source_output_index": 0,
+            "dest_node": 1067,
+            "dest_input_index": 0
+        },
+        "51": {
+            "source_node": 3086,
+            "source_output_index": 0,
+            "dest_node": 2410,
+            "dest_input_index": 0
+        },
+        "52": {
+            "source_node": 3086,
+            "source_output_index": 0,
+            "dest_node": 2527,
+            "dest_input_index": 0
+        },
+        "53": {
+            "source_node": 3086,
+            "source_output_index": 0,
+            "dest_node": 2644,
+            "dest_input_index": 0
+        },
+        "54": {
+            "source_node": 3086,
+            "source_output_index": 0,
+            "dest_node": 1567,
+            "dest_input_index": 0
+        },
+        "55": {
+            "source_node": 3086,
+            "source_output_index": 0,
+            "dest_node": 1684,
+            "dest_input_index": 0
+        },
+        "56": {
+            "source_node": 3086,
+            "source_output_index": 0,
+            "dest_node": 1801,
+            "dest_input_index": 0
+        },
+        "57": {
+            "source_node": 3086,
+            "source_output_index": 0,
+            "dest_node": 2293,
+            "dest_input_index": 0
+        },
+        "58": {
+            "source_node": 3086,
+            "source_output_index": 0,
+            "dest_node": 1942,
+            "dest_input_index": 0
+        },
+        "59": {
+            "source_node": 3086,
+            "source_output_index": 0,
+            "dest_node": 2059,
+            "dest_input_index": 0
+        },
+        "60": {
+            "source_node": 3086,
+            "source_output_index": 0,
+            "dest_node": 2176,
+            "dest_input_index": 0
+        },
+        "61": {
+            "source_node": 3086,
+            "source_output_index": 0,
+            "dest_node": 1192,
+            "dest_input_index": 0
+        },
+        "62": {
+            "source_node": 3086,
+            "source_output_index": 0,
+            "dest_node": 1309,
+            "dest_input_index": 0
+        },
+        "63": {
+            "source_node": 3086,
+            "source_output_index": 0,
+            "dest_node": 1426,
+            "dest_input_index": 0
+        }
+    }
+}

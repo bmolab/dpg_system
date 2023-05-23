@@ -1,0 +1,453 @@
+{
+    "height": 800,
+    "width": 1280,
+    "position": [
+        100,
+        100
+    ],
+    "id": 159,
+    "name": "mocap_take_example",
+    "path": "/Users/drokeby/PycharmProjects/dpg_system/examples/mocap_take_example.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 184,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "name": "take",
+            "id": 233,
+            "position_x": 119,
+            "position_y": 135,
+            "width": 123,
+            "height": 156,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "speed",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "frame",
+                    "value": 1199,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "on/off",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "load",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "4": {
+                    "name": "",
+                    "value": "take.npz",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "path",
+                    "value": "/Users/drokeby/PycharmProjects/guitest/take.npz",
+                    "value_type": "string"
+                }
+            }
+        },
+        "2": {
+            "name": "gl_body",
+            "id": 286,
+            "position_x": 433,
+            "position_y": 291,
+            "width": 58,
+            "height": 66,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "show joint motion",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "joint motion scale",
+                    "value": 20.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "joint motion smoothing",
+                    "value": 0.800000011920929,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "joint motion alpha",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "3": {
+            "name": "gl_context",
+            "id": 318,
+            "position_x": 190,
+            "position_y": 370,
+            "width": 70,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "fov",
+                    "value": 60.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "4": {
+            "name": "int",
+            "id": 336,
+            "position_x": 61,
+            "position_y": 27,
+            "width": 130,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 208,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "large_font",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "5": {
+            "name": "gl_translate",
+            "id": 368,
+            "position_x": 286,
+            "position_y": 369,
+            "width": 99,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "z",
+                    "value": -1.7400000095367432,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "reset",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "6": {
+            "name": "smooth",
+            "id": 485,
+            "position_x": 276,
+            "position_y": 255,
+            "width": 129,
+            "height": 66,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degree",
+                    "value": 0.699999988079071,
+                    "value_type": "float"
+                }
+            }
+        },
+        "7": {
+            "name": "body_to_joints",
+            "id": 506,
+            "position_x": 523,
+            "position_y": 15,
+            "width": 131,
+            "height": 408,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "8": {
+            "init": "vector 4",
+            "name": "vector",
+            "id": 678,
+            "position_x": 858,
+            "position_y": 38,
+            "width": 88,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 0.7980355620384216,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.09665293991565704,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": -0.5772053599357605,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.14363664388656616,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 233,
+            "source_output_index": 0,
+            "dest_node": 485,
+            "dest_input_index": 0
+        },
+        "1": {
+            "source_node": 233,
+            "source_output_index": 0,
+            "dest_node": 506,
+            "dest_input_index": 0
+        },
+        "2": {
+            "source_node": 318,
+            "source_output_index": 0,
+            "dest_node": 368,
+            "dest_input_index": 0
+        },
+        "3": {
+            "source_node": 336,
+            "source_output_index": 0,
+            "dest_node": 233,
+            "dest_input_index": 1
+        },
+        "4": {
+            "source_node": 368,
+            "source_output_index": 0,
+            "dest_node": 286,
+            "dest_input_index": 1
+        },
+        "5": {
+            "source_node": 485,
+            "source_output_index": 0,
+            "dest_node": 286,
+            "dest_input_index": 0
+        },
+        "6": {
+            "source_node": 506,
+            "source_output_index": 5,
+            "dest_node": 678,
+            "dest_input_index": 0
+        }
+    }
+}

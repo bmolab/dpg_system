@@ -1,0 +1,139 @@
+{
+    "height": 740,
+    "width": 1117,
+    "position": [
+        52,
+        164
+    ],
+    "id": 627,
+    "name": "torch_camera",
+    "path": "/Users/drokeby/PycharmProjects/dpg_system/examples/torch_camera.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 648,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "name": "gl_context",
+            "id": 671,
+            "position_x": 13,
+            "position_y": 13,
+            "width": 70,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "fov",
+                    "value": 60.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "2": {
+            "name": "gl_billboard",
+            "id": 689,
+            "position_x": 308,
+            "position_y": 41,
+            "width": 129,
+            "height": 102,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "width",
+                    "value": 1.600000023841858,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "height",
+                    "value": 0.8999999761581421,
+                    "value_type": "float"
+                }
+            }
+        },
+        "3": {
+            "name": "cv_camera",
+            "id": 721,
+            "position_x": 14,
+            "position_y": 77,
+            "width": 64,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on/off",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "init": "tensor uint8 mps",
+            "name": "tensor",
+            "id": 737,
+            "position_x": 113,
+            "position_y": 97,
+            "width": 163,
+            "height": 102,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "device",
+                    "value": "mps",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "dtype",
+                    "value": "uint8",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 671,
+            "source_output_index": 0,
+            "dest_node": 689,
+            "dest_input_index": 0
+        },
+        "1": {
+            "source_node": 721,
+            "source_output_index": 0,
+            "dest_node": 737,
+            "dest_input_index": 0
+        },
+        "2": {
+            "source_node": 737,
+            "source_output_index": 0,
+            "dest_node": 689,
+            "dest_input_index": 3
+        }
+    }
+}

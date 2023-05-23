@@ -1,0 +1,475 @@
+{
+    "height": 800,
+    "width": 1280,
+    "position": [
+        100,
+        100
+    ],
+    "id": 159,
+    "name": "t.any_and_t.json",
+    "path": "/Users/drokeby/PycharmProjects/dpg_system/examples/t.any_and_t.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 184,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "t.rand 4",
+            "name": "t.rand",
+            "id": 233,
+            "position_x": 25,
+            "position_y": 26,
+            "width": 163,
+            "height": 156,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "shape",
+                    "value": "[4]",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "dtype",
+                    "value": "float",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "2": {
+            "init": "> 0.5",
+            "name": ">",
+            "id": 291,
+            "position_x": 221,
+            "position_y": 152,
+            "width": 88,
+            "height": 66,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0.5,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "output_type",
+                    "value": "bool",
+                    "value_type": "string"
+                }
+            }
+        },
+        "3": {
+            "name": "t.any",
+            "id": 315,
+            "position_x": 623,
+            "position_y": 74,
+            "width": 70,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "4": {
+            "name": "t.all",
+            "id": 330,
+            "position_x": 622,
+            "position_y": 189,
+            "width": 70,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "5": {
+            "name": "message",
+            "id": 345,
+            "position_x": 727,
+            "position_y": 113,
+            "width": 130,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": "True",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "large_font",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "6": {
+            "name": "message",
+            "id": 380,
+            "position_x": 728,
+            "position_y": 268,
+            "width": 130,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": "False",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "large_font",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "7": {
+            "name": "toggle",
+            "id": 415,
+            "position_x": 727,
+            "position_y": 45,
+            "width": 45,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                }
+            }
+        },
+        "8": {
+            "name": "toggle",
+            "id": 434,
+            "position_x": 726,
+            "position_y": 194,
+            "width": 45,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                }
+            }
+        },
+        "9": {
+            "name": "heat_map",
+            "id": 474,
+            "position_x": 332,
+            "position_y": 228,
+            "width": 264,
+            "height": 116,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "10": {
+            "name": "heat_map",
+            "id": 534,
+            "position_x": 220,
+            "position_y": 22,
+            "width": 264,
+            "height": 116,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "11": {
+            "init": "comment t.any and t.all",
+            "name": "comment",
+            "id": 608,
+            "position_x": 512,
+            "position_y": 11,
+            "width": 193,
+            "height": 28,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.any and t.all",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "large",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            },
+            "comment": "t.any and t.all"
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 233,
+            "source_output_index": 0,
+            "dest_node": 291,
+            "dest_input_index": 0
+        },
+        "1": {
+            "source_node": 233,
+            "source_output_index": 0,
+            "dest_node": 534,
+            "dest_input_index": 0
+        },
+        "2": {
+            "source_node": 291,
+            "source_output_index": 0,
+            "dest_node": 315,
+            "dest_input_index": 0
+        },
+        "3": {
+            "source_node": 291,
+            "source_output_index": 0,
+            "dest_node": 330,
+            "dest_input_index": 0
+        },
+        "4": {
+            "source_node": 291,
+            "source_output_index": 0,
+            "dest_node": 474,
+            "dest_input_index": 0
+        },
+        "5": {
+            "source_node": 315,
+            "source_output_index": 0,
+            "dest_node": 345,
+            "dest_input_index": 0
+        },
+        "6": {
+            "source_node": 315,
+            "source_output_index": 0,
+            "dest_node": 415,
+            "dest_input_index": 0
+        },
+        "7": {
+            "source_node": 330,
+            "source_output_index": 0,
+            "dest_node": 380,
+            "dest_input_index": 0
+        },
+        "8": {
+            "source_node": 330,
+            "source_output_index": 0,
+            "dest_node": 434,
+            "dest_input_index": 0
+        }
+    }
+}

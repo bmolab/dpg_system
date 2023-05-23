@@ -1,0 +1,2623 @@
+{
+    "height": 1194,
+    "width": 1351,
+    "position": [
+        100,
+        100
+    ],
+    "id": 2949,
+    "name": "torch_special",
+    "path": "/Users/drokeby/PycharmProjects/dpg_system/examples/torch_special.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 2970,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "t.linspace 0 1 16",
+            "name": "t.linspace",
+            "id": 2993,
+            "position_x": 20,
+            "position_y": 38,
+            "width": 163,
+            "height": 156,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "start",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "stop",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "steps",
+                    "value": 512,
+                    "value_type": "int"
+                }
+            }
+        },
+        "2": {
+            "name": "t.special.airy_ai",
+            "id": 3042,
+            "position_x": 193,
+            "position_y": 34,
+            "width": 113,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "3": {
+            "name": "t.special.bessel_j0",
+            "id": 3057,
+            "position_x": 193,
+            "position_y": 251,
+            "width": 125,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "4": {
+            "name": "t.special.bessel_j1",
+            "id": 3072,
+            "position_x": 192,
+            "position_y": 470,
+            "width": 125,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "5": {
+            "name": "t.special.digamma",
+            "id": 3087,
+            "position_x": 191,
+            "position_y": 690,
+            "width": 113,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "6": {
+            "name": "t.special.entr",
+            "id": 3102,
+            "position_x": 187,
+            "position_y": 909,
+            "width": 95,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "7": {
+            "name": "plot",
+            "id": 3117,
+            "position_x": 190,
+            "position_y": 961,
+            "width": 136,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "8": {
+            "name": "t.special.erf",
+            "id": 3176,
+            "position_x": 385,
+            "position_y": 34,
+            "width": 88,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
+            "name": "t.special.erfc",
+            "id": 3191,
+            "position_x": 386,
+            "position_y": 251,
+            "width": 95,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "name": "t.special.erfcx",
+            "id": 3206,
+            "position_x": 386,
+            "position_y": 470,
+            "width": 101,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "name": "t.special.erfinv",
+            "id": 3221,
+            "position_x": 385,
+            "position_y": 690,
+            "width": 107,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "name": "t.special.exp2",
+            "id": 3236,
+            "position_x": 382,
+            "position_y": 909,
+            "width": 95,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "name": "t.special.expit",
+            "id": 3251,
+            "position_x": 577,
+            "position_y": 34,
+            "width": 101,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "name": "t.special.expm1",
+            "id": 3266,
+            "position_x": 580,
+            "position_y": 251,
+            "width": 101,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "name": "t.special.gammaln",
+            "id": 3281,
+            "position_x": 580,
+            "position_y": 470,
+            "width": 113,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "name": "t.special.i0",
+            "id": 3296,
+            "position_x": 579,
+            "position_y": 690,
+            "width": 82,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "17": {
+            "name": "t.special.i0e",
+            "id": 3311,
+            "position_x": 578,
+            "position_y": 909,
+            "width": 88,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "18": {
+            "name": "t.special.log1p",
+            "id": 3326,
+            "position_x": 769,
+            "position_y": 34,
+            "width": 101,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "19": {
+            "name": "t.special.ndtr",
+            "id": 3341,
+            "position_x": 774,
+            "position_y": 251,
+            "width": 95,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "20": {
+            "name": "t.special.ndtri",
+            "id": 3356,
+            "position_x": 775,
+            "position_y": 470,
+            "width": 101,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "21": {
+            "name": "t.special.scaled_modified_bessel_k0",
+            "id": 3371,
+            "position_x": 774,
+            "position_y": 690,
+            "width": 224,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "22": {
+            "name": "t.special.sinc",
+            "id": 3386,
+            "position_x": 774,
+            "position_y": 909,
+            "width": 95,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "23": {
+            "name": "t.special.spherical_bessel_j0",
+            "id": 3401,
+            "position_x": 962,
+            "position_y": 34,
+            "width": 187,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "24": {
+            "name": "plot",
+            "id": 3416,
+            "position_x": 190,
+            "position_y": 742,
+            "width": 136,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "25": {
+            "name": "plot",
+            "id": 3475,
+            "position_x": 190,
+            "position_y": 524,
+            "width": 136,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "26": {
+            "name": "plot",
+            "id": 3534,
+            "position_x": 190,
+            "position_y": 306,
+            "width": 136,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "27": {
+            "name": "plot",
+            "id": 3593,
+            "position_x": 190,
+            "position_y": 87,
+            "width": 136,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "28": {
+            "name": "plot",
+            "id": 3652,
+            "position_x": 385,
+            "position_y": 961,
+            "width": 136,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "29": {
+            "name": "plot",
+            "id": 3711,
+            "position_x": 385,
+            "position_y": 742,
+            "width": 136,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "30": {
+            "name": "plot",
+            "id": 3770,
+            "position_x": 385,
+            "position_y": 523,
+            "width": 136,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "31": {
+            "name": "plot",
+            "id": 3829,
+            "position_x": 385,
+            "position_y": 306,
+            "width": 136,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "32": {
+            "name": "plot",
+            "id": 3888,
+            "position_x": 382,
+            "position_y": 87,
+            "width": 136,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "33": {
+            "name": "plot",
+            "id": 3947,
+            "position_x": 580,
+            "position_y": 961,
+            "width": 136,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "34": {
+            "name": "plot",
+            "id": 4006,
+            "position_x": 580,
+            "position_y": 742,
+            "width": 136,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "35": {
+            "name": "plot",
+            "id": 4065,
+            "position_x": 580,
+            "position_y": 524,
+            "width": 136,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "36": {
+            "name": "plot",
+            "id": 4124,
+            "position_x": 580,
+            "position_y": 306,
+            "width": 136,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "37": {
+            "name": "plot",
+            "id": 4183,
+            "position_x": 575,
+            "position_y": 87,
+            "width": 136,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "38": {
+            "name": "plot",
+            "id": 4242,
+            "position_x": 773,
+            "position_y": 967,
+            "width": 136,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "39": {
+            "name": "plot",
+            "id": 4301,
+            "position_x": 775,
+            "position_y": 742,
+            "width": 136,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "40": {
+            "name": "plot",
+            "id": 4360,
+            "position_x": 775,
+            "position_y": 524,
+            "width": 136,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "41": {
+            "name": "plot",
+            "id": 4419,
+            "position_x": 775,
+            "position_y": 306,
+            "width": 136,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "42": {
+            "name": "plot",
+            "id": 4478,
+            "position_x": 768,
+            "position_y": 87,
+            "width": 136,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "43": {
+            "name": "plot",
+            "id": 4537,
+            "position_x": 961,
+            "position_y": 87,
+            "width": 136,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "44": {
+            "name": "t.special.softmax",
+            "id": 4596,
+            "position_x": 963,
+            "position_y": 246,
+            "width": 113,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "45": {
+            "name": "plot",
+            "id": 4611,
+            "position_x": 963,
+            "position_y": 300,
+            "width": 136,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "46": {
+            "name": "plot",
+            "id": 4670,
+            "position_x": 967,
+            "position_y": 524,
+            "width": 136,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "47": {
+            "name": "t.special.log_softmax",
+            "id": 4729,
+            "position_x": 964,
+            "position_y": 470,
+            "width": 138,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "48": {
+            "name": "plot",
+            "id": 4744,
+            "position_x": 973,
+            "position_y": 745,
+            "width": 136,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "49": {
+            "name": "t.special.polygamma",
+            "id": 4803,
+            "position_x": 1010,
+            "position_y": 680,
+            "width": 125,
+            "height": 66,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "n",
+                    "value": 0,
+                    "value_type": "int"
+                }
+            }
+        },
+        "50": {
+            "name": "plot",
+            "id": 4824,
+            "position_x": 974,
+            "position_y": 967,
+            "width": 136,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "51": {
+            "name": "t.special.multigammaln",
+            "id": 4883,
+            "position_x": 973,
+            "position_y": 896,
+            "width": 144,
+            "height": 66,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "p",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "52": {
+            "name": "plot",
+            "id": 4904,
+            "position_x": 1164,
+            "position_y": 89,
+            "width": 136,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "53": {
+            "name": "t.special.logits",
+            "id": 4963,
+            "position_x": 1167,
+            "position_y": 20,
+            "width": 111,
+            "height": 66,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "eps",
+                    "value": 1.0000000116860974e-07,
+                    "value_type": "float"
+                }
+            }
+        },
+        "54": {
+            "name": "load_action",
+            "id": 4984,
+            "position_x": 36,
+            "position_y": 256,
+            "width": 88,
+            "height": 66,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##loadActionString",
+                    "value": "bang",
+                    "value_type": "string"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 2993,
+            "source_output_index": 0,
+            "dest_node": 3042,
+            "dest_input_index": 0
+        },
+        "1": {
+            "source_node": 2993,
+            "source_output_index": 0,
+            "dest_node": 3057,
+            "dest_input_index": 0
+        },
+        "2": {
+            "source_node": 2993,
+            "source_output_index": 0,
+            "dest_node": 3072,
+            "dest_input_index": 0
+        },
+        "3": {
+            "source_node": 2993,
+            "source_output_index": 0,
+            "dest_node": 3087,
+            "dest_input_index": 0
+        },
+        "4": {
+            "source_node": 2993,
+            "source_output_index": 0,
+            "dest_node": 3102,
+            "dest_input_index": 0
+        },
+        "5": {
+            "source_node": 2993,
+            "source_output_index": 0,
+            "dest_node": 3236,
+            "dest_input_index": 0
+        },
+        "6": {
+            "source_node": 2993,
+            "source_output_index": 0,
+            "dest_node": 3311,
+            "dest_input_index": 0
+        },
+        "7": {
+            "source_node": 2993,
+            "source_output_index": 0,
+            "dest_node": 3386,
+            "dest_input_index": 0
+        },
+        "8": {
+            "source_node": 2993,
+            "source_output_index": 0,
+            "dest_node": 3176,
+            "dest_input_index": 0
+        },
+        "9": {
+            "source_node": 2993,
+            "source_output_index": 0,
+            "dest_node": 3191,
+            "dest_input_index": 0
+        },
+        "10": {
+            "source_node": 2993,
+            "source_output_index": 0,
+            "dest_node": 3206,
+            "dest_input_index": 0
+        },
+        "11": {
+            "source_node": 2993,
+            "source_output_index": 0,
+            "dest_node": 3221,
+            "dest_input_index": 0
+        },
+        "12": {
+            "source_node": 2993,
+            "source_output_index": 0,
+            "dest_node": 3251,
+            "dest_input_index": 0
+        },
+        "13": {
+            "source_node": 2993,
+            "source_output_index": 0,
+            "dest_node": 3266,
+            "dest_input_index": 0
+        },
+        "14": {
+            "source_node": 2993,
+            "source_output_index": 0,
+            "dest_node": 3281,
+            "dest_input_index": 0
+        },
+        "15": {
+            "source_node": 2993,
+            "source_output_index": 0,
+            "dest_node": 3296,
+            "dest_input_index": 0
+        },
+        "16": {
+            "source_node": 2993,
+            "source_output_index": 0,
+            "dest_node": 3326,
+            "dest_input_index": 0
+        },
+        "17": {
+            "source_node": 2993,
+            "source_output_index": 0,
+            "dest_node": 3341,
+            "dest_input_index": 0
+        },
+        "18": {
+            "source_node": 2993,
+            "source_output_index": 0,
+            "dest_node": 3356,
+            "dest_input_index": 0
+        },
+        "19": {
+            "source_node": 2993,
+            "source_output_index": 0,
+            "dest_node": 3371,
+            "dest_input_index": 0
+        },
+        "20": {
+            "source_node": 2993,
+            "source_output_index": 0,
+            "dest_node": 3401,
+            "dest_input_index": 0
+        },
+        "21": {
+            "source_node": 2993,
+            "source_output_index": 0,
+            "dest_node": 4596,
+            "dest_input_index": 0
+        },
+        "22": {
+            "source_node": 2993,
+            "source_output_index": 0,
+            "dest_node": 4729,
+            "dest_input_index": 0
+        },
+        "23": {
+            "source_node": 2993,
+            "source_output_index": 0,
+            "dest_node": 4803,
+            "dest_input_index": 0
+        },
+        "24": {
+            "source_node": 2993,
+            "source_output_index": 0,
+            "dest_node": 4883,
+            "dest_input_index": 0
+        },
+        "25": {
+            "source_node": 2993,
+            "source_output_index": 0,
+            "dest_node": 4963,
+            "dest_input_index": 0
+        },
+        "26": {
+            "source_node": 3042,
+            "source_output_index": 0,
+            "dest_node": 3593,
+            "dest_input_index": 0
+        },
+        "27": {
+            "source_node": 3057,
+            "source_output_index": 0,
+            "dest_node": 3534,
+            "dest_input_index": 0
+        },
+        "28": {
+            "source_node": 3072,
+            "source_output_index": 0,
+            "dest_node": 3475,
+            "dest_input_index": 0
+        },
+        "29": {
+            "source_node": 3087,
+            "source_output_index": 0,
+            "dest_node": 3416,
+            "dest_input_index": 0
+        },
+        "30": {
+            "source_node": 3102,
+            "source_output_index": 0,
+            "dest_node": 3117,
+            "dest_input_index": 0
+        },
+        "31": {
+            "source_node": 3176,
+            "source_output_index": 0,
+            "dest_node": 3888,
+            "dest_input_index": 0
+        },
+        "32": {
+            "source_node": 3191,
+            "source_output_index": 0,
+            "dest_node": 3829,
+            "dest_input_index": 0
+        },
+        "33": {
+            "source_node": 3206,
+            "source_output_index": 0,
+            "dest_node": 3770,
+            "dest_input_index": 0
+        },
+        "34": {
+            "source_node": 3221,
+            "source_output_index": 0,
+            "dest_node": 3711,
+            "dest_input_index": 0
+        },
+        "35": {
+            "source_node": 3236,
+            "source_output_index": 0,
+            "dest_node": 3652,
+            "dest_input_index": 0
+        },
+        "36": {
+            "source_node": 3251,
+            "source_output_index": 0,
+            "dest_node": 4183,
+            "dest_input_index": 0
+        },
+        "37": {
+            "source_node": 3266,
+            "source_output_index": 0,
+            "dest_node": 4124,
+            "dest_input_index": 0
+        },
+        "38": {
+            "source_node": 3281,
+            "source_output_index": 0,
+            "dest_node": 4065,
+            "dest_input_index": 0
+        },
+        "39": {
+            "source_node": 3296,
+            "source_output_index": 0,
+            "dest_node": 4006,
+            "dest_input_index": 0
+        },
+        "40": {
+            "source_node": 3311,
+            "source_output_index": 0,
+            "dest_node": 3947,
+            "dest_input_index": 0
+        },
+        "41": {
+            "source_node": 3326,
+            "source_output_index": 0,
+            "dest_node": 4478,
+            "dest_input_index": 0
+        },
+        "42": {
+            "source_node": 3341,
+            "source_output_index": 0,
+            "dest_node": 4419,
+            "dest_input_index": 0
+        },
+        "43": {
+            "source_node": 3356,
+            "source_output_index": 0,
+            "dest_node": 4360,
+            "dest_input_index": 0
+        },
+        "44": {
+            "source_node": 3371,
+            "source_output_index": 0,
+            "dest_node": 4301,
+            "dest_input_index": 0
+        },
+        "45": {
+            "source_node": 3386,
+            "source_output_index": 0,
+            "dest_node": 4242,
+            "dest_input_index": 0
+        },
+        "46": {
+            "source_node": 3401,
+            "source_output_index": 0,
+            "dest_node": 4537,
+            "dest_input_index": 0
+        },
+        "47": {
+            "source_node": 4596,
+            "source_output_index": 0,
+            "dest_node": 4611,
+            "dest_input_index": 0
+        },
+        "48": {
+            "source_node": 4729,
+            "source_output_index": 0,
+            "dest_node": 4670,
+            "dest_input_index": 0
+        },
+        "49": {
+            "source_node": 4803,
+            "source_output_index": 0,
+            "dest_node": 4744,
+            "dest_input_index": 0
+        },
+        "50": {
+            "source_node": 4883,
+            "source_output_index": 0,
+            "dest_node": 4824,
+            "dest_input_index": 0
+        },
+        "51": {
+            "source_node": 4963,
+            "source_output_index": 0,
+            "dest_node": 4904,
+            "dest_input_index": 0
+        },
+        "52": {
+            "source_node": 4984,
+            "source_output_index": 0,
+            "dest_node": 2993,
+            "dest_input_index": 0
+        }
+    }
+}

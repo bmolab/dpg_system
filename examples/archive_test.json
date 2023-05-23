@@ -1,0 +1,437 @@
+{
+    "height": 800,
+    "width": 1280,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1201,
+    "name": "archive_test",
+    "path": "/Users/drokeby/PycharmProjects/dpg_system/examples/archive_test.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 2062,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "name": "int",
+            "id": 2083,
+            "position_x": 290,
+            "position_y": 86,
+            "width": 130,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "large_font",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "2": {
+            "name": "int",
+            "id": 2115,
+            "position_x": 286,
+            "position_y": 169,
+            "width": 130,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "large_font",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "3": {
+            "name": "int",
+            "id": 2147,
+            "position_x": 307,
+            "position_y": 251,
+            "width": 130,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "large_font",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "name": "archive",
+            "id": 2179,
+            "position_x": 37,
+            "position_y": 34,
+            "width": 52,
+            "height": 192,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": "3",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "remember",
+                    "value": "patch",
+                    "value_type": "string"
+                }
+            },
+            "presets": [
+                {
+                    "height": 800,
+                    "width": 1280,
+                    "position": [
+                        100,
+                        100
+                    ],
+                    "id": 92,
+                    "nodes": {
+                        "106": {
+                            "name": "",
+                            "id": 106,
+                            "position_x": 0,
+                            "position_y": 0,
+                            "width": 9,
+                            "height": 26,
+                            "properties": {
+                                "0": {
+                                    "name": "",
+                                    "value": null,
+                                    "value_type": "NoneType"
+                                }
+                            }
+                        },
+                        "2083": {
+                            "name": "int",
+                            "id": 2083,
+                            "position_x": 290,
+                            "position_y": 86,
+                            "width": 130,
+                            "height": 48,
+                            "properties": {
+                                "0": {
+                                    "name": "",
+                                    "value": 0,
+                                    "value_type": "int"
+                                },
+                                "1": {
+                                    "name": "bind to",
+                                    "value": "",
+                                    "value_type": "string"
+                                },
+                                "2": {
+                                    "name": "width",
+                                    "value": 100,
+                                    "value_type": "int"
+                                },
+                                "3": {
+                                    "name": "format",
+                                    "value": "%.3f",
+                                    "value_type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "links": {}
+                },
+                {
+                    "height": 800,
+                    "width": 1280,
+                    "position": [
+                        100,
+                        100
+                    ],
+                    "id": 92,
+                    "nodes": {
+                        "106": {
+                            "name": "",
+                            "id": 106,
+                            "position_x": 0,
+                            "position_y": 0,
+                            "width": 9,
+                            "height": 26,
+                            "properties": {
+                                "0": {
+                                    "name": "",
+                                    "value": null,
+                                    "value_type": "NoneType"
+                                }
+                            }
+                        },
+                        "2083": {
+                            "name": "int",
+                            "id": 2083,
+                            "position_x": 290,
+                            "position_y": 86,
+                            "width": 130,
+                            "height": 48,
+                            "properties": {
+                                "0": {
+                                    "name": "",
+                                    "value": 0,
+                                    "value_type": "int"
+                                },
+                                "1": {
+                                    "name": "bind to",
+                                    "value": "",
+                                    "value_type": "string"
+                                },
+                                "2": {
+                                    "name": "width",
+                                    "value": 100,
+                                    "value_type": "int"
+                                },
+                                "3": {
+                                    "name": "format",
+                                    "value": "%.3f",
+                                    "value_type": "string"
+                                }
+                            }
+                        },
+                        "2115": {
+                            "name": "int",
+                            "id": 2115,
+                            "position_x": 286,
+                            "position_y": 169,
+                            "width": 130,
+                            "height": 48,
+                            "properties": {
+                                "0": {
+                                    "name": "",
+                                    "value": 0,
+                                    "value_type": "int"
+                                },
+                                "1": {
+                                    "name": "bind to",
+                                    "value": "",
+                                    "value_type": "string"
+                                },
+                                "2": {
+                                    "name": "width",
+                                    "value": 100,
+                                    "value_type": "int"
+                                },
+                                "3": {
+                                    "name": "format",
+                                    "value": "%.3f",
+                                    "value_type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "links": {}
+                },
+                {
+                    "height": 800,
+                    "width": 1280,
+                    "position": [
+                        100,
+                        100
+                    ],
+                    "id": 92,
+                    "nodes": {
+                        "106": {
+                            "name": "",
+                            "id": 106,
+                            "position_x": 0,
+                            "position_y": 0,
+                            "width": 9,
+                            "height": 26,
+                            "properties": {
+                                "0": {
+                                    "name": "",
+                                    "value": null,
+                                    "value_type": "NoneType"
+                                }
+                            }
+                        },
+                        "2083": {
+                            "name": "int",
+                            "id": 2083,
+                            "position_x": 290,
+                            "position_y": 86,
+                            "width": 130,
+                            "height": 48,
+                            "properties": {
+                                "0": {
+                                    "name": "",
+                                    "value": 0,
+                                    "value_type": "int"
+                                },
+                                "1": {
+                                    "name": "bind to",
+                                    "value": "",
+                                    "value_type": "string"
+                                },
+                                "2": {
+                                    "name": "width",
+                                    "value": 100,
+                                    "value_type": "int"
+                                },
+                                "3": {
+                                    "name": "format",
+                                    "value": "%.3f",
+                                    "value_type": "string"
+                                }
+                            }
+                        },
+                        "2115": {
+                            "name": "int",
+                            "id": 2115,
+                            "position_x": 286,
+                            "position_y": 169,
+                            "width": 130,
+                            "height": 48,
+                            "properties": {
+                                "0": {
+                                    "name": "",
+                                    "value": 0,
+                                    "value_type": "int"
+                                },
+                                "1": {
+                                    "name": "bind to",
+                                    "value": "",
+                                    "value_type": "string"
+                                },
+                                "2": {
+                                    "name": "width",
+                                    "value": 100,
+                                    "value_type": "int"
+                                },
+                                "3": {
+                                    "name": "format",
+                                    "value": "%.3f",
+                                    "value_type": "string"
+                                }
+                            }
+                        },
+                        "2147": {
+                            "name": "int",
+                            "id": 2147,
+                            "position_x": 307,
+                            "position_y": 251,
+                            "width": 130,
+                            "height": 48,
+                            "properties": {
+                                "0": {
+                                    "name": "",
+                                    "value": 0,
+                                    "value_type": "int"
+                                },
+                                "1": {
+                                    "name": "bind to",
+                                    "value": "",
+                                    "value_type": "string"
+                                },
+                                "2": {
+                                    "name": "width",
+                                    "value": 100,
+                                    "value_type": "int"
+                                },
+                                "3": {
+                                    "name": "format",
+                                    "value": "%.3f",
+                                    "value_type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "links": {}
+                },
+                null,
+                null,
+                null,
+                null,
+                null
+            ]
+        }
+    },
+    "links": {}
+}

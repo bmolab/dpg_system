@@ -1,0 +1,484 @@
+{
+    "name": "deeper_embed_example",
+    "path": "/Users/drokeby/PycharmProjects/dpg_system/examples/deeper_embed_example.json",
+    "patches": {
+        "0": {
+            "height": 800,
+            "width": 1280,
+            "position": [
+                100,
+                100
+            ],
+            "id": 433,
+            "parent_node_uuid": 545,
+            "name": "yy",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 454,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "in xx",
+                    "name": "in",
+                    "id": 475,
+                    "position_x": 334,
+                    "position_y": 321,
+                    "width": 53,
+                    "height": 48,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "source",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "input name",
+                            "value": "xx",
+                            "value_type": "string"
+                        }
+                    }
+                },
+                "2": {
+                    "init": "out xxx",
+                    "name": "out",
+                    "id": 494,
+                    "position_x": 694,
+                    "position_y": 333,
+                    "width": 41,
+                    "height": 48,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "dest",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "output name",
+                            "value": "xxx",
+                            "value_type": "string"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 475,
+                    "source_output_index": 0,
+                    "dest_node": 494,
+                    "dest_input_index": 0
+                }
+            }
+        },
+        "1": {
+            "height": 800,
+            "width": 1280,
+            "position": [
+                100,
+                100
+            ],
+            "id": 389,
+            "parent_node_uuid": 816,
+            "name": "ubu",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 410,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "in y",
+                    "name": "in",
+                    "id": 510,
+                    "position_x": 211,
+                    "position_y": 173,
+                    "width": 53,
+                    "height": 48,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "source",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "input name",
+                            "value": "y",
+                            "value_type": "string"
+                        }
+                    }
+                },
+                "2": {
+                    "init": "out not",
+                    "name": "out",
+                    "id": 529,
+                    "position_x": 483,
+                    "position_y": 211,
+                    "width": 41,
+                    "height": 48,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "dest",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "output name",
+                            "value": "not",
+                            "value_type": "string"
+                        }
+                    }
+                },
+                "3": {
+                    "init": "patcher yy",
+                    "name": "patcher",
+                    "id": 545,
+                    "position_x": 371,
+                    "position_y": 185,
+                    "width": 52,
+                    "height": 66,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "yy",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "patcher name",
+                            "value": "yy",
+                            "value_type": "string"
+                        }
+                    },
+                    "show inputs": [
+                        true,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false
+                    ],
+                    "show outputs": [
+                        true,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false
+                    ],
+                    "patcher id": 433
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 510,
+                    "source_output_index": 0,
+                    "dest_node": 545,
+                    "dest_input_index": 0
+                },
+                "1": {
+                    "source_node": 545,
+                    "source_output_index": 0,
+                    "dest_node": 529,
+                    "dest_input_index": 0
+                }
+            }
+        },
+        "2": {
+            "height": 800,
+            "width": 1280,
+            "position": [
+                100,
+                100
+            ],
+            "id": 343,
+            "name": "node patch",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 364,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "patcher ubu",
+                    "name": "patcher",
+                    "id": 816,
+                    "position_x": 470,
+                    "position_y": 252,
+                    "width": 52,
+                    "height": 66,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "ubu",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "patcher name",
+                            "value": "ubu",
+                            "value_type": "string"
+                        }
+                    },
+                    "show inputs": [
+                        true,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false
+                    ],
+                    "show outputs": [
+                        true,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false
+                    ],
+                    "patcher id": 389
+                },
+                "2": {
+                    "name": "signal",
+                    "id": 1087,
+                    "position_x": 173,
+                    "position_y": 251,
+                    "width": 129,
+                    "height": 84,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": false,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "shape",
+                            "value": "sin",
+                            "value_type": "string"
+                        },
+                        "3": {
+                            "name": "range",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "4": {
+                            "name": "bipolar",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "5": {
+                            "name": "vector size",
+                            "value": 1,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "3": {
+                    "name": "plot",
+                    "id": 1124,
+                    "position_x": 674,
+                    "position_y": 289,
+                    "width": 308,
+                    "height": 180,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "style",
+                            "value": "line",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "color",
+                            "value": "deep",
+                            "value_type": "string"
+                        },
+                        "2": {
+                            "name": "sample count",
+                            "value": 200,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "array fills plot",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "4": {
+                            "name": "width",
+                            "value": 300,
+                            "value_type": "int"
+                        },
+                        "5": {
+                            "name": "height",
+                            "value": 128,
+                            "value_type": "int"
+                        },
+                        "6": {
+                            "name": "min x",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "7": {
+                            "name": "max x",
+                            "value": 200.0,
+                            "value_type": "float"
+                        },
+                        "8": {
+                            "name": "min y",
+                            "value": -1.0,
+                            "value_type": "float"
+                        },
+                        "9": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "10": {
+                            "name": "number format",
+                            "value": "",
+                            "value_type": "string"
+                        },
+                        "11": {
+                            "name": "continuous output",
+                            "value": false,
+                            "value_type": "bool"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 816,
+                    "source_output_index": 0,
+                    "dest_node": 1124,
+                    "dest_input_index": 0
+                },
+                "1": {
+                    "source_node": 1087,
+                    "source_output_index": 0,
+                    "dest_node": 816,
+                    "dest_input_index": 0
+                }
+            }
+        }
+    }
+}
