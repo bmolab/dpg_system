@@ -6,13 +6,15 @@ import json
 from typing import List, Any, Callable, Union, Tuple
 from fuzzywuzzy import fuzz
 
+
 def register_base_nodes():
     Node.app.register_node('patcher', PatcherNode.factory)
     Node.app.register_node('p', PatcherNode.factory)
     Node.app.register_node('in', PatcherInputNode.factory)
     Node.app.register_node('out', PatcherOutputNode.factory)
 
-class OutputNodeAttribute:
+
+class NodeOutput:
     _pin_active_theme = None
     _pin_active_and_connected_theme = None
     _pin_theme_created = False
@@ -145,7 +147,7 @@ def value_trigger_callback(s, a, u):
         u.execute()
 
 
-class DisplayNodeAttribute:
+class NodeDisplay:
     def __init__(self, label: str = "", uuid=None, node=None, width=80):
         self.uuid = dpg.generate_uuid()
         self.callback = None
@@ -190,7 +192,7 @@ class DisplayNodeAttribute:
         pass
 
 
-class PropertyNodeAttribute:
+class NodeProperty:
     def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
         self.label = label
         if uuid == None:
@@ -590,11 +592,10 @@ class PropertyWidget:
         width = minimum_width
         if size is not None:
             width = size[0] + pad
-        font_scale = Node.app.font_scale_variable.get()
+        font_scale = Node.app.font_scale_variable()
         if width < minimum_width / font_scale:
             width = minimum_width / font_scale
         return width * font_scale
-        # return (dpg.get_text_size(self.value, font=dpg.get_item_font(self.uuid)) + pad) * Node.app.font_scale_variable.get()
 
     def adjust_to_text_width(self, max=0):
         width = self.get_text_width()
@@ -691,7 +692,7 @@ class PropertyWidget:
         dpg.bind_item_font(self.uuid, font)
 
 
-class InputNodeAttribute:
+class NodeInput:
     _pin_active_theme = None
     _pin_theme_created = False
 
@@ -844,7 +845,7 @@ class InputNodeAttribute:
         if self.triggers_execution:
             self.node.execute()
 
-    def set_parent(self, parent: OutputNodeAttribute):
+    def set_parent(self, parent: NodeOutput):
         if parent not in self._parents:
             self._parents.append(parent)
 
@@ -890,6 +891,39 @@ class InputNodeAttribute:
         return self._data
 
 
+class NodeNumericalInput(NodeInput):
+    def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
+        super().__init(self, label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
+        self.numerical_data = None
+        if default_value is not None:
+            self.to_numerical(default_value)
+
+    def to_numerical(self, data):
+        t = type(data)
+        if t == str:
+            self.numerical_data = string_to_float_or_int(data)
+        elif t == list:
+            self.numerical_data = list_to_array(data)
+        elif t in [bool, np.bool_]:
+            if data:
+                self.numerical_data = 1
+            else:
+                self.numerical_data = 0
+        else:
+            self.numerical_data = data
+
+    def receive_data(self, data):
+        super().receive_data(data)
+        self.to_numerical(data)
+
+    def __call__(self):
+        self.fresh_input = False
+        if self.widget:
+            return self.get_widget_value()
+        return self.numerical_data
+
+
+
 class Conduit:
     def __init__(self, label: str):
         self.label = label
@@ -929,9 +963,16 @@ class Variable:
         self.set_value(data)
         self.notify_clients_of_value_change(from_client)
 
+    def __call__(self):
+        if self.property:
+            self.value = self.property()
+        else:
+            self.value = self.get_value()
+        return self.value
+
     def get(self):
         if self.property:
-            self.value = self.property.get_widget_value()
+            self.value = self.property()
         else:
             self.value = self.get_value()
         return self.value
@@ -1070,19 +1111,19 @@ class Node:
             output.send()  # should not always trigger!!! make flag to indicate trigger always or trigger on change...
 
     def add_label(self, label: str = ""):
-        new_property = PropertyNodeAttribute(label, widget_type='label')
+        new_property = NodeProperty(label, widget_type='label')
         # self.properties.append(new_property)
         self.ordered_elements.append(new_property)
         return new_property
 
     def add_spacer(self):
-        new_property = PropertyNodeAttribute('', widget_type='spacer')
+        new_property = NodeProperty('', widget_type='spacer')
         # self.properties.append(new_property)
         self.ordered_elements.append(new_property)
         return new_property
 
     def add_property(self, label: str = "", uuid=None, widget_type=None, width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, callback=None):
-        new_property = PropertyNodeAttribute(label, uuid, self, widget_type, width, triggers_execution, trigger_button, default_value, min, max)
+        new_property = NodeProperty(label, uuid, self, widget_type, width, triggers_execution, trigger_button, default_value, min, max)
         self.properties.append(new_property)
         self.ordered_elements.append(new_property)
         if callback is not None:
@@ -1092,7 +1133,7 @@ class Node:
         return new_property
 
     def add_option(self, label: str = "", uuid=None, widget_type=None, width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, callback=None):
-        new_option = PropertyNodeAttribute(label, uuid, self, widget_type, width, triggers_execution, trigger_button, default_value, min, max)
+        new_option = NodeProperty(label, uuid, self, widget_type, width, triggers_execution, trigger_button, default_value, min, max)
         self.options.append(new_option)
         self.ordered_elements.append(new_option)
         if callback is not None:
@@ -1109,7 +1150,7 @@ class Node:
         pass
 
     def add_display(self, label: str = "", uuid=None, width=80, callback=None):
-        new_display = DisplayNodeAttribute(label, uuid, self, width)
+        new_display = NodeDisplay(label, uuid, self, width)
         self.displays.append(new_display)
         self.ordered_elements.append(new_display)
         # new_display.node = self
@@ -1118,7 +1159,7 @@ class Node:
         return new_display
 
     def add_input(self, label: str = "", uuid=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, callback=None):
-        new_input = InputNodeAttribute(label, uuid, self, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
+        new_input = NodeInput(label, uuid, self, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
         self.inputs.append(new_input)
         new_input.input_index = len(self.inputs) - 1
         self.ordered_elements.append(new_input)
@@ -1130,7 +1171,7 @@ class Node:
         return new_input
 
     def add_output(self, label: str = "output", pos=None):
-        new_output = OutputNodeAttribute(label, self, pos)
+        new_output = NodeOutput(label, self, pos)
         self.outputs.append(new_output)
         self.ordered_elements.append(new_output)
         return new_output
@@ -1643,7 +1684,7 @@ class PatcherNode(Node):
         self.button.set_label(new_name)
         size = dpg.get_text_size(new_name, font=self.app.default_font)
         if size is not None:
-            dpg.set_item_width(self.button.widget.uuid, int(size[0] * self.app.font_scale_variable.get() + 12))
+            dpg.set_item_width(self.button.widget.uuid, int(size[0] * self.app.font_scale_variable() + 12))
 
         if self.patch_editor:
             self.patch_editor.set_name(new_name)

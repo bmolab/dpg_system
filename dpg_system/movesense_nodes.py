@@ -101,6 +101,7 @@ async def init_queue(node):
     node.consumer_task = run_queue_consumer(node.queue)
     await asyncio.gather(node.client_task, node.consumer_task)
 
+
 async def run_queue_consumer(queue: asyncio.Queue):
     while True:
         data = await queue.get()

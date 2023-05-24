@@ -55,6 +55,7 @@ def register_basic_nodes():
 class CommentNode(Node):
     comment_theme = None
     inited = False
+
     @staticmethod
     def factory(name, data, args=None):
         node = CommentNode(name, data, args)
@@ -80,7 +81,7 @@ class CommentNode(Node):
         self.large_text_option = self.add_option('large', widget_type='checkbox', default_value=False, callback=self.large_font_changed)
 
     def large_font_changed(self):
-        use_large = self.large_text_option.get_widget_value()
+        use_large = self.large_text_option()
         if use_large:
             self.set_font(self.app.large_font)
             self.comment_text_option.widget.set_font(self.app.default_font)
@@ -90,7 +91,7 @@ class CommentNode(Node):
             self.set_font(self.app.default_font)
 
     def comment_changed(self):
-        self.comment_text = self.comment_text_option.get_widget_value()
+        self.comment_text = self.comment_text_option()
         self.set_title(self.comment_text)
         self.comment_text_option.widget.adjust_to_text_width()
 
@@ -105,6 +106,7 @@ class CommentNode(Node):
     def load_custom(self, container):
         self.comment_text = container['comment']
 
+
 class TickNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -118,8 +120,9 @@ class TickNode(Node):
         self.add_frame_task()
 
     def frame_task(self):
-        if self.input.get_widget_value():
+        if self.input():
             self.output.send('bang')
+
 
 class MetroNode(Node):
     @staticmethod
@@ -149,15 +152,15 @@ class MetroNode(Node):
         self.period_input = self.add_input('period', widget_type='drag_float', default_value=self.period, callback=self.change_period)
         self.units_property = self.add_property('units', widget_type='combo', default_value='milliseconds', callback=self.set_units)
         self.units_property.widget.combo_items = ['seconds', 'milliseconds', 'minutes', 'hours']
-        self.output = self.add_output("")
+        self.output = self.add_output('')
 
     def change_period(self, input=None):
-        self.period = self.period_input.get_widget_value()
+        self.period = self.period_input()
         if self.period <= 0:
             self.period = .001
 
     def start_stop(self, input=None):
-        self.on = self.on_off_input.get_widget_value()
+        self.on = self.on_off_input()
         if self.on:
             if not self.streaming:
                 self.add_frame_task()
@@ -170,7 +173,7 @@ class MetroNode(Node):
                 self.streaming = False
 
     def set_units(self, input=None):
-        units_string = self.units_property.get_widget_value()
+        units_string = self.units_property()
         if units_string in self.units_dict:
             self.units = self.units_dict[units_string]
 
@@ -237,7 +240,7 @@ class RampNode(Node):
         self.duration = 0
 
     def set_units(self):
-        units_string = self.units_property.get_widget_value()
+        units_string = self.units_property()
         if units_string in self.units_dict:
             self.units = self.units_dict[units_string]
 
@@ -269,7 +272,7 @@ class RampNode(Node):
                 if self.new_target:
                     self.ramp_done_out.send('bang')
                     self.output.send(self.current_value)
-                elif self.output_always_option.get_widget_value():
+                elif self.output_always_option():
                     self.output.send(self.current_value)
             self.new_target = False
             self.lock.release()
@@ -348,12 +351,12 @@ class TimerNode(Node):
         self.base_time = time.time()
 
     def start_stop(self, input=None):
-        on = self.input.get_widget_value()
+        on = self.input()
         if on:
             self.update_time_base()
 
     def set_units(self):
-        units_string = self.units_property.get_widget_value()
+        units_string = self.units_property()
         if units_string in self.units_dict:
             self.units = self.units_dict[units_string]
 
@@ -361,7 +364,7 @@ class TimerNode(Node):
         do_execute = False
         current_time = time.time()
         self.elapsed = (current_time - self.base_time) * self.units
-        output_ints = self.output_integers_option.get_widget_value()
+        output_ints = self.output_integers_option()
         if not output_ints or (int(self.elapsed) != int(self.previous_elapsed)):
             if output_ints:
                 self.output_elapsed = int(self.elapsed)
@@ -372,7 +375,7 @@ class TimerNode(Node):
         return do_execute
 
     def frame_task(self):
-        on = self.input.get_widget_value()
+        on = self.input()
         if on:
             if self.calc_time():
                 self.execute()
@@ -412,10 +415,10 @@ class CounterNode(Node):
 
     # widget callbacks
     def update_max_count_from_widget(self, input=None):
-        self.max_count = self.max_input.get_widget_value()
+        self.max_count = self.max_input()
 
     def update_step_from_widget(self, input=None):
-        self.step = self.step_input.get_widget_value()
+        self.step = self.step_input()
 
     # messages
     def reset_message(self, message='', message_data=[]):
@@ -428,7 +431,7 @@ class CounterNode(Node):
     #     self.step = any_to_int(message_data[0])
 
     def execute(self):
-        in_data = self.input.get_received_data()
+        in_data = self.input()
         # handled, do_output = self.check_for_messages(in_data)
         #
         # if not handled:
@@ -471,20 +474,20 @@ class GateNode(Node):
 
     def change_state(self, input=None):
         if self.num_gates == 1:
-            self.bool_state = self.choice_input.get_widget_value()
+            self.bool_state = self.choice_input()
         else:
-            self.state = self.choice_input.get_widget_value()
+            self.state = self.choice_input()
 
     def execute(self):
         if self.num_gates == 1:
             if self.bool_state:
                 if self.gated_input.fresh_input:
-                    self.outputs[0].send(self.gated_input.get_received_data())
+                    self.outputs[0].send(self.gated_input())
         else:
             if self.num_gates >= self.state > 0:
                 if self.gated_input.fresh_input:
-                    value = self.gated_input.get_received_data()
-                    self.outputs[self.state - 1].send(self.gated_input.get_received_data())
+                    value = self.gated_input()
+                    self.outputs[self.state - 1].send(self.gated_input())
 
 
 class SwitchNode(Node):
@@ -508,7 +511,7 @@ class SwitchNode(Node):
         self.out = self.add_output('out')
 
     def change_state(self, input=None):
-        self.state = self.choice_input.get_widget_value()
+        self.state = self.choice_input()
         if self.state < 0:
             self.state = 0
             self.choice_input.set(self.state)
@@ -522,7 +525,7 @@ class SwitchNode(Node):
                 self.switch_inputs[i].triggers_execution = False
 
     def execute(self):
-        received = self.switch_inputs[self.state - 1].get_received_data()
+        received = self.switch_inputs[self.state - 1]()
         self.out.send(received)
 
 
@@ -543,7 +546,7 @@ class UnpackNode(Node):
 
     def execute(self):
         if self.input.fresh_input:
-            value = self.input.get_received_data()
+            value = self.input()
             t = type(value)
             if t in [float, int, bool]:
                 self.outputs[0].set_value(value)
@@ -647,7 +650,7 @@ class BucketBrigadeNode(Node):
     def execute(self):
         if self.input.fresh_input:
             self.head = (self.head + 1) % self.bucket_count
-            data = self.input.get_received_data()
+            data = self.input()
             self.buckets[self.head] = data
             for i in range(self.bucket_count):
                 rev_i = self.bucket_count - i - 1
@@ -677,7 +680,7 @@ class DelayNode(Node):
         self.new_delay = self.delay
 
     def delay_changed(self, input=None):
-        self.new_delay = self.delay_input.get_widget_value()
+        self.new_delay = self.delay_input()
 
     def frame_task(self):
         self.execute()
@@ -776,7 +779,7 @@ class SelectNode(Node):
         self.new_selectors = False
 
     def output_mode_changed(self):
-        if self.output_mode_option.get_widget_value() == 'bang':
+        if self.output_mode_option() == 'bang':
             self.out_mode = 0
         else:
             self.out_mode = 1
@@ -787,7 +790,7 @@ class SelectNode(Node):
     def update_selectors(self):
         new_selectors = []
         for i in range(self.selector_count):
-            new_selectors.append(self.selector_options[i].get_widget_value())
+            new_selectors.append(self.selector_options[i]())
         for i in range(self.selector_count):
             # this does not update the label
             dpg.set_item_label(self.outputs[i].uuid, label=new_selectors[i])
@@ -798,7 +801,7 @@ class SelectNode(Node):
         if self.new_selectors:
             self.update_selectors()
             self.new_selectors = False
-        value = self.input.get_received_data()
+        value = self.input()
 
         if self.out_mode == 0:
             if type(value) == list:
@@ -852,7 +855,6 @@ class TriggerNode(Node):
         self.target_time = 0
         self.flash_duration = .100
 
-
         self.input = self.add_input("", widget_type='button', widget_width=14, triggers_execution=True, callback=self.call_execution)
 
         for i in range(self.trigger_count):
@@ -878,15 +880,13 @@ class TriggerNode(Node):
                 dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
 
     def triggers_changed(self):
-#        print('trigger changed')
         self.new_triggers = True
         self.update_triggers()
 
     def update_triggers(self):
- #       print('trigger updates')
         new_triggers = []
         for i in range(self.trigger_count):
-            new_triggers.append(self.trigger_options[i].get_widget_value())
+            new_triggers.append(self.trigger_options[i]())
         for i in range(self.trigger_count):
             # this does not update the label
             if new_triggers[i] == 'int':
@@ -930,7 +930,7 @@ class TriggerNode(Node):
 
         if self.input.fresh_input or self.force_trigger:
             self.force_trigger = False
-            in_data = self.input.get_received_data()
+            in_data = self.input()
             for i in range(self.trigger_count):
                 j = self.trigger_count - i - 1
                 trig_mode = self.trigger_pass[j]
@@ -982,6 +982,7 @@ class CombineNode(Node):
             output_string += any_to_string(self.inputs[i]._data)
         self.output.send(output_string)
 
+
 class CombineFIFONode(Node):
         @staticmethod
         def factory(name, data, args=None):
@@ -1032,7 +1033,7 @@ class CombineFIFONode(Node):
             now = time.time()
             elapsed = now - self.last_time
             self.last_time = now
-            decay = self.decay_rate_property.get_widget_value() * elapsed
+            decay = self.decay_rate_property() * elapsed
             for i in range(len(self.age)):
                 self.age[i] -= decay
                 if self.age[i] < 0:
@@ -1040,7 +1041,7 @@ class CombineFIFONode(Node):
 
         def execute(self):
             if self.progress_input.fresh_input:
-                progress = any_to_string(self.progress_input.get_received_data())
+                progress = any_to_string(self.progress_input())
                 if progress != '':
                     self.advance_age()
 
@@ -1053,7 +1054,7 @@ class CombineFIFONode(Node):
                         return
 
             if self.input.fresh_input:
-                phrase = any_to_string(self.input.get_received_data())
+                phrase = any_to_string(self.input())
                 # if self.last_was_progress:
                 #     self.pointer = (self.pointer - 1) % self.count
                 self.last_was_progress = False
@@ -1071,7 +1072,7 @@ class CombineFIFONode(Node):
                 pointer = (self.pointer - 1) % self.count
 
             # added string out
-            if self.order.get_widget_value() == 'newest_at_end':
+            if self.order() == 'newest_at_end':
                 for i in range(self.count):
                     j = (pointer - i) % self.count
                     if self.combine_list[j] != '':
@@ -1087,6 +1088,7 @@ class CombineFIFONode(Node):
                             output_string += (self.combine_list[j] + ' ')
             self.output.send(output_string_list)
             self.string_output.send(output_string)
+
 
 class TypeNode(Node):
     @staticmethod
@@ -1104,7 +1106,7 @@ class TypeNode(Node):
         self.type_property = self.add_property(self.label, widget_type='text_input', width=width)
 
     def execute(self):
-        input = self.input.get_received_data()
+        input = self.input()
         if self.label == 'type':
             t = type(input)
             if t == float:
@@ -1259,7 +1261,7 @@ class LengthNode(Node):
 
     def execute(self):
         if self.input.fresh_input:
-            data = self.input.get_received_data()
+            data = self.input()
             t = type(data)
             if t in [list, tuple]:
                 self.output.send(len(data))
@@ -1269,6 +1271,7 @@ class LengthNode(Node):
                 self.output.send(data.numel())
             else:
                 self.output.send(1)
+
 
 class ArrayNode(Node):
     @staticmethod
@@ -1293,13 +1296,13 @@ class ArrayNode(Node):
         self.shape_property = self.add_option('shape', widget_type='text_input', default_value=shape_text, callback=self.shape_changed)
 
     def shape_changed(self):
-        shape_text = self.shape_property.get_widget_value()
+        shape_text = self.shape_property()
         shape_split = re.findall(r'\d+', shape_text)
         shape_list, _, _ = list_to_hybrid_list(shape_split)
         self.shape = shape_list
 
     def execute(self):
-        in_data = self.input.get_received_data()
+        in_data = self.input()
         out_array = any_to_array(in_data)
         if self.shape is not None:
             out_array = np.reshape(out_array, tuple(self.shape))
@@ -1319,7 +1322,7 @@ class StringNode(Node):
         self.output = self.add_output('string out')
 
     def execute(self):
-        in_data = self.input.get_received_data()
+        in_data = self.input()
         out_string = any_to_string(in_data)
         self.output.send(out_string)
 
@@ -1337,7 +1340,7 @@ class ListNode(Node):
         self.output = self.add_output('list out')
 
     def execute(self):
-        in_data = self.input.get_received_data()
+        in_data = self.input()
         out_list = any_to_list(in_data)
         self.output.send(out_list)
 
@@ -1367,14 +1370,14 @@ class PrependNode(Node):
         self.always_as_list_option = self.add_option('always output list', widget_type='checkbox', default_value=False, callback=self.option_changed)
 
     def option_changed(self):
-        self.as_list = self.always_as_list_option.get_widget_value()
+        self.as_list = self.always_as_list_option()
 
     def prepender_changed(self):
-        self.prepender = self.prepender_property.get_widget_value()
+        self.prepender = self.prepender_property()
 
     def execute(self):
         out_list = [self.prepender]
-        data = self.input.get_received_data()
+        data = self.input()
         t = type(data)
 
         if t == str:
@@ -1409,36 +1412,30 @@ class AppendNode(Node):
             self.appender = in_value
 
         self.input = self.add_input("in", triggers_execution=True)
-        self.appender_property = self.add_property("prefix", widget_type='text_input', default_value=self.appender, callback=self.appender_changed)
+        self.appender = self.add_property("prefix", widget_type='text_input', default_value=self.appender, callback=self.appender_changed)
         self.output = self.add_output("out")
-        self.always_as_list_option = self.add_option('always output list', widget_type='checkbox', default_value=False, callback=self.option_changed)
-
-    def option_changed(self):
-        self.as_list = self.always_as_list_option.get_widget_value()
-
-    def appender_changed(self):
-        self.appender = self.appender_property.get_widget_value()
+        self.always_as_list = self.add_option('always output list', widget_type='checkbox', default_value=False)
 
     def execute(self):
         out_list = []
-        data = self.input.get_received_data()
+        data = self.input()
         t = type(data)
 
         if t == str:
-            if self.as_list:
+            if self.always_as_list():
                 out_list = [data]
-                out_list.append(self.appender)
+                out_list.append(self.appender())
             else:
                 out_list = data + ' ' + self.appender
         elif t in [int, float, bool, np.int64, np.double, np.bool_]:
             out_list = [data]
-            out_list.append(self.appender)
+            out_list.append(self.appender())
         elif t == list:
             out_list = data
-            out_list.append(self.appender)
+            out_list.append(self.appender())
         elif t == np.ndarray:
             out_list = any_to_list(data)
-            out_list.append(self.appender)
+            out_list.append(self.appender())
         self.output.send(out_list)
 
 
@@ -1542,7 +1539,7 @@ class CollectionNode(Node):
         self.save_pointer = -1
 
     def execute(self):
-        data = self.input.get_received_data()
+        data = self.input()
         # handled, do_output = self.check_for_messages(data)
         # if not handled:
         t = type(data)
@@ -1598,7 +1595,7 @@ class RepeatNode(Node):
             self.add_output('out ' + str(i))
 
     def execute(self):
-        data = self.input.get_received_data()
+        data = self.input()
         for i in range(self.trigger_count):
             j = self.trigger_count - i - 1
             self.outputs[j].set_value(data)
@@ -1626,7 +1623,7 @@ class ConduitSendNode(Node):
         self.conduit_name_option = self.add_option('name', widget_type='text_input', default_value=self.conduit_name, callback=self.conduit_name_changed)
 
     def conduit_name_changed(self):
-        conduit_name = self.conduit_name_option.get_widget_value()
+        conduit_name = self.conduit_name_option()
         self.conduit = None
         self.conduit_name = conduit_name
         self.conduit = self.app.find_conduit(self.conduit_name)
@@ -1636,7 +1633,7 @@ class ConduitSendNode(Node):
 
     def execute(self):
         if self.input.fresh_input and self.conduit is not None:
-            data = self.input.get_received_data()
+            data = self.input()
             self.conduit.transmit(data)
 
 
@@ -1665,7 +1662,7 @@ class ConduitReceiveNode(Node):
                                                        callback=self.conduit_name_changed)
 
     def conduit_name_changed(self):
-        conduit_name = self.conduit_name_option.get_widget_value()
+        conduit_name = self.conduit_name_option()
         self.conduit.detach_client(self)
         self.conduit = None
         self.conduit_name = conduit_name
@@ -1685,6 +1682,7 @@ class ConduitReceiveNode(Node):
 
     def execute(self):
         pass
+
 
 class VariableNode(Node):
     @staticmethod
@@ -1711,7 +1709,7 @@ class VariableNode(Node):
         self.output = self.add_output("out")
 
     def variable_name_changed(self):
-        variable_name = self.variable_name_property.get_widget_value()
+        variable_name = self.variable_name_property()
         self.variable.detach_client(self)
         self.variable = None
         self.variable_name = variable_name
@@ -1731,21 +1729,18 @@ class VariableNode(Node):
         if self.variable:
             self.variable.set(data, from_client=self)
 
-    def get_variable_value(self):
-        if self.variable:
-            return self.variable.get()
-
     def execute(self):
         if self.input.fresh_input:
-            data = self.input.get_received_data()
+            data = self.input()
             if type(data) == str and data == 'bang':
-                data = self.get_variable_value()
+                data = self.variable()
             else:
                 self.set_variable_value(data)
             self.output.send(data)
         else:
-            data = self.get_variable_value()
+            data = self.variable()
             self.output.send(data)
+
 
 class FuzzyMatchNode(Node):
     @staticmethod
@@ -1799,7 +1794,7 @@ class FuzzyMatchNode(Node):
             post_string = ''
             pass_data = False
             found = False
-            data = self.input.get_received_data()
+            data = self.input()
             if type(data) == list:
                 data = ' '.join(data)
             if type(data) == str:
@@ -1854,7 +1849,7 @@ class FuzzyMatchNode(Node):
                     self.fuzzy_score(substring)
 
                     self.score_output.send(self.best_score)
-                    if len(self.filtered_list) > 0 and self.best_score > self.threshold.get_widget_value():
+                    if len(self.filtered_list) > 0 and self.best_score > self.threshold():
                         self.output.send(prestring + self.filtered_list[0] + post_string)
                     else:
                         self.output.send(data)

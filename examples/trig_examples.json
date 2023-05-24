@@ -1,20 +1,42 @@
 {
     "height": 1223,
-    "width": 1280,
+    "width": 1351,
     "position": [
         100,
         100
     ],
+    "id": 1574,
     "name": "trig_examples",
-    "path": "/Users/drokeby/PycharmProjects/DPG_SYSTEM/trig_examples.json",
+    "path": "/Users/drokeby/PycharmProjects/dpg_system/examples/trig_examples.json",
     "nodes": {
         "0": {
+            "name": "",
+            "id": 1595,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
             "name": "signal",
-            "id": 102,
-            "position_x": 26,
-            "position_y": 196,
-            "width": 129,
-            "height": 84,
+            "id": 1616,
+            "position_x": 30,
+            "position_y": 27,
+            "width": 160,
+            "height": 138,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "on",
@@ -23,7 +45,7 @@
                 },
                 "1": {
                     "name": "period",
-                    "value": 2.0,
+                    "value": 1.0,
                     "value_type": "float"
                 },
                 "2": {
@@ -33,7 +55,7 @@
                 },
                 "3": {
                     "name": "range",
-                    "value": 2.0,
+                    "value": 6.2829999923706055,
                     "value_type": "float"
                 },
                 "4": {
@@ -48,13 +70,16 @@
                 }
             }
         },
-        "1": {
+        "2": {
             "name": "plot",
-            "id": 139,
-            "position_x": 327,
-            "position_y": 12,
-            "width": 308,
-            "height": 162,
+            "id": 1653,
+            "position_x": 487,
+            "position_y": 16,
+            "width": 307,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "style",
@@ -63,7 +88,7 @@
                 },
                 "1": {
                     "name": "color",
-                    "value": "deep",
+                    "value": "none",
                     "value_type": "string"
                 },
                 "2": {
@@ -72,133 +97,62 @@
                     "value_type": "int"
                 },
                 "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
                     "name": "width",
                     "value": 300,
                     "value_type": "int"
                 },
-                "4": {
+                "5": {
                     "name": "height",
                     "value": 128,
                     "value_type": "int"
                 },
-                "5": {
+                "6": {
                     "name": "min x",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "6": {
+                "7": {
                     "name": "max x",
                     "value": 200.0,
                     "value_type": "float"
                 },
-                "7": {
-                    "name": "min y",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
                 "8": {
-                    "name": "max y",
-                    "value": 8.0,
+                    "name": "min y",
+                    "value": -1.0,
                     "value_type": "float"
                 },
                 "9": {
-                    "name": "number format",
-                    "value": "",
-                    "value_type": "string"
-                }
-            }
-        },
-        "2": {
-            "name": "plot",
-            "id": 181,
-            "position_x": 332,
-            "position_y": 184,
-            "width": 308,
-            "height": 162,
-            "properties": {
-                "0": {
-                    "name": "style",
-                    "value": "line",
-                    "value_type": "string"
-                },
-                "1": {
-                    "name": "color",
-                    "value": "deep",
-                    "value_type": "string"
-                },
-                "2": {
-                    "name": "sample count",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "width",
-                    "value": 300,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "height",
-                    "value": 128,
-                    "value_type": "int"
-                },
-                "5": {
-                    "name": "min x",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "6": {
-                    "name": "max x",
-                    "value": 200.0,
-                    "value_type": "float"
-                },
-                "7": {
-                    "name": "min y",
-                    "value": -6.0,
-                    "value_type": "float"
-                },
-                "8": {
                     "name": "max y",
                     "value": 1.0,
                     "value_type": "float"
                 },
-                "9": {
+                "10": {
                     "name": "number format",
                     "value": "",
                     "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
                 }
             }
         },
         "3": {
-            "name": "exp",
-            "id": 223,
-            "position_x": 230,
-            "position_y": 131,
-            "width": 27,
-            "height": 48
-        },
-        "4": {
-            "name": "log2",
-            "id": 238,
-            "position_x": 240,
-            "position_y": 202,
-            "width": 33,
-            "height": 48
-        },
-        "5": {
-            "name": "log10",
-            "id": 253,
-            "position_x": 241,
-            "position_y": 296,
-            "width": 39,
-            "height": 48
-        },
-        "6": {
             "name": "plot",
-            "id": 268,
-            "position_x": 331,
-            "position_y": 356,
-            "width": 308,
-            "height": 162,
+            "id": 1816,
+            "position_x": 953,
+            "position_y": 19,
+            "width": 307,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "style",
@@ -207,7 +161,7 @@
                 },
                 "1": {
                     "name": "color",
-                    "value": "deep",
+                    "value": "none",
                     "value_type": "string"
                 },
                 "2": {
@@ -216,57 +170,189 @@
                     "value_type": "int"
                 },
                 "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
                     "name": "width",
                     "value": 300,
                     "value_type": "int"
                 },
-                "4": {
+                "5": {
                     "name": "height",
                     "value": 128,
                     "value_type": "int"
                 },
-                "5": {
+                "6": {
                     "name": "min x",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "6": {
+                "7": {
                     "name": "max x",
                     "value": 200.0,
                     "value_type": "float"
                 },
-                "7": {
-                    "name": "min y",
-                    "value": -2.0,
-                    "value_type": "float"
-                },
                 "8": {
-                    "name": "max y",
-                    "value": 0.5,
+                    "name": "min y",
+                    "value": -1.5056999921798706,
                     "value_type": "float"
                 },
                 "9": {
+                    "name": "max y",
+                    "value": 1.5056999921798706,
+                    "value_type": "float"
+                },
+                "10": {
                     "name": "number format",
                     "value": "",
                     "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "name": "sin",
+            "id": 2280,
+            "position_x": 393,
+            "position_y": 18,
+            "width": 70,
+            "height": 66,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "5": {
+            "name": "cos",
+            "id": 2350,
+            "position_x": 393,
+            "position_y": 205,
+            "width": 70,
+            "height": 66,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "6": {
+            "name": "plot",
+            "id": 2369,
+            "position_x": 487,
+            "position_y": 211,
+            "width": 307,
+            "height": 179,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
                 }
             }
         },
         "7": {
-            "name": "sqrt",
-            "id": 310,
-            "position_x": 239,
-            "position_y": 455,
-            "width": 33,
-            "height": 48
+            "name": "tan",
+            "id": 2443,
+            "position_x": 393,
+            "position_y": 410,
+            "width": 70,
+            "height": 66,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
         },
         "8": {
             "name": "plot",
-            "id": 325,
-            "position_x": 333,
-            "position_y": 527,
-            "width": 308,
-            "height": 162,
+            "id": 2463,
+            "position_x": 487,
+            "position_y": 407,
+            "width": 307,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "style",
@@ -275,7 +361,7 @@
                 },
                 "1": {
                     "name": "color",
-                    "value": "deep",
+                    "value": "none",
                     "value_type": "string"
                 },
                 "2": {
@@ -284,57 +370,98 @@
                     "value_type": "int"
                 },
                 "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
                     "name": "width",
                     "value": 300,
                     "value_type": "int"
                 },
-                "4": {
+                "5": {
                     "name": "height",
                     "value": 128,
                     "value_type": "int"
                 },
-                "5": {
+                "6": {
                     "name": "min x",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "6": {
+                "7": {
                     "name": "max x",
                     "value": 200.0,
                     "value_type": "float"
                 },
-                "7": {
-                    "name": "min y",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
                 "8": {
-                    "name": "max y",
-                    "value": 2.0,
+                    "name": "min y",
+                    "value": -10.0,
                     "value_type": "float"
                 },
                 "9": {
+                    "name": "max y",
+                    "value": 10.0,
+                    "value_type": "float"
+                },
+                "10": {
                     "name": "number format",
                     "value": "",
                     "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
                 }
             }
         },
         "9": {
-            "name": "inverse",
-            "id": 367,
-            "position_x": 266,
-            "position_y": 731,
-            "width": 52,
-            "height": 48
+            "name": "asin",
+            "id": 2537,
+            "position_x": 839,
+            "position_y": 20,
+            "width": 69,
+            "height": 66,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
         },
         "10": {
+            "name": "acos",
+            "id": 2730,
+            "position_x": 839,
+            "position_y": 216,
+            "width": 69,
+            "height": 66,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "11": {
             "name": "plot",
-            "id": 382,
-            "position_x": 334,
-            "position_y": 710,
-            "width": 308,
-            "height": 162,
+            "id": 2749,
+            "position_x": 953,
+            "position_y": 217,
+            "width": 307,
+            "height": 179,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "style",
@@ -343,7 +470,7 @@
                 },
                 "1": {
                     "name": "color",
-                    "value": "deep",
+                    "value": "none",
                     "value_type": "string"
                 },
                 "2": {
@@ -352,97 +479,80 @@
                     "value_type": "int"
                 },
                 "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
                     "name": "width",
                     "value": 300,
                     "value_type": "int"
                 },
-                "4": {
+                "5": {
                     "name": "height",
                     "value": 128,
                     "value_type": "int"
                 },
-                "5": {
+                "6": {
                     "name": "min x",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "6": {
+                "7": {
                     "name": "max x",
                     "value": 200.0,
                     "value_type": "float"
                 },
-                "7": {
+                "8": {
                     "name": "min y",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "8": {
+                "9": {
                     "name": "max y",
-                    "value": 20.0,
+                    "value": 3.141592025756836,
                     "value_type": "float"
                 },
-                "9": {
+                "10": {
                     "name": "number format",
                     "value": "",
                     "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
                 }
             }
         },
-        "11": {
-            "name": "abs",
-            "id": 424,
-            "position_x": 854,
-            "position_y": 739,
-            "width": 27,
-            "height": 48
-        },
         "12": {
-            "name": "signal",
-            "id": 439,
-            "position_x": 659,
-            "position_y": 709,
-            "width": 129,
-            "height": 84,
+            "name": "atan",
+            "id": 2823,
+            "position_x": 839,
+            "position_y": 412,
+            "width": 69,
+            "height": 66,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "on",
-                    "value": true,
+                    "name": "degrees",
+                    "value": false,
                     "value_type": "bool"
-                },
-                "1": {
-                    "name": "period",
-                    "value": 2.0,
-                    "value_type": "float"
-                },
-                "2": {
-                    "name": "shape",
-                    "value": "sin",
-                    "value_type": "string"
-                },
-                "3": {
-                    "name": "range",
-                    "value": 1.0,
-                    "value_type": "float"
-                },
-                "4": {
-                    "name": "bipolar",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "5": {
-                    "name": "vector size",
-                    "value": 1,
-                    "value_type": "int"
                 }
             }
         },
         "13": {
             "name": "plot",
-            "id": 476,
-            "position_x": 893,
-            "position_y": 699,
-            "width": 308,
-            "height": 162,
+            "id": 2842,
+            "position_x": 953,
+            "position_y": 416,
+            "width": 307,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "style",
@@ -451,7 +561,7 @@
                 },
                 "1": {
                     "name": "color",
-                    "value": "deep",
+                    "value": "none",
                     "value_type": "string"
                 },
                 "2": {
@@ -460,64 +570,62 @@
                     "value_type": "int"
                 },
                 "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
                     "name": "width",
                     "value": 300,
                     "value_type": "int"
                 },
-                "4": {
+                "5": {
                     "name": "height",
                     "value": 128,
                     "value_type": "int"
                 },
-                "5": {
+                "6": {
                     "name": "min x",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "6": {
+                "7": {
                     "name": "max x",
                     "value": 200.0,
                     "value_type": "float"
                 },
-                "7": {
-                    "name": "min y",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
                 "8": {
-                    "name": "max y",
-                    "value": 1.0,
+                    "name": "min y",
+                    "value": -1.5707000494003296,
                     "value_type": "float"
                 },
                 "9": {
+                    "name": "max y",
+                    "value": 1.5707000494003296,
+                    "value_type": "float"
+                },
+                "10": {
                     "name": "number format",
                     "value": "",
                     "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
                 }
             }
         },
         "14": {
-            "name": "pow",
-            "id": 518,
-            "position_x": 715,
-            "position_y": 84,
-            "width": 88,
-            "height": 66,
-            "properties": {
-                "0": {
-                    "name": "",
-                    "value": 3.0,
-                    "value_type": "float"
-                }
-            }
-        },
-        "15": {
             "name": "plot",
-            "id": 539,
-            "position_x": 844,
-            "position_y": 37,
+            "id": 2905,
+            "position_x": 24,
+            "position_y": 192,
             "width": 308,
-            "height": 162,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "style",
@@ -526,7 +634,7 @@
                 },
                 "1": {
                     "name": "color",
-                    "value": "deep",
+                    "value": "none",
                     "value_type": "string"
                 },
                 "2": {
@@ -535,167 +643,281 @@
                     "value_type": "int"
                 },
                 "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
                     "name": "width",
                     "value": 300,
                     "value_type": "int"
                 },
-                "4": {
+                "5": {
                     "name": "height",
                     "value": 128,
                     "value_type": "int"
                 },
-                "5": {
+                "6": {
                     "name": "min x",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "6": {
+                "7": {
                     "name": "max x",
                     "value": 200.0,
                     "value_type": "float"
                 },
-                "7": {
-                    "name": "min y",
-                    "value": -0.10000000149011612,
-                    "value_type": "float"
-                },
                 "8": {
-                    "name": "max y",
-                    "value": 8.0,
+                    "name": "min y",
+                    "value": 0.0,
                     "value_type": "float"
                 },
                 "9": {
+                    "name": "max y",
+                    "value": 6.28000020980835,
+                    "value_type": "float"
+                },
+                "10": {
                     "name": "number format",
                     "value": "",
                     "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "15": {
+            "name": "t.linspace",
+            "id": 3155,
+            "position_x": 76,
+            "position_y": 646,
+            "width": 163,
+            "height": 156,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "start",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "stop",
+                    "value": 10.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "steps",
+                    "value": 256,
+                    "value_type": "int"
                 }
             }
         },
         "16": {
-            "name": "float",
-            "id": 622,
-            "position_x": 66,
-            "position_y": 54,
-            "width": 130,
-            "height": 48,
+            "name": "sin",
+            "id": 3215,
+            "position_x": 320,
+            "position_y": 707,
+            "width": 70,
+            "height": 66,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "",
-                    "value": 5.586019992828369,
-                    "value_type": "float"
+                    "name": "degrees",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "17": {
+            "name": "heat_map",
+            "id": 3248,
+            "position_x": 488,
+            "position_y": 645,
+            "width": 308,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "heat_map",
+                    "value_type": "string"
                 },
                 "1": {
-                    "name": "bind to",
-                    "value": "",
+                    "name": "color",
+                    "value": "viridis",
                     "value_type": "string"
                 },
                 "2": {
-                    "name": "min",
-                    "value": 0.0,
-                    "value_type": "float"
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
                 },
                 "3": {
-                    "name": "max",
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "4": {
-                    "name": "format",
-                    "value": "%.3f",
+                "7": {
+                    "name": "max x",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
                     "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
                 }
             }
         }
     },
     "links": {
         "0": {
-            "source_node": 102,
+            "source_node": 1616,
             "source_output_index": 0,
-            "dest_node": 223,
+            "dest_node": 2280,
             "dest_input_index": 0
         },
         "1": {
-            "source_node": 102,
+            "source_node": 1616,
             "source_output_index": 0,
-            "dest_node": 238,
+            "dest_node": 2350,
             "dest_input_index": 0
         },
         "2": {
-            "source_node": 102,
+            "source_node": 1616,
             "source_output_index": 0,
-            "dest_node": 253,
+            "dest_node": 2443,
             "dest_input_index": 0
         },
         "3": {
-            "source_node": 102,
+            "source_node": 1616,
             "source_output_index": 0,
-            "dest_node": 310,
+            "dest_node": 2905,
             "dest_input_index": 0
         },
         "4": {
-            "source_node": 102,
+            "source_node": 2280,
             "source_output_index": 0,
-            "dest_node": 367,
+            "dest_node": 1653,
             "dest_input_index": 0
         },
         "5": {
-            "source_node": 102,
+            "source_node": 2280,
             "source_output_index": 0,
-            "dest_node": 518,
+            "dest_node": 2537,
             "dest_input_index": 0
         },
         "6": {
-            "source_node": 223,
+            "source_node": 2350,
             "source_output_index": 0,
-            "dest_node": 139,
+            "dest_node": 2369,
             "dest_input_index": 0
         },
         "7": {
-            "source_node": 223,
+            "source_node": 2350,
             "source_output_index": 0,
-            "dest_node": 622,
+            "dest_node": 2730,
             "dest_input_index": 0
         },
         "8": {
-            "source_node": 238,
+            "source_node": 2443,
             "source_output_index": 0,
-            "dest_node": 181,
+            "dest_node": 2463,
             "dest_input_index": 0
         },
         "9": {
-            "source_node": 253,
+            "source_node": 2443,
             "source_output_index": 0,
-            "dest_node": 268,
+            "dest_node": 2823,
             "dest_input_index": 0
         },
         "10": {
-            "source_node": 310,
+            "source_node": 2537,
             "source_output_index": 0,
-            "dest_node": 325,
+            "dest_node": 1816,
             "dest_input_index": 0
         },
         "11": {
-            "source_node": 367,
+            "source_node": 2730,
             "source_output_index": 0,
-            "dest_node": 382,
+            "dest_node": 2749,
             "dest_input_index": 0
         },
         "12": {
-            "source_node": 424,
+            "source_node": 2823,
             "source_output_index": 0,
-            "dest_node": 476,
+            "dest_node": 2842,
             "dest_input_index": 0
         },
         "13": {
-            "source_node": 439,
+            "source_node": 3155,
             "source_output_index": 0,
-            "dest_node": 424,
+            "dest_node": 3215,
             "dest_input_index": 0
         },
         "14": {
-            "source_node": 518,
+            "source_node": 3215,
             "source_output_index": 0,
-            "dest_node": 539,
+            "dest_node": 3248,
             "dest_input_index": 0
         }
     }

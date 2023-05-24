@@ -54,34 +54,55 @@ class ArithmeticNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.operand = self.arg_as_number(default_value=0.0)
-        self.input = self.add_input('in', triggers_execution=True)
-        self.operand_input = self.add_input('', widget_type='drag_float', default_value=self.operand, callback=self.operand_changed)
-        self.output = self.add_output("")
-        self.operations = {'+': self.add, '-': self.subtract, '!-': self.inverse_subtract,
-                           '*': self.multiply, '/': self.divide, '//': self.int_divide,
-                           '!/': self.inverse_divide, 'pow': self.power, '^': self.power,
-                           'min': self.min, 'max': self.max, 'mod': self.mod, '%': self.mod}
-        if label in self.operations:
-            self.operation = self.operations[label]
+        widget_type = 'drag_float'
+        self.operand = 0
+        supplied_operand = False
+        if len(args) > 0:
+            supplied_operand = True
+            self.operand = any_to_float_or_int(args[0])
+            t = type(self.operand)
+            if t == float:
+                widget_type = 'drag_float'
+            elif t == int:
+                widget_type = 'drag_int'
+
+        self.op_dict = {
+            '+': self.add,
+            '-': self.subtract,
+            '!-': self.inverse_subtract,
+            '*': self.multiply,
+            '/': self.divide,
+            '//': self.int_divide,
+            '!/': self.inverse_divide,
+            'pow': self.power,
+            '^': self.power,
+            'min': self.min,
+            'max': self.max,
+            'mod': self.mod,
+            '%': self.mod
+        }
+        if label in self.op_dict:
+            self.op = self.op_dict[label]
         else:
-            self.operation = self.operations['+']
+            self.op = self.op_dict['+']
+
+        self.input = self.add_input('in', triggers_execution=True)
+
+        if supplied_operand:
+            self.operand_input = self.add_input('', widget_type=widget_type, default_value=self.operand, callback=self.operand_changed)
+        else:
+            self.operand_input = self.add_input('operand')
+
+        self.output = self.add_output('result')
 
     def operand_changed(self, input=None):
-        self.operand = self.operand_input.get_widget_value()
+        self.operand = any_to_numerical(self.operand_input())
 
     def execute(self):
         if self.operand_input.fresh_input:
-            self.operand = self.operand_input.get_received_data()
-            if type(self.operand) == list:
-                self.operand = list_to_array(self.operand)
-
-        input_value = self.input.get_received_data()
-        t = type(input_value)
-        if t == list:
-            input_value = list_to_array(input_value)
-
-        output_value = self.operation(input_value, self.operand)
+            self.operand = any_to_numerical(self.operand_input())
+        input_value = any_to_numerical(self.input())
+        output_value = self.op(input_value, self.operand)
         self.output.send(output_value)
 
     def mod(self, a, b):
@@ -170,29 +191,67 @@ class ComparisonNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+
         self.output_op = bool
         self.torch_output_op = torch.bool
         self.numpy_output_op = np.bool_
 
-        self.operand = self.arg_as_number(default_value=0.0)
-        self.input = self.add_input('in', triggers_execution=True)
-        self.operand_input = self.add_input('', widget_type='drag_float', default_value=self.operand, callback=self.operand_changed)
-        self.output = self.add_output("")
-        self.operations = {'>': self.greater, '>=': self.greater_equal, '==': self.equal,
-                           '<': self.less, '<=': self.less_equal, '!=': self.not_equal}
+        widget_type = 'drag_float'
+        self.operand = 0
+        supplied_operand = False
+        if len(args) > 0:
+            supplied_operand = True
+            self.operand = any_to_float_or_int(args[0])
+            t = type(self.operand)
+            if t == float:
+                widget_type = 'drag_float'
+            elif t == int:
+                widget_type = 'drag_int'
+
+        self.operations = {
+            '>': self.greater,
+            '>=': self.greater_equal,
+            '==': self.equal,
+            '<': self.less,
+            '<=': self.less_equal,
+            '!=': self.not_equal
+        }
         if label in self.operations:
-            self.operation = self.operations[label]
+            self.op = self.operations[label]
         else:
-            self.operation = self.operations['>']
+            self.op = self.operations['>']
+
+        self.input = self.add_input('in', triggers_execution=True)
+
+        if supplied_operand:
+            self.operand_input = self.add_input('', widget_type=widget_type, default_value=self.operand, callback=self.operand_changed)
+        else:
+            self.operand_input = self.add_input('operand')
+
+        self.output = self.add_output("result")
         self.output_type_option = self.add_option('output_type', widget_type='combo', default_value='bool', callback=self.output_type_changed)
         self.output_type_option.widget.combo_items = ['bool', 'int', 'float']
 
     def operand_changed(self, input=None):
-        self.operand = self.operand_input.get_widget_value()
+        self.operand = any_to_numerical(self.operand_input())
+
+    def execute(self):
+        if self.operand_input.fresh_input:
+            self.operand = any_to_numerical(self.operand_input())
+        input_value = any_to_numerical(self.input())
+
+        t = type(input_value)
+        if t == np.ndarray:
+            output_value = self.op(input_value, self.operand).astype(self.numpy_output_op)
+        elif t == torch.Tensor:
+            output_value = self.op(input_value, self.operand).to(self.torch_output_op)
+        else:
+            output_value = self.output_op(self.op(input_value, self.operand))
+
+        self.output.send(output_value)
 
     def output_type_changed(self):
         output_type = self.output_type_option.get_widget_value()
- #       print('got output type ' + output_type)
         self.output_op = bool
         self.torch_output_op = torch.bool
         self.numpy_output_op = np.bool_
@@ -206,26 +265,6 @@ class ComparisonNode(Node):
             self.output_op = float
             self.torch_output_op = torch.float
             self.numpy_output_op = float
-
-    def execute(self):
-        if self.operand_input.fresh_input:
-            self.operand = self.operand_input.get_received_data()
-            if type(self.operand) == list:
-                self.operand = list_to_array(self.operand)
-
-        input_value = self.input.get_data()
-        t = type(input_value)
-        if t == list:
-            input_value = list_to_array(input_value)
-
-        if type(input_value) == np.ndarray:
-            output_value = self.operation(input_value, self.operand).astype(self.numpy_output_op)
-        elif type(input_value) == torch.Tensor:
-            output_value = self.operation(input_value, self.operand).to(self.torch_output_op)
-        else:
-            output_value = self.output_op(self.operation(input_value, self.operand))
-
-        self.output.send(output_value)
 
     def greater(self, a, b):
         return a > b
@@ -257,6 +296,7 @@ class ComparisonAndPassNode(Node):
         super().__init__(label, data, args)
         self.simple = True
         force_int = False
+
         self.operation = 'always'
         self.operations = {'!=': self.not_equal, '==': self.equal, '>': self.greater, '>=': self.greater_equal,
                            '<': self.less, '<=': self.less_equal, 'always': self.no_op}
@@ -267,12 +307,15 @@ class ComparisonAndPassNode(Node):
             self.operation = '>'
         elif label == 'decreasing':
             self.operation = '<'
+
         if len(args) > 0:
             self.simple = False
             if args[0] in self.operations:
                 self.operation = args[0]
+
         self.operand = 0
         self_compare = False
+
         if self.simple:
             if len(args) > 1:
                 self.operand = self.arg_as_number(default_value=0.0, index=1)
@@ -300,28 +343,25 @@ class ComparisonAndPassNode(Node):
             self.self_compare_property = self.add_property('self_compare', widget_type='checkbox')
             self.force_int_property = self.add_property('force_int', widget_type='checkbox')
 
-        self.output = self.add_output("")
+        self.output = self.add_output('result')
 
     def comparison_changed(self, input=None):
         self.operation = self.comparison_property.get_widget_value()
+
     def operand_changed(self, input=None):
         self.operand = self.operand_property.get_widget_value()
 
     def execute(self):
         if not self.simple and self.operand_property.fresh_input:
-            self.operand = self.operand_property.get_received_data()
-            if type(self.operand) == list:
-                self.operand = list_to_array(self.operand)
+            self.operand = any_to_numerical(self.operand_property())
 
-        input_value = self.input.get_data()
-        t = type(input_value)
-        if t == list:
-            input_value = list_to_array(input_value)
+        input_value = any_to_numerical(self.input())
+
         if type(input_value) == np.ndarray:
             if type(self.operand) != np.ndarray:
                 self.operand = np.zeros_like(input_value)
                 self.operand_property.set(input_value)
-            if self.force_int_property.get_widget_value():
+            if self.force_int_property():
                 input_value = input_value.round()
                 op = self.operand.round()
             else:
@@ -333,7 +373,7 @@ class ComparisonAndPassNode(Node):
             if type(self.operand) != torch.Tensor:
                 self.operand = torch.zeros_like(input_value)
                 self.operand_property.set(input_value)
-            if self.force_int_property.get_widget_value():
+            if self.force_int_property():
                 input_value = input_value.round()
                 op = self.operand.round()
             else:
@@ -344,7 +384,7 @@ class ComparisonAndPassNode(Node):
         else:
             if type(self.operand) == np.ndarray:
                 self.operand = 0
-            if self.force_int_property.get_widget_value():
+            if self.force_int_property():
                 input_value = int(input_value)
                 op = int(self.operand)
             else:
@@ -352,7 +392,7 @@ class ComparisonAndPassNode(Node):
             output_value = self.operations[self.operation](input_value, op)
             if output_value:
                 self.output.send(input_value)
-        if self.self_compare_property.get_widget_value():
+        if self.self_compare_property():
             self.operand = input_value
             self.operand_property.set(input_value)
 
@@ -387,26 +427,30 @@ class OpSingleNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.input = self.add_input('in', triggers_execution=True)
-        self.output = self.add_output("")
-
-        self.operations = {'log10': self.log10, 'log2': self.log2, 'exp': self.exp,
-                           'inverse': self.inverse, 'abs': self.abs,
-                           'sqrt': self.square_root, 'norm': self.normalize}
+        self.operations = {
+            'log10': self.log10,
+            'log2': self.log2,
+            'exp': self.exp,
+            'inverse': self.inverse,
+            'abs': self.abs,
+            'sqrt': self.square_root,
+            'norm': self.normalize
+        }
         if label in self.operations:
-            self.operation = self.operations[label]
+            self.op = self.operations[label]
         else:
-            self.operation = self.operations['log10']
+            self.op = self.operations['log10']
+
+        self.input = self.add_input('in', triggers_execution=True)
+        self.output = self.add_output('result')
 
     def execute(self):
         # get values from static attributes
-        input_value = self.input.get_received_data()
+        input_value = self.input()
         t = type(input_value)
-        if t == list:
-            input_value = list_to_array(input_value)
-        elif t in [int, bool, np.int64, np.bool_]:
+        if t in [int, bool, np.int64, np.bool_]:
             input_value = float(input_value)
-        output_value = self.operation(input_value)
+        output_value = self.op(input_value)
         self.output.send(output_value)
 
     def normalize(self, a):
@@ -494,30 +538,35 @@ class OpSingleTrigNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
+        self.operations = {
+            'sin': self.sin,
+            'cos': self.cos,
+            'asin': self.asin,
+            'acos': self.acos,
+            'tan': self.tan,
+            'atan': self.atan
+        }
+        if label in self.operations:
+            self.op = self.operations[label]
+        else:
+            self.op = self.operations['sin']
+
         self.use_degrees = True
         self.degrees_to_radians = math.pi / 180
 
         self.input = self.add_input('in', triggers_execution=True)
         self.use_degrees_property = self.add_property('degrees', widget_type='checkbox', default_value=self.use_degrees)
         self.output = self.add_output("out")
-        self.operations = {'sin': self.sin, 'cos': self.cos, 'asin': self.asin,
-                           'acos': self.acos, 'tan': self.tan, 'atan': self.atan}
-        if label in self.operations:
-            self.operation = self.operations[label]
-        else:
-            self.operation = self.operations['sin']
 
     def execute(self):
         # get values from static attributes
-        self.use_degrees = self.use_degrees_property.get_widget_value()
+        self.use_degrees = self.use_degrees_property()
 
-        input_value = self.input.get_received_data()
+        input_value = any_to_numerical(self.input())
         t = type(input_value)
-        if t == list:
-            input_value = list_to_array(input_value)
-        elif t in [int, bool, np.int64, np.bool_]:
+        if t in [int, bool, np.int64, np.bool_]:
             input_value = float(input_value)
-        output_value = self.operation(input_value)
+        output_value = self.op(input_value)
         self.output.send(output_value)
 
     def sin(self, a):

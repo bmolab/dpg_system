@@ -137,6 +137,26 @@ def any_to_float_or_int(data):
         return tensor_to_float(data)
     return 0
 
+
+def any_to_numerical(data):
+    t = type(data)
+    if t in [float, int, np.ndarray]:
+        return data
+    elif torch_available and t == torch.Tensor:
+        return data
+    elif t in [bool, np.bool_]:
+        return int(data)
+    elif t == str:
+        return string_to_numerical(data)
+    elif t in [list, tuple]:
+        return list_to_array(list(data))
+    elif t in [np.int64]:
+        return int(data)
+    elif t in [np.float32, np.double]:
+        return float(data)
+    return 0
+
+
 def any_to_bool(data):
     t = type(data)
     if t == bool:
@@ -399,6 +419,7 @@ def string_to_tensor(input):
             pass
     return None
 
+
 def string_to_array(input_string):
     arr = np.zeros((1))
     try:
@@ -408,6 +429,23 @@ def string_to_array(input_string):
     except:
         print('invalid string to cast as array')
     return arr
+
+
+def string_to_numerical(input_string):
+    try:
+        force_list = False
+        if input_string[0] == '[':
+            force_list = True
+        input_string = " ".join(input_string.split())
+        arr_str = input_string.replace(" ]", "]").replace(" ", ",").replace("\n", "")
+        arr = np.array(ast.literal_eval(arr_str))
+        if arr.size == 1 and not force_list:
+            return arr[0]
+        return arr
+    except Exception as e:
+        print(string_to_numerical, e)
+    return np.zeros((1))
+
 
 def list_to_hybrid_list(in_list):
     hybrid_list = []

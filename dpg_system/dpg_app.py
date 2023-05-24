@@ -2,7 +2,7 @@ import dearpygui.dearpygui as dpg
 import time
 import numpy as np
 
-from dpg_system.node import Node, InputNodeAttribute, OutputNodeAttribute, Variable, PlaceholderNode
+from dpg_system.node import Node, NodeInput, NodeOutput, Variable, PlaceholderNode
 from dpg_system.node_editor import *
 from os.path import exists
 import json
