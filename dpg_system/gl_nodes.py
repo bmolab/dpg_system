@@ -145,7 +145,7 @@ class GLContextNode(Node):
     @staticmethod
     def maintenance_loop():
         for p in GLContextNode.pending_contexts:
-            p.create()
+            p.create_context()
         GLContextNode.pending_contexts = []
         for c in GLContextNode.context_list:
             if c.ready:
@@ -196,7 +196,7 @@ class GLContextNode(Node):
                 self.pending_commands.append(data)
 
     def fov_changed(self):
-        self.fov = self.fov_option.get_widget_value()
+        self.fov = self.fov_option()
         if self.fov < 1:
             self.fov = 1
         elif self.fov > 180:
@@ -204,7 +204,7 @@ class GLContextNode(Node):
         if self.context:
             self.context.set_fov(self.fov)
 
-    def create(self):
+    def create_context(self):
         self.context = MyGLContext(self.title, self.width, self.height)
         self.context_list.append(self)
         self.ready = True
@@ -259,7 +259,7 @@ class GLNode(Node):
 
     def execute(self):
         if self.gl_input.fresh_input:
-            input_list = self.gl_input.get_received_data()
+            input_list = self.gl_input()
             do_draw = False
             t = type(input_list)
             if t == list:
@@ -399,21 +399,20 @@ class GLBillboard(GLNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.size = [2, 2]
-        self.width_property = self.add_input('width', widget_type='drag_float', default_value=1.6)
-        self.height_property = self.add_input('height', widget_type='drag_float', default_value=0.9)
-        self.texture_input = self.add_input('texture')
+        self.width = self.add_input('width', widget_type='drag_float', default_value=1.6)
+        self.height = self.add_input('height', widget_type='drag_float', default_value=0.9)
+        self.texture = self.add_input('texture')
         self.texture_shape = None
         self.numpy_texture = None
         self.texture_data_pending = None
 
     def execute(self):
-        if self.texture_input.fresh_input:
-            data = self.texture_input.get_received_data()
+        if self.texture.fresh_input:
+            data = self.texture()
             if type(data) == np.ndarray:
-                self.texture_data_pending = self.texture_input.get_received_data() #  * 255.0
+                self.texture_data_pending = data #  * 255.0
             elif self.app.torch_available and type(data) == torch.Tensor:
-                texture_data = self.texture_input.get_received_data()
+                texture_data = data
                 if len(texture_data.shape) > 2:
                     if texture_data.shape[-3] <= 5:
                         if texture_data.shape[-1] > 5:
@@ -425,84 +424,77 @@ class GLBillboard(GLNode):
                 self.texture_data_pending = np.ones((16, 16, 1), dtype=np.uint8) * data
             elif type(data) == list:
                 component_count = len(data)
+                t = type(data[0])
                 if component_count == 3:
-                    if type(data[0]) == float:
+                    if t == float:
                         self.texture_data_pending = np.ones((16, 16, 3), dtype=np.float32)
                         multiplier = np.array(data)
                         multiplier = np.expand_dims(multiplier, axis=0)
                         multiplier = np.expand_dims(multiplier, axis=0)
                         self.texture_data_pending = self.texture_data_pending * multiplier
-                    if type(data[0]) == int:
+                    elif t == int:
                         self.texture_data_pending = np.ones((16, 16, 3), dtype=np.uint8)
                         multiplier = np.array(data)
                         multiplier = np.expand_dims(multiplier, axis=0)
                         multiplier = np.expand_dims(multiplier, axis=0)
                         self.texture_data_pending = self.texture_data_pending * multiplier
                 elif component_count == 4:
-                    if type(data[0]) == float:
+                    if t == float:
                         self.texture_data_pending = np.ones((16, 16, 4), dtype=np.float32)
                         multiplier = np.array(data)
                         multiplier = np.expand_dims(multiplier, axis=0)
                         multiplier = np.expand_dims(multiplier, axis=0)
                         self.texture_data_pending = self.texture_data_pending * multiplier
-                    if type(data[0]) == int:
+                    elif t == int:
                         self.texture_data_pending = np.ones((16, 16, 4), dtype=np.uint8)
                         multiplier = np.array(data)
                         multiplier = np.expand_dims(multiplier, axis=0)
                         multiplier = np.expand_dims(multiplier, axis=0)
                         self.texture_data_pending = self.texture_data_pending * multiplier
                 elif component_count == 1:
-                    if type(data[0]) == float:
+                    if t == float:
                         self.texture_data_pending = np.ones((16, 16, 1), dtype=np.float32)
                         multiplier = np.array(data)
                         multiplier = np.expand_dims(multiplier, axis=0)
                         multiplier = np.expand_dims(multiplier, axis=0)
                         self.texture_data_pending = self.texture_data_pending * multiplier
-                    if type(data[0]) == int:
+                    elif t == int:
                         self.texture_data_pending = np.ones((16, 16, 1), dtype=np.uint8)
                         multiplier = np.array(data)
                         multiplier = np.expand_dims(multiplier, axis=0)
                         multiplier = np.expand_dims(multiplier, axis=0)
                         self.texture_data_pending = self.texture_data_pending * multiplier
-                    # if type(data[0]) == float:
-                    #     self.texture_data_pending = np.ones((16, 16, 3), dtype=np.float32)
-                    #     multiplier = np.array(data).expand_dims(0).expand_dims(0)
-                    #     self.texture_data_pending = self.texture_data_pending * multiplier
         super().execute()
 
     def draw(self):
-        # self.process_pending_commands()
-        # self.size = self.size_property.get_widget_value()
         if self.texture_data_pending is not None:
             if self.numpy_texture is None:
                 self.numpy_texture = GLNumpyTexture(self.texture_data_pending)
             else:
                 self.numpy_texture.update(self.texture_data_pending)
             self.texture_data_pending = None
+        half_width = self.width() / 2
+        half_height = self.height() / 2
         if self.numpy_texture is not None and self.numpy_texture.texture != -1:
             glEnable(GL_TEXTURE_2D)
             glBindTexture(GL_TEXTURE_2D, self.numpy_texture.texture)
-            self.size[0] = self.width_property.get_widget_value()
-            self.size[1] = self.height_property.get_widget_value()
             gl.glBegin(gl.GL_TRIANGLE_STRIP)
             glTexCoord2f(0, 0)
-            gl.glVertex2f(-self.size[0] / 2, self.size[1] / 2)
+            gl.glVertex2f(-half_width, half_height)
             glTexCoord2f(0, 1)
-            gl.glVertex2f(-self.size[0] / 2, -self.size[1] / 2)
+            gl.glVertex2f(-half_width, -half_height)
             glTexCoord2f(1, 0)
-            gl.glVertex2f(self.size[0] / 2, self.size[1] / 2)
+            gl.glVertex2f(half_width, half_height)
             glTexCoord2f(1, 1)
-            gl.glVertex2f(self.size[0] / 2, -self.size[1] / 2)
+            gl.glVertex2f(half_width, -half_height)
             gl.glEnd()
             glBindTexture(GL_TEXTURE_2D, 0)
         else:
-            self.size[0] = self.width_property.get_widget_value()
-            self.size[1] = self.height_property.get_widget_value()
             gl.glBegin(gl.GL_TRIANGLE_STRIP)
-            gl.glVertex2f(-self.size[0] / 2, -self.size[1] / 2)
-            gl.glVertex2f(-self.size[0] / 2, self.size[1] / 2)
-            gl.glVertex2f(self.size[0] / 2, -self.size[1] / 2)
-            gl.glVertex2f(self.size[0] / 2, self.size[1] / 2)
+            gl.glVertex2f(-half_width, -half_height)
+            gl.glVertex2f(-half_width, half_height)
+            gl.glVertex2f(half_width, -half_height)
+            gl.glVertex2f(half_width, half_height)
             gl.glEnd()
 
 
@@ -521,7 +513,7 @@ class GLQuadricNode(GLNode):
         self.pending_commands = []
 
     def shading_changed(self):
-        shading = self.shading_option.get_widget_value()
+        shading = self.shading_option()
         if shading == 'flat':
             self.shading = glu.GLU_FLAT
         elif shading == 'smooth':
@@ -549,27 +541,21 @@ class GLSphereNode(GLQuadricNode):
         super().__init__(label, data, args)
 
     def initialize(self, args):
-        self.size = self.arg_as_float(default_value=0.5)
-        self.slices = self.arg_as_int(index=1, default_value=32)
-        self.stacks = self.arg_as_int(index =2, default_value=32)
+        size = self.arg_as_float(default_value=0.5)
+        slices = self.arg_as_int(index=1, default_value=32)
+        stacks = self.arg_as_int(index =2, default_value=32)
 
         self.gl_input = self.add_input('gl chain in', triggers_execution=True)
-        self.size_property = self.add_property('size', widget_type='drag_float', default_value=self.size)
+        self.size = self.add_property('size', widget_type='drag_float', default_value=size)
         self.gl_output = self.add_output('gl chain out')
 
-        self.slices_option = self.add_option('slices', widget_type='drag_int', default_value=self.slices, callback=self.options_changed)
-        self.stacks_option = self.add_option('stacks', widget_type='drag_int', default_value=self.stacks, callback=self.options_changed)
+        self.slices = self.add_option('slices', widget_type='drag_int', default_value=slices)
+        self.stacks = self.add_option('stacks', widget_type='drag_int', default_value=stacks)
         self.add_shading_option()
-
-    def options_changed(self):
-        self.shading_changed()
-        self.slices = self.slices_option.get_widget_value()
-        self.stacks = self.stacks_option.get_widget_value()
 
     def draw(self):
         self.process_pending_commands()
-        self.size = self.size_property.get_widget_value()
-        gluSphere(self.quadric, self.size, self.slices, self.stacks)
+        gluSphere(self.quadric, self.size(), self.slices(), self.stacks())
 
 
 class GLDiskNode(GLQuadricNode):
@@ -582,32 +568,24 @@ class GLDiskNode(GLQuadricNode):
         super().__init__(label, data, args)
 
     def initialize(self, args):
-        self.inner_radius = self.arg_as_float(default_value=0.0)
-        self.outer_radius = self.arg_as_float(index=1, default_value=0.5)
-        self.slices = self.arg_as_int(index=2, default_value=32)
-        self.rings = self.arg_as_int(index=3, default_value=1)
+        inner_radius = self.arg_as_float(default_value=0.0)
+        outer_radius = self.arg_as_float(index=1, default_value=0.5)
+        slices = self.arg_as_int(index=2, default_value=32)
+        rings = self.arg_as_int(index=3, default_value=1)
 
         self.gl_input = self.add_input('gl chain in', triggers_execution=True)
-        self.outer_radius_property = self.add_property('outer radius', widget_type='drag_float', default_value=self.outer_radius, callback=self.outer_radius_changed)
+        self.outer_radius = self.add_property('outer radius', widget_type='drag_float', default_value=outer_radius)
         self.gl_output = self.add_output('gl chain out')
 
-        self.inner_radius_option = self.add_option('inner radius', widget_type='drag_float', default_value=self.inner_radius, callback=self.options_changed)
-        self.slices_option = self.add_option('slices', widget_type='drag_int', default_value=self.slices, callback=self.options_changed)
-        self.rings_option = self.add_option('rings', widget_type='drag_int', default_value=self.rings, callback=self.options_changed)
+        self.inner_radius = self.add_option('inner radius', widget_type='drag_float', default_value=inner_radius)
+        self.slices = self.add_option('slices', widget_type='drag_int', default_value=slices)
+        self.rings = self.add_option('rings', widget_type='drag_int', default_value=rings)
         self.add_shading_option()
-
-    def outer_radius_changed(self):
-        self.outer_radius = self.outer_radius_property.get_widget_value()
-
-    def options_changed(self):
-        self.shading_changed()
-        self.inner_radius = self.inner_radius_option.get_widget_value()
-        self.slices = self.slices_option.get_widget_value()
-        self.rings = self.rings_option.get_widget_value()
 
     def draw(self):
         self.process_pending_commands()
-        gluDisk(self.quadric, self.inner_radius, self.outer_radius, self.slices, self.rings)
+        gluDisk(self.quadric, self.inner_radius(), self.outer_radius(), self.slices(), self.rings)
+        ()
 
 
 class GLPartialDiskNode(GLQuadricNode):
@@ -620,40 +598,29 @@ class GLPartialDiskNode(GLQuadricNode):
         super().__init__(label, data, args)
 
     def initialize(self, args):
-        self.inner_radius = self.arg_as_float(default_value=0.0)
-        self.outer_radius = self.arg_as_float(index=1, default_value=0.5)
-        self.slices = self.arg_as_int(index=2, default_value=32)
-        self.rings = self.arg_as_int(index=3, default_value=1)
-        self.start_angle = self.arg_as_float(index=4, default_value=0.0)
-        self.sweep_angle = self.arg_as_float(index=5, default_value=90)
+        inner_radius = self.arg_as_float(default_value=0.0)
+        outer_radius = self.arg_as_float(index=1, default_value=0.5)
+        slices = self.arg_as_int(index=2, default_value=32)
+        rings = self.arg_as_int(index=3, default_value=1)
+        start_angle = self.arg_as_float(index=4, default_value=0.0)
+        sweep_angle = self.arg_as_float(index=5, default_value=90)
 
         self.gl_input = self.add_input('gl chain in', triggers_execution=True)
-        self.outer_radius_property = self.add_property('outer radius', widget_type='drag_float', default_value=self.outer_radius, callback=self.outer_radius_changed)
+        self.outer_radius = self.add_property('outer radius', widget_type='drag_float', default_value=outer_radius)
         self.gl_output = self.add_output('gl chain out')
 
-        self.inner_radius_option = self.add_option('inner radius', widget_type='drag_float', default_value=self.inner_radius, callback=self.options_changed)
-        self.slices_option = self.add_option('slices', widget_type='drag_int', default_value=self.slices, callback=self.options_changed)
-        self.rings_option = self.add_option('rings', widget_type='drag_int', default_value=self.rings, callback=self.options_changed)
-        self.start_angle_option = self.add_option('start angle', widget_type='drag_float', default_value=self.start_angle, callback=self.options_changed)
-        self.start_angle_option.widget.speed = 1
-        self.sweep_angle_option = self.add_option('sweep angle', widget_type='drag_float', default_value=self.sweep_angle, callback=self.options_changed)
-        self.sweep_angle_option.widget.speed = 1
+        self.inner_radius = self.add_option('inner radius', widget_type='drag_float', default_value=inner_radius)
+        self.slices = self.add_option('slices', widget_type='drag_int', default_value=slices)
+        self.rings = self.add_option('rings', widget_type='drag_int', default_value=rings)
+        self.start_angle = self.add_option('start angle', widget_type='drag_float', default_value=start_angle)
+        self.start_angle.widget.speed = 1
+        self.sweep_angle = self.add_option('sweep angle', widget_type='drag_float', default_value=sweep_angle)
+        self.sweep_angle.widget.speed = 1
         self.add_shading_option()
-
-    def outer_radius_changed(self):
-        self.outer_radius = self.outer_radius_property.get_widget_value()
-
-    def options_changed(self):
-        self.shading_changed()
-        self.inner_radius = self.inner_radius_option.get_widget_value()
-        self.slices = self.slices_option.get_widget_value()
-        self.rings = self.rings_option.get_widget_value()
-        self.start_angle = self.start_angle_option.get_widget_value()
-        self.sweep_angle = self.sweep_angle_option.get_widget_value()
 
     def draw(self):
         self.process_pending_commands()
-        gluPartialDisk(self.quadric, self.inner_radius, self.outer_radius, self.slices, self.rings, self.start_angle, self.sweep_angle)
+        gluPartialDisk(self.quadric, self.inner_radius(), self.outer_radius(), self.slices(), self.rings(), self.start_angle(), self.sweep_angle())
 
 
 class GLCylinderNode(GLQuadricNode):
@@ -666,33 +633,25 @@ class GLCylinderNode(GLQuadricNode):
         super().__init__(label, data, args)
 
     def initialize(self, args):
-        self.base_radius = self.arg_as_float(default_value=0.5)
-        self.top_radius = self.arg_as_float(index=1, default_value=0.5)
-        self.height = self.arg_as_float(index=2, default_value=0.5)
-        self.slices = self.arg_as_int(index=3, default_value=40)
-        self.stacks = self.arg_as_int(index=4, default_value=1)
+        base_radius = self.arg_as_float(default_value=0.5)
+        top_radius = self.arg_as_float(index=1, default_value=0.5)
+        height = self.arg_as_float(index=2, default_value=0.5)
+        slices = self.arg_as_int(index=3, default_value=40)
+        stacks = self.arg_as_int(index=4, default_value=1)
 
         self.gl_input = self.add_input('gl chain in', triggers_execution=True)
         self.gl_output = self.add_output('gl chain out')
 
-        self.base_radius_option = self.add_option('base radius', widget_type='drag_float', default_value=self.base_radius, callback=self.options_changed)
-        self.top_radius_option = self.add_option('top radius', widget_type='drag_float', default_value=self.top_radius, callback=self.options_changed)
-        self.height_option = self.add_option('height', widget_type='drag_float', default_value=self.height, callback=self.options_changed)
-        self.slices_option = self.add_option('slices', widget_type='drag_int', default_value=self.slices, callback=self.options_changed)
-        self.stacks_option = self.add_option('stacks', widget_type='drag_int', default_value=self.stacks, callback=self.options_changed)
+        self.base_radius = self.add_option('base radius', widget_type='drag_float', default_value=base_radius)
+        self.top_radius = self.add_option('top radius', widget_type='drag_float', default_value=top_radius)
+        self.height = self.add_option('height', widget_type='drag_float', default_value=height)
+        self.slices = self.add_option('slices', widget_type='drag_int', default_value=slices)
+        self.stacks = self.add_option('stacks', widget_type='drag_int', default_value=stacks)
         self.add_shading_option()
-
-    def options_changed(self):
-        self.shading_changed()
-        self.base_radius = self.base_radius_option.get_widget_value()
-        self.top_radius = self.top_radius_option.get_widget_value()
-        self.height = self.height_option.get_widget_value()
-        self.slices = self.slices_option.get_widget_value()
-        self.stacks = self.stacks_option.get_widget_value()
 
     def draw(self):
         self.process_pending_commands()
-        gluCylinder(self.quadric, self.base_radius, self.top_radius, self.height, self.slices, self.stacks)
+        gluCylinder(self.quadric, self.base_radius(), self.top_radius(), self.height(), self.slices(), self.stacks())
 
 
 class GLQuaternionRotateNode(GLNode):
@@ -730,14 +689,14 @@ class GLQuaternionRotateNode(GLNode):
         return transform
 
     def draw(self):
-        input_ = self.quat_input.get_received_data()
+        input_ = self.quat_input()
         t = type(input_)
         if t == list:
             input_ = np.array(input_)
             t = np.ndarray
         if t == np.ndarray:
             rotation_q = Quaternion(input_)
-            if self.show_axis_option.get_widget_value():
+            if self.show_axis_option():
                 if self.previous_quat:
                     up_vector = np.array([0.0, 0.0, 1.0])
                     d = Quaternion.sym_distance(rotation_q, self.previous_quat) * 20
@@ -789,25 +748,25 @@ class GLTransformNode(GLNode):
         self.values[2] = self.arg_as_float(index=2, default_value=0.0)
 
         self.gl_input = self.add_input('gl chain in', triggers_execution=True)
-        self.x_input = self.add_input('x', widget_type='drag_float', default_value=self.values[0])
-        self.y_input = self.add_input('y', widget_type='drag_float', default_value=self.values[1])
-        self.z_input = self.add_input('z', widget_type='drag_float', default_value=self.values[2])
+        self.x = self.add_input('x', widget_type='drag_float', default_value=self.values[0])
+        self.y = self.add_input('y', widget_type='drag_float', default_value=self.values[1])
+        self.z = self.add_input('z', widget_type='drag_float', default_value=self.values[2])
         if self.label == 'gl_rotate':
-            self.x_input.widget.speed = 1
-            self.y_input.widget.speed = 1
-            self.z_input.widget.speed = 1
+            self.x.widget.speed = 1
+            self.y.widget.speed = 1
+            self.z.widget.speed = 1
         self.reset_button = self.add_property('reset', widget_type='button', callback=self.reset)
         self.gl_output = self.add_output('gl chain out')
 
     def reset(self):
         if self.label in ['gl_translate', 'gl_rotate']:
-            self.x_input.set(0.0)
-            self.y_input.set(0.0)
-            self.z_input.set(0.0)
+            self.x.set(0.0)
+            self.y.set(0.0)
+            self.z.set(0.0)
         elif self.label == 'gl_scale':
-            self.x_input.set(1.0)
-            self.y_input.set(1.0)
-            self.z_input.set(1.0)
+            self.x.set(1.0)
+            self.y.set(1.0)
+            self.z.set(1.0)
 
     def remember_state(self):
         gl.glPushMatrix()
@@ -816,9 +775,9 @@ class GLTransformNode(GLNode):
         gl.glPopMatrix()
 
     def draw(self):
-        self.values[0] = self.x_input.get_widget_value()
-        self.values[1] = self.y_input.get_widget_value()
-        self.values[2] = self.z_input.get_widget_value()
+        self.values[0] = self.x()
+        self.values[1] = self.y()
+        self.values[2] = self.z()
 
         gl.glMatrixMode(gl.GL_MODELVIEW)
 
@@ -887,14 +846,14 @@ class GLMaterialNode(GLNode):
         self.diffuse_input = self.add_input('diffuse')
         self.specular_input = self.add_input('specular')
         self.emission_input = self.add_input('emission')
-        self.shininess_input = self.add_input('shininess', widget_type='drag_float', default_value=self.material.shininess, callback=self.shininess_changed)
+        self.shininess_input = self.add_input('shininess', widget_type='drag_float', default_value=self.material.shininess)
         self.preset_menu = self.add_property('presets', widget_type='combo', callback=self.preset_selected)
         presets = list(self.presets.keys())
         self.preset_menu.widget.combo_items = presets
         self.gl_output = self.add_output('gl chain out')
 
     def preset_selected(self):
-        selected_preset = self.preset_menu.get_widget_value()
+        selected_preset = self.preset_menu()
         if selected_preset in self.presets:
             p = self.presets[selected_preset]
             self.material.ambient = p.ambient
@@ -902,9 +861,6 @@ class GLMaterialNode(GLNode):
             self.material.specular = p.specular
             self.material.emission = p.emission
             self.material.shininess = p.shininess
-
-    def shininess_changed(self, input=None):
-        self.material.shininess = self.shininess_input.get_widget_value()
 
     def remember_state(self):
         self.hold_material.ambient = gl.glGetMaterialfv(gl.GL_FRONT, gl.GL_AMBIENT)
@@ -922,7 +878,7 @@ class GLMaterialNode(GLNode):
 
     def execute(self):
         if self.ambient_input.fresh_input:
-            ambient = self.ambient_input.get_received_data()
+            ambient = self.ambient_input()
             t = type(ambient)
             if t == np.ndarray:
                 if ambient.shape[0] == 4:
@@ -936,7 +892,7 @@ class GLMaterialNode(GLNode):
                 self.material.ambient = [ambient, ambient, ambient, 1.0]
 
         if self.diffuse_input.fresh_input:
-            diffuse = self.diffuse_input.get_received_data()
+            diffuse = self.diffuse_input()
             t = type(diffuse)
             if t == np.ndarray:
                 if diffuse.shape[0] == 4:
@@ -950,7 +906,7 @@ class GLMaterialNode(GLNode):
                 self.material.diffuse = [diffuse, diffuse, diffuse, 1.0]
 
         if self.specular_input.fresh_input:
-            specular = self.specular_input.get_received_data()
+            specular = self.specular_input()
             t = type(specular)
             if t == np.ndarray:
                 if specular.shape[0] == 4:
@@ -964,7 +920,7 @@ class GLMaterialNode(GLNode):
                 self.material.specular = [specular, specular, specular, 1.0]
 
         if self.emission_input.fresh_input:
-            emission = self.emission_input.get_received_data()
+            emission = self.emission_input()
             t = type(emission)
             if t == np.ndarray:
                 if emission.shape[0] == 4:
@@ -978,7 +934,7 @@ class GLMaterialNode(GLNode):
                 self.material.emission = [emission, emission, emission, 1.0]
 
         if self.shininess_input.fresh_input:
-            shininess = self.shininess_input.get_received_data()
+            shininess = self.shininess_input()
             t = type(shininess)
             shininess = any_to_float(shininess)
             if shininess < 0:
@@ -1232,6 +1188,9 @@ class GLAlignNode(GLNode):
     def __init__(self, label: str, data, args):
         self.ready = False
         super().__init__(label, data, args)
+        self.x = None
+        self.y = None
+        self.z = None
         self.axis = np.array([0.0, 1.0, 0.0])
         self.up = np.array([0.0, 1.0, 0.0])
 
@@ -1245,9 +1204,9 @@ class GLAlignNode(GLNode):
                 float_count += 1
 
         self.gl_input = self.add_input('gl chain in', triggers_execution=True)
-        self.x_input = self.add_input('x', widget_type='drag_float', default_value=self.axis[0], callback=self.axis_changed)
-        self.y_input = self.add_input('y', widget_type='drag_float', default_value=self.axis[1], callback=self.axis_changed)
-        self.z_input = self.add_input('z', widget_type='drag_float', default_value=self.axis[2], callback=self.axis_changed)
+        self.x = self.add_input('x', widget_type='drag_float', default_value=self.axis[0], callback=self.axis_changed)
+        self.y = self.add_input('y', widget_type='drag_float', default_value=self.axis[1], callback=self.axis_changed)
+        self.z = self.add_input('z', widget_type='drag_float', default_value=self.axis[2], callback=self.axis_changed)
         self.gl_output = self.add_output('gl chain out')
         self.align()
         self.ready = True
@@ -1273,9 +1232,9 @@ class GLAlignNode(GLNode):
             gl.glMultMatrixf(self.alignment_matrix)
 
     def axis_changed(self, input=None):
-        self.axis[0] = self.x_input.get_widget_value()
-        self.axis[1] = self.y_input.get_widget_value()
-        self.axis[2] = self.z_input.get_widget_value()
+        self.axis[0] = self.x()
+        self.axis[1] = self.y()
+        self.axis[2] = self.z()
         self.axis /= (math.sqrt(self.axis[0] * self.axis[0] + self.axis[1] * self.axis[1] + self.axis[2] * self.axis[2]))
         self.align()
 
@@ -1367,20 +1326,20 @@ class GLTextNode(GLNode):
         self.new_text = True
 
     def color_changed(self):
-        self.color = self.text_color.get_widget_value()
+        self.color = self.text_color()
         self.color[0] /= 255.0
         self.color[1] /= 255.0
         self.color[2] /= 255.0
 
     def size_changed(self):
-        size = self.text_size.get_widget_value()
+        size = self.text_size()
         if size != self.font_size:
             self.font_size = size
             self.initialized = False
             self.new_text = True
 
     def font_changed(self):
-        path = self.text_font.get_widget_value()
+        path = self.text_font()
         if self.font_path != path:
             self.font_path = path
             self.initialized = False
@@ -1485,8 +1444,8 @@ class GLTextNode(GLNode):
                 glDeleteLists(self.display_list, 1)
             self.display_list = glGenLists(1)
 
-            pos = [self.position_x_input.get_widget_value(), self.position_y_input.get_widget_value()]
-            scale = self.scale_input.get_widget_value() / 100
+            pos = [self.position_x_input(), self.position_y_input()]
+            scale = self.scale_input() / 100
             text = self.text_input.get_received_data()
 
             if type(text) == str:
@@ -1522,7 +1481,7 @@ class GLTextNode(GLNode):
                     if type(fragment) == list:
                         this_text = fragment[0] + ' '
                         this_alpha = fragment[1]
-                        glColor4f(self.color[0], self.color[1], self.color[2], self.text_alpha_input.get_widget_value() * this_alpha)
+                        glColor4f(self.color[0], self.color[1], self.color[2], self.text_alpha_input() * this_alpha)
                     elif type(fragment) == str:
                         this_text = fragment + ' '
                     for index, c in enumerate(this_text):
@@ -1565,12 +1524,12 @@ class GLTextNode(GLNode):
         # glEnable(GL_BLEND)
         # glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         # glEnable(GL_TEXTURE_2D)
-        glColor4f(self.color[0], self.color[1], self.color[2], self.text_alpha_input.get_widget_value())
+        glColor4f(self.color[0], self.color[1], self.color[2], self.text_alpha_input())
         if self.display_list != -1:
             glCallList(self.display_list)
-        # pos = [self.position_x_input.get_widget_value(), self.position_y_input.get_widget_value()]
-        # scale = self.scale_input.get_widget_value() / 100
-        # text = self.text_input.get_widget_value()
+        # pos = [self.position_x_input(), self.position_y_input()]
+        # scale = self.scale_input() / 100
+        # text = self.text_input()
         # glBindTexture(GL_TEXTURE_2D, self.texture)
         #
         # for c in text:

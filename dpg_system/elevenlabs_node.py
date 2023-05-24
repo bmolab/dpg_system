@@ -47,21 +47,21 @@ class ElevenLabNode(Node):
         self.voices['David']= 'p1NETszyIlYTrbi495Pf'
 
         voice_names = list(self.voices.keys())
-        self.voice_property = self.add_input('voice', widget_type='combo')
-        self.voice_property.widget.combo_items = voice_names
+        self.voice = self.add_input('voice', widget_type='combo')
+        self.voice.widget.combo_items = voice_names
 
-        self.stability_property = self.add_input('stability', widget_type='drag_float', default_value=.02)
-        self.similarity_boost_property = self.add_input('similarity_boost', widget_type='drag_float', default_value=1.0)
+        self.stability = self.add_input('stability', widget_type='drag_float', default_value=.02)
+        self.similarity_boost = self.add_input('similarity_boost', widget_type='drag_float', default_value=1.0)
 
     def execute(self):
-        text_to_speak = any_to_string(self.text_input.get_received_data())
-        current_voice = self.voice_property.get_widget_value()
+        text_to_speak = any_to_string(self.text_input())
+        current_voice = self.voice()
         data = {
             'text': text_to_speak,
             'voice_settings':
             {
-                'stability': self.stability_property.get_widget_value(),
-                'similarity_boost': self.similarity_boost_property.get_widget_value()
+                'stability': self.stability(),
+                'similarity_boost': self.similarity_boost()
             }
         }
         response = requests.post(self.url + self.voices[current_voice], json=data, headers=self.headers)
