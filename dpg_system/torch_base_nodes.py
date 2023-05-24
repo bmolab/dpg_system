@@ -95,14 +95,14 @@ class TorchDeviceDtypeNode(TorchNode):
         self.grad_input = self.add_input('requires_grad', widget_type='checkbox', default_value=self.requires_grad,
                                               callback=self.requires_grad_changed)
 
-    def device_changed(self, val='cpu'):
+    def device_changed(self):
         device_name = self.device_input.get_widget_value()
         self.device = torch.device(device_name)
 
-    def requires_grad_changed(self, val=False):
+    def requires_grad_changed(self):
         self.requires_grad = self.grad_input.get_widget_value()
 
-    def dtype_changed(self, val='torch.float'):
+    def dtype_changed(self):
         dtype = self.dtype_input.get_widget_value()
         if dtype in self.dtype_dict:
             self.dtype = self.dtype_dict[dtype]
@@ -191,7 +191,7 @@ class TorchWithDimNode(TorchNode):
         if self.dim_specified:
             self.dim_input = self.add_input('dim', widget_type='input_int', default_value=self.dim, callback=self.dim_changed)
 
-    def dim_changed(self, val=None):
+    def dim_changed(self):
         if self.dim_input is not None:
             self.dim = self.dim_input.get_widget_value()
 

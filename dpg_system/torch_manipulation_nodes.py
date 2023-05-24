@@ -100,7 +100,7 @@ class TorchViewNode(TorchNode):
                                                   callback=self.shape_changed)
         self.output = self.add_output("output")
 
-    def shape_changed(self, val=None):
+    def shape_changed(self):
         shape_text = self.shape_input.get_widget_value()
         shape_list = re.findall(r'[-+]?\d+', shape_text)
         shape = []
@@ -186,7 +186,7 @@ class TorchTransposeNode(TorchNode):
         self.transpose2_property = self.add_input('dim 2', widget_type='input_int', default_value=self.transpose2, callback=self.transpose_changed)
         self.output = self.add_output('permuted tensor out')
 
-    def transpose_changed(self, val=None):
+    def transpose_changed(self):
         self.transpose1 = self.transpose1_property.get_widget_value()
         self.transpose2 = self.transpose2_property.get_widget_value()
 
@@ -247,7 +247,7 @@ class TorchStackCatNode(TorchNode):
         self.dim_input = self.add_input('dim', widget_type='input_int', default_value=self.dim, callback=self.dim_changed)
         self.output = self.add_output("output")
 
-    def dim_changed(self, val=None):
+    def dim_changed(self):
         self.dim = self.dim_input.get_widget_value()
 
 
@@ -395,7 +395,7 @@ class TorchChunkNode(TorchNode):
         for i in range(self.splits):
             self.tensor_outputs.append(self.add_output("tensor " + str(i)))
 
-    def dim_changed(self, val=None):
+    def dim_changed(self):
         self.dim = self.dim_input.get_widget_value()
 
     def execute(self):
@@ -425,7 +425,7 @@ class TorchPermuteNode(TorchNode):
         self.permute_property = self.add_input('permute', widget_type='text_input', default_value=self.permute, callback=self.permute_changed)
         self.output = self.add_output('permuted tensor out')
 
-    def permute_changed(self, val=None):
+    def permute_changed(self):
         permute_text = self.permute_property.get_widget_value()
         permute_split = re.findall(r'[-+]?\d+', permute_text)
         permute_list, _, _ = list_to_hybrid_list(permute_split)
@@ -459,7 +459,7 @@ class TorchRepeatNode(TorchNode):
         self.repeat_property = self.add_input('repeats', widget_type='text_input', default_value=self.repeat, callback=self.repeat_changed)
         self.output = self.add_output('repeated tensor out')
 
-    def repeat_changed(self, val=None):
+    def repeat_changed(self):
         repeat_text = self.repeat_property.get_widget_value()
         repeat_split = re.findall(r'\d+', repeat_text)
         repeat_list, _, _ = list_to_hybrid_list(repeat_split)
@@ -489,7 +489,7 @@ class TorchTileNode(TorchNode):
         self.tile_property = self.add_input('tiling', widget_type='text_input', default_value=self.tile, callback=self.tile_changed)
         self.output = self.add_output('repeated tensor out')
 
-    def tile_changed(self, val=None):
+    def tile_changed(self):
         tile_text = self.tile_property.get_widget_value()
         tile_split = re.findall(r'\d+', tile_text)
         tile_list, _, _ = list_to_hybrid_list(tile_split)
@@ -562,7 +562,7 @@ class TorchSubtensorNode(TorchNode):
                                                   callback=self.dim_changed)
         self.output = self.add_output("output")
 
-    def dim_changed(self, val=None):
+    def dim_changed(self):
         dim_text = self.indices_input.get_widget_value()
         dim_split = dim_text.split(',')
         dimmers = []
@@ -641,10 +641,10 @@ class TorchSelectNode(TorchNode):
         self.index_input = self.add_input('index', widget_type='input_int', default_value=self.index, callback=self.index_changed)
         self.output = self.add_output("output")
 
-    def dim_changed(self, val=None):
+    def dim_changed(self):
         self.dim = self.dim_input.get_widget_value()
 
-    def index_changed(self, val=None):
+    def index_changed(self):
         self.index = self.index_input.get_widget_value()
 
     def execute(self):
@@ -803,7 +803,7 @@ class TorchNarrowNode(TorchWithDimNode):
         self.length_input = self.add_input('length', widget_type='drag_int', default_value=self.length, callback=self.params_changed)
         self.output = self.add_output("tensor out")
 
-    def params_changed(self, val=0):
+    def params_changed(self):
         self.start = self.start_input.get_widget_value()
         self.length = self.length_input.get_widget_value()
 

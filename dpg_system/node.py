@@ -134,18 +134,6 @@ class NodeOutput:
             children[index] = child.uuid
         output_container['children'] = children
 
-    # def load(self, output_container):
-    #     self.loaded_uuid = output_container['id']
-    #     self.loaded_children = []
-    #     kids = output_container['children']
-    #     for i in kids:
-    #         self.loaded_children.append(kids[i])
-
-
-def value_trigger_callback(s, a, u):
-    if u is not None:
-        u.execute()
-
 
 class NodeDisplay:
     def __init__(self, label: str = "", uuid=None, node=None, width=80):
@@ -479,12 +467,15 @@ class PropertyWidget:
                 dpg.set_item_callback(self.uuid, callback=lambda s, a, u: self.value_changed(a))
 
             if self.widget_has_trigger:
-                self.trigger_widget = dpg.add_button(label='', width=14, callback=value_trigger_callback, user_data=self.node)
+                self.trigger_widget = dpg.add_button(label='', width=14, callback=self.trigger_value)
                 with dpg.theme() as item_theme:
                     with dpg.theme_component(dpg.mvAll):
                         dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
                 dpg.bind_item_theme(self.trigger_widget, item_theme)
         return
+
+    def trigger_value(self):
+        self.node.execute()
 
     def set_default_value(self, data):
         if self.widget in ['drag_float', 'slider_float', 'knob_float', 'input_float']:
@@ -839,7 +830,7 @@ class NodeInput:
             if self.widget:
                 self.widget.set(data)
             if self.callback:
-                self.callback(self)
+                self.callback()
 
     def trigger(self):
         if self.triggers_execution:

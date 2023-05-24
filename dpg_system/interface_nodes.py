@@ -8,6 +8,7 @@ import threading
 from dpg_system.conversion_utils import *
 from dpg_system.matrix_nodes import RollingBuffer
 
+
 def register_interface_nodes():
     Node.app.register_node("menu", MenuNode.factory)
     Node.app.register_node("toggle", ToggleNode.factory)
@@ -26,6 +27,7 @@ def register_interface_nodes():
     Node.app.register_node("Value Tool", ValueNode.factory)
     Node.app.register_node('print', PrintNode.factory)
     Node.app.register_node('load_action', LoadActionNode.factory)
+    Node.app.register_node('load_bang', LoadActionNode.factory)
     Node.app.register_node('color', ColorPickerNode.factory)
     Node.app.register_node('vector', VectorNode.factory)
     Node.app.register_node('radio', RadioButtonsNode.factory)
@@ -48,7 +50,7 @@ class ButtonNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.flash_duration = .100
+        flash_duration = .100
         self.target_time = time.time() - self.flash_duration
         self.action_name = ''
         self.action = None
@@ -61,11 +63,11 @@ class ButtonNode(Node):
         self.input = self.add_input('', triggers_execution=True, widget_type='button', widget_width=14, callback=self.clicked_function)
         self.output = self.add_output("")
 
-        self.action_binding_property = self.add_option('bind to', widget_type='text_input', width=120, default_value=self.action_name, callback=self.binding_changed)
-        self.message_option = self.add_option('message', widget_type='text_input', default_value='bang', callback=self.message_changed)
-        self.width_option = self.add_option('width', widget_type='input_int', default_value=14, callback=self.size_changed)
-        self.height_option = self.add_option('height', widget_type='input_int', default_value=14, callback=self.size_changed)
-        self.flash_duration_option = self.add_option('flash duration', widget_type='drag_float', min=0, max=1.0, default_value=self.flash_duration)
+        self.bound_action = self.add_option('bind to', widget_type='text_input', width=120, default_value=self.action_name, callback=self.binding_changed)
+        self.message = self.add_option('message', widget_type='text_input', default_value='bang', callback=self.message_changed)
+        self.width = self.add_option('width', widget_type='input_int', default_value=14, callback=self.size_changed)
+        self.height = self.add_option('height', widget_type='input_int', default_value=14, callback=self.size_changed)
+        self.flash_duration = self.add_option('flash duration', widget_type='drag_float', min=0, max=1.0, default_value=flash_duration)
 
         with dpg.theme() as self.active_theme:
             with dpg.theme_component(dpg.mvAll):
@@ -78,28 +80,22 @@ class ButtonNode(Node):
                 dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
 
     def size_changed(self):
-        # print('button size changed')
-        width = self.width_option.get_widget_value()
-        height = self.height_option.get_widget_value()
-        dpg.set_item_width(self.input.widget.uuid, width)
-        dpg.set_item_height(self.input.widget.uuid, height)
+        dpg.set_item_width(self.input.widget.uuid, self.width())
+        dpg.set_item_height(self.input.widget.uuid, self.height())
 
     def binding_changed(self):
-        binding = self.action_binding_property.get_widget_value()
-        self.bind_to_action(binding)
-
-    def bind_to_action(self, action_name):
+        action_name = self.bound_action()
         if action_name != '':
             a = Node.app.find_action(action_name)
             if a is not None:
                 self.action_name = action_name
                 self.action = a
                 self.input.attach_to_action(a)
-                if self.message_option.get_widget_value() == 'bang':
+                if self.message() == 'bang':
                     size = dpg.get_text_size(self.action_name, font=dpg.get_item_font(self.input.widget.uuid))
                     if size is None:
                         size = [80, 14]
-                    dpg.set_item_width(self.input.widget.uuid, int(size[0] * self.app.font_scale_variable.get()) + 12)
+                    dpg.set_item_width(self.input.widget.uuid, int(size[0] * self.app.font_scale_variable()) + 12)
                     dpg.set_item_label(self.input.widget.uuid, self.action_name)
             else:
                 self.input.attach_to_action(None)
@@ -107,22 +103,17 @@ class ButtonNode(Node):
             self.input.attach_to_action(None)
 
     def message_changed(self):
-        new_name = self.message_option.get_widget_value()
+        new_name = self.message()
 
-        # print(new_name)
         if new_name != 'bang':
             dpg.set_item_label(self.input.widget.uuid, new_name)
             width = self.input.widget.get_text_width()
             if width < 14:
                 width = 14
-            # size = dpg.get_text_size(new_name, font=dpg.get_item_font(self.input.widget.uuid))
-            # if size is None:
-            #     size = [80, 14]
             dpg.set_item_width(self.input.widget.uuid, width)
 
     def clicked_function(self, input=None):
-        self.flash_duration = self.flash_duration_option.get_widget_value()
-        self.target_time = time.time() + self.flash_duration
+        self.target_time = time.time() + self.flash_duration()
         dpg.bind_item_theme(self.input.widget.uuid, self.active_theme)
         self.add_frame_task()
 
@@ -137,10 +128,7 @@ class ButtonNode(Node):
             self.remove_frame_tasks()
 
     def execute(self):
-        # if self.action is not None:
-        #     print('execute', self.action)
-        #     self.action()
-        self.output.send(self.message_option.get_widget_value())
+        self.output.send(self.message())
 
 
 class MenuNode(Node):
@@ -152,43 +140,41 @@ class MenuNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.choice = ''
         self.choices = self.args_as_list()
-        self.choice_input = self.add_input('##choice', widget_type='combo', default_value=self.choice, callback=self.set_choice)
-        self.choice_input.widget.combo_items = self.choices
-        self.large_text_option = self.add_option('large_font', widget_type='checkbox', default_value=False,
+        self.choice = self.add_input('##choice', widget_type='combo', default_value=self.choices[0], callback=self.set_choice)
+        self.choice.widget.combo_items = self.choices
+        self.large_text = self.add_option('large_font', widget_type='checkbox', default_value=False,
                                                  callback=self.large_font_changed)
         self.output = self.add_output("")
 
     def get_preset_state(self):
         preset = {}
-        preset['value'] = self.choice_input.get_widget_value()
+        preset['value'] = self.choice()
         return preset
 
     def set_preset_state(self, preset):
         if 'value' in preset:
-            self.choice_input.widget.set(preset['value'])
+            self.choice.widget.set(preset['value'])
             self.execute()
 
     def large_font_changed(self):
-        use_large = self.large_text_option.get_widget_value()
+        use_large = self.large_text()
         if use_large:
-            self.choice_input.set_font(self.app.large_font)
+            self.choice.set_font(self.app.large_font)
         else:
-            self.choice_input.set_font(self.app.default_font)
-        adjusted_width = self.choice_input.widget.adjust_to_text_width()
+            self.choice.set_font(self.app.default_font)
+        adjusted_width = self.choice.widget.adjust_to_text_width()
         # self.width_option.widget.set(adjusted_width)
-        # if self.choice_input.widget.trigger_widget is not None:
+        # if self.choice.widget.trigger_widget is not None:
         #     if use_large:
-        #         dpg.set_item_width(self.choice_input.widget.trigger_widget, 28)
+        #         dpg.set_item_width(self.choice.widget.trigger_widget, 28)
         #     else:
-        #         dpg.set_item_width(self.choice_input.widget.trigger_widget, 14)
+        #         dpg.set_item_width(self.choice.widget.trigger_widget, 14)
 
-    def set_choice(self, input=None):
+    def set_choice(self):
         do_execute = True
-        if self.choice_input.fresh_input:
-            self.choice_input.fresh_input = False
-            input_choice = self.choice_input._data
+        if self.choice.fresh_input:
+            input_choice = self.choice()
             t = type(input_choice)
             test_choice = None
             if t == list:
@@ -202,14 +188,14 @@ class MenuNode(Node):
                         for new_choice in input_choice[1:]:
                             if new_choice not in self.choices:
                                 self.choices.append(new_choice)
-                        dpg.configure_item(self.choice_input.widget.uuid, items=self.choices)
+                        dpg.configure_item(self.choice.widget.uuid, items=self.choices)
                         do_execute = False
                     else:
                         self.choices = []
                         for new_choice in input_choice:
                             if new_choice not in self.choices:
                                 self.choices.append(new_choice)
-                        dpg.configure_item(self.choice_input.widget.uuid, items=self.choices)
+                        dpg.configure_item(self.choice.widget.uuid, items=self.choices)
                         do_execute = False
             elif t in [int, float, bool]:
                 test_choice = str(input_choice)
@@ -220,12 +206,12 @@ class MenuNode(Node):
             elif t == str:
                 test_choice = input_choice
             if test_choice is not None and test_choice in self.choices:
-                self.choice_input.set(test_choice)
+                self.choice.set(test_choice)
         if do_execute:
             self.execute()
 
     def execute(self):
-        self.outputs[0].send(self.choice_input.get_widget_value())
+        self.outputs[0].send(self.choice())
 
 
 class MouseNode(Node):
@@ -240,12 +226,12 @@ class MouseNode(Node):
         self.mouse_pos = None
         self.streaming = False
 
-        self.input = self.add_input("", triggers_execution=True, widget_type='checkbox', widget_width=40, callback=self.start_stop_streaming)
-        self.output_x = self.add_output("x")
-        self.output_y = self.add_output("y")
+        self.input = self.add_input('', triggers_execution=True, widget_type='checkbox', widget_width=40, callback=self.start_stop_streaming)
+        self.output_x = self.add_output('x')
+        self.output_y = self.add_output('y')
 
     def start_stop_streaming(self, input=None):
-        if self.input.get_widget_value():
+        if self.input():
             if not self.streaming:
                 self.add_frame_task()
                 self.streaming = True
@@ -255,7 +241,7 @@ class MouseNode(Node):
                 self.streaming = False
 
     def frame_task(self):
-        if self.input.get_widget_value():
+        if self.input():
             self.mouse_pos = dpg.get_mouse_pos(local=False)
             self.execute()
 
@@ -289,51 +275,46 @@ class PresetsNode(Node):
         self.input = self.add_input('', triggers_execution=True)
         for i in range(self.preset_count):
             self.buttons.append(i + 1)
+
         self.radio_group = self.add_property(widget_type='radio_group', callback=self.preset_click)
         self.radio_group.widget.combo_items = self.buttons
 
         self.output = self.add_output('')
-        # if label == 'radio_h':
-        #     self.radio_group.widget.horizontal = True
-        # else:
         self.radio_group.widget.horizontal = False
 
-        self.remember_mode = 'ui'
+        remember_mode = 'ui'
         if label in ['snapshots', 'states']:
-            self.remember_mode = 'nodes'
+            remember_mode = 'nodes'
         if label in ['archive', 'versions']:
-            self.remember_mode = 'patch'
+            remember_mode = 'patch'
 
-        self.remember_all_properties = self.add_option('remember', widget_type='combo', default_value=self.remember_mode, callback=self.remember_all_changed)
-        self.remember_all_properties.widget.combo_items = ['ui', 'nodes', 'patch']
+        self.remember_mode = self.add_option('remember', widget_type='combo', default_value=remember_mode, callback=self.remember_mode_changed)
+        self.remember_mode.widget.combo_items = ['ui', 'nodes', 'patch']
         self.presets = [None] * self.preset_count
         self.capturing_patch = False
         self.patch_preset_paste_pending = False
         self.created_nodes = None
         self.preset_clipboard = None
 
-    def remember_all_changed(self):
-        self.remember_mode = self.remember_all_properties.get_widget_value()
+    def remember_mode_changed(self):
         self.presets = [None] * self.preset_count
 
     def preset_click(self):
-        # print('clicking preset', PresetsNode.restoring_patch)
         if PresetsNode.restoring_patch:
             return
         if dpg.is_key_down(dpg.mvKey_Shift):
-            # print('store preset')
             self.save_preset()
         else:
-            # print('load preset from click')
             self.load_preset()
 
     def save_preset(self):
         editor = self.my_editor
-        current_preset_index = string_to_int(self.radio_group.get_widget_value()) - 1
+        remember_mode = self.remember_mode()
+        current_preset_index = string_to_int(self.radio_group()) - 1
         if len(self.presets) > current_preset_index + 1:
             if self.presets[current_preset_index] is None:
                 self.presets[current_preset_index] = {}
-            if self.remember_mode == 'patch':
+            if remember_mode == 'patch':
                 patch_container = {}
                 editor = Node.app.get_current_editor()
                 if editor is not None:
@@ -345,78 +326,53 @@ class PresetsNode(Node):
                     for kid in kids:
                         node = kid.node
                         if node is not None:
-                            if self.remember_mode == 'nodes':
+                            if remember_mode == 'nodes':
                                 properties = {}
                                 node.store_properties(properties)
                                 self.presets[current_preset_index][node.uuid] = properties
-                            elif self.remember_mode == 'ui':
+                            elif remember_mode == 'ui':
                                 self.presets[current_preset_index][node.uuid] = node.get_preset_state()
                 else:
                     for node in editor._nodes:
-                        if self.remember_mode == 'nodes':
+                        if remember_mode == 'nodes':
                             properties = {}
                             node.store_properties(properties)
                             self.presets[current_preset_index][node.uuid] = properties
-                        elif self.remember_mode == 'ui':
+                        elif remember_mode == 'ui':
                             self.presets[current_preset_index][node.uuid] = node.get_preset_state()
 
     def frame_task(self):
-        # print('preset frame task')
         if self.patch_preset_paste_pending:
-
             self.do_pending_archive_paste()
         self.remove_frame_tasks()
 
     def do_pending_archive_paste(self):
-        # print('about to paste', self.preset_clipboard)
         self.patch_preset_paste_pending = False
         editor = Node.app.get_current_editor()
-        # here is where the error now resides - intermittent error on this next paste
-        current_preset_index = string_to_int(self.radio_group.get_widget_value()) - 1
+        current_preset_index = string_to_int(self.radio_group()) - 1
         editor.paste(self.presets[current_preset_index], drag=False, origin=True, clear_loaded_uuids=False)
         # on paste, the link ids in the preset will no longer reflect the node id's
         # so they must be updated
         self.created_nodes = self.app.created_nodes.copy()
         editor.paste(self.preset_clipboard, drag=False, origin=True, previously_created_nodes=self.created_nodes)
-        # print('preset pasted', self.presets)
         editor.clear_loaded_uuids()
 
     def load_preset(self):
-        # print('restoring preset')
         editor = self.my_editor
-        # preset_container = {}
-        # self.save(preset_container, 0)
-        # print('saved preset')
-        # nodes_container = {}
-        # nodes_container[self.label] = preset_container
-        # faux_container = {}
-        # faux_container['nodes'] = nodes_container
+        remember_mode = self.remember_mode()
         self.preset_clipboard = self.copy_to_clipboard()
-        current_preset_index = string_to_int(self.radio_group.get_widget_value()) - 1
+        current_preset_index = string_to_int(self.radio_group()) - 1
         if len(self.presets) > current_preset_index + 1:
             if self.presets[current_preset_index] is None:
                 return
-            if self.remember_mode == 'patch':
-                # clear patch
+            if remember_mode == 'patch':
                 PresetsNode.restoring_patch = True
-                # self.app.pause()
                 try:
                     editor = Node.app.get_current_editor()
                     if editor is not None:
                         editor.remove_all_nodes()
                         self.add_frame_task()
                         self.patch_preset_paste_pending = True
-
-                        #perhaps we need to spread this acrosstask calls?
-                        # print('about to paste', self.preset_clipboard)
-                        # self.patch_preset_paste_pending = False
-                        #
-                        # # here is where the error now resides - intermittent error on this next paste
-                        #
-                        #
-                        # editor.paste(self.preset_clipboard, drag=False, origin=True, previously_created_nodes=self.created_nodes)
-                        # print('preset pasted', self.presets)
-                        # editor.clear_loaded_uuids()
                 except Exception as e:
                     print('error restoring patch', e)
                 # self.app.resume()
@@ -427,18 +383,17 @@ class PresetsNode(Node):
                     for kid in kids:
                         node = kid.node
                         if node is not None:
-                            if self.remember_mode == 'nodes' and node != self:
+                            if remember_mode == 'nodes' and node != self:
                                 node.restore_properties(self.presets[current_preset_index][node.uuid])
-                            elif self.remember_mode == 'ui':
+                            elif remember_mode == 'ui':
                                 node.set_preset_state(self.presets[current_preset_index][node.uuid])
                 else:
                     for node in editor._nodes:
                         if node.uuid in self.presets[current_preset_index]:
-                            if self.remember_mode == 'nodes' and node != self:
+                            if remember_mode == 'nodes' and node != self:
                                 node.restore_properties(self.presets[current_preset_index][node.uuid])
-                            elif self.remember_mode == 'ui':
+                            elif remember_mode == 'ui':
                                 node.set_preset_state(self.presets[current_preset_index][node.uuid])
-        # self.app.resume()
 
     def save_custom(self, container):
         # note this only works for save with the copy()
@@ -447,68 +402,53 @@ class PresetsNode(Node):
         container['presets'] = self.presets.copy()
 
     def load_custom(self, container):
-        # print('load custom')
         if 'presets' in container:
             self.presets = container['presets'].copy()
-            # print('load custom', self.presets)
 
     def post_load_callback(self):
-        # print('post load')
         editor = self.my_editor
+        remember_mode = self.remember_mode()
         translation_table = {}
         if self.presets is not None:
-            # print(self.presets)
             for preset in self.presets:
                 if preset is not None:
-                    if self.remember_mode == 'patch':
+                    if remember_mode == 'patch':
                         if 'nodes' in preset:
                             nodes_container = preset['nodes']
                             for index in nodes_container:
                                 node_container = nodes_container[index]
-                                # print('prepping translation table', node_container)
                                 if 'id' in node_container:
                                     node_preset_uuid_int = int(node_container['id'])
                                     if node_preset_uuid_int not in translation_table:
                                         for node in editor._nodes:
-                                            # print(node.loaded_uuid, node_preset_uuid_int)
                                             if node.loaded_uuid == node_preset_uuid_int:
                                                 translation_table[node_preset_uuid_int] = node.uuid
                     else:
                         for node_preset_uuid in preset:
-                            # print('uuid', node_preset_uuid)
                             node_preset_uuid_int = int(node_preset_uuid)
                             if node_preset_uuid_int not in translation_table:
                                 for node in editor._nodes:
-                                    # print(node.loaded_uuid, node_preset_uuid_int)
                                     if node.loaded_uuid == node_preset_uuid_int:
                                         translation_table[node_preset_uuid_int] = node.uuid
 
-            # print('translation table built', translation_table)
             adjusted_presets = [None] * self.preset_count
             for index, preset in enumerate(self.presets):
                 if preset is not None:
-                    if self.remember_mode == 'patch':
+                    if remember_mode == 'patch':
                         if 'nodes' in preset:
                             adjusted_presets[index] = self.presets[index].copy()
                             adjusted_presets[index]['nodes'] = {}
 
-                            # print('got nodes')
                             nodes_container = preset['nodes']
                             for index_key in nodes_container:
                                 node_container = nodes_container[index_key]
-                                # print('got node container')
                                 if 'id' in node_container:
                                     node_preset_uuid_int = int(node_container['id'])
-                                    # print('node_preset_uuid_int', node_preset_uuid_int)
                                     if node_preset_uuid_int in translation_table:
-                                        # print('is in table')
                                         new_uuid = translation_table[node_preset_uuid_int]
                                         node_container['id'] = new_uuid
-                                        # print(new_uuid, node_container)
                                         adjusted_presets[index]['nodes'][new_uuid] = node_container
-                                        # print('adjusted_presets', new_uuid)
                                     else:
-                                        # print('not in table, save as is')
                                         adjusted_presets[index]['nodes'][node_preset_uuid_int] = node_container
                     else:
                         adjusted_presets[index] = []
@@ -518,16 +458,13 @@ class PresetsNode(Node):
                                 new_uuid = translation_table[node_preset_uuid_int]
                                 adjusted_presets[index][new_uuid] = preset[node_preset_uuid_int]
 
-            # print('presets adjusted')
             self.presets = adjusted_presets.copy()
-            # print('adjusted presets saved', self.presets)
         else:
             print('None presets')
 
     def execute(self):
         if self.input.fresh_input:
-            # print('load preset from external input')
-            data = self.input.get_received_data()
+            data = self.input()
             self.radio_group.widget.set(data)
             self.load_preset()
 
@@ -546,6 +483,7 @@ class RadioButtonsNode(Node):
             for i in range(len(args)):
                 v, t = decode_arg(args, i)
                 self.buttons.append(v)
+
         self.radio_group = self.add_property(widget_type='radio_group', callback=self.execute)
         self.radio_group.widget.combo_items = self.buttons
         if label == 'radio_h':
@@ -556,7 +494,7 @@ class RadioButtonsNode(Node):
 
     def get_preset_state(self):
         preset = {}
-        preset['value'] = self.radio_group.get_widget_value()
+        preset['value'] = self.radio_group()
         return preset
 
     def set_preset_state(self, preset):
@@ -568,7 +506,7 @@ class RadioButtonsNode(Node):
         self.execute()
 
     def execute(self):
-        self.output.send(self.radio_group.get_widget_value())
+        self.output.send(self.radio_group())
 
 
 class ToggleNode(Node):
@@ -580,21 +518,22 @@ class ToggleNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.value = False
-        self.variable = None
-        self.variable_name = ''
-        self.input = self.add_input("", triggers_execution=True, widget_type='checkbox', widget_width=40, callback=self.call_execute)
-        self.output = self.add_output("")
-        self.variable_binding_property = self.add_option('bind to', widget_type='text_input', width=120, default_value=self.variable_name, callback=self.binding_changed)
+        variable_name = ''
         if self.ordered_args is not None and len(self.ordered_args) > 0:
             for i in range(len(self.ordered_args)):
                 var_name, t = decode_arg(self.ordered_args, i)
                 if t == str:
-                    self.variable_name = var_name
+                    variable_name = var_name
+
+        self.value = False
+        self.variable = None
+        self.input = self.add_input("", triggers_execution=True, widget_type='checkbox', widget_width=40, callback=self.call_execute)
+        self.output = self.add_output("")
+        self.bound_variable = self.add_option('bind to', widget_type='text_input', width=120, default_value=variable_name, callback=self.binding_changed)
 
     def get_preset_state(self):
         preset = {}
-        preset['value'] = self.input.get_widget_value()
+        preset['value'] = self.input()
         return preset
 
     def set_preset_state(self, preset):
@@ -603,11 +542,7 @@ class ToggleNode(Node):
             self.execute()
 
     def binding_changed(self):
-        binding = self.variable_binding_property.get_widget_value()
-        self.bind_to_variable(binding)
-
-    def bind_to_variable(self, variable_name):
-        # change name
+        variable_name = self.bound_variable()
         if self.variable is not None:
             self.variable.detach_client(self)
             self.variable = None
@@ -617,7 +552,6 @@ class ToggleNode(Node):
                 default = False
                 v = Node.app.add_variable(variable_name, default_value=default)
             if v:
-                self.variable_name = variable_name
                 self.variable = v
                 self.input.attach_to_variable(v)
                 self.variable.attach_client(self)
@@ -625,8 +559,7 @@ class ToggleNode(Node):
                 self.variable_update()
 
     def custom_create(self, from_file):
-        if self.variable_name != '':
-            self.bind_to_variable(self.variable_name)
+        self.binding_changed()
 
     def variable_update(self):
         if self.variable is not None:
@@ -662,7 +595,7 @@ class ToggleNode(Node):
                 self.value = any_to_bool(received)
                 self.input.set(self.value)
         else:
-            self.value = any_to_bool(self.input.get_widget_value())
+            self.value = any_to_bool(self.input())
         if self.variable is not None:
             self.variable.set(self.value, from_client=self)
         self.output.send(self.value)
@@ -681,33 +614,28 @@ class GainNode(Node):
         widget_width = 200
         self.value = dpg.generate_uuid()
         self.horizontal = True
-        self.max = None
+        max = 1.0
 
         if self.ordered_args is not None:
             for i in range(len(self.ordered_args)):
                 val, t = decode_arg(self.ordered_args, i)
                 if t in [float, int]:
-                    self.max = val
-        if self.max is None:
-            self.max = 1.0
+                    max = val
+
         self.input = self.add_input("", triggers_execution=True)
-        self.gain_property = self.add_property('', widget_type=widget_type, width=widget_width, max=self.max)
+        self.gain = self.add_property('', widget_type=widget_type, width=widget_width, max=max)
         self.output = self.add_output('')
-        self.max_option = self.add_option('max', widget_type='drag_float', callback=self.max_changed, default_value=self.max)
+        self.max = self.add_option('max', widget_type='drag_float', callback=self.max_changed, default_value=max)
 
     def max_changed(self):
-        self.max = self.max_option.get_widget_value()
-        self.gain_property.widget.set_limits(0.0, self.max)
-        # dpg.configure_item(self.max_option.widget.uuid, max=self.max)
+        self.gain.widget.set_limits(0.0, self.max())
 
     def execute(self):
         if self.input.fresh_input:
-            data = self.input.get_received_data()
-            gain = self.gain_property.get_widget_value()
+            data = self.input()
             t = type(data)
             if t is not str:
-                out_data = data * gain
-                self.output.send(out_data)
+                self.output.send(data * self.gain())
 
 
 class ValueNode(Node):
@@ -811,7 +739,7 @@ class ValueNode(Node):
             self.large_text_option = self.add_option('large_font', widget_type='checkbox', default_value=False, callback=self.large_font_changed)
 
     def large_font_changed(self):
-        use_large = self.large_text_option.get_widget_value()
+        use_large = self.large_text_option()
         if use_large:
             self.input.set_font(self.app.large_font)
         else:
@@ -826,7 +754,7 @@ class ValueNode(Node):
 
     def get_preset_state(self):
         preset = {}
-        preset['value'] = self.input.get_widget_value()
+        preset['value'] = self.input()
         return preset
 
     def set_preset_state(self, preset):
@@ -835,7 +763,7 @@ class ValueNode(Node):
             self.execute()
 
     def binding_changed(self):
-        binding = self.variable_binding_property.get_widget_value()
+        binding = self.variable_binding_property()
         self.bind_to_variable(binding)
 
     def bind_to_variable(self, variable_name):
@@ -871,20 +799,20 @@ class ValueNode(Node):
 
     def options_changed(self):
         if self.min_property is not None and self.max_property is not None:
-            self.min = self.min_property.get_widget_value()
-            self.max = self.max_property.get_widget_value()
+            self.min = self.min_property()
+            self.max = self.max_property()
             self.input.widget.set_limits(self.min, self.max)
 
         if self.format_property is not None:
-            self.format = self.format_property.get_widget_value()
+            self.format = self.format_property()
             self.input.widget.set_format(self.format)
 
-        width = self.width_option.get_widget_value()
+        width = self.width_option()
         dpg.set_item_width(self.input.widget.uuid, width)
 
         if self.grow_option is not None:
-            self.grow_mode = self.grow_option.get_widget_value()
-        # height = self.height_option.get_widget_value()
+            self.grow_mode = self.grow_option()
+        # height = self.height_option()
         # dpg.set_item_height(self.input.widget.uuid, height)
 
     def value_changed(self, force=True):
@@ -911,7 +839,7 @@ class ValueNode(Node):
     def execute(self):
         value = None
         if self.inputs[0].fresh_input:
-            in_data = self.inputs[0].get_received_data()
+            in_data = self.inputs[0]()
             t = type(in_data)
             if t == str:
                 value = in_data.split(' ')
@@ -949,7 +877,7 @@ class ValueNode(Node):
         if self.input.widget.widget == 'text_input':
             adjusted_width = self.input.widget.get_text_width()
             if self.grow_mode == 'grow_to_fit':
-                if adjusted_width > self.width_option.get_widget_value():
+                if adjusted_width > self.width_option():
                     dpg.configure_item(self.input.widget.uuid, width=adjusted_width)
                     self.width_option.set(adjusted_width)
             elif self.grow_mode == 'grow_or_shrink_to_fit':
@@ -1001,7 +929,7 @@ class VectorNode(Node):
         preset = {}
         values = []
         for i in range(self.current_component_count):
-            values.append(self.component_properties[i].get_widget_value())
+            values.append(self.component_properties[i]())
         preset['values'] = values
         return preset
 
@@ -1024,7 +952,7 @@ class VectorNode(Node):
                 dpg.hide_item(self.component_properties[i].uuid)
 
     def component_count_changed(self):
-        self.current_component_count = self.component_count_property.get_widget_value()
+        self.current_component_count = self.component_count_property()
         if self.current_component_count > self.max_component_count:
             self.current_component_count = self.max_component_count
             self.component_count_property.set(self.current_component_count)
@@ -1038,13 +966,13 @@ class VectorNode(Node):
         self.execute()
 
     def change_format(self):
-        self.format = self.format_option.get_widget_value()
+        self.format = self.format_option()
         for i in range(self.max_component_count):
             dpg.configure_item(self.component_properties[i].widget.uuid, format=self.format)
 
     def execute(self):
         if self.input.fresh_input:
-            value = self.input.get_received_data()
+            value = self.input()
             t = type(value)
             if t == list:
                 value = np.array(value)
@@ -1073,7 +1001,7 @@ class VectorNode(Node):
         else:
             output_array = np.ndarray((self.current_component_count))
             for i in range(self.current_component_count):
-                output_array[i] = self.component_properties[i].get_widget_value()
+                output_array[i] = self.component_properties[i]()
             self.output.set_value(output_array)
         self.output.send()
 
@@ -1090,15 +1018,14 @@ class PrintNode(Node):
         self.precision = 3
         self.format_string = '{:.3f}'
         self.input = self.add_input('in', triggers_execution=True)
-
-        self.precision_option = self.add_option(label='precision', widget_type='drag_int', default_value=self.precision, min=0, max=32, callback=self.change_format)
+        self.precision = self.add_option(label='precision', widget_type='drag_int', default_value=self.precision, min=0, max=32, callback=self.change_format)
 
     def change_format(self):
-        self.precision = self.precision_option.get_widget_value()
-        if self.precision < 0:
-            self.precision = 0
-            self.precision_option.set(0)
-        self.format_string = '{:.' + str(self.precision) + 'f}'
+        precision = self.precision()
+        if precision < 0:
+            precision = 0
+            self.precision.set(precision)
+        self.format_string = '{:.' + str(precision) + 'f}'
 
     def print_list(self, in_list):
         print('[', end='')
@@ -1117,7 +1044,7 @@ class PrintNode(Node):
         print(']', end=end)
 
     def execute(self):
-        data = self.input.get_received_data()
+        data = self.input()
         t = type(data)
         if t in [int, np.int64, bool, np.bool_, str]:
             print(data)
@@ -1127,10 +1054,10 @@ class PrintNode(Node):
             self.print_list(data)
             print('')
         elif t == np.ndarray:
-            np.set_printoptions(precision=self.precision)
+            np.set_printoptions(precision=self.precision())
             print(data)
         elif self.app.torch_available and t == torch.Tensor:
-            torch.set_printoptions(precision=self.precision)
+            torch.set_printoptions(precision=self.precision())
             print(data)
 
 
@@ -1144,17 +1071,27 @@ class LoadActionNode(Node):
         super().__init__(label, data, args)
 
         self.first_time = True
+        load_bang = False
+        if self.label == 'load_bang':
+            load_bang = True
 
-        self.message_list = []
-        if len(args) > 0:
+        if len(args) > 0 and not load_bang:
+            self.message_list = []
             for arg in args:
                 self.message_list.append(arg)
-        self.message_string = ' '.join(self.message_list)
+                message_string = ' '.join(self.message_list)
+        else:
+            self.message_list = ['bang']
+            message_string = 'bang'
 
         self.input = self.add_input('trigger', triggers_execution=True)
-        self.load_action_property = self.add_property(label='##loadActionString', widget_type='text_input', default_value=self.message_string)
+        if not load_bang:
+            self.load_action = self.add_property(label='##loadActionString', widget_type='text_input', default_value=message_string, callback=self.action_changed)
         self.output = self.add_output("out")
         self.add_frame_task()
+
+    def action_changed(self):
+        self.message_list = self.load_action().split(' ')
 
     def frame_task(self):
         if self.first_time:
@@ -1388,7 +1325,7 @@ class PlotNode(Node):
         self.lock.release()
 
     def change_colormap(self):
-        colormap = self.heat_map_colour_property.get_widget_value()
+        colormap = self.heat_map_colour_property()
         if colormap == 'none':
             dpg.bind_colormap(self.plot_tag, None)
             if self.style not in ['heat_map', 'heat_scroll']:
@@ -1427,8 +1364,8 @@ class PlotNode(Node):
         elif colormap == 'greys':
             dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Greys)
 
-    def array_fills_plot_changed(self, val=False):
-        self.array_fills_plot = self.array_fills_plot_option.get_widget_value()
+    def array_fills_plot_changed(self):
+        self.array_fills_plot = self.array_fills_plot_option()
 
     def frame_task(self):
         if PlotNode.mousing_plot == self.plotter or PlotNode.mousing_plot is None:
@@ -1513,7 +1450,7 @@ class PlotNode(Node):
                     self.y_data.set_write_pos(0)
                     self.update_plot()
                     self.was_drawing = True
-                    if self.continuous_output.get_widget_value():
+                    if self.continuous_output():
                         self.output.send(self.y_data.get_buffer()[0])
                         self.y_data.release_buffer()
 
@@ -1551,7 +1488,7 @@ class PlotNode(Node):
         self.y_data.set_update_style(self.update_style)
 
     def change_style_property(self):
-        self.style_type = self.style_property.get_widget_value()
+        self.style_type = self.style_property()
         if self.style_type == 'heat_map':
             self.style = self.heat_map_style
             self.update_style = 'buffer holds one sample of input'
@@ -1563,13 +1500,13 @@ class PlotNode(Node):
             self.heat_map_colour_property.set('none')
             self.update_style = 'input is stream of samples'
         self.y_data.set_update_style(self.update_style)
-        if self.style_type != 'heat_map' and self.sample_count_option.get_widget_value() == 1:
+        if self.style_type != 'heat_map' and self.sample_count_option() == 1:
             self.sample_count_option.set(200)
         self.change_sample_count()
 
     def change_sample_count(self):
         self.lock.acquire(blocking=True)
-        self.sample_count = self.sample_count_option.get_widget_value()
+        self.sample_count = self.sample_count_option()
         if self.sample_count < 1:
             self.sample_count = 1
             self.sample_count_option.set(self.sample_count)
@@ -1609,26 +1546,26 @@ class PlotNode(Node):
 
     def change_range(self):
         if self.style in [self.heat_map_style, self.heat_scroll_style]:
-            self.max_y = self.max_y_option.get_widget_value()
-            self.min_y = self.min_y_option.get_widget_value()
+            self.max_y = self.max_y_option()
+            self.min_y = self.min_y_option()
             self.range = self.max_y - self.min_y
             self.offset = - self.min_y
-            dpg.set_axis_limits(self.x_axis, self.min_x_option.get_widget_value() / self.sample_count, self.max_x_option.get_widget_value() / self.sample_count)
+            dpg.set_axis_limits(self.x_axis, self.min_x_option() / self.sample_count, self.max_x_option() / self.sample_count)
             dpg.set_axis_limits(self.y_axis, 0.0, 1.0)
         else:
-            self.max_y = self.max_y_option.get_widget_value()
-            self.min_y = self.min_y_option.get_widget_value()
+            self.max_y = self.max_y_option()
+            self.min_y = self.min_y_option()
             self.range = self.max_y - self.min_y
             self.offset = - self.min_y
-            dpg.set_axis_limits(self.y_axis, self.min_y_option.get_widget_value(), self.max_y_option.get_widget_value())
-            dpg.set_axis_limits(self.x_axis, self.min_x_option.get_widget_value(), self.max_x_option.get_widget_value())
+            dpg.set_axis_limits(self.y_axis, self.min_y_option(), self.max_y_option())
+            dpg.set_axis_limits(self.x_axis, self.min_x_option(), self.max_x_option())
 
     def change_size(self):
-        dpg.set_item_width(self.plot_tag, self.width_option.get_widget_value())
-        dpg.set_item_height(self.plot_tag, self.height_option.get_widget_value())
+        dpg.set_item_width(self.plot_tag, self.width_option())
+        dpg.set_item_height(self.plot_tag, self.height_option())
 
     def change_format(self):
-        self.format = self.format_option.get_widget_value()
+        self.format = self.format_option()
         if self.format != '':
             self.hold_format = self.format
         if self.style in [self.heat_scroll_style, self.heat_map_style]:
@@ -1656,7 +1593,7 @@ class PlotNode(Node):
             self.change_sample_count()
         self.lock.acquire(blocking=True)
         if self.input.fresh_input:   # standard plot
-            data = self.input.get_received_data()
+            data = self.input()
 
             t = type(data)
             if self.app.torch_available and t == torch.Tensor:
@@ -1792,7 +1729,7 @@ class PlotNode(Node):
         if self.style == self.xy_plot_style:
             if self.input_x.fresh_input:
                 self.x_data[1:] = self.x_data[0:-1]
-                self.x_data[0] = self.input_x.get_received_data()
+                self.x_data[0] = self.input_x()
         if self.style == self.plot_style:
             buffer = self.y_data.get_buffer()
             if buffer is not None:
@@ -1850,7 +1787,7 @@ class PlotNode(Node):
         if self.style == self.xy_plot_style:
             if self.input_x.fresh_input:
                 self.x_data[1:] = self.x_data[0:-1]
-                self.x_data[0] = self.input_x.get_received_data()
+                self.x_data[0] = self.input_x()
         if self.style == self.plot_style:
             buffer = self.y_data.get_buffer()
             if buffer is not None:
@@ -1883,7 +1820,7 @@ class ColorPickerNode(Node):
         self.inputs_option = self.add_option('inputs', widget_type='checkbox', default_value=self.has_inputs, callback=self.inputs_changed)
 
     def inputs_changed(self):
-        has_inputs = self.inputs_option.get_widget_value()
+        has_inputs = self.inputs_option()
         if has_inputs != self.has_inputs:
             if has_inputs:
                 dpg.configure_item(self.input.widget.uuid, no_inputs=False)
@@ -1892,7 +1829,7 @@ class ColorPickerNode(Node):
             self.has_inputs = has_inputs
 
     def hue_wheel_changed(self):
-        wheel = self.hue_wheel_option.get_widget_value()
+        wheel = self.hue_wheel_option()
         if wheel != self.wheel:
             if wheel:
                 dpg.configure_item(self.input.widget.uuid, picker_mode=dpg.mvColorPicker_wheel)
@@ -1901,7 +1838,7 @@ class ColorPickerNode(Node):
             self.wheel = wheel
 
     def alpha_changed(self):
-        alpha = self.alpha_option.get_widget_value()
+        alpha = self.alpha_option()
         if alpha != self.alpha:
             if alpha:
                 dpg.configure_item(self.input.widget.uuid, no_alpha=False)
@@ -1911,12 +1848,12 @@ class ColorPickerNode(Node):
                 dpg.configure_item(self.input.widget.uuid, alpha_preview=dpg.mvColorEdit_AlphaPreviewNone)
             self.alpha = alpha
 
-    def color_changed(self, input=None):
+    def color_changed(self):
         self.execute()
 
     def get_preset_state(self):
         preset = {}
-        preset['color'] = list(self.input.get_widget_value())
+        preset['color'] = list(self.input())
         return preset
 
     def set_preset_state(self, preset):
@@ -1926,13 +1863,7 @@ class ColorPickerNode(Node):
             self.execute()
 
     def execute(self):
-        # if self.input.fresh_input:
-        #     data = self.input.get_received_data()
-        #     if type(data) != tuple:
-        #         data = tuple(any_to_array(data))
-        #     self.input.widget.set(data)
-        # else:
-        data = list(self.input.get_widget_value())
+        data = list(self.input())
         self.output.send(data)
 
 

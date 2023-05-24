@@ -69,24 +69,20 @@ class TorchBucketizeNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.output_int32 = False
-        self.right = False
+        output_int32 = False
+        right = False
         self.input = self.add_input("tensor in", triggers_execution=True)
-        self.boundaries_input = self.add_input("boundaries tensor in")
-        self.output_int32_input = self.add_input('int32 indices', widget_type='checkbox', default_value=self.output_int32, callback=self.params_changed)
-        self.right_input = self.add_input('right', widget_type='checkbox', default_value=self.right, callback=self.params_changed)
+        self.boundaries = self.add_input("boundaries tensor in")
+        self.output_int32 = self.add_input('int32 indices', widget_type='checkbox', default_value=output_int32)
+        self.right = self.add_input('right', widget_type='checkbox', default_value=right)
         self.output = self.add_output("bin count tensor out")
-
-    def params_changed(self, val=0):
-        self.output_int32 = self.output_int32_input.get_widget_value()
-        self.right = self.right_input.get_widget_value()
 
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            data = self.boundaries_input.get_received_data()
+            data = self.boundaries()
             boundaries_tensor = self.data_to_tensor(data)
-            output_tensor = torch.bucketize(input_tensor, boundaries_tensor, out_int32=self.output_int32, right=self.right)
+            output_tensor = torch.bucketize(input_tensor, boundaries_tensor, out_int32=self.output_int32(), right=self.right())
             self.output.send(output_tensor)
 
 
@@ -113,6 +109,7 @@ class TorchAnyAllNode(TorchNode):
             result = self.op(input_tensor)
             self.output.send(result)
 
+
 class TorchHistogramNode(TorchDeviceDtypeNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -121,25 +118,20 @@ class TorchHistogramNode(TorchDeviceDtypeNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.bin_count = 100
-        self.min = 0
-        self.max = 0
+        bin_count = 100
+        min = 0
+        max = 0
 
         self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
-        self.bin_count_input = self.add_input('bin count', widget_type='drag_int', default_value=self.bin_count, callback=self.param_changed)
-        self.min_input = self.add_input('min', widget_type='drag_float', default_value=self.min, callback=self.param_changed)
-        self.max_input = self.add_input('max', widget_type='drag_float', default_value=self.max, callback=self.param_changed)
+        self.bin_count = self.add_input('bin count', widget_type='drag_int', default_value=bin_count)
+        self.min = self.add_input('min', widget_type='drag_float', default_value=min)
+        self.max = self.add_input('max', widget_type='drag_float', default_value=max)
         self.output = self.add_output('histogram tensor out')
-
-    def param_changed(self, val=64):
-        self.bin_count = self.bin_count_input.get_widget_value()
-        self.min = self.min_input.get_widget_value()
-        self.max = self.max_input.get_widget_value()
 
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            histogram_tensor = torch.histc(input_tensor, bins=self.bin_count, min=self.min, max=self.max)
+            histogram_tensor = torch.histc(input_tensor, bins=self.bin_count(), min=self.min(), max=self.max())
             self.output.send(histogram_tensor)
 
 
@@ -227,24 +219,20 @@ class TorchArgSortNode(TorchWithDimNode):
         super().__init__(label, data, args)
         self.input = self.add_input("tensor in", triggers_execution=True)
         self.dim = -1
-        self.descending = False
-        self.stable = False
+        descending = False
+        stable = False
         if self.dim_specified:
             self.add_dim_input()
-        self.descending_input = self.add_input('descending', widget_type='checkbox', default_value=self.descending, callback=self.params_changed)
-        self.stable_input = self.add_input('stable', widget_type='checkbox', default_value=self.stable, callback=self.params_changed)
+        self.descending = self.add_input('descending', widget_type='checkbox', default_value=descending)
+        self.stable = self.add_input('stable', widget_type='checkbox', default_value=stable)
         self.output = self.add_output("output")
-
-    def params_changed(self, val=0):
-        self.descending = self.descending_input.get_widget_value()
-        self.stable = self.stable_input.get_widget_value()
 
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
             if self.dim_specified:
-                self.output.send(torch.argsort(input_tensor, dim=self.dim, descending=self.descending, stable=self.stable))
+                self.output.send(torch.argsort(input_tensor, dim=self.dim, descending=self.descending(), stable=self.stable()))
             else:
-                self.output.send(torch.argsort(input_tensor, descending=self.descending, stable=self.stable))
+                self.output.send(torch.argsort(input_tensor, descending=self.descending(), stable=self.stable()))
 
 

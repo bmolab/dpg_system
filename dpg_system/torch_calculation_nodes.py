@@ -217,7 +217,7 @@ class TorchDistanceNode(TorchNode):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
             if self.input2 is not None:
-                input2 = self.data_to_tensor(self.input2.get_received_data())
+                input2 = self.data_to_tensor(self.input2())
                 if input2 is not None:
                     euclidean_length = torch.dist(input_tensor, torch.zeros_like(input_tensor))
                 else:
@@ -646,8 +646,8 @@ class TorchLinalgRQNode(TorchNode):
         self.q_output = self.add_output('Q tensor out')
         self.r_output = self.add_output('R tensor out')
 
-    def mode_changed(self, val='reduced'):
-        self.mode = self.mode_property.get_widget_value()
+    def mode_changed(self):
+        self.mode = self.mode_property()
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -672,8 +672,8 @@ class TorchLinalgSVDNode(TorchNode):
         self.v_output = self.add_output('V tensor out')
         self.d_output = self.add_output('D tensor out')
 
-    def full_changed(self, val='reduced'):
-        self.full = self.full_property.get_widget_value()
+    def full_changed(self):
+        self.full = self.full_property()
 
     def execute(self):
         input_tensor = self.input_to_tensor()

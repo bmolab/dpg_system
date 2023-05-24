@@ -95,7 +95,7 @@ class ArithmeticNode(Node):
 
         self.output = self.add_output('result')
 
-    def operand_changed(self, input=None):
+    def operand_changed(self):
         self.operand = any_to_numerical(self.operand_input())
 
     def execute(self):
@@ -232,7 +232,7 @@ class ComparisonNode(Node):
         self.output_type_option = self.add_option('output_type', widget_type='combo', default_value='bool', callback=self.output_type_changed)
         self.output_type_option.widget.combo_items = ['bool', 'int', 'float']
 
-    def operand_changed(self, input=None):
+    def operand_changed(self):
         self.operand = any_to_numerical(self.operand_input())
 
     def execute(self):
@@ -345,10 +345,10 @@ class ComparisonAndPassNode(Node):
 
         self.output = self.add_output('result')
 
-    def comparison_changed(self, input=None):
+    def comparison_changed(self):
         self.operation = self.comparison_property.get_widget_value()
 
-    def operand_changed(self, input=None):
+    def operand_changed(self):
         self.operand = self.operand_property.get_widget_value()
 
     def execute(self):

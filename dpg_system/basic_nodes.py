@@ -679,7 +679,7 @@ class DelayNode(Node):
         self.add_frame_task()
         self.new_delay = self.delay
 
-    def delay_changed(self, input=None):
+    def delay_changed(self):
         self.new_delay = self.delay_input()
 
     def frame_task(self):

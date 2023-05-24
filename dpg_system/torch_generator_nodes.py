@@ -57,11 +57,11 @@ class TorchGeneratorNode(TorchDeviceDtypeNode):
             out_label = 'tensor of zeros'
         self.output = self.add_output(out_label)
 
-    def range_changed(self, val=None):
+    def range_changed(self):
         self.min = self.min_input.get_widget_value()
         self.max = self.max_input.get_widget_value()
 
-    def shape_changed(self, val=0):
+    def shape_changed(self):
         shape_text = self.shape_input.get_widget_value()
         shape_list = re.findall(r'[-+]?\d+', shape_text)
         shape = []
@@ -69,8 +69,8 @@ class TorchGeneratorNode(TorchDeviceDtypeNode):
             shape.append(any_to_int(dim_text))
         self.shape = shape
 
-    def dtype_changed(self, val='torch.float'):
-        super().dtype_changed(val)
+    def dtype_changed(self):
+        super().dtype_changed()
         if self.label == 't.rand':
             if self.dtype == torch.uint8:
                 if self.min < 0:
@@ -136,7 +136,7 @@ class TorchFullNode(TorchDeviceDtypeNode):
         out_label = 'filled tensor'
         self.output = self.add_output(out_label)
 
-    def val_changed(self, val=None):
+    def val_changed(self):
         self.value = self.value_input.get_widget_value()
 
     def execute(self):
@@ -175,12 +175,12 @@ class TorchGeneratorLikeNode(TorchDeviceDtypeNode):
             out_label = 'tensor of zeros'
         self.output = self.add_output(out_label)
 
-    def range_changed(self, val=None):
+    def range_changed(self):
         self.min = self.min_input.get_widget_value()
         self.max = self.max_input.get_widget_value()
 
-    def dtype_changed(self, val='torch.float'):
-        super().dtype_changed(val)
+    def dtype_changed(self):
+        super().dtype_changed()
         if self.label == 't.rand':
             if self.dtype == torch.uint8:
                 if self.min < 0:
@@ -342,7 +342,7 @@ class TorchEyeNode(TorchDeviceDtypeNode):
         out_label = 'eye tensor'
         self.output = self.add_output(out_label)
 
-    def n_changed(self, val=None):
+    def n_changed(self):
         self.n = self.n_input.get_widget_value()
 
     def execute(self):

@@ -1231,7 +1231,7 @@ class GLAlignNode(GLNode):
             gl.glEnd()
             gl.glMultMatrixf(self.alignment_matrix)
 
-    def axis_changed(self, input=None):
+    def axis_changed(self):
         self.axis[0] = self.x()
         self.axis[1] = self.y()
         self.axis[2] = self.z()
@@ -1322,7 +1322,7 @@ class GLTextNode(GLNode):
         dpg.configure_item(self.text_color.widget.uuid, no_alpha=True)
         dpg.configure_item(self.text_color.widget.uuid, alpha_preview=dpg.mvColorEdit_AlphaPreviewNone)
 
-    def text_changed(self, value=''):
+    def text_changed(self):
         self.new_text = True
 
     def color_changed(self):

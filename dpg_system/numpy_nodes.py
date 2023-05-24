@@ -99,7 +99,7 @@ class NumpyGeneratorNode(Node):
             out_label = 'array of zeros'
         self.output = self.add_output(out_label)
 
-    def range_changed(self, val=None):
+    def range_changed(self):
         self.min = self.min_input.get_widget_value()
         self.max = self.max_input.get_widget_value()
 

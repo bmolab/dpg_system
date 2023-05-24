@@ -75,26 +75,21 @@ class TorchNNThresholdNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.threshold = 0
-        self.replace = 0
+        threshold = 0
+        replace = 0
         if len(args) > 0:
-            self.threshold = any_to_int(args[0])
+            threshold = any_to_int(args[0])
         if len(args) > 1:
-            self.replace = any_to_int(args[1])
+            replace = any_to_int(args[1])
 
         self.input = self.add_input("tensor in", triggers_execution=True)
-        self.threshold_input = self.add_input('threshold', widget_type='drag_float', default_value=self.threshold, callback=self.threshold_changed)
-        self.replace_input = self.add_input('replacenent', widget_type='drag_float', default_value=self.replace, callback=self.replacement_changed)
+        self.threshold = self.add_input('threshold', widget_type='drag_float', default_value=threshold, callback=self.params_changed)
+        self.replace = self.add_input('replacenent', widget_type='drag_float', default_value=replace, callback=self.params_changed)
         self.op = torch.nn.Threshold(self.threshold, self.replace)
         self.output = self.add_output("output")
 
-    def threshold_changed(self, val=None):
-        self.threshold = self.threshold_input.get_widget_value()
-        self.op = torch.nn.Threshold(self.threshold, self.replace)
-
-    def replacement_changed(self, val=None):
-        self.replace = self.replace_input.get_widget_value()
-        self.op = torch.nn.Threshold(self.threshold, self.replace)
+    def params_changed(self):
+        self.op = torch.nn.Threshold(self.threshold(), self.replace())
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -103,6 +98,24 @@ class TorchNNThresholdNode(TorchNode):
 
 
 class TorchActivationNode(TorchNode):
+    op_dict = {
+    't.nn.relu': torch.nn.functional.relu,
+    't.nn.hardswish': torch.nn.functional.hardswish,
+    't.nn.hardtanh': torch.nn.functional.hardtanh,
+    't.nn.relu6': torch.nn.functional.relu6,
+    't.nn.selu': torch.nn.functional.selu,
+    't.nn.glu': torch.nn.functional.glu,
+    't.nn.gelu': torch.nn.functional.gelu,
+    't.nn.logsigmoid': torch.nn.functional.logsigmoid,
+    't.nn.tanhshrink': torch.nn.functional.tanhshrink,
+    't.nn.softsign': torch.nn.functional.softsign,
+    't.nn.tanh': torch.nn.functional.tanh,
+    't.nn.sigmoid': torch.nn.functional.sigmoid,
+    't.nn.hardsigmoid': torch.nn.functional.hardsigmoid,
+    't.nn.silu': torch.nn.functional.silu,
+    't.nn.mish': torch.nn.functional.mish
+    }
+
     @staticmethod
     def factory(name, data, args=None):
         node = TorchActivationNode(name, data, args)
@@ -110,37 +123,10 @@ class TorchActivationNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.op = None
-        if self.label == 't.nn.relu':
-            self.op = torch.nn.functional.relu
-        elif self.label == 't.nn.hardswish':
-            self.op = torch.nn.functional.hardswish
-        elif self.label == 't.nn.hardtanh':
-            self.op = torch.nn.functional.hardtanh
-        elif self.label == 't.nn.relu6':
-            self.op = torch.nn.functional.relu6
-        elif self.label == 't.nn.selu':
-            self.op = torch.nn.functional.selu
-        elif self.label == 't.nn.glu':
-            self.op = torch.nn.functional.glu
-        elif self.label == 't.nn.gelu':
-            self.op = torch.nn.functional.gelu
-        elif self.label == 't.nn.logsigmoid':
-            self.op = torch.nn.functional.logsigmoid
-        elif self.label == 't.nn.tanhshrink':
-            self.op = torch.nn.functional.tanhshrink
-        elif self.label == 't.nn.softsign':
-            self.op = torch.nn.functional.softsign
-        elif self.label == 't.nn.tanh':
-            self.op = torch.nn.functional.tanh
-        elif self.label == 't.nn.sigmoid':
-            self.op = torch.nn.functional.sigmoid
-        elif self.label == 't.nn.hardsigmoid':
-            self.op = torch.nn.functional.hardsigmoid
-        elif self.label == 't.nn.silu':
-            self.op = torch.nn.functional.silu
-        elif self.label == 't.nn.mish':
-            self.op = torch.nn.functional.mish
+
+        self.op = torch.nn.functional.relu
+        if self.label in self.op_dict:
+            self.op = self.op_dict[self.label]
 
         self.input = self.add_input("tensor in", triggers_execution=True)
         self.output = self.add_output("output")
@@ -159,11 +145,11 @@ class TorchActivationTwoParamNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.op = None
+        self.op = torch.nn.functional.hardtanh
         param_1_name = 'minimum'
         param_2_name = 'maximum'
-        self.parameter_1 = -1
-        self.parameter_2 = 1
+        parameter_1 = -1
+        parameter_2 = 1
 
         if self.label == 't.nn.hardtanh':
             self.op = torch.nn.functional.hardtanh
@@ -171,28 +157,24 @@ class TorchActivationTwoParamNode(TorchNode):
             self.op = torch.nn.functional.rrelu
             param_1_name = 'lower'
             param_2_name = 'upper'
-            self.parameter_1 = 0.125
-            self.parameter_2 = 0.3333333333333
+            parameter_1 = 0.125
+            parameter_2 = 0.3333333333333
         if self.label == 't.nn.softplus':
             self.op = torch.nn.functional.softplus
             param_1_name = 'beta'
             param_2_name = 'threshold'
-            self.parameter_1 = 1.0
-            self.parameter_2 = 20
+            parameter_1 = 1.0
+            parameter_2 = 20
 
         self.input = self.add_input("tensor in", triggers_execution=True)
-        self.parameter_1_input = self.add_input(param_1_name, widget_type='drag_float', default_value=self.parameter_1, callback=self.parameter_changed)
-        self.parameter_2_input = self.add_input(param_2_name, widget_type='drag_float', default_value=self.parameter_2, callback=self.parameter_changed)
+        self.parameter_1 = self.add_input(param_1_name, widget_type='drag_float', default_value=parameter_1)
+        self.parameter_2 = self.add_input(param_2_name, widget_type='drag_float', default_value=parameter_2)
         self.output = self.add_output("output")
-
-    def parameter_changed(self, val=None):
-        self.parameter_1 = self.parameter_1_input.get_widget_value()
-        self.parameter_2 = self.parameter_2_input.get_widget_value()
 
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            self.output.send(self.op(input_tensor, self.parameter_1, self.parameter_2))
+            self.output.send(self.op(input_tensor, self.parameter_1(), self.parameter_2()))
 
 
 class TorchActivationThreeParamNode(TorchNode):
@@ -203,32 +185,27 @@ class TorchActivationThreeParamNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.op = None
+        self.op = torch.nn.functional.gumbel_softmax
         param_1_name = 'tau'
         param_2_name = 'hard'
         param_3_name = 'dim'
-        self.parameter_1 = 1
-        self.parameter_2 = False
-        self.parameter_3 = -1
+        parameter_1 = 1
+        parameter_2 = False
+        parameter_3 = -1
 
         if self.label == 't.nn.gumbel_softmax':
             self.op = torch.nn.functional.gumbel_softmax
 
         self.input = self.add_input("tensor in", triggers_execution=True)
-        self.parameter_1_input = self.add_input(param_1_name, widget_type='drag_float', default_value=self.parameter_1, callback=self.parameter_changed)
-        self.parameter_2_input = self.add_input(param_2_name, widget_type='checkbox', default_value=self.parameter_2, callback=self.parameter_changed)
-        self.parameter_3_input = self.add_input(param_3_name, widget_type='input_int', default_value=self.parameter_3, callback=self.parameter_changed)
+        self.parameter_1 = self.add_input(param_1_name, widget_type='drag_float', default_value=parameter_1)
+        self.parameter_2 = self.add_input(param_2_name, widget_type='checkbox', default_value=parameter_2)
+        self.parameter_3 = self.add_input(param_3_name, widget_type='input_int', default_value=parameter_3)
         self.output = self.add_output("output")
-
-    def parameter_changed(self, val=None):
-        self.parameter_1 = self.parameter_1_input.get_widget_value()
-        self.parameter_2 = self.parameter_2_input.get_widget_value()
-        self.parameter_3 = self.parameter_3_input.get_widget_value()
 
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            self.output.send(self.op(input_tensor, self.parameter_1, self.parameter_2, self.parameter_3))
+            self.output.send(self.op(input_tensor, self.parameter_1(), self.parameter_2(), self.parameter_3()))
 
 
 class TorchSoftmaxNode(TorchNode):
@@ -239,8 +216,8 @@ class TorchSoftmaxNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.op = None
-        self.dim = 0
+        self.op = torch.nn.functional.softmax
+        dim = 0
 
         if self.label == 't.nn.softmax':
             self.op = torch.nn.functional.softmax
@@ -250,19 +227,16 @@ class TorchSoftmaxNode(TorchNode):
             self.op = torch.nn.functional.log_softmax
 
         if len(args) > 0:
-            self.dim = any_to_int(args[0])
+            dim = any_to_int(args[0])
 
         self.input = self.add_input("tensor in", triggers_execution=True)
-        self.dim_input = self.add_input('dim', widget_type='input_int', default_value=self.dim, callback=self.dim_changed)
+        self.dim = self.add_input('dim', widget_type='input_int', default_value=dim)
         self.output = self.add_output("output")
-
-    def dim_changed(self, val=None):
-        self.dim = self.dim_input.get_widget_value()
 
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            self.output.send(self.op(input_tensor, self.dim))
+            self.output.send(self.op(input_tensor, self.dim()))
 
 
 class TorchActivationOneParamNode(TorchNode):
@@ -273,45 +247,42 @@ class TorchActivationOneParamNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.op = None
+        self.op = torch.nn.functional.elu
         param_name = ''
-        self.parameter = 1
+        parameter = 1
         if self.label == 't.nn.elu':
             self.op = torch.nn.functional.elu
             param_name = 'alpha'
-            self.parameter = 1.0
+            parameter = 1.0
         elif self.label == 't.nn.celu':
             self.op = torch.nn.functional.celu
             param_name = 'alpha'
-            self.parameter = 1.0
+            parameter = 1.0
         elif self.label == 't.nn.leaky_relu':
             self.op = torch.nn.functional.leaky_relu
             param_name = 'negative slope'
-            self.parameter = 0.01
+            parameter = 0.01
         # elif self.label == 't.nn.prelu':
         #     self.op = torch.nn.functional.prelu
         #     param_name = 'weight'
-        #     self.parameter = 1.0
+        #     parameter = 1.0
         elif self.label == 't.nn.hardshrink':
             self.op = torch.nn.functional.hardshrink
             param_name = 'lambda'
-            self.parameter = 0.5
+            parameter = 0.5
         elif self.label == 't.nn.softshrink':
             self.op = torch.nn.functional.softshrink
             param_name = 'lambda'
-            self.parameter = 0.5
+            parameter = 0.5
 
         self.input = self.add_input("tensor in", triggers_execution=True)
-        self.parameter_input = self.add_input(param_name, widget_type='drag_float', default_value=self.parameter, callback=self.parameter_changed)
+        self.parameter = self.add_input(param_name, widget_type='drag_float', default_value=parameter)
         self.output = self.add_output("output")
-
-    def parameter_changed(self, val=None):
-        self.parameter = self.parameter_input.get_widget_value()
 
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            self.output.send(self.op(input_tensor, self.parameter))
+            self.output.send(self.op(input_tensor, self.parameter()))
 
 class TorchSpecialNode(TorchNode):
     op_dict = {
@@ -395,19 +366,15 @@ class TorchSpecialPolygammaNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.n = 0
+        n = 0
         self.input = self.add_input("tensor in", triggers_execution=True)
-        self.n_input = self.add_input('n', widget_type='input_int', default_value=self.n, min=0, callback=self.n_changed)
+        self.n = self.add_input('n', widget_type='input_int', default_value=n, min=0)
         self.output = self.add_output("tensor out")
-
-    def n_changed(self, val=0):
-        self.n = self.n_input.get_widget_value()
 
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            self.output.send(torch.special.polygamma(self.n, input_tensor))
-
+            self.output.send(torch.special.polygamma(self.n(), input_tensor))
 
 
 class TorchSpecialLogitNode(TorchNode):
@@ -418,22 +385,19 @@ class TorchSpecialLogitNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.eps = 1e-8
+        eps = 1e-8
         self.input = self.add_input("tensor in", triggers_execution=True)
-        self.eps_input = self.add_input('eps', widget_type='drag_float', default_value=self.eps, callback=self.eps_changed)
+        self.eps = self.add_input('eps', widget_type='drag_float', default_value=eps)
 
         self.output = self.add_output("tensor out")
 
     def custom_create(self, from_file):
-        self.eps_input.widget.set_format('%.8f')
-
-    def eps_changed(self, val=0):
-        self.eps = self.eps_input.get_widget_value()
+        self.eps.widget.set_format('%.8f')
 
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            self.output.send(torch.special.logit(input_tensor, self.eps))
+            self.output.send(torch.special.logit(input_tensor, self.eps()))
 
 
 class TorchSpecialTwoTensorNode(TorchNode):
@@ -460,7 +424,7 @@ class TorchSpecialTwoTensorNode(TorchNode):
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            data = self.second_input.get_received_data()
+            data = self.second_input()
             if data is not None:
                 second_tensor = self.data_to_tensor(data)
                 if second_tensor is not None:
@@ -492,11 +456,12 @@ class TorchSpecialTwoTensorOrNumberNode(TorchNode):
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            data = self.second_input.get_received_data()
+            data = self.second_input()
             if data is not None:
                 second_tensor = self.data_to_tensor(data)
                 if second_tensor is not None:
                     self.output.send(self.op(input_tensor, second_tensor))
+
 
 class TorchSpecialMultiGammaLnNode(TorchNode):
     @staticmethod
@@ -506,16 +471,13 @@ class TorchSpecialMultiGammaLnNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.p = 1e-8
+        p = 1e-8
         self.input = self.add_input("tensor in", triggers_execution=True)
-        self.p_input = self.add_input('p', widget_type='input_int', default_value=self.p, callback=self.p_changed)
+        self.p = self.add_input('p', widget_type='input_int', default_value=p)
         self.output = self.add_output("tensor out")
-
-    def p_changed(self, val=0):
-        self.p = self.p_input.get_widget_value()
 
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            self.output.send(torch.special.multigammaln(input_tensor, self.p))
+            self.output.send(torch.special.multigammaln(input_tensor, self.p()))
 
