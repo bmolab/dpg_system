@@ -51,7 +51,7 @@ class ButtonNode(Node):
         super().__init__(label, data, args)
 
         flash_duration = .100
-        self.target_time = time.time() - self.flash_duration
+        self.target_time = time.time() - flash_duration
         self.action_name = ''
         self.action = None
 
@@ -67,7 +67,7 @@ class ButtonNode(Node):
         self.message = self.add_option('message', widget_type='text_input', default_value='bang', callback=self.message_changed)
         self.width = self.add_option('width', widget_type='input_int', default_value=14, callback=self.size_changed)
         self.height = self.add_option('height', widget_type='input_int', default_value=14, callback=self.size_changed)
-        self.flash_duration = self.add_option('flash duration', widget_type='drag_float', min=0, max=1.0, default_value=flash_duration)
+        self.flash_duration = self.add_option('flash_duration', widget_type='drag_float', min=0, max=1.0, default_value=flash_duration)
 
         with dpg.theme() as self.active_theme:
             with dpg.theme_component(dpg.mvAll):
@@ -555,7 +555,7 @@ class ToggleNode(Node):
                 self.variable = v
                 self.input.attach_to_variable(v)
                 self.variable.attach_client(self)
-                self.output.set_label(self.variable_name)
+                self.output.set_label(variable_name)
                 self.variable_update()
 
     def custom_create(self, from_file):
