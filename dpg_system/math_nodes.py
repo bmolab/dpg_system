@@ -251,7 +251,7 @@ class ComparisonNode(Node):
         self.output.send(output_value)
 
     def output_type_changed(self):
-        output_type = self.output_type_option.get_widget_value()
+        output_type = self.output_type_option()
         self.output_op = bool
         self.torch_output_op = torch.bool
         self.numpy_output_op = np.bool_
@@ -346,10 +346,10 @@ class ComparisonAndPassNode(Node):
         self.output = self.add_output('result')
 
     def comparison_changed(self):
-        self.operation = self.comparison_property.get_widget_value()
+        self.operation = self.comparison_property()
 
     def operand_changed(self):
-        self.operand = self.operand_property.get_widget_value()
+        self.operand = self.operand_property()
 
     def execute(self):
         if not self.simple and self.operand_property.fresh_input:

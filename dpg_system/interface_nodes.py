@@ -61,7 +61,7 @@ class ButtonNode(Node):
                 self.action_name = v
 
         self.input = self.add_input('', triggers_execution=True, widget_type='button', widget_width=14, callback=self.clicked_function)
-        self.output = self.add_output("")
+        self.output = self.add_output('')
 
         self.bound_action = self.add_option('bind to', widget_type='text_input', width=120, default_value=self.action_name, callback=self.binding_changed)
         self.message = self.add_option('message', widget_type='text_input', default_value='bang', callback=self.message_changed)
@@ -528,6 +528,7 @@ class ToggleNode(Node):
         self.value = False
         self.variable = None
         self.input = self.add_input("", triggers_execution=True, widget_type='checkbox', widget_width=40, callback=self.call_execute)
+        self.input.bang_repeats_previous = False
         self.output = self.add_output("")
         self.bound_variable = self.add_option('bind to', widget_type='text_input', width=120, default_value=variable_name, callback=self.binding_changed)
 

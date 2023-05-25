@@ -50,11 +50,12 @@ class TorchvisionGaussianBlurNode(TorchNode):
         self.op = torchvision.transforms.functional.gaussian_blur
 
     def params_changed(self):
-        self.sigma = self.sigma_property.get_widget_value()
+        self.sigma = self.sigma_property()
         if self.sigma <= 0:
             self.sigma = 0.1
-        self.kernel_size = int(self.kernel_size_property.get_widget_value())
+        self.kernel_size = int(self.kernel_size_property())
         self.op = torchvision.transforms.functional.gaussian_blur
+
     def execute(self):
         input_tensor = self.input_to_torchvision_tensor()
         if input_tensor is not None:
@@ -113,7 +114,7 @@ class TorchvisionAdjustOneParamNode(TorchNode):
         print(self.op)
 
     def params_changed(self):
-        self.param = self.param_input.get_widget_value()
+        self.param = self.param_input()
 
     def execute(self):
         input_tensor = self.input_to_torchvision_tensor()

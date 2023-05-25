@@ -186,12 +186,13 @@ class GLContextNode(Node):
         self.context = None
         self.command_input = self.add_input('commands', triggers_execution=True)
         self.output = self.add_output('gl_chain')
+        self.ui_output = self.add_output('ui')
         self.fov_option = self.add_option('fov', widget_type='drag_float', default_value=self.fov, callback=self.fov_changed)
         self.fov_option.widget.speed = 0.5
 
     def execute(self):
         if self.command_input.fresh_input:
-            data = self.command_input.get_received_data()
+            data = self.command_input()
             if type(data) == list:
                 self.pending_commands.append(data)
 
@@ -204,9 +205,13 @@ class GLContextNode(Node):
         if self.context:
             self.context.set_fov(self.fov)
 
+    def handle_key(self, key, mods):
+        self.ui_output.send(['key', key])
+
     def create_context(self):
         self.context = MyGLContext(self.title, self.width, self.height)
         self.context_list.append(self)
+        self.context.node = self
         self.ready = True
 
     def custom_cleanup(self):
@@ -1446,7 +1451,7 @@ class GLTextNode(GLNode):
 
             pos = [self.position_x_input(), self.position_y_input()]
             scale = self.scale_input() / 100
-            text = self.text_input.get_received_data()
+            text = self.text_input()
 
             if type(text) == str:
                 glNewList(self.display_list, GL_COMPILE)

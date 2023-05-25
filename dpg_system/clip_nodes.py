@@ -36,7 +36,7 @@ class ClipEmbeddingNode(ClipNode):
         self.output = self.add_output("output")
 
     def execute(self):
-        input = any_to_string(self.input.get_received_data())
+        input = any_to_string(self.input())
         with torch.no_grad():
             tokens = self.__class__.tokenizer([input], padding=True, return_tensors="pt")
             outputs = self.__class__.model(**tokens)
@@ -58,7 +58,7 @@ class ClipEmbeddingDistanceNode(ClipNode):
         self.output = self.add_output("output")
 
     def execute(self):
-        input = any_to_string(self.input.get_received_data())
+        input = any_to_string(self.input())
         tokens = self.__class__.tokenizer([input], padding=True, return_tensors="pt")
         outputs = self.__class__.model(**tokens)
         pooled_output = outputs.pooler_output

@@ -1065,6 +1065,9 @@ class App:
         if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
             self.tighten_selected()
 
+    def space_handler(self):
+        pass
+
     def P_handler(self):
         if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
             if self.get_current_editor() is not None:
@@ -1676,6 +1679,7 @@ class App:
                             dpg.add_key_press_handler(dpg.mvKey_R, callback=self.R_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Plus, callback=self.plus_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Minus, callback=self.minus_handler)
+                            dpg.add_key_press_handler(dpg.mvKey_Spacebar, callback=self.space_handler)
 
                             dpg.add_key_press_handler(dpg.mvKey_Back, callback=self.del_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Return, callback=self.return_handler)

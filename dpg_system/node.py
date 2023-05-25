@@ -458,8 +458,7 @@ class PropertyWidget:
             elif self.widget == 'spacer':
                 dpg.add_spacer(label='', height=13)
             elif self.widget == 'label':
-                dpg.add_text(self._label)
-
+                dpg.add_text(self._label, tag=self.uuid)
             if self.widget in ['checkbox', 'radio_group', 'button', 'combo', 'color_picker']:
                 dpg.set_item_callback(self.uuid, callback=self.clickable_changed)
             elif self.widget not in ['spacer', 'label']:
@@ -596,9 +595,13 @@ class PropertyWidget:
 
     def set(self, data, propagate=True):
         if self.widget == 'checkbox':
-            val = any_to_bool(data)
-            dpg.set_value(self.uuid, val)
-            self.value = val
+            if data == 'bang':
+                self.value = not self.value
+                dpg.set_value(self.uuid, self.value)
+            else:
+                val = any_to_bool(data)
+                dpg.set_value(self.uuid, val)
+                self.value = val
         elif self.widget in ['combo', 'radio_group']:
             val = any_to_string(data)
             dpg.set_value(self.uuid, val)
@@ -633,14 +636,15 @@ class PropertyWidget:
             dpg.set_value(self.uuid, val)
             self.value = val
         elif self.widget == 'color_picker':
-            # print(data, type(data))
             if type(data) != tuple:
                 val = tuple(any_to_array(data))
             else:
                 val = data
-            # print(data, type(data))
             dpg.set_value(self.uuid, val)
             self.value = val
+        elif self.widget == 'label':
+            label_string = any_to_string(data)
+            dpg.set_value(self.uuid, label_string)
         if self.variable and propagate:
             self.variable.set_value(self.value)
         if self.action and propagate:
@@ -1151,6 +1155,8 @@ class Node:
 
     def add_input(self, label: str = "", uuid=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, callback=None):
         new_input = NodeInput(label, uuid, self, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
+        if widget_type == 'checkbox':
+            new_input.bang_repeats_previous = False
         self.inputs.append(new_input)
         new_input.input_index = len(self.inputs) - 1
         self.ordered_elements.append(new_input)
@@ -1522,7 +1528,7 @@ class PatcherInputNode(Node):
         self.name_option = self.add_option('input name', widget_type='text_input', default_value=self.input_name, callback=self.name_changed)
 
     def name_changed(self):
-        self.input_name = self.name_option.get_widget_value()
+        self.input_name = self.name_option()
         old_name = self.input_out.get_label()
         self.input_out.set_label(self.input_name)
         if self.patcher_node:
@@ -1578,18 +1584,17 @@ class PatcherOutputNode(Node):
         self.name_option = self.add_option('output name', widget_type='text_input', default_value=self.output_name, callback=self.name_changed)
 
     def name_changed(self):
-        self.output_name = self.name_option.get_widget_value()
+        self.output_name = self.name_option()
         old_name = self.output_in.get_label()
         self.output_in.set_label(self.output_name)
         if self.patcher_node:
             self.patcher_node.change_output_name(old_name, self.output_name)
 
-
     def send_to_patcher(self, input=None):
         if self.target_output is not None and input is not None:
             if input.fresh_input:
                 input.fresh_input = False
-                data = input.get_received_data()
+                data = input()
                 if data is not None:
                     self.target_output.send(data)
 
@@ -1670,7 +1675,7 @@ class PatcherNode(Node):
         self.name_option = self.add_option('patcher name', widget_type='text_input', default_value=self.patcher_name, callback=self.name_changed)
 
     def name_changed(self):
-        new_name = self.name_option.get_widget_value()
+        new_name = self.name_option()
         self.unparsed_args = [new_name]
         self.button.set_label(new_name)
         size = dpg.get_text_size(new_name, font=self.app.default_font)
@@ -1695,7 +1700,7 @@ class PatcherNode(Node):
             index = input.input_index
 
             if self.input_outs[index] is not None:
-                data = self.patcher_inputs[index].get_received_data()
+                data = self.patcher_inputs[index]()
                 self.input_outs[index].send(data)
 
     def open_patcher(self):
@@ -2030,7 +2035,7 @@ class PlaceholderNode(Node):
 
     def execute(self):
         if dpg.is_item_active(self.name_property.widget.uuid):
-            print('execute', self.name_property.get_widget_value())
+            print('execute', self.name_property())
         else:
             selection_name = dpg.get_value(self.node_list_box.widget.uuid)
             new_node_name = dpg.get_value(self.name_property.widget.uuid)

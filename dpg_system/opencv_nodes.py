@@ -14,18 +14,6 @@ def register_opencv_nodes():
     Node.app.register_node('cv_image', CVImageNode.factory)
     Node.app.register_node('cv_capture', CVVideoCaptureNode.factory)
     Node.app.register_node('cv_camera', CVVideoCaptureNode.factory)
-    # Node.app.register_node('gl_sphere', GLSphereNode.factory)
-    # Node.app.register_node('gl_cylinder', GLCylinderNode.factory)
-    # Node.app.register_node('gl_disk', GLDiskNode.factory)
-    # Node.app.register_node('gl_partial_disk', GLPartialDiskNode.factory)
-    # Node.app.register_node('gl_translate', GLTransformNode.factory)
-    # Node.app.register_node('gl_rotate', GLTransformNode.factory)
-    # Node.app.register_node('gl_scale', GLTransformNode.factory)
-    # Node.app.register_node('gl_material', GLMaterialNode.factory)
-    # Node.app.register_node('gl_align', GLAlignNode.factory)
-    # Node.app.register_node('gl_quaternion_rotate', GLQuaternionRotateNode.factory)
-    # Node.app.register_node('gl_text', GLTextNode.factory)
-    # Node.app.register_node('gl_billboard', GLBillboard.factory)
 
 class CVImageNode(Node):
     @staticmethod
@@ -36,24 +24,30 @@ class CVImageNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
+        image_path = ''
         if len(args) > 0:
-            self.image_path = any_to_string(args[0])
+            image_path = any_to_string(args[0])
 
-        self.path = ''
         self.image = None
         self.input = self.add_input('show image', triggers_execution=True)
-        self.path_input = self.add_input('path in', triggers_execution=True)
+        self.path_input = self.add_input('path in', widget_type='text_input', default_value=image_path, callback=self.path_changed)
         self.output = self.add_output("")
 
+    def custom_create(self, from_file):
+        self.path_changed()
+
+    def path_changed(self):
+        path = self.path_input()
+        if type(path) == list:
+            path = list_to_string(path)
+        elif type(path) == str:
+            path = path
+        if type(path) == str and path != '':
+            self.image = cv2.imread(path, cv2.IMREAD_COLOR)
+            if self.image is not None:
+                self.execute()
+
     def execute(self):
-        if self.path_input.fresh_input:
-            path = self.path_input.get_received_data()
-            if type(path) == list:
-                self.path = list_to_string(path)
-            elif type(path) == str:
-                self.path = path
-            if type(self.path) == str and self.path != '':
-                self.image = cv2.imread(self.path, cv2.IMREAD_COLOR)
         if self.image is not None:
             self.output.send(self.image)
 
@@ -67,14 +61,14 @@ class CVVideoCaptureNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.streaming = False
-        self.input = self.add_input('on/off', widget_type='checkbox', callback=self.on_off)
+        self.on_off = self.add_input('on/off', widget_type='checkbox', callback=self.turn_on_off)
         self.output = self.add_output("")
         self.cap = cv2.VideoCapture(0)
         if not self.cap.isOpened():
             print("Cannot open camera")
 
-    def on_off(self):
-        on = self.input.get_widget_value()
+    def turn_on_off(self):
+        on = self.on_off()
         if on != self.streaming:
             if on:
                 self.add_frame_task()
@@ -94,6 +88,6 @@ class CVVideoCaptureNode(Node):
         self.output.send(rgb)
 
     def execute(self):
-        self.on_off()
+        self.turn_on_off()
 
 

@@ -1,10 +1,5 @@
-import dearpygui.dearpygui as dpg
-from dpg_system.node import Node
-from dpg_system.conversion_utils import *
-import time
-import numpy as np
 from dpg_system.body_base import *
-#import torch
+
 
 def register_mocap_nodes():
     Node.app.register_node('gl_body', MoCapGLBody.factory)
@@ -54,7 +49,7 @@ class MoCapTakeNode(MoCapNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.speed = 1
+        speed = 1
         self.buffer = None
         self.frames = 0
         self.current_frame = 0
@@ -62,27 +57,23 @@ class MoCapTakeNode(MoCapNode):
         self.quat_buffer = None
         self.position_buffer = None
         self.label_buffer = None
-        self.file_name = ''
         self.streaming = False
 
-        self.on_off_property = self.add_property('on/off', widget_type='checkbox', callback=self.start_stop_streaming)
-        self.speed_property = self.add_input('speed', widget_type='drag_float', default_value=self.speed, callback=self.speed_changed)
+        self.on_off = self.add_input('on/off', widget_type='checkbox', callback=self.start_stop_streaming)
+        self.speed = self.add_input('speed', widget_type='drag_float', default_value=speed)
         self.input = self.add_input('frame', widget_type='drag_int', triggers_execution=True, callback=self.frame_widget_changed)
         self.load_button = self.add_property('load', widget_type='button', callback=self.load_take)
-        self.file_name_property = self.add_property('', widget_type='text_input')
+        self.file_name = self.add_label('')
         self.quaternions_out = self.add_output('quaternions')
         self.positions_out = self.add_output('positions')
         self.labels_out = self.add_output('labels')
-        self.load_path = ''
-        self.load_path_option = self.add_option('path', widget_type='text_input', default_value=self.load_path, callback=self.load_from_load_path)
+        load_path = ''
+        self.load_path = self.add_option('path', widget_type='text_input', default_value=load_path, callback=self.load_from_load_path)
         self.message_handlers['load'] = self.load_take_message
 
-    def speed_changed(self):
-        self.speed = self.speed_property.get_widget_value()
-
     def start_stop_streaming(self):
-        if self.on_off_property.get_widget_value():
-            if not self.streaming and self.load_path != '':
+        if self.on_off():
+            if not self.streaming and self.load_path() != '':
                 self.add_frame_task()
                 self.streaming = True
         else:
@@ -91,7 +82,7 @@ class MoCapTakeNode(MoCapNode):
                 self.streaming = False
 
     def frame_task(self):
-        self.current_frame += self.speed
+        self.current_frame += self.speed()
         if self.current_frame > self.frames:
             self.current_frame = 0
         self.input.set(self.current_frame)
@@ -102,16 +93,15 @@ class MoCapTakeNode(MoCapNode):
         self.send_all()
 
     def load_from_load_path(self):
-        path = self.load_path_option.get_widget_value()
+        path = self.load_path()
         if path != '':
             self.load_take_from_npz(path)
 
     def load_take_from_npz(self, path):
         take_file = np.load(path)
-        self.file_name = path.split('/')[-1]
-        self.file_name_property.set(self.file_name)
-        self.load_path = path
-        self.load_path_option.set(self.load_path)
+        file_name = path.split('/')[-1]
+        self.file_name.set(file_name)
+        self.load_path.set(path)
         self.quat_buffer = take_file['quats']
         for idx, quat in enumerate(self.quat_buffer):
             if quat[10, 0] < 0:
@@ -123,7 +113,7 @@ class MoCapTakeNode(MoCapNode):
         self.start_stop_streaming()
 
     def frame_widget_changed(self):
-        data = self.input.get_widget_value()
+        data = self.input()
         if data < self.frames:
             self.current_frame = data
             self.quaternions_out.set_value(self.quat_buffer[self.current_frame])
@@ -133,7 +123,7 @@ class MoCapTakeNode(MoCapNode):
 
     def execute(self):
         if self.input.fresh_input:
-            data = self.input.get_received_data()
+            data = self.input()
             # handled, do_output = self.check_for_messages(data)
             # if not handled:
             t = type(data)
@@ -160,9 +150,10 @@ class MoCapTakeNode(MoCapNode):
     def load_npz_callback(self, sender, app_data):
         # print('self=', self, 'sender=', sender, 'app_data=', app_data)
         if 'file_path_name' in app_data:
-            self.load_path = app_data['file_path_name']
-            if self.load_path != '':
-                self.load_take_from_npz(self.load_path)
+            load_path = app_data['file_path_name']
+            if load_path != '':
+                self.load_path.set(load_path)
+                self.load_take_from_npz(load_path)
         else:
             print('no file chosen')
         dpg.delete_item(sender)
@@ -211,13 +202,14 @@ class PoseNode(MoCapNode):
         pose = np.array([[1.0, 0.0, 0.0, 0.0]] * 37)
         print(pose)
         for index, input in enumerate(self.joint_inputs):
-            incoming = input.get_received_data()
+            incoming = input()
             t = type(incoming)
 
             if t == np.ndarray:
                 offset = self.joint_offsets[index]
                 pose[offset] = incoming
         self.output.send(pose)
+
 
 class MoCapBody(MoCapNode):
     @staticmethod
@@ -244,7 +236,7 @@ class MoCapBody(MoCapNode):
 
     def execute(self):
         if self.input.fresh_input:
-            incoming = self.input.get_received_data()
+            incoming = self.input()
             t = type(incoming)
             if t == np.ndarray:
                 for i, index in enumerate(self.joint_offsets):
@@ -267,10 +259,10 @@ class MoCapGLBody(MoCapNode):
         self.input = self.add_input('pose in', triggers_execution=True)
         self.gl_chain_input = self.add_input('gl chain', triggers_execution=True)
         self.gl_chain_output = self.add_output('gl_chain')
-        self.show_joint_spheres_option = self.add_option('show joint motion', widget_type='checkbox', default_value=self.show_joint_activity)
-        self.joint_motion_scale_option = self.add_option('joint motion scale', widget_type='drag_float', default_value=5)
-        self.diff_quat_smoothing_option = self.add_option('joint motion smoothing', widget_type='drag_float', default_value=0.8, max=1.0, min=0.0)
-        self.joint_disk_alpha_option = self.add_option('joint motion alpha', widget_type='drag_float', default_value=0.5, max=1.0, min=0.0)
+        self.show_joint_spheres = self.add_option('show joint motion', widget_type='checkbox', default_value=self.show_joint_activity)
+        self.joint_motion_scale = self.add_option('joint motion scale', widget_type='drag_float', default_value=5)
+        self.diff_quat_smoothing = self.add_option('joint motion smoothing', widget_type='drag_float', default_value=0.8, max=1.0, min=0.0)
+        self.joint_disk_alpha = self.add_option('joint motion alpha', widget_type='drag_float', default_value=0.5, max=1.0, min=0.0)
         self.body = BodyData()
         self.body.node = self
 
@@ -279,7 +271,7 @@ class MoCapGLBody(MoCapNode):
 
     def execute(self):
         if self.input.fresh_input:
-            incoming = self.input.get_received_data()
+            incoming = self.input()
             t = type(incoming)
             if t == np.ndarray:
                 # work on this!!!
@@ -288,12 +280,12 @@ class MoCapGLBody(MoCapNode):
                         joint_id = self.joint_map[joint_name]
                         self.body.update(joint_index=joint_id, quat=incoming[joint_id])
         elif self.gl_chain_input.fresh_input:
-            incoming = self.gl_chain_input.get_received_data()
+            incoming = self.gl_chain_input()
             t = type(incoming)
             if t == str and incoming == 'draw':
-                scale = self.joint_motion_scale_option.get_widget_value()
-                smoothing = self.diff_quat_smoothing_option.get_widget_value()
+                scale = self.joint_motion_scale()
+                smoothing = self.diff_quat_smoothing()
                 self.body.joint_motion_scale = scale
                 self.body.diffQuatSmoothingA = smoothing
-                self.body.joint_disk_alpha = self.joint_disk_alpha_option.get_widget_value()
-                self.body.draw(self.show_joint_spheres_option.get_widget_value())
+                self.body.joint_disk_alpha = self.joint_disk_alpha()
+                self.body.draw(self.show_joint_spheres())

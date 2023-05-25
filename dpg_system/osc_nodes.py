@@ -181,21 +181,6 @@ class OSCTarget:
         self.client = None
         self.send_nodes = {}
 
-        if self.ordered_args is not None:
-            for i in range(len(self.ordered_args)):
-                arg, t = decode_arg(self.ordered_args, i)
-                if t == int:
-                    self.port = arg
-                elif t == str:
-                    is_name = False
-                    for c in arg:
-                        if c not in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.']:
-                            self.name = arg
-                            is_name = True
-                            break
-                    if not is_name:
-                        self.ip = arg
-
     def custom_create(self, from_file):
         self.create_client()
         self.osc_manager.register_target(self)
@@ -248,6 +233,21 @@ class OSCTargetNode(OSCTarget, Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
+        if self.ordered_args is not None:
+            for i in range(len(self.ordered_args)):
+                arg, t = decode_arg(self.ordered_args, i)
+                if t == int:
+                    self.port = arg
+                elif t == str:
+                    is_name = False
+                    for c in arg:
+                        if c not in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.']:
+                            self.name = arg
+                            is_name = True
+                            break
+                    if not is_name:
+                        self.ip = arg
+
         self.input = self.add_input('osc to send', triggers_execution=True)
 
         self.target_name_property = self.add_property('name', widget_type='text_input', default_value=self.name, callback=self.target_changed)
@@ -255,9 +255,9 @@ class OSCTargetNode(OSCTarget, Node):
         self.target_port_property = self.add_property('port', widget_type='text_input', default_value=str(self.port), callback=self.target_changed)
 
     def target_changed(self):
-        name = self.target_name_property.get_widget_value()
-        port = any_to_int(self.target_port_property.get_widget_value())
-        ip = self.target_ip_property.get_widget_value()
+        name = self.target_name_property()
+        port = any_to_int(self.target_port_property())
+        ip = self.target_ip_property()
 
         if port != self.port or ip != self.ip:
             self.destroy_client()
@@ -277,7 +277,7 @@ class OSCTargetNode(OSCTarget, Node):
         content = []
         message = ''
         if self.input.fresh_input:
-            data = list(self.input.get_received_data())
+            data = list(self.input())
             hybrid_list, homogenous, types = list_to_hybrid_list(data)
             if hybrid_list is not None:
                 if len(hybrid_list) > 0:
@@ -487,8 +487,8 @@ class OSCSourceNode(OSCSource, Node):
             self.output.send(out_list)
 
     def source_changed(self):
-        name = self.source_name_property.get_widget_value()
-        port = any_to_int(self.source_port_property.get_widget_value())
+        name = self.source_name_property()
+        port = any_to_int(self.source_port_property())
 
         if port != self.port:
             self.destroy_server()
@@ -553,8 +553,8 @@ class OSCAsyncIOSourceNode(OSCAsyncIOSource, Node):
             self.output.send(out_list)
 
     def source_changed(self):
-        name = self.source_name_property.get_widget_value()
-        port = any_to_int(self.source_port_property.get_widget_value())
+        name = self.source_name_property()
+        port = any_to_int(self.source_port_property())
 
         if port != self.port:
             self.stop_serving()
@@ -615,7 +615,7 @@ class OSCReceiveNode(Node):
         self.output = self.add_output("osc received")
 
     def name_changed(self):
-        new_name = self.source_name_property.get_widget_value()
+        new_name = self.source_name_property()
         if new_name != self.name:
             if self.source is not None:
                 self.osc_manager.unregister_receive_node(self)
@@ -624,7 +624,7 @@ class OSCReceiveNode(Node):
             self.osc_manager.connect_receive_node_to_source(self, self.source)
 
     def address_changed(self):
-        new_address = self.source_address_property.get_widget_value()
+        new_address = self.source_address_property()
         if new_address != self.address:
             self.osc_manager.receive_node_address_changed(self, new_address, self.source)
 
@@ -649,7 +649,7 @@ class OSCReceiveNode(Node):
             self.source = None
 
     def verify_source(self):
-        if self.source.registered_name == self.source_name_property.get_widget_value():
+        if self.source.registered_name == self.source_name_property():
             return True
         return False
 
@@ -684,7 +684,7 @@ class OSCSendNode(Node):
         self.target_address_property = self.add_property('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
 
     def name_changed(self):
-        new_name = self.target_name_property.get_widget_value()
+        new_name = self.target_name_property()
         if new_name != self.name:
             if self.target is not None:
                 self.osc_manager.unregister_send_node(self)
@@ -692,7 +692,7 @@ class OSCSendNode(Node):
             self.find_target_node(self.name)
 
     def address_changed(self):
-        new_address = self.target_address_property.get_widget_value()
+        new_address = self.target_address_property()
         if new_address != self.address:
             self.osc_manager.unregister_send_node(self)
             self.address = new_address
@@ -720,7 +720,7 @@ class OSCSendNode(Node):
              self.target = None
 
     def verify_target(self):
-        if self.target.registered_name == self.target_name_property.get_widget_value():
+        if self.target.registered_name == self.target_name_property():
             return True
         return False
 
@@ -729,7 +729,7 @@ class OSCSendNode(Node):
 
     def execute(self):
         if self.input.fresh_input:
-            data = self.input.get_received_data()
+            data = self.input()
             t = type(data)
             if t not in [str, int, float, bool, np.int64, np.double]:
                 data = list(data)

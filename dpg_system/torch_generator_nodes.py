@@ -58,11 +58,11 @@ class TorchGeneratorNode(TorchDeviceDtypeNode):
         self.output = self.add_output(out_label)
 
     def range_changed(self):
-        self.min = self.min_input.get_widget_value()
-        self.max = self.max_input.get_widget_value()
+        self.min = self.min_input()
+        self.max = self.max_input()
 
     def shape_changed(self):
-        shape_text = self.shape_input.get_widget_value()
+        shape_text = self.shape_input()
         shape_list = re.findall(r'[-+]?\d+', shape_text)
         shape = []
         for dim_text in shape_list:
@@ -137,11 +137,11 @@ class TorchFullNode(TorchDeviceDtypeNode):
         self.output = self.add_output(out_label)
 
     def val_changed(self):
-        self.value = self.value_input.get_widget_value()
+        self.value = self.value_input()
 
     def execute(self):
         for i in range(len(self.shape)):
-            self.shape[i] = self.shape_properties[i].get_widget_value()
+            self.shape[i] = self.shape_properties[i]()
         size = tuple(self.shape)
         out_array = torch.full(size=size, fill_value=self.value, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad)
         self.output.send(out_array)
@@ -176,8 +176,8 @@ class TorchGeneratorLikeNode(TorchDeviceDtypeNode):
         self.output = self.add_output(out_label)
 
     def range_changed(self):
-        self.min = self.min_input.get_widget_value()
-        self.max = self.max_input.get_widget_value()
+        self.min = self.min_input()
+        self.max = self.max_input()
 
     def dtype_changed(self):
         super().dtype_changed()
@@ -203,7 +203,7 @@ class TorchGeneratorLikeNode(TorchDeviceDtypeNode):
 
     def execute(self):
         if self.input.fresh_input:
-            data = self.input.get_received_data()
+            data = self.input()
             if type(data) == torch.Tensor:
                 shape = data.shape
                 size = tuple(shape)
@@ -264,9 +264,9 @@ class TorchLinSpaceNode(TorchDeviceDtypeNode):
         self.output = self.add_output(out_label)
 
     def execute(self):
-        self.start = self.start_property.get_widget_value()
-        self.stop = self.stop_property.get_widget_value()
-        self.steps = self.steps_property.get_widget_value()
+        self.start = self.start_property()
+        self.stop = self.stop_property()
+        self.steps = self.steps_property()
         out_array = self.op(self.start, self.stop, self.steps, dtype=self.dtype, device=self.device, requires_grad=self.requires_grad)
         self.output.send(out_array)
 
@@ -313,9 +313,9 @@ class TorchRangeNode(TorchDeviceDtypeNode):
         self.output = self.add_output(out_label)
 
     def execute(self):
-        self.start = self.start_property.get_widget_value()
-        self.stop = self.stop_property.get_widget_value()
-        self.step = self.step_property.get_widget_value()
+        self.start = self.start_property()
+        self.stop = self.stop_property()
+        self.step = self.step_property()
         out_array = self.op(self.start, self.stop, self.step, dtype=self.dtype, device=self.device, requires_grad=self.requires_grad)
         self.output.send(out_array)
 
@@ -343,7 +343,7 @@ class TorchEyeNode(TorchDeviceDtypeNode):
         self.output = self.add_output(out_label)
 
     def n_changed(self):
-        self.n = self.n_input.get_widget_value()
+        self.n = self.n_input()
 
     def execute(self):
         out_array = torch.eye(n=self.n, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad)

@@ -78,13 +78,13 @@ class SpacyConfusionMatrixNode(SpacyNode):
     def execute(self):
         if self.input2.fresh_input:
             self.vectors_2 = []
-            self.data2 = self.input2.get_received_data()
+            self.data2 = self.input2()
             for word in self.data2:
                 self.vectors_2.append(self.nlp(word).vector)
 
         if self.data2 is not None and len(self.data2) > 0:
             self.vectors = []
-            data1 = self.input.get_received_data()
+            data1 = self.input()
             self.confusion_matrix = np.ndarray((len(self.data2), len(data1)))
             for index, word in enumerate(data1):
                 vector_ = self.nlp(word).vector
@@ -110,7 +110,7 @@ class PhraseVectorNode(SpacyNode):
 
     def execute(self):
         if self.input.fresh_input:
-            sentence = self.input.get_received_data()
+            sentence = self.input()
             self.sentence = any_to_string(sentence)
             self.doc = self.nlp(self.sentence)
             vector = self.doc.vector
@@ -136,11 +136,11 @@ class PhraseSimilarityNode(SpacyNode):
 
     def execute(self):
         if self.input.fresh_input:
-            sentence = self.input.get_received_data()
+            sentence = self.input()
             self.sentence = any_to_string(sentence)
             self.doc = self.nlp(self.sentence)
         if self.input2.fresh_input:
-            sentence = self.input2.get_received_data()
+            sentence = self.input2()
             self.sentence2 = any_to_string(sentence)
             self.doc2 = self.nlp(self.sentence2)
         if self.doc is not None and self.doc2 is not None:
@@ -162,7 +162,7 @@ class LemmaNode(SpacyNode):
 
     def execute(self):
         if self.input.fresh_input:
-            self.sentence = self.input.get_received_data()
+            self.sentence = self.input()
             self.sentence = any_to_string(self.sentence)
             self.doc = self.nlp(self.sentence)
             lemma_list = []
@@ -315,9 +315,9 @@ class RephraseNode(SpacyNode):
 
     def execute(self):
         if self.clip_score_input.fresh_input:
-            self.clip_score = self.clip_score_input.get_received_data()
+            self.clip_score = self.clip_score_input()
         if self.input.fresh_input:
-            input = self.input.get_received_data()
+            input = self.input()
             # handled, do_output = self.check_for_messages(input)
             # if not handled:
             sentence = any_to_string(input)
@@ -815,7 +815,7 @@ class RephraseNode(SpacyNode):
             sentence_list[0] = self.focus_noun
             sentence = self.token_list_to_string(sentence_list)
             self.new_doc = self.nlp(sentence)
-        self.replace_sim_threshold = self.replace_sim_threshold_property.get_widget_value()
+        self.replace_sim_threshold = self.replace_sim_threshold_property()
 
         root = None
         for new_index, new_token in enumerate(self.new_doc):
@@ -824,11 +824,11 @@ class RephraseNode(SpacyNode):
 
         complexity = self.phrase_complexity(self.new_doc)
 
-        if self.new_doc[0].pos_ in ['CCONJ', 'SCONJ'] and complexity > self.complexity_threshold_property.get_widget_value():
+        if self.new_doc[0].pos_ in ['CCONJ', 'SCONJ'] and complexity > self.complexity_threshold_property():
             sentence = self.sentence + ' ' + sentence
             return sentence
 
-        if root.pos_ != 'ADP' and complexity > self.complexity_threshold_property.get_widget_value():
+        if root.pos_ != 'ADP' and complexity > self.complexity_threshold_property():
             return ''
 
         self.recursion += 1
@@ -871,8 +871,8 @@ class RephraseNode(SpacyNode):
         self.recursion = 0
         was_rewritten = False
 
-        self.replace_sim_threshold = self.replace_sim_threshold_property.get_widget_value()
-        self.clear_input_pause = self.clear_input_pause_property.get_widget_value()
+        self.replace_sim_threshold = self.replace_sim_threshold_property()
+        self.clear_input_pause = self.clear_input_pause_property()
         if now - self.last_input_time < self.clear_input_pause:
             rewritten_sentence = self.conditional_parse(sentence, clip_score=clip_score)
             if len(rewritten_sentence) > 0:
@@ -894,7 +894,7 @@ class RephraseNode(SpacyNode):
             if self.focus_noun is None or not was_rewritten:
                 self.focus_noun = self.choose_focus_noun()
 
-            if self.output_as_list_property.get_widget_value():
+            if self.output_as_list_property():
                 token_list = self.gather_token_list_from_doc()
                 sentence_list = self.token_list_to_string_list(token_list)
                 self.output.send(sentence_list)

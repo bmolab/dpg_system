@@ -41,7 +41,7 @@ class DifferentiateNode(Node):
         self.previousType = None
 
         self.input = self.add_input("", triggers_execution=True)
-        self.absolute_property = self.add_input("absolute", widget_type='checkbox', default_value=False)
+        self.absolute = self.add_input("absolute", widget_type='checkbox', default_value=False)
         self.output = self.add_output("")
 
     def float_diff(self, received, absolute):
@@ -104,24 +104,23 @@ class DifferentiateNode(Node):
         return output
 
     def execute(self):
-        received = self.input.get_received_data()
+        received = self.input()
         t = type(received)
         output = None
-        absolute = self.absolute_property.get_widget_value()
         if self.previous_value is not None:
             if t == float:
-                output = self.float_diff(received, absolute)
+                output = self.float_diff(received, self.absolute())
             elif t == int:
-                output = self.int_diff(received, absolute)
+                output = self.int_diff(received, self.absolute())
             elif t == bool:
-                output = self.bool_diff(received, absolute)
+                output = self.bool_diff(received, self.absolute())
             elif t == list:
-                output, received = self.list_diff(received, absolute)
+                output, received = self.list_diff(received, self.absolute())
                 t = np.ndarray
             if t == np.ndarray:
-                output = self.array_diff(received, absolute)
+                output = self.array_diff(received, self.absolute())
             elif self.app.torch_available and t == torch.Tensor:
-                output = self.tensor_diff(received, absolute)
+                output = self.tensor_diff(received, self.absolute())
 
             self.output.send(output)
 
@@ -138,20 +137,20 @@ class RandomNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.range = self.arg_as_number(default_value=1.0)
-        self.bipolar = False
+        range = self.arg_as_number(default_value=1.0)
+        bipolar = False
 
         self.trigger_input = self.add_input('trigger', triggers_execution=True)
-        self.range_input = self.add_input('range', widget_type='drag_float', default_value=self.range)
-        self.range_input.widget.speed = 0.01
-        self.bipolar_property = self.add_option('bipolar', widget_type='checkbox', default_value=self.bipolar)
+        self.range = self.add_input('range', widget_type='drag_float', default_value=range)
+        self.range.widget.speed = 0.01
+        self.bipolar = self.add_option('bipolar', widget_type='checkbox', default_value=bipolar)
         self.output = self.add_output('out')
 
     def execute(self):
-        if self.bipolar_property.get_widget_value():
-            output_value = random.random() * self.range_input.get_widget_value() * 2 - self.range_input.get_widget_value()
+        if self.bipolar():
+            output_value = random.random() * self.range() * 2 - self.range()
         else:
-            output_value = random.random() * self.range_input.get_widget_value()
+            output_value = random.random() * self.range()
         self.output.send(output_value)
 
 
@@ -202,26 +201,26 @@ class SignalNode(Node):
         self.start_stop()
 
     def set_shape(self, input=None):
-        self.shape = self.shape_input.get_widget_value()
+        self.shape = self.shape_input()
 
     def change_size(self):
-        self.vector_size = self.size_property.get_widget_value()
+        self.vector_size = self.size_property()
         if self.vector_size != 1:
             self.vector = np.ndarray((self.vector_size))
 
     def change_period(self, input=None):
-        self.period = self.period_input.get_widget_value()
+        self.period = self.period_input()
         if self.period <= 0:
             self.period = .001
 
     def change_range(self):
-        self.range = self.range_property.get_widget_value()
+        self.range = self.range_property()
 
     def change_bipolar(self):
-        self.bipolar = self.bipolar_property.get_widget_value()
+        self.bipolar = self.bipolar_property()
 
     def start_stop(self, input=None):
-        self.on = self.on_off_input.get_widget_value()
+        self.on = self.on_off_input()
         if self.on:
             self.first_tick = time.time()
 
@@ -294,7 +293,7 @@ class SubSampleNode(Node):
         self.output = self.add_output("out")
 
     def rate_changed(self):
-        self.subsampler = self.rate_property.get_widget_value()
+        self.subsampler = self.rate_property()
 
     def call_execute(self, input=None):
         self.execute()
@@ -304,7 +303,7 @@ class SubSampleNode(Node):
             self.sample_count += 1
             if self.sample_count + 1 >= self.subsampler:
                 self.sample_count = 0
-                self.output.send(self.input.get_received_data())
+                self.output.send(self.input())
 
 
 class NoiseGateNode(Node):
@@ -328,12 +327,12 @@ class NoiseGateNode(Node):
         self.squeeze_option = self.add_option('squeeze', widget_type='checkbox', default_value=self.bipolar, callback=self.option_changed)
 
     def option_changed(self):
-        self.threshold = self.threshold_property.get_widget_value()
-        self.squeeze = self.squeeze_option.get_widget_value()
-        self.bipolar = self.bipolar_option.get_widget_value()
+        self.threshold = self.threshold_property()
+        self.squeeze = self.squeeze_option()
+        self.bipolar = self.bipolar_option()
 
     def execute(self):
-        data = self.input.get_received_data()
+        data = self.input()
         t = type(data)
         output_data = data
         if t in [float, np.double]:
@@ -443,17 +442,17 @@ class ThresholdTriggerNode(Node):
         self.retrigger_delay_option = self.add_option('retrig delay', widget_type='drag_float', default_value=self.retrigger_delay, callback=self.option_changed)
 
     def option_changed(self):
-        self.threshold = self.threshold_property.get_widget_value()
-        self.release_threshold = self.release_threshold_property.get_widget_value()
-        self.retrigger_delay = self.retrigger_delay_option.get_widget_value()
-        mode = self.output_mode_option.get_widget_value()
+        self.threshold = self.threshold_property()
+        self.release_threshold = self.release_threshold_property()
+        self.retrigger_delay = self.retrigger_delay_option()
+        mode = self.output_mode_option()
         if mode == 'output toggle':
             self.output_mode = 0
         else:
             self.output_mode = 1
 
     def execute(self):
-        data = self.input.get_received_data()
+        data = self.input()
         t = type(data)
 
         if t in [float, np.double, int, np.int64]:
@@ -549,7 +548,7 @@ class RangerNode(Node):
         self.output = self.add_output('rescaled')
 
     def execute(self):
-        self.calibrating = self.calibrate_input.get_widget_value()
+        self.calibrating = self.calibrate_input()
         if self.calibrating != self.was_calibrating:
             if self.calibrating:
                 self.calibrating_min = math.inf
@@ -563,7 +562,7 @@ class RangerNode(Node):
                 self.was_calibrating = False
         out = 0.0
         if self.input.fresh_input:
-            inData = self.input.get_received_data()
+            inData = self.input()
 
             t = type(inData)
             if t in [int, float]:
@@ -573,10 +572,10 @@ class RangerNode(Node):
                         self.calibrating_max = in_value
                     elif in_value < self.calibrating_min:
                         self.calibrating_min = in_value
-                self.inMin = self.in_min_input.get_widget_value()
-                self.inMax = self.in_max_input.get_widget_value()
-                self.outMin = self.out_min_input.get_widget_value()
-                self.outMax = self.out_max_input.get_widget_value()
+                self.inMin = self.in_min_input()
+                self.inMax = self.in_max_input()
+                self.outMin = self.out_min_input()
+                self.outMax = self.out_max_input()
 
                 range = self.inMax - self.inMin
                 if range == 0:
@@ -656,7 +655,7 @@ class MultiDiffFilterNode(Node):
 
     def degree_changed(self):
         for i in range(self.filter_count):
-            self.degrees[i] = self.filter_degree_inputs[i].get_widget_value()
+            self.degrees[i] = self.filter_degree_inputs[i]()
         self.minus_degrees = self.ones - self.degrees
 
     def execute(self):
@@ -701,7 +700,7 @@ class FilterNode(Node):
         self.output = self.add_output("out")
 
     def change_degree(self, input=None):
-        self.degree = self.degree_input.get_widget_value()
+        self.degree = self.degree_input()
         if self.degree < 0:
             self.degree = 0
         elif self.degree > 1:
@@ -735,9 +734,9 @@ class SampleHoldNode(Node):
         self.output = self.add_output("out")
 
     def execute(self):
-        self.sample_hold = self.sample_hold_input.get_widget_value()
+        self.sample_hold = self.sample_hold_input()
         if self.sample_hold:
-            self.sample = self.input.get_received_data()
+            self.sample = self.input()
         self.output.send(self.sample)
 
 
@@ -793,15 +792,15 @@ class TogEdgeNode(Node):
 #         self.sos = signal.butter(self.order, [self.low, self.high], btype='band', output='sos')
 #
 #     def params_changed(self):
-#         self.low_cut = self.low_cut_property.get_widget_value()
-#         self.high_cut = self.high_cut_property.get_widget_value()
+#         self.low_cut = self.low_cut_property()
+#         self.high_cut = self.high_cut_property()
 #         self.low = self.low_cut / self.nyquist
 #         self.high = self.high_cut / self.nyquist
-#         self.order = self.order_property.get_widget_value()
+#         self.order = self.order_property()
 #         self.sos = signal.butter(self.order, [self.low, self.high], btype='band', output='sos')
 #
 #     def execute(self):
-#         signal = self.input.get_received_data()
+#         signal = self.input()
 
 # envelope:
 # square of the signal + square of (diff of the signal * period * 9.5)
@@ -854,13 +853,13 @@ class FilterBankNode(Node):
 
     def params_changed(self):
         self.ready = False
-        self.low_bound = self.low_cut_property.get_widget_value()
-        self.high_bound = self.high_cut_property.get_widget_value()
-        self.order = self.order_property.get_widget_value()
-        self.sample_frequency = self.sample_frequency_property.get_widget_value()
+        self.low_bound = self.low_cut_property()
+        self.high_bound = self.high_cut_property()
+        self.order = self.order_property()
+        self.sample_frequency = self.sample_frequency_property()
         self.nyquist = self.sample_frequency * 0.5
-        # self.filter_type = self.filter_type_property.get_widget_value()
-        self.filter_design = self.filter_design_property.get_widget_value()
+        # self.filter_type = self.filter_type_property()
+        self.filter_design = self.filter_design_property()
 
         if self.high_bound > self.nyquist:
             self.high_bound = self.nyquist - 1
@@ -881,7 +880,7 @@ class FilterBankNode(Node):
         self.ready = True
 
     def execute(self):
-        signal = self.input.get_received_data()
+        signal = self.input()
 
         if self.ready:
             for i, filter in enumerate(self.filters):
@@ -938,14 +937,14 @@ class SpectrumNode(Node):
 
     def params_changed(self):
         self.ready = False
-        self.low_bound = self.low_cut_property.get_widget_value()
-        self.high_bound = self.high_cut_property.get_widget_value()
-        self.order = self.order_property.get_widget_value()
-        self.sample_frequency = self.sample_frequency_property.get_widget_value()
+        self.low_bound = self.low_cut_property()
+        self.high_bound = self.high_cut_property()
+        self.order = self.order_property()
+        self.sample_frequency = self.sample_frequency_property()
         self.nyquist = self.sample_frequency * 0.5
-        # self.filter_type = self.filter_type_property.get_widget_value()
-        self.filter_design = self.filter_design_property.get_widget_value()
-        self.number_of_bands = self.number_of_bands_property.get_widget_value()
+        # self.filter_type = self.filter_type_property()
+        self.filter_design = self.filter_design_property()
+        self.number_of_bands = self.number_of_bands_property()
 
         if self.high_bound > self.nyquist:
             self.high_bound = self.nyquist - 1
@@ -970,7 +969,7 @@ class SpectrumNode(Node):
         self.ready = True
 
     def execute(self):
-        signal = self.input.get_received_data()
+        signal = self.input()
 
         if self.ready:
             for i, filter in enumerate(self.filters):
@@ -1014,13 +1013,13 @@ class BandPassFilterNode(Node):
 
     def params_changed(self):
         self.filter = None
-        self.low_cut = self.low_cut_property.get_widget_value()
-        self.high_cut = self.high_cut_property.get_widget_value()
-        self.order = self.order_property.get_widget_value()
-        self.sample_frequency = self.sample_frequency_property.get_widget_value()
+        self.low_cut = self.low_cut_property()
+        self.high_cut = self.high_cut_property()
+        self.order = self.order_property()
+        self.sample_frequency = self.sample_frequency_property()
         self.nyquist = self.sample_frequency * 0.5
-        self.filter_type = self.filter_type_property.get_widget_value()
-        self.filter_design = self.filter_design_property.get_widget_value()
+        self.filter_type = self.filter_type_property()
+        self.filter_design = self.filter_design_property()
         if self.high_cut > self.nyquist:
             self.high_cut = self.nyquist - 1
         if self.low_cut > self.high_cut:
@@ -1033,7 +1032,7 @@ class BandPassFilterNode(Node):
             self.filter = IIR2Filter(self.order, [self.low_cut], filter_type=self.filter_type, design=self.filter_design, fs=self.sample_frequency)
 
     def execute(self):
-        signal = self.input.get_received_data()
+        signal = self.input()
         if self.filter is not None:
             signal_out = self.filter.filter(signal)
             self.output.send(signal_out)
@@ -1045,6 +1044,7 @@ class IIR2Filter():
         self.filter_types_1 = ['lowpass', 'highpass', 'Lowpass', 'Highpass', 'low', 'high']
         self.filter_types_2 = ['bandstop', 'bandpass', 'Bandstop', 'Bandpass']
         self.error_flag = 0
+        self.fir_coefficients = None
         self.coefficients = None
         self.coefficients = self.create_coefficients(order, cutoff, filter_type, design, rp, rs, fs)
         self.acc_input = np.zeros(len(self.coefficients))

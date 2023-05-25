@@ -12,7 +12,7 @@ class TorchNode(Node):
 
     def input_to_tensor(self):
         if self.input is not None:
-            input_tensor = self.input.get_received_data()
+            input_tensor = self.input()
             if input_tensor is None:
                 return input_tensor
             if type(input_tensor) != torch.Tensor:
@@ -40,7 +40,7 @@ class TorchNode(Node):
 
     def input_to_torchvision_tensor(self):
         if self.input is not None:
-            input_tensor = self.input.get_received_data()
+            input_tensor = self.input()
             if input_tensor is None:
                 return input_tensor
             if type(input_tensor) != torch.Tensor:
@@ -96,14 +96,14 @@ class TorchDeviceDtypeNode(TorchNode):
                                               callback=self.requires_grad_changed)
 
     def device_changed(self):
-        device_name = self.device_input.get_widget_value()
+        device_name = self.device_input()
         self.device = torch.device(device_name)
 
     def requires_grad_changed(self):
-        self.requires_grad = self.grad_input.get_widget_value()
+        self.requires_grad = self.grad_input()
 
     def dtype_changed(self):
-        dtype = self.dtype_input.get_widget_value()
+        dtype = self.dtype_input()
         if dtype in self.dtype_dict:
             self.dtype = self.dtype_dict[dtype]
 
@@ -193,5 +193,5 @@ class TorchWithDimNode(TorchNode):
 
     def dim_changed(self):
         if self.dim_input is not None:
-            self.dim = self.dim_input.get_widget_value()
+            self.dim = self.dim_input()
 

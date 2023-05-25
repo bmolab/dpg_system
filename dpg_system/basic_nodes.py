@@ -27,6 +27,7 @@ def register_basic_nodes():
     Node.app.register_node("kombine", CombineNode.factory)
     Node.app.register_node("delay", DelayNode.factory)
     Node.app.register_node("select", SelectNode.factory)
+    Node.app.register_node("route", RouteNode.factory)
     Node.app.register_node("gate", GateNode.factory)
     Node.app.register_node("switch", SwitchNode.factory)
     Node.app.register_node("metro", MetroNode.factory)
@@ -403,6 +404,7 @@ class CounterNode(Node):
         self.step = self.arg_as_int(default_value=1, index=1)
 
         self.input = self.add_input("input", triggers_execution=True)
+        self.input.bang_repeats_previous = False
         self.max_input = self.add_input('count', widget_type='drag_int', default_value=self.max_count, callback=self.update_max_count_from_widget)
         self.step_input = self.add_input('step', widget_type='drag_int', default_value=self.step, callback=self.update_step_from_widget)
         self.output = self.add_output("count out")
@@ -754,6 +756,7 @@ class SelectNode(Node):
         self.current_states = []
 
         self.input = self.add_input("in", triggers_execution=True)
+        self.input.bang_repeats_previous = False
 
         if self.mode == 0:
             for i in range(self.selector_count):
@@ -834,6 +837,71 @@ class SelectNode(Node):
                         self.outputs[i].send(self.current_states[i])
 
             self.last_states = self.current_states
+
+
+class RouteNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = RouteNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.router_count = 0
+
+        if len(args) > 0:
+            self.router_count = len(args)
+
+        self.out_mode = 0
+        self.routers = []
+        self.router_options = []
+        self.last_states = []
+        self.current_states = []
+
+        self.input = self.add_input("in", triggers_execution=True)
+
+        for i in range(self.router_count):
+            self.add_output(any_to_string(args[i]))
+        for i in range(self.router_count):
+            val, t = decode_arg(args, i)
+            self.routers.append(val)
+        for i in range(self.router_count):
+            an_option = self.add_option('route address ' + str(i), widget_type='text_input', default_value=args[i], callback=self.routers_changed)
+            self.router_options.append(an_option)
+
+        self.new_routers = False
+
+    def routers_changed(self):
+        self.new_routers = True
+
+    def update_routers(self):
+        new_routers = []
+        for i in range(self.router_count):
+            new_routers.append(self.router_options[i]())
+        for i in range(self.router_count):
+            # this does not update the label
+            dpg.set_item_label(self.outputs[i].uuid, label=new_routers[i])
+            sel, t = decode_arg(new_routers, i)
+            self.routers[i] = sel
+
+    def execute(self):
+        if self.new_routers:
+            self.update_routers()
+            self.new_routers = False
+        data = self.input()
+        t = type(data)
+        if t == str:
+            data = data.split(' ')
+            t = list
+        if t == list:
+            if len(data) > 1:
+                router = data[0]
+                if router in self.routers:
+                    index = self.routers.index(router)
+                    message = data[1:]
+                    if index < len(self.outputs):
+                        self.outputs[index].send(message)
 
 
 class TriggerNode(Node):
@@ -1100,6 +1168,7 @@ class TypeNode(Node):
         super().__init__(label, data, args)
 
         self.input = self.add_input("in", triggers_execution=True)
+        self.input.bang_repeats_previous = False
         width = 128
         if label == 'info':
             width = 192
@@ -1108,13 +1177,17 @@ class TypeNode(Node):
     def execute(self):
         input = self.input()
         if self.label == 'type':
+            print('type', type(input))
             t = type(input)
             if t == float:
                 self.type_property.set('float')
             elif t == int:
                 self.type_property.set('int')
             elif t == str:
-                self.type_property.set('string')
+                if input == 'bang':
+                    self.type_property.set('bang')
+                else:
+                    self.type_property.set('string')
             elif t == list:
                 self.type_property.set('list[' + str(len(input)) + ']')
             elif t == bool:
@@ -1158,14 +1231,16 @@ class TypeNode(Node):
             elif t == int:
                 self.type_property.set('int')
             elif t == str:
-                self.type_property.set('string')
+                if input == 'bang':
+                    self.type_property.set('bang')
+                else:
+                    self.type_property.set('string')
             elif t == list:
                 self.type_property.set('list[' + str(len(input)) + ']')
             elif t == bool:
                 self.type_property.set('bool')
             elif t == np.ndarray:
                 shape = input.shape
-
                 if input.dtype == float:
                     comp = 'float'
                 elif input.dtype == np.double:

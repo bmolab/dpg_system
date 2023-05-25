@@ -44,14 +44,14 @@ class BufferNode(Node):
         self.write_pos = 0
 
     def output_style_changed(self):
-        output_style = self.output_style_option.get_widget_value()
+        output_style = self.output_style_option()
         if output_style == 'output buffer on every input':
             self.output_style = 0
         elif output_style == 'output samples on demand by index':
             self.output_style = 1
 
     def update_style_changed(self):
-        update_style = self.update_style_option.get_widget_value()
+        update_style = self.update_style_option()
         if update_style == 'buffer holds one sample of input':
             self.update_style = 0
         elif update_style == 'input is stream of samples':
@@ -60,10 +60,10 @@ class BufferNode(Node):
             self.update_style = 2
 
     def execute(self):
-        self.sample_count = self.sample_count_option.get_widget_value()
+        self.sample_count = self.sample_count_option()
 
         if self.input.fresh_input:
-            data = self.input.get_received_data()
+            data = self.input()
             data = any_to_array(data)
 
             if self.update_style == t_BufferFill:
@@ -108,7 +108,7 @@ class BufferNode(Node):
                     self.output.send(self.buffer)
 
         if self.index_input.fresh_input:
-            index = any_to_int(self.index_input.get_received_data())
+            index = any_to_int(self.index_input())
             if 0 <= index < self.sample_count:
                 output_sample = self.buffer[index]
                 self.output.send(output_sample)
@@ -375,21 +375,21 @@ class RollingBufferNode(Node):
         self.scroll_direction_option.widget.combo_items = ['horizontal', 'vertical']
 
     def scroll_direction_changed(self):
-        self.scroll_direction = self.scroll_direction_option.get_widget_value()
+        self.scroll_direction = self.scroll_direction_option()
         if self.scroll_direction == 'horizontal':
             self.rolling_buffer.set_roll_axis(roll_along_x=True)
         else:
             self.rolling_buffer.set_roll_axis(roll_along_x=False)
 
     def update_style_changed(self):
-        update_style = self.update_style_option.get_widget_value()
+        update_style = self.update_style_option()
         self.rolling_buffer.set_update_style(update_style)
 
     def execute(self):
-        self.rolling_buffer.sample_count = self.sample_count_option.get_widget_value()
+        self.rolling_buffer.sample_count = self.sample_count_option()
 
         if self.input.fresh_input:
-            data = self.input.get_received_data()
+            data = self.input()
             data = any_to_array(data)
 
             self.rolling_buffer.update(data)
@@ -420,9 +420,9 @@ class ConfusionMatrixNode(Node):
 
     def execute(self):
         if self.input2.fresh_input:
-            self.data2 = self.input2.get_received_data()
+            self.data2 = self.input2()
         if self.data2 is not None and len(self.data2) > 0:
-            data1 = self.input.get_received_data()
+            data1 = self.input()
             self.confusion_matrix = np.ndarray((len(self.data2), len(data1)))
             for index, word in enumerate(data1):
                 for index2, word2 in enumerate(self.data2):
@@ -450,10 +450,10 @@ class WaveletNode(Node):
         self.wavelets_property.widget.combo_items = ['cmhat', 'gmw', 'bump', 'hhhat', 'morlet']
 
     def execute(self):
-        self.octaves = self.octaves_property.get_widget_value()
-        self.wavelets = self.wavelets_property.get_widget_value()
+        self.octaves = self.octaves_property()
+        self.wavelets = self.wavelets_property()
         if self.input.fresh_input:
-            data = self.input.get_received_data()
+            data = self.input()
             data = any_to_array(data)
             wavelets, _ = ssqueezepy.cwt(data.ravel(), nv=self.octaves, wavelet=self.wavelets, scales='log-piecewise')
             self.output.send(np.abs(wavelets))

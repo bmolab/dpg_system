@@ -123,10 +123,10 @@ class KorniaGaussianBlurNode(TorchNode):
         self.output = self.add_output("output")
 
     def params_changed(self):
-        self.sigma = self.sigma_property.get_widget_value()
+        self.sigma = self.sigma_property()
         if self.sigma <= 0:
             self.sigma = 0.1
-        self.kernel_size = int(self.kernel_size_property.get_widget_value())
+        self.kernel_size = int(self.kernel_size_property())
 
     def execute(self):
         input_tensor = self.input_to_torchvision_tensor().float()
@@ -158,8 +158,8 @@ class KorniaDOGResponseSingleNode(TorchNode):
         self.output = self.add_output("output")
 
     def params_changed(self):
-        self.sigma_1 = self.sigma_1_property.get_widget_value()
-        self.sigma_2 = self.sigma_2_property.get_widget_value()
+        self.sigma_1 = self.sigma_1_property()
+        self.sigma_2 = self.sigma_2_property()
 
 
     def execute(self):

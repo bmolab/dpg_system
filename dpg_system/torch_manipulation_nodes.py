@@ -101,7 +101,7 @@ class TorchViewNode(TorchNode):
         self.output = self.add_output("output")
 
     def shape_changed(self):
-        shape_text = self.shape_input.get_widget_value()
+        shape_text = self.shape_input()
         shape_list = re.findall(r'[-+]?\d+', shape_text)
         shape = []
         for dim_text in shape_list:
@@ -187,8 +187,8 @@ class TorchTransposeNode(TorchNode):
         self.output = self.add_output('permuted tensor out')
 
     def transpose_changed(self):
-        self.transpose1 = self.transpose1_property.get_widget_value()
-        self.transpose2 = self.transpose2_property.get_widget_value()
+        self.transpose1 = self.transpose1_property()
+        self.transpose2 = self.transpose2_property()
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -218,7 +218,7 @@ class TorchFlipNode(TorchNode):
         self.output = self.add_output("output")
 
     def flip_changed(self):
-        flip_text = self.flip_property.get_widget_value()
+        flip_text = self.flip_property()
         flip_split = re.findall(r'[-+]?\d+', flip_text)
         flip_list, _, _ = list_to_hybrid_list(flip_split)
         self.flip_list = flip_list
@@ -248,7 +248,7 @@ class TorchStackCatNode(TorchNode):
         self.output = self.add_output("output")
 
     def dim_changed(self):
-        self.dim = self.dim_input.get_widget_value()
+        self.dim = self.dim_input()
 
 
 class TorchStackNode(TorchStackCatNode):
@@ -266,7 +266,7 @@ class TorchStackNode(TorchStackCatNode):
             stack_list = [input_tensor]
             for i in range(self.input_count - 1):
                 an_in = self.other_inputs[i]
-                a_tensor = self.data_to_tensor(an_in.get_received_data())
+                a_tensor = self.data_to_tensor(an_in())
                 if a_tensor is not None:
                     if len(a_tensor.shape) == len(input_tensor.shape):
                         ok_shape = True
@@ -304,7 +304,7 @@ class TorchCatNode(TorchStackCatNode):
             cat_list = [input_tensor]
             for i in range(self.input_count - 1):
                 an_in = self.other_inputs[i]
-                a_tensor = self.data_to_tensor(an_in.get_received_data())
+                a_tensor = self.data_to_tensor(an_in())
                 if a_tensor is not None:
                     if len(a_tensor.shape) == len(input_tensor.shape):
                         ok_shape = True
@@ -357,7 +357,7 @@ class TorchHStackNode(TorchNode):
             stack_list = [input_tensor]
             for i in range(self.input_count - 1):
                 an_in = self.other_inputs[i]
-                a_tensor = self.data_to_tensor(an_in.get_received_data())
+                a_tensor = self.data_to_tensor(an_in())
                 if a_tensor is not None:
                     if a_tensor.shape != input_tensor.shape:
                         if self.app.verbose:
@@ -396,7 +396,7 @@ class TorchChunkNode(TorchNode):
             self.tensor_outputs.append(self.add_output("tensor " + str(i)))
 
     def dim_changed(self):
-        self.dim = self.dim_input.get_widget_value()
+        self.dim = self.dim_input()
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -426,7 +426,7 @@ class TorchPermuteNode(TorchNode):
         self.output = self.add_output('permuted tensor out')
 
     def permute_changed(self):
-        permute_text = self.permute_property.get_widget_value()
+        permute_text = self.permute_property()
         permute_split = re.findall(r'[-+]?\d+', permute_text)
         permute_list, _, _ = list_to_hybrid_list(permute_split)
         self.permute = permute_list
@@ -460,7 +460,7 @@ class TorchRepeatNode(TorchNode):
         self.output = self.add_output('repeated tensor out')
 
     def repeat_changed(self):
-        repeat_text = self.repeat_property.get_widget_value()
+        repeat_text = self.repeat_property()
         repeat_split = re.findall(r'\d+', repeat_text)
         repeat_list, _, _ = list_to_hybrid_list(repeat_split)
         self.repeat = repeat_list
@@ -490,7 +490,7 @@ class TorchTileNode(TorchNode):
         self.output = self.add_output('repeated tensor out')
 
     def tile_changed(self):
-        tile_text = self.tile_property.get_widget_value()
+        tile_text = self.tile_property()
         tile_split = re.findall(r'\d+', tile_text)
         tile_list, _, _ = list_to_hybrid_list(tile_split)
         self.tile = tile_list
@@ -521,13 +521,13 @@ class TorchRollNode(TorchNode):
         self.output = self.add_output("rolled tensor")
 
     def dims_changed(self):
-        dims_text = self.dims_input.get_widget_value()
+        dims_text = self.dims_input()
         dims_split = re.findall(r'[-+]?\d+', dims_text)
         dims_list, _, _ = list_to_hybrid_list(dims_split)
         self.dims_tuple = tuple(dims_list)
 
     def shifts_changed(self):
-        shifts_text = self.shifts_input.get_widget_value()
+        shifts_text = self.shifts_input()
         shifts_split = re.findall(r'[-+]?\d+', shifts_text)
         shifts_list, _, _ = list_to_hybrid_list(shifts_split)
         self.shifts_tuple = tuple(shifts_list)
@@ -563,7 +563,7 @@ class TorchSubtensorNode(TorchNode):
         self.output = self.add_output("output")
 
     def dim_changed(self):
-        dim_text = self.indices_input.get_widget_value()
+        dim_text = self.indices_input()
         dim_split = dim_text.split(',')
         dimmers = []
 
@@ -642,10 +642,10 @@ class TorchSelectNode(TorchNode):
         self.output = self.add_output("output")
 
     def dim_changed(self):
-        self.dim = self.dim_input.get_widget_value()
+        self.dim = self.dim_input()
 
     def index_changed(self):
-        self.index = self.index_input.get_widget_value()
+        self.index = self.index_input()
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -671,7 +671,7 @@ class TorchMaskedSelectNode(TorchNode):
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            data = self.mask_input.get_received_data()
+            data = self.mask_input()
             if data is not None:
                 mask_tensor = self.data_to_tensor(data)
                 if mask_tensor is not None:
@@ -699,7 +699,7 @@ class TorchTakeNode(TorchNode):
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            data = self.index_input.get_received_data()
+            data = self.index_input()
             if data is not None:
                 index_tensor = self.data_to_tensor(data)
                 if index_tensor is not None and index_tensor.dtype == torch.long:
@@ -733,7 +733,7 @@ class TorchTakeAlongDimNode(TorchWithDimNode):
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            data = self.index_input.get_received_data()
+            data = self.index_input()
             if data is not None:
                 index_tensor = self.data_to_tensor(data)
                 if index_tensor is not None and index_tensor.dtype == torch.long:
@@ -769,7 +769,7 @@ class TorchIndexSelectNode(TorchWithDimNode):
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            data = self.index_input.get_received_data()
+            data = self.index_input()
             if data is not None:
                 index_tensor = self.data_to_tensor(data)
                 if index_tensor is not None and index_tensor.dtype == torch.long:
@@ -804,8 +804,8 @@ class TorchNarrowNode(TorchWithDimNode):
         self.output = self.add_output("tensor out")
 
     def params_changed(self):
-        self.start = self.start_input.get_widget_value()
-        self.length = self.length_input.get_widget_value()
+        self.start = self.start_input()
+        self.length = self.length_input()
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -834,7 +834,7 @@ class TorchDiagNode(TorchNode):
         self.output = self.add_output("output")
 
     def diag_changed(self):
-        self.diag = self.which_property.get_widget_value()
+        self.diag = self.which_property()
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -867,7 +867,7 @@ class TorchTriangleNode(TorchNode):
         self.output = self.add_output("output")
 
     def diag_changed(self):
-        self.diag = self.which_property.get_widget_value()
+        self.diag = self.which_property()
 
     def execute(self):
         input_tensor = self.input_to_tensor()

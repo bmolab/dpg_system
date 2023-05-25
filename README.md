@@ -103,8 +103,8 @@ class AdditionNode(Node):
 
     def execute(self):
         if self.input.fresh_input:
-            data = self.input.get_received_data()
-            operand = self.operand_input.get_widget_value()
+            data = self.input()
+            operand = self.operand_input()
             sum = data + operand
             self.output.send(sum)
             
@@ -139,14 +139,14 @@ def __init__(self, label: str, data, args):
     self.output = self.add_output("sum")
 ```
     
-The execute method is called when new input is received in self.input. Note that self.input is created with the argument trigger_node=self. This indicates that any input received in that input should cause the node to execute.
+The execute method is called when new input is received in self.input. Note that self.input is created with the argument triggers_execution=True. This indicates that any input received in that input should cause the node to execute.
     
     
 ```
 def execute(self):
     if self.input.fresh_input:
-        data = self.input.get_received_data()
-        operand = self.operand_input.get_widget_value()
+        data = self.input()
+        operand = self.operand_input()
         sum = data + operand
         self.output.send(sum)
 ```
