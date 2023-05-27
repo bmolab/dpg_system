@@ -718,6 +718,7 @@ class App:
                         self.recent_menus.append(dpg.add_menu_item(label="...", show=False, callback=recent_callback[i]))
                     dpg.add_separator()
                     dpg.add_menu_item(label="Clear Recent", callback=self.clear_recent)
+                dpg.add_menu_item(label="Open Example", callback=self.load_example)
 
                 dpg.add_separator()
                 dpg.add_menu_item(label='Close Current Patch (W)', callback=self.close_current_node_editor)
@@ -1293,9 +1294,9 @@ class App:
         self.loaded_patcher_nodes = []
         self.links_containers = {}
         self.created_nodes = {}
-        hold_current_editor = self.current_node_editor
         if len(self.node_editors) == 0:
             self.add_node_editor()
+        hold_current_editor = self.current_node_editor
         parent_tab = self.get_current_tab()
         try:
             with open(path, 'r') as f:
@@ -1400,7 +1401,7 @@ class App:
             print(exc_)
             print('load failed')
         self.current_node_editor = hold_current_editor
-        self.select_editor_tab(self.current_node_editor)
+        self.select_tab(parent_tab)
         self.loading = False
 
     def load_nodes(self):
@@ -1453,6 +1454,14 @@ class App:
         self.active_widget = 1
         self.fresh_patcher = fresh_patcher
         with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, callback=load_patches_callback, cancel_callback=cancel_callback, tag="file_dialog_id"):
+            dpg.add_file_extension(".json")
+
+
+    def load_example(self):
+        self.active_widget = 1
+        self.fresh_patcher = True
+        with dpg.file_dialog(modal=True, default_path='examples', directory_selector=False, show=True, height=400, callback=load_patches_callback,
+                             cancel_callback=cancel_callback, tag="file_dialog_id"):
             dpg.add_file_extension(".json")
 
     def save_as_nodes(self):
@@ -1636,6 +1645,7 @@ class App:
                     new_editor.patch_name = editor_name
                 self.node_editors.append(new_editor)
                 self.node_editors[len(self.node_editors) - 1].create(panel_uuid)
+                self.current_node_editor = len(self.node_editors) - 1
                 self.select_tab(tab)
         return new_editor
 

@@ -596,8 +596,9 @@ class PropertyWidget:
     def set(self, data, propagate=True):
         if self.widget == 'checkbox':
             if data == 'bang':
-                self.value = not self.value
-                dpg.set_value(self.uuid, self.value)
+                val = not self.value
+                dpg.set_value(self.uuid, val)
+                self.value = val
             else:
                 val = any_to_bool(data)
                 dpg.set_value(self.uuid, val)

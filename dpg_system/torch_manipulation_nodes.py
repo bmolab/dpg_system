@@ -266,7 +266,7 @@ class TorchStackNode(TorchStackCatNode):
             stack_list = [input_tensor]
             for i in range(self.input_count - 1):
                 an_in = self.other_inputs[i]
-                a_tensor = self.data_to_tensor(an_in())
+                a_tensor = self.data_to_tensor(an_in(), match_tensor=input_tensor)
                 if a_tensor is not None:
                     if len(a_tensor.shape) == len(input_tensor.shape):
                         ok_shape = True
@@ -304,7 +304,7 @@ class TorchCatNode(TorchStackCatNode):
             cat_list = [input_tensor]
             for i in range(self.input_count - 1):
                 an_in = self.other_inputs[i]
-                a_tensor = self.data_to_tensor(an_in())
+                a_tensor = self.data_to_tensor(an_in(), match_tensor=input_tensor)
                 if a_tensor is not None:
                     if len(a_tensor.shape) == len(input_tensor.shape):
                         ok_shape = True
@@ -357,7 +357,7 @@ class TorchHStackNode(TorchNode):
             stack_list = [input_tensor]
             for i in range(self.input_count - 1):
                 an_in = self.other_inputs[i]
-                a_tensor = self.data_to_tensor(an_in())
+                a_tensor = self.data_to_tensor(an_in(), match_tensor=input_tensor)
                 if a_tensor is not None:
                     if a_tensor.shape != input_tensor.shape:
                         if self.app.verbose:
@@ -673,10 +673,8 @@ class TorchMaskedSelectNode(TorchNode):
         if input_tensor is not None:
             data = self.mask_input()
             if data is not None:
-                mask_tensor = self.data_to_tensor(data)
+                mask_tensor = self.data_to_tensor(data, device=input_tensor.device, dtype=torch.bool, requires_grad=input_tensor.requires_grad)
                 if mask_tensor is not None:
-                    if mask_tensor.dtype is not torch.bool:
-                        mask_tensor.to(dtype=torch.bool)
                     try:
                         out_tensor = torch.masked_select(input_tensor, mask_tensor)
                         self.out.send(out_tensor)
@@ -701,8 +699,8 @@ class TorchTakeNode(TorchNode):
         if input_tensor is not None:
             data = self.index_input()
             if data is not None:
-                index_tensor = self.data_to_tensor(data)
-                if index_tensor is not None and index_tensor.dtype == torch.long:
+                index_tensor = self.data_to_tensor(data, dtype=torch.long, device=input_tensor.device, requires_grad=input_tensor.requires_grad)
+                if index_tensor is not None:
                     try:
                         taken = torch.take(input_tensor, index_tensor)
                         self.output.send(taken)
@@ -735,11 +733,11 @@ class TorchTakeAlongDimNode(TorchWithDimNode):
         if input_tensor is not None:
             data = self.index_input()
             if data is not None:
-                index_tensor = self.data_to_tensor(data)
-                if index_tensor is not None and index_tensor.dtype == torch.long:
+                index_tensor = self.data_to_tensor(data, device=input_tensor.device, requires_grad=input_tensor.requires_grad, dtype=torch.long)
+                if index_tensor is not None:
                     if -1 - len(input_tensor.shape) < self.dim <= len(input_tensor.shape):
                         try:
-                            taken = torch.take_along_dim(input_tensor, indices=index_tensor, dim = self.dim)
+                            taken = torch.take_along_dim(input_tensor, indices=index_tensor, dim=self.dim)
                             self.output.send(taken)
                         except Exception as e:
                             print(self.label, 'failed')
@@ -771,8 +769,8 @@ class TorchIndexSelectNode(TorchWithDimNode):
         if input_tensor is not None:
             data = self.index_input()
             if data is not None:
-                index_tensor = self.data_to_tensor(data)
-                if index_tensor is not None and index_tensor.dtype == torch.long:
+                index_tensor = self.data_to_tensor(data, device=input_tensor.device, requires_grad=input_tensor.requires_grad, dtype=torch.long)
+                if index_tensor is not None:
                     if -1 - len(input_tensor.shape) < self.dim < len(input_tensor.shape):
                         self.output.send(torch.index_select(input_tensor, self.dim, index_tensor))
                     else:

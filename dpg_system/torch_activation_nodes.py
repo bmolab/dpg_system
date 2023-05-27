@@ -426,7 +426,7 @@ class TorchSpecialTwoTensorNode(TorchNode):
         if input_tensor is not None:
             data = self.second_input()
             if data is not None:
-                second_tensor = self.data_to_tensor(data)
+                second_tensor = self.data_to_tensor(data, match_tensor=input_tensor)
                 if second_tensor is not None:
                     self.output.send(self.op(input_tensor, second_tensor))
 
@@ -458,7 +458,7 @@ class TorchSpecialTwoTensorOrNumberNode(TorchNode):
         if input_tensor is not None:
             data = self.second_input()
             if data is not None:
-                second_tensor = self.data_to_tensor(data)
+                second_tensor = self.data_to_tensor(data, match_tensor=input_tensor)
                 if second_tensor is not None:
                     self.output.send(self.op(input_tensor, second_tensor))
 

@@ -20,11 +20,15 @@ class TorchNode(Node):
             return input_tensor
         return None
 
-    def data_to_tensor(self, input_tensor):
+    def data_to_tensor(self, input_tensor, match_tensor=None, device='cpu', dtype=torch.float32, requires_grad=False):
         if input_tensor is None:
             return input_tensor
+        if match_tensor is not None:
+            device = match_tensor.device
+            dtype = match_tensor.dtype
+            requires_grad = match_tensor.requires_grad
         if type(input_tensor) != torch.Tensor:
-            input_tensor = any_to_tensor(input_tensor)
+            input_tensor = any_to_tensor(input_tensor, device, dtype, requires_grad)
         return input_tensor
 
     def data_to_torchvision_tensor(self, input_tensor):

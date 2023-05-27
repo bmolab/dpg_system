@@ -81,7 +81,7 @@ class TorchBucketizeNode(TorchNode):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
             data = self.boundaries()
-            boundaries_tensor = self.data_to_tensor(data)
+            boundaries_tensor = self.data_to_tensor(data, match_tensor=input_tensor)
             output_tensor = torch.bucketize(input_tensor, boundaries_tensor, out_int32=self.output_int32(), right=self.right())
             self.output.send(output_tensor)
 

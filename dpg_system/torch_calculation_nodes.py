@@ -195,6 +195,7 @@ class TorchCDistanceNode(TorchNode):
 
             self.output.send(euclidean_length.item())
 
+
 class TorchDistanceNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -217,7 +218,7 @@ class TorchDistanceNode(TorchNode):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
             if self.input2 is not None:
-                input2 = self.data_to_tensor(self.input2())
+                input2 = self.data_to_tensor(self.input2(), match_tensor=input_tensor)
                 if input2 is not None:
                     euclidean_length = torch.dist(input_tensor, torch.zeros_like(input_tensor))
                 else:
@@ -282,7 +283,7 @@ class TorchMinimumMaximumNode(TorchNode):
         if input_tensor is not None:
             data = self.input_2()
             if data is not None:
-                input_tensor_2 = self.data_to_tensor(data)
+                input_tensor_2 = self.data_to_tensor(data, match_tensor=input_tensor)
                 if input_tensor_2 is not None:
                     output_tensor = self.op(input_tensor, input_tensor_2)
                     self.output.send(output_tensor)
@@ -318,7 +319,7 @@ class TorchComparisonNode(TorchNode):
         if input_tensor is not None:
             data = self.input_2()
             if data is not None:
-                input_tensor_2 = self.data_to_tensor(data)
+                input_tensor_2 = self.data_to_tensor(data, match_tensor=input_tensor)
                 if input_tensor_2 is not None:
                     output_tensor = self.op(input_tensor, input_tensor_2)
                     self.output.send(output_tensor)
@@ -507,7 +508,7 @@ class TorchComplexNode(TorchNode):
         if real_tensor is not None:
             data = self.imag_input()
             if data is not None:
-                imag_tensor = self.data_to_tensor(data)
+                imag_tensor = self.data_to_tensor(data, match_tensor=real_tensor)
                 if imag_tensor is not None:
                     if real_tensor.shape == imag_tensor.shape:
                         if real_tensor.dtype in [torch.float16, torch.float32, torch.float64]:
@@ -594,13 +595,12 @@ class TorchCopySignNode(TorchNode):
         if input_tensor is not None:
             data = self.sign_input()
             if data is not None:
-                sign_tensor = self.data_to_tensor(data)
+                sign_tensor = self.data_to_tensor(data, match_tensor=input_tensor)
                 if sign_tensor is not None:
-                    if sign_tensor.device == input_tensor.device:
-                        try:
-                            self.output.send(torch.copysign(input_tensor, sign_tensor))
-                        except Exception as error:
-                            print('t.copysign:', error)
+                    try:
+                        self.output.send(torch.copysign(input_tensor, sign_tensor))
+                    except Exception as error:
+                        print('t.copysign:', error)
 
 
 class CosineSimilarityNode(TorchNode):
@@ -623,12 +623,16 @@ class CosineSimilarityNode(TorchNode):
         self.output = self.add_output("output")
 
     def execute(self):
-        if self.input2.fresh_input:
-            self.vector_2 = self.data_to_tensor(self.input2())
         vector_1 = self.input_to_tensor()
-        if self.vector_2 is not None and vector_1 is not None:
-            similarity = self.cos(vector_1, self.vector_2)
-            self.output.send(similarity.item())
+        if vector_1 is not None:
+            if self.input2.fresh_input:
+                self.vector_2 = self.data_to_tensor(self.input2(), match_tensor=vector_1)
+                if self.vector_2 is not None:
+                    try:
+                        similarity = self.cos(vector_1, self.vector_2)
+                        self.output.send(similarity.item())
+                    except Exception as e:
+                        print(self.label, e)
 
 
 class TorchLinalgRQNode(TorchNode):

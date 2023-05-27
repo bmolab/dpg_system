@@ -403,6 +403,7 @@ def string_to_tensor(input):
         out_tensor = torch.Tensor(0)
         try:
             out_array = string_to_array(input)
+            print('string_to_tensor', out_array)
             out_tensor = torch.from_numpy(out_array)
 
             # hybrid_list, homogenous, types = string_to_hybrid_list(input)
@@ -425,6 +426,7 @@ def string_to_array(input_string):
     try:
         input_string = " ".join(input_string.split())
         arr_str = input_string.replace(" ]", "]").replace(" ", ",").replace("\n", "")
+        print('string_to_array', arr_str)
         arr = np.array(ast.literal_eval(arr_str))
     except:
         print('invalid string to cast as array')
@@ -482,6 +484,7 @@ def list_to_tensor(input):
         hybrid_list, homogenous, types = list_to_hybrid_list(input)
         if homogenous:
             t = type(hybrid_list[0])
+            print('list_to_tensor type', t)
             if t in [float, int, bool, np.int64, np.double, np.float32, np.bool_]:
                 return torch.Tensor(hybrid_list)
             elif str not in types:
@@ -659,6 +662,8 @@ def decode_arg(args, index):
             return bool(arg), bool
         elif t == str:
             if re.search(r'\d', arg) is not None:
+                if ',' in arg:
+                    arg = arg.replace(',', '')
                 if '.' in arg:
                     try:
                         v = float(arg)
@@ -667,10 +672,15 @@ def decode_arg(args, index):
                         return arg, str
                 else:
                     try:
+                        print('arg', arg)
                         v = int(arg)
                         return v, int
                     except:
                         return arg, str
+            elif re.search(r'False', arg) is not None:
+                return False, bool
+            elif re.search(r'True', arg) is not None:
+                return True, bool
             return arg, str
         elif t == list:
             return arg, list
