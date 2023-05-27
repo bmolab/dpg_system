@@ -1076,13 +1076,16 @@ class LoadActionNode(Node):
         if self.label == 'load_bang':
             load_bang = True
 
+        if len(args) == 1 and args[0] == 'bang':
+            load_bang = True
+
         if len(args) > 0 and not load_bang:
-            self.message_list = []
+            self.message = []
             for arg in args:
-                self.message_list.append(arg)
-                message_string = ' '.join(self.message_list)
+                self.message.append(arg)
+                message_string = ' '.join(self.message)
         else:
-            self.message_list = ['bang']
+            self.message = 'bang'
             message_string = 'bang'
 
         self.input = self.add_input('trigger', triggers_execution=True)
@@ -1092,16 +1095,20 @@ class LoadActionNode(Node):
         self.add_frame_task()
 
     def action_changed(self):
-        self.message_list = self.load_action().split(' ')
+        action = self.load_action()
+        if action == 'bang':
+            self.message = 'bang'
+        else:
+            self.message = action.split(' ')
 
     def frame_task(self):
         if self.first_time:
             self.first_time = False
             self.remove_frame_tasks()
-            self.output.send(self.message_list)
+            self.output.send(self.message)
 
     def execute(self):
-        self.output.send(self.message_list)
+        self.output.send(self.message)
 
 
 class PlotNode(Node):

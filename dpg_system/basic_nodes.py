@@ -561,7 +561,7 @@ class UnpackNode(Node):
                     self.outputs[i].set_value(listing[i])
             elif t == list:
                 listing, _, _ = list_to_hybrid_list(value)
-                print(listing)
+                # print(listing)
                 out_count = len(listing)
                 if out_count > self.num_outs:
                     out_count = self.num_outs
@@ -619,7 +619,7 @@ class PackNode(Node):
             for i in range(self.num_ins):
                 value = self.inputs[i].get_data()
                 t = type(value)
-                print(t)
+                # print(t)
                 if t in [list, tuple]:
                     out_list += [value]
                 elif t == np.ndarray:
@@ -1177,7 +1177,7 @@ class TypeNode(Node):
     def execute(self):
         input = self.input()
         if self.label == 'type':
-            print('type', type(input))
+            # print('type', type(input))
             t = type(input)
             if t == float:
                 self.type_property.set('float')
@@ -1666,6 +1666,7 @@ class RepeatNode(Node):
         self.trigger_count = self.arg_as_int(default_value=2)
 
         self.input = self.add_input("", triggers_execution=True)
+        self.input.bang_repeats_previous = False
         for i in range(self.trigger_count):
             self.add_output('out ' + str(i))
 

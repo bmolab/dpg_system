@@ -122,7 +122,7 @@ class TorchHistogramNode(TorchDeviceDtypeNode):
         min = 0
         max = 0
 
-        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+        self.input = self.add_input('', triggers_execution=True)
         self.bin_count = self.add_input('bin count', widget_type='drag_int', default_value=bin_count)
         self.min = self.add_input('min', widget_type='drag_float', default_value=min)
         self.max = self.add_input('max', widget_type='drag_float', default_value=max)

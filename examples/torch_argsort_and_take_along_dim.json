@@ -5,13 +5,13 @@
         100,
         100
     ],
-    "id": 2571,
-    "name": "torcharg_sort_and_take_along_dim",
-    "path": "/Users/drokeby/PycharmProjects/dpg_system/examples/torcharg_sort_and_take_along_dim.json",
+    "id": 5003,
+    "name": "torch_argsort_and_take_along_dim",
+    "path": "/Users/drokeby/PycharmProjects/dpg_system/examples/torch_argsort_and_take_along_dim.json",
     "nodes": {
         "0": {
             "name": "",
-            "id": 2592,
+            "id": 5024,
             "position_x": 0,
             "position_y": 0,
             "width": 9,
@@ -30,7 +30,7 @@
         "1": {
             "init": "t.rand 8 8",
             "name": "t.rand",
-            "id": 2613,
+            "id": 5045,
             "position_x": 32,
             "position_y": 35,
             "width": 163,
@@ -78,7 +78,7 @@
         },
         "2": {
             "name": "heat_map",
-            "id": 2671,
+            "id": 5103,
             "position_x": 237,
             "position_y": 24,
             "width": 136,
@@ -151,7 +151,7 @@
         },
         "3": {
             "name": "t.argsort",
-            "id": 2730,
+            "id": 5162,
             "position_x": 337,
             "position_y": 264,
             "width": 88,
@@ -174,7 +174,7 @@
         },
         "4": {
             "name": "t.take_along_dim",
-            "id": 2757,
+            "id": 5189,
             "position_x": 454,
             "position_y": 159,
             "width": 111,
@@ -192,7 +192,7 @@
         },
         "5": {
             "name": "heat_map",
-            "id": 2783,
+            "id": 5215,
             "position_x": 854,
             "position_y": 117,
             "width": 136,
@@ -265,7 +265,7 @@
         },
         "6": {
             "name": "t.flatten",
-            "id": 2842,
+            "id": 5274,
             "position_x": 226,
             "position_y": 231,
             "width": 70,
@@ -277,7 +277,7 @@
         "7": {
             "init": "t.view 8 8",
             "name": "t.view",
-            "id": 2857,
+            "id": 5289,
             "position_x": 609,
             "position_y": 228,
             "width": 208,
@@ -295,7 +295,7 @@
         },
         "8": {
             "name": "t.info",
-            "id": 2878,
+            "id": 5310,
             "position_x": 605,
             "position_y": 106,
             "width": 88,
@@ -303,55 +303,72 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
+        },
+        "9": {
+            "name": "load_bang",
+            "id": 5371,
+            "position_x": 50,
+            "position_y": 238,
+            "width": 64,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
         }
     },
     "links": {
         "0": {
-            "source_node": 2613,
+            "source_node": 5045,
             "source_output_index": 0,
-            "dest_node": 2671,
+            "dest_node": 5103,
             "dest_input_index": 0
         },
         "1": {
-            "source_node": 2613,
+            "source_node": 5045,
             "source_output_index": 0,
-            "dest_node": 2842,
+            "dest_node": 5274,
             "dest_input_index": 0
         },
         "2": {
-            "source_node": 2730,
+            "source_node": 5162,
             "source_output_index": 0,
-            "dest_node": 2757,
+            "dest_node": 5189,
             "dest_input_index": 1
         },
         "3": {
-            "source_node": 2757,
+            "source_node": 5189,
             "source_output_index": 0,
-            "dest_node": 2857,
+            "dest_node": 5289,
             "dest_input_index": 0
         },
         "4": {
-            "source_node": 2757,
+            "source_node": 5189,
             "source_output_index": 0,
-            "dest_node": 2878,
+            "dest_node": 5310,
             "dest_input_index": 0
         },
         "5": {
-            "source_node": 2842,
+            "source_node": 5274,
             "source_output_index": 0,
-            "dest_node": 2730,
+            "dest_node": 5162,
             "dest_input_index": 0
         },
         "6": {
-            "source_node": 2842,
+            "source_node": 5274,
             "source_output_index": 0,
-            "dest_node": 2757,
+            "dest_node": 5189,
             "dest_input_index": 0
         },
         "7": {
-            "source_node": 2857,
+            "source_node": 5289,
             "source_output_index": 0,
-            "dest_node": 2783,
+            "dest_node": 5215,
+            "dest_input_index": 0
+        },
+        "8": {
+            "source_node": 5371,
+            "source_output_index": 0,
+            "dest_node": 5045,
             "dest_input_index": 0
         }
     }

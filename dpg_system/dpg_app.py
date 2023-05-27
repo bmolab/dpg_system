@@ -9,6 +9,8 @@ import json
 import os
 import platform as platform_
 
+# make new tab pop up when new file is opened
+
 osc_active = True
 opengl_active = True
 opencv_active = True
@@ -297,6 +299,7 @@ def cancel_callback(sender, app_data):
     if sender is not None:
         dpg.delete_item(sender)
     Node.app.active_widget = -1
+
 
 def load_patches_callback(sender, app_data):
     global load_path
@@ -1108,7 +1111,7 @@ class App:
             selected_nodes_uuids = dpg.get_selected_nodes(self.get_current_editor().uuid)
             for selected_nodes_uuid in selected_nodes_uuids:
                 node = dpg.get_item_user_data(selected_nodes_uuid)
-                print(node)
+                # print(node)
 
                 if node is not None:
                     node.set_visibility('widgets_only')
@@ -1326,6 +1329,7 @@ class App:
                         del available_editors[0]
                     else:
                         patch_assign[i] = (len(self.node_editors), self.add_node_editor())
+                main_editor = None
 
                 if 'patches' in file_container:
                     self.patches_path = path
@@ -1342,6 +1346,8 @@ class App:
                             editor = None
                         if editor is not None:
                             self.current_node_editor = editor_index
+                            if main_editor is None:
+                                main_editor = self.current_node_editor
                             editor.load_(nodes_container)
                 else:  # single patch
                     # print('patch assign', patch_assign)
@@ -1353,12 +1359,13 @@ class App:
                             editor = self.get_current_editor()
                             if editor.num_nodes > 1:
                                 self.add_node_editor()
-                                self.current_node_editor = len(self.node_editors) - 1
-
+                                # self.current_node_editor = len(self.node_editors) - 1
+                        main_editor = self.current_node_editor
                     else:
                         if self.get_current_editor() is None:
                             self.add_node_editor()
-                            self.current_node_editor = len(self.node_editors) - 1
+                            main_editor = self.current_node_editor
+                            # self.current_node_editor = len(self.node_editors) - 1
                     self.add_to_recent(patch_name, path)
                     self.select_tab(self.tabs[self.current_node_editor])
                     # dpg.set_value(self.tab_bar, self.tabs[self.current_node_editor])
@@ -1400,8 +1407,8 @@ class App:
         except Exception as exc_:
             print(exc_)
             print('load failed')
-        self.current_node_editor = hold_current_editor
-        self.select_tab(parent_tab)
+        self.current_node_editor = main_editor
+        self.select_editor_tab(self.current_node_editor)
         self.loading = False
 
     def load_nodes(self):

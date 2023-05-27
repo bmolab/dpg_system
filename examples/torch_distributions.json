@@ -5,13 +5,13 @@
         100,
         100
     ],
-    "id": 159,
+    "id": 160,
     "name": "torch_distributions",
     "path": "/Users/drokeby/PycharmProjects/dpg_system/examples/torch_distributions.json",
     "nodes": {
         "0": {
             "name": "",
-            "id": 184,
+            "id": 185,
             "position_x": 0,
             "position_y": 0,
             "width": 9,
@@ -29,7 +29,7 @@
         },
         "1": {
             "name": "t.bernoulli",
-            "id": 233,
+            "id": 235,
             "position_x": 219,
             "position_y": 18,
             "width": 76,
@@ -40,7 +40,7 @@
         },
         "2": {
             "name": "t.poisson",
-            "id": 248,
+            "id": 250,
             "position_x": 223,
             "position_y": 229,
             "width": 70,
@@ -51,7 +51,7 @@
         },
         "3": {
             "name": "heat_map",
-            "id": 263,
+            "id": 265,
             "position_x": 309,
             "position_y": 17,
             "width": 136,
@@ -125,7 +125,7 @@
         "4": {
             "init": "t.rand 64 64",
             "name": "t.rand",
-            "id": 322,
+            "id": 324,
             "position_x": 16,
             "position_y": 16,
             "width": 163,
@@ -173,7 +173,7 @@
         },
         "5": {
             "name": "t.cauchy",
-            "id": 380,
+            "id": 382,
             "position_x": 171,
             "position_y": 433,
             "width": 129,
@@ -196,7 +196,7 @@
         },
         "6": {
             "name": "heat_map",
-            "id": 407,
+            "id": 409,
             "position_x": 317,
             "position_y": 429,
             "width": 136,
@@ -269,7 +269,7 @@
         },
         "7": {
             "name": "t.normal",
-            "id": 466,
+            "id": 468,
             "position_x": 179,
             "position_y": 636,
             "width": 117,
@@ -292,7 +292,7 @@
         },
         "8": {
             "name": "heat_map",
-            "id": 493,
+            "id": 495,
             "position_x": 316,
             "position_y": 634,
             "width": 136,
@@ -365,7 +365,7 @@
         },
         "9": {
             "name": "t.log_normal",
-            "id": 552,
+            "id": 554,
             "position_x": 174,
             "position_y": 834,
             "width": 117,
@@ -388,7 +388,7 @@
         },
         "10": {
             "name": "heat_map",
-            "id": 579,
+            "id": 581,
             "position_x": 316,
             "position_y": 825,
             "width": 136,
@@ -461,7 +461,7 @@
         },
         "11": {
             "name": "t.uniform",
-            "id": 638,
+            "id": 640,
             "position_x": 493,
             "position_y": 22,
             "width": 117,
@@ -484,7 +484,7 @@
         },
         "12": {
             "name": "heat_map",
-            "id": 665,
+            "id": 667,
             "position_x": 629,
             "position_y": 21,
             "width": 136,
@@ -557,7 +557,7 @@
         },
         "13": {
             "name": "t.exponential",
-            "id": 724,
+            "id": 726,
             "position_x": 481,
             "position_y": 232,
             "width": 129,
@@ -575,7 +575,7 @@
         },
         "14": {
             "name": "heat_map",
-            "id": 745,
+            "id": 747,
             "position_x": 633,
             "position_y": 231,
             "width": 136,
@@ -648,7 +648,7 @@
         },
         "15": {
             "name": "t.geometric",
-            "id": 804,
+            "id": 806,
             "position_x": 507,
             "position_y": 431,
             "width": 99,
@@ -666,7 +666,7 @@
         },
         "16": {
             "name": "heat_map",
-            "id": 825,
+            "id": 827,
             "position_x": 630,
             "position_y": 430,
             "width": 136,
@@ -739,7 +739,7 @@
         },
         "17": {
             "name": "heat_map",
-            "id": 884,
+            "id": 886,
             "position_x": 311,
             "position_y": 230,
             "width": 136,
@@ -809,103 +809,120 @@
                     "value_type": "bool"
                 }
             }
+        },
+        "18": {
+            "name": "load_bang",
+            "id": 975,
+            "position_x": 47,
+            "position_y": 224,
+            "width": 64,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
         }
     },
     "links": {
         "0": {
-            "source_node": 233,
+            "source_node": 235,
             "source_output_index": 0,
-            "dest_node": 263,
+            "dest_node": 265,
             "dest_input_index": 0
         },
         "1": {
-            "source_node": 248,
+            "source_node": 250,
             "source_output_index": 0,
-            "dest_node": 884,
+            "dest_node": 886,
             "dest_input_index": 0
         },
         "2": {
-            "source_node": 322,
+            "source_node": 324,
             "source_output_index": 0,
-            "dest_node": 233,
+            "dest_node": 235,
             "dest_input_index": 0
         },
         "3": {
-            "source_node": 322,
+            "source_node": 324,
             "source_output_index": 0,
-            "dest_node": 248,
+            "dest_node": 250,
             "dest_input_index": 0
         },
         "4": {
-            "source_node": 322,
+            "source_node": 324,
             "source_output_index": 0,
-            "dest_node": 380,
+            "dest_node": 382,
             "dest_input_index": 0
         },
         "5": {
-            "source_node": 322,
+            "source_node": 324,
             "source_output_index": 0,
-            "dest_node": 466,
+            "dest_node": 468,
             "dest_input_index": 0
         },
         "6": {
-            "source_node": 322,
+            "source_node": 324,
             "source_output_index": 0,
-            "dest_node": 552,
+            "dest_node": 554,
             "dest_input_index": 0
         },
         "7": {
-            "source_node": 322,
+            "source_node": 324,
             "source_output_index": 0,
-            "dest_node": 638,
+            "dest_node": 640,
             "dest_input_index": 0
         },
         "8": {
-            "source_node": 322,
+            "source_node": 324,
             "source_output_index": 0,
-            "dest_node": 724,
+            "dest_node": 726,
             "dest_input_index": 0
         },
         "9": {
-            "source_node": 322,
+            "source_node": 324,
             "source_output_index": 0,
-            "dest_node": 804,
+            "dest_node": 806,
             "dest_input_index": 0
         },
         "10": {
-            "source_node": 380,
+            "source_node": 382,
             "source_output_index": 0,
-            "dest_node": 407,
+            "dest_node": 409,
             "dest_input_index": 0
         },
         "11": {
-            "source_node": 466,
+            "source_node": 468,
             "source_output_index": 0,
-            "dest_node": 493,
+            "dest_node": 495,
             "dest_input_index": 0
         },
         "12": {
-            "source_node": 552,
+            "source_node": 554,
             "source_output_index": 0,
-            "dest_node": 579,
+            "dest_node": 581,
             "dest_input_index": 0
         },
         "13": {
-            "source_node": 638,
+            "source_node": 640,
             "source_output_index": 0,
-            "dest_node": 665,
+            "dest_node": 667,
             "dest_input_index": 0
         },
         "14": {
-            "source_node": 724,
+            "source_node": 726,
             "source_output_index": 0,
-            "dest_node": 745,
+            "dest_node": 747,
             "dest_input_index": 0
         },
         "15": {
-            "source_node": 804,
+            "source_node": 806,
             "source_output_index": 0,
-            "dest_node": 825,
+            "dest_node": 827,
+            "dest_input_index": 0
+        },
+        "16": {
+            "source_node": 975,
+            "source_output_index": 0,
+            "dest_node": 324,
             "dest_input_index": 0
         }
     }

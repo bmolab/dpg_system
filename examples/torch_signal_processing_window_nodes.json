@@ -5,13 +5,13 @@
         100,
         100
     ],
-    "id": 159,
-    "name": "signal_processing_window_nodes",
-    "path": "/Users/drokeby/PycharmProjects/dpg_system/signal_processing_window_nodes.json",
+    "id": 3580,
+    "name": "torch_signal_processing_window_nodes",
+    "path": "/Users/drokeby/PycharmProjects/dpg_system/examples/torch_signal_processing_window_nodes.json",
     "nodes": {
         "0": {
             "name": "",
-            "id": 184,
+            "id": 3601,
             "position_x": 0,
             "position_y": 0,
             "width": 9,
@@ -29,7 +29,7 @@
         },
         "1": {
             "name": "t.window.hamming",
-            "id": 231,
+            "id": 3622,
             "position_x": 19,
             "position_y": 584,
             "width": 163,
@@ -87,7 +87,7 @@
         },
         "2": {
             "name": "plot",
-            "id": 301,
+            "id": 3692,
             "position_x": 217,
             "position_y": 613,
             "width": 264,
@@ -103,7 +103,7 @@
                 },
                 "1": {
                     "name": "color",
-                    "value": "deep",
+                    "value": "none",
                     "value_type": "string"
                 },
                 "2": {
@@ -160,7 +160,7 @@
         },
         "3": {
             "name": "t.window.cosine",
-            "id": 360,
+            "id": 3751,
             "position_x": 19,
             "position_y": 416,
             "width": 163,
@@ -218,7 +218,7 @@
         },
         "4": {
             "name": "t.window.hann",
-            "id": 430,
+            "id": 3821,
             "position_x": 19,
             "position_y": 752,
             "width": 163,
@@ -276,7 +276,7 @@
         },
         "5": {
             "name": "t.window.nuttall",
-            "id": 500,
+            "id": 3891,
             "position_x": 533,
             "position_y": 21,
             "width": 163,
@@ -334,7 +334,7 @@
         },
         "6": {
             "name": "t.window.blackman",
-            "id": 570,
+            "id": 3961,
             "position_x": 19,
             "position_y": 247,
             "width": 163,
@@ -392,7 +392,7 @@
         },
         "7": {
             "name": "t.window.bartlett",
-            "id": 640,
+            "id": 4031,
             "position_x": 19,
             "position_y": 80,
             "width": 163,
@@ -450,7 +450,7 @@
         },
         "8": {
             "name": "plot",
-            "id": 710,
+            "id": 4101,
             "position_x": 217,
             "position_y": 436,
             "width": 264,
@@ -466,7 +466,7 @@
                 },
                 "1": {
                     "name": "color",
-                    "value": "deep",
+                    "value": "none",
                     "value_type": "string"
                 },
                 "2": {
@@ -523,9 +523,9 @@
         },
         "9": {
             "name": "plot",
-            "id": 769,
-            "position_x": 217,
-            "position_y": 790,
+            "id": 4160,
+            "position_x": 214,
+            "position_y": 781,
             "width": 264,
             "height": 116,
             "visibility": "show_all",
@@ -539,7 +539,7 @@
                 },
                 "1": {
                     "name": "color",
-                    "value": "deep",
+                    "value": "none",
                     "value_type": "string"
                 },
                 "2": {
@@ -596,7 +596,7 @@
         },
         "10": {
             "name": "plot",
-            "id": 828,
+            "id": 4219,
             "position_x": 217,
             "position_y": 82,
             "width": 264,
@@ -612,7 +612,7 @@
                 },
                 "1": {
                     "name": "color",
-                    "value": "deep",
+                    "value": "none",
                     "value_type": "string"
                 },
                 "2": {
@@ -669,7 +669,7 @@
         },
         "11": {
             "name": "plot",
-            "id": 887,
+            "id": 4278,
             "position_x": 217,
             "position_y": 259,
             "width": 264,
@@ -685,7 +685,7 @@
                 },
                 "1": {
                     "name": "color",
-                    "value": "deep",
+                    "value": "none",
                     "value_type": "string"
                 },
                 "2": {
@@ -742,7 +742,7 @@
         },
         "12": {
             "name": "plot",
-            "id": 946,
+            "id": 4337,
             "position_x": 734,
             "position_y": 77,
             "width": 264,
@@ -758,7 +758,7 @@
                 },
                 "1": {
                     "name": "color",
-                    "value": "deep",
+                    "value": "none",
                     "value_type": "string"
                 },
                 "2": {
@@ -815,7 +815,7 @@
         },
         "13": {
             "name": "t.window.gaussian",
-            "id": 1005,
+            "id": 4396,
             "position_x": 537,
             "position_y": 187,
             "width": 163,
@@ -873,7 +873,7 @@
         },
         "14": {
             "name": "plot",
-            "id": 1075,
+            "id": 4466,
             "position_x": 734,
             "position_y": 253,
             "width": 264,
@@ -889,7 +889,7 @@
                 },
                 "1": {
                     "name": "color",
-                    "value": "deep",
+                    "value": "none",
                     "value_type": "string"
                 },
                 "2": {
@@ -946,7 +946,7 @@
         },
         "15": {
             "name": "t.window.exponential",
-            "id": 1134,
+            "id": 4525,
             "position_x": 541,
             "position_y": 740,
             "width": 163,
@@ -1004,7 +1004,7 @@
         },
         "16": {
             "name": "plot",
-            "id": 1204,
+            "id": 4595,
             "position_x": 734,
             "position_y": 783,
             "width": 264,
@@ -1020,7 +1020,7 @@
                 },
                 "1": {
                     "name": "color",
-                    "value": "deep",
+                    "value": "none",
                     "value_type": "string"
                 },
                 "2": {
@@ -1077,7 +1077,7 @@
         },
         "17": {
             "name": "t.window.general_hamming",
-            "id": 1263,
+            "id": 4654,
             "position_x": 536,
             "position_y": 370,
             "width": 163,
@@ -1135,7 +1135,7 @@
         },
         "18": {
             "name": "plot",
-            "id": 1333,
+            "id": 4724,
             "position_x": 734,
             "position_y": 430,
             "width": 264,
@@ -1151,7 +1151,7 @@
                 },
                 "1": {
                     "name": "color",
-                    "value": "deep",
+                    "value": "none",
                     "value_type": "string"
                 },
                 "2": {
@@ -1208,7 +1208,7 @@
         },
         "19": {
             "name": "t.window.kaiser",
-            "id": 1392,
+            "id": 4783,
             "position_x": 540,
             "position_y": 554,
             "width": 163,
@@ -1266,7 +1266,7 @@
         },
         "20": {
             "name": "plot",
-            "id": 1462,
+            "id": 4853,
             "position_x": 734,
             "position_y": 606,
             "width": 264,
@@ -1282,7 +1282,7 @@
                 },
                 "1": {
                     "name": "color",
-                    "value": "deep",
+                    "value": "none",
                     "value_type": "string"
                 },
                 "2": {
@@ -1340,7 +1340,7 @@
         "21": {
             "init": "comment t.window",
             "name": "comment",
-            "id": 1521,
+            "id": 4912,
             "position_x": 16,
             "position_y": 31,
             "width": 181,
@@ -1363,143 +1363,136 @@
             "comment": "t.window nodes"
         },
         "22": {
-            "name": "load_action",
-            "id": 1536,
-            "position_x": 219,
-            "position_y": 8,
-            "width": 88,
-            "height": 66,
+            "name": "load_bang",
+            "id": 4972,
+            "position_x": 289,
+            "position_y": 14,
+            "width": 64,
+            "height": 48,
             "visibility": "show_all",
             "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "##loadActionString",
-                    "value": "bang",
-                    "value_type": "string"
-                }
-            }
+            "presentation_state": "show_all"
         }
     },
     "links": {
         "0": {
-            "source_node": 231,
+            "source_node": 3622,
             "source_output_index": 0,
-            "dest_node": 301,
+            "dest_node": 3692,
             "dest_input_index": 0
         },
         "1": {
-            "source_node": 360,
+            "source_node": 3751,
             "source_output_index": 0,
-            "dest_node": 710,
+            "dest_node": 4101,
             "dest_input_index": 0
         },
         "2": {
-            "source_node": 430,
+            "source_node": 3821,
             "source_output_index": 0,
-            "dest_node": 769,
+            "dest_node": 4160,
             "dest_input_index": 0
         },
         "3": {
-            "source_node": 500,
+            "source_node": 3891,
             "source_output_index": 0,
-            "dest_node": 946,
+            "dest_node": 4337,
             "dest_input_index": 0
         },
         "4": {
-            "source_node": 570,
+            "source_node": 3961,
             "source_output_index": 0,
-            "dest_node": 887,
+            "dest_node": 4278,
             "dest_input_index": 0
         },
         "5": {
-            "source_node": 640,
+            "source_node": 4031,
             "source_output_index": 0,
-            "dest_node": 828,
+            "dest_node": 4219,
             "dest_input_index": 0
         },
         "6": {
-            "source_node": 1005,
+            "source_node": 4396,
             "source_output_index": 0,
-            "dest_node": 1075,
+            "dest_node": 4466,
             "dest_input_index": 0
         },
         "7": {
-            "source_node": 1134,
+            "source_node": 4525,
             "source_output_index": 0,
-            "dest_node": 1204,
+            "dest_node": 4595,
             "dest_input_index": 0
         },
         "8": {
-            "source_node": 1263,
+            "source_node": 4654,
             "source_output_index": 0,
-            "dest_node": 1333,
+            "dest_node": 4724,
             "dest_input_index": 0
         },
         "9": {
-            "source_node": 1392,
+            "source_node": 4783,
             "source_output_index": 0,
-            "dest_node": 1462,
+            "dest_node": 4853,
             "dest_input_index": 0
         },
         "10": {
-            "source_node": 1536,
+            "source_node": 4972,
             "source_output_index": 0,
-            "dest_node": 500,
+            "dest_node": 4031,
             "dest_input_index": 0
         },
         "11": {
-            "source_node": 1536,
+            "source_node": 4972,
             "source_output_index": 0,
-            "dest_node": 1005,
+            "dest_node": 3961,
             "dest_input_index": 0
         },
         "12": {
-            "source_node": 1536,
+            "source_node": 4972,
             "source_output_index": 0,
-            "dest_node": 1263,
+            "dest_node": 3751,
             "dest_input_index": 0
         },
         "13": {
-            "source_node": 1536,
+            "source_node": 4972,
             "source_output_index": 0,
-            "dest_node": 1392,
+            "dest_node": 3622,
             "dest_input_index": 0
         },
         "14": {
-            "source_node": 1536,
+            "source_node": 4972,
             "source_output_index": 0,
-            "dest_node": 1134,
+            "dest_node": 3821,
             "dest_input_index": 0
         },
         "15": {
-            "source_node": 1536,
+            "source_node": 4972,
             "source_output_index": 0,
-            "dest_node": 640,
+            "dest_node": 3891,
             "dest_input_index": 0
         },
         "16": {
-            "source_node": 1536,
+            "source_node": 4972,
             "source_output_index": 0,
-            "dest_node": 570,
+            "dest_node": 4396,
             "dest_input_index": 0
         },
         "17": {
-            "source_node": 1536,
+            "source_node": 4972,
             "source_output_index": 0,
-            "dest_node": 360,
+            "dest_node": 4654,
             "dest_input_index": 0
         },
         "18": {
-            "source_node": 1536,
+            "source_node": 4972,
             "source_output_index": 0,
-            "dest_node": 231,
+            "dest_node": 4783,
             "dest_input_index": 0
         },
         "19": {
-            "source_node": 1536,
+            "source_node": 4972,
             "source_output_index": 0,
-            "dest_node": 430,
+            "dest_node": 4525,
             "dest_input_index": 0
         }
     }

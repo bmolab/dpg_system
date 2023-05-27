@@ -179,6 +179,7 @@ def any_to_bool(data):
 def any_to_tensor(data, device='cpu', dtype=torch.float32, requires_grad=False):
     if torch_available:
         t = type(data)
+        # print('any to tensor', data)
         if t == torch.Tensor:
             tensor_ = data
         elif t == np.ndarray:
@@ -192,6 +193,7 @@ def any_to_tensor(data, device='cpu', dtype=torch.float32, requires_grad=False):
         elif t == str:
             tensor_ = string_to_tensor(data)
         elif t in [list, tuple]:
+            # print('list')
             tensor_ = list_to_tensor(list(data))
         elif t in [np.int64, np.float32, np.double, np.bool_]:
             tensor_ = torch.tensor(data)
@@ -403,7 +405,7 @@ def string_to_tensor(input):
         out_tensor = torch.Tensor(0)
         try:
             out_array = string_to_array(input)
-            print('string_to_tensor', out_array)
+            # print('string_to_tensor', out_array)
             out_tensor = torch.from_numpy(out_array)
 
             # hybrid_list, homogenous, types = string_to_hybrid_list(input)
@@ -426,7 +428,7 @@ def string_to_array(input_string):
     try:
         input_string = " ".join(input_string.split())
         arr_str = input_string.replace(" ]", "]").replace(" ", ",").replace("\n", "")
-        print('string_to_array', arr_str)
+        # print('string_to_array', arr_str)
         arr = np.array(ast.literal_eval(arr_str))
     except:
         print('invalid string to cast as array')
@@ -479,17 +481,24 @@ def list_to_array(input):
             return np.array(hybrid_list)
     return np.ndarray(0)
 
+
 def list_to_tensor(input):
     if torch_available:
         hybrid_list, homogenous, types = list_to_hybrid_list(input)
+        # print(hybrid_list)
         if homogenous:
             t = type(hybrid_list[0])
-            print('list_to_tensor type', t)
+            # print('list_to_tensor type', t)
             if t in [float, int, bool, np.int64, np.double, np.float32, np.bool_]:
                 return torch.Tensor(hybrid_list)
             elif str not in types:
                 return torch.Tensor(hybrid_list)
+            else:  # all elements are string
+                data_string = ' '.join(hybrid_list)
+                # print('data_string', data_string)
+                return string_to_tensor(data_string)
         else:
+            # print('not homo')
             if str not in types:
                 return torch.Tensor(hybrid_list)
         return torch.Tensor(0)
@@ -672,7 +681,7 @@ def decode_arg(args, index):
                         return arg, str
                 else:
                     try:
-                        print('arg', arg)
+                        # print('arg', arg)
                         v = int(arg)
                         return v, int
                     except:

@@ -5,13 +5,13 @@
         100,
         100
     ],
-    "id": 2520,
+    "id": 160,
     "name": "torch_mask_select",
     "path": "/Users/drokeby/PycharmProjects/dpg_system/examples/torch_mask_select.json",
     "nodes": {
         "0": {
             "name": "",
-            "id": 2541,
+            "id": 185,
             "position_x": 0,
             "position_y": 0,
             "width": 9,
@@ -30,9 +30,9 @@
         "1": {
             "init": "t.linspace 0 1 16",
             "name": "t.linspace",
-            "id": 2564,
-            "position_x": 68,
-            "position_y": 89,
+            "id": 235,
+            "position_x": 119,
+            "position_y": 96,
             "width": 163,
             "height": 156,
             "visibility": "show_all",
@@ -78,9 +78,9 @@
         },
         "2": {
             "name": "message",
-            "id": 2613,
-            "position_x": 47,
-            "position_y": 305,
+            "id": 284,
+            "position_x": 106,
+            "position_y": 306,
             "width": 226,
             "height": 48,
             "visibility": "show_all",
@@ -89,7 +89,7 @@
             "properties": {
                 "0": {
                     "name": "",
-                    "value": "1 1 1 1 0 0 0 0 0 0 0 0 1 1 1 1",
+                    "value": "0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1",
                     "value_type": "string"
                 },
                 "1": {
@@ -116,9 +116,9 @@
         },
         "3": {
             "name": "t.masked_select",
-            "id": 2691,
-            "position_x": 307,
-            "position_y": 266,
+            "id": 319,
+            "position_x": 379,
+            "position_y": 240,
             "width": 107,
             "height": 66,
             "visibility": "show_all",
@@ -127,9 +127,9 @@
         },
         "4": {
             "name": "heat_map",
-            "id": 2801,
-            "position_x": 446,
-            "position_y": 49,
+            "id": 339,
+            "position_x": 526,
+            "position_y": 276,
             "width": 308,
             "height": 180,
             "visibility": "show_all",
@@ -200,9 +200,9 @@
         },
         "5": {
             "name": "heat_map",
-            "id": 2861,
-            "position_x": 447,
-            "position_y": 246,
+            "id": 398,
+            "position_x": 520,
+            "position_y": 72,
             "width": 308,
             "height": 180,
             "visibility": "show_all",
@@ -272,12 +272,78 @@
             }
         },
         "6": {
-            "init": "comment torch.masked_select",
+            "name": "load_bang",
+            "id": 457,
+            "position_x": 97,
+            "position_y": 408,
+            "width": 64,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "7": {
+            "init": "repeat 2",
+            "name": "repeat",
+            "id": 472,
+            "position_x": 195,
+            "position_y": 398,
+            "width": 45,
+            "height": 66,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "8": {
+            "name": "b",
+            "id": 495,
+            "position_x": 53,
+            "position_y": 410,
+            "width": 22,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "message",
+                    "value": "bang",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "height",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "flash_duration",
+                    "value": 0.10000000149011612,
+                    "value_type": "float"
+                }
+            }
+        },
+        "9": {
+            "init": "comment t.mask_select",
             "name": "comment",
-            "id": 2936,
-            "position_x": 57,
+            "id": 563,
+            "position_x": 111,
             "position_y": 34,
-            "width": 242,
+            "width": 168,
             "height": 28,
             "visibility": "show_all",
             "draggable": true,
@@ -285,7 +351,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "torch.masked_select",
+                    "value": "t.mask_select",
                     "value_type": "string"
                 },
                 "1": {
@@ -294,79 +360,56 @@
                     "value_type": "bool"
                 }
             },
-            "comment": "torch.masked_select"
-        },
-        "7": {
-            "name": "load_action",
-            "id": 2958,
-            "position_x": 56,
-            "position_y": 426,
-            "width": 88,
-            "height": 66,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "##loadActionString",
-                    "value": "bang",
-                    "value_type": "string"
-                }
-            }
-        },
-        "8": {
-            "name": "repeat",
-            "id": 2990,
-            "position_x": 185,
-            "position_y": 421,
-            "width": 45,
-            "height": 66,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
+            "comment": "t.mask_select"
         }
     },
     "links": {
         "0": {
-            "source_node": 2564,
+            "source_node": 235,
             "source_output_index": 0,
-            "dest_node": 2691,
+            "dest_node": 319,
             "dest_input_index": 0
         },
         "1": {
-            "source_node": 2564,
+            "source_node": 235,
             "source_output_index": 0,
-            "dest_node": 2801,
+            "dest_node": 398,
             "dest_input_index": 0
         },
         "2": {
-            "source_node": 2613,
+            "source_node": 284,
             "source_output_index": 0,
-            "dest_node": 2691,
+            "dest_node": 319,
             "dest_input_index": 1
         },
         "3": {
-            "source_node": 2691,
+            "source_node": 319,
             "source_output_index": 0,
-            "dest_node": 2861,
+            "dest_node": 339,
             "dest_input_index": 0
         },
         "4": {
-            "source_node": 2958,
+            "source_node": 457,
             "source_output_index": 0,
-            "dest_node": 2990,
+            "dest_node": 472,
             "dest_input_index": 0
         },
         "5": {
-            "source_node": 2990,
+            "source_node": 472,
             "source_output_index": 0,
-            "dest_node": 2613,
+            "dest_node": 284,
             "dest_input_index": 0
         },
         "6": {
-            "source_node": 2990,
+            "source_node": 472,
             "source_output_index": 1,
-            "dest_node": 2564,
+            "dest_node": 235,
+            "dest_input_index": 0
+        },
+        "7": {
+            "source_node": 495,
+            "source_output_index": 0,
+            "dest_node": 457,
             "dest_input_index": 0
         }
     }
