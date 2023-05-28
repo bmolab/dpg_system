@@ -402,6 +402,7 @@ class App:
         self.frame_time_variable = self.add_variable(variable_name='frame_time')
         self.frame_number = 0
         self.frame_variable = self.add_variable(variable_name='frame')
+        self.frame_clock_conduit = self.add_conduit('frame_clock')
         self.font_scale_variable = self.add_variable(variable_name='font_scale', setter=self.update_font_scale, default_value=0.5)
         self.gui_scale_variable = self.add_variable(variable_name='gui_scale', setter=self.update_gui_scale, default_value=1.0)
         self.link_thickness_variable = self.add_variable(variable_name='link_thickness', setter=self.update_link_thickness, default_value=1.0)
@@ -1725,6 +1726,7 @@ class App:
                     dpg.run_callbacks(jobs)
                     self.frame_number += 1
                     self.frame_variable.set(self.frame_number)
+                    self.frame_clock_conduit.transmit('bang')
                     self.frame_time_variable.set(elapsed)
                     dpg.render_dearpygui_frame()
                     then = time.time()

@@ -286,22 +286,17 @@ class SubSampleNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.subsampler = self.arg_as_int(default_value=2)
+        subsampler = self.arg_as_int(default_value=2)
         self.sample_count = 0
-        self.input = self.add_input("input", triggers_execution=True, callback=self.call_execute)
-        self.rate_property = self.add_property('rate', widget_type='drag_int', default_value=self.subsampler, min=0, max=math.inf, callback=self.rate_changed)
+        self.input = self.add_input("input", triggers_execution=True)
+        self.rate = self.add_input('rate', widget_type='drag_int', default_value=subsampler, min=0, max=math.inf)
         self.output = self.add_output("out")
-
-    def rate_changed(self):
-        self.subsampler = self.rate_property()
-
-    def call_execute(self, input=None):
-        self.execute()
 
     def execute(self):
         if self.input.fresh_input:
+            self.input.fresh_input = False
             self.sample_count += 1
-            if self.sample_count + 1 >= self.subsampler:
+            if self.sample_count >= self.rate():
                 self.sample_count = 0
                 self.output.send(self.input())
 
