@@ -233,9 +233,11 @@ class GLContextNode(Node):
             except:
                 self.pending_commands = []
             self.pending_commands = []
-            glTranslatef(0.0, 0.0, -1.0)
             self.context.prepare_draw()
+            glPushMatrix()
+            glTranslate(0.0, 0.0, -1.0)
             self.output.send('draw')
+            glPopMatrix()
             self.context.end_draw()
 
     def predisplay_callback(self):
@@ -302,6 +304,100 @@ class GLQuadricCommandParser(GLCommandParser):
                 gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_LINE)
             elif mode == 'point':
                 gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_POINT)
+
+
+# class GLNumpyVertices:
+#     def __init__(self, texture_array):
+#         self.texture = -1
+#         self.width = 256
+#         self.height = 256
+#         self.channels = 3
+#         self.type = GL_UNSIGNED_BYTE
+#
+#         self.allocate(texture_array)
+
+    # def allocate(self, texture_array):
+    #     self.width = texture_array.shape[1]
+    #     self.height = texture_array.shape[0]
+    #     num_dims = len(texture_array.shape)
+    #     if num_dims == 3:
+    #         self.channels = texture_array.shape[2]
+    #     else:
+    #         self.channels = 1
+    #     # self.type = GL_UNSIGNED_BYTE
+    #     if texture_array.dtype == np.float32:
+    #         self.type = GL_FLOAT
+    #     elif texture_array.dtype == np.uint8:
+    #         self.type = GL_UNSIGNED_BYTE
+    #
+    #     if self.texture == -1:
+    #         self.texture = glGenTextures(1)
+    #
+    #     glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
+    #     glEnable(GL_TEXTURE_2D)
+    #     glBindTexture(GL_TEXTURE_2D, self.texture)
+    #     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+    #     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+    #     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+    #     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+    #     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL)
+    #     contiguous_texture = np.ascontiguousarray(texture_array)
+    #     if self.type == GL_FLOAT:
+    #         if self.channels == 3:
+    #             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, self.width, self.height, 0, GL_RGB, GL_FLOAT, contiguous_texture)
+    #         elif self.channels == 4:
+    #             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, self.width, self.height, 0, GL_RGBA, GL_FLOAT, contiguous_texture)
+    #         elif self.channels == 1:
+    #             glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, self.width, self.height, 0, GL_LUMINANCE, GL_FLOAT, contiguous_texture)
+    #     elif self.type == GL_UNSIGNED_BYTE:
+    #         if self.channels == 3:
+    #             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, self.width, self.height, 0, GL_RGB, GL_UNSIGNED_BYTE, contiguous_texture)
+    #         elif self.channels == 4:
+    #             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, self.width, self.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, contiguous_texture)
+    #         elif self.channels == 1:
+    #             glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, self.width, self.height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+    #                          contiguous_texture)
+    #     glBindTexture(GL_TEXTURE_2D, 0)
+    #
+    # def update(self, texture_array):
+    #     reshape = False
+    #     if self.width != texture_array.shape[1]:
+    #         reshape = True
+    #     if self.height != texture_array.shape[0]:
+    #         reshape = True
+    #     num_dims = len(texture_array.shape)
+    #     if num_dims == 3:
+    #         channels = texture_array.shape[2]
+    #     else:
+    #         channels = 1
+    #     if self.channels != channels:
+    #         reshape = True
+    #
+    #     if reshape:
+    #         self.allocate(texture_array)
+    #     else:
+    #         glEnable(GL_TEXTURE_2D)
+    #         glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
+    #
+    #         glBindTexture(GL_TEXTURE_2D, self.texture)
+    #         contiguous_texture = np.ascontiguousarray(texture_array)
+    #         if self.type == GL_FLOAT:
+    #             if self.channels == 3:
+    #                 glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_RGB, GL_FLOAT, contiguous_texture)
+    #             elif self.channels == 4:
+    #                 glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_RGBA, GL_FLOAT, contiguous_texture)
+    #             elif self.channels == 1:
+    #                 glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_LUMINANCE, GL_FLOAT, contiguous_texture)
+    #
+    #         elif self.type == GL_UNSIGNED_BYTE:
+    #             if self.channels == 3:
+    #                 glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_RGB, GL_UNSIGNED_BYTE, contiguous_texture)
+    #             elif self.channels == 4:
+    #                 glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_RGBA, GL_UNSIGNED_BYTE, contiguous_texture)
+    #             elif self.channels == 1:
+    #                 glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_LUMINANCE, GL_UNSIGNED_BYTE, contiguous_texture)
+    #         glBindTexture(GL_TEXTURE_2D, 0)
+
 
 class GLNumpyTexture:
     def __init__(self, texture_array):
