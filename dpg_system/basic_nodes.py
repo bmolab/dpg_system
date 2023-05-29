@@ -67,6 +67,11 @@ class CommentNode(Node):
         self.comment_text = 'comment'
         if args is not None and len(args) > 0:
             self.comment_text = ' '.join(args)
+        self.setup_theme()
+        self.comment_text_option = self.add_option('text', widget_type='text_input', width=200, default_value=self.comment_text, callback=self.comment_changed)
+        self.large_text_option = self.add_option('large', widget_type='checkbox', default_value=False, callback=self.large_font_changed)
+
+    def setup_theme(self):
         if not CommentNode.inited:
             with dpg.theme() as CommentNode.comment_theme:
                 with dpg.theme_component(dpg.mvAll):
@@ -78,8 +83,6 @@ class CommentNode(Node):
                     dpg.add_theme_color(dpg.mvNodeCol_NodeOutline, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
                     dpg.add_theme_color(dpg.mvNodeCol_TitleBar, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
             CommentNode.inited = True
-        self.comment_text_option = self.add_option('text', widget_type='text_input', width=200, default_value=self.comment_text, callback=self.comment_changed)
-        self.large_text_option = self.add_option('large', widget_type='checkbox', default_value=False, callback=self.large_font_changed)
 
     def large_font_changed(self):
         use_large = self.large_text_option()
@@ -97,6 +100,7 @@ class CommentNode(Node):
         self.comment_text_option.widget.adjust_to_text_width()
 
     def custom_create(self, from_file):
+        self.setup_theme()
         dpg.bind_item_theme(self.uuid, CommentNode.comment_theme)
         dpg.configure_item(self.uuid, label=self.comment_text)
 
@@ -106,6 +110,8 @@ class CommentNode(Node):
 
     def load_custom(self, container):
         self.comment_text = container['comment']
+        self.setup_theme()
+        dpg.bind_item_theme(self.uuid, CommentNode.comment_theme)
 
 
 class TickNode(Node):
