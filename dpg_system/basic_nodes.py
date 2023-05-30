@@ -1849,7 +1849,7 @@ class FuzzyMatchNode(Node):
 
     def load_match_file(self):
         with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400,
-                             user_data=self, callback=self.load_match_file_callback, tag="file_dialog_id"):
+                             user_data=self, callback=self.load_match_file_callback, tag="match_file_dialog_id"):
             dpg.add_file_extension(".json")
 
     def load_match_file_callback(self, sender, app_data):

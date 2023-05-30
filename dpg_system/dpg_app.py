@@ -458,6 +458,7 @@ class App:
                     dpg.bind_font(self.default_font)
                     dpg.set_global_font_scale(0.5)
                     self.large_font = dpg.add_font("Inconsolata-g.otf", 48)
+        # handle other platforms...
         self.viewport = dpg.create_viewport()
         dpg.setup_dearpygui()
 
@@ -1408,7 +1409,8 @@ class App:
         except Exception as exc_:
             print(exc_)
             print('load failed')
-        self.current_node_editor = main_editor
+        if main_editor is not None:
+            self.current_node_editor = main_editor
         self.select_editor_tab(self.current_node_editor)
         self.loading = False
 
@@ -1430,7 +1432,7 @@ class App:
     def add_to_recent(self, name, path):
         if name in self.recent_files:
             self.recent_files[name] = path
-        elif len(self.recent_files) > 10:
+        elif len(self.recent_files) >= 10:
             keys = list(self.recent_files.keys())
             del self.recent_files[keys[0]]
             self.recent_files[name] = path

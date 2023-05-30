@@ -673,7 +673,6 @@ class TorchMaskedSelectNode(TorchNode):
         if input_tensor is not None:
             data = self.mask_input()
             if data is not None:
-                print(data)
                 mask_tensor = self.data_to_tensor(data, device=input_tensor.device, dtype=torch.bool, requires_grad=input_tensor.requires_grad)
                 if mask_tensor is not None:
                     try:
