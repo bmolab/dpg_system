@@ -110,7 +110,10 @@ class NodeOutput:
                     dpg.bind_item_theme(self.uuid, self._pin_active_theme)
                 Node.app.get_current_editor().add_active_pin(self.uuid)
             for child in self._children:
+                child.node.active_input = child
                 child.trigger()
+                child.node.active_input = None
+
         self.new_output = False
 
     def create(self, parent):

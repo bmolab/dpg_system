@@ -51,6 +51,7 @@ def register_basic_nodes():
     Node.app.register_node('comment', CommentNode.factory)
     Node.app.register_node('fuzzy_match', FuzzyMatchNode.factory)
     Node.app.register_node('length', LengthNode.factory)
+    Node.app.register_node('time_between', TimeBetweenNode.factory)
 
 
 class CommentNode(Node):
@@ -313,6 +314,47 @@ class RampNode(Node):
                 self.go_to_value(data)
                 self.update_time_base()
             self.lock.release()
+
+
+class TimeBetweenNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TimeBetweenNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.start_time = time.time()
+        self.end_time = time.time()
+        default_units = 'milliseconds'
+        self.units = 1000
+        self.units_dict = {'seconds': 1, 'milliseconds': 1000, 'minutes': 1.0/60.0, 'hours': 1.0/60.0/60.0}
+
+        if len(self.ordered_args) > 0:
+            if self.ordered_args[0] in self.units_dict:
+                self.units = self.units_dict[self.ordered_args[0]]
+                default_units = self.ordered_args[0]
+
+        self.start_input = self.add_input('start', triggers_execution=True)
+        self.end_input = self.add_input('end', triggers_execution=True)
+
+        self.units_property = self.add_property('units', widget_type='combo', default_value=default_units, callback=self.set_units)
+        self.units_property.widget.combo_items = ['seconds', 'milliseconds', 'minutes', 'hours']
+        self.output = self.add_output("")
+
+    def set_units(self):
+        units_string = self.units_property()
+        if units_string in self.units_dict:
+            self.units = self.units_dict[units_string]
+
+    def execute(self):
+        if self.active_input == self.start_input:
+            self.start_time = time.time()
+        elif self.active_input == self.end_input:
+            self.end_time = time.time()
+            elapsed = (self.end_time - self.start_time) * self.units
+            self.output.send(elapsed)
 
 
 class TimerNode(Node):
