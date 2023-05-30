@@ -908,9 +908,9 @@ class App:
         else:
             new_node = self.create_var_node_for_variable(node_name, pos)
         if placeholder:
-            editor = self.get_current_editor()
+            editor = placeholder.my_editor
             if editor is not None:
-                self.get_current_editor().remove_node(placeholder)
+                editor.remove_node(placeholder)
         return new_node
 
     def create_node_from_model(self, model, pos, name=None, args=[], from_file=False):

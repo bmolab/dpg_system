@@ -192,7 +192,6 @@ class NodeEditor:
                 dpg.set_item_pos(uuid, pos)
 
     def connect_nodes_to_nodes(self, source_nodes, dest_nodes):
-        print('connect_nodes_to_nodes')
         connect_count = len(dest_nodes)
         if len(source_nodes) < connect_count:
             connect_count = len(source_nodes)
@@ -213,7 +212,6 @@ class NodeEditor:
             source_output.add_child(dest_input, self.uuid)
 
     def connect_single_node_output_to_nodes(self, source_nodes, dest_nodes):
-        print('connect_single_node_output_to_nodes')
         out_count = len(source_nodes[0].outputs)
         dest_count = len(dest_nodes)
         connect_count = dest_count
@@ -228,7 +226,6 @@ class NodeEditor:
             out_.add_child(in_, self.uuid)
 
     def connect_single_node_multi_outputs_to_single_node_multi_inputs(self, source_nodes, dest_nodes):
-        print('connect_single_node_multi_outputs_to_single_node_multi_inputs')
         input_count = len(dest_nodes[0].inputs)
         output_count = len(source_nodes[0].outputs)
         connect_count = input_count
@@ -240,7 +237,6 @@ class NodeEditor:
             source_output.add_child(dest_input, self.uuid)
 
     def connect_single_node_multi_outputs_to_nodes(self, source_nodes, dest_nodes):
-        print('connect_single_node_multi_outputs_to_nodes')
         out_count = len(source_nodes[0].outputs)
         dest_count = len(dest_nodes)
         connect_count = out_count
@@ -257,7 +253,6 @@ class NodeEditor:
             out_.add_child(in_, self.uuid)
 
     def connect_nodes_to_single_node_multi_output(self, source_nodes, dest_nodes):
-        print('connect_nodes_to_single_node_multi_output')
         in_count = len(dest_nodes[0].inputs)
         source_count = len(source_nodes)
         connect_count = in_count
@@ -274,7 +269,6 @@ class NodeEditor:
             out_.add_child(in_, self.uuid)
 
     def connect_nodes_to_single_node_input(self, source_nodes, dest_nodes):
-        print('connect_nodes_to_single_node_input')
         source_count = len(source_nodes)
         connect_count = source_count
         source_dict = {}
@@ -773,7 +767,6 @@ class NodeEditor:
             node.set_visibility('show_all')
             node.set_draggable(True)
         dpg.bind_theme(self.node_theme)
-
 
     def patchify_selection(self):
         #  find centre of patch

@@ -821,6 +821,7 @@ class NodeInput:
 
     def receive_data(self, data):
         if not self.node.check_for_messages(data):
+            self.node.active_input = self
             if type(data) == str and data == 'bang':
                 if self.bang_repeats_previous:
                     if self.widget:
@@ -836,6 +837,7 @@ class NodeInput:
                 self.widget.set(data)
             if self.callback:
                 self.callback()
+            self.node.active_input = None
 
     def trigger(self):
         if self.triggers_execution:
@@ -1008,7 +1010,6 @@ class Action:
             self.action_function()
 
 
-
 class Node:
     app = None
 
@@ -1041,6 +1042,7 @@ class Node:
         self.draggable = True
         self.visibility = 'show_all'
         self.presentation_state = 'show_all'
+        self.active_input = None
 
     def custom_cleanup(self):
         pass
@@ -1562,11 +1564,13 @@ class PatcherInputNode(Node):
         if self.patcher_node is not None:
             self.patcher_node.remove_patcher_input(self.input_name, self.input_out)
 
+
 class PatcherOutputNode(Node):
     @staticmethod
     def factory(name, data, args=None):
         node = PatcherOutputNode(name, data, args)
         return node
+
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         # print('create out')
@@ -1591,11 +1595,11 @@ class PatcherOutputNode(Node):
         if self.patcher_node:
             self.patcher_node.change_output_name(old_name, self.output_name)
 
-    def send_to_patcher(self, input=None):
-        if self.target_output is not None and input is not None:
-            if input.fresh_input:
-                input.fresh_input = False
-                data = input()
+    def send_to_patcher(self):
+        if self.target_output is not None:
+            if self.output_in.fresh_input:
+                self.output_in.fresh_input = False
+                data = self.output_in()
                 if data is not None:
                     self.target_output.send(data)
 
@@ -1697,9 +1701,8 @@ class PatcherNode(Node):
                 out_.set_label(new_name)
 
     def receive_(self, input=None):
-        if input is not None:
-            index = input.input_index
-
+        if self.active_input is not None:
+            index = self.active_input.input_index
             if self.input_outs[index] is not None:
                 data = self.patcher_inputs[index]()
                 self.input_outs[index].send(data)
@@ -1769,10 +1772,14 @@ class PatcherNode(Node):
 
     def custom_create(self, from_file):
         if not from_file:
+            # hold_current_patcher = self.app.get_current_editor()
             self.patch_editor = self.app.add_node_editor()
             self.app.set_tab_title(len(self.app.node_editors) - 1, self.patcher_name)
+
             # self.home_editor.add_subpatch(self.patch_editor)
             self.connect()
+            # self.app.current_node_editor = hold_current_patcher
+            # self.app.select_editor_tab(self.app.current_node_editor)
 
         # note that this happens before custom load setup... so 'self.subpatcher_loaded_uuid' is not yet valid
         # self.patch_editor = self.app.find_orphaned_subpatch(self.patcher_name, self.subpatcher_loaded_uuid)
@@ -1835,6 +1842,7 @@ class PatcherNode(Node):
             self.app.loaded_patcher_nodes.append(self)
             # patch not yet loaded so will be attached when it loads
 
+
 class OriginNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -1867,6 +1875,7 @@ class OriginNode(Node):
         dpg.bind_item_theme(self.ref_property.uuid, self.app.invisible_theme)
         dpg.bind_item_theme(self.uuid, self.app.invisible_theme)
 
+
 class PlaceholderNode(Node):
     node_list = []
 
@@ -1880,7 +1889,7 @@ class PlaceholderNode(Node):
         self.filtered_list = []
         self.name_property = self.add_property(label='##node_name', widget_type='text_input', width=180)
         self.static_name = self.add_property(label='##static_name', widget_type='text_input', width=180)
-        self.args_property = self.add_property(label='args', widget_type='text_input', width=180, callback=self.execute)
+        self.args_property = self.add_property(label='args', widget_type='text_input', width=180)
         if len(self.node_list) == 0:
             self.node_list = self.app.node_factory_container.get_node_list()
         self.variable_list = self.app.get_variable_list()
@@ -1899,13 +1908,15 @@ class PlaceholderNode(Node):
         scores = {}
         for index, node_name in enumerate(self.node_list):
             ratio = fuzz.partial_ratio(node_name.lower(), test.lower())
-            full_ratio = fuzz.ratio(node_name.lower(), test.lower())        # partial matchi should be less important if size diff is big
+            # partial match should be less important if size diff is big
+            full_ratio = fuzz.ratio(node_name.lower(), test.lower())
             len_ratio = len(test) / len(node_name)
             if len_ratio > 1:
                 len_ratio = 1 / len_ratio
             len_ratio = len_ratio * .5 + 0.5  # 0.25 - 0.75
             ratio = (ratio * (1 - len_ratio) + full_ratio * len_ratio)
             scores[node_name] = ratio
+
         for index, variable_name in enumerate(self.variable_list):
             ratio = fuzz.partial_ratio(variable_name.lower(), test.lower())
             full_ratio = fuzz.ratio(variable_name.lower(), test.lower())
@@ -1915,6 +1926,7 @@ class PlaceholderNode(Node):
             len_ratio = len_ratio * .5 + 0.5  # 0.25 - 0.75
             ratio = (ratio * (1 - len_ratio) + full_ratio * len_ratio)
             scores[variable_name] = ratio
+
         for index, patcher_name in enumerate(self.patcher_list):
             ratio = fuzz.partial_ratio(patcher_name.lower(), test.lower())
             full_ratio = fuzz.ratio(patcher_name.lower(), test.lower())
@@ -1924,6 +1936,7 @@ class PlaceholderNode(Node):
             len_ratio = len_ratio * .5 + 0.5  # 0.25 - 0.75
             ratio = (ratio * (1 - len_ratio) + full_ratio * len_ratio)
             scores[patcher_name] = ratio
+
         for index, action_name in enumerate(self.action_list):
             ratio = fuzz.partial_ratio(action_name.lower(), test.lower())
             full_ratio = fuzz.ratio(action_name.lower(), test.lower())
@@ -1933,6 +1946,7 @@ class PlaceholderNode(Node):
             len_ratio = len_ratio * .5 + 0.5  # 0.25 - 0.75
             ratio = (ratio * (1 - len_ratio) + full_ratio * len_ratio)
             scores[action_name] = ratio
+
         sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
         self.filtered_list = []
         for index, item in enumerate(sorted_scores):
@@ -1943,34 +1957,22 @@ class PlaceholderNode(Node):
 
     def increment_widget(self, widget):
         filter_name = dpg.get_value(self.node_list_box.widget.uuid)
-        # print(filter_name)
         if filter_name in self.filtered_list:
-            # print('name in list')
             index = self.filtered_list.index(filter_name)
-            # print(index)
             index -= 1
-            # print(index)
             if index >= 0:
                 self.list_box_arrowed = True
-                # print('ok index')
                 filter_name = self.filtered_list[index]
-                # print(filter_name)
                 self.node_list_box.set(filter_name)
 
     def decrement_widget(self, widget):
         filter_name = dpg.get_value(self.node_list_box.widget.uuid)
-        # print(filter_name)
         if filter_name in self.filtered_list:
-            # print('name in list')
             index = self.filtered_list.index(filter_name)
-            # print(index)
             index += 1
-            # print(index)
             if index < len(self.filtered_list):
                 self.list_box_arrowed = True
-                # print('ok index')
                 filter_name = self.filtered_list[index]
-                # print(filter_name)
                 self.node_list_box.set(filter_name)
 
     def prompt_for_args(self):
@@ -2032,7 +2034,6 @@ class PlaceholderNode(Node):
                 self.execute()
         elif widget == self.node_list_box.widget:
             self.execute()
-
 
     def execute(self):
         if dpg.is_item_active(self.name_property.widget.uuid):
