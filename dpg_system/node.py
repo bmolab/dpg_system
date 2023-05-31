@@ -1181,10 +1181,10 @@ class Node:
 
     def add_handler_to_widgets(self):
         for input_ in self.inputs:
-            if input_.widget and input_.widget.widget not in['button', 'combo', 'knob_float', 'knob_int']:
+            if input_.widget and input_.widget.widget not in['checkbox', 'button', 'combo', 'knob_float', 'knob_int']:
                 dpg.bind_item_handler_registry(input_.widget.uuid, "widget handler")
         for property_ in self.properties:
-            if property_.widget.widget not in ['button', 'spacer', 'label']:
+            if property_.widget.widget not in ['checkbox', 'button', 'spacer', 'label']:
                 dpg.bind_item_handler_registry(property_.widget.uuid, "widget handler")
         for option in self.options:
             dpg.bind_item_handler_registry(option.widget.uuid, "widget handler")

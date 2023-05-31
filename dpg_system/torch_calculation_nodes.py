@@ -19,6 +19,8 @@ def register_torch_calculation_nodes():
     Node.app.register_node('t.minimum', TorchMinimumMaximumNode.factory)
     Node.app.register_node('t.maximum', TorchMinimumMaximumNode.factory)
 
+    Node.app.register_node('t.clamp', TorchClampNode.factory)
+
     Node.app.register_node('t.real', TorchRealImaginaryNode.factory)
     Node.app.register_node('t.imag', TorchRealImaginaryNode.factory)
     Node.app.register_node('t.complex', TorchComplexNode.factory)
@@ -532,7 +534,29 @@ class TorchComplexNode(TorchNode):
                 print(self.label, 'real tensor is None')
 
 
-class TorchRoundNode(TorchWithDimNode):
+class TorchClampNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchClampNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        if len(args) > 1:
+            min = any_to_float(args[0])
+            max = any_to_float(args[1])
+        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.min = self.add_input('min', widget_type='drag_float', default_value=min)
+        self.max = self.add_input('max', widget_type='drag_float', default_value=max)
+        self.output = self.add_output("output")
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            self.output.send(torch.clamp(input_tensor, self.min(), self.max()))
+
+
+class TorchRoundNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
         node = TorchRoundNode(name, data, args)
@@ -551,7 +575,7 @@ class TorchRoundNode(TorchWithDimNode):
             self.output.send(torch.round(input_tensor, decimals=self.decimals()))
 
 
-class TorchFloorCeilingTruncNode(TorchWithDimNode):
+class TorchFloorCeilingTruncNode(TorchNode):
     op_dict = {
         't.floor': torch.floor,
         't.ceil': torch.ceil,
