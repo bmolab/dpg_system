@@ -1252,7 +1252,9 @@ class TypeNode(Node):
                     self.type_property.set('array[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + ', ' + str(shape[3]) + ']')
             elif self.app.torch_available and t == torch.Tensor:
                 shape = input.shape
-                if len(shape) == 1:
+                if len(shape) == 0:
+                    self.type_property.set('tensor[]')
+                elif len(shape) == 1:
                     self.type_property.set('tensor[' + str(shape[0]) + ']')
                 elif len(shape) == 2:
                     self.type_property.set('tensor[' + str(shape[0]) + ', ' + str(shape[1]) + ']')
@@ -1348,7 +1350,9 @@ class TypeNode(Node):
                 else:
                     grad = ''
 
-                if len(shape) == 1:
+                if len(shape) == 0:
+                    self.type_property.set('tensor[] ' + comp + ' ' + device + ' ' + grad)
+                elif len(shape) == 1:
                     self.type_property.set('tensor[' + str(shape[0]) + '] ' + comp + ' ' + device + ' ' + grad)
                 elif len(shape) == 2:
                     self.type_property.set('tensor[' + str(shape[0]) + ', ' + str(shape[1]) + '] ' + comp + ' ' + device + ' ' + grad)

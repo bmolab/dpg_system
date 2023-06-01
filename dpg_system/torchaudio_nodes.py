@@ -7,6 +7,9 @@ import pyaudio
 def register_torchaudio_nodes():
     Node.app.register_node('t.audio_source', TorchAudioSourceNode.factory)
     Node.app.register_node('ta.kaldi_pitch', TorchAudioKaldiPitchNode.factory)
+    Node.app.register_node('t.audio.gain', TorchAudioGainNode.factory)
+    Node.app.register_node('t.audio.contrast', TorchAudioContrastNode.factory)
+    Node.app.register_node('t.audio.loudness', TorchAudioLoudnessNode.factory)
     # Node.app.register_node('ta.vad', TorchAudioVADNode.factory) - does not seem to do anything
 
 class AudioSource:
@@ -172,6 +175,72 @@ class TorchAudioVADNode(TorchNode):
             print('trigger', self.trigger_level())
             active_audio = torchaudio.functional.vad(data, self.rate(), trigger_level=self.trigger_level(), noise_reduction_amount=self.noise_reduction())
             self.vad_output.send(active_audio)
+
+
+class TorchAudioGainNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchAudioGainNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('audio tensor in', triggers_execution=True)
+        self.gain = self.add_input('gain in dB', widget_type='drag_float', default_value=1.0)
+        self.output = self.add_output('audio out')
+
+    def execute(self):
+        data = self.input_to_tensor()
+        if data is not None:
+            active_audio = torchaudio.functional.gain(data, self.gain())
+            self.output.send(active_audio)
+
+
+class TorchAudioContrastNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchAudioContrastNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('audio tensor in', triggers_execution=True)
+        self.contrast = self.add_input('contrast', widget_type='drag_float', default_value=75.0)
+        self.output = self.add_output('audio out')
+
+    def execute(self):
+        data = self.input_to_tensor()
+        if data is not None:
+            active_audio = torchaudio.functional.contrast(data, self.contrast())
+            self.output.send(active_audio)
+
+
+# loudness needs minimum of 6400 chunk size????
+class TorchAudioLoudnessNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchAudioLoudnessNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('audio tensor in', triggers_execution=True)
+        self.rate = self.add_property('sample_rate', widget_type='drag_int', default_value=16000)
+        self.loudness_output = self.add_output('loudness out')
+
+    def execute(self):
+        data = self.input_to_tensor()
+        if data is not None:
+            if len(data.shape) < 2:
+                data.unsqueeze(dim=0)
+            if data.shape[-1] < 6400:
+                print(self.label, 'too few samples to calculate loudness (min 6400)')
+            else:
+                active_audio = torchaudio.functional.loudness(data, self.rate())
+                self.loudness_output.send(active_audio)
+
 
 
 
