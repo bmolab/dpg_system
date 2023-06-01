@@ -24,7 +24,28 @@ class AudioSource:
         self.chunk = chunk
         self.channels = channels
         self.rate = rate
+        self.sources = {}
         self.device_info = self.audio.get_default_input_device_info()
+        self.device_index = self.device_info['index']
+        self.device_count = self.audio.get_device_count()
+        for i in range(self.device_count):
+            device_info = self.audio.get_device_info_by_index(i)
+            if device_info['maxInputChannels'] > 0:
+                self.sources[i] = device_info['name']
+
+    def get_device_list(self):
+        dev_list = []
+        for index in self.sources:
+            dev_list.append(self.sources[index])
+        return dev_list
+
+    def change_source(self, source_name):
+        for index in self.sources:
+            name = self.sources[index]
+            if name == source_name:
+                self.device_index = index
+                self.device_info = self.audio.get_device_info_by_index(index)
+                print(self.device_index, self.device_info)
 
     def set_callback(self, routine):
         self.callback_routine = routine
@@ -35,7 +56,7 @@ class AudioSource:
 
     def start(self):
         if self.stream is None:
-            self.stream = self.audio.open(rate=self.rate, channels=self.channels, format=self.format, input=True, frames_per_buffer=self.chunk, stream_callback=self.callback)
+            self.stream = self.audio.open(rate=self.rate, channels=self.channels, input_device_index=self.device_index, format=self.format, input=True, frames_per_buffer=self.chunk, stream_callback=self.callback)
         return self.stream is not None
 
     def stop(self):
@@ -48,7 +69,7 @@ class AudioSource:
 
     def check_format(self, rate, channels, data_format):
         print('check format', rate, channels, data_format)
-        return self.audio.is_format_supported(rate=rate, input_device=self.device_info['index'], input_channels=channels, input_format=data_format)
+        return self.audio.is_format_supported(rate=rate, input_device=self.device_index, input_channels=channels, input_format=data_format)
 
 
 class TorchAudioSourceNode(TorchNode):
@@ -68,9 +89,12 @@ class TorchAudioSourceNode(TorchNode):
         self.streaming = False
         self.dtype = torch.float32
         self.source = AudioSource()
+        self.source_name = self.source.device_info['name']
         self.source.set_callback(self.audio_callback)
         self.stream_input = self.add_input('stream', widget_type='checkbox', default_value=self.streaming,
                                            callback=self.stream_on_off)
+        self.source_choice = self.add_property('source', widget_type='combo', width=180, default_value=self.source_name, callback=self.source_params_changed)
+        self.source_choice.widget.combo_items = self.source.get_device_list()
         self.channels = self.add_property('channels', widget_type='input_int', default_value=1, callback=self.source_params_changed)
         self.sample_rate = self.add_property('sample_rate', widget_type='drag_int', default_value=16000, callback=self.source_params_changed)
         self.format = self.add_property('sample format', widget_type='combo', default_value='float', callback=self.source_params_changed)
@@ -80,6 +104,11 @@ class TorchAudioSourceNode(TorchNode):
 
     def source_params_changed(self):
         changed = False
+        source_changed = False
+        source = self.source_choice()
+        if source != self.source_name:
+            source_changed = True
+            self.source_name = source
         channels = self.channels()
         if channels != self.source.channels:
             changed = True
@@ -98,8 +127,10 @@ class TorchAudioSourceNode(TorchNode):
             changed = True
 
         streaming = self.streaming
-        if changed:
-            if self.source.check_format(sample_rate, channels, data_format):
+        if changed or source_changed:
+            if source_changed:
+                self.source.change_source(source)
+            if self.source.check_format(sample_rate, channels, data_format) or source_changed:
                 self.source.stop()
                 self.source.channels = channels
                 self.source.rate = sample_rate
