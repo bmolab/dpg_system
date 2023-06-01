@@ -10,6 +10,7 @@ def register_torchaudio_nodes():
     Node.app.register_node('t.audio.gain', TorchAudioGainNode.factory)
     Node.app.register_node('t.audio.contrast', TorchAudioContrastNode.factory)
     Node.app.register_node('t.audio.loudness', TorchAudioLoudnessNode.factory)
+    Node.app.register_node('t.audio.overdrive', TorchAudioOverdriveNode.factory)
     # Node.app.register_node('ta.vad', TorchAudioVADNode.factory) - does not seem to do anything
 
 class AudioSource:
@@ -271,6 +272,79 @@ class TorchAudioLoudnessNode(TorchNode):
             else:
                 active_audio = torchaudio.functional.loudness(data, self.rate())
                 self.loudness_output.send(active_audio)
+
+
+class TorchAudioOverdriveNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchAudioOverdriveNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('audio tensor in', triggers_execution=True)
+        self.gain = self.add_input('gain', widget_type='drag_float', default_value=20.0)
+        self.colour = self.add_input('colour', widget_type='drag_float', default_value=20.0)
+        self.output = self.add_output('audio out')
+
+    def execute(self):
+        data = self.input_to_tensor()
+        if data is not None:
+            overdriven_audio = torchaudio.functional.overdrive(data, self.gain(), self.colour())
+            self.output.send(overdriven_audio)
+
+
+# class TorchAudioSpectrogramNode(TorchNode):
+#     window_function_dict = {
+#         'blackman': torch.blackman_window,
+#         'bartlett': torch.bartlett_window,
+#         'hann': torch.hann_window,
+#         'hamming': torch.hamming_window,
+#         'nutall': torch.kaiser_window
+#     }
+#     @staticmethod
+#     def factory(name, data, args=None):
+#         node = TorchAudioSpectrogramNode(name, data, args)
+#         return node
+#
+#     def __init__(self, label: str, data, args):
+#         super().__init__(label, data, args)
+#
+#         self.transform = torchaudio.transforms.Spectrogram(n_fft=400)
+#         self.input = self.add_input('audio tensor in', triggers_execution=True)
+#         self.n_fft = self.add_input('n_fft', widget_type='drag_int', default_value=400, callback=self.params_changed)
+#         self.window_length = self.add_input('window_length', widget_type='drag_int', default_value=400, callback=self.params_changed)
+#         self.hop_length = self.add_input('hop_length', widget_type='drag_int', default_value=200, callback=self.params_changed)
+#         self.window_function = self.add_input('window', widget_type='combo', default_value='hann', callback=self.params_changed)
+#         self.window_function.widget.combo_items = ['blackman', 'bartlett', 'hamming', 'hann', 'kaiser']
+#         self.power = self.add_input('power', widget_type='drag_float', default_value=2.0, callback=self.params_changed)
+#         self.normalized = self.add_input('norm', widget_type='combo', default_value='frame_length', callback=self.params_changed)
+#         self.normalized.widget.combo_items = ['frame_length', 'window']
+#         self.one_sided = self.add_input('one-sided', widget_type='checkbox', default_value=True, callback=self.params_changed)
+#         self.output = self.add_output('spectrogram out')
+#
+#
+#     def params_changed(self):
+#         win_f = torch.hann_window
+#         if self.window_function() in self.window_function_dict:
+#             win_f = self.window_function_dict[self.window_function()]
+#         self.transform = torchaudio.transforms.Spectrogram(
+#             n_fft=self.n_fft(),
+#             win_length=self.window_length(),
+#             hop_length=self.hop_length(),
+#             window_fn=win_f,
+#             power = self.power(),
+#             normalized=self.normalized(),
+#             onesided=self.one_sided()
+#         )
+#
+#     def execute(self):
+#         data = self.input_to_tensor()
+#         if data is not None:
+#             spectrogram = self.transform(data)
+#             self.output.send(spectrogram)
+
 
 
 

@@ -10,6 +10,7 @@ from dpg_system.conversion_utils import *
 
 def register_signal_nodes():
     Node.app.register_node("filter", FilterNode.factory)
+    Node.app.register_node("adaptive_filter", AdaptiveFilterNode.factory)
     Node.app.register_node("smooth", FilterNode.factory)
     Node.app.register_node("diff_filter_bank", MultiDiffFilterNode.factory)
     Node.app.register_node("diff_filter", MultiDiffFilterNode.factory)
@@ -710,6 +711,73 @@ class FilterNode(Node):
                 self.accum = any_to_match(self.accum, input_value)
 
         self.accum = self.accum * self.degree + input_value * (1.0 - self.degree)
+        self.output.send(self.accum)
+
+
+class AdaptiveFilterNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = AdaptiveFilterNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.power = self.arg_as_float(default_value=2.0)
+        if self.power < 0.0:
+            self.power = 0.0
+        self.degree = 0.9
+        self.accum = 0.0
+        self.offset_accum = 0.0
+
+        self.input = self.add_input('in', triggers_execution=True)
+        self.power_input = self.add_input('power', widget_type='drag_float', min=0.0, default_value=self.power, callback=self.change_power)
+        self.power_input.widget.speed = .01
+        self.base_degree = self.add_input('responsiveness', widget_type='drag_float', min=0.0, max=1.0, default_value=1.0)
+        self.base_degree.widget.speed = .01
+        self.base_degree.widget.speed = .01
+        self.range = self.add_input('signal range', widget_type='drag_float', min=0.0001, default_value=1.0)
+        self.adaption_smoothing = self.add_input('smooth response', widget_type='drag_float', min=0.0, default_value=0.0)
+        self.offset_smoothing = self.add_input('offset response', widget_type='drag_float', min=0.0, default_value=0.9)
+        self.output = self.add_output("out")
+
+    def change_power(self):
+        self.power = self.power_input()
+        if self.power < 0:
+            self.power = 0
+
+    def execute(self):
+        input_value = self.input.get_data()
+        t = type(input_value)
+
+        if type(self.accum) != t:
+            self.accum = any_to_match(self.accum, input_value)
+        elif self.app.torch_available and t == torch.Tensor:
+            if input_value.device != self.accum.device:
+                self.accum = any_to_match(self.accum, input_value)
+
+        if self.app.torch_available and t == torch.Tensor:
+            offset = (input_value - self.accum) / self.range()
+            offset = offset.sum().item()
+        elif t == np.ndarray:
+            offset = (input_value - self.accum) / self.range()
+            offset = offset.sum().item()
+        else:
+            offset = (input_value - self.accum) / self.range()
+
+        offset_smooth = self.offset_smoothing()
+        self.offset_accum = self.offset_accum * offset_smooth + offset * (1.0 - offset_smooth)
+
+        degree = pow(abs(offset), self.power)
+        if degree < 0:
+            degree = 0
+        elif degree > self.base_degree():
+            degree = self.base_degree()
+        adapt_smooth = self.adaption_smoothing()
+        self.degree = self.degree * adapt_smooth + degree * (1.0 - adapt_smooth)
+
+        self.accum = self.accum * (1.0 - self.degree) + input_value * self.degree + self.offset_accum
+
         self.output.send(self.accum)
 
 

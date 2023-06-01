@@ -308,7 +308,9 @@ def tensor_to_array(input):
 def array_to_float(input):
     value = 0.0
     if type(input) == np.ndarray:
-        if len(input.shape) == 1:
+        if len(input.shape) == 0:
+            value = input.item()
+        elif len(input.shape) == 1:
             value = input[0]
         elif len(input.shape) == 2:
             value = input[0, 0]
@@ -322,7 +324,9 @@ def array_to_float(input):
 def array_to_int(input):
     value = 0
     if type(input) == np.ndarray:
-        if len(input.shape) == 1:
+        if len(input.shape) == 0:
+            value = input.item()
+        elif len(input.shape) == 1:
             value = input[0]
         elif len(input.shape) == 2:
             value = input[0, 0]
@@ -336,7 +340,9 @@ def array_to_int(input):
 def array_to_bool(input):
     value = False
     if type(input) == np.ndarray:
-        if len(input.shape) == 1:
+        if len(input.shape) == 0:
+            value = input.item()
+        elif len(input.shape) == 1:
             value = input[0]
         elif len(input.shape) == 2:
             value = input[0, 0]

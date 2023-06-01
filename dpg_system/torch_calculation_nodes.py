@@ -9,6 +9,7 @@ def register_torch_calculation_nodes():
     Node.app.register_node('t.corrcoef', TorchCovarianceCoefficientNode.factory)
 
     Node.app.register_node('t.diff', TorchDiffNode.factory)
+    Node.app.register_node('t.energy', TorchEnergyNode.factory)
 
     Node.app.register_node('t.eq', TorchComparisonNode.factory)
     Node.app.register_node('t.gt', TorchComparisonNode.factory)
@@ -256,6 +257,38 @@ class TorchDiffNode(TorchWithDimNode):
                     result = torch.diff(input_tensor, n=self.n(), dim=self.dim)
                 else:
                     result = torch.diff(input_tensor, n=self.n())
+                self.output.send(result)
+            except Exception as e:
+                if self.app.verbose:
+                    print(self.label, e)
+
+
+class TorchEnergyNode(TorchWithDimNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchEnergyNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.dim = -1
+        n = 1
+        self.n = self.add_input('n', widget_type='input_int', default_value=n)
+        if self.dim_specified:
+            self.add_dim_input()
+        self.output = self.add_output('tensor out')
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            try:
+                if self.dim_specified:
+                    result = torch.diff(input_tensor, n=self.n(), dim=self.dim)
+                else:
+                    result = torch.diff(input_tensor, n=self.n())
+                result = result.abs().sum()
                 self.output.send(result)
             except Exception as e:
                 if self.app.verbose:

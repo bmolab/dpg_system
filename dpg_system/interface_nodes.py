@@ -1628,18 +1628,23 @@ class PlotNode(Node):
                     if data.dtype in [np.csingle, np.cdouble, np.clongdouble]:
                         data = data.real
                     if data.dtype in [float, np.float32, np.double, int, np.int64, np.uint8, np.bool_, np.csingle, np.cdouble, np.clongdouble]:
-                        if self.array_fills_plot:
+                        if self.array_fills_plot and len(data.shape) > 0:
                             if len(data.shape) == 1:
-                                if self.sample_count != data.shape[0]:
-                                    self.pending_sample_count = data.shape[0]
-                                else:
+                                if data.shape[0] == 1:
                                     self.y_data.update(data)
+                                else:
+                                    if self.sample_count != data.shape[0]:
+                                        self.pending_sample_count = data.shape[0]
+                                    else:
+                                        self.y_data.update(data)
                         else:
                             if len(data.shape) == 1:
                                 if data.shape[0] > self.sample_count:
                                     self.pending_sample_count = data.shape[0]
                                 else:
                                     self.y_data.update(data)
+                            elif len(data.shape) == 0:
+                                self.y_data.update(np.expand_dims(data, axis=0))
 
 
                 # if self.count_follows_input_size:
