@@ -619,7 +619,7 @@ class UnpackNode(Node):
                 out_count = value.size
                 if out_count > self.num_outs:
                     out_count = self.num_outs
-                if value.dtype in [np.double, float]:
+                if value.dtype in [np.double, float, np.float32]:
                     for i in range(out_count):
                         self.outputs[i].set_value(float(value[i]))
                 elif value.dtype in [np.int64, int, np.bool_]:

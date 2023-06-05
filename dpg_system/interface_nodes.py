@@ -12,6 +12,7 @@ from dpg_system.matrix_nodes import RollingBuffer
 def register_interface_nodes():
     Node.app.register_node("menu", MenuNode.factory)
     Node.app.register_node("toggle", ToggleNode.factory)
+    Node.app.register_node("set_reset", ToggleNode.factory)
     Node.app.register_node("button", ButtonNode.factory)
     Node.app.register_node("b", ButtonNode.factory)
     Node.app.register_node("mouse", MouseNode.factory)
@@ -519,17 +520,23 @@ class ToggleNode(Node):
         super().__init__(label, data, args)
 
         variable_name = ''
+        self.set_reset = False
         if self.ordered_args is not None and len(self.ordered_args) > 0:
             for i in range(len(self.ordered_args)):
                 var_name, t = decode_arg(self.ordered_args, i)
                 if t == str:
                     variable_name = var_name
-
+        self.reset_input = None
         self.value = False
         self.variable = None
-        self.input = self.add_input("", triggers_execution=True, widget_type='checkbox', widget_width=40, callback=self.call_execute)
+        if self.label == 'set_reset':
+            self.set_reset = True
+            self.input = self.add_input('set', triggers_execution=True)
+            self.reset_input = self.add_input('reset', triggers_execution=True)
+        else:
+            self.input = self.add_input('', triggers_execution=True, widget_type='checkbox', callback=self.call_execute)
         self.input.bang_repeats_previous = False
-        self.output = self.add_output("")
+        self.output = self.add_output('')
         self.bound_variable = self.add_option('bind to', widget_type='text_input', width=120, default_value=variable_name, callback=self.binding_changed)
 
     def get_preset_state(self):
@@ -586,17 +593,24 @@ class ToggleNode(Node):
         self.execute()
 
     def execute(self):
-        if self.input.fresh_input:
-            received = self.input.get_received_data()     # so that we can catch 'bang' ?
-            if type(received) == str:
-                if received == 'bang':
-                    self.value = not self.value
+        if not self.set_reset:
+            if self.input.fresh_input:
+                received = self.input.get_received_data()     # so that we can catch 'bang' ?
+                if type(received) == str:
+                    if received == 'bang':
+                        self.value = not self.value
+                        self.input.set(self.value)
+                else:
+                    self.value = any_to_bool(received)
                     self.input.set(self.value)
             else:
-                self.value = any_to_bool(received)
-                self.input.set(self.value)
+                self.value = any_to_bool(self.input())
         else:
-            self.value = any_to_bool(self.input())
+            if self.active_input == self.input:
+                self.value = 1
+            elif self.active_input == self.reset_input:
+                self.value = 0
+            self.output.set_label(str(self.value))
         if self.variable is not None:
             self.variable.set(self.value, from_client=self)
         self.output.send(self.value)

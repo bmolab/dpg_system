@@ -1,3 +1,7 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import math
 import numpy as np
 import torch.fft
@@ -27,6 +31,9 @@ from dpg_system.torchvision_nodes import *
 from dpg_system.torch_kornia_nodes import *
 from dpg_system.torchaudio_nodes import *
 
+from dpg_system.wavelet_nodes import *
+# import wavelets_pytorch.transform
+
 def register_torch_nodes():
     Node.app.torch_available = True
     Node.app.register_node('tensor', TensorNode.factory)
@@ -46,6 +53,7 @@ def register_torch_nodes():
     register_torchvision_nodes()
     register_kornia_nodes()
     register_torchaudio_nodes()
+    register_wavelet_nodes()
 
 
 class TensorNode(TorchDeviceDtypeNode):
