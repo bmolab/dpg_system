@@ -83,6 +83,8 @@ class ArithmeticNode(Node):
         }
         if label in self.op_dict:
             self.op = self.op_dict[label]
+            if label in ['pow', '^']:
+                widget_type = 'drag_float'
         else:
             self.op = self.op_dict['+']
 
