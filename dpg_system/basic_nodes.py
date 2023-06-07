@@ -1923,6 +1923,7 @@ class FuzzyMatchNode(Node):
             post_string = ''
             pass_data = False
             found = False
+            indicator = ''
             data = self.input()
             if type(data) == list:
                 data = ' '.join(data)
@@ -1931,6 +1932,7 @@ class FuzzyMatchNode(Node):
                 if index != -1:
                     index += 3
                     if data[index:index + 2] != 'a ' and data[index:index + 4] != 'the ':
+                        indicator = 'by '
                         substring = data[index:]
                         prestring = data[:index]
                         index = substring.find(' of ')
@@ -1956,6 +1958,7 @@ class FuzzyMatchNode(Node):
                 if not found:
                     index = data.find('style of ')
                     if index != -1:
+                        indicator = 'style of'
                         index += len('style of ')
                         substring = data[index:]
                         prestring = data[:index]
@@ -1981,7 +1984,7 @@ class FuzzyMatchNode(Node):
                     self.score_output.send(self.best_score)
                     if len(self.filtered_list) > 0 and self.best_score > self.threshold():
                         self.output.send(prestring + self.filtered_list[0] + post_string)
-                        self.replacement_output.send(self.filtered_list[0])
+                        self.replacement_output.send(indicator + self.filtered_list[0])
                     else:
                         self.output.send(data)
                 else:
