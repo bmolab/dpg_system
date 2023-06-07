@@ -15,6 +15,8 @@ def register_signal_nodes():
     Node.app.register_node("diff_filter_bank", MultiDiffFilterNode.factory)
     Node.app.register_node("diff_filter", MultiDiffFilterNode.factory)
     Node.app.register_node("random", RandomNode.factory)
+    Node.app.register_node("random.gauss", RandomGaussNode.factory)
+    Node.app.register_node("random.triangular", RandomTriangularNode.factory)
     Node.app.register_node("signal", SignalNode.factory)
     Node.app.register_node("togedge", TogEdgeNode.factory)
     Node.app.register_node("subsample", SubSampleNode.factory)
@@ -127,6 +129,67 @@ class DifferentiateNode(Node):
 
         self.previous_value = received
         self.previousType = t
+
+
+class RandomGaussNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = RandomGaussNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        mean = 0.0
+        dev = 1.0
+        if len(args) > 0:
+            mean = self.arg_as_number(default_value=0.0)
+        if len(args) > 1:
+            dev = self.arg_as_number(default_value=1.0)
+
+        self.trigger_input = self.add_input('trigger', triggers_execution=True)
+        self.mean = self.add_input('mean', widget_type='drag_float', default_value=mean)
+        self.dev = self.add_input('deviation', widget_type='drag_float', default_value=dev)
+        self.mean.widget.speed = 0.01
+        self.dev.widget.speed = 0.01
+        self.output = self.add_output('out')
+
+    def execute(self):
+        output_value = random.gauss(self.mean(), self.dev())
+        self.output.send(output_value)
+
+
+class RandomTriangularNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = RandomTriangularNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        low = -1.0
+        high = 1.0
+        mode = 0.0
+        if len(args) > 0:
+            low = self.arg_as_number(default_value=-1.0)
+        if len(args) > 1:
+            high = self.arg_as_number(default_value=1.0)
+        if len(args) > 2:
+            mode = self.arg_as_number(default_value=0.0)
+
+        self.trigger_input = self.add_input('trigger', triggers_execution=True)
+        self.low = self.add_input('low', widget_type='drag_float', default_value=low)
+        self.high = self.add_input('high', widget_type='drag_float', default_value=high)
+        self.mode = self.add_input('mode', widget_type='drag_float', default_value=mode)
+        self.low.widget.speed = 0.01
+        self.high.widget.speed = 0.01
+        self.mode.widget.speed = 0.01
+        self.output = self.add_output('out')
+
+    def execute(self):
+        output_value = random.triangular(self.low(), self.high(), self.mode())
+        self.output.send(output_value)
 
 
 class RandomNode(Node):
