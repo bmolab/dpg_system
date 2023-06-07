@@ -1883,6 +1883,7 @@ class FuzzyMatchNode(Node):
         self.threshold = self.add_property('threshold', widget_type='drag_float', default_value=60)
         self.output = self.add_output('string out')
         self.score_output = self.add_output('score out')
+        self.replacement_output = self.add_output('replacement out')
 
         self.filtered_list = []
         self.option_list = []
@@ -1929,28 +1930,29 @@ class FuzzyMatchNode(Node):
                 index = data.find('by ')
                 if index != -1:
                     index += 3
-                    substring = data[index:]
-                    prestring = data[:index]
-                    index = substring.find(' of ')
-                    index2 = substring.find(' from ')
-                    if index != -1:
-                        if index2 != -1:
-                            if index < index2:
+                    if data[index:index + 2] != 'a ' and data[index:index + 4] != 'the ':
+                        substring = data[index:]
+                        prestring = data[:index]
+                        index = substring.find(' of ')
+                        index2 = substring.find(' from ')
+                        if index != -1:
+                            if index2 != -1:
+                                if index < index2:
+                                    post_string = substring[index:]
+                                    substring = substring[:index]
+                                    found = True
+                                else:
+                                    post_string = substring[index2:]
+                                    substring = substring[:index2]
+                                    found = True
+                            else:
                                 post_string = substring[index:]
                                 substring = substring[:index]
                                 found = True
-                            else:
-                                post_string = substring[index2:]
-                                substring = substring[:index2]
-                                found = True
-                        else:
-                            post_string = substring[index:]
-                            substring = substring[:index]
+                        elif index2 != -1:
+                            post_string = substring[index2:]
+                            substring = substring[:index2]
                             found = True
-                    elif index2 != -1:
-                        post_string = substring[index2:]
-                        substring = substring[:index2]
-                        found = True
                 if not found:
                     index = data.find('style of ')
                     if index != -1:
@@ -1979,6 +1981,7 @@ class FuzzyMatchNode(Node):
                     self.score_output.send(self.best_score)
                     if len(self.filtered_list) > 0 and self.best_score > self.threshold():
                         self.output.send(prestring + self.filtered_list[0] + post_string)
+                        self.replacement_output.send(self.filtered_list[0])
                     else:
                         self.output.send(data)
                 else:
