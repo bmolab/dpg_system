@@ -1958,7 +1958,7 @@ class FuzzyMatchNode(Node):
                 if not found:
                     index = data.find('style of ')
                     if index != -1:
-                        indicator = 'style of'
+                        indicator = 'style of '
                         index += len('style of ')
                         substring = data[index:]
                         prestring = data[:index]
