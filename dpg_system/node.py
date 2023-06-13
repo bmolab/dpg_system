@@ -1663,6 +1663,7 @@ class PatcherNode(Node):
             if t == str:
                 self.patcher_name = s
         self.home_editor = self.app.get_current_editor()
+        self.home_editor_index = self.app.current_node_editor
         print('init', self.patcher_name, self.home_editor)
         self.patch_editor = None
         text_size = dpg.get_text_size(text=self.patcher_name)
@@ -1850,7 +1851,7 @@ class PatcherNode(Node):
             self.app.loaded_patcher_nodes.append(self)
             # patch not yet loaded so will be attached when it loads
 
-        self.app.current_node_editor = self.home_editor
+        self.app.current_node_editor = self.home_editor_index
 
 
 
