@@ -16,7 +16,15 @@ def register_signal_nodes():
     Node.app.register_node("diff_filter", MultiDiffFilterNode.factory)
     Node.app.register_node("random", RandomNode.factory)
     Node.app.register_node("random.gauss", RandomGaussNode.factory)
+    Node.app.register_node("random.normalvariate", RandomGaussNode.factory)
+    Node.app.register_node("random.lognormvariate", RandomGaussNode.factory)
+    Node.app.register_node("random.vonmisesvariate", RandomGaussNode.factory)
+    Node.app.register_node("random.gammavariate", RandomGammaNode.factory)
+    Node.app.register_node("random.betavariate", RandomGammaNode.factory)
+    Node.app.register_node("random.weibullvariate", RandomGammaNode.factory)
     Node.app.register_node("random.triangular", RandomTriangularNode.factory)
+    Node.app.register_node("random.paretovariate", RandomParetoNode.factory)
+    Node.app.register_node("random.expovariate", RandomParetoNode.factory)
     Node.app.register_node("signal", SignalNode.factory)
     Node.app.register_node("togedge", TogEdgeNode.factory)
     Node.app.register_node("subsample", SubSampleNode.factory)
@@ -140,6 +148,18 @@ class RandomGaussNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
+        label_1 = 'mean'
+        label_2 = 'dev'
+        self.op = random.gauss
+        if self.label == 'random.normalvariate':
+            self.op = random.normalvariate
+        elif self.label == 'random.lognormvariate':
+            self.op = random.lognormvariate
+        elif self.label == 'random.vonmisesvariate':
+            self.op = random.vonmisesvariate
+            label_1 = 'mu'
+            label_2 = 'kappa'
+
         mean = 0.0
         dev = 1.0
         if len(args) > 0:
@@ -148,14 +168,48 @@ class RandomGaussNode(Node):
             dev = self.arg_as_number(default_value=1.0)
 
         self.trigger_input = self.add_input('trigger', triggers_execution=True)
-        self.mean = self.add_input('mean', widget_type='drag_float', default_value=mean)
-        self.dev = self.add_input('deviation', widget_type='drag_float', default_value=dev)
+        self.mean = self.add_input(label_1, widget_type='drag_float', default_value=mean)
+        self.dev = self.add_input(label_2, widget_type='drag_float', default_value=dev)
         self.mean.widget.speed = 0.01
         self.dev.widget.speed = 0.01
         self.output = self.add_output('out')
 
     def execute(self):
-        output_value = random.gauss(self.mean(), self.dev())
+        output_value = self.op(self.mean(), self.dev())
+        self.output.send(output_value)
+
+
+class RandomGammaNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = RandomGammaNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        if self.label == 'random.gammavariate':
+            self.op = random.gammavariate
+        elif self.label == 'random.betavariate':
+            self.op = random.betavariate
+        elif self.label == 'random.weibullvariate':
+            self.op = random.weibullvariate
+        alpha = 1.0
+        beta = 0.5
+        if len(args) > 0:
+            alpha = self.arg_as_number(default_value=alpha)
+        if len(args) > 1:
+            beta = self.arg_as_number(default_value=beta)
+
+        self.trigger_input = self.add_input('trigger', triggers_execution=True)
+        self.alpha = self.add_input('alpha', widget_type='drag_float', default_value=alpha)
+        self.beta = self.add_input('beta', widget_type='drag_float', default_value=beta)
+        self.alpha.widget.speed = 0.01
+        self.beta.widget.speed = 0.01
+        self.output = self.add_output('out')
+
+    def execute(self):
+        output_value = self.op(self.alpha(), self.beta())
         self.output.send(output_value)
 
 
@@ -189,6 +243,34 @@ class RandomTriangularNode(Node):
 
     def execute(self):
         output_value = random.triangular(self.low(), self.high(), self.mode())
+        self.output.send(output_value)
+
+
+class RandomParetoNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = RandomParetoNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        alpha = 1.0
+        if len(args) > 0:
+            alpha = self.arg_as_number(default_value=1.0)
+        self.op = random.paretovariate
+        param_1_name = 'alpha'
+
+        if self.label == 'random.expovariate':
+            self.op = random.expovariate
+            param_1_name = 'lambda'
+        self.trigger_input = self.add_input('trigger', triggers_execution=True)
+        self.alpha = self.add_input(param_1_name, widget_type='drag_float', default_value=alpha)
+        self.alpha.widget.speed = 0.01
+        self.output = self.add_output('out')
+
+    def execute(self):
+        output_value = self.op(self.alpha())
         self.output.send(output_value)
 
 
