@@ -1822,6 +1822,7 @@ class PatcherNode(Node):
         container['patcher id'] = self.patch_editor.uuid
 
     def load_custom(self, container):  # called after custom setup...
+        print('load_custom', self.patcher_name)
         if 'show inputs' in container:
             self.show_input = container['show inputs']
         if 'show outputs' in container:
