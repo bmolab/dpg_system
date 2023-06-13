@@ -1832,18 +1832,22 @@ class PatcherNode(Node):
         self.patch_editor = self.app.find_orphaned_subpatch(self.patcher_name, self.subpatcher_loaded_uuid)
         # note that patch_editor may not have been opened yet if opening from file
         if self.patch_editor is None:
+            print('added node editor for', self.patcher_name)
             self.patch_editor = self.app.add_node_editor()
             self.app.set_tab_title(len(self.app.node_editors) - 1, self.patcher_name)
         elif self.patch_editor is not None:
+            print('found existing node editor for', self.patcher_name)
             self.update_inputs()
             self.update_outputs()
 
         if self.patch_editor is not None:
+            print('connected patcher')
             self.connect()
         else:
-            # print('patch editor not loaded yet')
+            print('patch editor not loaded yet')
             self.app.loaded_patcher_nodes.append(self)
             # patch not yet loaded so will be attached when it loads
+
 
 
 class OriginNode(Node):
