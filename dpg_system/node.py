@@ -1662,6 +1662,7 @@ class PatcherNode(Node):
             s, t = decode_arg(args, 0)
             if t == str:
                 self.patcher_name = s
+        print('init', self.patcher_name)
         self.home_editor = self.app.get_current_editor()
         self.patch_editor = None
         text_size = dpg.get_text_size(text=self.patcher_name)
