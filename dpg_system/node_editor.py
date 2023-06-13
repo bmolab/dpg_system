@@ -945,6 +945,7 @@ class NodeEditor:
         self.app.current_node_editor = hold_editor
         if 'name' in file_container:
             self.patch_name = file_container['name']
+            print('uncontainerized', self.patch_name, self.app.current_node_editor)
         if 'path' in file_container:
             self.file_path = file_container['path']
         if 'id' in file_container:
