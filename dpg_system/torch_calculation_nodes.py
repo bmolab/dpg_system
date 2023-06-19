@@ -55,14 +55,14 @@ def register_torch_calculation_nodes():
     Node.app.register_node('t.nansum', TorchMeanMedianNode.factory)
     Node.app.register_node('t.prod', TorchMeanMedianNode.factory)
 
-    Node.app.register_node('t.bernoulli', TorchDistributionNode.factory)
-    Node.app.register_node('t.poisson', TorchDistributionNode.factory)
-    Node.app.register_node('t.exponential', TorchDistributionOneParamNode.factory)
-    Node.app.register_node('t.geometric', TorchDistributionOneParamNode.factory)
-    Node.app.register_node('t.cauchy', TorchDistributionTwoParamNode.factory)
-    Node.app.register_node('t.log_normal', TorchDistributionTwoParamNode.factory)
-    Node.app.register_node('t.normal', TorchDistributionTwoParamNode.factory)
-    Node.app.register_node('t.uniform', TorchDistributionTwoParamNode.factory)
+    Node.app.register_node('t.bernoulli', TorchDistributionTensorNode.factory)
+    Node.app.register_node('t.poisson', TorchDistributionTensorNode.factory)
+    Node.app.register_node('t.exponential', TorchDistributionTensorOneParamNode.factory)
+    Node.app.register_node('t.geometric', TorchDistributionTensorOneParamNode.factory)
+    Node.app.register_node('t.cauchy', TorchDistributionTensorTwoParamNode.factory)
+    Node.app.register_node('t.log_normal', TorchDistributionTensorTwoParamNode.factory)
+    Node.app.register_node('t.normal', TorchDistributionTensorTwoParamNode.factory)
+    Node.app.register_node('t.uniform', TorchDistributionTensorTwoParamNode.factory)
 
 
 class TorchCovarianceCoefficientNode(TorchNode):
@@ -91,6 +91,28 @@ class TorchDistributionNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+
+        self.distribution = torch.distributions.bernoulli.Bernoulli(probs=0.5)
+        self.input = self.add_input('trigger', triggers_execution=True)
+        self.probability = self.add_input('probability', widget_type='drag_float', min=0.0, max=1.0, default_value=0.5, callback=self.prob_changed)
+        self.output = self.add_output('tensor out')
+
+    def prob_changed(self):
+        self.distribution = torch.distributions.bernoulli.Bernoulli(probs=self.probability())
+
+    def execute(self):
+        out_tensor = self.distribution.sample()
+        self.output.send(out_tensor)
+
+
+class TorchDistributionTensorNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchDistributionTensorNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
         if self.label == 't.bernoulli':
             self.op = torch.bernoulli
         elif self.label == 't.poisson':
@@ -106,10 +128,10 @@ class TorchDistributionNode(TorchNode):
             self.output.send(out_tensor)
 
 
-class TorchDistributionOneParamNode(TorchNode):
+class TorchDistributionTensorOneParamNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
-        node = TorchDistributionOneParamNode(name, data, args)
+        node = TorchDistributionTensorOneParamNode(name, data, args)
         return node
 
     def __init__(self, label: str, data, args):
@@ -136,10 +158,10 @@ class TorchDistributionOneParamNode(TorchNode):
             self.output.send(out_tensor)
 
 
-class TorchDistributionTwoParamNode(TorchNode):
+class TorchDistributionTensorTwoParamNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
-        node = TorchDistributionTwoParamNode(name, data, args)
+        node = TorchDistributionTensorTwoParamNode(name, data, args)
         return node
 
     def __init__(self, label: str, data, args):

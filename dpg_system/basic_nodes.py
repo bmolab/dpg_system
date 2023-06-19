@@ -1880,19 +1880,31 @@ class FuzzyMatchNode(Node):
         super().__init__(label, data, args)
         self.input = self.add_input('string in', triggers_execution=True)
         self.load_button = self.add_property('load match file', width=120, widget_type='button', callback=self.load_match_file)
+        self.file_name = self.add_label('')
         self.threshold = self.add_property('threshold', widget_type='drag_float', default_value=60)
         self.output = self.add_output('string out')
         self.score_output = self.add_output('score out')
         self.replacement_output = self.add_output('replacement out')
+        self.load_path = self.add_option('path', widget_type='text_input', default_value='', callback=self.load_from_load_path)
 
         self.filtered_list = []
         self.option_list = []
         self.best_score = 0
+        self.list_path = ''
         if len(args) > 0:
+            self.list_path = args[0]
+            path = self.list_path.split('/')[-1]
+            self.file_name.set(path)
             f = open(args[0])
             data = json.load(f)
             for artist in data:
                 self.option_list.append(artist)
+
+    def load_from_load_path(self):
+        path = self.load_path()
+        print('load_from_load_path', path)
+        if path != '':
+            self.load_match_file_from_json(self.load_path())
 
     def load_match_file(self):
         with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400,
@@ -1901,15 +1913,20 @@ class FuzzyMatchNode(Node):
 
     def load_match_file_callback(self, sender, app_data):
         if 'file_path_name' in app_data:
-            self.load_path = app_data['file_path_name']
-            if self.load_path != '':
-                self.load_match_file_from_json(self.load_path)
+            path = app_data['file_path_name']
+            if path != '':
+                self.load_path.set(path)
+                self.load_from_load_path()
         else:
             print('no file chosen')
         dpg.delete_item(sender)
 
     def load_match_file_from_json(self, path):
+        print('load from json')
+        self.list_path = path
         with open(path, 'r') as f:
+            path = self.list_path.split('/')[-1]
+            self.file_name.set(path)
             data = json.load(f)
             self.option_list = []
             for artist in data:

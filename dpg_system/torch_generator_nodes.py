@@ -1,3 +1,5 @@
+import torch.distributions.poisson
+
 from dpg_system.torch_base_nodes import *
 
 def register_torch_generator_nodes():
@@ -10,6 +12,14 @@ def register_torch_generator_nodes():
     Node.app.register_node('t.range', TorchRangeNode.factory)
     Node.app.register_node('t.arange', TorchRangeNode.factory)
     Node.app.register_node('t.eye', TorchEyeNode.factory)
+
+    Node.app.register_node('t.dist.bernoulli', TorchDistributionBernoulliNode.factory)
+    Node.app.register_node('t.dist.continuous_bernoulli', TorchDistributionBernoulliNode.factory)
+    Node.app.register_node('t.dist.chi2', TorchDistributionChi2Node.factory)
+    Node.app.register_node('t.dist.exponential', TorchDistributionExponentialNode.factory)
+    Node.app.register_node('t.dist.half_cauchy', TorchDistributionHalfCauchyNode.factory)
+    Node.app.register_node('t.dist.half_normal', TorchDistributionHalfNormalNode.factory)
+    Node.app.register_node('t.dist.poisson', TorchDistributionPoissonNode.factory)
 
     Node.app.register_node('t.rand_like', TorchGeneratorLikeNode.factory)
     Node.app.register_node('t.ones_like', TorchGeneratorLikeNode.factory)
@@ -106,6 +116,188 @@ class TorchGeneratorNode(TorchDeviceDtypeNode):
         elif self.label == 't.zeros':
             out_array = torch.zeros(size=size, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad)
         self.output.send(out_array)
+
+
+class TorchDistributionNode(TorchNode):
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.shape = []
+        self.shape_input = None
+        self.mode = 'probs'
+        for i in range(len(args)):
+            d, t = decode_arg(args, i)
+            if t == int:
+                self.shape += (d,)
+        if len(self.shape) == 0:
+            self.shape = [1]
+
+    def add_shape_input(self):
+        self.shape_input = self.add_input('shape', widget_type='text_input', default_value=str(self.shape),
+                                          callback=self.shape_changed)
+
+    def shape_changed(self):
+        shape_text = self.shape_input()
+        shape_list = re.findall(r'[-+]?\d+', shape_text)
+        shape = []
+        for dim_text in shape_list:
+            shape.append(any_to_int(dim_text))
+        self.shape = shape
+
+    def execute(self):
+        size = tuple(self.shape)
+        out_array = self.distribution.sample(sample_shape=size)
+        self.output.send(out_array)
+
+
+
+class TorchDistributionBernoulliNode(TorchDistributionNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchDistributionBernoulliNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.mode = 'probs'
+        for i in range(len(args)):
+            d, t = decode_arg(args, i)
+            if t == str:
+                if d == 'probs':
+                    self.mode = 'probs'
+                else:
+                    self.mode = 'logits'
+
+        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+
+        self.add_shape_input()
+
+        if self.label == 't.dist.bernoulli':
+            if self.mode == 'probs':
+                self.probability = self.add_input('probability', widget_type='drag_float', default_value=0.5, min=0.0, max=1.0, callback=self.probability_changed)
+                self.distribution = torch.distributions.bernoulli.Bernoulli(probs=0.5)
+            else:
+                self.probability = self.add_input('logits', widget_type='drag_float', default_value=1.0, callback=self.probability_changed)
+                self.distribution = torch.distributions.bernoulli.Bernoulli(logits=1.0)
+        elif self.label == 't.dist.continuous_bernoulli':
+            if self.mode == 'probs':
+                self.probability = self.add_input('probability', widget_type='drag_float', default_value=0.5, min=0.0,
+                                                  max=1.0, callback=self.probability_changed)
+                self.distribution = torch.distributions.continuous_bernoulli.ContinuousBernoulli(probs=0.5)
+            else:
+                self.probability = self.add_input('logits', widget_type='drag_float', default_value=1.0,
+                                                  callback=self.probability_changed)
+                self.distribution = torch.distributions.continuous_bernoulli.ContinuousBernoulli(logits=1.0)
+        out_label = 'random tensor'
+        self.output = self.add_output(out_label)
+
+    def probability_changed(self):
+        if self.mode == 'probs':
+            self.distribution = torch.distributions.continuous_bernoulli.ContinuousBernoulli(probs=self.probability())
+        else:
+            self.distribution = torch.distributions.continuous_bernoulli.ContinuousBernoulli(logits=self.probability())
+
+
+class TorchDistributionChi2Node(TorchDistributionNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchDistributionChi2Node(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+        self.add_shape_input()
+        self.df = self.add_input('df', widget_type='drag_float', default_value=1.0, min=0.0, callback=self.df_changed)
+        self.distribution = torch.distributions.chi2.Chi2(df=1.0)
+
+        out_label = 'random tensor'
+        self.output = self.add_output(out_label)
+
+    def df_changed(self):
+        self.distribution = torch.distributions.chi2.Chi2(df=self.df())
+
+
+class TorchDistributionExponentialNode(TorchDistributionNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchDistributionExponentialNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+        self.add_shape_input()
+        self.rate = self.add_input('rate', widget_type='drag_float', default_value=1.0, min=0.0, callback=self.rate_changed)
+        self.distribution = torch.distributions.exponential.Exponential(rate=1.0)
+
+        out_label = 'random tensor'
+        self.output = self.add_output(out_label)
+
+    def rate_changed(self):
+        self.distribution = torch.distributions.exponential.Exponential(rate=self.rate())
+
+
+class TorchDistributionHalfCauchyNode(TorchDistributionNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchDistributionHalfCauchyNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+        self.add_shape_input()
+        self.scale = self.add_input('scale', widget_type='drag_float', default_value=1.0, min=0.0, callback=self.scale_changed)
+        self.distribution = torch.distributions.half_cauchy.HalfCauchy(scale=1.0)
+
+        out_label = 'random tensor'
+        self.output = self.add_output(out_label)
+
+    def scale_changed(self):
+        self.distribution = torch.distributions.half_cauchy.HalfCauchy(scale=self.scale())
+
+
+class TorchDistributionHalfNormalNode(TorchDistributionNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchDistributionHalfNormalNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+        self.add_shape_input()
+        self.scale = self.add_input('scale', widget_type='drag_float', default_value=1.0, min=0.0, callback=self.scale_changed)
+        self.distribution = torch.distributions.half_normal.HalfNormal(scale=1.0)
+
+        out_label = 'random tensor'
+        self.output = self.add_output(out_label)
+
+    def scale_changed(self):
+        self.distribution = torch.distributions.half_normal.HalfNormal(scale=self.scale())
+
+
+class TorchDistributionPoissonNode(TorchDistributionNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchDistributionPoissonNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+        self.add_shape_input()
+        self.rate = self.add_input('rate', widget_type='drag_float', default_value=1.0, min=0.0, callback=self.rate_changed)
+        self.distribution = torch.distributions.poisson.Poisson(rate=1.0)
+
+        out_label = 'random tensor'
+        self.output = self.add_output(out_label)
+
+    def rate_changed(self):
+        self.distribution = torch.distributions.poisson.Poisson(rate=self.rate())
+
 
 class TorchFullNode(TorchDeviceDtypeNode):
     @staticmethod

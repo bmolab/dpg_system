@@ -255,6 +255,11 @@ class NodeProperty:
         if self.widget:
             self.widget.set_label(new_name)
 
+    def set_and_callback(self, data, propagate=True):
+        self.set(data, propagate)
+        if self.callback is not None:
+            self.callback()
+
     def set(self, data, propagate=True):
         if type(data) == list:
             if len(data) == 1:
