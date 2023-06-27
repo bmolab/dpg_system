@@ -3,68 +3,68 @@ channels:
   - defaults
   - conda-forge
 dependencies:
-  - aom=3.5.0=h7ea286d_0
-  - bzip2=1.0.8=h620ffc9_4
-  - ca-certificates=2023.01.10=hca03da5_0
-  - cairo=1.16.0=h1e71087_1016
-  - dav1d=1.2.0=hb547adb_0
-  - expat=2.5.0=hb7217d7_1
-  - ffmpeg=6.0.0=gpl_hc7e3b81_101
+  - aom=3.5.0
+  - bzip2=1.0.8
+  - ca-certificates=2023.01.10
+  - cairo=1.16.0
+  - dav1d=1.2.0
+  - expat=2.5.0
+  - ffmpeg=6.0.0
   - font-ttf-dejavu-sans-mono=2.37=hd3eb1b0_0
   - font-ttf-inconsolata=2.001=hcb22688_0
   - font-ttf-source-code-pro=2.030=hd3eb1b0_0
   - font-ttf-ubuntu=0.83=h8b1ccd4_0
-  - fontconfig=2.14.2=h82840c6_0
+  - fontconfig=2.14.2
   - fonts-anaconda=1=h8fa9717_0
   - fonts-conda-ecosystem=1=hd3eb1b0_0
-  - freetype=2.12.1=h1192e45_0
-  - fribidi=1.0.10=h1a28f6b_0
-  - gettext=0.21.1=h0186832_0
-  - glfw=3.3.8=hb547adb_1
-  - gmp=6.2.1=hc377ac9_3
-  - gnutls=3.7.8=h9f1a10d_0
-  - graphite2=1.3.14=hc377ac9_1
-  - harfbuzz=7.3.0=h46e5fef_0
-  - icu=72.1=he12128b_0
-  - lame=3.100=h1a28f6b_0
-  - libass=0.17.1=h4da34ad_0
-  - libcxx=16.0.4=h4653b0c_0
-  - libexpat=2.5.0=hb7217d7_1
-  - libffi=3.4.4=hca03da5_0
-  - libglib=2.76.3=h24e9cb9_0
-  - libiconv=1.17=he4db4b2_0
-  - libidn2=2.3.4=h80987f9_0
-  - libopus=1.3.1=h27ca646_1
-  - libpng=1.6.39=h80987f9_0
-  - libsqlite=3.42.0=hb31c410_0
-  - libtasn1=4.19.0=h80987f9_0
-  - libunistring=0.9.10=h1a28f6b_0
-  - libvpx=1.13.0=h7ea286d_0
-  - libxml2=2.11.4=he3bdae6_0
-  - libzlib=1.2.13=h03a7124_4
-  - ncurses=6.4=h313beb8_0
-  - nettle=3.8.1=h63371fa_1
-  - openh264=2.3.1=hb7217d7_2
-  - openssl=3.1.0=h53f4e23_3
-  - p11-kit=0.24.1=h29577a5_0
-  - pcre2=10.40=hb34f9b4_0
-  - pip=23.0.1=py310hca03da5_0
-  - pixman=0.40.0=h1a28f6b_0
-  - pyglfw=2.5.9=py310hbe9552e_0
-  - pyopengl=3.1.1a1=py310hca03da5_0
-  - python=3.10.11=h3ba56d0_0_cpython
+  - freetype=2.12.1
+  - fribidi=1.0.10
+  - gettext=0.21.1
+  - glfw=3.3.8
+  - gmp=6.2.1
+  - gnutls=3.7.8
+  - graphite2=1.3.14
+  - harfbuzz=7.3.0
+  - icu=72.1
+  - lame=3.100
+  - libass=0.17.1
+  - libcxx=16.0.4
+  - libexpat=2.5.0
+  - libffi=3.4.4
+  - libglib=2.76.3
+  - libiconv=1.17
+  - libidn2=2.3.4
+  - libopus=1.3.1
+  - libpng=1.6.39
+  - libsqlite=3.42.0
+  - libtasn1=4.19.0
+  - libunistring=0.9.10
+  - libvpx=1.13.0
+  - libxml2=2.11.4
+  - libzlib=1.2.13
+  - ncurses=6.4
+  - nettle=3.8.1
+  - openh264=2.3.1
+  - openssl=3.1.0
+  - p11-kit=0.24.1
+  - pcre2=10.40
+  - pip=23.0.1
+  - pixman=0.40.0
+  - pyglfw=2.5.9
+  - pyopengl=3.1.1a1
+  - python=3.10.11
   - python_abi=3.10=3_cp310
-  - readline=8.2=h1a28f6b_0
-  - setuptools=66.0.0=py310hca03da5_0
-  - sqlite=3.41.2=h80987f9_0
-  - svt-av1=1.5.0=hb765f3a_0
-  - tk=8.6.12=hb8d0fd4_0
+  - readline=8.2
+  - setuptools=66.0.0
+  - sqlite=3.41.2
+  - svt-av1=1.5.0
+  - tk=8.6.12
   - tzdata=2023c=h04d1e81_0
-  - wheel=0.38.4=py310hca03da5_0
-  - x264=1!164.3095=h57fd34a_2
-  - x265=3.5=hbc6ce65_3
-  - xz=5.4.2=h80987f9_0
-  - zlib=1.2.13=h03a7124_4
+  - wheel=0.38.4
+  - x264=1!164.3095
+  - x265=3.5
+  - xz=5.4.2
+  - zlib=1.2.13
   - pip:
     - blis==0.7.9
     - catalogue==2.0.8
@@ -76,7 +76,6 @@ dependencies:
     - cycler==0.11.0
     - cymem==2.0.7
     - dearpygui==1.9.1
-    - en-core-web-lg==3.5.0
     - ffmpeg-python==0.2.0
     - filelock==3.12.0
     - fonttools==4.39.4
@@ -105,7 +104,6 @@ dependencies:
     - pathy==0.10.1
     - pillow==9.5.0
     - preshed==3.0.8
-    - pyaudio==0.2.13
     - pydantic==1.10.7
     - pydub==0.25.1
     - pyparsing==3.0.9
