@@ -152,10 +152,12 @@ if clip_active:
         clip_active = False
 
 if pytorch_active:
+    print('torch active')
     try:
         from dpg_system.torch_nodes import *
         imported.append('torch_nodes.py')
     except ModuleNotFoundError:
+        print('failed')
         pytorch_active = False
 
 if elevenlabs_active:

@@ -29,7 +29,13 @@ from dpg_system.torch_generator_nodes import *
 from dpg_system.torch_signal_processing_nodes import *
 from dpg_system.torchvision_nodes import *
 from dpg_system.torch_kornia_nodes import *
-from dpg_system.torchaudio_nodes import *
+torchaudio_avail = True
+try:
+    import pyaudio
+    from dpg_system.torchaudio_nodes import *
+except Exception as e:
+    print('pyaudio not found - torchaudio nodes not available')
+    torchaudio_avail = False
 
 from dpg_system.wavelet_nodes import *
 # import wavelets_pytorch.transform
@@ -52,7 +58,8 @@ def register_torch_nodes():
     register_torch_signal_processing_nodes()
     register_torchvision_nodes()
     register_kornia_nodes()
-    register_torchaudio_nodes()
+    if torchaudio_avail:
+        register_torchaudio_nodes()
     register_wavelet_nodes()
 
 

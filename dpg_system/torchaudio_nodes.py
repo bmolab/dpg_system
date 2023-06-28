@@ -1,17 +1,25 @@
 from dpg_system.torch_base_nodes import *
 import torch
 import torchaudio
-import pyaudio
+pyaudio_available = True
+try:
+    import pyaudio
+except Exception as e:
+    print('pyaudio not available')
+    pyaudio_available = False
 
 
 def register_torchaudio_nodes():
-    Node.app.register_node('t.audio_source', TorchAudioSourceNode.factory)
+    global pyaudio_available
+    if pyaudio_available:
+        Node.app.register_node('t.audio_source', TorchAudioSourceNode.factory)
     Node.app.register_node('ta.kaldi_pitch', TorchAudioKaldiPitchNode.factory)
     Node.app.register_node('t.audio.gain', TorchAudioGainNode.factory)
     Node.app.register_node('t.audio.contrast', TorchAudioContrastNode.factory)
     Node.app.register_node('t.audio.loudness', TorchAudioLoudnessNode.factory)
     Node.app.register_node('t.audio.overdrive', TorchAudioOverdriveNode.factory)
     # Node.app.register_node('ta.vad', TorchAudioVADNode.factory) - does not seem to do anything
+
 
 class AudioSource:
     audio = None
