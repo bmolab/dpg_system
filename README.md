@@ -10,34 +10,38 @@ There is a growing collections of nodes for numpy functions, pytorch functions, 
 
 __Requirements__
 
-It is recommended to create a conda environment (python 3.10 is recommended. As of this writing, python 3.11 causes some issues)
-
-In initial testing, this was what else needed to be installed after a basic conda install:
-
+If you have conda installed, you can simply run the install.sh script which creates the conda environment, installs the required conda and pip packages and downloads spacy en_core_web_lg
 ```
-pip install ssqueezepy
-pip install dearpygui
-pip install pyquaternion
-pip install fuzzywuzzy
-pip install python-Levenshtein
-pip install spacy
+cd dpg_system
+./install.sh
+```
+You can also create the conda environment manually instead:
+```
+cd dpg_system
+conda env create --file environment.yml
+```
+This will not install spacy en_core_web_lg, so you would need to do:
+```
 python -m spacy download en_core_web_lg
-pip install python-osc
-conda install pyopengl
-conda install pyglfw -c conda-forge
-pip install matplotlib
-pip install numpy-quaternion
-pip install scipy
-conda install freetype
-pip install freetype-py
-
 ```
-* To use the Pytorch nodes, you need to install Pytorch.
-* torchvision is required for the torchvision nodes
-* torchaudio is required for the torchaudio nodes
-* Kornia is required for the kornia image processing nodes (pip install kornia)
-* opencv is required for video camera access  (pip install opencv-python)
-* for the clip nodes, you also need to install CLIP by installing huggingface transformers
+
+For torchaudio nodes, you need to install pyaudio
+
+for windows:
+```
+python -m pip install pyaudio
+```
+
+for macOS (assumes you have homebrew installed):
+```
+brew install portaudio
+pip install pyaudio
+```
+
+for Linux:
+```
+sudo apt install python3-pyaudio
+```
 
 __Simple Example__
 
