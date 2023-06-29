@@ -853,8 +853,10 @@ class App:
         pass
 
     def add_conduit(self, conduit_name='untitled'):
-        c = Conduit(label=conduit_name)
-        self.conduits[conduit_name] = c
+        c = self.find_conduit(conduit_name)
+        if c is None:
+            c = Conduit(label=conduit_name)
+            self.conduits[conduit_name] = c
         return c
 
     def find_conduit(self, conduit_name):
