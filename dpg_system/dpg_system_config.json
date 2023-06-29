@@ -8,5 +8,6 @@
   "SpaCy": true,
   "CLIP": true,
   "Numpy": true,
-  "Pytorch": true
+  "Pytorch": true,
+  "SMPL": true
 }

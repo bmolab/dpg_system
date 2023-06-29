@@ -21,6 +21,7 @@ spacy_active = True
 clip_active = True
 numpy_active = True
 pytorch_active = True
+smpl_active = True
 
 print('Options active:', end=' ')
 with open('dpg_system/dpg_system_config.json', 'r') as f:
@@ -65,6 +66,10 @@ with open('dpg_system/dpg_system_config.json', 'r') as f:
         pytorch_active = config['Pytorch']
         if pytorch_active:
             print('Pytorch', end=' ')
+    if 'SMPL' in config:
+        smpl_active = config['SMPL']
+        if smpl_active:
+            print('SMPL', end=' ')
 
 print('')
 
@@ -174,6 +179,12 @@ if movesense_active:
     except ModuleNotFoundError:
         movesense_active = False
 
+if smpl_active:
+    try:
+        from dpg_system.SMPL_nodes import *
+        imported.append('SMPL_nodes.py')
+    except ModuleNotFoundError:
+        smpl_active = False
 # import additional node files in folder
 
 # for entry in os.scandir('dpg_system'):
@@ -816,6 +827,9 @@ class App:
 
         if 'register_signal_nodes' in globals():
             register_signal_nodes()
+
+        if 'register_smpl_nodes' in globals():
+            register_smpl_nodes()
 
         if spacy_active and 'register_spacy_nodes' in globals():
             register_spacy_nodes()

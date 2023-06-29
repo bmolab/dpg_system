@@ -1,0 +1,4875 @@
+{
+    "height": 1820,
+    "width": 1861,
+    "position": [
+        100,
+        100
+    ],
+    "id": 157,
+    "name": "test_smpl",
+    "path": "/home/bmolab/Projects/dpg_system/test_smpl.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 182,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 32,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "name": "smpl_take",
+            "id": 230,
+            "position_x": 30,
+            "position_y": 103,
+            "width": 289,
+            "height": 127,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on/off",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "speed",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "frame",
+                    "value": 33,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "load",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "4": {
+                    "name": "path",
+                    "value": "/media/bmolab/2_TB_SSD/AMASS/SMPL+H/ACCAD/Male1Running_c3d/Run C24 - quick side step left_poses.npz",
+                    "value_type": "string"
+                }
+            }
+        },
+        "2": {
+            "name": "smpl_pose_to_joints",
+            "id": 273,
+            "position_x": 344,
+            "position_y": -11,
+            "width": 141,
+            "height": 450,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "3": {
+            "name": "euler_to_quaternion",
+            "id": 456,
+            "position_x": 1024,
+            "position_y": 774,
+            "width": 141,
+            "height": 51,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "init": "vector 4",
+            "name": "vector",
+            "id": 474,
+            "position_x": 1038,
+            "position_y": 823,
+            "width": 88,
+            "height": 127,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 0.18596312403678894,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.7694007754325867,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.4207150638103485,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.44321441650390625,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "5": {
+            "name": "euler_to_quaternion",
+            "id": 591,
+            "position_x": 1159,
+            "position_y": 854,
+            "width": 141,
+            "height": 51,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "6": {
+            "init": "vector 4",
+            "name": "vector",
+            "id": 609,
+            "position_x": 1171,
+            "position_y": 922,
+            "width": 88,
+            "height": 127,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 0.9964348077774048,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": -0.0012565264478325844,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.02516026236116886,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.08051770180463791,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "7": {
+            "name": "euler_to_quaternion",
+            "id": 726,
+            "position_x": 840,
+            "position_y": 859,
+            "width": 141,
+            "height": 51,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "8": {
+            "init": "vector 4",
+            "name": "vector",
+            "id": 744,
+            "position_x": 852,
+            "position_y": 927,
+            "width": 88,
+            "height": 127,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 0.9983458518981934,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.0019332659430801868,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": -0.02679525874555111,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.05083151534199715,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "9": {
+            "name": "euler_to_quaternion",
+            "id": 861,
+            "position_x": 990,
+            "position_y": 671,
+            "width": 141,
+            "height": 51,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "10": {
+            "init": "vector 4",
+            "name": "vector",
+            "id": 879,
+            "position_x": 1147,
+            "position_y": 633,
+            "width": 88,
+            "height": 127,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 0.9994087815284729,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": -0.00024914537789300084,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.008600222878158092,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.0332871675491333,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "11": {
+            "name": "euler_to_quaternion",
+            "id": 996,
+            "position_x": 1289,
+            "position_y": 1038,
+            "width": 141,
+            "height": 51,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "12": {
+            "init": "vector 4",
+            "name": "vector",
+            "id": 1014,
+            "position_x": 1301,
+            "position_y": 1106,
+            "width": 88,
+            "height": 127,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 0.9992052316665649,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.0001798612647689879,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": -0.02053619921207428,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": -0.034162845462560654,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "13": {
+            "name": "euler_to_quaternion",
+            "id": 1131,
+            "position_x": 732,
+            "position_y": 1054,
+            "width": 141,
+            "height": 51,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "14": {
+            "init": "vector 4",
+            "name": "vector",
+            "id": 1149,
+            "position_x": 744,
+            "position_y": 1122,
+            "width": 88,
+            "height": 127,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 0.9996234774589539,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.0009042404708452523,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.02363770082592964,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.013906855136156082,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "15": {
+            "name": "euler_to_quaternion",
+            "id": 1266,
+            "position_x": 989,
+            "position_y": 531,
+            "width": 141,
+            "height": 51,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "16": {
+            "init": "vector 4",
+            "name": "vector",
+            "id": 1284,
+            "position_x": 1142,
+            "position_y": 495,
+            "width": 88,
+            "height": 127,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 0.9987906217575073,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.0005110739730298519,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": -0.01852644793689251,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.04553912580013275,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "17": {
+            "name": "euler_to_quaternion",
+            "id": 1401,
+            "position_x": 844,
+            "position_y": 1237,
+            "width": 141,
+            "height": 51,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "18": {
+            "init": "vector 4",
+            "name": "vector",
+            "id": 1419,
+            "position_x": 856,
+            "position_y": 1305,
+            "width": 88,
+            "height": 127,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 0.997442901134491,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.0001474150485591963,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.0017400463111698627,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.07144677639007568,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "19": {
+            "name": "euler_to_quaternion",
+            "id": 1536,
+            "position_x": 1132,
+            "position_y": 1229,
+            "width": 141,
+            "height": 51,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "20": {
+            "init": "vector 4",
+            "name": "vector",
+            "id": 1554,
+            "position_x": 1144,
+            "position_y": 1297,
+            "width": 88,
+            "height": 127,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 0.9977462291717529,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.0022973089944571257,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.06527235358953476,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": -0.015383774414658546,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "21": {
+            "name": "euler_to_quaternion",
+            "id": 1671,
+            "position_x": 976,
+            "position_y": 379,
+            "width": 141,
+            "height": 51,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "22": {
+            "init": "vector 4",
+            "name": "vector",
+            "id": 1689,
+            "position_x": 1133,
+            "position_y": 357,
+            "width": 88,
+            "height": 127,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 0.9998917579650879,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": -3.2004554668674245e-05,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.0012881613802164793,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.014654611237347126,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "23": {
+            "name": "euler_to_quaternion",
+            "id": 1806,
+            "position_x": 1272,
+            "position_y": 1344,
+            "width": 141,
+            "height": 51,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "24": {
+            "init": "vector 4",
+            "name": "vector",
+            "id": 1824,
+            "position_x": 1284,
+            "position_y": 1412,
+            "width": 88,
+            "height": 127,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": -0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "25": {
+            "name": "euler_to_quaternion",
+            "id": 1941,
+            "position_x": 689,
+            "position_y": 1359,
+            "width": 141,
+            "height": 51,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "26": {
+            "init": "vector 4",
+            "name": "vector",
+            "id": 1959,
+            "position_x": 701,
+            "position_y": 1427,
+            "width": 88,
+            "height": 127,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": -0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "27": {
+            "name": "euler_to_quaternion",
+            "id": 2076,
+            "position_x": 973,
+            "position_y": 247,
+            "width": 141,
+            "height": 51,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "28": {
+            "init": "vector 4",
+            "name": "vector",
+            "id": 2094,
+            "position_x": 1130,
+            "position_y": 225,
+            "width": 88,
+            "height": 127,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 0.9998999238014221,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": -0.0001495690958108753,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.013565892353653908,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": -0.004003909416496754,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "29": {
+            "name": "euler_to_quaternion",
+            "id": 2211,
+            "position_x": 1292,
+            "position_y": 475,
+            "width": 141,
+            "height": 51,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "30": {
+            "init": "vector 4",
+            "name": "vector",
+            "id": 2229,
+            "position_x": 1449,
+            "position_y": 453,
+            "width": 88,
+            "height": 127,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 0.9781798720359802,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": -0.004109733738005161,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.016849704086780548,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": -0.20703455805778503,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "31": {
+            "name": "euler_to_quaternion",
+            "id": 2346,
+            "position_x": 694,
+            "position_y": 487,
+            "width": 141,
+            "height": 51,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "32": {
+            "init": "vector 4",
+            "name": "vector",
+            "id": 2364,
+            "position_x": 851,
+            "position_y": 465,
+            "width": 88,
+            "height": 127,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 0.9692041277885437,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.003965192940086126,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.019857898354530334,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.24542483687400818,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "33": {
+            "name": "euler_to_quaternion",
+            "id": 2481,
+            "position_x": 962,
+            "position_y": 97,
+            "width": 141,
+            "height": 51,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "34": {
+            "init": "vector 4",
+            "name": "vector",
+            "id": 2499,
+            "position_x": 1119,
+            "position_y": 75,
+            "width": 88,
+            "height": 127,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 0.9989354610443115,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.0012741944519802928,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": -0.025032468140125275,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.03872646018862724,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "35": {
+            "name": "euler_to_quaternion",
+            "id": 2616,
+            "position_x": 467,
+            "position_y": 578,
+            "width": 141,
+            "height": 51,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "36": {
+            "init": "vector 4",
+            "name": "vector",
+            "id": 2634,
+            "position_x": 624,
+            "position_y": 556,
+            "width": 88,
+            "height": 127,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 0.8369600176811218,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.05377291515469551,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.10982637852430344,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.5334272384643555,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "37": {
+            "name": "euler_to_quaternion",
+            "id": 2751,
+            "position_x": 1477,
+            "position_y": 609,
+            "width": 141,
+            "height": 51,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "38": {
+            "init": "vector 4",
+            "name": "vector",
+            "id": 2769,
+            "position_x": 1634,
+            "position_y": 587,
+            "width": 88,
+            "height": 127,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 0.8905013799667358,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.05647290498018265,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": -0.09066510200500488,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": -0.4422645568847656,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "39": {
+            "name": "euler_to_quaternion",
+            "id": 2886,
+            "position_x": 1540,
+            "position_y": 794,
+            "width": 141,
+            "height": 51,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "40": {
+            "init": "vector 4",
+            "name": "vector",
+            "id": 2904,
+            "position_x": 1697,
+            "position_y": 772,
+            "width": 88,
+            "height": 127,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 0.9707614779472351,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": -0.00021521697635762393,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": -0.18447284400463104,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": 0.15359656512737274,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "41": {
+            "name": "euler_to_quaternion",
+            "id": 3021,
+            "position_x": 360,
+            "position_y": 751,
+            "width": 141,
+            "height": 51,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "42": {
+            "init": "vector 4",
+            "name": "vector",
+            "id": 3039,
+            "position_x": 517,
+            "position_y": 729,
+            "width": 88,
+            "height": 127,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 0.9793221950531006,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": -0.008819011971354485,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.15181995928287506,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": -0.13342024385929108,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "43": {
+            "name": "euler_to_quaternion",
+            "id": 3156,
+            "position_x": 292,
+            "position_y": 926,
+            "width": 141,
+            "height": 51,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "44": {
+            "init": "vector 4",
+            "name": "vector",
+            "id": 3174,
+            "position_x": 449,
+            "position_y": 904,
+            "width": 88,
+            "height": 127,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 0.9990537762641907,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 0.003637113841250539,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": 0.03349998965859413,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": -0.027495872229337692,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "45": {
+            "name": "euler_to_quaternion",
+            "id": 3291,
+            "position_x": 1513,
+            "position_y": 952,
+            "width": 141,
+            "height": 51,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "46": {
+            "init": "vector 4",
+            "name": "vector",
+            "id": 3309,
+            "position_x": 1670,
+            "position_y": 930,
+            "width": 88,
+            "height": 127,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "##0",
+                    "value": 0.9892885684967041,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "##1",
+                    "value": 1.753629112499766e-05,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "##2",
+                    "value": -0.07046616077423096,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "##3",
+                    "value": -0.12783817946910858,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "##4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "##5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "##6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "##7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "##8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "##9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "##10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "##11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "##12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "##13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "##14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "##15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "##16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "##17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "##18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "##19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "##20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "##21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "##22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "##23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "##24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "##25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "##26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "##27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "##28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "##29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "##30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "##31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "33": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "47": {
+            "name": "heat_scroll",
+            "id": 3485,
+            "position_x": 222,
+            "position_y": 1063,
+            "width": 308,
+            "height": 183,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "heat_scroll",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 230,
+            "source_output_index": 0,
+            "dest_node": 273,
+            "dest_input_index": 0
+        },
+        "1": {
+            "source_node": 273,
+            "source_output_index": 0,
+            "dest_node": 456,
+            "dest_input_index": 0
+        },
+        "2": {
+            "source_node": 273,
+            "source_output_index": 1,
+            "dest_node": 591,
+            "dest_input_index": 0
+        },
+        "3": {
+            "source_node": 273,
+            "source_output_index": 2,
+            "dest_node": 726,
+            "dest_input_index": 0
+        },
+        "4": {
+            "source_node": 273,
+            "source_output_index": 3,
+            "dest_node": 861,
+            "dest_input_index": 0
+        },
+        "5": {
+            "source_node": 273,
+            "source_output_index": 4,
+            "dest_node": 996,
+            "dest_input_index": 0
+        },
+        "6": {
+            "source_node": 273,
+            "source_output_index": 5,
+            "dest_node": 1131,
+            "dest_input_index": 0
+        },
+        "7": {
+            "source_node": 273,
+            "source_output_index": 6,
+            "dest_node": 1266,
+            "dest_input_index": 0
+        },
+        "8": {
+            "source_node": 273,
+            "source_output_index": 7,
+            "dest_node": 1536,
+            "dest_input_index": 0
+        },
+        "9": {
+            "source_node": 273,
+            "source_output_index": 8,
+            "dest_node": 1401,
+            "dest_input_index": 0
+        },
+        "10": {
+            "source_node": 273,
+            "source_output_index": 9,
+            "dest_node": 1671,
+            "dest_input_index": 0
+        },
+        "11": {
+            "source_node": 273,
+            "source_output_index": 10,
+            "dest_node": 1806,
+            "dest_input_index": 0
+        },
+        "12": {
+            "source_node": 273,
+            "source_output_index": 11,
+            "dest_node": 1941,
+            "dest_input_index": 0
+        },
+        "13": {
+            "source_node": 273,
+            "source_output_index": 12,
+            "dest_node": 2076,
+            "dest_input_index": 0
+        },
+        "14": {
+            "source_node": 273,
+            "source_output_index": 13,
+            "dest_node": 2211,
+            "dest_input_index": 0
+        },
+        "15": {
+            "source_node": 273,
+            "source_output_index": 14,
+            "dest_node": 2346,
+            "dest_input_index": 0
+        },
+        "16": {
+            "source_node": 273,
+            "source_output_index": 15,
+            "dest_node": 2481,
+            "dest_input_index": 0
+        },
+        "17": {
+            "source_node": 273,
+            "source_output_index": 16,
+            "dest_node": 2751,
+            "dest_input_index": 0
+        },
+        "18": {
+            "source_node": 273,
+            "source_output_index": 17,
+            "dest_node": 2616,
+            "dest_input_index": 0
+        },
+        "19": {
+            "source_node": 273,
+            "source_output_index": 18,
+            "dest_node": 2886,
+            "dest_input_index": 0
+        },
+        "20": {
+            "source_node": 273,
+            "source_output_index": 19,
+            "dest_node": 3021,
+            "dest_input_index": 0
+        },
+        "21": {
+            "source_node": 273,
+            "source_output_index": 20,
+            "dest_node": 3291,
+            "dest_input_index": 0
+        },
+        "22": {
+            "source_node": 273,
+            "source_output_index": 21,
+            "dest_node": 3156,
+            "dest_input_index": 0
+        },
+        "23": {
+            "source_node": 456,
+            "source_output_index": 0,
+            "dest_node": 474,
+            "dest_input_index": 0
+        },
+        "24": {
+            "source_node": 591,
+            "source_output_index": 0,
+            "dest_node": 609,
+            "dest_input_index": 0
+        },
+        "25": {
+            "source_node": 726,
+            "source_output_index": 0,
+            "dest_node": 744,
+            "dest_input_index": 0
+        },
+        "26": {
+            "source_node": 861,
+            "source_output_index": 0,
+            "dest_node": 879,
+            "dest_input_index": 0
+        },
+        "27": {
+            "source_node": 996,
+            "source_output_index": 0,
+            "dest_node": 1014,
+            "dest_input_index": 0
+        },
+        "28": {
+            "source_node": 1131,
+            "source_output_index": 0,
+            "dest_node": 1149,
+            "dest_input_index": 0
+        },
+        "29": {
+            "source_node": 1266,
+            "source_output_index": 0,
+            "dest_node": 1284,
+            "dest_input_index": 0
+        },
+        "30": {
+            "source_node": 1401,
+            "source_output_index": 0,
+            "dest_node": 1419,
+            "dest_input_index": 0
+        },
+        "31": {
+            "source_node": 1536,
+            "source_output_index": 0,
+            "dest_node": 1554,
+            "dest_input_index": 0
+        },
+        "32": {
+            "source_node": 1671,
+            "source_output_index": 0,
+            "dest_node": 1689,
+            "dest_input_index": 0
+        },
+        "33": {
+            "source_node": 1806,
+            "source_output_index": 0,
+            "dest_node": 1824,
+            "dest_input_index": 0
+        },
+        "34": {
+            "source_node": 1941,
+            "source_output_index": 0,
+            "dest_node": 1959,
+            "dest_input_index": 0
+        },
+        "35": {
+            "source_node": 2076,
+            "source_output_index": 0,
+            "dest_node": 2094,
+            "dest_input_index": 0
+        },
+        "36": {
+            "source_node": 2211,
+            "source_output_index": 0,
+            "dest_node": 2229,
+            "dest_input_index": 0
+        },
+        "37": {
+            "source_node": 2346,
+            "source_output_index": 0,
+            "dest_node": 2364,
+            "dest_input_index": 0
+        },
+        "38": {
+            "source_node": 2481,
+            "source_output_index": 0,
+            "dest_node": 2499,
+            "dest_input_index": 0
+        },
+        "39": {
+            "source_node": 2616,
+            "source_output_index": 0,
+            "dest_node": 2634,
+            "dest_input_index": 0
+        },
+        "40": {
+            "source_node": 2751,
+            "source_output_index": 0,
+            "dest_node": 2769,
+            "dest_input_index": 0
+        },
+        "41": {
+            "source_node": 2886,
+            "source_output_index": 0,
+            "dest_node": 2904,
+            "dest_input_index": 0
+        },
+        "42": {
+            "source_node": 3021,
+            "source_output_index": 0,
+            "dest_node": 3039,
+            "dest_input_index": 0
+        },
+        "43": {
+            "source_node": 3156,
+            "source_output_index": 0,
+            "dest_node": 3174,
+            "dest_input_index": 0
+        },
+        "44": {
+            "source_node": 3156,
+            "source_output_index": 0,
+            "dest_node": 3485,
+            "dest_input_index": 0
+        },
+        "45": {
+            "source_node": 3291,
+            "source_output_index": 0,
+            "dest_node": 3309,
+            "dest_input_index": 0
+        }
+    }
+}
