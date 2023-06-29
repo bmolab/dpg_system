@@ -412,7 +412,7 @@ class App:
         self.dragging_ref = [0, 0]
         self.clipboard = None
         self.saving_to_lib = False
-        self.project_name = 'dpg_system'
+        self.project_name = os.path.basename(__file__).split('.')[0]
 
         self.register_patchers()
         self.handler = dpg.item_handler_registry(tag="widget handler")
