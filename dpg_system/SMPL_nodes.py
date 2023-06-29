@@ -4,6 +4,7 @@ import math
 import numpy as np
 import random
 import time
+import os
 from scipy import signal
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
@@ -31,8 +32,11 @@ class SMPLNode(Node):
         super().__init__(label, data, args)
 
     def load_smpl_file(self, in_path):
-        data = np.load(in_path)
-        return data['poses']
+        try:
+            data = np.load(in_path)
+            return data['poses']
+        except Exception as e:
+            return None
 
     def extract_joint_data(self, pose_data):
         # joint_data_size = len(self.joint_names) * 3
@@ -80,25 +84,30 @@ class SMPLTakeNode(SMPLNode):
             self.current_frame = 0
         self.input.set(self.current_frame)
         frame = int(self.current_frame)
-        self.joint_data_out.send(self.joint_data[frame])
+        if self.joint_data is not None and frame < self.frames:
+            self.joint_data_out.send(self.joint_data[frame])
 
     def load_smpl_callback(self):
         in_path = self.load_path()
         self.load_smpl(in_path)
 
     def load_smpl(self, in_path):
-        self.smpl_data = self.load_smpl_file(in_path)
-        self.file_name.set(in_path.split('/')[-1])
-        self.load_path.set(in_path)
-        self.joint_data = self.extract_joint_data(self.smpl_data)
-        self.joint_data = self.joint_data.reshape((self.joint_data.shape[0], self.joint_data.shape[1] // 3, 3))
-        self.frames = self.joint_data.shape[0]
-        self.current_frame = 0
-        self.start_stop_streaming()
+        print(in_path)
+        if os.path.isfile(in_path):
+            print('is file')
+            self.smpl_data = self.load_smpl_file(in_path)
+            if self.smpl_data is not None:
+                self.file_name.set(in_path.split('/')[-1])
+                self.load_path.set(in_path)
+                self.joint_data = self.extract_joint_data(self.smpl_data)
+                self.joint_data = self.joint_data.reshape((self.joint_data.shape[0], self.joint_data.shape[1] // 3, 3))
+                self.frames = self.joint_data.shape[0]
+                self.current_frame = 0
+                self.start_stop_streaming()
 
     def frame_widget_changed(self):
         data = self.input()
-        if int(data) < self.frames:
+        if self.joint_data is not None and int(data) < self.frames:
             self.current_frame = int(data)
             self.joint_data_out.send(self.joint_data[self.current_frame])
 
@@ -109,7 +118,7 @@ class SMPLTakeNode(SMPLNode):
             # if not handled:
             t = type(data)
             if t == int:
-                if int(data) < self.frames:
+                if self.joint_data is not None and int(data) < self.frames:
                     self.current_frame = int(data)
                     self.joint_data_out.send(self.joint_data[self.current_frame])
 
