@@ -4,6 +4,7 @@ import numpy as np
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
 import quaternion
+import scipy
 
 def register_quaternion_nodes():
     Node.app.register_node('quaternion_to_euler', QuaternionToEulerNode.factory)
@@ -59,23 +60,29 @@ class EulerToQuaternionNode(Node):
         self.degree_factor = 180.0 / math.pi
 
         self.input = self.add_input("xyz rotation", triggers_execution=True)
+        self.degrees = self.add_property('degrees', widget_type='checkbox', default_value=True)
         self.output = self.add_output("quaternion rotation")
-        self.degrees = self.add_option('degrees', widget_type='checkbox', default_value=True)
+        self.order = self.add_property('order', widget_type='combo', default_value='xyz')
+        self.order.widget.combo_items = ['xyz', 'zyx', 'xzy', 'zxy', 'yxz', 'yzx']
 
     def execute(self):
         if self.input.fresh_input:
             data = self.input()
             data = any_to_array(data)
             if data.shape[-1] % 3 == 0:
-                if self.degrees():
-                    data /= self.degree_factor
-
-                q = quaternion.from_euler_angles(alpha_beta_gamma=data)
-                self.output.send(quaternion.as_float_array(q))
+                # if self.degrees():
+                #     data /= self.degree_factor
+                q = self.my_quaternion_from_euler(data)
+                self.output.send(q)
             else:
                 if self.app.verbose:
                     print('euler_to_quaternion received improperly formatted input')
 
+    def my_quaternion_from_euler(self, eulers):
+        rot = scipy.spatial.transform.Rotation.from_euler(self.order(), any_to_list(eulers), degrees=self.degrees())
+        q = rot.as_quat()
+        qq = np.array([q[3], q[0], q[1], q[2]])
+        return qq
 
 class QuaternionToRotationMatrixNode(Node):
     @staticmethod

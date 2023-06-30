@@ -5,6 +5,7 @@ import numpy as np
 import random
 import time
 import os
+import scipy
 from scipy import signal
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
@@ -92,9 +93,7 @@ class SMPLTakeNode(SMPLNode):
         self.load_smpl(in_path)
 
     def load_smpl(self, in_path):
-        print(in_path)
         if os.path.isfile(in_path):
-            print('is file')
             self.smpl_data = self.load_smpl_file(in_path)
             if self.smpl_data is not None:
                 self.file_name.set(in_path.split('/')[-1])
@@ -128,7 +127,6 @@ class SMPLTakeNode(SMPLNode):
             dpg.add_file_extension(".npz")
 
     def load_npz_callback(self, sender, app_data):
-        print('self=', self, 'sender=', sender, 'app_data=', app_data)
         if 'file_path_name' in app_data:
             load_path = app_data['file_path_name']
             if load_path != '':
@@ -152,8 +150,9 @@ class SMPLPoseToJointsNode(SMPLNode):
             if index < 22:
                 self.joint_offsets.append(index)
 
-        print(self.joint_offsets)
         self.input = self.add_input('pose in', triggers_execution=True)
+        self.output_as = self.add_property('output_as', widget_type='combo', default_value='quaternions')
+        self.output_as.widget.combo_items = ['quaternions', 'euler angles']
         # self.gl_chain_input = self.add_input('gl chain', triggers_execution=True)
         self.joint_outputs = []
 
@@ -166,11 +165,17 @@ class SMPLPoseToJointsNode(SMPLNode):
     def execute(self):
         if self.input.fresh_input:
             incoming = self.input()
+            output_quaternions = (self.output_as() == 'quaternions')
+
             t = type(incoming)
             if t == np.ndarray:
                 for i, index in enumerate(self.joint_offsets):
                     if index < incoming.shape[0]:
                         joint_value = incoming[index]
+                        if output_quaternions:
+                            rot = scipy.spatial.transform.Rotation.from_euler('xyz', any_to_list(joint_value), degrees=False)
+                            q = rot.as_quat()
+                            joint_value = np.array([q[3], q[0], q[1], q[2]])
                         self.joint_outputs[i].set_value(joint_value)
                 self.send_all()
 

@@ -200,7 +200,6 @@ class PoseNode(MoCapNode):
     def execute(self):
         # we need to know the size of the pose vector...
         pose = np.array([[1.0, 0.0, 0.0, 0.0]] * 37)
-        print(pose)
         for index, input in enumerate(self.joint_inputs):
             incoming = input()
             t = type(incoming)
