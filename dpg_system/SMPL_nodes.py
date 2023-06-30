@@ -173,7 +173,11 @@ class SMPLPoseToJointsNode(SMPLNode):
                     if index < incoming.shape[0]:
                         joint_value = incoming[index]
                         if output_quaternions:
-                            rot = scipy.spatial.transform.Rotation.from_euler('xyz', any_to_list(joint_value), degrees=False)
+                            if i == 0:
+                                rot = scipy.spatial.transform.Rotation.from_euler('XYZ', any_to_list(joint_value),
+                                                                                  degrees=False)
+                            else:
+                                rot = scipy.spatial.transform.Rotation.from_euler('xyz', any_to_list(joint_value), degrees=False)
                             q = rot.as_quat()
                             joint_value = np.array([q[3], q[0], q[1], q[2]])
                         self.joint_outputs[i].set_value(joint_value)
