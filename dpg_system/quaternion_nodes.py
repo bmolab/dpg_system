@@ -84,6 +84,7 @@ class EulerToQuaternionNode(Node):
         qq = np.array([q[3], q[0], q[1], q[2]])
         return qq
 
+
 class QuaternionToRotationMatrixNode(Node):
     @staticmethod
     def factory(name, data, args=None):

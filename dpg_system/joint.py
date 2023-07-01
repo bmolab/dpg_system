@@ -74,14 +74,13 @@ class Joint:
             self.thickness = (.2, .11)
 
     def set_limb_vector(self):
+        self.ref_vector = (0.0, 0.0, 1.0)
         if self.joint_index in [t_Body, t_PelvisAnchor, t_Reference, t_Tracker0, t_Tracker1, t_Tracker2, t_Tracker3]:
             self.ref_vector = (1.0, 0.0, 0.0)
         elif self.joint_index in [t_LeftHeel, t_RightHeel]:
             self.ref_vector = (0.0, 1.0, 0.0)
         elif self.joint_index in [t_LeftToeTip, t_RightToeTip]:
             self.ref_vector = (0.0, 0.0001, 1.0)
-        elif self.joint_index in [t_LeftFingerTip, t_RightFingerTip]:
-            self.ref_vector = (0.0, 0.0, 1.0)
 
     def set_children(self):
         if self.joint_index == t_MidVertebrae:
@@ -160,10 +159,10 @@ class Joint:
 
     def set_matrix(self):
         try:
-            base_vector = np.array(self.ref_vector)
-            limb_vector = np.array(self.bone_dim)
+            base_vector = np.array(self.ref_vector)  # like an up vector
+            limb_vector = np.array(self.bone_dim)  # vector defining limb extension from parent joint at T-Pose
 
-            scale = np.linalg.norm(limb_vector)
+            scale = np.linalg.norm(limb_vector)  # limb length
             limb_vector /= scale
             w = np.cross(limb_vector, base_vector)
             a_ = np.stack((limb_vector, w, np.cross(limb_vector, w)), axis=0)
@@ -192,7 +191,7 @@ class Joint:
             joint_matrix.append(0)
             joint_matrix.append(1)
 
-            self.matrix = joint_matrix
+            self.matrix = joint_matrix  # matrix defining rotation at parent joint in T-Pose
             self.length = scale
         except Exception as e:
             print(e)

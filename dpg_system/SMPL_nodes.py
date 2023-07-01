@@ -35,9 +35,10 @@ class SMPLNode(Node):
     def load_smpl_file(self, in_path):
         try:
             data = np.load(in_path)
-            return data['poses']
+            print(list(data.keys()))
+            return data['poses'], data['trans']
         except Exception as e:
-            return None
+            return None, None
 
     def extract_joint_data(self, pose_data):
         # joint_data_size = len(self.joint_names) * 3
@@ -59,12 +60,14 @@ class SMPLTakeNode(SMPLNode):
         self.frames = 0
         self.streaming = False
         self.current_frame = 0
+        self.root_positions = None
         self.on_off = self.add_input('on/off', widget_type='checkbox', callback=self.start_stop_streaming)
         self.speed = self.add_input('speed', widget_type='drag_float', default_value=speed)
         self.input = self.add_input('frame', widget_type='drag_int', triggers_execution=True, callback=self.frame_widget_changed)
         self.load_button = self.add_property('load', widget_type='button', callback=self.load_take)
         self.file_name = self.add_label('')
         self.joint_data_out = self.add_output('joint_data')
+        self.root_position_out = self.add_output('root_position')
         load_path = ''
         self.load_path = self.add_option('path', widget_type='text_input', default_value=load_path, callback=self.load_smpl_callback)
         # self.message_handlers['load'] = self.load_take_message
@@ -87,6 +90,7 @@ class SMPLTakeNode(SMPLNode):
         frame = int(self.current_frame)
         if self.joint_data is not None and frame < self.frames:
             self.joint_data_out.send(self.joint_data[frame])
+            self.root_position_out.send(self.root_positions[frame])
 
     def load_smpl_callback(self):
         in_path = self.load_path()
@@ -94,7 +98,8 @@ class SMPLTakeNode(SMPLNode):
 
     def load_smpl(self, in_path):
         if os.path.isfile(in_path):
-            self.smpl_data = self.load_smpl_file(in_path)
+            self.smpl_data, self.root_positions = self.load_smpl_file(in_path)
+            print(self.root_positions[0])
             if self.smpl_data is not None:
                 self.file_name.set(in_path.split('/')[-1])
                 self.load_path.set(in_path)
@@ -108,7 +113,9 @@ class SMPLTakeNode(SMPLNode):
         data = self.input()
         if self.joint_data is not None and int(data) < self.frames:
             self.current_frame = int(data)
-            self.joint_data_out.send(self.joint_data[self.current_frame])
+            frame = int(self.current_frame)
+            self.joint_data_out.send(self.joint_data[frame])
+            self.root_position_out.send(self.root_positions[frame])
 
     def execute(self):
         if self.input.fresh_input:
@@ -119,7 +126,9 @@ class SMPLTakeNode(SMPLNode):
             if t == int:
                 if self.joint_data is not None and int(data) < self.frames:
                     self.current_frame = int(data)
-                    self.joint_data_out.send(self.joint_data[self.current_frame])
+                    frame = int(self.current_frame)
+                    self.joint_data_out.send(self.joint_data[frame])
+                    self.root_position_out.send(self.root_positions[frame])
 
     def load_take(self, args=None):
         with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=640,
@@ -152,7 +161,8 @@ class SMPLPoseToJointsNode(SMPLNode):
 
         self.input = self.add_input('pose in', triggers_execution=True)
         self.output_as = self.add_property('output_as', widget_type='combo', default_value='quaternions')
-        self.output_as.widget.combo_items = ['quaternions', 'euler angles']
+        self.output_as.widget.combo_items = ['quaternions', 'euler angles', 'roll_pitch_yaw']
+        self.use_degrees = self.add_property('degrees', widget_type='checkbox', default_value=False)
         # self.gl_chain_input = self.add_input('gl chain', triggers_execution=True)
         self.joint_outputs = []
 
@@ -166,6 +176,7 @@ class SMPLPoseToJointsNode(SMPLNode):
         if self.input.fresh_input:
             incoming = self.input()
             output_quaternions = (self.output_as() == 'quaternions')
+            output_rpy = (self.output_as() == 'roll_pitch_yaw')
 
             t = type(incoming)
             if t == np.ndarray:
@@ -173,12 +184,12 @@ class SMPLPoseToJointsNode(SMPLNode):
                     if index < incoming.shape[0]:
                         joint_value = incoming[index]
                         if output_quaternions:
-                            if i == 0:
-                                rot = scipy.spatial.transform.Rotation.from_euler('XYZ', any_to_list(joint_value),
-                                                                                  degrees=False)
-                            else:
-                                rot = scipy.spatial.transform.Rotation.from_euler('xyz', any_to_list(joint_value), degrees=False)
+                            rot = scipy.spatial.transform.Rotation.from_rotvec(any_to_list(joint_value), degrees=self.use_degrees())
                             q = rot.as_quat()
+                            joint_value = np.array([q[3], q[0], q[1], q[2]])
+                        elif output_rpy:
+                            rot = scipy.spatial.transform.Rotation.from_rotvec(any_to_list(joint_value), degrees=self.use_degrees())
+                            q = rot.as_euler('XYZ', degrees=self.use_degrees())
                             joint_value = np.array([q[3], q[0], q[1], q[2]])
                         self.joint_outputs[i].set_value(joint_value)
                 self.send_all()

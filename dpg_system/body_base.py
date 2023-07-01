@@ -48,6 +48,7 @@ def save_templates_and_distances(path, pose_proximities, templates):
     pose_prox = pose_proximities.numpy()
     np.savez(path, templates=temp_np, proximities=pose_prox)
 
+
 def quaternion_to_R3_rotation(q):
     a = q[0]
     b = q[1]
