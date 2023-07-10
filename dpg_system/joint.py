@@ -59,7 +59,7 @@ class Joint:
         elif self.joint_index in [t_LeftKnee, t_RightKnee]:
             self.thickness = (.08, .1)
         elif self.joint_index in [t_LeftShoulderBladeBase, t_RightShoulderBladeBase]:
-            self.thickness = (.02, .02)
+            self.thickness = (.15, .10)
         elif self.joint_index in [t_LeftHip, t_RightHip]:
             self.thickness = (.05, .05)
         elif self.joint_index in [t_LeftBallOfFoot, t_RightBallOfFoot]:
@@ -67,7 +67,8 @@ class Joint:
         elif self.joint_index in [t_LeftToeTip, t_RightToeTip]:
             self.thickness = (.07, .02)
         elif self.joint_index == t_UpperVertebrae:
-            self.thickness = (.28, .15)
+            self.thickness = (.07, .07)
+            # self.thickness = (.28, .15)
         elif self.joint_index == t_SpinePelvis:
             self.thickness = (.21, .11)
         elif self.joint_index == t_LowerVertebrae:

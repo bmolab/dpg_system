@@ -9,5 +9,6 @@
   "CLIP": true,
   "Numpy": true,
   "Pytorch": true,
-  "SMPL": true
+  "SMPL": true,
+  "prompt": true
 }

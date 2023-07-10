@@ -1623,7 +1623,7 @@ class CollectionNode(Node):
             self.output.send(out_list)
 
     def save_dialog(self):
-        with dpg.file_dialog(directory_selector=False, show=True, height=400, user_data=self, callback=save_coll_callback,
+        with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, user_data=self, callback=save_coll_callback,
                              tag="coll_dialog_id"):
             dpg.add_file_extension(".json")
 
@@ -1646,7 +1646,7 @@ class CollectionNode(Node):
             self.collection = container['collection']
 
     def load_dialog(self):
-        with dpg.file_dialog(directory_selector=False, show=True, height=400, user_data=self, callback=load_coll_callback,
+        with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, user_data=self, callback=load_coll_callback,
                              tag="coll_dialog_id"):
             dpg.add_file_extension(".json")
 
@@ -1907,7 +1907,7 @@ class FuzzyMatchNode(Node):
             self.load_match_file_from_json(self.load_path())
 
     def load_match_file(self):
-        with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400,
+        with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
                              user_data=self, callback=self.load_match_file_callback, tag="match_file_dialog_id"):
             dpg.add_file_extension(".json")
 

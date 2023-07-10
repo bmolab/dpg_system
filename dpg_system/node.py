@@ -295,6 +295,7 @@ class PropertyWidget:
         self.user_data = self
         self.tag = self.uuid
         self.horizontal = False
+        self.input = None
         if widget_type == 'drag_float':
             self.speed = 0.01
         else:
@@ -482,7 +483,9 @@ class PropertyWidget:
         return
 
     def trigger_value(self):
+        self.node.active_input = self.input
         self.node.execute()
+        self.node.active_input = None
 
     def set_default_value(self, data):
         if self.widget in ['drag_float', 'slider_float', 'knob_float', 'input_float']:
@@ -521,7 +524,9 @@ class PropertyWidget:
         if self.callback is not None:
             self.callback()
         if self.triggers_execution:
+            self.node.active_input = self.input
             self.node.execute()
+            self.node.active_input = None
 
     def set_label(self, name):
         self._label = name
@@ -536,7 +541,9 @@ class PropertyWidget:
         if self.callback is not None:
             self.callback()
         if self.triggers_execution:
+            self.node.active_input = self.input
             self.node.execute()
+            self.node.active_input = None
 
     def increment(self):
         if self.widget == 'checkbox':
@@ -714,6 +721,7 @@ class NodeInput:
         self.executor = False
         self.triggers_execution = triggers_execution
         self.node = node
+        self.input = None
         self.input_index = -1
         self.fresh_input = False
         self.node_attribute = None
@@ -722,6 +730,7 @@ class NodeInput:
         self.widget_has_trigger = trigger_button
         if widget_type:
             self.widget = PropertyWidget(label, uuid=widget_uuid, node=node, widget_type=widget_type, width=widget_width, triggers_execution=triggers_execution, trigger_button=trigger_button, default_value=default_value, min=min, max=max)
+            self.widget.input = self
         self.callback = None
         self.user_data = None
         self.variable = None
@@ -736,6 +745,11 @@ class NodeInput:
             dpg.set_value(self.label_uuid, self._label)
         else:
             dpg.set_item_label(self.widget.uuid, self._label)
+
+    def set_input(self, widget_input):
+        self.input = widget_input
+        if self.widget is not None:
+            self.widget.input = self.input
 
     def show(self):
         dpg.show_item(self.uuid)
@@ -849,7 +863,9 @@ class NodeInput:
 
     def trigger(self):
         if self.triggers_execution:
+            self.node.active_input = self
             self.node.execute()
+            self.node.active_input = None
 
     def set_parent(self, parent: NodeOutput):
         if parent not in self._parents:
@@ -877,7 +893,7 @@ class NodeInput:
             if len(data) == 1:
                 data = data[0]
             else:
-                if self.widget.widget in ['text_input', 'combo', 'radio_group']:
+                if self.widget is not None and self.widget.widget in ['text_input', 'combo', 'radio_group']:
                     data = any_to_string(data)
                 else:
                     data = data[0]
@@ -1170,6 +1186,7 @@ class Node:
             new_input.bang_repeats_previous = False
         self.inputs.append(new_input)
         new_input.input_index = len(self.inputs) - 1
+
         self.ordered_elements.append(new_input)
         if callback is not None:
             new_input.add_callback(callback=callback, user_data=self)

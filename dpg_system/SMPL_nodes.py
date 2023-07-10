@@ -8,11 +8,18 @@ import os
 import scipy
 from scipy import signal
 from dpg_system.node import Node
+import pickle
 from dpg_system.conversion_utils import *
+import pickle
+import chumpy as ch
+from chumpy.ch import MatVecMult
+import cv2
+import scipy.sparse as sp
 
 def register_smpl_nodes():
     Node.app.register_node("smpl_take", SMPLTakeNode.factory)
     Node.app.register_node("smpl_pose_to_joints", SMPLPoseToJointsNode.factory)
+    Node.app.register_node("smpl_body", SMPLBodyNode.factory)
 
 class SMPLNode(Node):
     joint_names = [
@@ -32,7 +39,7 @@ class SMPLNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-    def load_smpl_file(self, in_path):
+    def load_smpl_take_file(self, in_path):
         try:
             data = np.load(in_path)
             print(list(data.keys()))
@@ -44,6 +51,138 @@ class SMPLNode(Node):
         # joint_data_size = len(self.joint_names) * 3
         joint_data = pose_data[:, :22 * 3]
         return joint_data
+
+    def load_SMPL_R_model_file(self, in_path):
+        suffix = in_path.split('.')[-1]
+        try:
+            if suffix == 'npz':
+                data = np.load(in_path)
+                return data, 'npz'
+            elif suffix == 'pkl':
+                data = load_model(in_path)
+                # data = pickle.load(open(in_path, 'rb'), encoding='latin1')
+                return data, 'pkl'
+        except Exception as e:
+            print('load_SMPL_R_model_file failed', e)
+            return None
+        return None
+
+
+class SMPLBodyNode(SMPLNode):
+    limb_dict = {
+        'pelvis_left_hip': 'left_hip',
+        'pelvis_right_hip': 'right_hip',
+        'pelvis_spine1': 'lower_back',
+        'left_hip_left_knee': 'left_thigh',
+        'right_hip_right_knee': 'right_thigh',
+        'spine1_spine2': 'mid_back',
+        'left_knee_left_ankle': 'left_lower_leg',
+        'right_knee_right_ankle': 'right_lower_leg',
+        'spine2_spine3': 'upper_back',
+        'left_ankle_left_foot': 'left_foot',
+        'right_ankle_right_foot': 'right_foot',
+        'spine3_neck': 'lower_neck',
+        'spine3_left_collar': 'left_shoulder_blade',
+        'spine3_right_collar': 'right_shoulder_blade',
+        'neck_head': 'upper_neck',
+        'left_collar_left_shoulder': 'left_shoulder',
+        'right_collar_right_shoulder': 'right_shoulder',
+        'left_shoulder_left_elbow': 'left_upper_arm',
+        'right_shoulder_right_elbow': 'right_upper_arm',
+        'left_elbow_left_wrist': 'left_forearm',
+        'right_elbow_right_wrist': 'right_forearm',
+        'left_wrist_left_index1': 'left_hand',
+        'right_wrist_left_index2': 'right_hand'
+    }
+    @staticmethod
+    def factory(name, data, args=None):
+        node = SMPLBodyNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.smpl_model = None
+        self.file_name = ''
+        self.model_type = 'pkl'
+        self.limbs = {}
+        self.joint_positions = None
+        self.betas = self.add_input('betas', callback=self.receive_betas)
+        self.betas.set([0.0] * 16)
+        self.kinematic_tree = None
+        self.load_button = self.add_property('load', widget_type='button', callback=self.load_body)
+        self.file_name = self.add_label('')
+        self.skeleton_data_out = self.add_output('skeleton_data')
+        load_path = ''
+        self.load_path = self.add_option('path', widget_type='text_input', default_value=load_path, callback=self.smpl_path_changed)
+
+    def load_smpl_model(self, in_path):
+        if os.path.isfile(in_path):
+            self.smpl_model, self.model_type = self.load_SMPL_R_model_file(in_path)
+            if self.smpl_model is not None:
+                self.file_name.set(in_path.split('/')[-1])
+                self.load_path.set(in_path)
+                self.process_smpl_model()
+                self.execute()
+
+    def process_smpl_model(self):
+        if self.model_type == 'npz':
+            self.betas.set(self.smpl_model['betas'])
+            self.kinematic_tree = self.smpl_model['kintree_table']
+            self.joint_positions = self.smpl_model['J']
+        else:
+            # print(list(self.smpl_model.keys()))
+            self.betas.set(self.smpl_model.betas)
+            self.kinematic_tree = self.smpl_model.kintree_table
+            self.joint_positions = self.smpl_model.J
+        self.update_betas()
+
+    def update_betas(self):
+        for index, start in enumerate(self.kinematic_tree[0]):
+            if 0 <= start <= 23:
+                end = self.kinematic_tree[1, index]
+                start_joint = self.joint_names[start]
+                end_joint = self.joint_names[end]
+                limb_name = self.limb_dict[start_joint + '_' + end_joint]
+                limb_diff = self.chumpy_to_numpy(self.joint_positions[end] - self.joint_positions[start])
+                self.limbs[limb_name] = limb_diff
+
+    def chumpy_to_numpy(self, chumpy_array):
+        numpy_array = np.array(chumpy_array.ravel()).reshape(chumpy_array.shape)
+        return numpy_array
+
+    def receive_betas(self):
+        if self.model_type == 'npz':
+            self.smpl_model['betas'] = self.betas()
+        else:
+            self.smpl_model.betas = self.betas()
+        self.update_betas()
+        self.execute()
+
+    def smpl_path_changed(self):
+        in_path = self.load_path()
+        self.load_smpl_model(in_path)
+
+    def execute(self):
+        limb_keys = list(self.limbs.keys())
+        for limb in limb_keys:
+            limb_data = list(self.limbs[limb])
+            limb_data = [limb] + limb_data
+            self.skeleton_data_out.send(limb_data)
+
+    def load_body(self, args=None):
+        with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
+                             user_data=self, callback=self.load_smpl_callback, tag="file_dialog_id"):
+            # dpg.add_file_extension(".npz")
+            dpg.add_file_extension(".pkl")
+
+    def load_smpl_callback(self, sender, app_data):
+        if 'file_path_name' in app_data:
+            load_path = app_data['file_path_name']
+            if load_path != '':
+                self.load_smpl_model(load_path)
+        else:
+            print('no file chosen')
+        dpg.delete_item(sender)
 
 
 class SMPLTakeNode(SMPLNode):
@@ -98,7 +237,7 @@ class SMPLTakeNode(SMPLNode):
 
     def load_smpl(self, in_path):
         if os.path.isfile(in_path):
-            self.smpl_data, self.root_positions = self.load_smpl_file(in_path)
+            self.smpl_data, self.root_positions = self.load_smpl_take_file(in_path)
             print(self.root_positions[0])
             if self.smpl_data is not None:
                 self.file_name.set(in_path.split('/')[-1])
@@ -131,7 +270,7 @@ class SMPLTakeNode(SMPLNode):
                     self.root_position_out.send(self.root_positions[frame])
 
     def load_take(self, args=None):
-        with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=640,
+        with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
                              user_data=self, callback=self.load_npz_callback, tag="file_dialog_id"):
             dpg.add_file_extension(".npz")
 
@@ -193,4 +332,244 @@ class SMPLPoseToJointsNode(SMPLNode):
                             joint_value = np.array([q[3], q[0], q[1], q[2]])
                         self.joint_outputs[i].set_value(joint_value)
                 self.send_all()
+
+# from smpl
+
+def backwards_compatibility_replacements(dd):
+
+    # replacements
+    if 'default_v' in dd:
+        dd['v_template'] = dd['default_v']
+        del dd['default_v']
+    if 'template_v' in dd:
+        dd['v_template'] = dd['template_v']
+        del dd['template_v']
+    if 'joint_regressor' in dd:
+        dd['J_regressor'] = dd['joint_regressor']
+        del dd['joint_regressor']
+    if 'blendshapes' in dd:
+        dd['posedirs'] = dd['blendshapes']
+        del dd['blendshapes']
+    if 'J' not in dd:
+        dd['J'] = dd['joints']
+        del dd['joints']
+
+    # defaults
+    if 'bs_style' not in dd:
+        dd['bs_style'] = 'lbs'
+
+
+def ready_arguments(fname_or_dict):
+    if not isinstance(fname_or_dict, dict):
+        dd = pickle.load(open(fname_or_dict, 'rb'), encoding='latin1')
+    else:
+        dd = fname_or_dict
+
+    backwards_compatibility_replacements(dd)
+
+    want_shapemodel = 'shapedirs' in dd
+    nposeparms = dd['kintree_table'].shape[1] * 3
+
+    if 'trans' not in dd:
+        dd['trans'] = np.zeros(3)
+    if 'pose' not in dd:
+        dd['pose'] = np.zeros(nposeparms)
+    if 'shapedirs' in dd and 'betas' not in dd:
+        dd['betas'] = np.zeros(dd['shapedirs'].shape[-1])
+
+    for s in ['v_template', 'weights', 'posedirs', 'pose', 'trans', 'shapedirs', 'betas', 'J']:
+        if (s in dd) and not hasattr(dd[s], 'dterms'):
+            dd[s] = ch.array(dd[s])
+
+    if want_shapemodel:
+        dd['v_shaped'] = dd['shapedirs'].dot(dd['betas']) + dd['v_template']
+        v_shaped = dd['v_shaped']
+        J_tmpx = MatVecMult(dd['J_regressor'], v_shaped[:, 0])
+        J_tmpy = MatVecMult(dd['J_regressor'], v_shaped[:, 1])
+        J_tmpz = MatVecMult(dd['J_regressor'], v_shaped[:, 2])
+        dd['J'] = ch.vstack((J_tmpx, J_tmpy, J_tmpz)).T
+        dd['v_posed'] = v_shaped + dd['posedirs'].dot(posemap(dd['bs_type'])(dd['pose']))
+    else:
+        dd['v_posed'] = dd['v_template'] + dd['posedirs'].dot(posemap(dd['bs_type'])(dd['pose']))
+
+    return dd
+
+
+def load_model(fname_or_dict):
+    dd = ready_arguments(fname_or_dict)
+
+    args = {
+        'pose': dd['pose'],
+        'v': dd['v_posed'],
+        'J': dd['J'],
+        'weights': dd['weights'],
+        'kintree_table': dd['kintree_table'],
+        'xp': ch,
+        'want_Jtr': True
+    }
+
+    result, Jtr = verts_core(**args)
+    result = result + dd['trans'].reshape((1, 3))
+    result.J_transformed = Jtr + dd['trans'].reshape((1, 3))
+
+    for k, v in dd.items():
+        setattr(result, k, v)
+
+    return result
+
+def ischumpy(x): return hasattr(x, 'dterms')
+
+def verts_decorated(trans, pose,
+                    v_template, J, weights, kintree_table, bs_style, f,
+                    bs_type=None, posedirs=None, betas=None, shapedirs=None, want_Jtr=False):
+    for which in [trans, pose, v_template, weights, posedirs, betas, shapedirs]:
+        if which is not None:
+            assert ischumpy(which)
+
+    v = v_template
+
+    if shapedirs is not None:
+        if betas is None:
+            betas = ch.zeros(shapedirs.shape[-1])
+        v_shaped = v + shapedirs.dot(betas)
+    else:
+        v_shaped = v
+
+    if posedirs is not None:
+        v_posed = v_shaped + posedirs.dot(posemap(bs_type)(pose))
+    else:
+        v_posed = v_shaped
+
+    v = v_posed
+
+    if sp.issparse(J):
+        regressor = J
+        J_tmpx = MatVecMult(regressor, v_shaped[:, 0])
+        J_tmpy = MatVecMult(regressor, v_shaped[:, 1])
+        J_tmpz = MatVecMult(regressor, v_shaped[:, 2])
+        J = ch.vstack((J_tmpx, J_tmpy, J_tmpz)).T
+    else:
+        assert (ischumpy(J))
+
+    assert (bs_style == 'lbs')
+    result, Jtr = verts_core(pose, v, J, weights, kintree_table, want_Jtr=True, xp=ch)
+
+    tr = trans.reshape((1, 3))
+    result = result + tr
+    Jtr = Jtr + tr
+
+    result.trans = trans
+    result.f = f
+    result.pose = pose
+    result.v_template = v_template
+    result.J = J
+    result.weights = weights
+    result.kintree_table = kintree_table
+    result.bs_style = bs_style
+    result.bs_type = bs_type
+    if posedirs is not None:
+        result.posedirs = posedirs
+        result.v_posed = v_posed
+    if shapedirs is not None:
+        result.shapedirs = shapedirs
+        result.betas = betas
+        result.v_shaped = v_shaped
+    if want_Jtr:
+        result.J_transformed = Jtr
+    return result
+
+
+# def verts_core(pose, v, J, weights, kintree_table, bs_style, want_Jtr=False, xp=ch):
+#     if xp == ch:
+#         assert (hasattr(pose, 'dterms'))
+#         assert (hasattr(v, 'dterms'))
+#         assert (hasattr(J, 'dterms'))
+#         assert (hasattr(weights, 'dterms'))
+#
+#     assert (bs_style == 'lbs')
+#     result = verts_core(pose, v, J, weights, kintree_table, want_Jtr, xp)
+#
+#     return result
+#
+
+class Rodrigues(ch.Ch):
+    dterms = 'rt'
+
+    def compute_r(self):
+        return cv2.Rodrigues(self.rt.r)[0]
+
+    def compute_dr_wrt(self, wrt):
+        if wrt is self.rt:
+            return cv2.Rodrigues(self.rt.r)[1].T
+
+
+def lrotmin(p):
+    if isinstance(p, np.ndarray):
+        p = p.ravel()[3:]
+        return np.concatenate([(cv2.Rodrigues(np.array(pp))[0]-np.eye(3)).ravel() for pp in p.reshape((-1, 3))]).ravel()
+    if p.ndim != 2 or p.shape[1] != 3:
+        p = p.reshape((-1,3))
+    p = p[1:]
+    return ch.concatenate([(Rodrigues(pp)-ch.eye(3)).ravel() for pp in p]).ravel()
+
+
+def posemap(s):
+    if s == 'lrotmin':
+        return lrotmin
+    else:
+        raise Exception('Unknown posemapping: %s' % (str(s),))
+
+
+def global_rigid_transformation(pose, J, kintree_table, xp):
+    results = {}
+    pose = pose.reshape((-1, 3))
+    id_to_col = {kintree_table[1, i]: i for i in range(kintree_table.shape[1])}
+    parent = {i: id_to_col[kintree_table[0, i]] for i in range(1, kintree_table.shape[1])}
+
+    if xp == ch:
+        rodrigues = lambda x: Rodrigues(x)
+    else:
+        import cv2
+        rodrigues = lambda x: cv2.Rodrigues(x)[0]
+
+    with_zeros = lambda x: xp.vstack((x, xp.array([[0.0, 0.0, 0.0, 1.0]])))
+    results[0] = with_zeros(xp.hstack((rodrigues(pose[0, :]), J[0, :].reshape((3, 1)))))
+
+    for i in range(1, kintree_table.shape[1]):
+        results[i] = results[parent[i]].dot(with_zeros(xp.hstack((
+            rodrigues(pose[i, :]),
+            ((J[i, :] - J[parent[i], :]).reshape((3, 1)))
+        ))))
+
+    pack = lambda x: xp.hstack([np.zeros((4, 3)), x.reshape((4, 1))])
+
+    results = [results[i] for i in sorted(results.keys())]
+    results_global = results
+
+    if True:
+        results2 = [results[i] - (pack(
+            results[i].dot(xp.concatenate(((J[i, :]), 0))))
+        ) for i in range(len(results))]
+        results = results2
+    result = xp.dstack(results)
+    return result, results_global
+
+
+def verts_core(pose, v, J, weights, kintree_table, want_Jtr=False, xp=ch):
+    A, A_global = global_rigid_transformation(pose, J, kintree_table, xp)
+    T = A.dot(weights.T)
+
+    rest_shape_h = xp.vstack((v.T, np.ones((1, v.shape[0]))))
+
+    v = (T[:, 0, :] * rest_shape_h[0, :].reshape((1, -1)) +
+         T[:, 1, :] * rest_shape_h[1, :].reshape((1, -1)) +
+         T[:, 2, :] * rest_shape_h[2, :].reshape((1, -1)) +
+         T[:, 3, :] * rest_shape_h[3, :].reshape((1, -1))).T
+
+    v = v[:, :3]
+
+    if not want_Jtr:
+        return v
+    Jtr = xp.vstack([g[:3, 3] for g in A_global])
+    return (v, Jtr)
 

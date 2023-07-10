@@ -344,7 +344,7 @@ class BodyData:
                     transform[4 * j + i] = temp
         return transform
 
-    def draw(self, show_rotation_spheres=False):
+    def draw(self, show_rotation_spheres=False, skeleton=False):
         transform = None
         glPushMatrix()
 
@@ -359,57 +359,57 @@ class BodyData:
         self.move_to(t_PelvisAnchor)
 
         glPushMatrix()
-        self.draw_to(t_LeftHip, False, t_PelvisAnchor)
-        self.draw_to(t_LeftKnee, False, t_LeftHip)
-        self.draw_to(t_LeftAnkle, False, t_LeftKnee)
+        self.draw_to(t_LeftHip, False, t_PelvisAnchor, skeleton=skeleton)
+        self.draw_to(t_LeftKnee, False, t_LeftHip, skeleton=skeleton)
+        self.draw_to(t_LeftAnkle, False, t_LeftKnee, skeleton=skeleton)
 
         glPushMatrix()
-        self.draw_to(t_LeftHeel, False, t_NoJoint)
+        self.draw_to(t_LeftHeel, False, t_NoJoint, skeleton=skeleton)
         glPopMatrix()
 
-        self.draw_to(t_LeftBallOfFoot, False, t_LeftAnkle)
-        self.draw_to(t_LeftToeTip, False, t_LeftBallOfFoot)
-        glPopMatrix()
-
-        glPushMatrix()
-        self.draw_to(t_RightHip, False, t_PelvisAnchor)
-        self.draw_to(t_RightKnee, False, t_RightHip)
-        self.draw_to(t_RightAnkle, False, t_RightKnee)
-
-        glPushMatrix()
-        self.draw_to(t_RightHeel, False, t_NoJoint)
-        glPopMatrix()
-
-        self.draw_to(t_RightBallOfFoot, False, t_RightAnkle)
-        self.draw_to(t_RightToeTip, False, t_RightBallOfFoot)
+        self.draw_to(t_LeftBallOfFoot, False, t_LeftAnkle, skeleton=skeleton)
+        self.draw_to(t_LeftToeTip, False, t_LeftBallOfFoot, skeleton=skeleton)
         glPopMatrix()
 
         glPushMatrix()
-        self.draw_to(t_SpinePelvis, False, t_PelvisAnchor)
-        self.draw_to(t_LowerVertebrae, False, t_SpinePelvis)
-        self.draw_to(t_MidVertebrae, False, t_LowerVertebrae)
+        self.draw_to(t_RightHip, False, t_PelvisAnchor, skeleton=skeleton)
+        self.draw_to(t_RightKnee, False, t_RightHip, skeleton=skeleton)
+        self.draw_to(t_RightAnkle, False, t_RightKnee, skeleton=skeleton)
 
         glPushMatrix()
-        self.draw_to(t_LeftShoulderBladeBase, False, t_MidVertebrae)
-        self.draw_to(t_LeftShoulder, False, t_LeftShoulderBladeBase)
-        self.draw_to(t_LeftElbow, False, t_LeftShoulder)
-        self.draw_to(t_LeftWrist, False, t_LeftElbow)
-        self.draw_to(t_LeftKnuckle, False, t_LeftWrist)
-        self.draw_to(t_LeftFingerTip, False, t_LeftKnuckle)
+        self.draw_to(t_RightHeel, False, t_NoJoint, skeleton=skeleton)
+        glPopMatrix()
+
+        self.draw_to(t_RightBallOfFoot, False, t_RightAnkle, skeleton=skeleton)
+        self.draw_to(t_RightToeTip, False, t_RightBallOfFoot, skeleton=skeleton)
         glPopMatrix()
 
         glPushMatrix()
-        self.draw_to(t_RightShoulderBladeBase, False, t_MidVertebrae)
-        self.draw_to(t_RightShoulder, False, t_RightShoulderBladeBase)
-        self.draw_to(t_RightElbow, False, t_RightShoulder)
-        self.draw_to(t_RightWrist, False, t_RightElbow)
-        self.draw_to(t_RightKnuckle, False, t_RightWrist)
-        self.draw_to(t_RightFingerTip, False, t_RightKnuckle)
+        self.draw_to(t_SpinePelvis, False, t_PelvisAnchor, skeleton=skeleton)
+        self.draw_to(t_LowerVertebrae, False, t_SpinePelvis, skeleton=skeleton)
+        self.draw_to(t_MidVertebrae, False, t_LowerVertebrae, skeleton=skeleton)
+
+        glPushMatrix()
+        self.draw_to(t_LeftShoulderBladeBase, False, t_MidVertebrae, skeleton=skeleton)
+        self.draw_to(t_LeftShoulder, False, t_LeftShoulderBladeBase, skeleton=skeleton)
+        self.draw_to(t_LeftElbow, False, t_LeftShoulder, skeleton=skeleton)
+        self.draw_to(t_LeftWrist, False, t_LeftElbow, skeleton=skeleton)
+        self.draw_to(t_LeftKnuckle, False, t_LeftWrist, skeleton=skeleton)
+        self.draw_to(t_LeftFingerTip, False, t_LeftKnuckle, skeleton=skeleton)
         glPopMatrix()
 
-        self.draw_to(t_UpperVertebrae, False, t_MidVertebrae)
-        self.draw_to(t_BaseOfSkull, False, t_UpperVertebrae)
-        self.draw_to(t_TopOfHead, False, t_BaseOfSkull)
+        glPushMatrix()
+        self.draw_to(t_RightShoulderBladeBase, False, t_MidVertebrae, skeleton=skeleton)
+        self.draw_to(t_RightShoulder, False, t_RightShoulderBladeBase, skeleton=skeleton)
+        self.draw_to(t_RightElbow, False, t_RightShoulder, skeleton=skeleton)
+        self.draw_to(t_RightWrist, False, t_RightElbow, skeleton=skeleton)
+        self.draw_to(t_RightKnuckle, False, t_RightWrist, skeleton=skeleton)
+        self.draw_to(t_RightFingerTip, False, t_RightKnuckle, skeleton=skeleton)
+        glPopMatrix()
+
+        self.draw_to(t_UpperVertebrae, False, t_MidVertebrae, skeleton=skeleton)
+        self.draw_to(t_BaseOfSkull, False, t_UpperVertebrae, skeleton=skeleton)
+        self.draw_to(t_TopOfHead, False, t_BaseOfSkull, skeleton=skeleton)
 
         glPopMatrix()
         glPopMatrix()
@@ -504,7 +504,7 @@ class BodyData:
             glTranslatef(self.joints[jointIndex].bone_dim[0], self.joints[jointIndex].bone_dim[1], self.joints[jointIndex].bone_dim[2])
             glMultMatrixf(transform)
 
-    def draw_to(self, joint_index, orientation=False, next_limb_index=-1):
+    def draw_to(self, joint_index, orientation=False, next_limb_index=-1, skeleton=False):
         quat = self.quaternions[joint_index]
         transform = quaternion_to_R3_rotation(quat)
         transform = self.transform_to_opengl(transform)
@@ -528,7 +528,7 @@ class BodyData:
             if not orientation:
             #     self.show_orientation(joint_index, next_limb_index)
             # else:
-                self.draw_block((widths[0], length, widths[1]))
+                self.draw_block((widths[0], length, widths[1]), skeleton=skeleton)
             # could call out to node...
 
             glPopMatrix()
@@ -538,73 +538,82 @@ class BodyData:
         glMultMatrixf(transform)
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, self.base_material)
 
-    def draw_block(self, dim):
-        dim_x = dim[0] / 2
-        dim_z = dim[1] - .02
-        dim_y = dim[2] / 2
+    def draw_block(self, dim, skeleton=False):
 
-        points = []
-        points.append((-dim_x, -dim_y, 0))
-        points.append((-dim_x, -dim_y, dim_z))
-        points.append((dim_x, -dim_y, 0))
-        points.append((dim_x, -dim_y, dim_z))
-        points.append((dim_x, dim_y, 0))
-        points.append((dim_x, dim_y, dim_z))
-        points.append((-dim_x, dim_y, 0))
-        points.append((-dim_x, dim_y, dim_z))
+        if skeleton:
+            dim_z = dim[1]
+            glBegin(GL_LINES)
+            glVertex3f(0, 0, 0)
+            glVertex3f(0, 0, dim_z)
+            glEnd()
 
-        glBegin(GL_TRIANGLE_STRIP)
+        else:
+            dim_x = dim[0] / 2
+            dim_z = dim[1] - .02
+            dim_y = dim[2] / 2
 
-        normal = self.calc_normal(points[0], points[1], points[2])
-        glNormal3fv(normal)
+            points = []
+            points.append((-dim_x, -dim_y, 0))
+            points.append((-dim_x, -dim_y, dim_z))
+            points.append((dim_x, -dim_y, 0))
+            points.append((dim_x, -dim_y, dim_z))
+            points.append((dim_x, dim_y, 0))
+            points.append((dim_x, dim_y, dim_z))
+            points.append((-dim_x, dim_y, 0))
+            points.append((-dim_x, dim_y, dim_z))
 
-        glVertex3fv(points[0])
-        glVertex3fv(points[1])
-        glVertex3fv(points[2])
-        glVertex3fv(points[3])
+            glBegin(GL_TRIANGLE_STRIP)
 
-        normal = self.calc_normal(points[2], points[3], points[4])
-        glNormal3fv(normal)
+            normal = self.calc_normal(points[0], points[1], points[2])
+            glNormal3fv(normal)
 
-        glVertex3fv(points[4])
-        glVertex3fv(points[5])
+            glVertex3fv(points[0])
+            glVertex3fv(points[1])
+            glVertex3fv(points[2])
+            glVertex3fv(points[3])
 
-        normal = self.calc_normal(points[4], points[5], points[6])
-        glNormal3fv(normal)
+            normal = self.calc_normal(points[2], points[3], points[4])
+            glNormal3fv(normal)
 
-        glVertex3fv(points[6])
-        glVertex3fv(points[7])
+            glVertex3fv(points[4])
+            glVertex3fv(points[5])
 
-        normal = self.calc_normal(points[6], points[7], points[0])
-        glNormal3fv(normal)
+            normal = self.calc_normal(points[4], points[5], points[6])
+            glNormal3fv(normal)
 
-        glVertex3fv(points[0])
-        glVertex3fv(points[1])
+            glVertex3fv(points[6])
+            glVertex3fv(points[7])
 
-        glVertex3fv(points[1])
-        glVertex3fv(points[1])
+            normal = self.calc_normal(points[6], points[7], points[0])
+            glNormal3fv(normal)
 
-        # DEGENERATE TRIANGLE ISSUE
-        normal = self.calc_normal(points[3], points[5], points[7])
-        glNormal3fv(normal)
+            glVertex3fv(points[0])
+            glVertex3fv(points[1])
 
-        glVertex3fv(points[1])
-        glVertex3fv(points[3])
-        glVertex3fv(points[7])
-        glVertex3fv(points[5])
+            glVertex3fv(points[1])
+            glVertex3fv(points[1])
 
-        glVertex3fv(points[5])
-        glVertex3fv(points[0])
+            # DEGENERATE TRIANGLE ISSUE
+            normal = self.calc_normal(points[3], points[5], points[7])
+            glNormal3fv(normal)
 
-        normal = self.calc_normal(points[2], points[4], points[6])
-        glNormal3fv(normal)
+            glVertex3fv(points[1])
+            glVertex3fv(points[3])
+            glVertex3fv(points[7])
+            glVertex3fv(points[5])
 
-        glVertex3fv(points[0])
-        glVertex3fv(points[2])
-        glVertex3fv(points[6])
-        glVertex3fv(points[4])
+            glVertex3fv(points[5])
+            glVertex3fv(points[0])
 
-        glEnd()
+            normal = self.calc_normal(points[2], points[4], points[6])
+            glNormal3fv(normal)
+
+            glVertex3fv(points[0])
+            glVertex3fv(points[2])
+            glVertex3fv(points[6])
+            glVertex3fv(points[4])
+
+            glEnd()
 
     def calc_normal(self, v1, v2, v3):
         v_1 = np.array([v1[0], v1[1], v1[2]])

@@ -22,6 +22,7 @@ clip_active = True
 numpy_active = True
 pytorch_active = True
 smpl_active = True
+prompt_active = True
 
 print('Options active:', end=' ')
 with open('dpg_system/dpg_system_config.json', 'r') as f:
@@ -70,6 +71,10 @@ with open('dpg_system/dpg_system_config.json', 'r') as f:
         smpl_active = config['SMPL']
         if smpl_active:
             print('SMPL', end=' ')
+    if 'prompt' in config:
+        prompt_active = config['prompt']
+        if prompt_active:
+            print('prompt', end=' ')
 
 print('')
 
@@ -185,6 +190,13 @@ if smpl_active:
         imported.append('SMPL_nodes.py')
     except ModuleNotFoundError:
         smpl_active = False
+
+if prompt_active:
+    try:
+        from dpg_system.prompt_nodes import *
+        imported.append('prompt_nodes.py')
+    except ModuleNotFoundError:
+        prompt_active = False
 # import additional node files in folder
 
 # for entry in os.scandir('dpg_system'):
@@ -844,6 +856,9 @@ class App:
         if pytorch_active and 'register_torch_nodes' in globals():
             register_torch_nodes()
 
+        if prompt_active and 'register_prompt_nodes' in globals():
+            register_prompt_nodes()
+
 
     def get_variable_list(self):
         v_list = list(self.variables.keys())
@@ -1481,14 +1496,14 @@ class App:
                 return
         self.active_widget = 1
         self.fresh_patcher = fresh_patcher
-        with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, callback=load_patches_callback, cancel_callback=cancel_callback, tag="file_dialog_id"):
+        with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800, callback=load_patches_callback, cancel_callback=cancel_callback, tag="file_dialog_id"):
             dpg.add_file_extension(".json")
 
 
     def load_example(self):
         self.active_widget = 1
         self.fresh_patcher = True
-        with dpg.file_dialog(modal=True, default_path='examples', directory_selector=False, show=True, height=400, callback=load_patches_callback,
+        with dpg.file_dialog(modal=True, default_path='examples', directory_selector=False, show=True, height=400, width=800, callback=load_patches_callback,
                              cancel_callback=cancel_callback, tag="file_dialog_id"):
             dpg.add_file_extension(".json")
 
@@ -1564,12 +1579,12 @@ class App:
 
     def save(self, path='', default_directory=''):
         self.active_widget = 1
-        with dpg.file_dialog(directory_selector=False, show=True, height=400, callback=save_file_callback, cancel_callback=cancel_callback, default_path=default_directory, tag="file_dialog_id"):
+        with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, callback=save_file_callback, cancel_callback=cancel_callback, default_path=default_directory, tag="file_dialog_id"):
             dpg.add_file_extension(".json")
 
     def save_patches(self, path=''):
         self.active_widget = 1
-        with dpg.file_dialog(directory_selector=False, show=True, height=400, callback=save_patches_callback, cancel_callback=cancel_callback, tag="file_dialog_id"):
+        with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, callback=save_patches_callback, cancel_callback=cancel_callback, tag="file_dialog_id"):
             dpg.add_file_extension(".json")
 
     def add_frame_task(self, dest):

@@ -143,7 +143,7 @@ class MoCapTakeNode(MoCapNode):
             self.load_take(args)
 
     def load_take(self, args=None):
-        with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400,
+        with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
                              user_data=self, callback=self.load_npz_callback, tag="file_dialog_id"):
             dpg.add_file_extension(".npz")
 
@@ -246,6 +246,32 @@ class MoCapBody(MoCapNode):
 
 
 class MoCapGLBody(MoCapNode):
+    smpl_limb_to_joint_dict = {
+        'left_hip': 'LeftHip',
+        'right_hip': 'RightHip',
+        'lower_back': 'SpinePelvis',
+        'left_thigh': 'LeftKnee',
+        'right_thigh': 'RightKnee',
+        'mid_back': 'LowerVertebrae',
+        'left_lower_leg': 'LeftFoot',
+        'right_lower_leg': 'RightFoot',
+        'upper_back': 'MidVertebrae',
+        'left_foot': 'LeftBallOfFoot',
+        'right_foot': 'RightBallOfFoot',
+        'lower_neck': 'UpperVertebrae',
+        'left_shoulder_blade': 'LeftShoulderBladeBase',
+        'right_shoulder_blade': 'RightShoulderBladeBase',
+        'upper_neck': 'BaseOfSkull',
+        'left_shoulder': 'LeftShoulder',
+        'right_shoulder': 'RightShoulder',
+        'left_upper_arm': 'LeftElbow',
+        'right_upper_arm': 'RightElbow',
+        'left_forearm': 'LeftWrist',
+        'right_forearm': 'RightWrist',
+        'left_hand': 'LeftKnuckle',
+        'right_hand': 'RightKnuckle'
+    }
+
     @staticmethod
     def factory(name, data, args=None):
         node = MoCapGLBody(name, data, args)
@@ -258,6 +284,7 @@ class MoCapGLBody(MoCapNode):
         self.input = self.add_input('pose in', triggers_execution=True)
         self.gl_chain_input = self.add_input('gl chain', triggers_execution=True)
         self.gl_chain_output = self.add_output('gl_chain')
+        self.skeleton_only = self.add_option('skeleton_only', widget_type='checkbox', default_value=False)
         self.show_joint_spheres = self.add_option('show joint motion', widget_type='checkbox', default_value=self.show_joint_activity)
         self.joint_motion_scale = self.add_option('joint motion scale', widget_type='drag_float', default_value=5)
         self.diff_quat_smoothing = self.add_option('joint motion smoothing', widget_type='drag_float', default_value=0.8, max=1.0, min=0.0)
@@ -267,6 +294,17 @@ class MoCapGLBody(MoCapNode):
 
     def joint_callback(self):
         self.gl_chain_output.send('draw')
+
+    def process_commands(self, command):
+        if type(command[0]) == str:
+            print(command)
+            if command[0] in self.smpl_limb_to_joint_dict:
+                target_joint = self.smpl_limb_to_joint_dict[command[0]]
+                if target_joint in joint_name_to_index:
+                    target_joint_index = joint_name_to_index[target_joint]
+                    self.body.joints[target_joint_index].bone_dim = command[1:]
+                    self.body.joints[target_joint_index].set_matrix()
+                # self.body.joints[target_joint_index].set_mass()
 
     def execute(self):
         if self.input.fresh_input:
@@ -278,6 +316,9 @@ class MoCapGLBody(MoCapNode):
                     for joint_name in self.joint_map:
                         joint_id = self.joint_map[joint_name]
                         self.body.update(joint_index=joint_id, quat=incoming[joint_id])
+            elif t == list:
+                self.process_commands(incoming)
+
         elif self.gl_chain_input.fresh_input:
             incoming = self.gl_chain_input()
             t = type(incoming)
@@ -287,4 +328,4 @@ class MoCapGLBody(MoCapNode):
                 self.body.joint_motion_scale = scale
                 self.body.diffQuatSmoothingA = smoothing
                 self.body.joint_disk_alpha = self.joint_disk_alpha()
-                self.body.draw(self.show_joint_spheres())
+                self.body.draw(self.show_joint_spheres(), self.skeleton_only())
