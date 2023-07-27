@@ -220,7 +220,7 @@ class OSCTarget:
         if self.client is not None:
             t = type(args)
             if t not in [str]:
-                args = list(args)
+                args = any_to_list(args)
             self.client.send_message(address, args)
 
 

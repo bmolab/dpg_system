@@ -10,5 +10,6 @@
   "Numpy": true,
   "Pytorch": true,
   "SMPL": true,
-  "prompt": true
+  "prompt": true,
+  "pybullet": true
 }

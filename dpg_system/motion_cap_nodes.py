@@ -284,6 +284,11 @@ class MoCapGLBody(MoCapNode):
         self.input = self.add_input('pose in', triggers_execution=True)
         self.gl_chain_input = self.add_input('gl chain', triggers_execution=True)
         self.gl_chain_output = self.add_output('gl_chain')
+        self.current_joint_output = self.add_output('current_joint_name')
+        self.current_joint_quaternion_output = self.add_output('current_joint_quaternion')
+        self.current_joint_rotation_axis_output = self.add_output('current_joint_quaternion_axis')
+        self.current_joint_gl_output = self.add_output('current_joint_gl_chain')
+
         self.skeleton_only = self.add_option('skeleton_only', widget_type='checkbox', default_value=False)
         self.show_joint_spheres = self.add_option('show joint motion', widget_type='checkbox', default_value=self.show_joint_activity)
         self.joint_motion_scale = self.add_option('joint motion scale', widget_type='drag_float', default_value=5)
@@ -292,9 +297,9 @@ class MoCapGLBody(MoCapNode):
         self.body = BodyData()
         self.body.node = self
 
-    def joint_callback(self):
-        self.gl_chain_output.send('draw')
-
+    # def joint_callback(self):
+    #     self.gl_chain_output.send('draw')
+    #
     def process_commands(self, command):
         if type(command[0]) == str:
             print(command)
@@ -305,6 +310,13 @@ class MoCapGLBody(MoCapNode):
                     self.body.joints[target_joint_index].bone_dim = command[1:]
                     self.body.joints[target_joint_index].set_matrix()
                 # self.body.joints[target_joint_index].set_mass()
+
+    def joint_callback(self, joint_index):
+        joint_name = joint_index_to_name[joint_index]
+        self.current_joint_output.send(joint_name)
+        self.current_joint_quaternion_output.send(self.body.quaternionDistance[joint_index])
+        self.current_joint_rotation_axis_output.send(self.body.rotationAxis[joint_index])
+        self.current_joint_gl_output.send('draw')
 
     def execute(self):
         if self.input.fresh_input:
@@ -328,4 +340,4 @@ class MoCapGLBody(MoCapNode):
                 self.body.joint_motion_scale = scale
                 self.body.diffQuatSmoothingA = smoothing
                 self.body.joint_disk_alpha = self.joint_disk_alpha()
-                self.body.draw(self.show_joint_spheres(), self.skeleton_only())
+                self.body.draw(self.show_joint_spheres(), self.skeleton_only(), joint_callback=self.joint_callback)

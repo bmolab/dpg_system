@@ -52,6 +52,7 @@ def register_basic_nodes():
     Node.app.register_node('fuzzy_match', FuzzyMatchNode.factory)
     Node.app.register_node('length', LengthNode.factory)
     Node.app.register_node('time_between', TimeBetweenNode.factory)
+    Node.app.register_node('word_replace', WordReplaceNode.factory)
 
 
 class CommentNode(Node):
@@ -2035,5 +2036,36 @@ class FuzzyMatchNode(Node):
 
 
 
+class WordReplaceNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = WordReplaceNode(name, data, args)
+        return node
 
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        find = ''
+        replace = ''
+        if len(args) > 1:
+            find = any_to_string(args[0])
+            replace = any_to_string(args[1])
+        self.input = self.add_input('string in', triggers_execution=True)
+        self.find_input = self.add_input('find', widget_type='text_input', default_value=find)
+        self.replace_input = self.add_input('replace', widget_type='text_input', default_value=replace)
+        self.output = self.add_output('string out')
 
+    def execute(self):
+        data = self.input()
+        if type(data) == list:
+            data = ' '.join(data)
+
+        find = self.find_input()
+        replace = self.replace_input()
+        if find != '':
+            if type(data) == str:
+                data = data.replace(find, replace)
+                self.output.send(data)
+            else:
+                self.output.send(data)
+        else:
+            self.output.send(data)

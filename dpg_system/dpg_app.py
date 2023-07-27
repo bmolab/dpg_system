@@ -75,6 +75,10 @@ with open('dpg_system/dpg_system_config.json', 'r') as f:
         prompt_active = config['prompt']
         if prompt_active:
             print('prompt', end=' ')
+    if 'pybullet' in config:
+        pybullet_active = config['pybullet']
+        if pybullet_active:
+            print('pybullet', end=' ')
 
 print('')
 
@@ -197,6 +201,14 @@ if prompt_active:
         imported.append('prompt_nodes.py')
     except ModuleNotFoundError:
         prompt_active = False
+
+if pybullet_active:
+    try:
+        from dpg_system.pybullet_nodes import *
+        imported.append('pybullet_active_nodes.py')
+    except ModuleNotFoundError:
+        pybullet_active_active = False
+
 # import additional node files in folder
 
 # for entry in os.scandir('dpg_system'):
@@ -858,6 +870,9 @@ class App:
 
         if prompt_active and 'register_prompt_nodes' in globals():
             register_prompt_nodes()
+
+        if pybullet_active and 'register_pybullet_nodes' in globals():
+            register_pybullet_nodes()
 
 
     def get_variable_list(self):
