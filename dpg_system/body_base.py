@@ -115,10 +115,12 @@ class BodyData:
         self.diffQuaternionAbsSum = []
         self.diffQuatSmoothingA = 0.8
         self.diffQuatSmoothingB = 0.9
+        self.quaternionDiff = []
         self.joint_scales = [1.0] * 38
         self.node = None
         self.captured_quaternions = []
         self.label = 0
+        self.skeleton = False
         self.joint_sphere = gluNewQuadric()
         self.joint_disk = gluNewQuadric()
         self.joint_motion_scale = 7.0
@@ -128,7 +130,6 @@ class BodyData:
         self.joint_disk_material.diffuse = [0.7038, 0.27048, 0.0828, self.joint_disk_alpha]
         self.joint_disk_material.specular = [0.256777, 0.137622, 0.086014, self.joint_disk_alpha]
         self.joint_disk_material.shininess = 12.8
-
 
         self.joints = []
         for joint_index in joint_index_to_name:
@@ -171,9 +172,8 @@ class BodyData:
             self.diffQuaternionA.append([0.0, 0.0, 0.0, 0.0])
             self.diffQuaternionB.append([0.0, 0.0, 0.0, 0.0])
             self.diffDiff.append([0.0, 0.0, 0.0, 0.0])
-
+            self.quaternionDiff.append([0.0, 0.0, 0.0, 0.0])
             self.diffQuaternionAbsSum.append(0.0)
-
 
     def create_colours(self):
         self.color.append([0.5, 0.0, 0.0, 1.0])
@@ -252,7 +252,6 @@ class BodyData:
             self.positions[joint_index] = [position[0], position[1], position[2]]
 
         if not paused:
-#            self.previousQuats[joint_index] = self.quaternions[joint_index]
             self.previousQuats[joint_index] = self.diffQuaternionA[joint_index].copy()
         self.quaternions[joint_index] = [quat[0], quat[1], quat[2], quat[3]]
         if not paused:
@@ -266,8 +265,8 @@ class BodyData:
         if paused == False:
             self.quaternionDistance[joint_index] = Quaternion.sym_distance(q1.unit, q2.unit)
             self.calc_diff_quaternion(joint_index)
-        diff = q2 - q1
-        self.rotationAxis[joint_index] = list(diff.unit.axis)
+        self.quaternionDiff[joint_index] = q2 - q1
+        self.rotationAxis[joint_index] = list(self.quaternionDiff[joint_index].unit.axis)
         self.set_label(label - 1)
 
     def calc_diff_quaternion(self, jointIndex):
@@ -344,7 +343,8 @@ class BodyData:
                     transform[4 * j + i] = temp
         return transform
 
-    def draw(self, show_rotation_spheres=False, skeleton=False, joint_callback=None):
+    def draw(self, show_rotation_spheres=False, skeleton=False):
+        self.skeleton = skeleton
         transform = None
         glPushMatrix()
 
@@ -359,61 +359,61 @@ class BodyData:
         self.move_to(t_PelvisAnchor)
 
         glPushMatrix()
-        self.draw_to(t_LeftHip, False, t_PelvisAnchor, skeleton=skeleton, joint_callback=joint_callback)
-        self.draw_to(t_LeftKnee, False, t_LeftHip, skeleton=skeleton, joint_callback=joint_callback)
-        self.draw_to(t_LeftAnkle, False, t_LeftKnee, skeleton=skeleton, joint_callback=joint_callback)
+        self.draw_to(t_LeftHip, t_PelvisAnchor)
+        self.draw_to(t_LeftKnee, t_LeftHip)
+        self.draw_to(t_LeftAnkle, t_LeftKnee)
 
         glPushMatrix()
-        self.draw_to(t_LeftHeel, False, t_NoJoint, skeleton=skeleton, joint_callback=joint_callback)
+        self.draw_to(t_LeftHeel, t_NoJoint)
         glPopMatrix()
 
-        self.draw_to(t_LeftBallOfFoot, False, t_LeftAnkle, skeleton=skeleton, joint_callback=joint_callback)
-        self.draw_to(t_LeftToeTip, False, t_LeftBallOfFoot, skeleton=skeleton, joint_callback=joint_callback)
-        glPopMatrix()
-
-        glPushMatrix()
-        self.draw_to(t_RightHip, False, t_PelvisAnchor, skeleton=skeleton, joint_callback=joint_callback)
-        self.draw_to(t_RightKnee, False, t_RightHip, skeleton=skeleton, joint_callback=joint_callback)
-        self.draw_to(t_RightAnkle, False, t_RightKnee, skeleton=skeleton, joint_callback=joint_callback)
-
-        glPushMatrix()
-        self.draw_to(t_RightHeel, False, t_NoJoint, skeleton=skeleton, joint_callback=joint_callback)
-        glPopMatrix()
-
-        self.draw_to(t_RightBallOfFoot, False, t_RightAnkle, skeleton=skeleton, joint_callback=joint_callback)
-        self.draw_to(t_RightToeTip, False, t_RightBallOfFoot, skeleton=skeleton, joint_callback=joint_callback)
+        self.draw_to(t_LeftBallOfFoot, t_LeftAnkle)
+        self.draw_to(t_LeftToeTip, t_LeftBallOfFoot)
         glPopMatrix()
 
         glPushMatrix()
-        self.draw_to(t_SpinePelvis, False, t_PelvisAnchor, skeleton=skeleton, joint_callback=joint_callback)
-        self.draw_to(t_LowerVertebrae, False, t_SpinePelvis, skeleton=skeleton, joint_callback=joint_callback)
-        self.draw_to(t_MidVertebrae, False, t_LowerVertebrae, skeleton=skeleton, joint_callback=joint_callback)
+        self.draw_to(t_RightHip, t_PelvisAnchor)
+        self.draw_to(t_RightKnee, t_RightHip)
+        self.draw_to(t_RightAnkle, t_RightKnee)
 
         glPushMatrix()
-        self.draw_to(t_LeftShoulderBladeBase, False, t_MidVertebrae, skeleton=skeleton, joint_callback=joint_callback)
-        self.draw_to(t_LeftShoulder, False, t_LeftShoulderBladeBase, skeleton=skeleton, joint_callback=joint_callback)
-        self.draw_to(t_LeftElbow, False, t_LeftShoulder, skeleton=skeleton, joint_callback=joint_callback)
-        self.draw_to(t_LeftWrist, False, t_LeftElbow, skeleton=skeleton, joint_callback=joint_callback)
-        self.draw_to(t_LeftKnuckle, False, t_LeftWrist, skeleton=skeleton, joint_callback=joint_callback)
-        self.draw_to(t_LeftFingerTip, False, t_LeftKnuckle, skeleton=skeleton, joint_callback=joint_callback)
+        self.draw_to(t_RightHeel, t_NoJoint)
+        glPopMatrix()
+
+        self.draw_to(t_RightBallOfFoot, t_RightAnkle)
+        self.draw_to(t_RightToeTip, t_RightBallOfFoot)
         glPopMatrix()
 
         glPushMatrix()
-        self.draw_to(t_RightShoulderBladeBase, False, t_MidVertebrae, skeleton=skeleton, joint_callback=joint_callback)
-        self.draw_to(t_RightShoulder, False, t_RightShoulderBladeBase, skeleton=skeleton, joint_callback=joint_callback)
-        self.draw_to(t_RightElbow, False, t_RightShoulder, skeleton=skeleton, joint_callback=joint_callback)
-        self.draw_to(t_RightWrist, False, t_RightElbow, skeleton=skeleton, joint_callback=joint_callback)
-        self.draw_to(t_RightKnuckle, False, t_RightWrist, skeleton=skeleton, joint_callback=joint_callback)
-        self.draw_to(t_RightFingerTip, False, t_RightKnuckle, skeleton=skeleton, joint_callback=joint_callback)
+        self.draw_to(t_SpinePelvis, t_PelvisAnchor)
+        self.draw_to(t_LowerVertebrae, t_SpinePelvis)
+        self.draw_to(t_MidVertebrae, t_LowerVertebrae)
+
+        glPushMatrix()
+        self.draw_to(t_LeftShoulderBladeBase, t_MidVertebrae)
+        self.draw_to(t_LeftShoulder, t_LeftShoulderBladeBase)
+        self.draw_to(t_LeftElbow, t_LeftShoulder)
+        self.draw_to(t_LeftWrist, t_LeftElbow)
+        self.draw_to(t_LeftKnuckle, t_LeftWrist)
+        self.draw_to(t_LeftFingerTip, t_LeftKnuckle)
         glPopMatrix()
 
-        self.draw_to(t_UpperVertebrae, False, t_MidVertebrae, skeleton=skeleton, joint_callback=joint_callback)
-        self.draw_to(t_BaseOfSkull, False, t_UpperVertebrae, skeleton=skeleton, joint_callback=joint_callback)
-        self.draw_to(t_TopOfHead, False, t_BaseOfSkull, skeleton=skeleton, joint_callback=joint_callback)
+        glPushMatrix()
+        self.draw_to(t_RightShoulderBladeBase, t_MidVertebrae)
+        self.draw_to(t_RightShoulder, t_RightShoulderBladeBase)
+        self.draw_to(t_RightElbow, t_RightShoulder)
+        self.draw_to(t_RightWrist, t_RightElbow)
+        self.draw_to(t_RightKnuckle, t_RightWrist)
+        self.draw_to(t_RightFingerTip, t_RightKnuckle)
+        glPopMatrix()
+
+        self.draw_to(t_UpperVertebrae, t_MidVertebrae)
+        self.draw_to(t_BaseOfSkull, t_UpperVertebrae)
+        self.draw_to(t_TopOfHead, t_BaseOfSkull)
 
         glPopMatrix()
         glPopMatrix()
-        self.draw_joint_spheres(show_rotation_spheres, transform)
+        self.draw_joint_spheres(show_rotation_spheres)
         glShadeModel(hold_shade)
 
     def adjust_clear_colour(self):
@@ -428,69 +428,68 @@ class BodyData:
     def test_show_joint_spheres(self, show_rotation_spheres):
         return show_rotation_spheres
 
-    def draw_joint_spheres(self, show_rotation_spheres, transform):
-        if self.test_show_joint_spheres(show_rotation_spheres):
-            glPushMatrix()
-            glScalef(scale, scale, 1.0)
-            glTranslatef(0.0, -1.0, 0.0)
+    def draw_joint_spheres(self, show_rotation_spheres):
+        glPushMatrix()
+        glScalef(scale, scale, 1.0)
+        glTranslatef(0.0, -1.0, 0.0)
 
-            self.move_to(t_PelvisAnchor)
+        self.move_to(t_PelvisAnchor)
 
-            glPushMatrix()
-            self.draw_to(t_LeftHip, True, t_PelvisAnchor)
-            self.draw_to(t_LeftKnee, True, t_LeftHip)
-            self.draw_to(t_LeftAnkle, True, t_LeftKnee)
+        glPushMatrix()
+        self.draw_to(t_LeftHip, t_PelvisAnchor, True, show_rotation_spheres)
+        self.draw_to(t_LeftKnee, t_LeftHip, True, show_rotation_spheres)
+        self.draw_to(t_LeftAnkle, t_LeftKnee, True, show_rotation_spheres)
 
-            glPushMatrix()
-            self.draw_to(t_LeftHeel, True, t_NoJoint)
-            glPopMatrix()
+        glPushMatrix()
+        self.draw_to(t_LeftHeel, t_NoJoint, True, show_rotation_spheres)
+        glPopMatrix()
 
-            self.draw_to(t_LeftBallOfFoot, True, t_LeftAnkle)
-            self.draw_to(t_LeftToeTip, True, t_LeftBallOfFoot)
-            glPopMatrix()
+        self.draw_to(t_LeftBallOfFoot, t_LeftAnkle, True, show_rotation_spheres)
+        self.draw_to(t_LeftToeTip, t_LeftBallOfFoot, True, show_rotation_spheres)
+        glPopMatrix()
 
-            glPushMatrix()
-            self.draw_to(t_RightHip, True, t_PelvisAnchor)
-            self.draw_to(t_RightKnee, True, t_RightHip)
-            self.draw_to(t_RightAnkle, True, t_RightKnee)
+        glPushMatrix()
+        self.draw_to(t_RightHip, t_PelvisAnchor, True, show_rotation_spheres)
+        self.draw_to(t_RightKnee, t_RightHip, True, show_rotation_spheres)
+        self.draw_to(t_RightAnkle, t_RightKnee, True, show_rotation_spheres)
 
-            glPushMatrix()
-            self.draw_to(t_RightHeel, True, t_NoJoint)
-            glPopMatrix()
+        glPushMatrix()
+        self.draw_to(t_RightHeel, t_NoJoint, True, show_rotation_spheres)
+        glPopMatrix()
 
-            self.draw_to(t_RightBallOfFoot, True, t_RightAnkle)
-            self.draw_to(t_RightToeTip, True, t_RightBallOfFoot)
-            glPopMatrix()
+        self.draw_to(t_RightBallOfFoot, t_RightAnkle, True, show_rotation_spheres)
+        self.draw_to(t_RightToeTip, t_RightBallOfFoot, True, show_rotation_spheres)
+        glPopMatrix()
 
-            glPushMatrix()
-            self.draw_to(t_SpinePelvis, True, t_PelvisAnchor)
-            self.draw_to(t_LowerVertebrae, True, t_SpinePelvis)
-            self.draw_to(t_MidVertebrae, True, t_LowerVertebrae)
+        glPushMatrix()
+        self.draw_to(t_SpinePelvis, t_PelvisAnchor, True, show_rotation_spheres)
+        self.draw_to(t_LowerVertebrae, t_SpinePelvis, True, show_rotation_spheres)
+        self.draw_to(t_MidVertebrae, t_LowerVertebrae, True, show_rotation_spheres)
 
-            glPushMatrix()
-            self.draw_to(t_LeftShoulderBladeBase, True, t_MidVertebrae)
-            self.draw_to(t_LeftShoulder, True, t_LeftShoulderBladeBase)
-            self.draw_to(t_LeftElbow, True, t_LeftShoulder)
-            self.draw_to(t_LeftWrist, True, t_LeftElbow)
-            self.draw_to(t_LeftKnuckle, True, t_LeftWrist)
-            self.draw_to(t_LeftFingerTip, True, t_LeftKnuckle)
-            glPopMatrix()
+        glPushMatrix()
+        self.draw_to(t_LeftShoulderBladeBase, t_MidVertebrae, True, show_rotation_spheres)
+        self.draw_to(t_LeftShoulder, t_LeftShoulderBladeBase, True, show_rotation_spheres)
+        self.draw_to(t_LeftElbow, t_LeftShoulder, True, show_rotation_spheres)
+        self.draw_to(t_LeftWrist, t_LeftElbow, True, show_rotation_spheres)
+        self.draw_to(t_LeftKnuckle, t_LeftWrist, True, show_rotation_spheres)
+        self.draw_to(t_LeftFingerTip, t_LeftKnuckle, True, show_rotation_spheres)
+        glPopMatrix()
 
-            glPushMatrix()
-            self.draw_to(t_RightShoulderBladeBase, True, t_MidVertebrae)
-            self.draw_to(t_RightShoulder, True, t_RightShoulderBladeBase)
-            self.draw_to(t_RightElbow, True, t_RightShoulder)
-            self.draw_to(t_RightWrist, True, t_RightElbow)
-            self.draw_to(t_RightKnuckle, True, t_RightWrist)
-            self.draw_to(t_RightFingerTip, True, t_RightKnuckle)
-            glPopMatrix()
+        glPushMatrix()
+        self.draw_to(t_RightShoulderBladeBase, t_MidVertebrae, True, show_rotation_spheres)
+        self.draw_to(t_RightShoulder, t_RightShoulderBladeBase, True, show_rotation_spheres)
+        self.draw_to(t_RightElbow, t_RightShoulder, True, show_rotation_spheres)
+        self.draw_to(t_RightWrist, t_RightElbow, True, show_rotation_spheres)
+        self.draw_to(t_RightKnuckle, t_RightWrist, True, show_rotation_spheres)
+        self.draw_to(t_RightFingerTip, t_RightKnuckle, True, show_rotation_spheres)
+        glPopMatrix()
 
-            self.draw_to(t_UpperVertebrae, True, t_MidVertebrae)
-            self.draw_to(t_BaseOfSkull, True, t_UpperVertebrae)
-            self.draw_to(t_TopOfHead, True, t_BaseOfSkull)
+        self.draw_to(t_UpperVertebrae, t_MidVertebrae, True, show_rotation_spheres)
+        self.draw_to(t_BaseOfSkull, t_UpperVertebrae, True, show_rotation_spheres)
+        self.draw_to(t_TopOfHead, t_BaseOfSkull, True, show_rotation_spheres)
 
-            glPopMatrix()
-            glPopMatrix()
+        glPopMatrix()
+        glPopMatrix()
 
     def move_to(self, jointIndex):
         # get quat and convert to matrix
@@ -504,7 +503,7 @@ class BodyData:
             glTranslatef(self.joints[jointIndex].bone_dim[0], self.joints[jointIndex].bone_dim[1], self.joints[jointIndex].bone_dim[2])
             glMultMatrixf(transform)
 
-    def draw_to(self, joint_index, orientation=False, next_limb_index=-1, skeleton=False, joint_callback=None):
+    def draw_to(self, joint_index, prev_limb_index=-1, orientation=False, show_disks=False):
         quat = self.quaternions[joint_index]
         transform = quaternion_to_R3_rotation(quat)
         transform = self.transform_to_opengl(transform)
@@ -516,19 +515,20 @@ class BodyData:
 
         if joint_data.do_draw:
             if orientation:
-                self.show_orientation(joint_index, next_limb_index)
-            if self.node and next_limb_index != -1:
-                self.node.joint_callback(next_limb_index)
-            mm = glGetDoublev(GL_MODELVIEW_MATRIX)
+                if show_disks:
+                    self.show_orientation(joint_index, prev_limb_index)
+                elif prev_limb_index != -1:
+                    self.node.joint_callback(prev_limb_index)
+            # mm = glGetDoublev(GL_MODELVIEW_MATRIX)
             glPushMatrix()
             glMultMatrixf(m)
             glLineWidth(2.0)
-            mm = glGetDoublev(GL_MODELVIEW_MATRIX)
+            # mm = glGetDoublev(GL_MODELVIEW_MATRIX)
 
             if not orientation:
             #     self.show_orientation(joint_index, next_limb_index)
             # else:
-                self.draw_block((widths[0], length, widths[1]), skeleton=skeleton)
+                self.draw_block((widths[0], length, widths[1]))
             # could call out to node...
             # to draw velocity or force indicators?
             # how?
@@ -536,15 +536,15 @@ class BodyData:
             #         joint_callback(joint_index)
 
             glPopMatrix()
-            mm = glGetDoublev(GL_MODELVIEW_MATRIX)
+            # mm = glGetDoublev(GL_MODELVIEW_MATRIX)
 
         glTranslatef(joint_data.bone_dim[0], joint_data.bone_dim[1], joint_data.bone_dim[2])
         glMultMatrixf(transform)
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, self.base_material)
 
-    def draw_block(self, dim, skeleton=False):
+    def draw_block(self, dim):
 
-        if skeleton:
+        if self.skeleton:
             dim_z = dim[1]
             glBegin(GL_LINES)
             glVertex3f(0, 0, 0)

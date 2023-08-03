@@ -71,6 +71,28 @@ def any_to_list(data):
         return data.tolist()
     return []
 
+def any_to_numerical_list(data):
+    t = type(data)
+    if t in [list, tuple]:
+        data = list(data)
+        data, homo, types = list_to_hybrid_list(data)
+        if str not in types:
+            return data
+    elif t == str:
+        return string_to_list(data)
+    elif t in [float, int, bool]:
+        return [data]
+    elif t == np.ndarray:
+        return data.tolist()
+    elif t == np.int64:
+        return [int(data)]
+    elif t in [np.double, np.float32]:
+        return [float(data)]
+    elif t == np.bool_:
+        return [bool(data)]
+    elif torch_available and t == torch.Tensor:
+        return data.tolist()
+    return []
 
 def any_to_int(data):
     t = type(data)
@@ -711,8 +733,15 @@ def string_to_num2(s):
     else:
         return 0
 
+
 def is_number(s):
-    return re.search(r'\d', s)
+    if type(s) == str:
+        if s[0] == '-':
+            b = s[1:]
+            return b.replace('.', '', 1).isdigit()
+        else:
+            return s.replace('.', '', 1).isdigit()
+
 
 def is_float(s):
     num = re.search(r'\d', s)

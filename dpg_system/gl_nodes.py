@@ -289,13 +289,15 @@ class GLNode(Node):
 
 
 class GLQuadricCommandParser(GLCommandParser):
-    def __init__(self):
+    def __init__(self, quadric_node):
         super().__init__()
+        self.quadric_node = quadric_node
         self.dict['style'] = self.set_style
+        self.dict['orient_scale'] = self.set_orient_scale
         # self.dict['frustum'] = self.set_frustum
         # self.dict['perspective'] = self.set_perspective
 
-    def set_style(self, quadric, args):
+    def set_style(self, node, args):
         if args is not None and len(args) > 0:
             mode = any_to_string(args[0])
             if mode == 'fill':
@@ -304,6 +306,34 @@ class GLQuadricCommandParser(GLCommandParser):
                 gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_LINE)
             elif mode == 'point':
                 gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_POINT)
+
+    def set_orient_scale(self, node, args):
+        orient = list_to_array(args)
+        scale = np.linalg.norm(orient) + 1e-6
+        axis = orient / scale
+
+        if scale > 0.001:
+            up_vector = np.array([0.0, 0.0, 1.0])
+            v = np.cross(axis, up_vector)
+            c = np.dot(axis, up_vector)
+            k = 1.0 / (1.0 + c)
+
+            node.alignment_matrix = np.array([v[0] * v[0] * k + c, v[1] * v[1] * k - v[2], v[2] * v[0] * k + v[1], 0.0,
+                                         v[0] * v[1] * k + v[2], v[1] * v[1] * k + c, v[2] * v[1] * k - v[0], 0.0,
+                                         v[0] * v[2] * k - v[1], v[1] * v[2] * k + v[0], v[2] * v[2] * k + c, 0.0,
+                                         0.0, 0.0, 0.0, 1.0])
+
+            node.alignment_matrix.reshape((4, 4))
+            node.set_size(scale)
+        else:
+            node.set_size(0.0)
+            # restore_matrix = glGetInteger(GL_MATRIX_MODE)
+            # glMatrixMode(GL_MODELVIEW)
+            # glPushMatrix()
+            # glMultMatrixf(alignment_matrix)
+            # gluDisk(self.joint_sphere, 0.0, scale, 32, 1)
+            # glPopMatrix()
+            # glMatrixMode(restore_matrix)
 
 
 # class GLNumpyVertices:
@@ -603,14 +633,15 @@ class GLQuadricNode(GLNode):
     def __init__(self, label: str, data, args):
         self.quadric = gluNewQuadric()
         self.shading_option = None
-        self.command_parser = GLQuadricCommandParser()
+        self.command_parser = GLQuadricCommandParser(self)
         self.pending_commands = []
+        self.alignment_matrix = None
         super().__init__(label, data, args)
 
     def process_pending_commands(self):
         if len(self.pending_commands) > 0:
             for command in self.pending_commands:
-                self.command_parser.perform(command[0], self.quadric, command[1:])
+                self.command_parser.perform(command[0], self, command[1:])
         self.pending_commands = []
 
     def shading_changed(self):
@@ -623,6 +654,9 @@ class GLQuadricNode(GLNode):
             self.shading = glu.GLU_NONE
         glu.gluQuadricNormals(self.quadric, self.shading)
 
+    def set_size(self, scaler):
+        pass
+
     def add_shading_option(self):
         self.shading_option = self.add_option('shading', widget_type='combo', default_value='smooth', callback=self.shading_changed)
         self.shading_option.widget.combo_items = ['none', 'flat', 'smooth']
@@ -630,6 +664,21 @@ class GLQuadricNode(GLNode):
     def handle_other_messages(self, message):
         if type(message) == list:
             self.pending_commands.append(message)
+
+    def quadric_draw(self):
+        pass
+
+    def draw(self):
+        self.process_pending_commands()
+        restore_matrix = glGetInteger(GL_MATRIX_MODE)
+        if self.alignment_matrix is not None:
+            glMatrixMode(GL_MODELVIEW)
+            glPushMatrix()
+            glMultMatrixf(self.alignment_matrix)
+        self.quadric_draw()
+        if self.alignment_matrix is not None:
+            glPopMatrix()
+            glMatrixMode(restore_matrix)
 
 
 class GLSphereNode(GLQuadricNode):
@@ -654,8 +703,10 @@ class GLSphereNode(GLQuadricNode):
         self.stacks = self.add_option('stacks', widget_type='drag_int', default_value=stacks)
         self.add_shading_option()
 
-    def draw(self):
-        self.process_pending_commands()
+    def set_size(self, scaler):
+        self.size.set(scaler)
+
+    def quadric_draw(self):
         gluSphere(self.quadric, self.size(), self.slices(), self.stacks())
 
 
@@ -683,10 +734,11 @@ class GLDiskNode(GLQuadricNode):
         self.rings = self.add_option('rings', widget_type='drag_int', default_value=rings)
         self.add_shading_option()
 
-    def draw(self):
-        self.process_pending_commands()
-        gluDisk(self.quadric, self.inner_radius(), self.outer_radius(), self.slices(), self.rings)
-        ()
+    def set_size(self, scaler):
+        self.outer_radius.set(scaler)
+
+    def quadric_draw(self):
+        gluDisk(self.quadric, self.inner_radius(), self.outer_radius(), self.slices(), self.rings())
 
 
 class GLPartialDiskNode(GLQuadricNode):
@@ -719,8 +771,10 @@ class GLPartialDiskNode(GLQuadricNode):
         self.sweep_angle.widget.speed = 1
         self.add_shading_option()
 
-    def draw(self):
-        self.process_pending_commands()
+    def set_size(self, scaler):
+        self.outer_radius.set(scaler)
+
+    def quadric_draw(self):
         gluPartialDisk(self.quadric, self.inner_radius(), self.outer_radius(), self.slices(), self.rings(), self.start_angle(), self.sweep_angle())
 
 
@@ -750,8 +804,12 @@ class GLCylinderNode(GLQuadricNode):
         self.stacks = self.add_option('stacks', widget_type='drag_int', default_value=stacks)
         self.add_shading_option()
 
-    def draw(self):
-        self.process_pending_commands()
+    def set_size(self, scaler):
+        self.base_radius.set(scaler)
+        self.top_radius.set(scaler)
+        self.height.set(scaler)
+
+    def quadric_draw(self):
         gluCylinder(self.quadric, self.base_radius(), self.top_radius(), self.height(), self.slices(), self.stacks())
 
 
@@ -948,10 +1006,19 @@ class GLMaterialNode(GLNode):
         self.specular_input = self.add_input('specular')
         self.emission_input = self.add_input('emission')
         self.shininess_input = self.add_input('shininess', widget_type='drag_float', default_value=self.material.shininess)
+        self.alpha_input = self.add_input('alpha', widget_type='drag_float', default_value=1.0, callback=self.set_alpha)
+
         self.preset_menu = self.add_property('presets', widget_type='combo', callback=self.preset_selected)
         presets = list(self.presets.keys())
         self.preset_menu.widget.combo_items = presets
         self.gl_output = self.add_output('gl chain out')
+
+    def set_alpha(self):
+        alpha = self.alpha_input()
+        self.material.ambient[3] = alpha
+        self.material.diffuse[3] = alpha
+        self.material.specular[3] = alpha
+        self.material.emission[3] = alpha
 
     def preset_selected(self):
         selected_preset = self.preset_menu()
@@ -985,6 +1052,7 @@ class GLMaterialNode(GLNode):
                 if ambient.shape[0] == 4:
                     self.material.ambient = ambient
             elif t == list:
+                ambient = any_to_numerical_list(ambient)
                 if len(ambient) == 4:
                     self.material.ambient = ambient
                 elif len(ambient) == 3:
@@ -999,6 +1067,7 @@ class GLMaterialNode(GLNode):
                 if diffuse.shape[0] == 4:
                     self.material.diffuse = diffuse
             if t == list:
+                diffuse = any_to_numerical_list(diffuse)
                 if len(diffuse) == 4:
                     self.material.diffuse = diffuse
                 elif len(diffuse) == 3:
@@ -1013,6 +1082,7 @@ class GLMaterialNode(GLNode):
                 if specular.shape[0] == 4:
                     self.material.specular = specular
             if t == list:
+                specular = any_to_numerical_list(specular)
                 if len(specular) == 4:
                     self.material.specular = specular
                 elif len(specular) == 3:
@@ -1027,6 +1097,7 @@ class GLMaterialNode(GLNode):
                 if emission.shape[0] == 4:
                     self.material.emission = emission
             if t == list:
+                emission = any_to_numerical_list(emission)
                 if len(emission) == 4:
                     self.material.emission = emission
                 elif len(emission) == 3:
@@ -1279,6 +1350,12 @@ class GLMaterialNode(GLNode):
         black_rubber.shininess = 10
         self.presets['black_rubber'] = black_rubber
 
+        orange_metal = GLMaterial()
+        orange_metal.ambient = [0.19125, 0.0735, 0.0225, 0.5]
+        orange_metal.diffuse = [0.7038, 0.27048, 0.0828, 0.5]
+        orange_metal.specular = [0.256777, 0.137622, 0.086014, 0.5]
+        orange_metal.shininess = 12.8
+        self.presets['orange_metal'] = orange_metal
 
 class GLAlignNode(GLNode):
     @staticmethod

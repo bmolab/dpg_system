@@ -285,12 +285,14 @@ class MoCapGLBody(MoCapNode):
         self.gl_chain_input = self.add_input('gl chain', triggers_execution=True)
         self.gl_chain_output = self.add_output('gl_chain')
         self.current_joint_output = self.add_output('current_joint_name')
-        self.current_joint_quaternion_output = self.add_output('current_joint_quaternion')
+        # self.current_joint_quaternion_output = self.add_output('current_joint_quaternion')
         self.current_joint_rotation_axis_output = self.add_output('current_joint_quaternion_axis')
         self.current_joint_gl_output = self.add_output('current_joint_gl_chain')
 
         self.skeleton_only = self.add_option('skeleton_only', widget_type='checkbox', default_value=False)
         self.show_joint_spheres = self.add_option('show joint motion', widget_type='checkbox', default_value=self.show_joint_activity)
+        self.joint_data_selection = self.add_option('joint data type', widget_type='combo', default_value='axis-angle')
+        self.joint_data_selection.widget.combo_items = ['diff quaternion', 'diff axis-angle', 'diff euler_angle']
         self.joint_motion_scale = self.add_option('joint motion scale', widget_type='drag_float', default_value=5)
         self.diff_quat_smoothing = self.add_option('joint motion smoothing', widget_type='drag_float', default_value=0.8, max=1.0, min=0.0)
         self.joint_disk_alpha = self.add_option('joint motion alpha', widget_type='drag_float', default_value=0.5, max=1.0, min=0.0)
@@ -312,10 +314,16 @@ class MoCapGLBody(MoCapNode):
                 # self.body.joints[target_joint_index].set_mass()
 
     def joint_callback(self, joint_index):
+        mode = self.joint_data_selection()
         joint_name = joint_index_to_name[joint_index]
         self.current_joint_output.send(joint_name)
-        self.current_joint_quaternion_output.send(self.body.quaternionDistance[joint_index])
-        self.current_joint_rotation_axis_output.send(self.body.rotationAxis[joint_index])
+        if mode == 'diff axis-angle':
+            rotation = np.array(self.body.rotationAxis[joint_index])
+            rotation = rotation / (np.linalg.norm(rotation) + 1e-6) * self.body.quaternionDistance[joint_index] * self.joint_motion_scale()
+            # self.current_joint_quaternion_output.send(self.body.quaternionDistance[joint_index])
+            self.current_joint_rotation_axis_output.send(rotation)
+        elif mode == 'diff quaternion':
+            self.current_joint_rotation_axis_output.send(self.quaternionDiff)
         self.current_joint_gl_output.send('draw')
 
     def execute(self):
@@ -340,4 +348,5 @@ class MoCapGLBody(MoCapNode):
                 self.body.joint_motion_scale = scale
                 self.body.diffQuatSmoothingA = smoothing
                 self.body.joint_disk_alpha = self.joint_disk_alpha()
-                self.body.draw(self.show_joint_spheres(), self.skeleton_only(), joint_callback=self.joint_callback)
+                self.body.draw(self.show_joint_spheres(), self.skeleton_only())
+
