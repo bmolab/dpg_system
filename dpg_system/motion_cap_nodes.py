@@ -291,8 +291,8 @@ class MoCapGLBody(MoCapNode):
 
         self.skeleton_only = self.add_option('skeleton_only', widget_type='checkbox', default_value=False)
         self.show_joint_spheres = self.add_option('show joint motion', widget_type='checkbox', default_value=self.show_joint_activity)
-        self.joint_data_selection = self.add_option('joint data type', widget_type='combo', default_value='axis-angle')
-        self.joint_data_selection.widget.combo_items = ['diff quaternion', 'diff axis-angle', 'diff euler_angle']
+        self.joint_data_selection = self.add_option('joint data type', widget_type='combo', default_value='diff_axis-angle')
+        self.joint_data_selection.widget.combo_items = ['diff_quaternion', 'diff_axis-angle', 'diff_euler_angle']
         self.joint_motion_scale = self.add_option('joint motion scale', widget_type='drag_float', default_value=5)
         self.diff_quat_smoothing = self.add_option('joint motion smoothing', widget_type='drag_float', default_value=0.8, max=1.0, min=0.0)
         self.joint_disk_alpha = self.add_option('joint motion alpha', widget_type='drag_float', default_value=0.5, max=1.0, min=0.0)
@@ -317,13 +317,16 @@ class MoCapGLBody(MoCapNode):
         mode = self.joint_data_selection()
         joint_name = joint_index_to_name[joint_index]
         self.current_joint_output.send(joint_name)
-        if mode == 'diff axis-angle':
+        if mode == 'diff_axis-angle':
             rotation = np.array(self.body.rotationAxis[joint_index])
             rotation = rotation / (np.linalg.norm(rotation) + 1e-6) * self.body.quaternionDistance[joint_index] * self.joint_motion_scale()
             # self.current_joint_quaternion_output.send(self.body.quaternionDistance[joint_index])
             self.current_joint_rotation_axis_output.send(rotation)
-        elif mode == 'diff quaternion':
-            self.current_joint_rotation_axis_output.send(self.quaternionDiff)
+        elif mode == 'diff_quaternion':
+            if type(self.body.quaternionDiff[joint_index]) == list:
+                self.current_joint_rotation_axis_output.send(self.body.quaternionDiff[joint_index])
+            else:
+                self.current_joint_rotation_axis_output.send(self.body.quaternionDiff[joint_index].elements)
         self.current_joint_gl_output.send('draw')
 
     def execute(self):

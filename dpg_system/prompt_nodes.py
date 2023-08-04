@@ -107,6 +107,7 @@ class WeightedPromptNode(Node):
             if t == int:
                 self.count = v
 
+        self.clear_button = self.add_property('clear', widget_type='button', callback=self.clear)
         for i in range(self.count):
             self.subprompts.append('')
             self.subprompt_weights.append(0.0)
@@ -114,6 +115,11 @@ class WeightedPromptNode(Node):
 
         # self.clear_input = self.add_input('clear', callback=self.clear_fifo)
         self.output = self.add_output("weighted prompt out")
+
+    def clear(self):
+        for i in range(self.count):
+            self.prompt_inputs[i].set('')
+        self.output.send([])
 
     def execute(self):
         index = self.active_input.input_index
@@ -136,8 +142,12 @@ class WeightedPromptNode(Node):
                     relative_weight = any_to_float(prompt[1])
         elif type(prompt) in [float, int]:
             relative_weight = any_to_float(prompt)
-        if self.subprompts[index][-1] == ' ':
-            self.subprompts[index] = self.subprompts[index][:-1]
+            if len(self.subprompts[index]) == 0:
+                self.prompt_inputs[index].set(self.subprompts[index])
+
+        if len(self.subprompts[index]) > 0:
+            if self.subprompts[index][-1] == ' ':
+                self.subprompts[index] = self.subprompts[index][:-1]
 
         self.subprompt_weights[index] = relative_weight
 
