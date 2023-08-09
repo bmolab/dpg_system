@@ -517,8 +517,8 @@ class BodyData:
             if orientation:
                 if show_disks:
                     self.show_orientation(joint_index, prev_limb_index)
-                elif prev_limb_index != -1:
-                    self.node.joint_callback(prev_limb_index)
+                # elif prev_limb_index != -1:
+                #     self.node.joint_callback(prev_limb_index)
             # mm = glGetDoublev(GL_MODELVIEW_MATRIX)
             glPushMatrix()
             glMultMatrixf(m)
@@ -539,6 +539,9 @@ class BodyData:
             # mm = glGetDoublev(GL_MODELVIEW_MATRIX)
 
         glTranslatef(joint_data.bone_dim[0], joint_data.bone_dim[1], joint_data.bone_dim[2])
+        if orientation:
+            if not show_disks:
+                self.node.joint_callback(joint_index)
         glMultMatrixf(transform)
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, self.base_material)
 

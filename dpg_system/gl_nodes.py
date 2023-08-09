@@ -23,7 +23,7 @@ def register_gl_nodes():
     Node.app.register_node('gl_quaternion_rotate', GLQuaternionRotateNode.factory)
     Node.app.register_node('gl_text', GLTextNode.factory)
     Node.app.register_node('gl_billboard', GLBillboard.factory)
-
+    Node.app.register_node('gl_rotation_disk', GLXYZDiskNode.factory)
 
 class GLCommandParser:
     def __init__(self):
@@ -313,6 +313,7 @@ class GLQuadricCommandParser(GLCommandParser):
         axis = orient / scale
 
         if scale > 0.001:
+            # note that up vector is not same for all joints... see refVector
             up_vector = np.array([0.0, 0.0, 1.0])
             v = np.cross(axis, up_vector)
             c = np.dot(axis, up_vector)
@@ -1753,3 +1754,57 @@ class GLTextNode(GLNode):
     #         xpos + width, ypos - height, texture_coords[2], texture_coords[3],
     #         xpos + width, ypos, texture_coords[2], texture_coords[1]
     #     ], np.float32)
+
+
+class GLXYZDiskNode(GLQuadricNode):
+    @staticmethod
+    def factory(node_name, data, args=None):
+        node = GLXYZDiskNode(node_name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        # self.scale = self.arg_as_float(default_value=1.0)
+
+        self.gl_input = self.add_input('gl chain in', triggers_execution=True)
+        self.scale = self.add_input('gl chain in', widget_type='drag_float', default_value=1.0)
+        self.quat = self.add_input('quaternion in', callback=self.set_quaternion)
+        self.gl_output = self.add_output('gl chain out')
+
+        self.inner_radius = 0.0
+        self.slices = 32
+        self.rings = 1
+        self.degree_factor = 180.0 / math.pi
+        self.add_shading_option()
+        self.size_x = 0.0
+        self.size_y = 0.0
+        self.size_z = 0.0
+
+    def set_quaternion(self):
+        data = any_to_array(self.quat())
+        if data.shape[-1] % 4 == 0:
+            # q = quaternion.as_quat_array(data)
+            # euler = quaternion.as_euler_angles(q) * self.degree_factor
+            scale = self.scale()
+            self.size_x = data[1] * scale
+            self.size_y = data[2] * scale
+            self.size_z = data[3] * scale
+
+    def quadric_draw(self):
+        # hold_ambient_material = gl.glGetMaterialfv(gl.GL_FRONT, gl.GL_AMBIENT)
+        # hold_diffuse_material = gl.glGetMaterialfv(gl.GL_FRONT, gl.GL_DIFFUSE)
+        glPushMatrix()
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [1.0, 0.0, 0.0, 0.5])
+        gluDisk(self.quadric, self.inner_radius, self.size_x, self.slices, self.rings)
+        glRotatef(90.0, 0.0, 1.0, 0.0)
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [0.0, 0.0, 1.0, 0.5])
+        gluDisk(self.quadric, self.inner_radius, self.size_y, self.slices, self.rings)
+        glRotatef(90.0, 1.0, 0.0, 0.0)
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [0.0, 1.0, 0.0, 0.5])
+        gluDisk(self.quadric, self.inner_radius, self.size_z, self.slices, self.rings)
+        glPopMatrix()
+        # glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, hold_ambient_material)
+        # glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, hold_diffuse_material)
+

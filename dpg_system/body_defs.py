@@ -203,8 +203,6 @@ joint_name_to_index = {
 }
 
 
-
-
 joint_to_shadow_limb = {
     'Body': 'Body',
     'MidVertebrae': 'Chest',

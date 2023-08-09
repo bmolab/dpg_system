@@ -1072,6 +1072,9 @@ class NodeEditor:
                 self.node_scalers[dpg.mvNodeCol_Pin] = [30, 100, 150]
                 dpg.add_theme_color(dpg.mvNodeCol_Pin, self.node_scalers[dpg.mvNodeCol_Pin], category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvThemeCol_CheckMark, [255, 255, 0, 255], category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_SliderGrab, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_SliderGrabActive, (255, 255, 0, 128), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_style(dpg.mvStyleVar_GrabMinSize, 4, category=dpg.mvThemeCat_Core)
                 dpg.add_theme_color(dpg.mvNodeCol_Link, [66, 150, 250, 100], category=dpg.mvThemeCat_Nodes)
         with dpg.theme() as self.node_presentation_theme:
             with dpg.theme_component(dpg.mvAll):
@@ -1086,6 +1089,9 @@ class NodeEditor:
                 dpg.add_theme_color(dpg.mvNodeCol_Link, [0.0, 0.0, 0.0, 0.0], category=dpg.mvThemeCat_Nodes)
                 self.node_scalers[dpg.mvNodeStyleVar_LinkThickness] = 1
                 dpg.add_theme_style(dpg.mvNodeStyleVar_LinkThickness, self.node_scalers[dpg.mvNodeStyleVar_LinkThickness], category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvThemeCol_CheckMark, [255, 255, 0, 255], category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_SliderGrab, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_SliderGrabActive, (255, 255, 0, 128), category=dpg.mvThemeCat_Core)
                 self.node_scalers[dpg.mvNodeCol_Pin] = [30, 100, 150]
                 dpg.add_theme_color(dpg.mvNodeCol_Pin, self.node_scalers[dpg.mvNodeCol_Pin], category=dpg.mvThemeCat_Nodes)
 

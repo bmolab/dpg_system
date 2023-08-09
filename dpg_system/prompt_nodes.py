@@ -111,10 +111,15 @@ class WeightedPromptNode(Node):
         for i in range(self.count):
             self.subprompts.append('')
             self.subprompt_weights.append(0.0)
-            self.prompt_inputs.append(self.add_input('in_' + str(i), widget_type='text_input', default_value='', triggers_execution=True))
+            self.prompt_inputs.append(self.add_input('', widget_type='text_input', widget_width=200, default_value='', triggers_execution=True))
 
         # self.clear_input = self.add_input('clear', callback=self.clear_fifo)
         self.output = self.add_output("weighted prompt out")
+        self.width_option = self.add_option("width", widget_type='drag_int', default_value=200, callback=self.set_size)
+
+    def set_size(self):
+        for i in range(self.count):
+            dpg.set_item_width(self.prompt_inputs[i].widget.uuid, self.width_option())
 
     def clear(self):
         for i in range(self.count):
@@ -142,8 +147,8 @@ class WeightedPromptNode(Node):
                     relative_weight = any_to_float(prompt[1])
         elif type(prompt) in [float, int]:
             relative_weight = any_to_float(prompt)
-            if len(self.subprompts[index]) == 0:
-                self.prompt_inputs[index].set(self.subprompts[index])
+            if len(self.subprompts[index]) > 0:
+                self.prompt_inputs[index].set(self.subprompts[index] + '@' + str(relative_weight))
 
         if len(self.subprompts[index]) > 0:
             if self.subprompts[index][-1] == ' ':

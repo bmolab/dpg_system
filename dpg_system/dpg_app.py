@@ -519,6 +519,9 @@ class App:
                 dpg.add_theme_style(dpg.mvStyleVar_FramePadding, self.frame_padding[0], self.frame_padding[1], category=dpg.mvThemeCat_Core)
                 dpg.add_theme_style(dpg.mvStyleVar_CellPadding, self.cell_padding[0], self.cell_padding[1], category=dpg.mvThemeCat_Core)
                 dpg.add_theme_style(dpg.mvStyleVar_ItemSpacing, self.item_spacing[0], self.item_spacing[1], category=dpg.mvThemeCat_Core)
+                dpg.add_theme_style(dpg.mvStyleVar_GrabMinSize, 4, 4, category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_SliderGrab, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_SliderGrabActive, (255, 255, 0, 128), category=dpg.mvThemeCat_Core)
                 # dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (200, 200, 0, 255), category=dpg.mvThemeCat_Core)
                 # dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (200, 200, 0, 255), category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
@@ -1757,7 +1760,6 @@ class App:
         dpg.set_primary_window(main_window, True)
         dpg.show_viewport()
         self.open_default_patch()
-
 
     def run_loop(self):
         elapsed = 0

@@ -6,6 +6,7 @@ from OpenGL.GLU import *
 from dpg_system.body_defs import *
 from pylab import *
 
+
 class Joint:
     def __init__(self, in_body, in_name, in_index):
         self.body = in_body
