@@ -41,6 +41,50 @@ class PyBulletBodyNode(Node):
         'right_wrist': 18
     }
 
+    joint_reverse_index = {
+        0: 'left_hip',
+        1: 'left_knee',
+        2: 'left_ankle',
+        3: 'right_hip',
+        4: 'right_knee',
+        5: 'right_ankle',
+        6: 'lower_back',
+        7: 'upper_back',
+        8: 'chest',
+        9: 'lower_neck',
+        10: 'upper_neck',
+        11: 'left_clavicle',
+        12: 'left_shoulder',
+        13: 'left_elbow',
+        14: 'left_wrist',
+        15: 'right_clavicle',
+        16: 'right_shoulder',
+        17: 'right_elbow',
+        18: 'right_wrist'
+    }
+
+    joint_to_shadow_index = {
+        'left_hip': 14,
+        'left_knee': 12,
+        'left_ankle': 8,
+        'right_hip': 28,
+        'right_knee': 26,
+        'right_ankle': 22,
+        'lower_back': 31,
+        'upper_back': 32,
+        'chest': 1,
+        'lower_neck': 17,
+        'upper_neck': 2,
+        'left_clavicle': 13,
+        'left_shoulder': 5,
+        'left_elbow': 9,
+        'left wrist': 10,
+        'right_clavicle': 27,
+        'right_shoulder': 19,
+        'right_elbow': 23,
+        'right_wrist': 24
+    }
+
     @staticmethod
     def factory(name, data, args=None):
         node = PyBulletBodyNode(name, data, args)
@@ -67,23 +111,27 @@ class PyBulletBodyNode(Node):
 
             if jointType == p.JOINT_SPHERICAL:
                 targetPosition = [0, 0, 0, 1]
-                p.setJointMotorControlMultiDof(self.body_id, j, p.POSITION_CONTROL, targetPosition, targetVelocity=[0, 0, 0],
-                                               positionGain=0, velocityGain=1, force=[0, 0, 0])
+                p.setJointMotorControlMultiDof(self.body_id, j, p.POSITION_CONTROL, targetPosition, targetVelocity=[0, 0, 0], positionGain=0, velocityGain=1, force=[0, 0, 0])
             if jointType == p.JOINT_PRISMATIC or jointType == p.JOINT_REVOLUTE:
                 p.setJointMotorControl2(self.body_id, j, p.VELOCITY_CONTROL, targetVelocity=0, force=0)
 
         self.joint_orientations = []
         self.joint_forces = []
-
+        self.out_pose = np.array([[1.0, 0.0, 0.0, 0.0]] * 37)
         self.trigger_input = self.add_input('step', triggers_execution=True)
-        self.pelvis_position = self.add_input('pelvis_position')
-        self.pelvis_orientation = self.add_input('pelvis_orientation')
+        self.pelvis_position = self.add_input('pelvis_position', callback=self.receive_data)
+        self.received_data = False
+        self.pelvis_orientation = self.add_input('pelvis_orientation', callback=self.receive_data)
         keys = list(self.joint_index.keys())
         for joint in keys:
-            self.joint_orientations.append(self.add_input(joint))
+            self.joint_orientations.append(self.add_input(joint, callback=self.receive_data))
         # we need inputs for each joint (quaternion)
         for joint in keys:
             self.joint_forces.append(self.add_output(joint))
+        self.pose_out = self.add_output('pose_out')
+
+    def receive_data(self):
+        self.received_data = True
 
     def disable_motors(self):
         for j in range(p.getNumJoints(self.body_id)):
@@ -101,15 +149,28 @@ class PyBulletBodyNode(Node):
     def execute(self):
         # get joint positions
         if p.isConnected():
-            joint_orientations = np.ndarray((len(self.movable_indices), 4))
-            for index in self.movable_indices:
-                joint_orientations[index] = np.roll(self.joint_orientations[index](), -1)
+            if self.received_data:
+                joint_orientations = np.ndarray((len(self.movable_indices), 4))
+                for index in self.movable_indices:
+                    joint_orientations[index] = np.roll(self.joint_orientations[index](), -1)
 
-            p.resetBasePositionAndOrientation(self.body_id, self.pelvis_position(), np.roll(self.pelvis_orientation(), -1))
-            p.resetJointStatesMultiDof(self.body_id, self.movable_indices, joint_orientations)
+                p.resetBasePositionAndOrientation(self.body_id, self.pelvis_position(), np.roll(self.pelvis_orientation(), -1))
+                p.resetJointStatesMultiDof(self.body_id, self.movable_indices, joint_orientations)
+                self.received_data = False
 
             p.stepSimulation()
+            # built shadow pose
+            for joint_idx in self.movable_indices:
+                if joint_idx in self.joint_reverse_index:
+                    joint = self.joint_reverse_index[joint_idx]
+                    if joint in self.joint_to_shadow_index:
+                        joint_state_dof = p.getJointStateMultiDof(self.body_id, joint_idx)
+                        self.out_pose[self.joint_to_shadow_index[joint]] = np.roll(joint_state_dof[0], 1)
+            _, self.out_pose[4] = p.getBasePositionAndOrientation(self.body_id)
+            self.out_pose[4] = np.roll(self.out_pose[4], 1)
 
             for joint_idx in self.movable_indices:
                 joint_state_dof = p.getJointStateMultiDof(self.body_id, joint_idx)
                 self.joint_forces[joint_idx].send(list(joint_state_dof[2]))
+
+            self.pose_out.send(self.out_pose)
