@@ -1031,7 +1031,8 @@ class App:
                 for node_uuid in node_uuids:
                     node = dpg.get_item_user_data(node_uuid)
                     if node is not None:
-                        editor.remove_node(node)
+                        if node != editor.origin:
+                            editor.remove_node(node)
                 for link_uuid in link_uuids:
                     if dpg.does_item_exist(link_uuid):
                         dat = dpg.get_item_user_data(link_uuid)
@@ -1047,12 +1048,10 @@ class App:
 
     def place_node(self, node):
         mouse_pos = dpg.get_mouse_pos(local=False)
-        panel_pos = dpg.get_item_pos(self.center_panel)
-        mouse_pos[0] -= (panel_pos[0] + 8)
-        mouse_pos[1] -= (panel_pos[1] + 8)
         editor = self.get_current_editor()
         if editor is not None:
-            node.create(editor.uuid, pos=mouse_pos)
+            editor_mouse_pos = editor.global_pos_to_editor_pos(mouse_pos)
+            node.create(editor.uuid, pos=editor_mouse_pos)
             editor.add_node(node)
 
     def int_handler(self):
@@ -1319,21 +1318,18 @@ class App:
                         if widget.callback is not None:
                             widget.callback()
 
+
     def new_handler(self, name=None):
         if self.get_current_editor() is not None:
-            origin = self.get_current_editor().origin
+            editor = self.get_current_editor()
 
             if self.active_widget == -1:
                 node = PlaceholderNode.factory("New Node", None)
-                mouse_pos = dpg.get_mouse_pos(local=False)
-                panel_pos = dpg.get_item_pos(self.center_panel)
-                origin_pos = dpg.get_item_pos(origin.ref_property.widget.uuid)
-                origin_node_pos = dpg.get_item_pos(origin.uuid)
-
-                mouse_pos[0] -= (panel_pos[0] + 8 + (origin_pos[0] - origin_node_pos[0]) - 4)
-                mouse_pos[1] -= (panel_pos[1] + 8 + (origin_pos[1] - origin_node_pos[1]) - 15)
-                node.create(self.get_current_editor().uuid, pos=mouse_pos)
-                self.get_current_editor().add_node(node)
+                self.place_node(node)
+                # mouse_pos = dpg.get_mouse_pos(local=False)
+                # editor_mouse_pos = editor.global_pos_to_editor_pos(mouse_pos)
+                # node.create(editor.uuid, pos=editor_mouse_pos)
+                # editor.add_node(node)
                 if name is not None:
                     self.set_widget_focus(node.name_property.widget.uuid)
                     dpg.set_value(node.name_property.widget.uuid, name)
