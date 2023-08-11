@@ -736,11 +736,20 @@ def string_to_num2(s):
 
 def is_number(s):
     if type(s) == str:
-        if s[0] == '-':
-            b = s[1:]
-            return b.replace('.', '', 1).isdigit()
+        if len(s) > 0:
+            if s[0] == '-':
+                b = s[1:]
+                return b.replace('.', '', 1).isdigit()
+            else:
+                return s.replace('.', '', 1).isdigit()
         else:
-            return s.replace('.', '', 1).isdigit()
+            return False
+    elif type(s) in [float, int, complex]:
+        return True
+    else:
+        return False
+
+
 
 
 def is_float(s):

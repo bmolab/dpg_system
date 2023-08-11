@@ -111,9 +111,10 @@ class WeightedPromptNode(Node):
         for i in range(self.count):
             self.subprompts.append('')
             self.subprompt_weights.append(0.0)
-            self.prompt_inputs.append(self.add_input('', widget_type='text_input', widget_width=200, default_value='', triggers_execution=True))
+            self.prompt_inputs.append(self.add_input('##' + str(i), widget_type='text_input', widget_width=200, default_value='', triggers_execution=True))
 
         # self.clear_input = self.add_input('clear', callback=self.clear_fifo)
+        self.strength = self.add_input('strength', widget_type='drag_float', default_value=1.0, triggers_execution=True)
         self.output = self.add_output("weighted prompt out")
         self.width_option = self.add_option("width", widget_type='drag_int', default_value=200, callback=self.set_size)
 
@@ -124,10 +125,13 @@ class WeightedPromptNode(Node):
     def clear(self):
         for i in range(self.count):
             self.prompt_inputs[i].set('')
+            self.subprompts = []
+            self.subprompt_weights = []
+            self.subprompts.append('')
+            self.subprompt_weights.append(0.0)
         self.output.send([])
 
-    def execute(self):
-        index = self.active_input.input_index
+    def process_prompt(self, index):
         prompt = self.prompt_inputs[index]()
         relative_weight = 1.0
         if is_number(prompt):
@@ -156,10 +160,19 @@ class WeightedPromptNode(Node):
 
         self.subprompt_weights[index] = relative_weight
 
+    def load_custom(self, container):
+        for i in range(self.count):
+            self.process_prompt(i)
+
+    def execute(self):
+        index = self.active_input.input_index
+        if index < self.count:
+            self.process_prompt(index)
+        strength = self.strength()
         ambient_prompt_list = []
         for i in range(len(self.subprompts)):
             if self.subprompts[i] != '':
-                entry = [self.subprompts[i], self.subprompt_weights[i]]
+                entry = [self.subprompts[i], self.subprompt_weights[i] * strength]
                 ambient_prompt_list.append(entry)
         self.output.send(ambient_prompt_list)
 

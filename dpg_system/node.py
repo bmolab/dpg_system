@@ -523,7 +523,7 @@ class PropertyWidget:
             self.action()
         if self.callback is not None:
             self.callback()
-        if self.triggers_execution:
+        if self.triggers_execution and not self.node.in_loading_process:
             self.node.active_input = self.input
             self.node.execute()
             self.node.active_input = None
@@ -1067,6 +1067,7 @@ class Node:
         self.visibility = 'show_all'
         self.presentation_state = 'show_all'
         self.active_input = None
+        self.in_loading_process = False
 
     def custom_cleanup(self):
         pass
@@ -1393,6 +1394,7 @@ class Node:
             self.store_properties(node_container)
 
     def load(self, node_container, offset=None):
+        self.in_loading_process = True
         if offset is None:
             offset = [0, 0]
         if node_container is not None:
@@ -1415,6 +1417,7 @@ class Node:
             if 'presentation_state' in node_container:
                 self.presentation_state = node_container['presentation_state']
             self.restore_properties(node_container)
+        self.in_loading_process = False
 
     def store_properties(self, node_container):
         properties_container = {}
