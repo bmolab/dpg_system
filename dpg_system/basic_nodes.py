@@ -53,7 +53,8 @@ def register_basic_nodes():
     Node.app.register_node('length', LengthNode.factory)
     Node.app.register_node('time_between', TimeBetweenNode.factory)
     Node.app.register_node('word_replace', WordReplaceNode.factory)
-
+    Node.app.register_node('split', SplitNode.factory)
+    Node.app.register_node('join', JoinNode.factory)
 
 class CommentNode(Node):
     comment_theme = None
@@ -912,6 +913,7 @@ class RouteNode(Node):
 
         for i in range(self.router_count):
             self.add_output(any_to_string(args[i]))
+        self.miss_out = self.add_output('unmatched')
         for i in range(self.router_count):
             val, t = decode_arg(args, i)
             self.routers.append(val)
@@ -932,7 +934,7 @@ class RouteNode(Node):
             # this does not update the label
             dpg.set_item_label(self.outputs[i].uuid, label=new_routers[i])
             sel, t = decode_arg(new_routers, i)
-            self.routers[i] = sel
+            self.routers[i] = any_to_string(sel)
 
     def execute(self):
         if self.new_routers:
@@ -945,12 +947,18 @@ class RouteNode(Node):
             t = list
         if t == list:
             if len(data) > 1:
-                router = data[0]
+                router = any_to_string(data[0])
                 if router in self.routers:
                     index = self.routers.index(router)
                     message = data[1:]
                     if index < len(self.outputs):
                         self.outputs[index].send(message)
+                else:
+                    self.miss_out.send(self.input())
+            else:
+                self.miss_out.send(self.input())
+        else:
+            self.miss_out.send(self.input())
 
 
 class TriggerNode(Node):
@@ -1098,6 +1106,58 @@ class CombineNode(Node):
         for i in range(self.num_ins):
             output_string += any_to_string(self.inputs[i]._data)
         self.output.send(output_string)
+
+
+class SplitNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = SplitNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('in', triggers_execution=True)
+        self.split_token = ' '
+        if len(args) > 0:
+            split_token = any_to_string(args[0])
+        self.split_token = self.add_input('split at', widget_type='text_input', default_value=split_token)
+        self.output = self.add_output("substrings out")
+
+    def execute(self):
+        in_string = self.input()
+        t = type(in_string)
+        if t == list:
+            in_string = ' '.join(in_string)
+        splits = in_string.split(self.split_token())
+        self.output.send(splits)
+
+class JoinNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = JoinNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('in', triggers_execution=True)
+        join_token = ' '
+        if len(args) > 0:
+            join_token = any_to_string(args[0])
+
+        self.join_token = self.add_input('join with', widget_type='text_input', default_value=join_token)
+        self.output = self.add_output("string out")
+
+    def execute(self):
+        in_list = self.input()
+        t = type(in_list)
+        if t == str:
+            in_list = in_list.split(' ')
+        elif t != list:
+            in_list = any_to_list(in_list)
+        joined = self.join_token().join(in_list)
+        self.output.send(joined)
 
 
 class CombineFIFONode(Node):

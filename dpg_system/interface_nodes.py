@@ -852,14 +852,19 @@ class ValueNode(Node):
             self.variable.detach_client(self)
 
     def execute(self):
+        # does not accept list of one element....
         value = None
         if self.inputs[0].fresh_input:
             in_data = self.inputs[0]()
             t = type(in_data)
+            if t == list:
+                if len(in_data) == 1:
+                    value = in_data[0]
+                    t = type(value)
+                else:
+                    value = in_data
             if t == str:
                 value = in_data.split(' ')
-            elif t == list:
-                value = in_data
             elif t in [float, int, bool]:
                 value = in_data
             else:

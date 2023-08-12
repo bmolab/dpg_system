@@ -1,3 +1,4 @@
+import dearpygui.dearpygui as dpg
 from pythonosc import osc_server
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.dispatcher import Dispatcher
@@ -15,6 +16,7 @@ def register_osc_nodes():
     Node.app.register_node('osc_receive', OSCReceiveNode.factory)
     Node.app.register_node('osc_target', OSCTargetNode.factory)
     Node.app.register_node('osc_send', OSCSendNode.factory)
+    Node.app.register_node('osc_route', OSCRouteNode.factory)
 
 
 # def osc_handler(address, *args):
@@ -737,3 +739,82 @@ class OSCSendNode(Node):
             if data is not None:
                 if self.target and self.address != '':
                     self.target.send_message(self.address, data)
+
+
+class OSCRouteNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = OSCRouteNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.router_count = 0
+
+        if len(args) > 0:
+            self.router_count = len(args)
+
+        self.out_mode = 0
+        self.routers = []
+        self.router_options = []
+        self.last_states = []
+        self.current_states = []
+
+        self.input = self.add_input("in", triggers_execution=True)
+
+        for i in range(self.router_count):
+            self.add_output(any_to_string(args[i]))
+        self.miss_out = self.add_output('unmatched')
+        for i in range(self.router_count):
+            val, t = decode_arg(args, i)
+            self.routers.append(any_to_string(val))
+        for i in range(self.router_count):
+            an_option = self.add_option('route address ' + str(i), widget_type='text_input', default_value=args[i], callback=self.routers_changed)
+            self.router_options.append(an_option)
+
+        self.new_routers = False
+
+    def routers_changed(self):
+        self.new_routers = True
+
+    def update_routers(self):
+        new_routers = []
+        for i in range(self.router_count):
+            new_routers.append(self.router_options[i]())
+        for i in range(self.router_count):
+            # this does not update the label
+            dpg.set_item_label(self.outputs[i].uuid, label=new_routers[i])
+            sel, t = decode_arg(new_routers, i)
+            self.routers[i] = any_to_string(sel)
+
+    def execute(self):
+        if self.new_routers:
+            self.update_routers()
+            self.new_routers = False
+        data = self.input()
+        t = type(data)
+        if t == str:
+            data = data.split(' ')
+            t = list
+        if t == list:
+            if len(data) > 1:
+                router = any_to_string(data[0])
+                split = router.split('/')
+                if split[0] == '':
+                    split = split[1:]
+                router = split[0]
+                if router in self.routers:
+                    index = self.routers.index(router)
+                    if len(split) > 1:
+                        message = ['/'.join(split[1:])] + data[1:]
+                    else:
+                        message = data[1:]
+                    if index < len(self.outputs):
+                        self.outputs[index].send(message)
+                else:
+                    self.miss_out.send(self.input())
+            else:
+                self.miss_out.send(self.input())
+        else:
+            self.miss_out.send(self.input())
