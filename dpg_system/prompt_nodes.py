@@ -133,7 +133,7 @@ class WeightedPromptNode(Node):
 
     def process_prompt(self, index):
         prompt = self.prompt_inputs[index]()
-        relative_weight = 1.0
+        relative_weight = self.subprompt_weights[index]
         if is_number(prompt):
             prompt = any_to_float(prompt)
         if type(prompt) == str:
@@ -141,18 +141,25 @@ class WeightedPromptNode(Node):
             self.subprompts[index] = prompt_split[0]
             if len(prompt_split) > 1:
                 relative_weight = any_to_float(prompt_split[1])
+            if len(self.subprompts[index]) > 0:
+                self.prompt_inputs[index].set(self.subprompts[index] + '@{:.3f}'.format(relative_weight))
         elif type(prompt) == list:
-            if len(prompt) == 2:
-                if type(prompt[0]) == str:
-                    self.subprompts[index] = prompt[0]
-                if type(prompt[1]) in [float, int]:
-                    relative_weight = prompt[1]
-                elif type(prompt[1]) == str:
-                    relative_weight = any_to_float(prompt[1])
+            sub = ''
+            for i in range(len(prompt)):
+                if type(prompt[i]) == str:
+                    if len(sub) > 0:
+                        sub += ' '
+                    sub += prompt[i]
+                elif type(prompt[i]) == float:
+                    relative_weight = prompt[i]
+            if sub != '':
+                self.subprompts[index] = sub
+            if len(self.subprompts[index]) > 0:
+                self.prompt_inputs[index].set(self.subprompts[index] + '@{:.3f}'.format(relative_weight))
         elif type(prompt) in [float, int]:
             relative_weight = any_to_float(prompt)
             if len(self.subprompts[index]) > 0:
-                self.prompt_inputs[index].set(self.subprompts[index] + '@' + str(relative_weight))
+                self.prompt_inputs[index].set(self.subprompts[index] + '@{:.3f}'.format(relative_weight))
 
         if len(self.subprompts[index]) > 0:
             if self.subprompts[index][-1] == ' ':
