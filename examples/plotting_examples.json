@@ -5,16 +5,38 @@
         100,
         100
     ],
-    "name": "simple_sin_plot",
-    "path": "/Users/drokeby/PycharmProjects/guitest/simple_sin_plot.json",
+    "id": 1821,
+    "name": "plotting_examples",
+    "path": "/Users/drokeby/dpg_system/examples/plotting_examples.json",
     "nodes": {
         "0": {
+            "name": "",
+            "id": 1848,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
             "name": "signal",
-            "id": 1444,
+            "id": 1869,
             "position_x": 106,
             "position_y": 189,
             "width": 129,
             "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "on",
@@ -48,13 +70,16 @@
                 }
             }
         },
-        "1": {
+        "2": {
             "name": "plot",
-            "id": 1495,
+            "id": 1906,
             "position_x": 509,
             "position_y": 211,
             "width": 308,
-            "height": 162,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "style",
@@ -63,7 +88,7 @@
                 },
                 "1": {
                     "name": "color",
-                    "value": "viridis",
+                    "value": "deep",
                     "value_type": "string"
                 },
                 "2": {
@@ -72,49 +97,62 @@
                     "value_type": "int"
                 },
                 "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
                     "name": "width",
                     "value": 300,
                     "value_type": "int"
                 },
-                "4": {
+                "5": {
                     "name": "height",
                     "value": 128,
                     "value_type": "int"
                 },
-                "5": {
+                "6": {
                     "name": "min x",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "6": {
+                "7": {
                     "name": "max x",
                     "value": 200.0,
                     "value_type": "float"
                 },
-                "7": {
+                "8": {
                     "name": "min y",
                     "value": -2.0,
                     "value_type": "float"
                 },
-                "8": {
+                "9": {
                     "name": "max y",
                     "value": 2.0,
                     "value_type": "float"
                 },
-                "9": {
+                "10": {
                     "name": "number format",
                     "value": "",
                     "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
                 }
             }
         },
-        "2": {
+        "3": {
             "name": "signal",
-            "id": 1552,
+            "id": 1965,
             "position_x": 101,
             "position_y": 323,
             "width": 129,
             "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "on",
@@ -148,28 +186,27 @@
                 }
             }
         },
-        "3": {
+        "4": {
             "name": "+",
-            "id": 1603,
+            "id": 2002,
             "position_x": 316,
             "position_y": 310,
-            "width": 88,
+            "width": 52,
             "height": 66,
-            "properties": {
-                "0": {
-                    "name": "",
-                    "value": 0.08343145251274109,
-                    "value_type": "float"
-                }
-            }
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
         },
-        "4": {
+        "5": {
             "name": "heat_scroll",
-            "id": 1641,
+            "id": 2022,
             "position_x": 664,
             "position_y": 430,
             "width": 308,
-            "height": 162,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "style",
@@ -187,81 +224,100 @@
                     "value_type": "int"
                 },
                 "3": {
+                    "name": "array fills plot",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "4": {
                     "name": "width",
                     "value": 300,
                     "value_type": "int"
                 },
-                "4": {
+                "5": {
                     "name": "height",
                     "value": 128,
                     "value_type": "int"
                 },
-                "5": {
+                "6": {
                     "name": "min x",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "6": {
+                "7": {
                     "name": "max x",
                     "value": 200.0,
                     "value_type": "float"
                 },
-                "7": {
+                "8": {
                     "name": "min y",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "8": {
+                "9": {
                     "name": "max y",
                     "value": 1.0,
                     "value_type": "float"
                 },
-                "9": {
+                "10": {
                     "name": "number format",
                     "value": "",
                     "value_type": "string"
-                }
-            }
-        },
-        "5": {
-            "init": "+ 2",
-            "name": "+",
-            "id": 1698,
-            "position_x": 422,
-            "position_y": 442,
-            "width": 88,
-            "height": 66,
-            "properties": {
-                "0": {
-                    "name": "",
-                    "value": 2.0,
-                    "value_type": "float"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
                 }
             }
         },
         "6": {
-            "init": "/ 2",
-            "name": "/",
-            "id": 1768,
-            "position_x": 540,
-            "position_y": 445,
+            "init": "+ 2",
+            "name": "+",
+            "id": 2081,
+            "position_x": 422,
+            "position_y": 442,
             "width": 88,
             "height": 66,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "",
-                    "value": 4.0,
-                    "value_type": "float"
+                    "value": 2,
+                    "value_type": "int"
                 }
             }
         },
         "7": {
+            "init": "/ 2",
+            "name": "/",
+            "id": 2102,
+            "position_x": 540,
+            "position_y": 445,
+            "width": 88,
+            "height": 66,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 4,
+                    "value_type": "int"
+                }
+            }
+        },
+        "8": {
             "name": "mouse",
-            "id": 1805,
+            "id": 2123,
             "position_x": 209,
             "position_y": 73,
             "width": 39,
             "height": 66,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "",
@@ -270,17 +326,20 @@
                 }
             }
         },
-        "8": {
+        "9": {
             "name": "int",
-            "id": 1829,
+            "id": 2147,
             "position_x": 303,
             "position_y": 51,
             "width": 130,
             "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "",
-                    "value": 79,
+                    "value": 82,
                     "value_type": "int"
                 },
                 "1": {
@@ -289,44 +348,70 @@
                     "value_type": "string"
                 },
                 "2": {
-                    "name": "format",
-                    "value": "%.3f",
-                    "value_type": "string"
-                }
-            }
-        },
-        "9": {
-            "name": "int",
-            "id": 1856,
-            "position_x": 306,
-            "position_y": 126,
-            "width": 130,
-            "height": 48,
-            "properties": {
-                "0": {
-                    "name": "",
-                    "value": 444,
+                    "name": "width",
+                    "value": 100,
                     "value_type": "int"
                 },
-                "1": {
-                    "name": "bind to",
-                    "value": "",
-                    "value_type": "string"
-                },
-                "2": {
+                "3": {
                     "name": "format",
                     "value": "%.3f",
                     "value_type": "string"
+                },
+                "4": {
+                    "name": "large_font",
+                    "value": false,
+                    "value_type": "bool"
                 }
             }
         },
         "10": {
+            "name": "int",
+            "id": 2179,
+            "position_x": 306,
+            "position_y": 126,
+            "width": 130,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 446,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "large_font",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "11": {
             "name": "plot",
-            "id": 1899,
+            "id": 2211,
             "position_x": 507,
             "position_y": 17,
             "width": 308,
-            "height": 162,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "style",
@@ -335,7 +420,7 @@
                 },
                 "1": {
                     "name": "color",
-                    "value": "viridis",
+                    "value": "deep",
                     "value_type": "string"
                 },
                 "2": {
@@ -344,96 +429,106 @@
                     "value_type": "int"
                 },
                 "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
                     "name": "width",
                     "value": 300,
                     "value_type": "int"
                 },
-                "4": {
+                "5": {
                     "name": "height",
                     "value": 128,
                     "value_type": "int"
                 },
-                "5": {
+                "6": {
                     "name": "min x",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "6": {
+                "7": {
                     "name": "max x",
                     "value": 200.0,
                     "value_type": "float"
                 },
-                "7": {
+                "8": {
                     "name": "min y",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "8": {
+                "9": {
                     "name": "max y",
                     "value": 1080.0,
                     "value_type": "float"
                 },
-                "9": {
+                "10": {
                     "name": "number format",
                     "value": "",
                     "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
                 }
             }
         }
     },
     "links": {
         "0": {
-            "source_node": 1444,
+            "source_node": 1869,
             "source_output_index": 0,
-            "dest_node": 1603,
+            "dest_node": 2002,
             "dest_input_index": 0
         },
         "1": {
-            "source_node": 1552,
+            "source_node": 1965,
             "source_output_index": 0,
-            "dest_node": 1603,
+            "dest_node": 2002,
             "dest_input_index": 1
         },
         "2": {
-            "source_node": 1603,
+            "source_node": 2002,
             "source_output_index": 0,
-            "dest_node": 1495,
+            "dest_node": 1906,
             "dest_input_index": 0
         },
         "3": {
-            "source_node": 1603,
+            "source_node": 2002,
             "source_output_index": 0,
-            "dest_node": 1698,
+            "dest_node": 2081,
             "dest_input_index": 0
         },
         "4": {
-            "source_node": 1698,
+            "source_node": 2081,
             "source_output_index": 0,
-            "dest_node": 1768,
+            "dest_node": 2102,
             "dest_input_index": 0
         },
         "5": {
-            "source_node": 1768,
+            "source_node": 2102,
             "source_output_index": 0,
-            "dest_node": 1641,
+            "dest_node": 2022,
             "dest_input_index": 0
         },
         "6": {
-            "source_node": 1805,
+            "source_node": 2123,
             "source_output_index": 0,
-            "dest_node": 1829,
+            "dest_node": 2147,
             "dest_input_index": 0
         },
         "7": {
-            "source_node": 1805,
+            "source_node": 2123,
             "source_output_index": 1,
-            "dest_node": 1856,
+            "dest_node": 2179,
             "dest_input_index": 0
         },
         "8": {
-            "source_node": 1856,
+            "source_node": 2179,
             "source_output_index": 0,
-            "dest_node": 1899,
+            "dest_node": 2211,
             "dest_input_index": 0
         }
     }

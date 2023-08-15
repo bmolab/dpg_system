@@ -725,7 +725,9 @@ class RangerNode(Node):
                 out = (self.outMax - self.outMin) * out + self.outMin
                 self.output.send(out)
             elif t == list:
-                inData = list_to_array(inData)
+                inData = list_to_array(inData, validate=True)
+                if inData is None:
+                    return
                 t = np.ndarray
             if t == np.ndarray:
                 if self.calibrating:

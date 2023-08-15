@@ -852,19 +852,22 @@ class ValueNode(Node):
             self.variable.detach_client(self)
 
     def execute(self):
-        # does not accept list of one element....
         value = None
         if self.inputs[0].fresh_input:
             in_data = self.inputs[0]()
             t = type(in_data)
+            if t == str:
+                value = in_data.split(' ')
+                t = list
             if t == list:
                 if len(in_data) == 1:
                     value = in_data[0]
                     t = type(value)
                 else:
+                    if self.input.widget.widget in ['drag_float', 'drag_int', 'input_float', 'input_int', 'slider_float', 'slider_int', 'knob_float', 'knob_int']:
+                        if not is_number(in_data[0]):
+                            return
                     value = in_data
-            if t == str:
-                value = in_data.split(' ')
             elif t in [float, int, bool]:
                 value = in_data
             else:
@@ -892,6 +895,10 @@ class ValueNode(Node):
                         value = value.split(' ')
                         if len(value) == 1:
                             value = value[0]
+                if self.input.widget.widget in ['drag_float', 'drag_int', 'input_float', 'input_int', 'slider_float', 'slider_int', 'knob_float', 'knob_int']:
+                    if not is_number(value):
+                        return
+
             if self.variable is not None:
                 self.variable.set(value, from_client=self)
         if self.input.widget.widget == 'text_input':
@@ -1641,8 +1648,14 @@ class PlotNode(Node):
                     data = tensor_to_array(data)
                     t = np.ndarray
                 elif t == list:
-                    data = list_to_array(data)
-                    t = np.ndarray
+                    if len(data) == 1:
+                        ii = any_to_array(float(data[0]))
+                        self.y_data.update(ii)
+                    else:
+                        data = list_to_array(data, validate=True)
+                        if data is None:
+                            return
+                        t = np.ndarray
                 if t == np.ndarray:
                     if data.dtype in [np.csingle, np.cdouble, np.clongdouble]:
                         data = data.real
@@ -1709,13 +1722,21 @@ class PlotNode(Node):
                     ii = (ii + self.offset) / self.range
                     self.y_data.update(ii)
                 elif t == list:
-                    rows = len(data)
-                    if rows != self.rows:
-                        self.rows = rows
-                        self.sample_count_option.set(self.sample_count)
-                    ii = list_to_array(data).reshape((rows, 1))
-                    ii = (ii + self.offset) / self.range
-                    self.y_data.update(ii)
+                    if len(data) == 1:
+                        ii = any_to_array(data[0])
+                        ii = (ii + self.offset) / self.range
+                        self.y_data.update(ii)
+                    else:
+                        rows = len(data)
+                        if rows != self.rows:
+                            self.rows = rows
+                            self.sample_count_option.set(self.sample_count)
+                        ii = list_to_array(data, validate=True)
+                        if ii is None:
+                            return
+                        ii = ii.reshape((rows, 1))
+                        ii = (ii + self.offset) / self.range
+                        self.y_data.update(ii)
                 elif t == np.ndarray:
                     if data.dtype in [float, np.float32, np.double, int, np.int64, np.bool_]:
                         rows = data.size
@@ -1737,8 +1758,21 @@ class PlotNode(Node):
                     self.y_data.update(ii)
 
                 elif t == list:
-                    data = list_to_array(data)
-                    t = np.ndarray
+                    if len(data) == 1:
+                        ii = any_to_array(data[0])
+                        if self.range != 1.0 or self.offset != 0:
+                            ii = (ii + self.offset) / self.range
+                        rows = 1
+                        sample_count = 1
+                        if rows != self.rows or sample_count != self.sample_count:
+                            self.rows = rows
+                            self.sample_count = sample_count
+                        self.y_data.update(ii)
+                    else:
+                        data = list_to_array(data, validate=True)
+                        if data is None:
+                            return
+                        t = np.ndarray
                 elif t == torch.Tensor:
                     data = tensor_to_array(data)
                     t = np.ndarray

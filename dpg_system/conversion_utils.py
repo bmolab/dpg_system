@@ -160,7 +160,7 @@ def any_to_float_or_int(data):
     return 0
 
 
-def any_to_numerical(data):
+def any_to_numerical(data, validate=False):
     t = type(data)
     if t in [float, int, np.ndarray]:
         return data
@@ -171,11 +171,13 @@ def any_to_numerical(data):
     elif t == str:
         return string_to_numerical(data)
     elif t in [list, tuple]:
-        return list_to_array(list(data))
+        return list_to_array(list(data), validate)
     elif t in [np.int64]:
         return int(data)
     elif t in [np.float32, np.double]:
         return float(data)
+    if validate:
+        return 0, False
     return 0
 
 
@@ -213,39 +215,40 @@ def any_to_tensor(data, device='cpu', dtype=torch.float32, requires_grad=False):
         elif t == bool:
             tensor_ = torch.tensor([data])
         elif t == str:
-            tensor_ = string_to_tensor(data)
+            tensor_ = string_to_tensor(data, validate=True)
         elif t in [list, tuple]:
             # print('list')
-            tensor_ = list_to_tensor(list(data))
+            tensor_ = list_to_tensor(list(data), validate=True)
         elif t in [np.int64, np.float32, np.double, np.bool_]:
             tensor_ = torch.tensor(data)
         else:
             tensor_ = torch.tensor([0])
-
-        if tensor_.device == device:
-            if dtype != tensor_.dtype:
-                if tensor_.requires_grad != requires_grad:
-                    tensor_ = tensor_.to(dtype=dtype, requires_grad=requires_grad)
-                else:
-                    tensor_ = tensor_.to(dtype=dtype)
-            elif tensor_.requires_grad != requires_grad:
-                tensor_.to(requires_grad=requires_grad)
-            return tensor_
-        else:
-            if dtype != tensor_.dtype:
-                if tensor_.requires_grad != requires_grad:
-                    tensor_ = tensor_.to(dtype=dtype, device=device, requires_grad=requires_grad)
-                else:
-                    tensor_ = tensor_.to(dtype=dtype, device=device)
-
-            elif tensor_.requires_grad != requires_grad:
-                tensor_.to(device=device, requires_grad=requires_grad)
+        if tensor_ is not None:
+            if tensor_.device == device:
+                if dtype != tensor_.dtype:
+                    if tensor_.requires_grad != requires_grad:
+                        tensor_ = tensor_.to(dtype=dtype, requires_grad=requires_grad)
+                    else:
+                        tensor_ = tensor_.to(dtype=dtype)
+                elif tensor_.requires_grad != requires_grad:
+                    tensor_.to(requires_grad=requires_grad)
+                return tensor_
             else:
-                tensor_.to(device=device)
-            return tensor_
+                if dtype != tensor_.dtype:
+                    if tensor_.requires_grad != requires_grad:
+                        tensor_ = tensor_.to(dtype=dtype, device=device, requires_grad=requires_grad)
+                    else:
+                        tensor_ = tensor_.to(dtype=dtype, device=device)
+
+                elif tensor_.requires_grad != requires_grad:
+                    tensor_.to(device=device, requires_grad=requires_grad)
+                else:
+                    tensor_.to(device=device)
+                return tensor_
     return None
 
-def any_to_array(data):
+
+def any_to_array(data, validate=False):
     t = type(data)
     homogenous = False
     if t == np.ndarray:
@@ -257,9 +260,9 @@ def any_to_array(data):
     elif t == bool:
         return np.array([data])
     elif t == str:
-        return string_to_array(data)
+        return string_to_array(data, validate=True)
     elif t in [list, tuple]:
-        return list_to_array(list(data))
+        return list_to_array(list(data), validate=True)
     elif t in [np.int64, np.float32, np.double, np.bool_]:
         return np.array(data)
     elif torch_available and t == torch.Tensor:
@@ -428,7 +431,7 @@ def string_to_hybrid_list(input):
 #     return out_array
 
 
-def string_to_tensor(input):
+def string_to_tensor(input, validate=False):
     if torch_available:
         out_tensor = torch.Tensor(0)
         try:
@@ -447,11 +450,13 @@ def string_to_tensor(input):
             #             out_tensor = torch.Tensor(hybrid_list)
             return out_tensor
         except:
-            pass
+            if validate:
+                return None
+            return out_tensor
     return None
 
 
-def string_to_array(input_string):
+def string_to_array(input_string, validate=False):
     arr = np.zeros((1))
     try:
         input_string = " ".join(input_string.split())
@@ -460,10 +465,12 @@ def string_to_array(input_string):
         arr = np.array(ast.literal_eval(arr_str))
     except:
         print('invalid string to cast as array')
+    if validate:
+        return None
     return arr
 
 
-def string_to_numerical(input_string):
+def string_to_numerical(input_string, validate=False):
     try:
         force_list = False
         if input_string[0] == '[':
@@ -476,6 +483,8 @@ def string_to_numerical(input_string):
         return arr
     except Exception as e:
         print(string_to_numerical, e)
+    if validate:
+        return None
     return np.zeros((1))
 
 
@@ -498,7 +507,7 @@ def list_to_hybrid_list(in_list):
     return hybrid_list, homogenous, types
 
 
-def list_to_array(input):
+def list_to_array(input, validate=False):
     hybrid_list, homogenous, types = list_to_hybrid_list(input)
     if homogenous:
         t = type(hybrid_list[0])
@@ -507,10 +516,12 @@ def list_to_array(input):
     else:
         if str not in types:
             return np.array(hybrid_list)
+    if validate:
+        return None
     return np.ndarray(0)
 
 
-def list_to_tensor(input):
+def list_to_tensor(input, validate=False):
     if torch_available:
         hybrid_list, homogenous, types = list_to_hybrid_list(input)
         # print(hybrid_list)
@@ -529,8 +540,13 @@ def list_to_tensor(input):
             # print('not homo')
             if str not in types:
                 return torch.Tensor(hybrid_list)
+        if validate:
+            None
         return torch.Tensor(0)
+    if validate:
+        return None
     return None
+
 
 def list_to_array_or_list_if_hetero(input):
     hybrid_list, homogenous, types = list_to_hybrid_list(input)
@@ -543,6 +559,7 @@ def list_to_array_or_list_if_hetero(input):
             if str not in types:
                 return np.array(hybrid_list), True
     return hybrid_list, False
+
 
 def list_to_tensor_or_list_if_hetero(input):
     hybrid_list, homogenous, types = list_to_hybrid_list(input)
@@ -557,7 +574,8 @@ def list_to_tensor_or_list_if_hetero(input):
                 return torch.Tensor(hybrid_list), True
     return hybrid_list, False
 
-def list_to_int(input):
+
+def list_to_int(input, validate=False):
     output = 0
     try:
         if len(input) > 0:
@@ -570,11 +588,12 @@ def list_to_int(input):
             elif t == str:
                 output = string_to_int(val)
     except:
-        pass
+        if validate:
+            return None
     return output
 
 
-def list_to_float(input):
+def list_to_float(input, validate=False):
     output = 0.0
     try:
         if len(input) > 0:
@@ -587,7 +606,8 @@ def list_to_float(input):
             elif t == str:
                 output = string_to_float(val)
     except:
-        pass
+        if validate:
+            return None
     return output
 
 
@@ -677,12 +697,15 @@ def string_to_float_or_int(input):
                 return 0
     return 0
 
+
 def string_to_bool(input):
     if input == 'True':
         return True
     elif input == 'False':
         return False
     elif input == '0':
+        return False
+    elif input == '':
         return False
     return True
 
@@ -735,6 +758,10 @@ def string_to_num2(s):
 
 
 def is_number(s):
+    if type(s) == list:
+        if len(s) == 1:
+            if type(s[0]) in [float, int, complex]:
+                return True
     if type(s) == str:
         if len(s) > 0:
             if s[0] == '-':

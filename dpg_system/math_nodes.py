@@ -564,12 +564,13 @@ class OpSingleTrigNode(Node):
         # get values from static attributes
         self.use_degrees = self.use_degrees_property()
 
-        input_value = any_to_numerical(self.input())
-        t = type(input_value)
-        if t in [int, bool, np.int64, np.bool_]:
-            input_value = float(input_value)
-        output_value = self.op(input_value)
-        self.output.send(output_value)
+        input_value = any_to_numerical(self.input(), validate=True)
+        if input is not None:
+            t = type(input_value)
+            if t in [int, bool, np.int64, np.bool_]:
+                input_value = float(input_value)
+            output_value = self.op(input_value)
+            self.output.send(output_value)
 
     def sin(self, a):
         t = type(a)

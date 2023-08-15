@@ -44,11 +44,10 @@ class OSCManager:
         self.pending_messages = [[], []]
         self.pending_message_buffer = 0
 
-        OSCReceiveNode.osc_manager = self
         OSCSource.osc_manager = self
         OSCAsyncIOSourceNode.osc_manager = self
-        OSCSendNode.osc_manager = self
         OSCTarget.osc_manager = self
+        OSCBaseNode.osc_manager = self
         # if not self.started:
         #     osc_thread()
 
@@ -167,6 +166,7 @@ class OSCManager:
             print(receive_node.name)
         for send_node in self.send_nodes:
             print(send_node.name)
+
 
 
 class OSCTarget:
@@ -315,8 +315,19 @@ class OSCSource:
     def osc_handler(self, address, *args):
         if address in self.receive_nodes:
             self.receive_nodes[address].receive(args)
+            return
         else:
-            self.output_message_directly(address, args)
+            if '/' in address:
+                sub_addresses = address.split('/')
+                length = len(sub_addresses)
+                for i in range(1, length):
+                    temp = '/'.join(sub_addresses[:-i])
+                    if temp in self.receive_nodes:
+                        sub = ['/' + '/'.join(sub_addresses[-i:])] + list(args)
+                        self.receive_nodes[temp].receive(sub)
+                        return
+        self.output_message_directly(address, args)
+
 
     def output_message_directly(self, args):
         pass
@@ -591,8 +602,33 @@ class OSCAsyncIOSourceNode(OSCAsyncIOSource, Node):
             i += 1
 
 
-class OSCReceiveNode(Node):
+class OSCBaseNode(Node):
     osc_manager = None
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+    def parse_osc_address(self, data):
+        t = type(data)
+        if t == str:
+            data = data.split(' ')
+        else:
+            data = any_to_list(data)
+        router = any_to_string(data[0])
+        split = router.split('/')
+        if split[0] == '':
+            split = split[1:]
+        return split
+
+    def construct_osc_address(self, address_as_list):
+        if type(address_as_list) == str:
+            address_as_list = address_as_list.split(' ')
+        address = '/'.join(address_as_list)
+        address = '/' + address
+        return address
+
+
+class OSCReceiveNode(OSCBaseNode):
 
     @staticmethod
     def factory(name, data, args=None):
@@ -659,8 +695,7 @@ class OSCReceiveNode(Node):
         self.osc_manager.unregister_receive_node(self)
 
 
-class OSCSendNode(Node):
-    osc_manager = None
+class OSCSendNode(OSCBaseNode):
 
     @staticmethod
     def factory(name, data, args=None):
@@ -741,7 +776,8 @@ class OSCSendNode(Node):
                     self.target.send_message(self.address, data)
 
 
-class OSCRouteNode(Node):
+class OSCRouteNode(OSCBaseNode):
+
     @staticmethod
     def factory(name, data, args=None):
         node = OSCRouteNode(name, data, args)
@@ -796,25 +832,30 @@ class OSCRouteNode(Node):
         t = type(data)
         if t == str:
             data = data.split(' ')
-            t = list
-        if t == list:
-            if len(data) > 1:
-                router = any_to_string(data[0])
-                split = router.split('/')
-                if split[0] == '':
-                    split = split[1:]
-                router = split[0]
+        address_list = self.parse_osc_address(data)
+
+        router = address_list[0]
+        if router in self.routers:
+            index = self.routers.index(router)
+            if len(address_list) > 1:
+                remaining_address = self.construct_osc_address(address_list[1:])
+                message = [remaining_address] + data[1:]
+            else:
+                message = data[1:]
+            if index < len(self.outputs):
+                self.outputs[index].send(message)
+                return
+        else:
+            if router[0] != '/':
+                router = '/' + router
                 if router in self.routers:
                     index = self.routers.index(router)
-                    if len(split) > 1:
-                        message = ['/'.join(split[1:])] + data[1:]
+                    if len(address_list) > 1:
+                        remaining_address = self.construct_osc_address(address_list[1:])
+                        message = [remaining_address] + data[1:]
                     else:
                         message = data[1:]
                     if index < len(self.outputs):
                         self.outputs[index].send(message)
-                else:
-                    self.miss_out.send(self.input())
-            else:
-                self.miss_out.send(self.input())
-        else:
-            self.miss_out.send(self.input())
+                        return
+        self.miss_out.send(self.input())

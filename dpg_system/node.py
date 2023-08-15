@@ -632,25 +632,27 @@ class PropertyWidget:
             self.value = val
             # self.adjust_to_text_width(max=2048)
         elif self.widget in ['drag_int', 'input_int', 'slider_int', 'knob_int']:
-            val = any_to_int(data)
-            if val:
-                if self.min != self.max:
-                    if self.max and val > self.max:
-                        val = self.max
-                    if self.min and val < self.min:
-                        val = self.min
-            dpg.set_value(self.uuid, val)
-            self.value = val
+            if is_number(data):
+                val = any_to_int(data)
+                if val:
+                    if self.min != self.max:
+                        if self.max and val > self.max:
+                            val = self.max
+                        if self.min and val < self.min:
+                            val = self.min
+                dpg.set_value(self.uuid, val)
+                self.value = val
         elif self.widget in ['drag_float', 'input_float', 'slider_float', 'knob_float']:
-            val = any_to_float(data)
-            if val:
-                if self.min != self.max:
-                    if self.max and val > self.max:
-                        val = self.max
-                    if self.min and val < self.min:
-                        val = self.min
-            dpg.set_value(self.uuid, val)
-            self.value = val
+            if is_number(data):
+                val = any_to_float(data)
+                if val:
+                    if self.min != self.max:
+                        if self.max and val > self.max:
+                            val = self.max
+                        if self.min and val < self.min:
+                            val = self.min
+                dpg.set_value(self.uuid, val)
+                self.value = val
         elif self.widget == 'color_picker':
             if type(data) != tuple:
                 val = tuple(any_to_array(data))
@@ -797,6 +799,9 @@ class NodeInput:
         self.user_data = user_data
 
     def __call__(self):
+        if self.fresh_input:
+            self.fresh_input = False
+            return self._data
         self.fresh_input = False
         if self.widget:
             return self.get_widget_value()
@@ -925,7 +930,9 @@ class NodeNumericalInput(NodeInput):
         if t == str:
             self.numerical_data = string_to_float_or_int(data)
         elif t == list:
-            self.numerical_data = list_to_array(data)
+            numerical_data = list_to_array(data)
+            if numerical_data is not None:
+                self.numerical_data = numerical_data
         elif t in [bool, np.bool_]:
             if data:
                 self.numerical_data = 1

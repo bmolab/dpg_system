@@ -5,16 +5,38 @@
         100,
         100
     ],
-    "name": "trig_examples",
-    "path": "/Users/drokeby/PycharmProjects/DPG_SYSTEM/trig_examples.json",
+    "id": 4042,
+    "name": "math_examples",
+    "path": "/Users/drokeby/dpg_system/examples/math_examples.json",
     "nodes": {
         "0": {
+            "name": "",
+            "id": 4069,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
             "name": "signal",
-            "id": 273,
+            "id": 4090,
             "position_x": 26,
             "position_y": 196,
-            "width": 160,
-            "height": 138,
+            "width": 129,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "on",
@@ -48,13 +70,16 @@
                 }
             }
         },
-        "1": {
+        "2": {
             "name": "plot",
-            "id": 327,
-            "position_x": 335,
+            "id": 4127,
+            "position_x": 333,
             "position_y": 8,
             "width": 308,
-            "height": 162,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "style",
@@ -63,7 +88,7 @@
                 },
                 "1": {
                     "name": "color",
-                    "value": "viridis",
+                    "value": "deep",
                     "value_type": "string"
                 },
                 "2": {
@@ -72,133 +97,62 @@
                     "value_type": "int"
                 },
                 "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
                     "name": "width",
                     "value": 300,
                     "value_type": "int"
                 },
-                "4": {
+                "5": {
                     "name": "height",
                     "value": 128,
                     "value_type": "int"
                 },
-                "5": {
+                "6": {
                     "name": "min x",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "6": {
+                "7": {
                     "name": "max x",
                     "value": 200.0,
                     "value_type": "float"
                 },
-                "7": {
+                "8": {
                     "name": "min y",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "8": {
+                "9": {
                     "name": "max y",
                     "value": 8.0,
                     "value_type": "float"
                 },
-                "9": {
+                "10": {
                     "name": "number format",
                     "value": "",
                     "value_type": "string"
-                }
-            }
-        },
-        "2": {
-            "name": "plot",
-            "id": 370,
-            "position_x": 332,
-            "position_y": 184,
-            "width": 308,
-            "height": 162,
-            "properties": {
-                "0": {
-                    "name": "style",
-                    "value": "line",
-                    "value_type": "string"
                 },
-                "1": {
-                    "name": "color",
-                    "value": "deep",
-                    "value_type": "string"
-                },
-                "2": {
-                    "name": "sample count",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "width",
-                    "value": 300,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "height",
-                    "value": 128,
-                    "value_type": "int"
-                },
-                "5": {
-                    "name": "min x",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "6": {
-                    "name": "max x",
-                    "value": 200.0,
-                    "value_type": "float"
-                },
-                "7": {
-                    "name": "min y",
-                    "value": -6.0,
-                    "value_type": "float"
-                },
-                "8": {
-                    "name": "max y",
-                    "value": 1.0,
-                    "value_type": "float"
-                },
-                "9": {
-                    "name": "number format",
-                    "value": "",
-                    "value_type": "string"
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
                 }
             }
         },
         "3": {
-            "name": "exp",
-            "id": 747,
-            "position_x": 230,
-            "position_y": 131,
-            "width": 27,
-            "height": 48
-        },
-        "4": {
-            "name": "log2",
-            "id": 811,
-            "position_x": 240,
-            "position_y": 202,
-            "width": 33,
-            "height": 48
-        },
-        "5": {
-            "name": "log10",
-            "id": 842,
-            "position_x": 241,
-            "position_y": 296,
-            "width": 39,
-            "height": 48
-        },
-        "6": {
             "name": "plot",
-            "id": 858,
-            "position_x": 331,
-            "position_y": 356,
+            "id": 4186,
+            "position_x": 333,
+            "position_y": 206,
             "width": 308,
-            "height": 162,
+            "height": 179,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "style",
@@ -216,57 +170,179 @@
                     "value_type": "int"
                 },
                 "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
                     "name": "width",
                     "value": 300,
                     "value_type": "int"
                 },
-                "4": {
+                "5": {
                     "name": "height",
                     "value": 128,
                     "value_type": "int"
                 },
-                "5": {
+                "6": {
                     "name": "min x",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "6": {
+                "7": {
                     "name": "max x",
                     "value": 200.0,
                     "value_type": "float"
                 },
+                "8": {
+                    "name": "min y",
+                    "value": -6.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "name": "exp",
+            "id": 4245,
+            "position_x": 231,
+            "position_y": 15,
+            "width": 45,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "5": {
+            "name": "log2",
+            "id": 4260,
+            "position_x": 240,
+            "position_y": 200,
+            "width": 45,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "6": {
+            "name": "log10",
+            "id": 4275,
+            "position_x": 244,
+            "position_y": 389,
+            "width": 45,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "7": {
+            "name": "plot",
+            "id": 4290,
+            "position_x": 333,
+            "position_y": 403,
+            "width": 308,
+            "height": 179,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "deep",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
                 "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
                     "name": "min y",
                     "value": -2.0,
                     "value_type": "float"
                 },
-                "8": {
+                "9": {
                     "name": "max y",
                     "value": 0.5,
                     "value_type": "float"
                 },
-                "9": {
+                "10": {
                     "name": "number format",
                     "value": "",
                     "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
                 }
             }
         },
-        "7": {
-            "name": "sqrt",
-            "id": 915,
-            "position_x": 239,
-            "position_y": 455,
-            "width": 33,
-            "height": 48
-        },
         "8": {
+            "name": "sqrt",
+            "id": 4349,
+            "position_x": 260,
+            "position_y": 583,
+            "width": 45,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
             "name": "plot",
-            "id": 931,
+            "id": 4364,
             "position_x": 333,
-            "position_y": 527,
+            "position_y": 601,
             "width": 308,
-            "height": 162,
+            "height": 179,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "style",
@@ -284,57 +360,73 @@
                     "value_type": "int"
                 },
                 "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
                     "name": "width",
                     "value": 300,
                     "value_type": "int"
                 },
-                "4": {
+                "5": {
                     "name": "height",
                     "value": 128,
                     "value_type": "int"
                 },
-                "5": {
+                "6": {
                     "name": "min x",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "6": {
+                "7": {
                     "name": "max x",
                     "value": 200.0,
                     "value_type": "float"
                 },
-                "7": {
+                "8": {
                     "name": "min y",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "8": {
+                "9": {
                     "name": "max y",
                     "value": 2.0,
                     "value_type": "float"
                 },
-                "9": {
+                "10": {
                     "name": "number format",
                     "value": "",
                     "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
                 }
             }
         },
-        "9": {
-            "name": "inverse",
-            "id": 1023,
-            "position_x": 266,
-            "position_y": 731,
-            "width": 52,
-            "height": 48
-        },
         "10": {
+            "name": "inverse",
+            "id": 4423,
+            "position_x": 264,
+            "position_y": 781,
+            "width": 52,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
             "name": "plot",
-            "id": 1039,
-            "position_x": 334,
-            "position_y": 710,
+            "id": 4438,
+            "position_x": 333,
+            "position_y": 798,
             "width": 308,
-            "height": 162,
+            "height": 179,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "style",
@@ -352,57 +444,73 @@
                     "value_type": "int"
                 },
                 "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
                     "name": "width",
                     "value": 300,
                     "value_type": "int"
                 },
-                "4": {
+                "5": {
                     "name": "height",
                     "value": 128,
                     "value_type": "int"
                 },
-                "5": {
+                "6": {
                     "name": "min x",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "6": {
+                "7": {
                     "name": "max x",
                     "value": 200.0,
                     "value_type": "float"
                 },
-                "7": {
+                "8": {
                     "name": "min y",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "8": {
+                "9": {
                     "name": "max y",
                     "value": 20.0,
                     "value_type": "float"
                 },
-                "9": {
+                "10": {
                     "name": "number format",
                     "value": "",
                     "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
                 }
             }
         },
-        "11": {
+        "12": {
             "name": "abs",
-            "id": 1096,
+            "id": 4497,
             "position_x": 854,
             "position_y": 739,
-            "width": 27,
-            "height": 48
+            "width": 45,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
         },
-        "12": {
+        "13": {
             "name": "signal",
-            "id": 1111,
+            "id": 4512,
             "position_x": 659,
             "position_y": 709,
-            "width": 160,
-            "height": 138,
+            "width": 129,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "on",
@@ -436,13 +544,16 @@
                 }
             }
         },
-        "13": {
+        "14": {
             "name": "plot",
-            "id": 1149,
-            "position_x": 893,
-            "position_y": 699,
+            "id": 4549,
+            "position_x": 928,
+            "position_y": 698,
             "width": 308,
-            "height": 162,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "style",
@@ -460,64 +571,73 @@
                     "value_type": "int"
                 },
                 "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
                     "name": "width",
                     "value": 300,
                     "value_type": "int"
                 },
-                "4": {
+                "5": {
                     "name": "height",
                     "value": 128,
                     "value_type": "int"
                 },
-                "5": {
+                "6": {
                     "name": "min x",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "6": {
+                "7": {
                     "name": "max x",
                     "value": 200.0,
                     "value_type": "float"
                 },
-                "7": {
+                "8": {
                     "name": "min y",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "8": {
+                "9": {
                     "name": "max y",
                     "value": 1.0,
                     "value_type": "float"
                 },
-                "9": {
+                "10": {
                     "name": "number format",
                     "value": "",
                     "value_type": "string"
-                }
-            }
-        },
-        "14": {
-            "name": "pow",
-            "id": 1206,
-            "position_x": 715,
-            "position_y": 84,
-            "width": 88,
-            "height": 66,
-            "properties": {
-                "0": {
-                    "name": "",
-                    "value": 3.0,
-                    "value_type": "float"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
                 }
             }
         },
         "15": {
+            "name": "pow",
+            "id": 4608,
+            "position_x": 719,
+            "position_y": 46,
+            "width": 52,
+            "height": 66,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
             "name": "plot",
-            "id": 1228,
+            "id": 4628,
             "position_x": 844,
             "position_y": 37,
             "width": 308,
-            "height": 162,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "style",
@@ -535,126 +655,136 @@
                     "value_type": "int"
                 },
                 "3": {
+                    "name": "array fills plot",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
                     "name": "width",
                     "value": 300,
                     "value_type": "int"
                 },
-                "4": {
+                "5": {
                     "name": "height",
                     "value": 128,
                     "value_type": "int"
                 },
-                "5": {
+                "6": {
                     "name": "min x",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "6": {
+                "7": {
                     "name": "max x",
                     "value": 200.0,
                     "value_type": "float"
                 },
-                "7": {
+                "8": {
                     "name": "min y",
                     "value": -0.10000000149011612,
                     "value_type": "float"
                 },
-                "8": {
+                "9": {
                     "name": "max y",
                     "value": 8.0,
                     "value_type": "float"
                 },
-                "9": {
+                "10": {
                     "name": "number format",
                     "value": "",
                     "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
                 }
             }
         }
     },
     "links": {
         "0": {
-            "source_node": 273,
+            "source_node": 4090,
             "source_output_index": 0,
-            "dest_node": 747,
+            "dest_node": 4245,
             "dest_input_index": 0
         },
         "1": {
-            "source_node": 273,
+            "source_node": 4090,
             "source_output_index": 0,
-            "dest_node": 811,
+            "dest_node": 4260,
             "dest_input_index": 0
         },
         "2": {
-            "source_node": 273,
+            "source_node": 4090,
             "source_output_index": 0,
-            "dest_node": 842,
+            "dest_node": 4275,
             "dest_input_index": 0
         },
         "3": {
-            "source_node": 273,
+            "source_node": 4090,
             "source_output_index": 0,
-            "dest_node": 915,
+            "dest_node": 4349,
             "dest_input_index": 0
         },
         "4": {
-            "source_node": 273,
+            "source_node": 4090,
             "source_output_index": 0,
-            "dest_node": 1023,
+            "dest_node": 4423,
             "dest_input_index": 0
         },
         "5": {
-            "source_node": 273,
+            "source_node": 4090,
             "source_output_index": 0,
-            "dest_node": 1206,
+            "dest_node": 4608,
             "dest_input_index": 0
         },
         "6": {
-            "source_node": 747,
+            "source_node": 4245,
             "source_output_index": 0,
-            "dest_node": 327,
+            "dest_node": 4127,
             "dest_input_index": 0
         },
         "7": {
-            "source_node": 811,
+            "source_node": 4260,
             "source_output_index": 0,
-            "dest_node": 370,
+            "dest_node": 4186,
             "dest_input_index": 0
         },
         "8": {
-            "source_node": 842,
+            "source_node": 4275,
             "source_output_index": 0,
-            "dest_node": 858,
+            "dest_node": 4290,
             "dest_input_index": 0
         },
         "9": {
-            "source_node": 915,
+            "source_node": 4349,
             "source_output_index": 0,
-            "dest_node": 931,
+            "dest_node": 4364,
             "dest_input_index": 0
         },
         "10": {
-            "source_node": 1023,
+            "source_node": 4423,
             "source_output_index": 0,
-            "dest_node": 1039,
+            "dest_node": 4438,
             "dest_input_index": 0
         },
         "11": {
-            "source_node": 1096,
+            "source_node": 4497,
             "source_output_index": 0,
-            "dest_node": 1149,
+            "dest_node": 4549,
             "dest_input_index": 0
         },
         "12": {
-            "source_node": 1111,
+            "source_node": 4512,
             "source_output_index": 0,
-            "dest_node": 1096,
+            "dest_node": 4497,
             "dest_input_index": 0
         },
         "13": {
-            "source_node": 1206,
+            "source_node": 4608,
             "source_output_index": 0,
-            "dest_node": 1228,
+            "dest_node": 4628,
             "dest_input_index": 0
         }
     }
