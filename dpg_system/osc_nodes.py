@@ -145,8 +145,7 @@ class OSCManager:
     def receive_node_address_changed(self, receive_node, new_address, source):
         if source is not None:
             source.unregister_receive_node(receive_node)
-        else:
-            receive_node.address = new_address
+        receive_node.address = new_address
         if source is not None:
             source.register_receive_node(receive_node)
 
