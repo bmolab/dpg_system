@@ -945,6 +945,8 @@ class NodeEditor:
         self.app.current_node_editor = hold_editor
         if 'name' in file_container:
             self.patch_name = file_container['name']
+        self.app.currently_loading_patch_name = self.patch_name
+
         if 'path' in file_container:
             self.file_path = file_container['path']
         if 'id' in file_container:
@@ -979,6 +981,7 @@ class NodeEditor:
                             node_name = 'origin'
                         else:
                             node_name = node_container['name']
+                            self.app.currently_loading_node_name = node_name
                 pos = [0, 0]
                 if 'position_x' in node_container:
                     pos[0] = node_container['position_x'] + offset[0]

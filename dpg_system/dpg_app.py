@@ -448,6 +448,8 @@ class App:
         self.clipboard = None
         self.saving_to_lib = False
         self.project_name = os.path.basename(__file__).split('.')[0]
+        self.currently_loading_patch_name = ''
+        self.currently_loading_node_name = ''
 
         self.register_patchers()
         self.handler = dpg.item_handler_registry(tag="widget handler")
@@ -1457,7 +1459,7 @@ class App:
 
         except Exception as exc_:
             print(exc_)
-            print('load failed')
+            print('load failed while loading', self.currently_loading_patch_name, self.currently_loading_node_name)
         if main_editor is not None:
             self.current_node_editor = main_editor
         self.select_editor_tab(self.current_node_editor)
