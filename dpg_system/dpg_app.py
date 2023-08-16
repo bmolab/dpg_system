@@ -1395,9 +1395,11 @@ class App:
                             editor = None
                         if editor is not None:
                             self.current_node_editor = editor_index
-                            if main_editor is None:
-                                main_editor = self.current_node_editor
                             editor.load_(nodes_container)
+                            if editor.loaded_parent_node_uuid == -1:
+                                if main_editor is None:
+                                    main_editor = self.current_node_editor
+
                 else:  # single patch
                     # print('patch assign', patch_assign)
                     if self.fresh_patcher:
@@ -1687,8 +1689,11 @@ class App:
         return False
 
     def close_current_node_editor(self):
+        # don't close node editor if it is a subpatcher
         if self.get_current_editor() is not None:
-            self.remove_node_editor(self.get_current_editor())
+            patcher = self.get_current_editor()
+            if patcher.parent_patcher is None:
+                self.remove_node_editor(self.get_current_editor())
 
     def add_node_editor(self):
         editor_name = 'patch ' + str(self.new_patcher_index)
