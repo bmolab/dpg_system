@@ -857,9 +857,9 @@ class ValueNode(Node):
             in_data = self.inputs[0]()
             t = type(in_data)
             if t == str:
-                value = in_data.split(' ')
-                t = list
-            if t == list:
+                value, _, _ = string_to_hybrid_list(in_data)
+                # value = in_data.split(' ')
+            elif t == list:
                 if len(in_data) == 1:
                     value = in_data[0]
                     t = type(value)

@@ -177,7 +177,7 @@ def any_to_numerical(data, validate=False):
     elif t in [np.float32, np.double]:
         return float(data)
     if validate:
-        return 0, False
+        return None
     return 0
 
 
@@ -200,7 +200,7 @@ def any_to_bool(data):
     return False
 
 
-def any_to_tensor(data, device='cpu', dtype=torch.float32, requires_grad=False):
+def any_to_tensor(data, device='cpu', dtype=torch.float32, requires_grad=False, validate=False):
     if torch_available:
         t = type(data)
         # print('any to tensor', data)
@@ -245,7 +245,9 @@ def any_to_tensor(data, device='cpu', dtype=torch.float32, requires_grad=False):
                 else:
                     tensor_.to(device=device)
                 return tensor_
-    return None
+    if validate:
+        return None
+    return torch.tensor([0])
 
 
 def any_to_array(data, validate=False):
@@ -260,13 +262,15 @@ def any_to_array(data, validate=False):
     elif t == bool:
         return np.array([data])
     elif t == str:
-        return string_to_array(data, validate=True)
+        return string_to_array(data, validate=validate)
     elif t in [list, tuple]:
-        return list_to_array(list(data), validate=True)
+        return list_to_array(list(data), validate=validate)
     elif t in [np.int64, np.float32, np.double, np.bool_]:
         return np.array(data)
     elif torch_available and t == torch.Tensor:
         return data.detach().cpu().numpy()
+    if validate:
+        return None
     return np.ndarray([0])
 
 

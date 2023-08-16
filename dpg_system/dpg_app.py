@@ -471,7 +471,6 @@ class App:
             self.update_recent_menu()
         self.pausing = False
 
-
     def clear_remembered_ids(self):
         self.active_widget = -1
         self.focussed_widget = -1
