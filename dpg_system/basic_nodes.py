@@ -526,9 +526,9 @@ class GateNode(Node):
 
     def change_state(self, input=None):
         if self.num_gates == 1:
-            self.bool_state = self.choice_input()
+            self.bool_state = any_to_bool(self.choice_input())
         else:
-            self.state = self.choice_input()
+            self.state = any_to_int(self.choice_input())
 
     def execute(self):
         if self.num_gates == 1:
