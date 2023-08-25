@@ -95,13 +95,13 @@ class PyBulletBodyNode(Node):
         p.connect(p.DIRECT)
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         self.plane_id = p.loadURDF('plane_implicit.urdf', [0, 0, 0], useMaximalCoordinates=True)
-        self.body_id = p.loadURDF(fileName='dpg_system/humanoid.urdf', basePosition=[0, 0, 0], globalScaling=1.0, useFixedBase=False, flags=p.URDF_MAINTAIN_LINK_ORDER)
+        self.body_id = p.loadURDF(fileName='dpg_system/humanoid.urdf', basePosition=[0, 0, 0], globalScaling=1.0, useFixedBase=False, flags=p.URDF_MAINTAIN_LINK_ORDER + p.URDF_USE_SELF_COLLISION + p.URDF_USE_SELF_COLLISION_INCLUDE_PARENT)
         self.movable_indices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
         for joint_idx in self.movable_indices:  # (joint position, joint velocity, (force along X, force along Y, force along Z, torque around X, torque around Y, torque around Z), applied joint motor torque)
             p.enableJointForceTorqueSensor(self.body_id, joint_idx, True)
 
         p.setGravity(0, 0, -10.0)
-
+        p.setTimeStep(1.0 / 60.0)
         # disable motors
 
         for j in range(p.getNumJoints(self.body_id)):
@@ -155,7 +155,9 @@ class PyBulletBodyNode(Node):
             for index in self.movable_indices:
                 if self.joint_orientations[index].fresh_input:
                     joint_orientations[index] = np.roll(self.joint_orientations[index](), -1)
-                    p.resetJointStatesMultiDof(self.body_id, self.movable_indices, joint_orientations)
+                    # p.setJointMotorControlMultiDof(self.body_id, index, p.POSITION_CONTROL, joint_orientations[index], targetVelocity=[0, 0, 0],
+                    #                            positionGain=0, velocityGain=1, force=[0, 0, 0])
+                p.resetJointStateMultiDof(self.body_id, index, joint_orientations[index])
 
             p.stepSimulation()
             # built shadow pose

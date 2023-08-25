@@ -23,6 +23,7 @@ numpy_active = True
 pytorch_active = True
 smpl_active = True
 prompt_active = True
+udp_active = True
 
 print('Options active:', end=' ')
 with open('dpg_system/dpg_system_config.json', 'r') as f:
@@ -79,6 +80,10 @@ with open('dpg_system/dpg_system_config.json', 'r') as f:
         pybullet_active = config['pybullet']
         if pybullet_active:
             print('pybullet', end=' ')
+    if 'udp' in config:
+        udp_active = config['udp']
+        if udp_active:
+            print('udp', end=' ')
 
 print('')
 
@@ -205,9 +210,16 @@ if prompt_active:
 if pybullet_active:
     try:
         from dpg_system.pybullet_nodes import *
-        imported.append('pybullet_active_nodes.py')
+        imported.append('pybullet_nodes.py')
     except ModuleNotFoundError:
-        pybullet_active_active = False
+        pybullet_active = False
+
+if udp_active:
+    try:
+        from dpg_system.udp_nodes import *
+        imported.append('udp_nodes.py')
+    except ModuleNotFoundError:
+        udp_active = False
 
 # import additional node files in folder
 
@@ -877,6 +889,9 @@ class App:
 
         if pybullet_active and 'register_pybullet_nodes' in globals():
             register_pybullet_nodes()
+
+        if udp_active and 'register_udp_nodes' in globals():
+            register_udp_nodes()
 
 
     def get_variable_list(self):

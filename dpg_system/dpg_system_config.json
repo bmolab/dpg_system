@@ -11,5 +11,6 @@
   "Pytorch": true,
   "SMPL": true,
   "prompt": true,
-  "pybullet": true
+  "pybullet": true,
+  "udp": true
 }

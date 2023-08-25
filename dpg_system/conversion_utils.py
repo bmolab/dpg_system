@@ -94,7 +94,7 @@ def any_to_numerical_list(data):
         return data.tolist()
     return []
 
-def any_to_int(data):
+def any_to_int(data, validate=False):
     t = type(data)
     if t == int:
         return data
@@ -103,13 +103,15 @@ def any_to_int(data):
     elif t == str:
         return string_to_int(data)
     elif t in [list, tuple]:
-        return list_to_int(list(data))
+        return list_to_int(list(data), validate=validate)
     elif t == np.ndarray:
         return array_to_int(data)
     elif t in [np.int64, np.float32, np.double, np.bool_]:
         return int(data)
     elif torch_available and t == torch.Tensor:
         return tensor_to_int(data)
+    if validate:
+        return None
     return 0
 
 
@@ -615,7 +617,7 @@ def list_to_float(input, validate=False):
     return output
 
 
-def list_to_bool(input):
+def list_to_bool(input, validate=False):
     output = False
     try:
         if len(input) == 0:
@@ -627,11 +629,13 @@ def list_to_bool(input):
         elif t == str:
             return string_to_bool(val)
     except:
+        if validate:
+            return None
         pass
     return output
 
 
-def list_to_string(data):
+def list_to_string(data, validate=False):
     out_string = ''
     string_list = []
     try:
@@ -650,40 +654,54 @@ def list_to_string(data):
                 string_list.append(list_string)
         out_string = ' '.join(string_list)
     except:
+        if validate:
+            return None
         pass
     return out_string
 
 
-def string_to_float(input):
+def string_to_float(input, validate=False):
     if re.search(r'\d', input) is not None:
         if '.' in input:
             try:
                 v = float(input)
                 return v
             except:
+                if validate:
+                    return None
                 return 0.0
         else:
             try:
                 v = float(input)
                 return v
             except:
+                if validate:
+                    return None
                 return 0.0
+    if validate:
+        return None
     return 0.0
 
 
-def string_to_int(input):
+def string_to_int(input, validate=False):
     if re.search(r'\d', input) is not None:
         if '.' in input:
             try:
                 v = int(float(input))
                 return v
             except:
+                if validate:
+                    return None
                 return 0
         else:
             try:
                 return int(input)
             except:
+                if validate:
+                    return None
                 return 0
+    if validate:
+        return None
     return 0
 
 def string_to_float_or_int(input):
