@@ -1400,6 +1400,9 @@ class Node:
 
             self.store_properties(node_container)
 
+    def post_creation_callback(self):
+        pass
+
     def load(self, node_container, offset=None):
         self.in_loading_process = True
         if offset is None:

@@ -489,6 +489,7 @@ class NodeEditor:
     def create(self, parent):
         with dpg.child_window(width=0, parent=parent, user_data=self):
             with dpg.node_editor(tag=self.uuid, callback=NodeEditor._link_callback, height=self.height, width=self.width, delink_callback=NodeEditor._unlink_callback):
+                # i don;t think there are ever any nodes to create here?
                 for node in self._nodes:
                     node.create(self.uuid)
 
@@ -1007,6 +1008,7 @@ class NodeEditor:
                     new_node.load(node_container, offset=offset)
                     self.app.created_nodes[new_node.loaded_uuid] = new_node
                     dpg.focus_item(new_node.uuid)
+                    new_node.post_creation_callback()
 
         if self.loaded_parent_node_uuid != -1:
             parent_node = self.app.find_loaded_parent(self.loaded_parent_node_uuid)

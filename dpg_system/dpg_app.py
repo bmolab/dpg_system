@@ -23,7 +23,7 @@ numpy_active = True
 pytorch_active = True
 smpl_active = True
 prompt_active = True
-udp_active = True
+sockets_active = True
 
 print('Options active:', end=' ')
 with open('dpg_system/dpg_system_config.json', 'r') as f:
@@ -80,10 +80,10 @@ with open('dpg_system/dpg_system_config.json', 'r') as f:
         pybullet_active = config['pybullet']
         if pybullet_active:
             print('pybullet', end=' ')
-    if 'udp' in config:
-        udp_active = config['udp']
-        if udp_active:
-            print('udp', end=' ')
+    if 'sockets' in config:
+        sockets_active = config['sockets']
+        if sockets_active:
+            print('sockets', end=' ')
 
 print('')
 
@@ -214,12 +214,12 @@ if pybullet_active:
     except ModuleNotFoundError:
         pybullet_active = False
 
-if udp_active:
+if sockets_active:
     try:
-        from dpg_system.udp_nodes import *
-        imported.append('udp_nodes.py')
+        from dpg_system.socket_nodes import *
+        imported.append('socket_nodes.py')
     except ModuleNotFoundError:
-        udp_active = False
+        sockets_active = False
 
 # import additional node files in folder
 
@@ -890,8 +890,8 @@ class App:
         if pybullet_active and 'register_pybullet_nodes' in globals():
             register_pybullet_nodes()
 
-        if udp_active and 'register_udp_nodes' in globals():
-            register_udp_nodes()
+        if sockets_active and 'register_socket_nodes' in globals():
+            register_socket_nodes()
 
 
     def get_variable_list(self):
@@ -986,6 +986,8 @@ class App:
         if editor is not None:
             node.create(editor.uuid, pos=pos, from_file=from_file)
             editor.add_node(node)
+            if not from_file:
+                node.post_creation_callback()
         return node
 
     def remove_frame_task(self, remove_node):

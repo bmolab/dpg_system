@@ -38,7 +38,6 @@ class PhraseMatch():
         self.bare = False
 
 
-
 def print_chunk_list(a_chunk, top_level=0):
     for c in a_chunk:
         if type(c) == list:
