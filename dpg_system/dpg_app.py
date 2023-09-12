@@ -1372,6 +1372,7 @@ class App:
         self.loaded_patcher_nodes = []
         self.links_containers = {}
         self.created_nodes = {}
+        main_editor = None
         if len(self.node_editors) == 0:
             self.add_node_editor()
         hold_current_editor = self.current_node_editor
@@ -1404,7 +1405,6 @@ class App:
                         del available_editors[0]
                     else:
                         patch_assign[i] = (len(self.node_editors), self.add_node_editor())
-                main_editor = None
 
                 if 'patches' in file_container:
                     self.patches_path = path
