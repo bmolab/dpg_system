@@ -2008,31 +2008,32 @@ class FuzzyMatchNode(Node):
             if type(data) == str:
                 index = data.find('by ')
                 if index != -1:
-                    index += 3
-                    if data[index:index + 2] != 'a ' and data[index:index + 4] != 'the ':
-                        indicator = 'by '
-                        substring = data[index:]
-                        prestring = data[:index]
-                        index = substring.find(' of ')
-                        index2 = substring.find(' from ')
-                        if index != -1:
-                            if index2 != -1:
-                                if index < index2:
+                    if index == 0 or data[index - 1] in [' ', ',', ':', ';']:
+                        index += 3
+                        if data[index:index + 2] != 'a ' and data[index:index + 4] != 'the ':
+                            indicator = 'by '
+                            substring = data[index:]
+                            prestring = data[:index]
+                            index = substring.find(' of ')
+                            index2 = substring.find(' from ')
+                            if index != -1:
+                                if index2 != -1:
+                                    if index < index2:
+                                        post_string = substring[index:]
+                                        substring = substring[:index]
+                                        found = True
+                                    else:
+                                        post_string = substring[index2:]
+                                        substring = substring[:index2]
+                                        found = True
+                                else:
                                     post_string = substring[index:]
                                     substring = substring[:index]
                                     found = True
-                                else:
-                                    post_string = substring[index2:]
-                                    substring = substring[:index2]
-                                    found = True
-                            else:
-                                post_string = substring[index:]
-                                substring = substring[:index]
+                            elif index2 != -1:
+                                post_string = substring[index2:]
+                                substring = substring[:index2]
                                 found = True
-                        elif index2 != -1:
-                            post_string = substring[index2:]
-                            substring = substring[:index2]
-                            found = True
                 if not found:
                     index = data.find('style of ')
                     if index != -1:

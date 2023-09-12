@@ -477,11 +477,19 @@ class App:
         self.action = self.add_action('do_it', self.reset_frame_count)
         self.window_context = None
         self.fresh_patcher = True
+        self.pausing = False
+        self.load_recent_patchers_list()
+
+    def get_local_project_name(self):
+        self.project_name = os.path.basename(__file__).split('.')[0]
+
+    def load_recent_patchers_list(self):
+        self.get_local_project_name()
+        print(self.project_name)
         if os.path.exists(self.project_name + '_recent_patchers.json'):
             with open(self.project_name + '_recent_patchers.json', 'r') as f:
                 self.recent_files = json.load(f)
             self.update_recent_menu()
-        self.pausing = False
 
     def clear_remembered_ids(self):
         self.active_widget = -1

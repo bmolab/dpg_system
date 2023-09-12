@@ -10,7 +10,7 @@ import torch
 import torch.distributed as dist
 import os
 import select
-from numpysocket import NumpySocket
+from dpg_system.numpysocket import NumpySocket
 
 def register_socket_nodes():
     Node.app.register_node("udp_numpy_send", UDPNumpySendNode.factory)
@@ -18,7 +18,6 @@ def register_socket_nodes():
     Node.app.register_node('process_group', ProcessGroupNode.factory)
     Node.app.register_node('tcp_numpy_send', TCPNumpySendNode.factory)
     Node.app.register_node('tcp_numpy_receive', TCPNumpyReceiveNode.factory)
-
 
 
 class UDPSendSocket:
@@ -266,6 +265,7 @@ class TCPNumpySendNode(Node):
         self.port = 4501
         self.connected = False
         self.server_has_changed = False
+        self.connection_lost = False
         if len(args) > 0:
             ip = args[0]
             if string_is_valid_ip(ip):
@@ -279,29 +279,35 @@ class TCPNumpySendNode(Node):
 
         self.ip_property = self.add_property('ip', widget_type='text_input', default_value=self.ip)
         self.port_property = self.add_property('port', widget_type='input_int', default_value=self.port, max=32767)
+        self.connected_out = self.add_output('connected')
+        self.add_frame_task()
 
     def server_changed(self):
         if self.app.verbose:
             print('server changed')
         self.ip = self.ip_property()
         self.port = self.port_property()
-        if self.connected:
-            if self.app.verbose:
-                print('was connected')
-            self.connected = False
-            if self.numpysocket is not None:
-                if self.app.verbose:
-                    print('shutting down send socket')
-                try:
-                    self.numpysocket.shutdown(socket.SHUT_RDWR)
-                    self.numpysocket.close()
-                    if self.app.verbose:
-                        print('send socket closed')
-                except Exception as e:
-                    print('send socket trying to shut down')
-        self.numpysocket = None
-        if self.app.verbose:
-            print('send destroyed self.numpysocket')
+        self.socket_release()
+        # if self.connected:
+        #     if self.app.verbose:
+        #         print('was connected')
+        #     self.connected = False
+        #     if self.numpysocket is not None:
+        #         if self.app.verbose:
+        #             print('shutting down send socket')
+        #         try:
+        #             self.numpysocket.shutdown(socket.SHUT_RDWR)
+        #             self.numpysocket.close()
+        #             if self.app.verbose:
+        #                 print('send socket closed')
+        #         except Exception as e:
+        #             print('send socket trying to shut down')
+        # self.numpysocket = None
+        # if self.app.verbose:
+        #     print('send destroyed self.numpysocket')
+
+    def frame_task(self):
+        self.connected_out.send(self.connected)
 
     def socket_release(self):
         if self.connected:
@@ -317,9 +323,9 @@ class TCPNumpySendNode(Node):
                 if self.app.verbose:
                     print('send socket_release socket closed')
             except Exception as e:
-                print('send socket_release socket trying to shut down')
+                if self.app.verbose:
+                    print('send socket_release socket trying to shut down')
         self.numpysocket = None
-
 
     def execute(self):
         port = self.port_property()
@@ -340,11 +346,11 @@ class TCPNumpySendNode(Node):
                     if self.app.verbose:
                         print('send connecting to', self.ip, self.port)
                     self.numpysocket.connect((self.ip, self.port))
-                    if self.app.verbose:
-                        print('send socket connected')
+                    print('send socket connected to', self.ip, self.port)
                     self.connected = True
                 except Exception as e:
-                    print('send trying to connect', e)
+                    if self.app.verbose:
+                        print('send trying to connect', e)
                     self.socket_release()
             if self.connected:
                 if self.active_input == self.data_input:
@@ -355,10 +361,19 @@ class TCPNumpySendNode(Node):
                             print('send')
                         try:
                             self.numpysocket.sendall(data)
+                            self.connection_lost = False
                         except Exception as e:
-                            if e == errno.ECONNRESET:
-                                print('send failed due to connection reset')
-                                self.connected = False
+                            if hasattr(e, 'errno'):
+                                if e.errno == errno.ECONNRESET:
+                                    print('send failed due to connection reset')
+                                    self.connected = False
+                                elif e.errno == errno.EPIPE:
+                                    if not self.connection_lost:
+                                        print('send to', self.ip, self.port, 'failed due to broken pipe')
+                                        self.connection_lost = True
+                                    self.connected = False
+                                else:
+                                    print('trying to send other error', e)
                             else:
                                 print('trying to send other error', e)
 
@@ -397,6 +412,7 @@ class TCPNumpyReceiveNode(Node):
         self.ready_to_listen = True
         self.port_property = self.add_property('port', widget_type='input_int', default_value=self.port, max=32767)
         self.data_out = self.add_output('data')
+        self.connected_out = self.add_output('connected')
 
     def post_creation_callback(self):
         if self.app.verbose:
@@ -416,6 +432,11 @@ class TCPNumpyReceiveNode(Node):
 #             self.port_changed = True
 
     def frame_task(self):
+        if self.connection is not None:
+            self.connected_out.send(True)
+        else:
+            self.connected_out.send(False)
+            
         if self.received is not None:
             if self.app.verbose:
                 print('output')
@@ -453,7 +474,8 @@ class TCPNumpyReceiveNode(Node):
                         print('receive shutting down')
                     self.numpysocket.shutdown(socket.SHUT_RDWR)
                 except Exception as e:
-                    print('receive shutting down error', e)
+                    if self.app.verbose:
+                        print('receive shutting down error', e)
                 self.listening = False
             try:
                 self.numpysocket.close()
@@ -499,8 +521,7 @@ class TCPNumpyReceiveNode(Node):
                 try:
                     self.connection, addr = self.numpysocket.accept()
                     if self.connection is not None:
-                        if self.app.verbose:
-                            print('connection is made')
+                        print('receive connected to', addr[0], self.port)
                         while self.connection is not None and self.running:
                             if self.port != self.port_property() or self.port_changed:
                                 if self.app.verbose:
@@ -515,8 +536,9 @@ class TCPNumpyReceiveNode(Node):
                                     else:
                                         self.socket_release()
                                 except Exception as e:
-                                    if e.errno != 35:
-                                        print('connection.recv error', e)
+                                    if hasattr(e, 'errno'):
+                                        if e.errno != 35:
+                                            print('connection.recv error', e)
                                     # else:
                                     #     print('socket', self.port, e)
                         if self.app.verbose:
@@ -526,10 +548,11 @@ class TCPNumpyReceiveNode(Node):
                             self.connection = None
 
                 except Exception as e:
-                    if e.errno == 35:
-                        if self.socket_released:
-                            print('receive lost connection', e)
-                            self.socket_released = False
+                    if hasattr(e, 'errno'):
+                        if e.errno == 35:
+                            if self.socket_released:
+                                print('receive lost connection', e)
+                                self.socket_released = False
 
         if self.app.verbose:
             print('running == False... cleaning up receive socket')
