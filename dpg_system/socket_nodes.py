@@ -18,6 +18,44 @@ def register_socket_nodes():
     Node.app.register_node('process_group', ProcessGroupNode.factory)
     Node.app.register_node('tcp_numpy_send', TCPNumpySendNode.factory)
     Node.app.register_node('tcp_numpy_receive', TCPNumpyReceiveNode.factory)
+    Node.app.register_node('ip_address', IPAddressNode.factory)
+
+class IPAddressNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = IPAddressNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.server_ip = '8.8.8.8'
+        if len(args) > 0:
+            ip = args[0]
+            if string_is_valid_ip(ip):
+                self.server_ip = ip
+        self.ip = '127.0.0.1'
+        self.get_ip()
+        self.server_ip_field = self.add_input('server_ip', widget_type='text_input', default_value=self.server_ip, callback=self.change_server)
+        self.ip_out = self.add_output(self.ip)
+        # self.add_frame_task()
+
+    def change_server(self):
+        ip = self.server_ip_field()
+        if string_is_valid_ip(ip):
+            self.server_ip = ip
+            self.get_ip()
+            self.ip_out.set_label(self.ip)
+            self.add_frame_task()
+
+    def frame_task(self):
+        self.ip_out.send(self.ip)
+        self.remove_frame_tasks()
+
+    def get_ip(self):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect((self.server_ip, 80))
+        self.ip = s.getsockname()[0]
+        s.close()
 
 
 class UDPSendSocket:
