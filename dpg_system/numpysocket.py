@@ -7,6 +7,10 @@ from io import BytesIO
 
 
 class NumpySocket(socket.socket):
+    def __init__(self, family=socket.AF_INET, type=socket.SOCK_STREAM, proto=0, fileno=None):
+        super().__init__(family, type, proto, fileno)
+        self.remaining_buffer = None
+
     def sendall(self, frame):
         if not isinstance(frame, np.ndarray):
             raise TypeError("input frame is not a valid numpy array")  # should this just call super intead?
@@ -17,15 +21,31 @@ class NumpySocket(socket.socket):
 
     def recv(self, bufsize=1024):
         length = None
-        frameBuffer = bytearray()
+        frameBuffer = None
+        if self.remaining_buffer is not None:
+            frameBuffer = self.remaining_buffer
+            self.remaining_buffer = None
+        else:
+            frameBuffer = bytearray()
+
         while True:
-            data = super().recv(bufsize)
+            data = np.array([])
+            try:
+                data = super().recv(bufsize)
+            except Exception as e:
+                if length is None:
+                    raise e
+
             if len(data) == 0:
                 return np.array([])
             frameBuffer += data
+            # print(len(frameBuffer))
+
             if len(frameBuffer) == length:
                 break
-            while True:
+
+            loop = True
+            while loop:
                 if length is None:
                     if b':' not in frameBuffer:
                         break
@@ -34,23 +54,29 @@ class NumpySocket(socket.socket):
                     length_str, ignored, frameBuffer = frameBuffer.partition(b':')
                     if len(length_str) > 16:
                         print('recv length_str longer than 16 bytes')
-                        break
-                    try:
-                        length = int(length_str)
-                        # print('len=', length)
-                    except Exception as e:
-                        print('recv length_str does not convert to int')
-                        break
+                    else:
+                        try:
+                            length = int(length_str)
+                        except Exception as e:
+                            print('recv length_str does not convert to int')
+
                 # print(len(frameBuffer), end='')
                 if len(frameBuffer) < length:
                     break
                 # split off the full message from the remaining bytes
                 # leave any remaining bytes in the frameBuffer!
+                # print('length or more', len(frameBuffer), length)
 
-                frameBuffer = frameBuffer[length:]
+                if len(frameBuffer) > length:
+                    self.remaining_buffer = frameBuffer[length:]
+                    # print('remainder', self.remaining_buffer)
+                frameBuffer = frameBuffer[:length]
                 length = None
+                loop = False
+
+            if not loop:
                 break
-        
+
         frame = np.load(BytesIO(frameBuffer), allow_pickle=True)['frame']
         logging.debug("frame received")
         return frame

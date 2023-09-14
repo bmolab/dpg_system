@@ -8,8 +8,10 @@ import struct
 import errno
 import torch
 import torch.distributed as dist
-import os
+
+
 import select
+import netifaces
 from dpg_system.numpysocket import NumpySocket
 
 def register_socket_nodes():
@@ -20,6 +22,7 @@ def register_socket_nodes():
     Node.app.register_node('tcp_numpy_receive', TCPNumpyReceiveNode.factory)
     Node.app.register_node('ip_address', IPAddressNode.factory)
 
+
 class IPAddressNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -28,34 +31,34 @@ class IPAddressNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.server_ip = '8.8.8.8'
-        if len(args) > 0:
-            ip = args[0]
-            if string_is_valid_ip(ip):
-                self.server_ip = ip
-        self.ip = '127.0.0.1'
-        self.get_ip()
-        self.server_ip_field = self.add_input('server_ip', widget_type='text_input', default_value=self.server_ip, callback=self.change_server)
-        self.ip_out = self.add_output(self.ip)
-        # self.add_frame_task()
+        self.ip_list = []
+        self.trigger_in = self.add_input('get_ip', widget_type='button', triggers_execution=True)
+        self.ip_labels = []
+        for i in range(20):
+            self.ip_labels.append(self.add_property('', widget_type='label'))
+        self.ip_out = self.add_output('ip_addresses_out')
 
-    def change_server(self):
-        ip = self.server_ip_field()
-        if string_is_valid_ip(ip):
-            self.server_ip = ip
-            self.get_ip()
-            self.ip_out.set_label(self.ip)
-            self.add_frame_task()
+    def post_creation_callback(self):
+        self.update_ip_addresses()
 
-    def frame_task(self):
-        self.ip_out.send(self.ip)
-        self.remove_frame_tasks()
+    def update_ip_addresses(self):
+        self.get_ip4_addresses()
+        for index, ip in enumerate(self.ip_list):
+            dpg.show_item(self.ip_labels[index].uuid)
+            self.ip_labels[index].set(ip)
+        for i in range(len(self.ip_list), 20):
+            dpg.hide_item(self.ip_labels[i].uuid)
+        self.ip_out.send(self.ip_list)
 
-    def get_ip(self):
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect((self.server_ip, 80))
-        self.ip = s.getsockname()[0]
-        s.close()
+    def get_ip4_addresses(self):
+        self.ip_list = []
+        for interface in netifaces.interfaces():
+            for link in netifaces.ifaddresses(interface).get(netifaces.AF_INET, ()):
+                self.ip_list.append(link['addr'])
+        return self.ip_list
+
+    def execute(self):
+        self.update_ip_addresses()
 
 
 class UDPSendSocket:
@@ -423,6 +426,7 @@ class TCPNumpySendNode(Node):
             self.numpysocket = None
 
 
+# receive does not reconnect when changing ports up and down
 class TCPNumpyReceiveNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -432,6 +436,8 @@ class TCPNumpyReceiveNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.port = 4500
+        self.serving_ip = '127.0.0.1'
+        self.get_default_ip()
         self.numpysocket = None
         if len(args) > 0:
             port = any_to_int(args[0], validate=True)
@@ -448,9 +454,16 @@ class TCPNumpyReceiveNode(Node):
         self.socket_released = False
         self.received = None
         self.ready_to_listen = True
+        self.ip_serving_address_property = self.add_property('serving ip', widget_type='text_input', default_value=self.serving_ip)
         self.port_property = self.add_property('port', widget_type='input_int', default_value=self.port, max=32767)
         self.data_out = self.add_output('data')
         self.connected_out = self.add_output('connected')
+
+    def get_default_ip(self):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(('8.8.8.8', 80))
+        self.serving_ip = s.getsockname()[0]
+        s.close()
 
     def post_creation_callback(self):
         if self.app.verbose:
@@ -491,7 +504,7 @@ class TCPNumpyReceiveNode(Node):
             if self.app.verbose:
                 print('binding to', self.port)
             self.numpysocket.setblocking(False)
-            self.numpysocket.bind(('', self.port))
+            self.numpysocket.bind((self.serving_ip, self.port))
             self.ready_to_listen = True
 
     def socket_release(self):
@@ -526,10 +539,10 @@ class TCPNumpyReceiveNode(Node):
         self.numpysocket = NumpySocket()
         try:
             self.numpysocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            self.numpysocket.setblocking(False)
+            # self.numpysocket.setblocking(False)
             if self.app.verbose:
                 print('bind to', self.port)
-            self.numpysocket.bind(('', self.port))
+            self.numpysocket.bind((self.serving_ip, self.port))
             self.numpysocket.listen()
             self.ready_to_listen = True
             self.listening = True
@@ -556,41 +569,44 @@ class TCPNumpyReceiveNode(Node):
                         self.listening = True
                     except Exception as e:
                         print('receive thread listen exception', e)
-                try:
-                    self.connection, addr = self.numpysocket.accept()
-                    if self.connection is not None:
-                        print('receive connected to', addr[0], self.port)
-                        while self.connection is not None and self.running:
-                            if self.port != self.port_property() or self.port_changed:
-                                if self.app.verbose:
-                                    print('receive closing due to port change')
-                                self.port = self.port_property()
-                                self.socket_release()
-                            else:
-                                try:
-                                    frame = self.connection.recv(1024)
-                                    if len(frame) > 0:
-                                        self.received = frame
-                                    else:
-                                        self.socket_release()
-                                except Exception as e:
-                                    if hasattr(e, 'errno'):
-                                        if e.errno != 35:
-                                            print('connection.recv error', e)
-                                    # else:
-                                    #     print('socket', self.port, e)
-                        if self.app.verbose:
-                            print('connected or running == False')
+                readable, writable, exceptional = select.select([self.numpysocket], [], [])
+                if len(readable) > 0:
+                    if readable[0] == self.numpysocket:
+                        self.connection, addr = self.numpysocket.accept()
                         if self.connection is not None:
-                            self.connection.close()
-                            self.connection = None
+                            print('receive connected to', addr[0], self.port)
+                            while self.connection is not None and self.running:
+                                if self.port != self.port_property() or self.port_changed:
+                                    if self.app.verbose:
+                                        print('receive closing due to port change')
+                                    self.port = self.port_property()
+                                    self.socket_release()
+                                else:
+                                    try:
+                                        frame = self.connection.recv(1024)
+                                        if len(frame) > 0:
+                                            self.received = frame
+                                        else:
+                                            print('recv lost connection')
+                                            self.socket_release()
+                                    except Exception as e:
+                                        if hasattr(e, 'errno'):
+                                            if e.errno != 35:
+                                                print('connection.recv error', e)
+                                        # else:
+                                        #     print('socket', self.port, e)
+                            if self.app.verbose:
+                                print('connected or running == False')
+                            if self.connection is not None:
+                                self.connection.close()
+                                self.connection = None
 
-                except Exception as e:
-                    if hasattr(e, 'errno'):
-                        if e.errno == 35:
-                            if self.socket_released:
-                                print('receive lost connection', e)
-                                self.socket_released = False
+                # except Exception as e:
+                #     if hasattr(e, 'errno'):
+                #         if e.errno == 35:
+                #             if self.socket_released:
+                #                 print('receive lost connection', e)
+                #                 self.socket_released = False
 
         if self.app.verbose:
             print('running == False... cleaning up receive socket')
