@@ -136,7 +136,7 @@ class UDPNumpySendNode(Node):
 
         self.socket = UDPSendSocket(ip=self.ip, port=self.port)
         self.data_input = self.add_input('data', triggers_execution=True)
-        self.ip_in = self.add_input('ip', widget_type='text_input', default_value= self.ip, triggers_execution=True)
+        self.ip_in = self.add_input('ip', widget_type='text_input', default_value= self.ip, width=120, triggers_execution=True)
         self.port_in = self.add_input('port', widget_type='drag_int', default_value=self.port, triggers_execution=True)
 
     def pack_data(self, data):
@@ -318,7 +318,7 @@ class TCPNumpySendNode(Node):
                 self.port = port
         self.data_input = self.add_input('data', triggers_execution=True)
 
-        self.ip_property = self.add_property('ip', widget_type='text_input', default_value=self.ip)
+        self.ip_property = self.add_property('ip', widget_type='text_input', width=120, default_value=self.ip)
         self.port_property = self.add_property('port', widget_type='input_int', default_value=self.port, max=32767)
         self.connected_out = self.add_output('connected')
         self.add_frame_task()
@@ -360,12 +360,12 @@ class TCPNumpySendNode(Node):
                 print('socket_release shutting down send socket')
             try:
                 self.numpysocket.shutdown(socket.SHUT_RDWR)
-                self.numpysocket.close()
-                if self.app.verbose:
-                    print('send socket_release socket closed')
             except Exception as e:
                 if self.app.verbose:
                     print('send socket_release socket trying to shut down')
+            self.numpysocket.close()
+            if self.app.verbose:
+                print('send socket_release socket closed')
         self.numpysocket = None
 
     def execute(self):
@@ -439,7 +439,14 @@ class TCPNumpyReceiveNode(Node):
         self.serving_ip = '127.0.0.1'
         self.get_default_ip()
         self.numpysocket = None
-        if len(args) > 0:
+        if len(args) > 1:
+            ip = args[0]
+            if string_is_valid_ip(ip):
+                self.serving_ip = ip
+            port = any_to_int(args[1], validate=True)
+            if port is not None:
+                self.port = port
+        elif len(args) > 0:
             port = any_to_int(args[0], validate=True)
             if port is not None:
                 self.port = port
@@ -448,13 +455,12 @@ class TCPNumpyReceiveNode(Node):
         self.listening = False
         self.connection = None
         self.reconnect = False
-        self.port_changed = False
         self.client_Address = ''
         self.connection = None
         self.socket_released = False
         self.received = None
         self.ready_to_listen = True
-        self.ip_serving_address_property = self.add_property('serving ip', widget_type='text_input', default_value=self.serving_ip)
+        self.ip_serving_address_property = self.add_property('serving ip', widget_type='text_input', width=120, default_value=self.serving_ip)
         self.port_property = self.add_property('port', widget_type='input_int', default_value=self.port, max=32767)
         self.data_out = self.add_output('data')
         self.connected_out = self.add_output('connected')
@@ -470,7 +476,6 @@ class TCPNumpyReceiveNode(Node):
             print('receive post_create')
         self.port = self.port_property()
         self.socket_init()
-        self.port_changed = False
         self.receive_thread = threading.Thread(target=self.receive_thread)
         self.receive_thread.start()
         self.add_frame_task()
@@ -552,10 +557,11 @@ class TCPNumpyReceiveNode(Node):
     def receive_thread(self):
         print('enter receive_thread')
         while self.running:
-            if self.port != self.port_property() or self.port_changed:
+            if self.port != self.port_property() or self.serving_ip != self.ip_serving_address_property():
                 if self.app.verbose:
-                    print('receive port changed')
+                    print('receive ip or port changed')
                 self.port = self.port_property()
+                self.serving_ip = self.ip_serving_address_property()
                 self.socket_release()
             if self.numpysocket is None:
                 self.socket_init()
@@ -569,17 +575,18 @@ class TCPNumpyReceiveNode(Node):
                         self.listening = True
                     except Exception as e:
                         print('receive thread listen exception', e)
-                readable, writable, exceptional = select.select([self.numpysocket], [], [])
+                readable, writable, exceptional = select.select([self.numpysocket], [], [], 1.0)
                 if len(readable) > 0:
                     if readable[0] == self.numpysocket:
                         self.connection, addr = self.numpysocket.accept()
                         if self.connection is not None:
                             print('receive connected to', addr[0], self.port)
                             while self.connection is not None and self.running:
-                                if self.port != self.port_property() or self.port_changed:
+                                if self.port != self.port_property() or self.serving_ip != self.ip_serving_address_property():
                                     if self.app.verbose:
                                         print('receive closing due to port change')
                                     self.port = self.port_property()
+                                    self.serving_ip = self.ip_serving_address_property()
                                     self.socket_release()
                                 else:
                                     try:
@@ -607,13 +614,18 @@ class TCPNumpyReceiveNode(Node):
                 #             if self.socket_released:
                 #                 print('receive lost connection', e)
                 #                 self.socket_released = False
-
+        self.socket_release()
         if self.app.verbose:
             print('running == False... cleaning up receive socket')
-        self.numpysocket.shutdown(socket.SHUT_RDWR)
-        self.numpysocket.close()
+        # try:
+        #     self.numpysocket.shutdown(socket.SHUT_RDWR)
+        # except Exception as e:
+        #     print('exception while shutting server socket down', e)
+        # self.numpysocket.close()
+        print('exiting receive thread')
 
     def custom_cleanup(self):
+        print('tcp_numpy_receive cleaning up')
         self.running = False
         if self.app.verbose:
             print('join')
@@ -698,7 +710,7 @@ class ProcessGroupNode(Node):
         print('ip', self.ip, 'port', str(self.port), 'backend', self.backend, 'rank', self.rank, 'world_size', self.world_size)
         self.process_group = ProcessGroup(ip=self.ip, port=str(self.port), backend=self.backend, rank=self.rank, world_size=self.world_size)
 
-        self.ip_widget = self.add_property('ip', widget_type='text_input', default_value=self.ip)
+        self.ip_widget = self.add_property('ip', widget_type='text_input', width=120, default_value=self.ip)
         self.ip_port_widget = self.add_property('port', widget_type='input_int', default_value=self.port)
         self.ip_rank_widget = self.add_property('rank', widget_type='input_int', default_value=self.rank)
         self.backend_widget = self.add_property('backend', widget_type='text_input', default_value=self.backend)

@@ -385,11 +385,10 @@ class TimerNode(Node):
 
         if label == 'elapsed':
             self.mode = 1
-            self.input = self.add_input('', triggers_execution=True)
+            self.input = self.add_input('', widget_type='drag_float', triggers_execution=True)
         else:
             self.input = self.add_input('on', widget_type='checkbox', triggers_execution=True, callback=self.start_stop)
-
-        self.units_property = self.add_property('units', widget_type='combo', default_value=default_units, callback=self.set_units)
+        self.units_property = self.add_property('units', widget_type='combo', default_value=default_units, width=100, callback=self.set_units)
         self.units_property.widget.combo_items = ['seconds', 'milliseconds', 'minutes', 'hours']
         self.output = self.add_output("")
 
@@ -434,6 +433,7 @@ class TimerNode(Node):
     def execute(self):
         if self.mode == 1:
             self.calc_time()
+            self.input.set(self.output_elapsed)
         self.output.send(self.output_elapsed)
         if self.mode == 1:
             self.update_time_base()

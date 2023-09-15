@@ -311,7 +311,8 @@ class PropertyWidget:
     def set_visibility(self, visibility_state='show_all'):
         if visibility_state == 'show_all':
             dpg.bind_item_theme(self.uuid, theme=Node.app.global_theme)
-            dpg.enable_item(self.uuid)
+            if self.widget != 'label':
+                dpg.enable_item(self.uuid)
             if self.trigger_widget is not None:
                 with dpg.theme() as item_theme:
                     with dpg.theme_component(dpg.mvAll):
@@ -326,7 +327,8 @@ class PropertyWidget:
 
         elif visibility_state == 'widgets_only':
             dpg.bind_item_theme(self.uuid, theme=Node.app.widget_only_theme)
-            dpg.enable_item(self.uuid)
+            if self.widget != 'label':
+                dpg.enable_item(self.uuid)
             if self.trigger_widget is not None:
                 with dpg.theme() as item_theme:
                     with dpg.theme_component(dpg.mvAll):
@@ -335,7 +337,8 @@ class PropertyWidget:
                 dpg.enable_item(self.trigger_widget)
         else:
             dpg.bind_item_theme(self.uuid, theme=Node.app.invisible_theme)
-            dpg.disable_item(self.uuid)
+            if self.widget != 'label':
+                dpg.disable_item(self.uuid)
             if self.trigger_widget is not None:
                 dpg.bind_item_theme(self.trigger_widget, theme=Node.app.invisible_theme)
                 dpg.disable_item(self.trigger_widget)
