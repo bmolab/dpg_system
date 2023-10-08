@@ -1,4 +1,4 @@
-prepend
+prepend : PrependNode
     description:
         prepend a prefix element to this list or string
 
@@ -23,7 +23,7 @@ prepend
         array input: convert the array to a list and output a list [prefix input_array_values]
 
 
-append
+append : AppendNode
     description:
         append a suffix element to this list or string
 
@@ -48,7 +48,7 @@ append
         array input: convert the array to a list and output a list [input_array_values suffix]
 
 
-type
+type : TypeNode
     description:
         reports type of received input
 
@@ -60,7 +60,7 @@ type
             float, int, bang, string, list[length], bool, array[shape], tensor[shape], numpy.double, numpy.float32, numpy.int64, numpy.bool_
 
 
-info
+info : InfoNode
     description:
         reports type and additional info of received input
 
@@ -75,7 +75,8 @@ info
             array: array[shape] dtype
             tensor: tensor[shape] dtype device requires_grad
 
-array
+
+array : ArrayNode
     description:
         convert input into an array
 
@@ -91,15 +92,48 @@ array
             any input is converted into a numpy array. If a shape is supplied the array is reshaped before output
 
 
+string : StringNode
+    description:
+        convert input into a string
+
+    inputs:
+        in: anything (triggers)
+
+    outputs:
+        string out:
+            any input is converted into a string and output
 
 
+list : ListNode
+    description:
+        convert input into a list
+
+    inputs:
+        in: anything (triggers)
+
+    outputs:
+        string out:
+            any input is converted into a list and output
+            for scalar inputs, a single element list is output
 
 
+counter : CounterNode
+    description:
+        counts input events, wrapping at maximum and signalling end of count
 
+    inputs:
+        input: (triggers) increments count on each input event
 
-string
-list
-counter
+        count: sets the count maximum
+
+        step: sets the increment step per input event
+
+    outputs:
+        count out: the current count is output for every input event
+
+        carry out: outputs 1 when the count maximum - 1 is achieved
+            outputs 0 when counter wraps back to 0
+
 coll
 dict
 combine

@@ -440,6 +440,25 @@ class TimerNode(Node):
             self.update_time_base()
 
 
+'''counter : CounterNode
+    description:
+        counts input events, wrapping at maximum and signalling end of count
+
+    inputs:
+        input: (triggers) increments count on each input event
+
+        count: sets the count maximum
+
+        step: sets the increment step per input event
+
+    outputs:
+        count out: the current count is output for every input event
+
+        carry out: outputs 1 when the count maximum - 1 is achieved
+            outputs 0 when counter wraps back to 0
+'''
+
+
 class CounterNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -496,7 +515,7 @@ class CounterNode(Node):
         elif self.current_value >= self.max_count:
             self.carry_output.set_value(0)
             self.current_value %= self.max_count
-        elif self.current_value > self.max_count - self.step:
+        elif self.current_value >= self.max_count - self.step:
             self.carry_output.set_value(1)
 
         self.output.set_value(self.current_value)
@@ -1268,6 +1287,34 @@ class CombineFIFONode(Node):
             self.output.send(output_string_list)
             self.string_output.send(output_string)
 
+'''type : TypeNode
+    description:
+        reports type of received input
+
+    inputs:
+        in: anything
+
+    properties:
+        type : str : shows type of the input
+            float, int, bang, string, list[length], bool, array[shape], tensor[shape], numpy.double, numpy.float32, numpy.int64, numpy.bool_
+'''
+
+'''info : TypeNode
+    description:
+        reports type and additional info of received input
+
+    inputs:
+        in: anything
+
+    properties:
+        info : str : shows type of the input
+            float, int, bang, numpy.double, numpy.float32, numpy.int64, numpy.bool_: type name
+            list input: list[length]
+            string: str
+            array: array[shape] dtype
+            tensor: tensor[shape] dtype device requires_grad
+'''
+
 
 class TypeNode(Node):
     @staticmethod
@@ -1463,6 +1510,23 @@ class LengthNode(Node):
                 self.output.send(1)
 
 
+'''array : ArrayNode
+    description:
+        convert input into an array
+
+    inputs:
+        in: anything (triggers)
+
+    properties: (optional)
+        shape: a list of numbers separated by spaces or commas
+            if empty, then the input is not reshaped
+
+    outputs:
+        array out:
+            any input is converted into a numpy array. If a shape is supplied the array is reshaped before output
+'''
+
+
 class ArrayNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -1498,6 +1562,18 @@ class ArrayNode(Node):
             out_array = np.reshape(out_array, tuple(self.shape))
         self.output.send(out_array)
 
+'''string : StringNode
+    description:
+        convert input into a string
+
+    inputs:
+        in: anything (triggers)
+
+    outputs:
+        string out:
+            any input is converted into a string and output
+'''
+
 
 class StringNode(Node):
     @staticmethod
@@ -1517,6 +1593,20 @@ class StringNode(Node):
         self.output.send(out_string)
 
 
+'''list : ListNode
+    description:
+        convert input into a list
+
+    inputs:
+        in: anything (triggers)
+
+    outputs:
+        string out:
+            any input is converted into a list and output
+            for scalar inputs, a single element list is output
+'''
+
+
 class ListNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -1533,6 +1623,32 @@ class ListNode(Node):
         in_data = self.input()
         out_list = any_to_list(in_data)
         self.output.send(out_list)
+
+
+'''prepend : PrependNode
+    description:
+        prepend a prefix element to this list or string
+
+    inputs:
+        in: list, str, scalar, array
+
+    arguments:
+        <list, str, bool, number> : the value to prepend to the input
+
+    properties:
+        prefix : str : str to prepend to the input
+
+    options:
+        always output list <bool> : if True, output list with prefix as first element
+
+    output:
+        list input: output a list [prefix input_list]
+        str input:
+            'always output list' is False : output a str of 'prefix input'
+            'always output list' is True : output a list [prefix input_str]
+        scalar input: output a list [prefix input_scalar]
+        array input: convert the array to a list and output a list [prefix input_array_values]
+'''
 
 
 class PrependNode(Node):
@@ -1582,6 +1698,32 @@ class PrependNode(Node):
         elif t == np.ndarray:
             out_list += any_to_list(data)
         self.output.send(out_list)
+
+
+'''append : AppendNode
+    description:
+        append a suffix element to this list or string
+
+    inputs:
+        in: list, str, scalar, array
+
+    arguments:
+        <list, str, bool, number> : the value to append to the input
+
+    properties:
+        suffix : str : str to append to the input
+
+    options:
+        always output list <bool> : if True, output list with suffix as last element
+
+    output:
+        list input: output a list [input_list suffix]
+        str input:
+            'always output list' is False : output a str of 'input suffix'
+            'always output list' is True : output a list [input_str suffix]
+        scalar input: output a list [input_scalar suffix]
+        array input: convert the array to a list and output a list [input_array_values suffix]
+'''
 
 
 class AppendNode(Node):
