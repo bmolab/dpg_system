@@ -868,8 +868,13 @@ class ValueNode(Node):
                         if not is_number(in_data[0]):
                             return
                     value = in_data
-            elif t in [float, int, bool]:
+            elif t in [float, int]:
                 value = in_data
+            elif t == bool:
+                if in_data:
+                    value = 1
+                else:
+                    value = 0
             else:
                 if self.input.widget.widget == 'text_input':
                     if t == np.ndarray:

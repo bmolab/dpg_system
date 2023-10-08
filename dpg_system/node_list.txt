@@ -1,0 +1,136 @@
+prepend
+    description:
+        prepend a prefix element to this list or string
+
+    inputs:
+        in: list, str, scalar, array
+
+    arguments:
+        <list, str, bool, number> : the value to prepend to the input
+
+    properties:
+        prefix : str : str to prepend to the input
+
+    options:
+        always output list <bool> : if True, output list with prefix as first element
+
+    output:
+        list input: output a list [prefix input_list]
+        str input:
+            'always output list' is False : output a str of 'prefix input'
+            'always output list' is True : output a list [prefix input_str]
+        scalar input: output a list [prefix input_scalar]
+        array input: convert the array to a list and output a list [prefix input_array_values]
+
+
+append
+    description:
+        append a suffix element to this list or string
+
+    inputs:
+        in: list, str, scalar, array
+
+    arguments:
+        <list, str, bool, number> : the value to append to the input
+
+    properties:
+        suffix : str : str to append to the input
+
+    options:
+        always output list <bool> : if True, output list with suffix as last element
+
+    output:
+        list input: output a list [input_list suffix]
+        str input:
+            'always output list' is False : output a str of 'input suffix'
+            'always output list' is True : output a list [input_str suffix]
+        scalar input: output a list [input_scalar suffix]
+        array input: convert the array to a list and output a list [input_array_values suffix]
+
+
+type
+    description:
+        reports type of received input
+
+    inputs:
+        in: anything
+
+    properties:
+        type : str : shows type of the input
+            float, int, bang, string, list[length], bool, array[shape], tensor[shape], numpy.double, numpy.float32, numpy.int64, numpy.bool_
+
+
+info
+    description:
+        reports type and additional info of received input
+
+    inputs:
+        in: anything
+
+    properties:
+        info : str : shows type of the input
+            float, int, bang, numpy.double, numpy.float32, numpy.int64, numpy.bool_: type name
+            list input: list[length]
+            string: str
+            array: array[shape] dtype
+            tensor: tensor[shape] dtype device requires_grad
+
+array
+    description:
+        convert input into an array
+
+    inputs:
+        in: anything (triggers)
+
+    properties: (optional)
+        shape: a list of numbers separated by spaces or commas
+            if empty, then the input is not reshaped
+
+    outputs:
+        array out:
+            any input is converted into a numpy array. If a shape is supplied the array is reshaped before output
+
+
+
+
+
+
+
+
+string
+list
+counter
+coll
+dict
+combine
+kombine
+delay
+select
+route
+gate
+switch
+metro
+unpack
+pack
+pak
+repeat
+timer
+elapsed
+decode
+t
+var
+send
+receive
+s
+r
+ramp
+fifo_string
+bucket_brigade
+tick
+comment
+fuzzy_match
+length
+time_between
+word_replace
+split
+join

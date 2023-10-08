@@ -23,6 +23,7 @@ def register_basic_nodes():
     Node.app.register_node("list", ListNode.factory)
     Node.app.register_node("counter", CounterNode.factory)
     Node.app.register_node('coll', CollectionNode.factory)
+    Node.app.register_node('dict', CollectionNode.factory)
     Node.app.register_node("combine", CombineNode.factory)
     Node.app.register_node("kombine", CombineNode.factory)
     Node.app.register_node("delay", DelayNode.factory)
@@ -1132,6 +1133,7 @@ class SplitNode(Node):
         splits = in_string.split(self.split_token())
         self.output.send(splits)
 
+
 class JoinNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -1600,7 +1602,7 @@ class AppendNode(Node):
             self.appender = in_value
 
         self.input = self.add_input("in", triggers_execution=True)
-        self.appender = self.add_property("prefix", widget_type='text_input', default_value=self.appender, callback=self.appender_changed)
+        self.appender = self.add_property("suffix", widget_type='text_input', default_value=self.appender, callback=self.appender_changed)
         self.output = self.add_output("out")
         self.always_as_list = self.add_option('always output list', widget_type='checkbox', default_value=False)
 
@@ -1669,7 +1671,8 @@ class CollectionNode(Node):
 
         self.collection_name = self.arg_as_string(default_value='untitled')
 
-        self.input = self.add_input('in', triggers_execution=True)
+        self.input = self.add_input('retrieve by key', triggers_execution=True)
+        self.store_input = self.add_input('store', triggers_execution=True)
         self.collection_name_property = self.add_property('name', widget_type='text_input', default_value=self.collection_name)
         self.output = self.add_output("out")
         self.message_handlers['clear'] = self.clear_message
@@ -1727,44 +1730,64 @@ class CollectionNode(Node):
         self.save_pointer = -1
 
     def execute(self):
-        data = self.input()
-        # handled, do_output = self.check_for_messages(data)
-        # if not handled:
-        t = type(data)
-        address = any_to_string(data)
+        if self.active_input == self.input:
+            data = self.input()
+            # handled, do_output = self.check_for_messages(data)
+            # if not handled:
+            t = type(data)
+            address = any_to_string(data)
 
-        if t in [int, float, np.int64, np.double]:
-            if data in self.collection:
-                self.output.send(self.collection[data])
-            elif address in self.collection:
-                self.output.send(self.collection[address])
-        elif t == str:
-            if address in self.collection:
-                self.output.send(self.collection[address])
-        elif t in [list]:
-            index = any_to_string(data[0])
-            if index == 'delete':
-                if len(data) > 1:
-                    index = any_to_string(data[1])
-                    if index in self.collection:
-                        self.collection.__delitem__(index)
-                return
-            elif index == 'append':
-                self.save_pointer += 1
-                while self.save_pointer in self.collection:
+            if t in [int, float, np.int64, np.double]:
+                if data in self.collection:
+                    self.output.send(self.collection[data])
+                elif address in self.collection:
+                    self.output.send(self.collection[address])
+            elif t == str:
+                if address in self.collection:
+                    self.output.send(self.collection[address])
+            elif t in [list]:
+                index = any_to_string(data[0])
+                if index == 'delete':
+                    if len(data) > 1:
+                        index = any_to_string(data[1])
+                        if index in self.collection:
+                            self.collection.__delitem__(index)
+                    return
+                elif index == 'append':
                     self.save_pointer += 1
-                index = self.save_pointer
-            data = data[1:]
-            if len(data) == 1:
-                t = type(data[0])
-                if t == list:
-                    self.collection[index] = data[0]
-                elif t == tuple:
-                    self.collection[index] = list(data[0])
+                    while self.save_pointer in self.collection:
+                        self.save_pointer += 1
+                    index = self.save_pointer
+                data = data[1:]
+                if len(data) == 1:
+                    t = type(data[0])
+                    if t == list:
+                        self.collection[index] = data[0]
+                    elif t == tuple:
+                        self.collection[index] = list(data[0])
+                    else:
+                        self.collection[index] = data
                 else:
                     self.collection[index] = data
-            else:
-                self.collection[index] = data
+        elif self.active_input == self.store_input:
+            data = self.store_input()
+            # handled, do_output = self.check_for_messages(data)
+            # if not handled:
+            t = type(data)
+
+            if t == list:
+                index = any_to_string(data[0])
+                data = data[1:]
+                if len(data) == 1:
+                    t = type(data[0])
+                    if t == list:
+                        self.collection[index] = data[0]
+                    elif t == tuple:
+                        self.collection[index] = list(data[0])
+                    else:
+                        self.collection[index] = data
+                else:
+                    self.collection[index] = data
 
 
 class RepeatNode(Node):
@@ -2117,15 +2140,21 @@ class WordReplaceNode(Node):
 
     def execute(self):
         data = self.input()
-        if type(data) == list:
-            data = ' '.join(data)
-
         find = self.find_input()
         replace = self.replace_input()
         if find != '':
-            if type(data) == str:
-                data = data.replace(find, replace)
+            if type(data) == list:
+                for i, w in enumerate(data):
+                    if type(w) == str:
+                        if w == find:
+                            data[i] = replace
                 self.output.send(data)
+            elif type(data) == str:
+                if type(data) == str:
+                    data = re.sub(r"\b{}\b".format(find), replace, data)
+                    self.output.send(data)
+                else:
+                    self.output.send(data)
             else:
                 self.output.send(data)
         else:

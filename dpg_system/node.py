@@ -645,6 +645,13 @@ class PropertyWidget:
                             val = self.min
                 dpg.set_value(self.uuid, val)
                 self.value = val
+            elif type(data) == bool:
+                if data:
+                    val = 1
+                else:
+                    val = 0
+                dpg.set_value(self.uuid, val)
+                self.value = val
         elif self.widget in ['drag_float', 'input_float', 'slider_float', 'knob_float']:
             if is_number(data):
                 val = any_to_float(data)
@@ -654,6 +661,13 @@ class PropertyWidget:
                             val = self.max
                         if self.min and val < self.min:
                             val = self.min
+                dpg.set_value(self.uuid, val)
+                self.value = val
+            elif type(data) == bool:
+                if data:
+                    val = 1
+                else:
+                    val = 0
                 dpg.set_value(self.uuid, val)
                 self.value = val
         elif self.widget == 'color_picker':
