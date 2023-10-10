@@ -134,8 +134,20 @@ counter : CounterNode
         carry out: outputs 1 when the count maximum - 1 is achieved
             outputs 0 when counter wraps back to 0
 
-coll
-dict
+
+coll, dict : CollectionNode
+    description:
+        effectively a python Dict
+        associate values or lists to a key
+        retrieve the value or list associated with a key
+        save to a file / load from a file
+
+    inputs:
+        retrieve by key: (triggers) retrieve data associated with the input key
+
+        store: <key> <data: int, float, str, list>
+
+
 combine
 kombine
 delay
