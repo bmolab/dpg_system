@@ -1,0 +1,18 @@
+Class: MoveSenseNode
+Node(s): movesense
+description:
+	Node description goes here
+
+inputs:
+
+properties:
+
+options:
+
+output:
+	accelerometer : output_description
+	gyroscope : output_description
+	magnetometer : output_description
+
+----------------------------------------
+

@@ -1,0 +1,69 @@
+Class: TorchNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+
+properties:
+
+options:
+
+output:
+
+----------------------------------------
+
+Class: TorchDeviceDtypeNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	device : data_type
+	dtype : data_type
+	requires_grad : data_type
+
+properties:
+
+options:
+
+output:
+
+----------------------------------------
+
+Class: TorchInfoNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	in : data_type
+
+properties:
+
+options:
+
+output:
+	shape : output_description
+	dtype : output_description
+	device : output_description
+	grad : output_description
+
+----------------------------------------
+
+Class: TorchWithDimNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	dim : data_type
+
+properties:
+
+options:
+
+output:
+
+----------------------------------------
+

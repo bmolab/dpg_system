@@ -1,0 +1,20 @@
+Class: PyBulletBodyNode
+Node(s): pybullet body
+description:
+	Node description goes here
+
+inputs:
+	step : data_type
+	pelvis_position : data_type
+	pelvis_orientation : data_type
+
+properties:
+
+options:
+
+output:
+	pose_out : output_description
+	position_out : output_description
+
+----------------------------------------
+

@@ -1,0 +1,411 @@
+Class: DifferentiateNode
+Node(s): diff
+description:
+	Node description goes here
+
+inputs:
+	 : data_type
+	absolute : data_type
+
+properties:
+
+options:
+
+output:
+	 : output_description
+
+----------------------------------------
+
+Class: RandomGaussNode
+Node(s): random.gauss, random.normalvariate, random.lognormvariate, random.vonmisesvariate
+description:
+	Node description goes here
+
+inputs:
+	trigger : data_type
+
+properties:
+
+options:
+
+output:
+	out : output_description
+
+----------------------------------------
+
+Class: RandomGammaNode
+Node(s): random.gammavariate, random.betavariate, random.weibullvariate
+description:
+	Node description goes here
+
+inputs:
+	trigger : data_type
+	alpha : data_type
+	beta : data_type
+
+properties:
+
+options:
+
+output:
+	out : output_description
+
+----------------------------------------
+
+Class: RandomTriangularNode
+Node(s): random.triangular
+description:
+	Node description goes here
+
+inputs:
+	trigger : data_type
+	low : data_type
+	high : data_type
+	mode : data_type
+
+properties:
+
+options:
+
+output:
+	out : output_description
+
+----------------------------------------
+
+Class: RandomParetoNode
+Node(s): random.paretovariate, random.expovariate
+description:
+	Node description goes here
+
+inputs:
+	trigger : data_type
+
+properties:
+
+options:
+
+output:
+	out : output_description
+
+----------------------------------------
+
+Class: RandomNode
+Node(s): random
+description:
+	Node description goes here
+
+inputs:
+	trigger : data_type
+	range : data_type
+
+properties:
+
+options:
+	bipolar : option_type : option_description
+
+output:
+	out : output_description
+
+----------------------------------------
+
+Class: SignalNode
+Node(s): signal
+description:
+	Node description goes here
+
+inputs:
+	on : data_type
+	period : data_type
+	shape : data_type
+
+properties:
+
+options:
+	range : option_type : option_description
+	bipolar : option_type : option_description
+	vector size : option_type : option_description
+
+output:
+	 : output_description
+
+----------------------------------------
+
+Class: SubSampleNode
+Node(s): subsample
+description:
+	Node description goes here
+
+inputs:
+	input : data_type
+	rate : data_type
+
+properties:
+
+options:
+
+output:
+	out : output_description
+
+----------------------------------------
+
+Class: NoiseGateNode
+Node(s): noise gate
+description:
+	Node description goes here
+
+inputs:
+	input : data_type
+
+properties:
+	threshold : property_type : property_description
+
+options:
+	bipolar : option_type : option_description
+	squeeze : option_type : option_description
+
+output:
+	out : output_description
+
+----------------------------------------
+
+Class: ThresholdTriggerNode
+Node(s): trigger, hysteresis
+description:
+	Node description goes here
+
+inputs:
+	input : data_type
+
+properties:
+	threshold : property_type : property_description
+	threshold : property_type : property_description
+
+options:
+	trigger mode : option_type : option_description
+	retrig delay : option_type : option_description
+
+output:
+	out : output_description
+	release : output_description
+
+----------------------------------------
+
+Class: RangerNode
+Node(s): range
+description:
+	Node description goes here
+
+inputs:
+	in : data_type
+	input_min : data_type
+	input_max : data_type
+	output_min : data_type
+	output_max : data_type
+	calibrate : data_type
+
+properties:
+
+options:
+
+output:
+	rescaled : output_description
+
+----------------------------------------
+
+Class: MultiDiffFilterNode
+Node(s): diff filter bank, diff filter
+description:
+	Node description goes here
+
+inputs:
+	in : data_type
+	filter  : data_type
+
+properties:
+
+options:
+
+output:
+	out : output_description
+
+----------------------------------------
+
+Class: FilterNode
+Node(s): filter, smooth
+description:
+	Node description goes here
+
+inputs:
+	in : data_type
+	degree : data_type
+
+properties:
+
+options:
+
+output:
+	out : output_description
+
+----------------------------------------
+
+Class: AdaptiveFilterNode
+Node(s): adaptive filter
+description:
+	Node description goes here
+
+inputs:
+	in : data_type
+	power : data_type
+	responsiveness : data_type
+	signal range : data_type
+	smooth response : data_type
+	offset response : data_type
+
+properties:
+
+options:
+
+output:
+	out : output_description
+
+----------------------------------------
+
+Class: SampleHoldNode
+Node(s): sample hold
+description:
+	Node description goes here
+
+inputs:
+	sample/hold : data_type
+	input : data_type
+
+properties:
+
+options:
+
+output:
+	out : output_description
+
+----------------------------------------
+
+Class: TogEdgeNode
+Node(s): togedge
+description:
+	Node description goes here
+
+inputs:
+	 : data_type
+
+properties:
+
+options:
+
+output:
+	on : output_description
+	off : output_description
+
+----------------------------------------
+
+Class: BandpassNode
+Node(s): band pass
+description:
+	Node description goes here
+
+inputs:
+
+properties:
+	order : property_type : property_description
+	low : property_type : property_description
+	high : property_type : property_description
+
+options:
+
+output:
+
+----------------------------------------
+
+Class: FilterBankNode
+Node(s): filter bank
+description:
+	Node description goes here
+
+inputs:
+	signal : data_type
+
+properties:
+	band count : property_type : property_description
+	filter type : property_type : property_description
+	filter design : property_type : property_description
+	order : property_type : property_description
+	low : property_type : property_description
+	high : property_type : property_description
+	sample freq : property_type : property_description
+
+options:
+
+output:
+	filtered : output_description
+
+----------------------------------------
+
+Class: SpectrumNode
+Node(s): spectrum
+description:
+	Node description goes here
+
+inputs:
+	signal : data_type
+
+properties:
+	band count : property_type : property_description
+	filter type : property_type : property_description
+	filter design : property_type : property_description
+	order : property_type : property_description
+	low : property_type : property_description
+	high : property_type : property_description
+	sample freq : property_type : property_description
+
+options:
+
+output:
+	spectrum : output_description
+
+----------------------------------------
+
+Class: BandPassFilterNode
+Node(s): band pass
+description:
+	Node description goes here
+
+inputs:
+
+properties:
+	filter type : property_type : property_description
+	filter design : property_type : property_description
+	order : property_type : property_description
+	low : property_type : property_description
+	high : property_type : property_description
+	sample freq : property_type : property_description
+
+options:
+
+output:
+	filtered : output_description
+
+----------------------------------------
+
+Class: IIR2Filter
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+
+properties:
+
+options:
+
+output:
+
+----------------------------------------
+

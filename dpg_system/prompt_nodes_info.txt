@@ -1,0 +1,39 @@
+Class: AmbientPromptNode
+Node(s): ambient prompt
+description:
+	Node description goes here
+
+inputs:
+	in_ : data_type
+	clear : data_type
+
+properties:
+
+options:
+
+output:
+	weighted prompt out : output_description
+
+----------------------------------------
+
+Class: WeightedPromptNode
+Node(s): weighted prompt
+description:
+	Node description goes here
+
+inputs:
+	## : data_type
+	clear : data_type
+	strength : data_type
+
+properties:
+	clear : property_type : property_description
+
+options:
+	width : option_type : option_description
+
+output:
+	weighted prompt out : output_description
+
+----------------------------------------
+

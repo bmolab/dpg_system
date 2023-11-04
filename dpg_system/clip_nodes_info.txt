@@ -1,0 +1,41 @@
+Class: ClipNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+----------------------------------------
+
+Class: ClipEmbeddingNode
+Node(s): clip embedding
+description:
+	Node description goes here
+
+inputs:
+	input : data_type
+
+properties:
+
+options:
+
+output:
+	output : output_description
+
+----------------------------------------
+
+Class: ClipEmbeddingDistanceNode
+Node(s): clip embedding length
+description:
+	Node description goes here
+
+inputs:
+	input : data_type
+
+properties:
+
+options:
+
+output:
+	output : output_description
+
+----------------------------------------
+

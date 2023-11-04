@@ -1,0 +1,123 @@
+Class: PhraseMatch
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+
+properties:
+
+options:
+
+output:
+
+----------------------------------------
+
+Class: SpacyNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+
+properties:
+
+options:
+
+output:
+
+----------------------------------------
+
+Class: SpacyConfusionMatrixNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	input : data_type
+	input2 : data_type
+
+properties:
+
+options:
+
+output:
+	output : output_description
+
+----------------------------------------
+
+Class: PhraseVectorNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	phrase in : data_type
+
+properties:
+
+options:
+
+output:
+	phrase vector out : output_description
+
+----------------------------------------
+
+Class: PhraseSimilarityNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	phrase in : data_type
+	phrase 2 in : data_type
+
+properties:
+
+options:
+
+output:
+	phrase similarity out : output_description
+
+----------------------------------------
+
+Class: LemmaNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	text in : data_type
+
+properties:
+
+options:
+
+output:
+	lemmas out : output_description
+
+----------------------------------------
+
+Class: RephraseNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	text in : data_type
+	clip score : data_type
+
+properties:
+	replace similarity : property_type : property_description
+	clear input pause : property_type : property_description
+	complexity replace threshold : property_type : property_description
+	clip score threshold : property_type : property_description
+	output as list : property_type : property_description
+
+options:
+
+output:
+	results : output_description
+
+----------------------------------------
+
