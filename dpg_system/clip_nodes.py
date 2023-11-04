@@ -32,8 +32,8 @@ class ClipEmbeddingNode(ClipNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.input = self.add_input("input", triggers_execution=True)
-        self.output = self.add_output("output")
+        self.input = self.add_input('input', triggers_execution=True)
+        self.output = self.add_output('output')
 
     def execute(self):
         input = any_to_string(self.input())
@@ -54,8 +54,8 @@ class ClipEmbeddingDistanceNode(ClipNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.input = self.add_input("input", triggers_execution=True)
-        self.output = self.add_output("output")
+        self.input = self.add_input('input', triggers_execution=True)
+        self.output = self.add_output('output')
 
     def execute(self):
         input = any_to_string(self.input())

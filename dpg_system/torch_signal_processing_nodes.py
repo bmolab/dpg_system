@@ -158,7 +158,7 @@ class TorchFFTNode(TorchWithDimNode):
         self.op = torch.fft.fft
         if self.label in self.op_dict:
             self.op = self.op_dict[self.label]
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         norm = 'backward'
         if self.dim_specified:
             self.add_dim_input()

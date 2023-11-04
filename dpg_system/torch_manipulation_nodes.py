@@ -44,10 +44,10 @@ class TorchSqueezeNode(TorchWithDimNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         if self.dim_specified:
             self.add_dim_input()
-        self.output = self.add_output("output")
+        self.output = self.add_output('output')
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -68,10 +68,10 @@ class TorchUnsqueezeNode(TorchWithDimNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         if self.dim_specified:
             self.dim_input = self.add_input('dim', widget_type='input_int', default_value=self.dim, callback=self.dim_changed)
-        self.output = self.add_output("output")
+        self.output = self.add_output('output')
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -95,10 +95,10 @@ class TorchViewNode(TorchNode):
             for arg in args:
                 self.shape.append(any_to_int(arg))
         shape_string = str(self.shape)
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         self.shape_input = self.add_input('', widget_type='text_input', widget_width=200, default_value=shape_string,
                                                   callback=self.shape_changed)
-        self.output = self.add_output("output")
+        self.output = self.add_output('output')
 
     def shape_changed(self):
         shape_text = self.shape_input()
@@ -212,10 +212,10 @@ class TorchFlipNode(TorchNode):
         super().__init__(label, data, args)
 
         self.flip_list = [0]
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         self.flip_property = self.add_property('flip dims', widget_type='text_input', default_value='0',
                                                   callback=self.flip_changed)
-        self.output = self.add_output("output")
+        self.output = self.add_output('output')
 
     def flip_changed(self):
         flip_text = self.flip_property()
@@ -241,11 +241,11 @@ class TorchStackCatNode(TorchNode):
         if len(args) > 0:
             self.input_count = string_to_int(args[0])
         self.other_inputs = []
-        self.input = self.add_input("tensor 1", triggers_execution=True)
+        self.input = self.add_input('tensor 1', triggers_execution=True)
         for i in range(self.input_count - 1):
             self.other_inputs.append(self.add_input('tensor ' + str(i + 2)))
         self.dim_input = self.add_input('dim', widget_type='input_int', default_value=self.dim, callback=self.dim_changed)
-        self.output = self.add_output("output")
+        self.output = self.add_output('output')
 
     def dim_changed(self):
         self.dim = self.dim_input()
@@ -346,10 +346,10 @@ class TorchHStackNode(TorchNode):
             self.op = torch.dstack
 
         self.other_inputs = []
-        self.input = self.add_input("tensor 1", triggers_execution=True)
+        self.input = self.add_input('tensor 1', triggers_execution=True)
         for i in range(self.input_count - 1):
             self.other_inputs.append(self.add_input('tensor ' + str(i + 2)))
-        self.output = self.add_output("stacked tensors")
+        self.output = self.add_output('stacked tensors')
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -387,13 +387,13 @@ class TorchChunkNode(TorchNode):
         if len(args) > 1:
             self.dim = any_to_int(args[1])
 
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         self.dim_input = self.add_input('dim', widget_type='input_int', default_value=self.dim, callback=self.dim_changed)
         self.split_count_option = self.add_option('split', widget_type='input_int', default_value=self.splits)
         self.tensor_outputs = []
 
         for i in range(self.splits):
-            self.tensor_outputs.append(self.add_output("tensor " + str(i)))
+            self.tensor_outputs.append(self.add_output('tensor ' + str(i)))
 
     def dim_changed(self):
         self.dim = self.dim_input()
@@ -513,12 +513,12 @@ class TorchRollNode(TorchNode):
 
         self.dims_tuple = (-1,)
         self.shifts_tuple = (1,)
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         self.dims_input = self.add_input('roll dims', widget_type='text_input', default_value='-1',
                                                   callback=self.dims_changed)
         self.shifts_input = self.add_input('roll shifts', widget_type='text_input', default_value='1',
                                                   callback=self.shifts_changed)
-        self.output = self.add_output("rolled tensor")
+        self.output = self.add_output('rolled tensor')
 
     def dims_changed(self):
         dims_text = self.dims_input()
@@ -557,10 +557,10 @@ class TorchSubtensorNode(TorchNode):
             index_string += args[i]
         if index_string == '':
             index_string = ':'
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         self.indices_input = self.add_input('', widget_type='text_input', widget_width=200, default_value=index_string,
                                                   callback=self.dim_changed)
-        self.output = self.add_output("output")
+        self.output = self.add_output('output')
 
     def dim_changed(self):
         dim_text = self.indices_input()
@@ -636,10 +636,10 @@ class TorchSelectNode(TorchNode):
         if len(args) > 1:
             self.index = any_to_int(args[1])
 
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         self.dim_input = self.add_input('dim', widget_type='input_int', default_value=self.dim, callback=self.dim_changed)
         self.index_input = self.add_input('index', widget_type='input_int', default_value=self.index, callback=self.index_changed)
-        self.output = self.add_output("output")
+        self.output = self.add_output('output')
 
     def dim_changed(self):
         self.dim = self.dim_input()
@@ -690,9 +690,9 @@ class TorchTakeNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         self.index_input = self.add_input('indices in')
-        self.output = self.add_output("output")
+        self.output = self.add_output('output')
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -723,10 +723,10 @@ class TorchTakeAlongDimNode(TorchWithDimNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.dim_specified = True
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         self.index_input = self.add_input('indices in')
         self.add_dim_input()
-        self.output = self.add_output("output")
+        self.output = self.add_output('output')
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -757,12 +757,12 @@ class TorchIndexSelectNode(TorchWithDimNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         self.index_input = self.add_input('indices in')
         if self.dim_specified:
             self.add_dim_input()
 
-        self.output = self.add_output("output")
+        self.output = self.add_output('output')
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -792,14 +792,14 @@ class TorchNarrowNode(TorchWithDimNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         self.dim_specified = True
         self.start = 0
         self.length = 1
         self.add_dim_input()
         self.start_input = self.add_input('start', widget_type='drag_int', default_value=self.start, callback=self.params_changed)
         self.length_input = self.add_input('length', widget_type='drag_int', default_value=self.length, callback=self.params_changed)
-        self.output = self.add_output("tensor out")
+        self.output = self.add_output('tensor out')
 
     def params_changed(self):
         self.start = self.start_input()
@@ -826,10 +826,10 @@ class TorchDiagNode(TorchNode):
 
         self.flip_list = [0]
         self.diag = 0
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         self.which_property = self.add_property('which diag', widget_type='input_int', default_value=self.diag,
                                                   callback=self.diag_changed)
-        self.output = self.add_output("output")
+        self.output = self.add_output('output')
 
     def diag_changed(self):
         self.diag = self.which_property()
@@ -859,10 +859,10 @@ class TorchTriangleNode(TorchNode):
             self.op = self.op_dict[self.label]
 
         self.diag = 0
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         self.which_property = self.add_property('which diag', widget_type='input_int', default_value=self.diag,
                                                   callback=self.diag_changed)
-        self.output = self.add_output("output")
+        self.output = self.add_output('output')
 
     def diag_changed(self):
         self.diag = self.which_property()

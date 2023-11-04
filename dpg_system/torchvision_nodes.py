@@ -20,8 +20,8 @@ class TorchvisionGrayscaleNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.input = self.add_input("tensor in", triggers_execution=True)
-        self.output = self.add_output("output")
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.output = self.add_output('output')
         self.op = torchvision.transforms.Grayscale()
 
     def execute(self):
@@ -42,11 +42,11 @@ class TorchvisionGaussianBlurNode(TorchNode):
         self.kernel_size = 9
         self.sigma = 0.5
 
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         self.kernel_size_property = self.add_property('kernel size', widget_type='combo', default_value=self.kernel_size, callback=self.params_changed)
         self.kernel_size_property.widget.combo_items = [3, 5, 7, 9, 11, 13, 15, 17, 19]
         self.sigma_property = self.add_property('sigma', widget_type='drag_float', default_value=self.sigma, callback=self.params_changed)
-        self.output = self.add_output("output")
+        self.output = self.add_output('output')
         self.op = torchvision.transforms.functional.gaussian_blur
 
     def params_changed(self):
@@ -108,9 +108,9 @@ class TorchvisionAdjustOneParamNode(TorchNode):
             max = 10
             self.op = torchvision.transforms.functional.adjust_brightness
 
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         self.param_input = self.add_input(param_name, widget_type='drag_float', default_value=self.param, min=min, max=max, callback=self.params_changed)
-        self.output = self.add_output("output")
+        self.output = self.add_output('output')
         print(self.op)
 
     def params_changed(self):

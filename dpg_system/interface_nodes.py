@@ -146,7 +146,7 @@ class MenuNode(Node):
         self.choice.widget.combo_items = self.choices
         self.large_text = self.add_option('large_font', widget_type='checkbox', default_value=False,
                                                  callback=self.large_font_changed)
-        self.output = self.add_output("")
+        self.output = self.add_output('')
 
     def get_preset_state(self):
         preset = {}
@@ -637,7 +637,7 @@ class GainNode(Node):
                 if t in [float, int]:
                     max = val
 
-        self.input = self.add_input("", triggers_execution=True)
+        self.input = self.add_input('', triggers_execution=True)
         self.gain = self.add_property('', widget_type=widget_type, width=widget_width, max=max)
         self.output = self.add_output('')
         self.max = self.add_option('max', widget_type='drag_float', callback=self.max_changed, default_value=max)
@@ -729,9 +729,9 @@ class ValueNode(Node):
                         self.variable_name = var_name
 
         if self.max is None:
-            self.input = self.add_input("", triggers_execution=True, widget_type=widget_type, widget_uuid=self.value, widget_width=widget_width, trigger_button=True)
+            self.input = self.add_input('', triggers_execution=True, widget_type=widget_type, widget_uuid=self.value, widget_width=widget_width, trigger_button=True)
         else:
-            self.input = self.add_input("", triggers_execution=True, widget_type=widget_type, widget_uuid=self.value, widget_width=widget_width, trigger_button=True, max=self.max)
+            self.input = self.add_input('', triggers_execution=True, widget_type=widget_type, widget_uuid=self.value, widget_width=widget_width, trigger_button=True, max=self.max)
 
         if self.variable_name != '':
             self.output = self.add_output(self.variable_name)
@@ -945,7 +945,7 @@ class VectorNode(Node):
 
         self.current_component_count = self.arg_as_int(default_value=4)
 
-        self.input = self.add_input("in", triggers_execution=True)
+        self.input = self.add_input('in', triggers_execution=True)
 
         self.component_properties = []
         for i in range(self.max_component_count):
@@ -1213,11 +1213,11 @@ class PlotNode(Node):
         self.x_data = np.linspace(0, self.sample_count, self.sample_count)
         self.roll_along_x = False
 
-        self.input = self.add_input("y", triggers_execution=True)
+        self.input = self.add_input('y', triggers_execution=True)
 
         self.input_x = None
         if self.style == 1:
-            self.input_x = self.add_input("x")
+            self.input_x = self.add_input('x')
 
         self.output = self.add_output('')
         self.plot_display = self.add_display('')
@@ -1884,8 +1884,8 @@ class ColorPickerNode(Node):
         self.alpha = True
         self.has_inputs = False
 
-        self.input = self.add_input("", triggers_execution=True, widget_type='color_picker', widget_width=128, callback=self.color_changed)
-        self.output = self.add_output("")
+        self.input = self.add_input('', triggers_execution=True, widget_type='color_picker', widget_width=128, callback=self.color_changed)
+        self.output = self.add_output('')
         self.hue_wheel_option = self.add_option('hue_wheel', widget_type='checkbox', default_value=self.wheel, callback=self.hue_wheel_changed)
         self.alpha_option = self.add_option('alpha', widget_type='checkbox', default_value=self.alpha, callback=self.alpha_changed)
         self.inputs_option = self.add_option('inputs', widget_type='checkbox', default_value=self.has_inputs, callback=self.inputs_changed)

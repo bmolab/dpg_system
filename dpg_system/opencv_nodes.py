@@ -31,7 +31,7 @@ class CVImageNode(Node):
         self.image = None
         self.input = self.add_input('show image', triggers_execution=True)
         self.path_input = self.add_input('path in', widget_type='text_input', default_value=image_path, callback=self.path_changed)
-        self.output = self.add_output("")
+        self.output = self.add_output('')
 
     def custom_create(self, from_file):
         self.path_changed()
@@ -62,7 +62,7 @@ class CVVideoCaptureNode(Node):
         super().__init__(label, data, args)
         self.streaming = False
         self.on_off = self.add_input('on/off', widget_type='checkbox', callback=self.turn_on_off)
-        self.output = self.add_output("")
+        self.output = self.add_output('')
         self.cap = cv2.VideoCapture(0)
         if not self.cap.isOpened():
             print("Cannot open camera")

@@ -82,11 +82,11 @@ class TorchNNThresholdNode(TorchNode):
         if len(args) > 1:
             replace = any_to_int(args[1])
 
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         self.threshold = self.add_input('threshold', widget_type='drag_float', default_value=threshold, callback=self.params_changed)
         self.replace = self.add_input('replacenent', widget_type='drag_float', default_value=replace, callback=self.params_changed)
         self.op = torch.nn.Threshold(self.threshold, self.replace)
-        self.output = self.add_output("output")
+        self.output = self.add_output('output')
 
     def params_changed(self):
         self.op = torch.nn.Threshold(self.threshold(), self.replace())
@@ -128,8 +128,8 @@ class TorchActivationNode(TorchNode):
         if self.label in self.op_dict:
             self.op = self.op_dict[self.label]
 
-        self.input = self.add_input("tensor in", triggers_execution=True)
-        self.output = self.add_output("output")
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.output = self.add_output('output')
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -166,10 +166,10 @@ class TorchActivationTwoParamNode(TorchNode):
             parameter_1 = 1.0
             parameter_2 = 20
 
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         self.parameter_1 = self.add_input(param_1_name, widget_type='drag_float', default_value=parameter_1)
         self.parameter_2 = self.add_input(param_2_name, widget_type='drag_float', default_value=parameter_2)
-        self.output = self.add_output("output")
+        self.output = self.add_output('output')
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -196,11 +196,11 @@ class TorchActivationThreeParamNode(TorchNode):
         if self.label == 't.nn.gumbel_softmax':
             self.op = torch.nn.functional.gumbel_softmax
 
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         self.parameter_1 = self.add_input(param_1_name, widget_type='drag_float', default_value=parameter_1)
         self.parameter_2 = self.add_input(param_2_name, widget_type='checkbox', default_value=parameter_2)
         self.parameter_3 = self.add_input(param_3_name, widget_type='input_int', default_value=parameter_3)
-        self.output = self.add_output("output")
+        self.output = self.add_output('output')
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -229,9 +229,9 @@ class TorchSoftmaxNode(TorchNode):
         if len(args) > 0:
             dim = any_to_int(args[0])
 
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         self.dim = self.add_input('dim', widget_type='input_int', default_value=dim)
-        self.output = self.add_output("output")
+        self.output = self.add_output('output')
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -275,9 +275,9 @@ class TorchActivationOneParamNode(TorchNode):
             param_name = 'lambda'
             parameter = 0.5
 
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         self.parameter = self.add_input(param_name, widget_type='drag_float', default_value=parameter)
-        self.output = self.add_output("output")
+        self.output = self.add_output('output')
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -322,8 +322,8 @@ class TorchSpecialNode(TorchNode):
         self.op = torch.special.exp2
         if self.label in self.op_dict:
             self.op = self.op_dict[self.label]
-        self.input = self.add_input("tensor in", triggers_execution=True)
-        self.output = self.add_output("tensor out")
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.output = self.add_output('tensor out')
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -347,10 +347,10 @@ class TorchSpecialDimNode(TorchWithDimNode):
         self.op = torch.special.log_softmax
         if self.label in self.op_dict:
             self.op = self.op_dict[self.label]
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         if self.dim_specified:
             self.add_dim_input()
-        self.output = self.add_output("tensor out")
+        self.output = self.add_output('tensor out')
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -367,9 +367,9 @@ class TorchSpecialPolygammaNode(TorchNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         n = 0
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         self.n = self.add_input('n', widget_type='input_int', default_value=n, min=0)
-        self.output = self.add_output("tensor out")
+        self.output = self.add_output('tensor out')
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -386,10 +386,10 @@ class TorchSpecialLogitNode(TorchNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         eps = 1e-8
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         self.eps = self.add_input('eps', widget_type='drag_float', default_value=eps)
 
-        self.output = self.add_output("tensor out")
+        self.output = self.add_output('tensor out')
 
     def custom_create(self, from_file):
         self.eps.widget.set_format('%.8f')
@@ -417,9 +417,9 @@ class TorchSpecialTwoTensorNode(TorchNode):
         self.op = torch.special.gammainc
         if self.label in self.op_dict:
             self.op = self.op_dict[self.label]
-        self.input = self.add_input("tensor 1 in", triggers_execution=True)
+        self.input = self.add_input('tensor 1 in', triggers_execution=True)
         self.second_input = self.add_input('tensor 2 in')
-        self.output = self.add_output("tensor out")
+        self.output = self.add_output('tensor out')
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -449,9 +449,9 @@ class TorchSpecialTwoTensorOrNumberNode(TorchNode):
         self.op = torch.special.gammainc
         if self.label in self.op_dict:
             self.op = self.op_dict[self.label]
-        self.input = self.add_input("tensor 1 or number in", triggers_execution=True)
+        self.input = self.add_input('tensor 1 or number in', triggers_execution=True)
         self.second_input = self.add_input('tensor 2 or number in')
-        self.output = self.add_output("tensor out")
+        self.output = self.add_output('tensor out')
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -472,9 +472,9 @@ class TorchSpecialMultiGammaLnNode(TorchNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         p = 1e-8
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         self.p = self.add_input('p', widget_type='input_int', default_value=p)
-        self.output = self.add_output("tensor out")
+        self.output = self.add_output('tensor out')
 
     def execute(self):
         input_tensor = self.input_to_tensor()

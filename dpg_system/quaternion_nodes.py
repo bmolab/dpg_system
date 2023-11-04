@@ -24,8 +24,8 @@ class QuaternionToEulerNode(Node):
 
         self.degree_factor = 180.0 / math.pi
 
-        self.input = self.add_input("quaternion", triggers_execution=True)
-        self.output = self.add_output("euler angles")
+        self.input = self.add_input('quaternion', triggers_execution=True)
+        self.output = self.add_output('euler angles')
         self.x_offset = self.add_option('offset x', widget_type='drag_int', default_value=0)
         self.y_offset = self.add_option('offset y', widget_type='drag_int', default_value=0)
         self.z_offset = self.add_option('offset x', widget_type='drag_int', default_value=0)
@@ -59,9 +59,9 @@ class EulerToQuaternionNode(Node):
 
         self.degree_factor = 180.0 / math.pi
 
-        self.input = self.add_input("xyz rotation", triggers_execution=True)
+        self.input = self.add_input('xyz rotation', triggers_execution=True)
         self.degrees = self.add_property('degrees', widget_type='checkbox', default_value=True)
-        self.output = self.add_output("quaternion rotation")
+        self.output = self.add_output('quaternion rotation')
         self.order = self.add_property('order', widget_type='combo', default_value='xyz')
         self.order.widget.combo_items = ['xyz', 'zyx', 'xzy', 'zxy', 'yxz', 'yzx']
 
@@ -96,8 +96,8 @@ class QuaternionToRotationMatrixNode(Node):
 
         self.degree_factor = 180.0 / math.pi
 
-        self.input = self.add_input("quaternion", triggers_execution=True)
-        self.output = self.add_output("rotation matrix")
+        self.input = self.add_input('quaternion', triggers_execution=True)
+        self.output = self.add_output('rotation matrix')
 
     def execute(self):
         if self.input.fresh_input:
@@ -124,12 +124,12 @@ class QuaternionDistanceNode(Node):
         self.degree_factor = 180.0 / math.pi
         self.reference = np.array([1.0, 0.0, 0.0, 0.0])
 
-        self.input = self.add_input("quaternion", triggers_execution=True)
-        self.reference_input = self.add_input("reference")
+        self.input = self.add_input('quaternion', triggers_execution=True)
+        self.reference_input = self.add_input('reference')
         self.freeze = self.add_input('freeze ref', widget_type='checkbox', default_value=False)
         self.axis = self.add_property('##distanceAxis', widget_type='combo', default_value='all axes')
         self.axis.widget.combo_items = ['x axis', 'y axis', 'z axis', 'w axis', 'all axes']
-        self.output = self.add_output("distance")
+        self.output = self.add_output('distance')
         self.distance_squared = self.add_option('distance squared', widget_type='checkbox', default_value=False)
 
     def quaternion_distance(self, q1, q2):

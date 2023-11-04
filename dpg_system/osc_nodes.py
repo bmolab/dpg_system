@@ -488,7 +488,7 @@ class OSCSourceNode(OSCSource, Node):
 
         self.source_name_property = self.add_property('name', widget_type='text_input', default_value=self.name, callback=self.source_changed)
         self.source_port_property = self.add_property('port', widget_type='text_input', default_value=str(self.port), callback=self.source_changed)
-        self.output = self.add_output("osc received")
+        self.output = self.add_output('osc received')
         self.create_server()
 
     def output_message_directly(self, address, args):
@@ -554,7 +554,7 @@ class OSCAsyncIOSourceNode(OSCAsyncIOSource, Node):
 
         self.source_name_property = self.add_property('name', widget_type='text_input', default_value=self.name, callback=self.source_changed)
         self.source_port_property = self.add_property('port', widget_type='text_input', default_value=str(self.port), callback=self.source_changed)
-        self.output = self.add_output("osc received")
+        self.output = self.add_output('osc received')
         # asyncio.run(self.init_main())
 
     def output_message_directly(self, address, args):
@@ -649,7 +649,7 @@ class OSCReceiveNode(OSCBaseNode):
 
         self.source_name_property = self.add_property('source name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
         self.source_address_property = self.add_property('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
-        self.output = self.add_output("osc received")
+        self.output = self.add_output('osc received')
 
     def name_changed(self):
         new_name = self.source_name_property()
@@ -714,7 +714,7 @@ class OSCSendNode(OSCBaseNode):
             if len(args) > 1:
                 self.address = args[1]
 
-        self.input = self.add_input("osc to send", triggers_execution=True)
+        self.input = self.add_input('osc to send', triggers_execution=True)
 
         self.target_name_property = self.add_property('target name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
         self.target_address_property = self.add_property('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
@@ -796,7 +796,7 @@ class OSCRouteNode(OSCBaseNode):
         self.last_states = []
         self.current_states = []
 
-        self.input = self.add_input("in", triggers_execution=True)
+        self.input = self.add_input('in', triggers_execution=True)
 
         for i in range(self.router_count):
             self.add_output(any_to_string(args[i]))

@@ -209,8 +209,8 @@ class TorchCDistanceNode(TorchNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.input = self.add_input("input", triggers_execution=True)
-        self.output = self.add_output("output")
+        self.input = self.add_input('input', triggers_execution=True)
+        self.output = self.add_output('output')
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -232,7 +232,7 @@ class TorchDistanceNode(TorchNode):
 
         out_label = 'length'
         self.input2 = None
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         if self.label == 't.dist':
             self.input2 = self.add_input("tensor 2 in")
             out_label = 'distance'
@@ -330,8 +330,8 @@ class TorchMinimumMaximumNode(TorchNode):
         if self.label == 't.minimum':
             output_label = 'minimum tensor'
             self.op = torch.minimum
-        self.input = self.add_input("tensor a in", triggers_execution=True)
-        self.input_2 = self.add_input("tensor b in")
+        self.input = self.add_input('tensor a in', triggers_execution=True)
+        self.input_2 = self.add_input('tensor b in')
 
         self.output = self.add_output(output_label)
 
@@ -366,8 +366,8 @@ class TorchComparisonNode(TorchNode):
         self.op = torch.eq
         if self.label in self.op_dict:
             self.op = self.op_dict[self.label]
-        self.input = self.add_input("tensor a in", triggers_execution=True)
-        self.input_2 = self.add_input("tensor b in")
+        self.input = self.add_input('tensor a in', triggers_execution=True)
+        self.input_2 = self.add_input('tensor b in')
 
         self.output = self.add_output(output_label)
 
@@ -400,8 +400,8 @@ class TorchLCMGCDNode(TorchNode):
         if self.label in self.op_dict:
             self.op = self.op_dict[self.label]
             output_name = 'lcm'
-        self.input = self.add_input("tensor a in", triggers_execution=True)
-        self.input_2 = self.add_input("tensor b in")
+        self.input = self.add_input('tensor a in', triggers_execution=True)
+        self.input_2 = self.add_input('tensor b in')
 
         self.output = self.add_output(output_name + ' tensor out')
 
@@ -456,7 +456,7 @@ class TorchMeanMedianNode(TorchWithDimNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         self.op = torch.mean
         if self.label in self.op_dict:
             self.op = self.op_dict[self.label]
@@ -465,7 +465,7 @@ class TorchMeanMedianNode(TorchWithDimNode):
         if self.dim_specified:
             self.add_dim_input()
             self.keep_dims = self.add_input('keep_dims', widget_type='checkbox', default_value=keep_dims)
-        self.output = self.add_output("output")
+        self.output = self.add_output('output')
         if self.label in ['t.median', 't.nanmedian'] and self.dim_specified:
             self.index_out = self.add_output("index output")
 
@@ -501,12 +501,12 @@ class TorchCumSumNode(TorchWithDimNode):
         self.op = torch.cumsum
         if self.label in self.op_dict:
             self.op = self.op_dict[self.label]
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         if self.dim_specified:
             self.add_dim_input()
-        self.output = self.add_output("output")
+        self.output = self.add_output('output')
         if self.label in ['t.cummax', 't.cummin']:
-            self.index_output = self.add_output("indices")
+            self.index_output = self.add_output('indices')
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -534,7 +534,7 @@ class TorchRealImaginaryNode(TorchNode):
             self.real = False
             output_name = 'imaginary tensor'
 
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         self.output = self.add_output(output_name)
 
     def execute(self):
@@ -556,8 +556,8 @@ class TorchComplexNode(TorchNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.real = True
-        self.input = self.add_input("real tensor in", triggers_execution=True)
-        self.imag_input = self.add_input("imag tensor in", triggers_execution=True)
+        self.input = self.add_input('real tensor in', triggers_execution=True)
+        self.imag_input = self.add_input('imag tensor in', triggers_execution=True)
         self.output = self.add_output('complex tensor out')
 
     def execute(self):
@@ -600,10 +600,10 @@ class TorchClampNode(TorchNode):
         if len(args) > 1:
             min = any_to_float(args[0])
             max = any_to_float(args[1])
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         self.min = self.add_input('min', widget_type='drag_float', default_value=min)
         self.max = self.add_input('max', widget_type='drag_float', default_value=max)
-        self.output = self.add_output("output")
+        self.output = self.add_output('output')
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -619,10 +619,10 @@ class TorchRoundNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         decimals = 0
         self.decimals = self.add_input('decimals', widget_type='input_int', default_value=decimals)
-        self.output = self.add_output("output")
+        self.output = self.add_output('output')
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -648,8 +648,8 @@ class TorchFloorCeilingTruncNode(TorchNode):
         self.op = torch.ceil
         if self.label in self.op_dict:
             self.op = self.op_dict[self.label]
-        self.input = self.add_input("tensor in", triggers_execution=True)
-        self.output = self.add_output("output")
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.output = self.add_output('output')
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -665,9 +665,9 @@ class TorchCopySignNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.input = self.add_input("tensor in", triggers_execution=True)
-        self.sign_input = self.add_input("sign tensor")
-        self.output = self.add_output("tensor with copied sign")
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.sign_input = self.add_input('sign tensor')
+        self.output = self.add_output('tensor with copied sign')
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -697,9 +697,9 @@ class CosineSimilarityNode(TorchNode):
         if not self.inited:
             self.cos = torch.nn.CosineSimilarity(dim=0, eps=1e-6)
             self.inited = True
-        self.input = self.add_input("input 1", triggers_execution=True)
-        self.input2 = self.add_input("input 2")
-        self.output = self.add_output("output")
+        self.input = self.add_input('input 1', triggers_execution=True)
+        self.input2 = self.add_input('input 2')
+        self.output = self.add_output('output')
 
     def execute(self):
         vector_1 = self.input_to_tensor()
