@@ -445,16 +445,25 @@ class TimerNode(Node):
         counts input events, wrapping at maximum and signalling end of count
 
     inputs:
-        input: (triggers) increments count on each input event
+        input: (triggers) <anything> increments count on each input event
 
-        count: sets the count maximum
+        count: <int> sets the count maximum
 
-        step: sets the increment step per input event
+        step: <int> sets the increment step per input event
 
+    messages:
+        count: 'count <int>' sets the count maximum
+
+        step: 'step <int>' sets the increment step per input event
+        
+        set: 'set <int>' sets the counter value 
+        
+        reset: 'reset' resets the counter value to 0
+        
     outputs:
-        count out: the current count is output for every input event
+        count out: <int> the current count is output for every input event
 
-        carry out: outputs 1 when the count maximum - 1 is achieved
+        carry out: <int> outputs 1 when the count maximum - 1 is achieved
             outputs 0 when counter wraps back to 0
 '''
 
@@ -1292,10 +1301,10 @@ class CombineFIFONode(Node):
         reports type of received input
 
     inputs:
-        in: anything
+        in: <anything>
 
     properties:
-        type : str : shows type of the input
+        type : <str> : shows type of the input
             float, int, bang, string, list[length], bool, array[shape], tensor[shape], numpy.double, numpy.float32, numpy.int64, numpy.bool_
 '''
 
@@ -1304,10 +1313,10 @@ class CombineFIFONode(Node):
         reports type and additional info of received input
 
     inputs:
-        in: anything
+        in: <anything>
 
     properties:
-        info : str : shows type of the input
+        info : <str> : shows type of the input
             float, int, bang, numpy.double, numpy.float32, numpy.int64, numpy.bool_: type name
             list input: list[length]
             string: str
@@ -1705,13 +1714,13 @@ class PrependNode(Node):
         append a suffix element to this list or string
 
     inputs:
-        in: list, str, scalar, array
+        in: <list, str, scalar, array>
 
     arguments:
         <list, str, bool, number> : the value to append to the input
 
     properties:
-        suffix : str : str to append to the input
+        suffix : <str> : string to append to the input
 
     options:
         always output list <bool> : if True, output list with suffix as last element
