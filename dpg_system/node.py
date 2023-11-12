@@ -1405,7 +1405,6 @@ class Node:
         clipboard_container = {'nodes': nodes_container}
         return clipboard_container
 
-
     def save(self, node_container, index):
         if node_container is not None:
             if self.unparsed_args and len(self.unparsed_args) > 0:
