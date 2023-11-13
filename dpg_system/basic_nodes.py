@@ -2331,7 +2331,7 @@ class WordTriggerNode(Node):
             self.trigger_outputs.append(self.add_output(self.find_list[i]))
 
     def execute(self):
-        data = self.input()
+        data = any_to_string(self.input()).lower()
         if len(self.find_list) > 0:
             for index, word_trigger in enumerate(self.find_list):
                 if data.find(word_trigger) != -1:
