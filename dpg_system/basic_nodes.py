@@ -740,7 +740,6 @@ class BucketBrigadeNode(Node):
                 self.outs[rev_i].send(self.buckets[source])
 
 
-
 class DelayNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -756,10 +755,15 @@ class DelayNode(Node):
 
         self.input = self.add_input("in")
         self.delay_input = self.add_input('delay', widget_type='drag_int', default_value=self.delay, min=0, max=4000, callback=self.delay_changed)
+        self.cancel_input = self.add_input('cancel', callback=self.delay_cancelled)
         self.output = self.add_output("out")
 
         self.add_frame_task()
         self.new_delay = self.delay
+
+    def delay_cancelled(self):
+        for i in range(self.delay):
+            self.buffer[i] = None
 
     def delay_changed(self):
         self.new_delay = self.delay_input()
