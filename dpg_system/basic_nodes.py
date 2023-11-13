@@ -54,6 +54,7 @@ def register_basic_nodes():
     Node.app.register_node('length', LengthNode.factory)
     Node.app.register_node('time_between', TimeBetweenNode.factory)
     Node.app.register_node('word_replace', WordReplaceNode.factory)
+    Node.app.register_node('word_trigger', WordTriggerNode.factory)
     Node.app.register_node('split', SplitNode.factory)
     Node.app.register_node('join', JoinNode.factory)
 
@@ -2310,3 +2311,28 @@ class WordReplaceNode(Node):
                 self.output.send(data)
         else:
             self.output.send(data)
+
+
+class WordTriggerNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = WordTriggerNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.find_list = []
+        if len(args) > 0:
+            for i in range(len(args)):
+                self.find_list.append(args[i])
+        self.input = self.add_input('string in', triggers_execution=True)
+        self.trigger_outputs = []
+        for i in range(len(args)):
+            self.trigger_outputs.append(self.add_output(self.find_list[i]))
+
+    def execute(self):
+        data = self.input()
+        if len(self.find_list) > 0:
+            for index, word_trigger in enumerate(self.find_list):
+                if data.find(word_trigger) != -1:
+                    self.trigger_outputs[index].send('bang')
