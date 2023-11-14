@@ -122,10 +122,14 @@ class ButtonNode(Node):
         if self.action_name != '':
             self.binding_changed()
 
+    def custom_cleanup(self):
+        self.remove_frame_tasks()
+
     def frame_task(self):
         now = time.time()
         if now >= self.target_time:
-            dpg.bind_item_theme(self.input.widget.uuid, self.inactive_theme)
+            if dpg.does_item_exist(self.input.widget.uuid):
+                dpg.bind_item_theme(self.input.widget.uuid, self.inactive_theme)
             self.remove_frame_tasks()
 
     def execute(self):
