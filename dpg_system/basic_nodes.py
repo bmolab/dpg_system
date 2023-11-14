@@ -54,6 +54,7 @@ def register_basic_nodes():
     Node.app.register_node('length', LengthNode.factory)
     Node.app.register_node('time_between', TimeBetweenNode.factory)
     Node.app.register_node('word_replace', WordReplaceNode.factory)
+    Node.app.register_node('word_trigger', WordTriggerNode.factory)
     Node.app.register_node('split', SplitNode.factory)
     Node.app.register_node('join', JoinNode.factory)
 
@@ -739,7 +740,6 @@ class BucketBrigadeNode(Node):
                 self.outs[rev_i].send(self.buckets[source])
 
 
-
 class DelayNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -755,10 +755,15 @@ class DelayNode(Node):
 
         self.input = self.add_input("in")
         self.delay_input = self.add_input('delay', widget_type='drag_int', default_value=self.delay, min=0, max=4000, callback=self.delay_changed)
+        self.cancel_input = self.add_input('cancel', callback=self.delay_cancelled)
         self.output = self.add_output("out")
 
         self.add_frame_task()
         self.new_delay = self.delay
+
+    def delay_cancelled(self):
+        for i in range(self.delay):
+            self.buffer[i] = None
 
     def delay_changed(self):
         self.new_delay = self.delay_input()
@@ -2310,3 +2315,28 @@ class WordReplaceNode(Node):
                 self.output.send(data)
         else:
             self.output.send(data)
+
+
+class WordTriggerNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = WordTriggerNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.find_list = []
+        if len(args) > 0:
+            for i in range(len(args)):
+                self.find_list.append(args[i])
+        self.input = self.add_input('string in', triggers_execution=True)
+        self.trigger_outputs = []
+        for i in range(len(args)):
+            self.trigger_outputs.append(self.add_output(self.find_list[i]))
+
+    def execute(self):
+        data = any_to_string(self.input()).lower()
+        if len(self.find_list) > 0:
+            for index, word_trigger in enumerate(self.find_list):
+                if data.find(word_trigger) != -1:
+                    self.trigger_outputs[index].send('bang')

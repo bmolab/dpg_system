@@ -160,6 +160,13 @@ class RollingBuffer:
             self.update_style = t_BufferCircularVertical
         self.allocate((self.sample_count, self.breadth), self.roll_along_x)
 
+    def get_value(self, x):
+        if self.buffer.shape[1] > x >= 0:
+            if self.roll_along_x:
+                return self.buffer[x, 0]
+            else:
+                return self.buffer[0, x]
+
     def set_value(self, x, value):
         if not self.lock.locked():
             if self.lock.acquire(blocking=False):

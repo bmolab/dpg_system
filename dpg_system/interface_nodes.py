@@ -1164,6 +1164,7 @@ class PlotNode(Node):
         self.max_y = 1.0
         default_color_map = 'viridis'
         self.style = -1
+        self.mode = 'plot'
         if label == 'plot':
             self.style_type = 'line'
             self.style = 0
@@ -1172,18 +1173,21 @@ class PlotNode(Node):
             self.array_fills_plot = True
             self.format = ''
         elif label == 'heat_scroll':
+            self.mode = 'heat_scroll'
             self.style = self.heat_scroll_style
             self.style_type = label
             self.update_style = 'input is multi-channel sample'
             self.array_fills_plot = False
             self.format = ''
         elif label == 'heat_map':
+            self.mode = 'heat_map'
             self.style = 6
             self.style_type = label
             self.update_style = 'buffer holds one sample of input'
             self.array_fills_plot = True
             self.format = '%.3f'
         elif label == 'profile':
+            self.mode = 'profile'
             self.format = ''
             self.style_type = 'bar'
             self.sample_count = 16
@@ -1635,6 +1639,18 @@ class PlotNode(Node):
             data = self.input()
 
             t = type(data)
+            if self.mode == 'profile':
+                if t not in [list, np.ndarray, torch.Tensor]:
+                    value = 0
+                    float_data = any_to_float(data)
+                    if float_data >= 0 and float_data < self.sample_count:
+                        pre_index = int(float_data)
+                        post_index = int(float_data + 1)
+                        interp = float_data - pre_index
+                        value = any_to_float(self.y_data.get_value(pre_index) * (1.0 - interp) + self.y_data.get_value(post_index) * interp)
+                    self.lock.release()
+                    self.output.send(value)
+                    return
             if self.app.torch_available and t == torch.Tensor:
                 data = any_to_array(data)
                 t = np.ndarray
@@ -1796,7 +1812,9 @@ class PlotNode(Node):
                             self.y_data.update(ii)
                         else:
                             self.y_data.update(data)
-
+        elif self.mode == 'profile':
+            self.lock.release()
+            return
         if self.style == self.xy_plot_style:
             if self.input_x.fresh_input:
                 self.x_data[1:] = self.x_data[0:-1]
