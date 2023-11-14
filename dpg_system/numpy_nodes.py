@@ -275,7 +275,7 @@ class NumpyDotProductNode(Node):
         self.operand = 0
         self.input = self.add_input('in 1', triggers_execution=True)
         self.operand_input = self.add_input('in 2')
-        self.output = self.add_output("dot product")
+        self.output = self.add_output('dot product')
 
     def execute(self):
         if self.operand_input.fresh_input:
@@ -299,9 +299,9 @@ class NumpyInnerOuterProductNode(Node):
         self.input = self.add_input('in 1', triggers_execution=True)
         self.operand_input = self.add_input('in 2')
         if self.label == 'np.outer':
-            self.output = self.add_output("outer_product")
+            self.output = self.add_output('outer_product')
         elif self.label == 'np.inner':
-            self.output = self.add_output("inner_product")
+            self.output = self.add_output('inner_product')
 
     def execute(self):
         if self.operand_input.fresh_input:
@@ -328,7 +328,7 @@ class NumpyMatMulNode(Node):
         self.operand = 0
         self.input = self.add_input('in 1', triggers_execution=True)
         self.operand_input = self.add_input('in 2')
-        self.output = self.add_output("mat mul result")
+        self.output = self.add_output('mat mul result')
 
     def execute(self):
         if self.operand_input.fresh_input:
@@ -351,7 +351,7 @@ class NumpyCrossProductNode(Node):
         self.operand = 0
         self.input = self.add_input('in 1', triggers_execution=True)
         self.operand_input = self.add_input('in 2')
-        self.output = self.add_output("cross product")
+        self.output = self.add_output('cross product')
 
     def execute(self):
         if self.operand_input.fresh_input:
@@ -375,9 +375,9 @@ class NumpySqueezeNode(Node):
             v, t = decode_arg(args, 0)
             if t in [int, float]:
                 axis = int(v)
-        self.input = self.add_input("input", triggers_execution=True)
+        self.input = self.add_input('input', triggers_execution=True)
         self.axis = self.add_property('axis', widget_type='input_int', default_value=axis)
-        self.output = self.add_output("squeezed array")
+        self.output = self.add_output('squeezed array')
 
     def execute(self):
         if self.input.fresh_input:
@@ -406,9 +406,9 @@ class NumpyExpandDimsNode(Node):
             v, t = decode_arg(args, 0)
             if t in [int, float]:
                 axis = int(v)
-        self.input = self.add_input("input", triggers_execution=True)
+        self.input = self.add_input('input', triggers_execution=True)
         self.axis = self.add_property('axis', widget_type='input_int', default_value=axis)
-        self.output = self.add_output("array out")
+        self.output = self.add_output('array out')
 
     def execute(self):
         if self.input.fresh_input:
@@ -443,11 +443,11 @@ class NumpyRepeatNode(Node):
             if t in [int, float]:
                 axis = int(v)
 
-        self.input = self.add_input("input", triggers_execution=True)
+        self.input = self.add_input('input', triggers_execution=True)
         self.repeats = self.add_input('repeats', widget_type='input_int', default_value=repeats)
         self.axis = self.add_input('axis', widget_type='input_int', default_value=axis)
 
-        self.output = self.add_output("array out")
+        self.output = self.add_output('array out')
 
     def execute(self):
         repeated_data = None
@@ -497,7 +497,7 @@ class NumpyCropNode(Node):
         self.right_property = self.add_input('right', widget_type='drag_int', default_value=self.right, callback=self.crop_changed)
         self.bottom_property = self.add_input('bottom', widget_type='drag_int', default_value=self.bottom, callback=self.crop_changed)
         self.uncrop_button = self.add_property('uncrop', widget_type='button', callback=self.uncrop)
-        self.output = self.add_output("out array")
+        self.output = self.add_output('out array')
 
     def uncrop(self):
         if self.input_shape is not None:
@@ -577,7 +577,7 @@ class NumpyClipNode(Node):
         if self.label in ['np.max', 'np.clip']:
             print('add max prop')
             self.max_property = self.add_property('max', widget_type='drag_float', default_value=self.max, callback=self.max_changed)
-        self.output = self.add_output("out array")
+        self.output = self.add_output('out array')
         self.mode = 0
         if self.label == 'np.min':
             self.mode = 1
@@ -620,11 +620,11 @@ class NumpyRollNode(Node):
             v, t = decode_arg(args, 1)
             if t in [int, float]:
                 axis = int(v)
-        self.input = self.add_input("input", triggers_execution=True)
+        self.input = self.add_input('input', triggers_execution=True)
         self.shifts = self.add_input('shifts', widget_type='input_int', default_value=shifts)
         self.axis = self.add_input('axis', widget_type='input_int', default_value=axis)
 
-        self.output = self.add_output("rolled array")
+        self.output = self.add_output('rolled array')
 
     def execute(self):
         if self.input.fresh_input:
@@ -651,10 +651,10 @@ class NumpyFlipNode(Node):
             v, t = decode_arg(args, 0)
             if t in [int, float]:
                 axis = int(v)
-        self.input = self.add_input("input", triggers_execution=True)
+        self.input = self.add_input('input', triggers_execution=True)
         self.axis = self.add_input('axis', widget_type='input_int', default_value=axis)
 
-        self.output = self.add_output("flipped array")
+        self.output = self.add_output('flipped array')
 
     def execute(self):
         if self.input.fresh_input:
@@ -681,10 +681,10 @@ class NumpyTransposeNode(Node):
             v, t = decode_arg(args, 0)
             if t in [int, float]:
                 axis = int(v)
-        self.input = self.add_input("input", triggers_execution=True)
+        self.input = self.add_input('input', triggers_execution=True)
         # self.axis_input = self.add_input('axis', widget_type='input_int', default_value=axis)
 
-        self.output = self.add_output("transposed array")
+        self.output = self.add_output('transposed array')
 
     def execute(self):
         if self.input.fresh_input:
@@ -707,11 +707,11 @@ class NumpyAsTypeNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.input = self.add_input("input array", triggers_execution=True)
+        self.input = self.add_input('input array', triggers_execution=True)
         self.type = self.add_property('type', widget_type='combo', default_value='float')
         self.type.widget.combo_items = ['bool', 'uint8', 'int8', 'int64', 'float', 'float32', 'double']
 
-        self.output = self.add_output("converted array")
+        self.output = self.add_output('converted array')
 
     def execute(self):
         if self.input.fresh_input:
@@ -746,10 +746,10 @@ class FlattenMatrixNode(Node):
             order_, t = decode_arg(args, 0)
             if t == str and order_ in ['C', 'F', 'A', 'K']:
                 order = order_
-        self.input = self.add_input("input", triggers_execution=True)
+        self.input = self.add_input('input', triggers_execution=True)
         self.order = self.add_property('order', widget_type='combo', default_value=order)
         self.order.widget.combo_items = ['C', 'F', 'A', 'K']
-        self.output = self.add_output("flattened array")
+        self.output = self.add_output('flattened array')
 
     def execute(self):
         if self.input.fresh_input:
@@ -777,7 +777,7 @@ class NumpyUnaryLinearAlgebraNode(Node):
         self.op = np.linalg.norm
         if label in self.operations:
             self.op = self.operations[label]
-        self.input = self.add_input("input", triggers_execution=True)
+        self.input = self.add_input('input', triggers_execution=True)
         out_name = 'norm'
         if self.label == 'euclidean_distance':
             out_name = 'euclidean_distance'
@@ -801,8 +801,8 @@ class NumpyShapeNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.input = self.add_input("np in", triggers_execution=True)
-        self.output = self.add_output("shape")
+        self.input = self.add_input('np in', triggers_execution=True)
+        self.output = self.add_output('shape')
 
     def execute(self):
         if self.input.fresh_input:
@@ -836,12 +836,12 @@ class NumpyRotateNode(Node):
             if t in [int, float]:
                 axis2 = int(v)
 
-        self.input = self.add_input("input", triggers_execution=True)
+        self.input = self.add_input('input', triggers_execution=True)
         self.k = self.add_input('k', widget_type='input_int', default_value=k)
         self.axis1 = self.add_input('axis 1', widget_type='input_int', default_value=axis1)
         self.axis2 = self.add_input('axis 2', widget_type='input_int', default_value=axis2)
 
-        self.output = self.add_output("rotated array")
+        self.output = self.add_output('rotated array')
 
     def execute(self):
         if self.input.fresh_input:

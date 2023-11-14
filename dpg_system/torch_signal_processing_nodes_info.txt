@@ -1,0 +1,38 @@
+Class: TorchWindowNode_
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	 : data_type
+	type : data_type
+	m : data_type
+	sym : data_type
+
+properties:
+
+options:
+
+output:
+	window tensor out : output_description
+
+----------------------------------------
+
+Class: TorchFFTNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	tensor in : data_type
+	norm : data_type
+
+properties:
+
+options:
+
+output:
+	histogram tensor out : output_description
+
+----------------------------------------
+

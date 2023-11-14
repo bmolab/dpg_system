@@ -18,8 +18,8 @@ class KorniaGrayscaleNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.input = self.add_input("tensor in", triggers_execution=True)
-        self.output = self.add_output("output")
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.output = self.add_output('output')
 
     def execute(self):
         input_tensor = self.input_to_torchvision_tensor()
@@ -36,8 +36,8 @@ class KorniaRGBToHLSNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.input = self.add_input("tensor in", triggers_execution=True)
-        self.output = self.add_output("output")
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.output = self.add_output('output')
 
     def execute(self):
         input_tensor = self.input_to_torchvision_tensor().float()
@@ -54,8 +54,8 @@ class KorniaColorMapNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.input = self.add_input("tensor in", triggers_execution=True)
-        self.output = self.add_output("output")
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.output = self.add_output('output')
 
     def execute(self):
         input_tensor = self.input_to_torchvision_tensor().float()
@@ -74,8 +74,8 @@ class KorniaCannyNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.input = self.add_input("tensor in", triggers_execution=True)
-        self.output = self.add_output("output")
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.output = self.add_output('output')
 
     def execute(self):
         input_tensor = self.input_to_torchvision_tensor().float()
@@ -93,8 +93,8 @@ class KorniaSobelNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.input = self.add_input("tensor in", triggers_execution=True)
-        self.output = self.add_output("output")
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.output = self.add_output('output')
 
     def execute(self):
         input_tensor = self.input_to_torchvision_tensor().float()
@@ -116,11 +116,11 @@ class KorniaGaussianBlurNode(TorchNode):
         self.kernel_size = 9
         self.sigma = 0.5
 
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         self.kernel_size_property = self.add_property('kernel size', widget_type='combo', default_value=self.kernel_size, callback=self.params_changed)
         self.kernel_size_property.widget.combo_items = [3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29]
         self.sigma_property = self.add_property('sigma', widget_type='drag_float', default_value=self.sigma, callback=self.params_changed)
-        self.output = self.add_output("output")
+        self.output = self.add_output('output')
 
     def params_changed(self):
         self.sigma = self.sigma_property()
@@ -152,10 +152,10 @@ class KorniaDOGResponseSingleNode(TorchNode):
             self.sigma_1 = any_to_float(arg[0])
             self.sigma_2 = any_to_float(arg[1])
 
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         self.sigma_1_property = self.add_property('sigma_1', widget_type='drag_float', default_value=self.sigma_1, min=.01, callback=self.params_changed)
         self.sigma_2_property = self.add_property('sigma_2', widget_type='drag_float', default_value=self.sigma_2, min=.01, callback=self.params_changed)
-        self.output = self.add_output("output")
+        self.output = self.add_output('output')
 
     def params_changed(self):
         self.sigma_1 = self.sigma_1_property()

@@ -65,9 +65,9 @@ class SpacyConfusionMatrixNode(SpacyNode):
         return node
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.input = self.add_input("input", triggers_execution=True)
-        self.input2 = self.add_input("input2", triggers_execution=True)
-        self.output = self.add_output("output")
+        self.input = self.add_input('input', triggers_execution=True)
+        self.input2 = self.add_input('input2', triggers_execution=True)
+        self.output = self.add_output('output')
         self.confusion_matrix = np.zeros((1, 1))
         self.doc1 = None
         self.doc2 = None

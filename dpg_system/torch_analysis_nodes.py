@@ -47,8 +47,8 @@ class TorchBinCountNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.input = self.add_input("int tensor in", triggers_execution=True)
-        self.output = self.add_output("bin count tensor out")
+        self.input = self.add_input('int tensor in', triggers_execution=True)
+        self.output = self.add_output('bin count tensor out')
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -71,11 +71,11 @@ class TorchBucketizeNode(TorchNode):
         super().__init__(label, data, args)
         output_int32 = False
         right = False
-        self.input = self.add_input("tensor in", triggers_execution=True)
-        self.boundaries = self.add_input("boundaries tensor in")
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.boundaries = self.add_input('boundaries tensor in')
         self.output_int32 = self.add_input('int32 indices', widget_type='checkbox', default_value=output_int32)
         self.right = self.add_input('right', widget_type='checkbox', default_value=right)
-        self.output = self.add_output("bin count tensor out")
+        self.output = self.add_output('bin count tensor out')
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -150,7 +150,7 @@ class TorchMinMaxNode(TorchWithDimNode):
             output_label = 'min tensor'
             index_label = 'min indices'
             self.op = torch.min
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         if self.dim_specified:
             self.add_dim_input()
         self.output = self.add_output(output_label)
@@ -177,10 +177,10 @@ class TorchArgMaxNode(TorchWithDimNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         if self.dim_specified:
             self.add_dim_input()
-        self.output = self.add_output("max index")
+        self.output = self.add_output('max index')
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -200,8 +200,8 @@ class TorchArgWhereNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.input = self.add_input("tensor in", triggers_execution=True)
-        self.output = self.add_output("index tensor where non-zero")
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.output = self.add_output('index tensor where non-zero')
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -217,7 +217,7 @@ class TorchArgSortNode(TorchWithDimNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.input = self.add_input("tensor in", triggers_execution=True)
+        self.input = self.add_input('tensor in', triggers_execution=True)
         self.dim = -1
         descending = False
         stable = False
@@ -225,7 +225,7 @@ class TorchArgSortNode(TorchWithDimNode):
             self.add_dim_input()
         self.descending = self.add_input('descending', widget_type='checkbox', default_value=descending)
         self.stable = self.add_input('stable', widget_type='checkbox', default_value=stable)
-        self.output = self.add_output("output")
+        self.output = self.add_output('output')
 
     def execute(self):
         input_tensor = self.input_to_tensor()

@@ -1,0 +1,160 @@
+Class: TorchCountNonZeroNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	tensor in : data_type
+
+properties:
+
+options:
+
+output:
+	tensor out : output_description
+
+----------------------------------------
+
+Class: TorchBinCountNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	int tensor in : data_type
+
+properties:
+
+options:
+
+output:
+	bin count tensor out : output_description
+
+----------------------------------------
+
+Class: TorchBucketizeNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	tensor in : data_type
+	boundaries tensor in : data_type
+	int32 indices : data_type
+	right : data_type
+
+properties:
+
+options:
+
+output:
+	bin count tensor out : output_description
+
+----------------------------------------
+
+Class: TorchAnyAllNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	tensor in : data_type
+
+properties:
+
+options:
+
+output:
+	tensor out : output_description
+
+----------------------------------------
+
+Class: TorchHistogramNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	 : data_type
+	bin count : data_type
+	min : data_type
+	max : data_type
+
+properties:
+
+options:
+
+output:
+	histogram tensor out : output_description
+
+----------------------------------------
+
+Class: TorchMinMaxNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	tensor in : data_type
+
+properties:
+
+options:
+
+output:
+
+----------------------------------------
+
+Class: TorchArgMaxNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	tensor in : data_type
+
+properties:
+
+options:
+
+output:
+	max index : output_description
+
+----------------------------------------
+
+Class: TorchArgWhereNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	tensor in : data_type
+
+properties:
+
+options:
+
+output:
+	index tensor where non-zero : output_description
+
+----------------------------------------
+
+Class: TorchArgSortNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	tensor in : data_type
+	descending : data_type
+	stable : data_type
+
+properties:
+
+options:
+
+output:
+	output : output_description
+
+----------------------------------------
+

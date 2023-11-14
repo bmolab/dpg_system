@@ -71,7 +71,7 @@ class TensorNode(TorchDeviceDtypeNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.input = self.add_input("in", triggers_execution=True)
+        self.input = self.add_input('in', triggers_execution=True)
         self.setup_dtype_device_grad(args)
         self.output = self.add_output('tensor out')
 
@@ -107,8 +107,8 @@ class TorchContiguousNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.input = self.add_input("tensor in", triggers_execution=True)
-        self.output = self.add_output("max index")
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.output = self.add_output('max index')
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -125,8 +125,8 @@ class TorchIsContiguousNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.input = self.add_input("tensor in", triggers_execution=True)
-        self.output = self.add_output("result")
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.output = self.add_output('result')
 
     def execute(self):
         input_tensor = self.input_to_tensor()

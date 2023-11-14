@@ -76,9 +76,9 @@ class MoveSenseNode(Node):
         self.end_of_serial = '000431'
         if len(args) > 0:
             self.end_of_serial = any_to_string(args[0])
-        self.output_accelerometer = self.add_output("accelerometer")
-        self.output_gyroscope = self.add_output("gyroscope")
-        self.output_magnetometer = self.add_output("magnetometer")
+        self.output_accelerometer = self.add_output('accelerometer')
+        self.output_gyroscope = self.add_output('gyroscope')
+        self.output_magnetometer = self.add_output('magnetometer')
 
         self.queue = None
         self.client_task = None

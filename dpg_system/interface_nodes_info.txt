@@ -1,0 +1,246 @@
+Class: ButtonNode
+Node(s): button, b
+description:
+	Node description goes here
+
+inputs:
+	 : data_type
+
+properties:
+
+options:
+	bind to : option_type : option_description
+	message : option_type : option_description
+	width : option_type : option_description
+	height : option_type : option_description
+	flash_duration : option_type : option_description
+
+output:
+	 : output_description
+
+----------------------------------------
+
+Class: MenuNode
+Node(s): menu
+description:
+	Node description goes here
+
+inputs:
+	##choice : data_type
+
+properties:
+
+options:
+	large_font : option_type : option_description
+
+output:
+	 : output_description
+
+----------------------------------------
+
+Class: MouseNode
+Node(s): mouse
+description:
+	Node description goes here
+
+inputs:
+	 : data_type
+
+properties:
+
+options:
+
+output:
+	x : output_description
+	y : output_description
+
+----------------------------------------
+
+Class: PresetsNode
+Node(s): presets, snapshots, states, archive, versions
+description:
+	Node description goes here
+
+inputs:
+	 : data_type
+
+properties:
+
+options:
+	remember : option_type : option_description
+
+output:
+	 : output_description
+
+----------------------------------------
+
+Class: RadioButtonsNode
+Node(s): radio, radio_h, radio_v
+description:
+	Node description goes here
+
+inputs:
+
+properties:
+
+options:
+
+output:
+
+----------------------------------------
+
+Class: ToggleNode
+Node(s): toggle, set_reset
+description:
+	Node description goes here
+
+inputs:
+	set : data_type
+	reset : data_type
+	 : data_type
+
+properties:
+
+options:
+	bind to : option_type : option_description
+
+output:
+	 : output_description
+
+----------------------------------------
+
+Class: GainNode
+Node(s): gain
+description:
+	Node description goes here
+
+inputs:
+	 : data_type
+
+properties:
+	 : property_type : property_description
+
+options:
+	max : option_type : option_description
+
+output:
+	 : output_description
+
+----------------------------------------
+
+Class: ValueNode
+Node(s): float, int, slider, message, knob, Value Tool
+description:
+	Node description goes here
+
+inputs:
+	 : data_type
+	 : data_type
+
+properties:
+
+options:
+	bind to : option_type : option_description
+	min : option_type : option_description
+	max : option_type : option_description
+	width : option_type : option_description
+	adapt_width : option_type : option_description
+	format : option_type : option_description
+	large_font : option_type : option_description
+
+output:
+	out : output_description
+
+----------------------------------------
+
+Class: VectorNode
+Node(s): vector
+description:
+	Node description goes here
+
+inputs:
+	in : data_type
+
+properties:
+	## : property_type : property_description
+
+options:
+	component count : option_type : option_description
+
+output:
+	out : output_description
+
+----------------------------------------
+
+Class: PrintNode
+Node(s): print
+description:
+	Node description goes here
+
+inputs:
+	in : data_type
+
+properties:
+
+options:
+
+output:
+
+----------------------------------------
+
+Class: LoadActionNode
+Node(s): load_action, load_bang
+description:
+	Node description goes here
+
+inputs:
+	trigger : data_type
+
+properties:
+
+options:
+
+output:
+
+----------------------------------------
+
+Class: PlotNode
+Node(s): plot, heat_map, heat_scroll, profile
+description:
+	Node description goes here
+
+inputs:
+	y : data_type
+	x : data_type
+
+properties:
+
+options:
+	style : option_type : option_description
+	color : option_type : option_description
+
+output:
+	 : output_description
+
+----------------------------------------
+
+Class: ColorPickerNode
+Node(s): color
+description:
+	Node description goes here
+
+inputs:
+	 : data_type
+
+properties:
+
+options:
+	hue_wheel : option_type : option_description
+	alpha : option_type : option_description
+	inputs : option_type : option_description
+
+output:
+	 : output_description
+
+----------------------------------------
+

@@ -1,0 +1,158 @@
+Class: TorchAudioSourceNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	stream : data_type
+
+properties:
+	source : property_type : property_description
+	channels : property_type : property_description
+	sample_rate : property_type : property_description
+	sample format : property_type : property_description
+	chunk_size : property_type : property_description
+
+options:
+
+output:
+	audio tensors : output_description
+
+----------------------------------------
+
+Class: TorchAudioKaldiPitchNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	audio tensor in : data_type
+
+properties:
+	sample_rate : property_type : property_description
+
+options:
+
+output:
+	pitch out : output_description
+	nccf out : output_description
+
+----------------------------------------
+
+Class: TorchAudioVADNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	audio tensor in : data_type
+	trigger_level : data_type
+	noise_reduction : data_type
+
+properties:
+	sample_rate : property_type : property_description
+
+options:
+
+output:
+	active voice out : output_description
+
+----------------------------------------
+
+Class: TorchAudioGainNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	audio tensor in : data_type
+	gain in dB : data_type
+
+properties:
+
+options:
+
+output:
+	audio out : output_description
+
+----------------------------------------
+
+Class: TorchAudioContrastNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	audio tensor in : data_type
+	contrast : data_type
+
+properties:
+
+options:
+
+output:
+	audio out : output_description
+
+----------------------------------------
+
+Class: TorchAudioLoudnessNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	audio tensor in : data_type
+
+properties:
+	sample_rate : property_type : property_description
+
+options:
+
+output:
+	loudness out : output_description
+
+----------------------------------------
+
+Class: TorchAudioOverdriveNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	audio tensor in : data_type
+	gain : data_type
+	colour : data_type
+
+properties:
+
+options:
+
+output:
+	audio out : output_description
+
+----------------------------------------
+
+Class: TorchAudioSpectrogramNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	audio tensor in : data_type
+	n_fft : data_type
+	window_length : data_type
+	hop_length : data_type
+	window : data_type
+	power : data_type
+	norm : data_type
+	one-sided : data_type
+
+properties:
+
+options:
+
+output:
+	spectrogram out : output_description
+
+----------------------------------------
+

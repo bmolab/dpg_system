@@ -42,7 +42,7 @@ class AmbientPromptNode(Node):
             self.prompt_inputs.append(self.add_input('in_' + str(i), widget_type='text_input', default_value='', triggers_execution=True))
 
         # self.clear_input = self.add_input('clear', callback=self.clear_fifo)
-        self.output = self.add_output("weighted prompt out")
+        self.output = self.add_output('weighted prompt out')
 
     def execute(self):
         index = self.active_input.input_index
@@ -115,8 +115,8 @@ class WeightedPromptNode(Node):
 
         # self.clear_input = self.add_input('clear', callback=self.clear_fifo)
         self.strength = self.add_input('strength', widget_type='drag_float', default_value=1.0, triggers_execution=True)
-        self.output = self.add_output("weighted prompt out")
-        self.width_option = self.add_option("width", widget_type='drag_int', default_value=200, callback=self.set_size)
+        self.output = self.add_output('weighted prompt out')
+        self.width_option = self.add_option('width', widget_type='drag_int', default_value=200, callback=self.set_size)
 
     def set_size(self):
         for i in range(self.count):

@@ -155,7 +155,7 @@ class TorchInfoNode(TorchNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.input = self.add_input("in", triggers_execution=True)
+        self.input = self.add_input('in', triggers_execution=True)
         self.shape_output = self.add_output('shape')
         self.dtype_output = self.add_output('dtype')
         self.device_output = self.add_output('device')

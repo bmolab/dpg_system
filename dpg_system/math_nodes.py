@@ -43,6 +43,8 @@ def register_math_nodes():
     Node.app.register_node('change', ComparisonAndPassNode.factory)
     Node.app.register_node('increasing', ComparisonAndPassNode.factory)
     Node.app.register_node('decreasing', ComparisonAndPassNode.factory)
+    Node.app.register_node('perm', ArithmeticNode.factory)
+    Node.app.register_node('combination', ArithmeticNode.factory)
 
 
 class ArithmeticNode(Node):
@@ -67,6 +69,9 @@ class ArithmeticNode(Node):
                 widget_type = 'drag_int'
 
         self.op_dict = {
+            'perm': self.permutation,
+            'combination': self.combination,
+            'matrix_'
             '+': self.add,
             '-': self.subtract,
             '!-': self.inverse_subtract,
@@ -106,6 +111,19 @@ class ArithmeticNode(Node):
         input_value = any_to_numerical(self.input())
         output_value = self.op(input_value, self.operand)
         self.output.send(output_value)
+
+    def matrix_mult(self, a, b):
+        if type(a) == np.array and type(b) == np.array:
+            a_row = len(a[0])
+            b_col = len(b)
+            if a_row == b_col:
+                return np.multiply(a, b)
+
+    def permutation(self, a, b):
+        return math.factorial(a) // math.factorial(abs(a - b))
+
+    def combination(self, a, b):
+        return math.factorial(a) // (math.factorial(abs(a - b)) * math.factorial(b))
 
     def mod(self, a, b):
         if type(a) == np.ndarray:
@@ -230,7 +248,7 @@ class ComparisonNode(Node):
         else:
             self.operand_input = self.add_input('operand')
 
-        self.output = self.add_output("result")
+        self.output = self.add_output('result')
         self.output_type_option = self.add_option('output_type', widget_type='combo', default_value='bool', callback=self.output_type_changed)
         self.output_type_option.widget.combo_items = ['bool', 'int', 'float']
 
@@ -558,7 +576,7 @@ class OpSingleTrigNode(Node):
 
         self.input = self.add_input('in', triggers_execution=True)
         self.use_degrees_property = self.add_property('degrees', widget_type='checkbox', default_value=self.use_degrees)
-        self.output = self.add_output("out")
+        self.output = self.add_output('out')
 
     def execute(self):
         # get values from static attributes

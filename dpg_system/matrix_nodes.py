@@ -32,9 +32,9 @@ class BufferNode(Node):
 
         self.update_style = 1
         self.output_style = 1
-        self.input = self.add_input("input", triggers_execution=True)
-        self.index_input = self.add_input("sample to output", triggers_execution=True)
-        self.output = self.add_output("output")
+        self.input = self.add_input('input', triggers_execution=True)
+        self.index_input = self.add_input('sample to output', triggers_execution=True)
+        self.output = self.add_output('output')
         self.sample_count_option = self.add_option('sample count', widget_type='drag_int', default_value=self.sample_count)
         self.update_style_option = self.add_option('update style', widget_type='combo', default_value='input is stream of samples', width=250, callback=self.update_style_changed)
         self.update_style_option.widget.combo_items = ['buffer holds one sample of input', 'input is stream of samples', 'input is multi-channel sample']
@@ -373,8 +373,8 @@ class RollingBufferNode(Node):
             if t == int:
                 self.sample_count = count
         self.rolling_buffer = RollingBuffer(self.sample_count, roll_along_x=False)
-        self.input = self.add_input("input", triggers_execution=True)
-        self.output = self.add_output("output")
+        self.input = self.add_input('input', triggers_execution=True)
+        self.output = self.add_output('output')
         self.sample_count_option = self.add_option('sample count', widget_type='drag_int', default_value=self.sample_count)
         self.update_style_option = self.add_option('update style', widget_type='combo', default_value='input is stream of samples', width=250, callback=self.update_style_changed)
         self.update_style_option.widget.combo_items = ['buffer holds one sample of input', 'input is stream of samples', 'input is multi-channel sample']
@@ -419,9 +419,9 @@ class ConfusionMatrixNode(Node):
         return node
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.input = self.add_input("input", triggers_execution=True)
-        self.input2 = self.add_input("input2", triggers_execution=True)
-        self.output = self.add_output("output")
+        self.input = self.add_input('input', triggers_execution=True)
+        self.input2 = self.add_input('input2', triggers_execution=True)
+        self.output = self.add_output('output')
         self.confusion_matrix = np.zeros((1, 1))
         self.data2 = None
 
@@ -448,8 +448,8 @@ class WaveletNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.input = self.add_input("input", triggers_execution=True)
-        self.output = self.add_output("output")
+        self.input = self.add_input('input', triggers_execution=True)
+        self.output = self.add_output('output')
         self.octaves = 2
         self.octaves_property = self.add_property('octaves', widget_type='drag_int', default_value=self.octaves)
         self.wavelets = 'gmw'

@@ -1,0 +1,123 @@
+Class: KorniaGrayscaleNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	tensor in : data_type
+
+properties:
+
+options:
+
+output:
+	output : output_description
+
+----------------------------------------
+
+Class: KorniaRGBToHLSNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	tensor in : data_type
+
+properties:
+
+options:
+
+output:
+	output : output_description
+
+----------------------------------------
+
+Class: KorniaColorMapNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	tensor in : data_type
+
+properties:
+
+options:
+
+output:
+	output : output_description
+
+----------------------------------------
+
+Class: KorniaCannyNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	tensor in : data_type
+
+properties:
+
+options:
+
+output:
+	output : output_description
+
+----------------------------------------
+
+Class: KorniaSobelNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	tensor in : data_type
+
+properties:
+
+options:
+
+output:
+	output : output_description
+
+----------------------------------------
+
+Class: KorniaGaussianBlurNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	tensor in : data_type
+
+properties:
+	kernel size : property_type : property_description
+	sigma : property_type : property_description
+
+options:
+
+output:
+	output : output_description
+
+----------------------------------------
+
+Class: KorniaDOGResponseSingleNode
+Node(s): nodes here
+description:
+	Node description goes here
+
+inputs:
+	tensor in : data_type
+
+properties:
+	sigma_1 : property_type : property_description
+	sigma_2 : property_type : property_description
+
+options:
+
+output:
+	output : output_description
+
+----------------------------------------
+
