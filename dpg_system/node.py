@@ -1181,7 +1181,7 @@ class Node:
         return new_property
 
     def add_option(self, label: str = "", uuid=None, widget_type=None, width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, callback=None):
-        if self.show_options_check is None:
+        if self.show_options_check is None and self.app.easy_mode:
             self.show_options_check = self.add_property('show options', widget_type='checkbox', default_value=False, callback=self.show_hide_options)
 
         new_option = NodeProperty(label, uuid, self, widget_type, width, triggers_execution, trigger_button, default_value, min, max)

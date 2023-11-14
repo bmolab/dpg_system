@@ -24,10 +24,13 @@ pytorch_active = True
 smpl_active = True
 prompt_active = True
 sockets_active = True
+easy_mode = False
 
 print('Options active:', end=' ')
 with open('dpg_system/dpg_system_config.json', 'r') as f:
     config = json.load(f)
+    if 'easy' in config:
+        easy_mode = config['easy']
     if 'OSC' in config:
         osc_active = config['OSC']
         if osc_active:
@@ -395,6 +398,7 @@ def save_patches_callback(sender, app_data):
 
 class App:
     def __init__(self):
+        self.easy_mode = easy_mode
         self.torch_available = False
         self.viewport = None
         self.main_window_id = -1

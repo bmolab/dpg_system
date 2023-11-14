@@ -12,5 +12,6 @@
   "SMPL": true,
   "prompt": true,
   "pybullet": true,
-  "sockets": true
+  "sockets": true,
+  "easy": false
 }
