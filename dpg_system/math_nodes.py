@@ -71,7 +71,6 @@ class ArithmeticNode(Node):
         self.op_dict = {
             'perm': self.permutation,
             'combination': self.combination,
-            'matrix_'
             '+': self.add,
             '-': self.subtract,
             '!-': self.inverse_subtract,
