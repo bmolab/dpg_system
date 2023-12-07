@@ -54,6 +54,7 @@ def register_basic_nodes():
     Node.app.register_node('length', LengthNode.factory)
     Node.app.register_node('time_between', TimeBetweenNode.factory)
     Node.app.register_node('word_replace', WordReplaceNode.factory)
+    Node.app.register_node('string_replace', StringReplaceNode.factory)
     Node.app.register_node('word_trigger', WordTriggerNode.factory)
     Node.app.register_node('split', SplitNode.factory)
     Node.app.register_node('join', JoinNode.factory)
@@ -1152,7 +1153,7 @@ class SplitNode(Node):
         super().__init__(label, data, args)
 
         self.input = self.add_input('in', triggers_execution=True)
-        self.split_token = ' '
+        self.split_token = None
         if len(args) > 0:
             split_token = any_to_string(args[0])
         self.split_token = self.add_input('split at', widget_type='text_input', default_value=split_token)
@@ -1163,6 +1164,10 @@ class SplitNode(Node):
         t = type(in_string)
         if t == list:
             in_string = ' '.join(in_string)
+        if self.split_token == None:
+            splits = in_string.split()
+        else:
+            splits = in_string.split(self.split_token())
         splits = in_string.split(self.split_token())
         self.output.send(splits)
 
@@ -2275,7 +2280,6 @@ class FuzzyMatchNode(Node):
                 self.best_score = item[1]
 
 
-
 class WordReplaceNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -2308,6 +2312,46 @@ class WordReplaceNode(Node):
             elif type(data) == str:
                 if type(data) == str:
                     data = re.sub(r"\b{}\b".format(find), replace, data)
+                    self.output.send(data)
+                else:
+                    self.output.send(data)
+            else:
+                self.output.send(data)
+        else:
+            self.output.send(data)
+
+class StringReplaceNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = StringReplaceNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        find = ''
+        replace = ''
+        if len(args) > 1:
+            find = any_to_string(args[0])
+            replace = any_to_string(args[1])
+        self.input = self.add_input('string in', triggers_execution=True)
+        self.find_input = self.add_input('find', widget_type='text_input', default_value=find)
+        self.replace_input = self.add_input('replace', widget_type='text_input', default_value=replace)
+        self.output = self.add_output('string out')
+
+    def execute(self):
+        data = self.input()
+        find = self.find_input()
+        replace = self.replace_input()
+        if find != '':
+            if type(data) == list:
+                for i, w in enumerate(data):
+                    if type(w) == str:
+                        w = re.sub(r"{}".format(find), replace, w)
+                        data[i] = w
+                self.output.send(data)
+            elif type(data) == str:
+                if type(data) == str:
+                    data = re.sub(r"{}".format(find), replace, data)
                     self.output.send(data)
                 else:
                     self.output.send(data)
