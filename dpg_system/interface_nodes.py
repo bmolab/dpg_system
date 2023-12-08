@@ -394,11 +394,12 @@ class PresetsNode(Node):
                                 node.set_preset_state(self.presets[current_preset_index][node.uuid])
                 else:
                     for node in editor._nodes:
-                        if node.uuid in self.presets[current_preset_index]:
+                        key = str(node.uuid)
+                        if key in self.presets[current_preset_index]:
                             if remember_mode == 'nodes' and node != self:
-                                node.restore_properties(self.presets[current_preset_index][node.uuid])
+                                node.restore_properties(self.presets[current_preset_index][key])
                             elif remember_mode == 'ui':
-                                node.set_preset_state(self.presets[current_preset_index][node.uuid])
+                                node.set_preset_state(self.presets[current_preset_index][key])
 
     def save_custom(self, container):
         # note this only works for save with the copy()
@@ -435,6 +436,7 @@ class PresetsNode(Node):
                                 for node in editor._nodes:
                                     if node.loaded_uuid == node_preset_uuid_int:
                                         translation_table[node_preset_uuid_int] = node.uuid
+                                        break
 
             adjusted_presets = [None] * self.preset_count
             for index, preset in enumerate(self.presets):
@@ -456,12 +458,12 @@ class PresetsNode(Node):
                                     else:
                                         adjusted_presets[index]['nodes'][node_preset_uuid_int] = node_container
                     else:
-                        adjusted_presets[index] = []
+                        adjusted_presets[index] = {}
                         for node_preset_uuid in preset:
                             node_preset_uuid_int = int(node_preset_uuid)
                             if node_preset_uuid_int in translation_table:
                                 new_uuid = translation_table[node_preset_uuid_int]
-                                adjusted_presets[index][new_uuid] = preset[node_preset_uuid_int]
+                                adjusted_presets[index][str(new_uuid)] = preset[str(node_preset_uuid_int)]
 
             self.presets = adjusted_presets.copy()
         else:
