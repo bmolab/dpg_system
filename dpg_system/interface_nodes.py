@@ -961,7 +961,7 @@ class VectorNode(Node):
         self.current_component_count = self.arg_as_int(default_value=4)
 
         self.input = self.add_input('in', triggers_execution=True)
-
+        self.input.bang_repeats_previous = False
         self.component_properties = []
         for i in range(self.max_component_count):
             cp = self.add_property('##' + str(i), widget_type='drag_float', callback=self.component_changed)
@@ -1021,7 +1021,13 @@ class VectorNode(Node):
         if self.input.fresh_input:
             value = self.input()
             t = type(value)
-            if t == list:
+            if t == str:
+                if value == 'bang':
+                    output_array = np.ndarray(self.current_component_count)
+                    for i in range(self.current_component_count):
+                        output_array[i] = self.component_properties[i]()
+                    self.output.set_value(output_array)
+            elif t == list:
                 value = np.array(value)
                 t = np.ndarray
             elif t in [float, int, np.double, np.int64]:

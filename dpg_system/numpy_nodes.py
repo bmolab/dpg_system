@@ -45,6 +45,8 @@ def register_numpy_nodes():
     Node.app.register_node('np.clip', NumpyClipNode.factory)
     Node.app.register_node('np.min', NumpyClipNode.factory)
     Node.app.register_node('np.max', NumpyClipNode.factory)
+    Node.app.register_node('np.line_intersection', NumpyLineIntersectionNode.factory)
+
 
 
 class NumpyGeneratorNode(Node):
@@ -637,6 +639,69 @@ class NumpyRollNode(Node):
             repeated_data = np.roll(data, shift=self.shifts(), axis=axis)
             self.output.send(repeated_data)
 
+class NumpyLineIntersectionNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyLineIntersectionNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.point1_input = self.add_input('line 1 start', triggers_execution=True)
+        self.point2_input = self.add_input('line 1 end')
+        self.point3_input = self.add_input('line 2 start')
+        self.point4_input = self.add_input('line 2 end')
+        self.directed = self.add_property('direction matters', widget_type='checkbox', default_value=True)
+        self.must_hit_line_2_segment = self.add_property('intersect line 2 segment', widget_type='checkbox', default_value=True)
+
+        self.valid_intersection = self.add_output('intersection is valid')
+        self.output = self.add_output('point of intersection')
+        self.relative_point = self.add_output('fraction of segment 2')
+
+    def execute(self):
+        a1 = any_to_array(self.point1_input())
+        a2 = any_to_array(self.point2_input())
+        b1 = any_to_array(self.point3_input())
+        b2 = any_to_array(self.point4_input())
+        intersection = self.get_intersect(a1, a2, b1, b2)
+        direction_ok = True
+        if self.directed():
+            a1_intersect_length = np.linalg.norm(a1 - intersection)
+            a2_intersect_length = np.linalg.norm(a2 - intersection)
+            if a1_intersect_length <= a2_intersect_length:
+                direction_ok = False
+        segment_intersect_ok = True
+        line_2_length = np.linalg.norm(b1 - b2)
+        intersection_seg_length_1 = np.linalg.norm(b1 - intersection)
+        intersection_seg_length_2 = np.linalg.norm(b2 - intersection)
+        fraction = float(intersection_seg_length_1 / line_2_length)
+        if self.must_hit_line_2_segment():
+            if intersection_seg_length_1 > line_2_length or intersection_seg_length_2 > line_2_length:
+                segment_intersect_ok = False
+        self.relative_point.send(fraction)
+        self.output.send(intersection)
+        if direction_ok and segment_intersect_ok:
+            self.valid_intersection.send(True)
+        else:
+            self.valid_intersection.send(False)
+
+    def get_intersect(self, a1, a2, b1, b2):
+        """
+        Returns the point of intersection of the lines passing through a2,a1 and b2,b1.
+        a1: [x, y] a point on the first line
+        a2: [x, y] another point on the first line
+        b1: [x, y] a point on the second line
+        b2: [x, y] another point on the second line
+        """
+        s = np.vstack([a1, a2, b1, b2])        # s for stacked
+        h = np.hstack((s, np.ones((4, 1)))) # h for homogeneous
+        l1 = np.cross(h[0], h[1])           # get first line
+        l2 = np.cross(h[2], h[3])           # get second line
+        x, y, z = np.cross(l1, l2)          # point of intersection
+        if z == 0:                          # lines are parallel
+            return np.array([float('inf'), float('inf')])
+        return np.array([x/z, y/z])
 
 class NumpyFlipNode(Node):
     @staticmethod
