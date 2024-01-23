@@ -58,6 +58,32 @@ def register_basic_nodes():
     Node.app.register_node('word_trigger', WordTriggerNode.factory)
     Node.app.register_node('split', SplitNode.factory)
     Node.app.register_node('join', JoinNode.factory)
+    Node.app.register_node('defer', DeferNode.factory)
+
+
+# DeferNode -- delays received input until next frame
+class DeferNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = DeferNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.received = False
+        self.received_data = None
+        self.input = self.add_input('input', triggers_execution=True)
+        self.output = self.add_output('deferred output')
+
+    def execute(self):
+        self.received_data = self.input()
+        self.add_frame_task()
+
+    def frame_task(self):
+        if self.received_data is not None:
+            self.output.send(self.received_data)
+            self.remove_frame_tasks()
+
 
 class CommentNode(Node):
     comment_theme = None
