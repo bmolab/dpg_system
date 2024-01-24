@@ -25,6 +25,7 @@ smpl_active = True
 prompt_active = True
 sockets_active = True
 easy_mode = False
+ultracwt_active = False
 
 print('Options active:', end=' ')
 with open('dpg_system/dpg_system_config.json', 'r') as f:
@@ -87,6 +88,10 @@ with open('dpg_system/dpg_system_config.json', 'r') as f:
         sockets_active = config['sockets']
         if sockets_active:
             print('sockets', end=' ')
+    if 'ultracwt' in config:
+        ultracwt_active = config['ultracwt']
+        if ultracwt_active:
+            print('ultracwt', end=' ')
 
 print('')
 
@@ -223,6 +228,13 @@ if sockets_active:
         imported.append('socket_nodes.py')
     except ModuleNotFoundError:
         sockets_active = False
+
+if ultracwt_active:
+    try:
+        from dpg_system.ultracwt_nodes import *
+        imported.append('ultracwt_nodes.py')
+    except ModuleNotFoundError:
+        ultracwt_active = False
 
 # import additional node files in folder
 
@@ -904,6 +916,9 @@ class App:
 
         if sockets_active and 'register_socket_nodes' in globals():
             register_socket_nodes()
+
+        if ultracwt_active and 'register_ultracwt_nodes' in globals():
+            register_ultracwt_nodes()
 
 
     def get_variable_list(self):

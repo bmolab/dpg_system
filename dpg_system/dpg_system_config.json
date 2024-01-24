@@ -13,5 +13,6 @@
   "prompt": true,
   "pybullet": true,
   "sockets": true,
+  "ultracwt": true,
   "easy": false
 }
