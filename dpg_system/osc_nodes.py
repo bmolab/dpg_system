@@ -439,7 +439,6 @@ class OSCAsyncIOSource:
                 self.pending_dead_loop[i] = None
             self.pending_dead_loop = []
 
-
     def stop_serving(self):
         for address in self.receive_nodes:
             receive_node = self.receive_nodes[address]
@@ -452,7 +451,6 @@ class OSCAsyncIOSource:
             self.pending_dead_loop.append(self.async_loop)
             stop_async(self.async_loop)
             self.async_loop = None
-
 
     def osc_handler(self, address, *args):
         # alternatively... pass message to buffer to be handled in loop
@@ -613,7 +611,6 @@ class OSCBase:
     osc_manager = None
 
     def __init__(self, label: str, data, args):
-        print('OSCBase init', label)
         super().__init__(label, data, args)
 
     def parse_osc_address(self, data):
@@ -638,7 +635,6 @@ class OSCBase:
 
 class OSCReceiver(OSCBase):
     def __init__(self, label: str, data, args):
-        print('OSCReceiver init', label)
         super().__init__(label, data, args)
 
         self.source = None
@@ -693,7 +689,6 @@ class OSCReceiveNode(OSCReceiver, Node):
         return node
 
     def __init__(self, label: str, data, args):
-        print('OSCReceiveNode init', label)
         super().__init__(label, data, args)
 
         self.source_name_property = self.add_property('source name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
@@ -741,7 +736,6 @@ class OSCBaseNode(Node):
 
 class OSCSender(OSCBase):
     def __init__(self, label: str, data, args):
-        print('OSCSender init', label)
         super().__init__(label, data, args)
 
         self.target = None
@@ -804,8 +798,6 @@ class OSCSendNode(OSCSender, Node):
         return node
 
     def __init__(self, label: str, data, args):
-        print('OSCSendNode init', label)
-
         super().__init__(label, data, args)
 
         self.input = self.add_input('osc to send', triggers_execution=True)
@@ -844,7 +836,6 @@ class OSCSendNode(OSCSender, Node):
 
 
 class OSCRouteNode(OSCBaseNode):
-
     @staticmethod
     def factory(name, data, args=None):
         node = OSCRouteNode(name, data, args)
@@ -936,14 +927,7 @@ class OSCValueNode(OSCReceiver, OSCSender, ValueNode):
         return node
 
     def __init__(self, label: str, data, args):
-        print('OSC_ValueNode init', label)
         super().__init__(label, data, args)
-        # print('init OSCReceiver')
-        # super(OSCReceiver, self).__init__(label, data, args)
-        # print('init OSCSender')
-        # super(OSCSender, self).__init__(label, data, args)
-        # print('init ValueNode')
-        # super(ValueNode, self).__init__(super_label, data, args)
         self.target_name_property = self.add_property('target name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
         self.target_address_property = self.add_property('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
         self.source_name_property = self.target_name_property
@@ -967,7 +951,6 @@ class OSCValueNode(OSCReceiver, OSCSender, ValueNode):
         OSCReceiver.cleanup(self)
 
     def receive(self, data):
-        print('OSCValueNode receive')
         t = type(data)
         if t == tuple:
             data = list(data)
@@ -975,7 +958,6 @@ class OSCValueNode(OSCReceiver, OSCSender, ValueNode):
         ValueNode.execute(self)
 
     def execute(self):
-        print('OSCValueNode execute')
         ValueNode.execute(self)
         data = dpg.get_value(self.value)
         t = type(data)
@@ -987,7 +969,6 @@ class OSCValueNode(OSCReceiver, OSCSender, ValueNode):
             data, homogenous, types = list_to_hybrid_list(data)
         if data is not None:
             if self.target and self.address != '':
-                print('OSCValueNode target send')
                 self.target.send_message(self.address, data)
 
 

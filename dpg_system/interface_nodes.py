@@ -676,8 +676,6 @@ class ValueNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-
-        print('ValueNode init', label)
         widget_type = 'drag_float'
         widget_width = 100
         self.value = dpg.generate_uuid()
