@@ -6,7 +6,7 @@ from dpg_system.conversion_utils import *
 import asyncio
 from dpg_system.node import Node
 import threading
-from dpg_system.interface_nodes import ValueNode
+from dpg_system.interface_nodes import ValueNode, ButtonNode, ToggleNode, MenuNode, RadioButtonsNode
 
 # NOTE changing target name changed, changing target port crashed
 
@@ -24,6 +24,10 @@ def register_osc_nodes():
     Node.app.register_node('osc_message', OSCValueNode.factory)
     Node.app.register_node('osc_string', OSCValueNode.factory)
     Node.app.register_node('osc_knob', OSCValueNode.factory)
+    Node.app.register_node('osc_button', OSCButtonNode.factory)
+    Node.app.register_node('osc_toggle', OSCToggleNode.factory)
+    Node.app.register_node('osc_menu', OSCMenuNode.factory)
+    Node.app.register_node('osc_radio', OSCRadioButtonsNode.factory)
 
 
 # def osc_handler(address, *args):
@@ -334,7 +338,6 @@ class OSCSource:
                         self.receive_nodes[temp].receive(sub)
                         return
         self.output_message_directly(address, args)
-
 
     def output_message_directly(self, args):
         pass
@@ -928,23 +931,26 @@ class OSCValueNode(OSCReceiver, OSCSender, ValueNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.target_name_property = self.add_property('target name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
-        self.target_address_property = self.add_property('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
+        self.target_name_property = self.add_option('target name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
+        self.target_address_property = self.add_option('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
         self.source_name_property = self.target_name_property
         self.source_address_property = self.target_address_property
 
     def name_changed(self):
         OSCReceiver.name_changed(self)
         OSCSender.name_changed(self)
+        self.outputs[0].set_label(self.target_name_property() + ':' + self.target_address_property())
 
     def address_changed(self):
         OSCReceiver.address_changed(self)
         OSCSender.address_changed(self)
+        self.outputs[0].set_label(self.target_name_property() + ':' + self.target_address_property())
 
     def custom_create(self, from_file):
         if self.name != '':
             self.find_target_node(self.name)
             self.find_source_node(self.name)
+        self.output.set_label(self.target_name_property() + ':' + self.target_address_property())
 
     def cleanup(self):
         OSCSender.cleanup(self)
@@ -970,5 +976,179 @@ class OSCValueNode(OSCReceiver, OSCSender, ValueNode):
         if data is not None:
             if self.target and self.address != '':
                 self.target.send_message(self.address, data)
+
+
+class OSCButtonNode(OSCReceiver, OSCSender, ButtonNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = OSCButtonNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.target_name_property = self.add_option('target name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
+        self.target_address_property = self.add_option('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
+        self.source_name_property = self.target_name_property
+        self.source_address_property = self.target_address_property
+
+    def name_changed(self):
+        OSCReceiver.name_changed(self)
+        OSCSender.name_changed(self)
+        self.output.set_label(self.target_name_property() + ':' + self.target_address_property())
+
+    def address_changed(self):
+        OSCReceiver.address_changed(self)
+        OSCSender.address_changed(self)
+        self.output.set_label(self.target_name_property() + ':' + self.target_address_property())
+
+    def custom_create(self, from_file):
+        if self.name != '':
+            self.find_target_node(self.name)
+            self.find_source_node(self.name)
+        self.output.set_label(self.target_name_property() + ':' + self.target_address_property())
+
+    def cleanup(self):
+        OSCSender.cleanup(self)
+        OSCReceiver.cleanup(self)
+
+    def receive(self, data):
+        ButtonNode.execute(self)
+
+    def execute(self):
+        ButtonNode.execute(self)
+        if self.target and self.address != '':
+            self.target.send_message(self.address, self.message())
+
+
+class OSCToggleNode(OSCReceiver, OSCSender, ToggleNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = OSCToggleNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.target_name_property = self.add_option('target name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
+        self.target_address_property = self.add_option('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
+        self.source_name_property = self.target_name_property
+        self.source_address_property = self.target_address_property
+
+    def name_changed(self):
+        OSCReceiver.name_changed(self)
+        OSCSender.name_changed(self)
+        self.output.set_label(self.target_name_property() + ':' + self.source_address_property())
+
+    def address_changed(self):
+        OSCReceiver.address_changed(self)
+        OSCSender.address_changed(self)
+        self.output.set_label(self.target_name_property() + ':' + self.source_address_property())
+
+    def custom_create(self, from_file):
+        if self.name != '':
+            self.find_target_node(self.name)
+            self.find_source_node(self.name)
+        self.output.set_label(self.target_name_property() + ':' + self.target_address_property())
+
+    def cleanup(self):
+        OSCSender.cleanup(self)
+        OSCReceiver.cleanup(self)
+
+    def receive(self, data):
+        self.value = any_to_bool(data)
+        self.input.set(self.value)
+        ToggleNode.execute(self)
+
+    def execute(self):
+        ToggleNode.execute(self)
+        if self.target and self.address != '':
+            self.target.send_message(self.address, self.value)
+
+
+class OSCMenuNode(OSCReceiver, OSCSender, MenuNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = OSCMenuNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.target_name_property = self.add_option('target name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
+        self.target_address_property = self.add_option('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
+        self.source_name_property = self.target_name_property
+        self.source_address_property = self.target_address_property
+
+    def name_changed(self):
+        OSCReceiver.name_changed(self)
+        OSCSender.name_changed(self)
+        self.output.set_label(self.target_name_property() + ':' + self.source_address_property())
+
+    def address_changed(self):
+        OSCReceiver.address_changed(self)
+        OSCSender.address_changed(self)
+        self.output.set_label(self.target_name_property() + ':' + self.source_address_property())
+
+    def custom_create(self, from_file):
+        if self.name != '':
+            self.find_target_node(self.name)
+            self.find_source_node(self.name)
+        self.output.set_label(self.target_name_property() + ':' + self.target_address_property())
+
+    def cleanup(self):
+        OSCSender.cleanup(self)
+        OSCReceiver.cleanup(self)
+
+    def receive(self, data):
+        self.choice.set(data)
+        self.set_choice_internal(data)
+
+    def execute(self):
+        MenuNode.execute(self)
+        if self.target and self.address != '':
+            self.target.send_message(self.address, self.choice())
+
+
+class OSCRadioButtonsNode(OSCReceiver, OSCSender, RadioButtonsNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = OSCRadioButtonsNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.target_name_property = self.add_option('target name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
+        self.target_address_property = self.add_option('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
+        self.source_name_property = self.target_name_property
+        self.source_address_property = self.target_address_property
+
+    def name_changed(self):
+        OSCReceiver.name_changed(self)
+        OSCSender.name_changed(self)
+        self.output.set_label(self.target_name_property() + ':' + self.source_address_property())
+
+    def address_changed(self):
+        OSCReceiver.address_changed(self)
+        OSCSender.address_changed(self)
+        self.output.set_label(self.target_name_property() + ':' + self.source_address_property())
+
+    def custom_create(self, from_file):
+        if self.name != '':
+            self.find_target_node(self.name)
+            self.find_source_node(self.name)
+        self.output.set_label(self.target_name_property() + ':' + self.target_address_property())
+
+    def cleanup(self):
+        OSCSender.cleanup(self)
+        OSCReceiver.cleanup(self)
+
+    def receive(self, data):
+        value = any_to_int(data)
+        self.radio_group.set(value)
+        RadioButtonsNode.execute(self)
+
+    def execute(self):
+        RadioButtonsNode.execute(self)
+        if self.target and self.address != '':
+            self.target.send_message(self.address, self.radio_group())
+
 
 

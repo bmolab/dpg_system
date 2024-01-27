@@ -1300,7 +1300,9 @@ class Node:
             if self.options_visible:
                 self.toggle_show_hide_options()
 
-    def args_as_list(self):
+    def args_as_list(self, supplied_args=None):
+        if supplied_args is not None:
+            return supplied_args
         return self.ordered_args
 
     def arg_as_number(self, default_value=0, index=0):

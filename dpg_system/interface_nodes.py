@@ -50,7 +50,8 @@ class ButtonNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-
+        if label[:4] == 'osc_':
+            args = args[2:]
         flash_duration = .100
         self.target_time = time.time() - flash_duration
         self.action_name = ''
@@ -121,6 +122,10 @@ class ButtonNode(Node):
     def custom_create(self, from_file):
         if self.action_name != '':
             self.binding_changed()
+        width = self.input.widget.get_text_width()
+        if width < 14:
+            width = 14
+        dpg.set_item_width(self.input.widget.uuid, width)
 
     def custom_cleanup(self):
         self.remove_frame_tasks()
@@ -144,8 +149,11 @@ class MenuNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-
-        self.choices = self.args_as_list()
+        if label[:4] == 'osc_':
+            ordered_args = self.ordered_args[2:]
+        else:
+            ordered_args = self.ordered_args
+        self.choices = self.args_as_list(ordered_args)
         self.choice = self.add_input('##choice', widget_type='combo', default_value=self.choices[0], callback=self.set_choice)
         self.choice.widget.combo_items = self.choices
         self.large_text = self.add_option('large_font', widget_type='checkbox', default_value=False,
@@ -176,42 +184,47 @@ class MenuNode(Node):
         #     else:
         #         dpg.set_item_width(self.choice.widget.trigger_widget, 14)
 
+    def set_choice_internal(self):
+        input_choice = self.choice()
+        t = type(input_choice)
+        do_execute = True
+        test_choice = None
+        if t == list:
+            if len(input_choice) == 1:
+                test_choice = input_choice[0]
+            else:
+                if input_choice[0] == 'set':
+                    test_choice = input_choice[1]
+                    do_execute = False
+                elif input_choice[0] == 'append':
+                    for new_choice in input_choice[1:]:
+                        if new_choice not in self.choices:
+                            self.choices.append(new_choice)
+                    dpg.configure_item(self.choice.widget.uuid, items=self.choices)
+                    do_execute = False
+                else:
+                    self.choices = []
+                    for new_choice in input_choice:
+                        if new_choice not in self.choices:
+                            self.choices.append(new_choice)
+                    dpg.configure_item(self.choice.widget.uuid, items=self.choices)
+                    do_execute = False
+        elif t in [int, float, bool]:
+            test_choice = str(input_choice)
+            if test_choice not in self.choices:
+                choice = int(input_choice)
+                if choice < len(self.choices):
+                    test_choice = self.choices[choice]
+        elif t == str:
+            test_choice = input_choice
+        if test_choice is not None and test_choice in self.choices:
+            self.choice.set(test_choice)
+        return do_execute
+
     def set_choice(self):
         do_execute = True
         if self.choice.fresh_input:
-            input_choice = self.choice()
-            t = type(input_choice)
-            test_choice = None
-            if t == list:
-                if len(input_choice) == 1:
-                    test_choice = input_choice[0]
-                else:
-                    if input_choice[0] == 'set':
-                        test_choice = input_choice[1]
-                        do_execute = False
-                    elif input_choice[0] == 'append':
-                        for new_choice in input_choice[1:]:
-                            if new_choice not in self.choices:
-                                self.choices.append(new_choice)
-                        dpg.configure_item(self.choice.widget.uuid, items=self.choices)
-                        do_execute = False
-                    else:
-                        self.choices = []
-                        for new_choice in input_choice:
-                            if new_choice not in self.choices:
-                                self.choices.append(new_choice)
-                        dpg.configure_item(self.choice.widget.uuid, items=self.choices)
-                        do_execute = False
-            elif t in [int, float, bool]:
-                test_choice = str(input_choice)
-                if test_choice not in self.choices:
-                    choice = int(input_choice)
-                    if choice < len(self.choices):
-                        test_choice = self.choices[choice]
-            elif t == str:
-                test_choice = input_choice
-            if test_choice is not None and test_choice in self.choices:
-                self.choice.set(test_choice)
+            do_execute = self.set_choice_internal()
         if do_execute:
             self.execute()
 
@@ -493,6 +506,8 @@ class RadioButtonsNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+        if label[:4] == 'osc_':
+            args = args[2:]
 
         self.buttons = []
         if args is not None and len(args) > 0:
@@ -533,12 +548,15 @@ class ToggleNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-
+        if label[:4] == 'osc_':
+            ordered_args = self.ordered_args[2:]
+        else:
+            ordered_args = self.ordered_args
         variable_name = ''
         self.set_reset = False
-        if self.ordered_args is not None and len(self.ordered_args) > 0:
-            for i in range(len(self.ordered_args)):
-                var_name, t = decode_arg(self.ordered_args, i)
+        if ordered_args is not None and len(ordered_args) > 0:
+            for i in range(len(ordered_args)):
+                var_name, t = decode_arg(ordered_args, i)
                 if t == str:
                     variable_name = var_name
         self.reset_input = None
@@ -676,6 +694,10 @@ class ValueNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+        if label[:4] == 'osc_':
+            ordered_args = self.ordered_args[2:]
+        else:
+            ordered_args = self.ordered_args
         widget_type = 'drag_float'
         widget_width = 100
         self.value = dpg.generate_uuid()
@@ -694,8 +716,8 @@ class ValueNode(Node):
 
         if label in ['float', 'osc_float']:
             widget_type = 'drag_float'
-            for i in range(len(self.ordered_args)):
-                val, t = decode_arg(self.ordered_args, i)
+            for i in range(len(ordered_args)):
+                val, t = decode_arg(ordered_args, i)
                 if t in [float, int]:
                     self.start_value = val
                 elif t == str:
@@ -703,8 +725,8 @@ class ValueNode(Node):
                         widget_type = 'input_float'
         elif label in ['int', 'osc_int']:
             widget_type = 'drag_int'
-            for i in range(len(self.ordered_args)):
-                val, t = decode_arg(self.ordered_args, i)
+            for i in range(len(ordered_args)):
+                val, t = decode_arg(ordered_args, i)
                 if t in [float, int]:
                     self.start_value = val
                 elif t == str:
@@ -712,9 +734,9 @@ class ValueNode(Node):
                         widget_type = 'input_int'
         elif label in ['slider', 'osc_slider']:
             widget_type = 'slider_float'
-            if self.ordered_args is not None:
-                for i in range(len(self.ordered_args)):
-                    val, t = decode_arg(self.ordered_args, i)
+            if ordered_args is not None:
+                for i in range(len(ordered_args)):
+                    val, t = decode_arg(ordered_args, i)
                     if t == float:
                         widget_type = 'slider_float'
                         self.max = val
@@ -725,9 +747,9 @@ class ValueNode(Node):
                 self.max = 1.0
         elif label in ['knob', 'osc_knob']:
             widget_type = 'knob_float'
-            if self.ordered_args is not None:
-                for i in range(len(self.ordered_args)):
-                    val, t = decode_arg(self.ordered_args, i)
+            if ordered_args is not None:
+                for i in range(len(ordered_args)):
+                    val, t = decode_arg(ordered_args, i)
                     if t in [float, int]:
                         self.max = val
             if self.max is None:
@@ -735,9 +757,9 @@ class ValueNode(Node):
         elif label in ['string', 'message', 'osc_string', 'osc_message']:
             widget_type = 'text_input'
 
-        if self.ordered_args is not None and len(self.ordered_args) > 0:
-            for i in range(len(self.ordered_args)):
-                var_name, t = decode_arg(self.ordered_args, i)
+        if ordered_args is not None and len(ordered_args) > 0:
+            for i in range(len(ordered_args)):
+                var_name, t = decode_arg(ordered_args, i)
                 if t == str:
                     if widget_type not in ['input_int', 'input_float'] or var_name != '+':
                         self.variable_name = var_name
@@ -751,7 +773,6 @@ class ValueNode(Node):
             self.output = self.add_output(self.variable_name)
         else:
             self.output = self.add_output('out')
-        print(self.output)
 
         self.variable_binding_property = self.add_option('bind to', widget_type='text_input', width=120, default_value=self.variable_name, callback=self.binding_changed)
 
