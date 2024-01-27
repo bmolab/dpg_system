@@ -677,6 +677,7 @@ class ValueNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
+        print('ValueNode init', label)
         widget_type = 'drag_float'
         widget_width = 100
         self.value = dpg.generate_uuid()
@@ -693,7 +694,7 @@ class ValueNode(Node):
         self.grow_option = None
         self.grow_mode = 'grow_to_fit'
 
-        if label == 'float':
+        if label in ['float', 'osc_float']:
             widget_type = 'drag_float'
             for i in range(len(self.ordered_args)):
                 val, t = decode_arg(self.ordered_args, i)
@@ -702,7 +703,7 @@ class ValueNode(Node):
                 elif t == str:
                     if val == '+':
                         widget_type = 'input_float'
-        elif label == 'int':
+        elif label in ['int', 'osc_int']:
             widget_type = 'drag_int'
             for i in range(len(self.ordered_args)):
                 val, t = decode_arg(self.ordered_args, i)
@@ -711,7 +712,7 @@ class ValueNode(Node):
                 elif t == str:
                     if val == '+':
                         widget_type = 'input_int'
-        elif label == 'slider':
+        elif label in ['slider', 'osc_slider']:
             widget_type = 'slider_float'
             if self.ordered_args is not None:
                 for i in range(len(self.ordered_args)):
@@ -724,7 +725,7 @@ class ValueNode(Node):
                         self.max = val
             if self.max is None:
                 self.max = 1.0
-        elif label == 'knob':
+        elif label in ['knob', 'osc_knob']:
             widget_type = 'knob_float'
             if self.ordered_args is not None:
                 for i in range(len(self.ordered_args)):
@@ -733,7 +734,7 @@ class ValueNode(Node):
                         self.max = val
             if self.max is None:
                 self.max = 100
-        elif label == 'string' or label == 'message':
+        elif label in ['string', 'message', 'osc_string', 'osc_message']:
             widget_type = 'text_input'
 
         if self.ordered_args is not None and len(self.ordered_args) > 0:
@@ -747,11 +748,12 @@ class ValueNode(Node):
             self.input = self.add_input('', triggers_execution=True, widget_type=widget_type, widget_uuid=self.value, widget_width=widget_width, trigger_button=True)
         else:
             self.input = self.add_input('', triggers_execution=True, widget_type=widget_type, widget_uuid=self.value, widget_width=widget_width, trigger_button=True, max=self.max)
-
+        print(self.input)
         if self.variable_name != '':
             self.output = self.add_output(self.variable_name)
         else:
             self.output = self.add_output('out')
+        print(self.output)
 
         self.variable_binding_property = self.add_option('bind to', widget_type='text_input', width=120, default_value=self.variable_name, callback=self.binding_changed)
 

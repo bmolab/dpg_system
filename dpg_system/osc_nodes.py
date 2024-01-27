@@ -6,6 +6,7 @@ from dpg_system.conversion_utils import *
 import asyncio
 from dpg_system.node import Node
 import threading
+from dpg_system.interface_nodes import ValueNode
 
 # NOTE changing target name changed, changing target port crashed
 
@@ -17,6 +18,12 @@ def register_osc_nodes():
     Node.app.register_node('osc_target', OSCTargetNode.factory)
     Node.app.register_node('osc_send', OSCSendNode.factory)
     Node.app.register_node('osc_route', OSCRouteNode.factory)
+    Node.app.register_node('osc_slider', OSCValueNode.factory)
+    Node.app.register_node('osc_float', OSCValueNode.factory)
+    Node.app.register_node('osc_int', OSCValueNode.factory)
+    Node.app.register_node('osc_message', OSCValueNode.factory)
+    Node.app.register_node('osc_string', OSCValueNode.factory)
+    Node.app.register_node('osc_knob', OSCValueNode.factory)
 
 
 # def osc_handler(address, *args):
@@ -48,6 +55,7 @@ class OSCManager:
         OSCAsyncIOSourceNode.osc_manager = self
         OSCTarget.osc_manager = self
         OSCBaseNode.osc_manager = self
+        OSCBase.osc_manager = self
         # if not self.started:
         #     osc_thread()
 
@@ -601,6 +609,110 @@ class OSCAsyncIOSourceNode(OSCAsyncIOSource, Node):
             i += 1
 
 
+class OSCBase:
+    osc_manager = None
+
+    def __init__(self, label: str, data, args):
+        print('OSCBase init', label)
+        super().__init__(label, data, args)
+
+    def parse_osc_address(self, data):
+        t = type(data)
+        if t == str:
+            data = data.split(' ')
+        else:
+            data = any_to_list(data)
+        router = any_to_string(data[0])
+        split = router.split('/')
+        if split[0] == '':
+            split = split[1:]
+        return split
+
+    def construct_osc_address(self, address_as_list):
+        if type(address_as_list) == str:
+            address_as_list = address_as_list.split(' ')
+        address = '/'.join(address_as_list)
+        address = '/' + address
+        return address
+
+
+class OSCReceiver(OSCBase):
+    def __init__(self, label: str, data, args):
+        print('OSCReceiver init', label)
+        super().__init__(label, data, args)
+
+        self.source = None
+        self.address = ''
+        self.name = 'untitled'
+        self.source_name_property = None
+        self.source_address_property = None
+
+        if args is not None:
+            if len(args) > 0:
+                self.name = args[0]
+            if len(args) > 1:
+                self.address = args[1]
+
+    def name_changed(self):
+        if self.source_name_property is not None:
+            new_name = self.source_name_property()
+            if new_name != self.name:
+                if self.source is not None:
+                    self.osc_manager.unregister_receive_node(self)
+                self.name = new_name
+                self.find_source_node(self.name)
+                self.osc_manager.connect_receive_node_to_source(self, self.source)
+
+    def address_changed(self):
+        if self.source_address_property is not None:
+            new_address = self.source_address_property()
+            if new_address != self.address:
+                self.osc_manager.receive_node_address_changed(self, new_address, self.source)
+
+    def find_source_node(self, name):
+        if self.osc_manager is not None:
+            self.source = self.osc_manager.find_source(name)
+            self.osc_manager.connect_receive_node_to_source(self, self.source)
+            if self.source is not None:
+                return True
+        return False
+
+    def source_going_away(self, old_source):
+        if self.source == old_source:
+            self.source = None
+
+    def cleanup(self):
+        print('OSCReceiver cleanup')
+        self.osc_manager.unregister_receive_node(self)
+
+
+class OSCReceiveNode(OSCReceiver, Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = OSCReceiveNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        print('OSCReceiveNode init', label)
+        super().__init__(label, data, args)
+
+        self.source_name_property = self.add_property('source name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
+        self.source_address_property = self.add_property('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
+        self.output = self.add_output('osc received')
+
+    def custom_create(self, from_file):
+        if self.name != '':
+            self.find_source_node(self.name)
+
+    def receive(self, data):
+        if self.output:
+            self.output.send(list(data))
+
+    def cleanup(self):
+        print('OSCReceiveNode cleanup')
+        super().cleanup()
+
+
 class OSCBaseNode(Node):
     osc_manager = None
 
@@ -627,81 +739,9 @@ class OSCBaseNode(Node):
         return address
 
 
-class OSCReceiveNode(OSCBaseNode):
-
-    @staticmethod
-    def factory(name, data, args=None):
-        node = OSCReceiveNode(name, data, args)
-        return node
-
+class OSCSender(OSCBase):
     def __init__(self, label: str, data, args):
-        super().__init__(label, data, args)
-
-        self.source = None
-        self.address = ''
-        self.name = 'untitled'
-
-        if args is not None:
-            if len(args) > 0:
-                self.name = args[0]
-            if len(args) > 1:
-                self.address = args[1]
-
-        self.source_name_property = self.add_property('source name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
-        self.source_address_property = self.add_property('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
-        self.output = self.add_output('osc received')
-
-    def name_changed(self):
-        new_name = self.source_name_property()
-        if new_name != self.name:
-            if self.source is not None:
-                self.osc_manager.unregister_receive_node(self)
-            self.name = new_name
-            self.find_source_node(self.name)
-            self.osc_manager.connect_receive_node_to_source(self, self.source)
-
-    def address_changed(self):
-        new_address = self.source_address_property()
-        if new_address != self.address:
-            self.osc_manager.receive_node_address_changed(self, new_address, self.source)
-
-    def custom_create(self, from_file):
-        if self.name != '':
-            self.find_source_node(self.name)
-
-    def receive(self, data):
-        if self.output:
-            self.output.send(list(data))
-
-    def find_source_node(self, name):
-        if self.osc_manager is not None:
-            self.source = self.osc_manager.find_source(name)
-            self.osc_manager.connect_receive_node_to_source(self, self.source)
-            if self.source is not None:
-                return True
-        return False
-
-    def source_going_away(self, old_source):
-        if self.source == old_source:
-            self.source = None
-
-    def verify_source(self):
-        if self.source.registered_name == self.source_name_property():
-            return True
-        return False
-
-    def cleanup(self):
-        self.osc_manager.unregister_receive_node(self)
-
-
-class OSCSendNode(OSCBaseNode):
-
-    @staticmethod
-    def factory(name, data, args=None):
-        node = OSCSendNode(name, data, args)
-        return node
-
-    def __init__(self, label: str, data, args):
+        print('OSCSender init', label)
         super().__init__(label, data, args)
 
         self.target = None
@@ -714,29 +754,25 @@ class OSCSendNode(OSCBaseNode):
             if len(args) > 1:
                 self.address = args[1]
 
-        self.input = self.add_input('osc to send', triggers_execution=True)
-
-        self.target_name_property = self.add_property('target name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
-        self.target_address_property = self.add_property('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
+        self.target_name_property = None
+        self.target_address_property = None
 
     def name_changed(self):
-        new_name = self.target_name_property()
-        if new_name != self.name:
-            if self.target is not None:
-                self.osc_manager.unregister_send_node(self)
-            self.name = new_name
-            self.find_target_node(self.name)
+        if self.target_name_property is not None:
+            new_name = self.target_name_property()
+            if new_name != self.name:
+                if self.target is not None:
+                    self.osc_manager.unregister_send_node(self)
+                self.name = new_name
+                self.find_target_node(self.name)
 
     def address_changed(self):
-        new_address = self.target_address_property()
-        if new_address != self.address:
-            self.osc_manager.unregister_send_node(self)
-            self.address = new_address
-            self.find_target_node(self.name)
-
-    def custom_create(self, from_file):
-        if self.name != '':
-            self.find_target_node(self.name)
+        if self.target_address_property is not None:
+            new_address = self.target_address_property()
+            if new_address != self.address:
+                self.osc_manager.unregister_send_node(self)
+                self.address = new_address
+                self.find_target_node(self.name)
 
     def find_target_node(self, name):
         if self.osc_manager is not None:
@@ -755,13 +791,45 @@ class OSCSendNode(OSCBaseNode):
         if self.target == old_target:
              self.target = None
 
-    def verify_target(self):
-        if self.target.registered_name == self.target_name_property():
-            return True
+    def cleanup(self):
+        print('OSCSender cleanup')
+        self.osc_manager.unregister_send_node(self)
+
+
+class OSCSendNode(OSCSender, Node):
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = OSCSendNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        print('OSCSendNode init', label)
+
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('osc to send', triggers_execution=True)
+
+        self.target_name_property = self.add_property('target name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
+        self.target_address_property = self.add_property('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
+
+    def custom_create(self, from_file):
+        if self.name != '':
+            self.find_target_node(self.name)
+
+    def find_target_node(self, name):
+        if self.osc_manager is not None:
+            self.target = self.osc_manager.find_target(name)
+            if self.target is not None:
+                self.osc_manager.connect_send_node_to_target(self, self.target)
+                return True
+            else:
+                self.osc_manager.connect_send_node_to_target(self, None)
         return False
 
     def cleanup(self):
-        self.osc_manager.unregister_send_node(self)
+        print('OSCSendNode cleanup')
+        super().cleanup()
 
     def execute(self):
         if self.input.fresh_input:
@@ -783,6 +851,7 @@ class OSCRouteNode(OSCBaseNode):
         return node
 
     def __init__(self, label: str, data, args):
+
         super().__init__(label, data, args)
 
         self.router_count = 0
@@ -858,3 +927,67 @@ class OSCRouteNode(OSCBaseNode):
                         self.outputs[index].send(message)
                         return
         self.miss_out.send(self.input())
+
+
+class OSCValueNode(OSCReceiver, OSCSender, ValueNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = OSCValueNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        print('OSC_ValueNode init', label)
+        super().__init__(label, data, args)
+        # print('init OSCReceiver')
+        # super(OSCReceiver, self).__init__(label, data, args)
+        # print('init OSCSender')
+        # super(OSCSender, self).__init__(label, data, args)
+        # print('init ValueNode')
+        # super(ValueNode, self).__init__(super_label, data, args)
+        self.target_name_property = self.add_property('target name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
+        self.target_address_property = self.add_property('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
+        self.source_name_property = self.target_name_property
+        self.source_address_property = self.target_address_property
+
+    def name_changed(self):
+        OSCReceiver.name_changed(self)
+        OSCSender.name_changed(self)
+
+    def address_changed(self):
+        OSCReceiver.address_changed(self)
+        OSCSender.address_changed(self)
+
+    def custom_create(self, from_file):
+        if self.name != '':
+            self.find_target_node(self.name)
+            self.find_source_node(self.name)
+
+    def cleanup(self):
+        OSCSender.cleanup(self)
+        OSCReceiver.cleanup(self)
+
+    def receive(self, data):
+        print('OSCValueNode receive')
+        t = type(data)
+        if t == tuple:
+            data = list(data)
+        self.inputs[0].receive_data(data)
+        ValueNode.execute(self)
+
+    def execute(self):
+        print('OSCValueNode execute')
+        ValueNode.execute(self)
+        data = dpg.get_value(self.value)
+        t = type(data)
+        if t not in [str, int, float, bool, np.int64, np.double]:
+            data = list(data)
+            data, homogenous, types = list_to_hybrid_list(data)
+        if self.label == 'osc_message' and t == str:
+            data = data.split(' ')
+            data, homogenous, types = list_to_hybrid_list(data)
+        if data is not None:
+            if self.target and self.address != '':
+                print('OSCValueNode target send')
+                self.target.send_message(self.address, data)
+
+
