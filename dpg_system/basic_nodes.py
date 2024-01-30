@@ -74,15 +74,18 @@ class DeferNode(Node):
         self.received_data = None
         self.input = self.add_input('input', triggers_execution=True)
         self.output = self.add_output('deferred output')
+        self.add_frame_task()
 
     def execute(self):
         self.received_data = self.input()
-        self.add_frame_task()
 
     def frame_task(self):
         if self.received_data is not None:
             self.output.send(self.received_data)
-            self.remove_frame_tasks()
+            self.received_data = None
+
+    def custom_cleanup(self):
+        self.remove_frame_tasks()
 
 
 class CommentNode(Node):

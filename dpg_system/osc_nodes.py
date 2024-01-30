@@ -101,7 +101,6 @@ class OSCManager:
                 source.output_message_directly(address, args)
         self.pending_messages[1 - self.pending_message_buffer] = []
 
-
     def get_target_list(self):
         return list(self.targets.keys())
 
