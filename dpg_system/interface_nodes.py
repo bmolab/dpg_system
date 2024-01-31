@@ -768,7 +768,7 @@ class ValueNode(Node):
             self.input = self.add_input('', triggers_execution=True, widget_type=widget_type, widget_uuid=self.value, widget_width=widget_width, trigger_button=True)
         else:
             self.input = self.add_input('', triggers_execution=True, widget_type=widget_type, widget_uuid=self.value, widget_width=widget_width, trigger_button=True, max=self.max)
-        print(self.input)
+        # print(self.input)
         if self.variable_name != '':
             self.output = self.add_output(self.variable_name)
         else:

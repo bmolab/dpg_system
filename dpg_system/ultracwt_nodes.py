@@ -14,7 +14,6 @@ from dpg_system.conversion_utils import *
 
 
 def register_ultracwt_nodes():
-    print('reg ultra')
     Node.app.register_node('ultracwt', NumpyUltraCWTNode.factory)
 
 

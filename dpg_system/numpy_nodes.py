@@ -570,14 +570,14 @@ class NumpyClipNode(Node):
             self.min = any_to_float(args[0])
         if len(args) > 1:
             self.max = any_to_float(args[1])
-        print(self.min, self.max)
+        # print(self.min, self.max)
         self.min_property = None
         self.max_property = None
         if self.label in ['np.min', 'np.clip']:
-            print('add min prop')
+            # print('add min prop')
             self.min_property = self.add_property('min', widget_type='drag_float', default_value=self.min, callback=self.min_changed)
         if self.label in ['np.max', 'np.clip']:
-            print('add max prop')
+            # print('add max prop')
             self.max_property = self.add_property('max', widget_type='drag_float', default_value=self.max, callback=self.max_changed)
         self.output = self.add_output('out array')
         self.mode = 0

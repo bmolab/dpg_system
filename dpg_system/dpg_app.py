@@ -1809,6 +1809,13 @@ class App:
 
     def run_loop(self):
         elapsed = 0
+        do_gl = False
+        do_osc_async = False
+        if 'GLContextNode' in globals():
+            do_gl = True
+        if 'OSCAsyncIOSource' in globals():
+            do_osc_async = True
+
         while dpg.is_dearpygui_running():
             try:
                 if not self.pausing:
@@ -1826,10 +1833,12 @@ class App:
                     self.frame_variable.set(self.frame_number)
                     self.frame_clock_conduit.transmit('bang')
                     self.frame_time_variable.set(elapsed)
+                    if do_osc_async:
+                        OSCSource.osc_manager.relay_pending_messages()
                     dpg.render_dearpygui_frame()
                     then = time.time()
                     elapsed = then - now
-                    if 'GLContextNode' in globals():
+                    if do_gl:
                         GLContextNode.maintenance_loop()
                     glfw.make_context_current(hold_context)
                 # else:

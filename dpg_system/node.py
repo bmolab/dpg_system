@@ -1729,7 +1729,7 @@ class PatcherNode(Node):
                 self.patcher_name = s
         self.home_editor = self.app.get_current_editor()
         self.home_editor_index = self.app.current_node_editor
-        print('init', self.patcher_name, self.home_editor)
+        # print('init', self.patcher_name, self.home_editor)
         self.patch_editor = None
         text_size = dpg.get_text_size(text=self.patcher_name)
         if text_size is None:
@@ -1889,7 +1889,7 @@ class PatcherNode(Node):
         container['patcher id'] = self.patch_editor.uuid
 
     def load_custom(self, container):  # called after custom setup...
-        print('load_custom', self.patcher_name)
+        # print('load_custom', self.patcher_name)
         if 'show inputs' in container:
             self.show_input = container['show inputs']
         if 'show outputs' in container:
@@ -1900,19 +1900,19 @@ class PatcherNode(Node):
         self.patch_editor = self.app.find_orphaned_subpatch(self.patcher_name, self.subpatcher_loaded_uuid)
         # note that patch_editor may not have been opened yet if opening from file
         if self.patch_editor is None:
-            print('added node editor for', self.patcher_name)
+            # print('added node editor for', self.patcher_name)
             self.patch_editor = self.app.add_node_editor()
             self.app.set_tab_title(len(self.app.node_editors) - 1, self.patcher_name)
         elif self.patch_editor is not None:
-            print('found existing node editor for', self.patcher_name)
+            # print('found existing node editor for', self.patcher_name)
             self.update_inputs()
             self.update_outputs()
 
         if self.patch_editor is not None:
-            print('connected patcher')
+            # print('connected patcher')
             self.connect()
         else:
-            print('patch editor not loaded yet')
+            # print('patch editor not loaded yet')
             self.app.loaded_patcher_nodes.append(self)
             # patch not yet loaded so will be attached when it loads
 

@@ -60,6 +60,7 @@ class OSCManager:
         OSCTarget.osc_manager = self
         OSCBaseNode.osc_manager = self
         OSCBase.osc_manager = self
+        self.lock = threading.Lock()
         # if not self.started:
         #     osc_thread()
 
@@ -83,7 +84,9 @@ class OSCManager:
         return None
 
     def receive_pending_message(self, source, message, args):
-        self.pending_messages[self.pending_message_buffer].append([source, message, args])
+        if self.lock.acquire(blocking=True):
+            self.pending_messages[self.pending_message_buffer].append([source, message, args])
+            self.lock.release()
 
     def swap_pending_message_buffer(self):
         self.pending_message_buffer = 1 - self.pending_message_buffer
@@ -93,12 +96,13 @@ class OSCManager:
         for osc_message in self.pending_messages[1 - self.pending_message_buffer]:
             source = osc_message[0]
             address = osc_message[1]
-            args = osc_message[2]
+            args_ = osc_message[2]
 
-            if address in source.receive_nodes:
-                source.receive_nodes[address].receive(args)
-            else:
-                source.output_message_directly(address, args)
+            source.relay_osc(address, args_)
+            # if address in source.receive_nodes:
+            #     source.receive_nodes[address].receive(args)
+            # else:
+            #     source.output_message_directly(address, args)
         self.pending_messages[1 - self.pending_message_buffer] = []
 
     def get_target_list(self):
@@ -228,12 +232,12 @@ class OSCTarget:
         if address in self.send_nodes:
             self.send_nodes.pop(address)
 
-    def send_message(self, address, args):
+    def send_message(self, address, args_):
         if self.client is not None:
-            t = type(args)
+            t = type(args_)
             if t not in [str]:
-                args = any_to_list(args)
-            self.client.send_message(address, args)
+                args_ = any_to_list(args_)
+            self.client.send_message(address, args_)
 
 
 class OSCTargetNode(OSCTarget, Node):
@@ -338,7 +342,7 @@ class OSCSource:
                         return
         self.output_message_directly(address, args)
 
-    def output_message_directly(self, args):
+    def output_message_directly(self, address, args):
         pass
 
     def create_server(self):
@@ -387,16 +391,20 @@ def stop_server():
     global server_to_stop
     server_to_stop.destroy_server()
 
+
 def start_async():
     loop = asyncio.new_event_loop()
     threading.Thread(target=loop.run_forever).start()
     return loop
 
+
 def submit_async(awaitable, looper):
     return asyncio.run_coroutine_threadsafe(awaitable, looper)
 
+
 def stop_async(looper):
     looper.call_soon_threadsafe(looper.stop)
+
 
 class OSCAsyncIOSource:
     osc_manager = None
@@ -408,10 +416,13 @@ class OSCAsyncIOSource:
         self.server_thread = None
         self.dispatcher = None
         self.receive_nodes = {}
+
         self.transport = None
         self.protocol = None
         self.pending_dead_loop = []
         self.handle_in_loop = True
+        self.async_loop = None
+
         self.name = ''
         self.port = 2500
         if args is not None:
@@ -421,6 +432,7 @@ class OSCAsyncIOSource:
                 p, t = decode_arg(args, 1)
                 self.port = any_to_int(p)
         self.osc_manager.register_source(self)
+        self.lock = threading.Lock()
         self.start_serving()
         # asyncio.run(self.init_main())
 
@@ -454,15 +466,49 @@ class OSCAsyncIOSource:
             stop_async(self.async_loop)
             self.async_loop = None
 
-    def osc_handler(self, address, *args):
-        # alternatively... pass message to buffer to be handled in loop
-        if self.handle_in_loop:
-            self.osc_manager.receive_pending_message(self, address, args)
-            return
+    def relay_osc(self, address, args):
         if address in self.receive_nodes:
             self.receive_nodes[address].receive(args)
+            return
         else:
+            if '/' in address:
+                sub_addresses = address.split('/')
+                length = len(sub_addresses)
+                for i in range(1, length):
+                    temp = '/'.join(sub_addresses[:-i])
+                    if temp in self.receive_nodes:
+                        sub = ['/' + '/'.join(sub_addresses[-i:])] + list(args)
+                        self.receive_nodes[temp].receive(sub)
+                        return
+        self.output_message_directly(address, args)
+
+    def osc_handler(self, address, *args):
+        # alternatively... pass message to buffer to be handled in loop
+        if self.lock.acquire(blocking=True):
+            if type(args) == tuple:
+                args = list(args)
+            if self.handle_in_loop:
+                self.osc_manager.receive_pending_message(self, address, args)
+                self.lock.release()
+                return
+            else:
+                if address in self.receive_nodes:
+                    self.receive_nodes[address].receive(args)
+                    self.lock.release()
+                    return
+                else:
+                    if '/' in address:
+                        sub_addresses = address.split('/')
+                        length = len(sub_addresses)
+                        for i in range(1, length):
+                            temp = '/'.join(sub_addresses[:-i])
+                            if temp in self.receive_nodes:
+                                sub = ['/' + '/'.join(sub_addresses[-i:])] + list(args)
+                                self.receive_nodes[temp].receive(sub)
+                                self.lock.release()
+                                return
             self.output_message_directly(address, args)
+            self.lock.release()
 
     def output_message_directly(self, address, args):
         pass
@@ -563,7 +609,11 @@ class OSCAsyncIOSourceNode(OSCAsyncIOSource, Node):
         self.source_name_property = self.add_property('name', widget_type='text_input', default_value=self.name, callback=self.source_changed)
         self.source_port_property = self.add_property('port', widget_type='text_input', default_value=str(self.port), callback=self.source_changed)
         self.output = self.add_output('osc received')
+        self.handle_in_loop_option = self.add_option('handle in main loop', widget_type='checkbox', default_value=self.handle_in_loop, callback=self.handle_in_loop_changed)
         # asyncio.run(self.init_main())
+
+    def handle_in_loop_changed(self):
+        self.handle_in_loop = self.handle_in_loop_option()
 
     def output_message_directly(self, address, args):
         if self.output:
