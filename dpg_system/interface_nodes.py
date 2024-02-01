@@ -561,6 +561,7 @@ class ToggleNode(Node):
                     variable_name = var_name
         self.reset_input = None
         self.value = False
+        self.temp_block_output = False
         self.variable = None
         if self.label == 'set_reset':
             self.set_reset = True
@@ -633,6 +634,15 @@ class ToggleNode(Node):
                     if received == 'bang':
                         self.value = not self.value
                         self.input.set(self.value)
+                elif type(received) == list:
+                    if type(received[0] == str):
+                        if received[0] == 'set':
+                            self.value = any_to_bool(received[1])
+                            self.input.set(self.value, propagate=False)
+                            self.temp_block_output = True
+                            if self.variable is not None:
+                                self.variable.set(self.value, from_client=self)
+                            return
                 else:
                     self.value = any_to_bool(received)
                     self.input.set(self.value)
@@ -646,7 +656,10 @@ class ToggleNode(Node):
             self.output.set_label(str(self.value))
         if self.variable is not None:
             self.variable.set(self.value, from_client=self)
-        self.output.send(self.value)
+        if not self.temp_block_output:
+            self.output.send(self.value)
+        else:
+            self.temp_block_output = False
 
 
 class GainNode(Node):
@@ -889,21 +902,28 @@ class ValueNode(Node):
 
     def execute(self):
         value = None
+        output = True
         if self.inputs[0].fresh_input:
             in_data = self.inputs[0]()
             t = type(in_data)
             if t == str:
-                value, _, _ = string_to_hybrid_list(in_data)
+                in_data, _, _ = string_to_hybrid_list(in_data)
+                t = list
                 # value = in_data.split(' ')
-            elif t == list:
+            if t == list:
                 if len(in_data) == 1:
                     value = in_data[0]
                     t = type(value)
                 else:
                     if self.input.widget.widget in ['drag_float', 'drag_int', 'input_float', 'input_int', 'slider_float', 'slider_int', 'knob_float', 'knob_int']:
                         if not is_number(in_data[0]):
-                            return
-                    value = in_data
+                            if type(in_data[0]) == str:
+                                if len(in_data) == 2 and is_number(in_data[1]):
+                                    value = in_data[1]
+                                    self.input.widget.set(value, propagate=False)
+                                    output = False
+                    if not output:
+                        value = in_data
             elif t in [float, int]:
                 value = in_data
             elif t == bool:
@@ -951,7 +971,8 @@ class ValueNode(Node):
             elif self.grow_mode == 'grow_or_shrink_to_fit':
                 dpg.configure_item(self.input.widget.uuid, width=adjusted_width)
                 self.width_option.set(adjusted_width)
-        self.outputs[0].send(value)
+        if output:
+            self.outputs[0].send(value)
 
     def update(self, propagate=True):
         value = dpg.get_value(self.value)
