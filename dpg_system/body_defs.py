@@ -162,6 +162,53 @@ joint_index_to_name = {
     36: 'Tracker3'
 }
 
+joint_linear_index_to_name = {
+    0: 'BaseOfSkull',
+    1: 'UpperVertebrae',
+    2: 'MidVertebrae',
+    3: 'LowerVertebrae',
+    4: 'SpinePelvis',
+    5: 'PelvisAnchor',
+    6: 'LeftHip',
+    7: 'LeftKnee',
+    8: 'LeftAnkle',
+    9: 'RightHip',
+    10: 'RightKnee',
+    11: 'RightAnkle',
+    12: 'LeftShoulderBladeBase',
+    13: 'LeftShoulder',
+    14: 'LeftElbow',
+    15: 'LeftWrist',
+    16: 'RightShoulderBladeBase',
+    17: 'RightShoulder',
+    18: 'RightElbow',
+    19: 'RightWrist'
+}
+
+
+joint_name_to_linear_index = {
+    'BaseOfSkull': 0,
+    'UpperVertebrae': 1,
+    'MidVertebrae': 2,
+    'LowerVertebrae': 3,
+    'SpinePelvis': 4,
+    'PelvisAnchor': 5,
+    'LeftHip': 6,
+    'LeftKnee': 7,
+    'LeftAnkle': 8,
+    'RightHip': 9,
+    'RightKnee': 10,
+    'RightAnkle': 11,
+    'LeftShoulderBladeBase': 12,
+    'LeftShoulder': 13,
+    'LeftElbow': 14,
+    'LeftWrist': 15,
+    'RightShoulderBladeBase': 16,
+    'RightShoulder': 17,
+    'RightElbow': 18,
+    'RightWrist': 19
+}
+
 joint_name_to_index = {
     'Body': 0,
     'MidVertebrae': 1,

@@ -969,7 +969,6 @@ class NodeNumericalInput(NodeInput):
         return self.numerical_data
 
 
-
 class Conduit:
     def __init__(self, label: str):
         self.label = label

@@ -6,7 +6,7 @@ def register_mocap_nodes():
     Node.app.register_node('take', MoCapTakeNode.factory)
     Node.app.register_node('body_to_joints', MoCapBody.factory)
     Node.app.register_node('pose', PoseNode.factory)
-
+    Node.app.register_node('active_joints', ActiveJointsNode.factory)
 
 class MoCapNode(Node):
     joint_map = {
@@ -31,6 +31,8 @@ class MoCapNode(Node):
         'right_elbow': 23,
         'right_wrist': 24
     }
+
+    shadow_to_active_joints_index = [2, 17, 1, 32, 31, 4, 14, 12, 8, 28, 26, 22, 13, 5, 9, 10, 27, 19, 23, 24]
 
     @staticmethod
     def factory(name, data, args=None):
@@ -272,6 +274,29 @@ class MoCapGLBody(MoCapNode):
         'right_hand': 'RightKnuckle'
     }
 
+    joint_mapped = {
+        'base_of_skull': 0,
+        'upper_vertebrae': 1,
+        'mid_vertebrae': 2,
+        'lower_vertebrae': 3,
+        'spine_pelvis': 4,
+        'pelvis_anchor': 5,
+        'left_hip': 6,
+        'left_knee': 7,
+        'left_ankle': 8,
+        'right_hip': 9,
+        'right_knee': 10,
+        'right_ankle': 11,
+        'left_shoulder_blade': 12,
+        'left_shoulder': 13,
+        'left_elbow': 14,
+        'left_wrist': 15,
+        'right_shoulder_blade': 16,
+        'right_shoulder': 17,
+        'right_elbow': 18,
+        'right_wrist': 19
+    }
+
     @staticmethod
     def factory(name, data, args=None):
         node = MoCapGLBody(name, data, args)
@@ -361,3 +386,23 @@ class MoCapGLBody(MoCapNode):
                 self.body.joint_disk_alpha = self.joint_disk_alpha()
                 self.body.draw(self.show_joint_spheres(), self.skeleton_only())
 
+
+class ActiveJointsNode(MoCapNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ActiveJointsNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.full_pose_in = self.add_input('full pose quats in', triggers_execution=True)
+        self.active_joints_out = self.add_output('active joint quats out')
+
+    def execute(self):
+        incoming = self.full_pose_in()
+        t = type(incoming)
+        if t == np.ndarray:
+            # work on this!!!
+            if incoming.shape[0] == 37:
+                active_joints = incoming[self.shadow_to_active_joints_index]
+                self.active_joints_out.send(active_joints)

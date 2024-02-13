@@ -1719,18 +1719,16 @@ class PrependNode(Node):
             self.prepender = in_value
 
         self.input = self.add_input("in", triggers_execution=True)
-        self.prepender_property = self.add_property("prefix", widget_type='text_input', default_value=self.prepender, callback=self.prepender_changed)
+        self.prepender_property = self.add_input("prefix", widget_type='text_input', default_value=self.prepender)
         self.output = self.add_output("out")
         self.always_as_list_option = self.add_option('always output list', widget_type='checkbox', default_value=False, callback=self.option_changed)
 
     def option_changed(self):
         self.as_list = self.always_as_list_option()
 
-    def prepender_changed(self):
-        self.prepender = self.prepender_property()
-
     def execute(self):
-        out_list = [self.prepender]
+        prepender = self.prepender_property()
+        out_list = [prepender]
         data = self.input()
         t = type(data)
 
@@ -1738,7 +1736,7 @@ class PrependNode(Node):
             if self.as_list:
                 out_list.append(data)
             else:
-                out_list = self.prepender + ' ' + data
+                out_list = prepender + ' ' + data
         elif t in [int, float, bool, np.int64, np.double, np.bool_]:
             out_list.append(data)
         elif t == list:
@@ -1792,7 +1790,7 @@ class AppendNode(Node):
             self.appender = in_value
 
         self.input = self.add_input("in", triggers_execution=True)
-        self.appender = self.add_property("suffix", widget_type='text_input', default_value=self.appender, callback=self.appender_changed)
+        self.appender = self.add_input("suffix", widget_type='text_input', default_value=self.appender)
         self.output = self.add_output("out")
         self.always_as_list = self.add_option('always output list', widget_type='checkbox', default_value=False)
 

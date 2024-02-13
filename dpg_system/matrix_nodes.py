@@ -160,6 +160,10 @@ class RollingBuffer:
             self.update_style = t_BufferCircularVertical
         self.allocate((self.sample_count, self.breadth), self.roll_along_x)
 
+    def set_update_style_code(self, style_code):
+        self.update_style = style_code
+        self.allocate((self.sample_count, self.breadth), self.roll_along_x)
+
     def get_value(self, x):
         if self.buffer.shape[1] > x >= 0:
             if self.roll_along_x:
@@ -297,8 +301,11 @@ class RollingBuffer:
             if self.roll_along_x:
                 b = self.buffer[self.write_pos:self.write_pos + self.sample_count]
             else:
-                if len(self.buffer.shape) > 1:
+                if len(self.buffer.shape) == 3:
+                    b = self.buffer[:, :, self.write_pos:self.write_pos + self.sample_count]
+                elif len(self.buffer.shape) == 2:
                     b = self.buffer[:, self.write_pos:self.write_pos + self.sample_count]
+
                 else:
                     b = self.buffer[self.write_pos:self.write_pos + self.sample_count]
             return b

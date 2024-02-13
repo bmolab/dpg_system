@@ -44,21 +44,42 @@ def register_osc_nodes():
 #     OSCserver_thread = threading.Thread(target=OSCserver.serve_forever)
 #     OSCserver_thread.start()
 
+class OSCBase:
+    osc_manager = None
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+    def parse_osc_address(self, data):
+        t = type(data)
+        if t == str:
+            data = data.split(' ')
+        else:
+            data = any_to_list(data)
+        router = any_to_string(data[0])
+        split = router.split('/')
+        if split[0] == '':
+            split = split[1:]
+        return split
+
+    def construct_osc_address(self, address_as_list):
+        if type(address_as_list) == str:
+            address_as_list = address_as_list.split(' ')
+        address = '/'.join(address_as_list)
+        address = '/' + address
+        return address
+
 
 class OSCManager:
     # started = False
     def __init__(self, label: str, data, args):
+        self.pending_message_buffer = 0
         self.targets = {}
         self.sources = {}
         self.send_nodes = []
         self.receive_nodes = []
         self.pending_messages = [[], []]
-        self.pending_message_buffer = 0
 
-        OSCSource.osc_manager = self
-        OSCAsyncIOSourceNode.osc_manager = self
-        OSCTarget.osc_manager = self
-        OSCBaseNode.osc_manager = self
         OSCBase.osc_manager = self
         self.lock = threading.Lock()
         # if not self.started:
@@ -66,14 +87,17 @@ class OSCManager:
 
     # --
     def register_target(self, target):
+        print('register target', target.name)
         if target is not None:
             name = target.name
             if name != '' and name not in self.targets:
                 self.targets[name] = target
                 self.connect_new_target_to_send_nodes(target)
+                print(self.targets)
 
     # --
     def remove_target(self, target):
+        print('removed target')
         target.disconnect_from_send_nodes()
         if target.name in self.targets:
             self.targets.pop(target.name)
@@ -94,16 +118,13 @@ class OSCManager:
     def relay_pending_messages(self):
         self.swap_pending_message_buffer()
         for osc_message in self.pending_messages[1 - self.pending_message_buffer]:
-            source = osc_message[0]
-            address = osc_message[1]
-            args_ = osc_message[2]
+            if len(osc_message) >= 3:
+                source = osc_message[0]
+                address = osc_message[1]
+                args_ = osc_message[2]
 
-            source.relay_osc(address, args_)
-            # if address in source.receive_nodes:
-            #     source.receive_nodes[address].receive(args)
-            # else:
-            #     source.output_message_directly(address, args)
-        self.pending_messages[1 - self.pending_message_buffer] = []
+                source.relay_osc(address, args_)
+                self.pending_messages[1 - self.pending_message_buffer] = []
 
     def get_target_list(self):
         return list(self.targets.keys())
@@ -182,9 +203,8 @@ class OSCManager:
             print(send_node.name)
 
 
-
-class OSCTarget:
-    osc_manager = None
+class OSCTarget(OSCBase):
+    # osc_manager = None
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
@@ -209,7 +229,7 @@ class OSCTarget:
             print(e)
 
     def destroy_client(self):
-        self.osc_manager.remove_target(self)
+        # self.osc_manager.remove_target(self)
         self.client = None
 
     def disconnect_from_send_nodes(self):
@@ -305,8 +325,7 @@ class OSCTargetNode(OSCTarget, Node):
                 self.send_message(message, content)
 
 
-class OSCSource:
-    osc_manager = None
+class OSCSource(OSCBase):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
@@ -406,12 +425,9 @@ def stop_async(looper):
     looper.call_soon_threadsafe(looper.stop)
 
 
-class OSCAsyncIOSource:
-    osc_manager = None
-
+class OSCAsyncIOSource(OSCBase):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-
         self.server = None
         self.server_thread = None
         self.dispatcher = None
@@ -434,7 +450,6 @@ class OSCAsyncIOSource:
         self.osc_manager.register_source(self)
         self.lock = threading.Lock()
         self.start_serving()
-        # asyncio.run(self.init_main())
 
     def start_serving(self):
         self.dispatcher = Dispatcher()
@@ -606,8 +621,8 @@ class OSCAsyncIOSourceNode(OSCAsyncIOSource, Node):
                 elif t == str:
                     self.name = arg
 
-        self.source_name_property = self.add_property('name', widget_type='text_input', default_value=self.name, callback=self.source_changed)
-        self.source_port_property = self.add_property('port', widget_type='text_input', default_value=str(self.port), callback=self.source_changed)
+        self.source_name_property = self.add_input('name', widget_type='text_input', default_value=self.name, callback=self.source_changed)
+        self.source_port_property = self.add_input('port', widget_type='text_input', default_value=str(self.port), callback=self.source_changed)
         self.output = self.add_output('osc received')
         self.handle_in_loop_option = self.add_option('handle in main loop', widget_type='checkbox', default_value=self.handle_in_loop, callback=self.handle_in_loop_changed)
         # asyncio.run(self.init_main())
@@ -658,31 +673,6 @@ class OSCAsyncIOSourceNode(OSCAsyncIOSource, Node):
         while self.server is not None:
             i += 1
 
-
-class OSCBase:
-    osc_manager = None
-
-    def __init__(self, label: str, data, args):
-        super().__init__(label, data, args)
-
-    def parse_osc_address(self, data):
-        t = type(data)
-        if t == str:
-            data = data.split(' ')
-        else:
-            data = any_to_list(data)
-        router = any_to_string(data[0])
-        split = router.split('/')
-        if split[0] == '':
-            split = split[1:]
-        return split
-
-    def construct_osc_address(self, address_as_list):
-        if type(address_as_list) == str:
-            address_as_list = address_as_list.split(' ')
-        address = '/'.join(address_as_list)
-        address = '/' + address
-        return address
 
 
 class OSCReceiver(OSCBase):
@@ -743,8 +733,8 @@ class OSCReceiveNode(OSCReceiver, Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.source_name_property = self.add_property('source name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
-        self.source_address_property = self.add_property('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
+        self.source_name_property = self.add_input('source name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
+        self.source_address_property = self.add_input('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
         self.output = self.add_output('osc received')
 
     def custom_create(self, from_file):
@@ -758,32 +748,6 @@ class OSCReceiveNode(OSCReceiver, Node):
     def cleanup(self):
         print('OSCReceiveNode cleanup')
         super().cleanup()
-
-
-class OSCBaseNode(Node):
-    osc_manager = None
-
-    def __init__(self, label: str, data, args):
-        super().__init__(label, data, args)
-
-    def parse_osc_address(self, data):
-        t = type(data)
-        if t == str:
-            data = data.split(' ')
-        else:
-            data = any_to_list(data)
-        router = any_to_string(data[0])
-        split = router.split('/')
-        if split[0] == '':
-            split = split[1:]
-        return split
-
-    def construct_osc_address(self, address_as_list):
-        if type(address_as_list) == str:
-            address_as_list = address_as_list.split(' ')
-        address = '/'.join(address_as_list)
-        address = '/' + address
-        return address
 
 
 class OSCSender(OSCBase):
@@ -854,8 +818,8 @@ class OSCSendNode(OSCSender, Node):
 
         self.input = self.add_input('osc to send', triggers_execution=True)
 
-        self.target_name_property = self.add_property('target name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
-        self.target_address_property = self.add_property('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
+        self.target_name_property = self.add_input('target name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
+        self.target_address_property = self.add_input('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
 
     def custom_create(self, from_file):
         if self.name != '':
@@ -887,7 +851,7 @@ class OSCSendNode(OSCSender, Node):
                     self.target.send_message(self.address, data)
 
 
-class OSCRouteNode(OSCBaseNode):
+class OSCRouteNode(OSCBase, Node):
     @staticmethod
     def factory(name, data, args=None):
         node = OSCRouteNode(name, data, args)
@@ -1061,7 +1025,9 @@ class OSCButtonNode(OSCReceiver, OSCSender, ButtonNode):
         OSCReceiver.cleanup(self)
 
     def receive(self, data):
-        ButtonNode.execute(self)
+        data = any_to_bool(data)
+        if data == True:
+            ButtonNode.execute(self)
 
     def execute(self):
         ButtonNode.execute(self)

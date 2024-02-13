@@ -4,6 +4,7 @@ import numpy as np
 
 from dpg_system.node import Node, NodeInput, NodeOutput, Variable, PlaceholderNode
 from dpg_system.node_editor import *
+from dpg_system.node import *
 from os.path import exists
 import json
 import os
@@ -447,7 +448,8 @@ class App:
         self.loaded_patcher_nodes = []
         self.recent_files = {}
         self.recent_menus = []
-        self.osc_manager = OSCManager(label='osc_manager', data=0, args=None)
+        if osc_active:
+            self.osc_manager = OSCManager(label='osc_manager', data=0, args=None)
 
         self.recent_menu = None
         self.presentation_edit_menu_item = -1
@@ -1762,7 +1764,8 @@ class App:
 
         with dpg.window() as main_window:
             global dpg_app
-            self.window_context = glfw.get_current_context()
+            if opengl_active:
+                self.window_context = glfw.get_current_context()
             self.main_window_id = main_window
             dpg.bind_item_theme(main_window, self.global_theme)
             dpg.add_spacer(height=14)
@@ -1819,8 +1822,9 @@ class App:
         while dpg.is_dearpygui_running():
             try:
                 if not self.pausing:
-                    hold_context = glfw.get_current_context()
-                    glfw.make_context_current(self.window_context)
+                    if opengl_active:
+                        hold_context = glfw.get_current_context()
+                        glfw.make_context_current(self.window_context)
                     now = time.time()
                     for node_editor in self.node_editors:
                         node_editor.reset_pins()
@@ -1838,9 +1842,10 @@ class App:
                     dpg.render_dearpygui_frame()
                     then = time.time()
                     elapsed = then - now
-                    if do_gl:
-                        GLContextNode.maintenance_loop()
-                    glfw.make_context_current(hold_context)
+                    if opengl_active:
+                        if do_gl:
+                            GLContextNode.maintenance_loop()
+                        glfw.make_context_current(hold_context)
                 # else:
                 #     print('p', end='')
             except Exception as exc_:

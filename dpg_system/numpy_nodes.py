@@ -639,6 +639,7 @@ class NumpyRollNode(Node):
             repeated_data = np.roll(data, shift=self.shifts(), axis=axis)
             self.output.send(repeated_data)
 
+
 class NumpyLineIntersectionNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -661,9 +662,18 @@ class NumpyLineIntersectionNode(Node):
 
     def execute(self):
         a1 = any_to_array(self.point1_input())
+        if a1.shape[0] < 2:
+            return
         a2 = any_to_array(self.point2_input())
+        if a2.shape[0] < 2:
+            return
         b1 = any_to_array(self.point3_input())
+        if b1.shape[0] < 2:
+            return
         b2 = any_to_array(self.point4_input())
+        if b2.shape[0] < 2:
+            return
+
         intersection = self.get_intersect(a1, a2, b1, b2)
         direction_ok = True
         if self.directed():
