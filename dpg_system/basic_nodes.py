@@ -59,6 +59,7 @@ def register_basic_nodes():
     Node.app.register_node('split', SplitNode.factory)
     Node.app.register_node('join', JoinNode.factory)
     Node.app.register_node('defer', DeferNode.factory)
+    Node.app.register_node('gather_sentence', GatherSentences.factory)
 
 
 # DeferNode -- delays received input until next frame
@@ -2411,3 +2412,26 @@ class WordTriggerNode(Node):
             for index, word_trigger in enumerate(self.find_list):
                 if data.find(word_trigger) != -1:
                     self.trigger_outputs[index].send('bang')
+
+
+class GatherSentences(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = GatherSentences(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.received_sentence = ''
+        self.input = self.add_input('string in', triggers_execution=True)
+        self.sentence_output = self.add_output('sentences out')
+
+    def execute(self):
+        data = any_to_string(self.input())
+        if len(data) == 1:
+            if data[0] in ['.', '?', '!']:
+                self.received_sentence += data[0]
+                self.sentence_output.send(self.received_sentence)
+                self.received_sentence = ''
+                return
+        self.received_sentence += data
