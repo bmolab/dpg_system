@@ -2428,10 +2428,25 @@ class GatherSentences(Node):
 
     def execute(self):
         data = any_to_string(self.input())
-        data = data.replace('\n', ' ')
         if len(data) > 0:
-            if data[-1] in ['.', '?', '!', ';', ':', '-']:
+            if data[-1] == '\n' and len(data) > 1:
+                if data[-2] == '\n':
+                    self.received_sentence += data
+                    self.received_sentence = self.received_sentence.replace('\n', ' ')
+
+                    self.sentence_output.send(self.received_sentence)
+                    self.received_sentence = ''
+                    return
+            if data[-1] == '-' and len(data) > 1:
+                if data[-2] == '-':
+                    self.received_sentence += data
+                    self.received_sentence = self.received_sentence.replace('\n', ' ')
+                    self.sentence_output.send(self.received_sentence)
+                    self.received_sentence = ''
+                    return
+            if data[-1] in ['.', '?', '!', ';', ':']:
                 self.received_sentence += data
+                self.received_sentence = self.received_sentence.replace('\n', ' ')
                 self.sentence_output.send(self.received_sentence)
                 self.received_sentence = ''
                 return
