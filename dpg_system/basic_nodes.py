@@ -2432,7 +2432,7 @@ class GatherSentences(Node):
             if data[-1] == '\n' and len(data) > 1:
                 if data[-2] == '\n':
                     self.received_sentence += data
-                    self.received_sentence = self.received_sentence.replace('\n', ' ')
+                    # self.received_sentence = self.received_sentence.replace('\n', ' ')
 
                     self.sentence_output.send(self.received_sentence)
                     self.received_sentence = ''
@@ -2440,13 +2440,13 @@ class GatherSentences(Node):
             if data[-1] == '-' and len(data) > 1:
                 if data[-2] == '-':
                     self.received_sentence += data
-                    self.received_sentence = self.received_sentence.replace('\n', ' ')
+                    # self.received_sentence = self.received_sentence.replace('\n', ' ')
                     self.sentence_output.send(self.received_sentence)
                     self.received_sentence = ''
                     return
             if data[-1] in ['.', '?', '!', ';', ':']:
                 self.received_sentence += data
-                self.received_sentence = self.received_sentence.replace('\n', ' ')
+                # self.received_sentence = self.received_sentence.replace('\n', ' ')
                 self.sentence_output.send(self.received_sentence)
                 self.received_sentence = ''
                 return
