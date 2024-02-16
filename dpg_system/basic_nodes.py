@@ -2428,9 +2428,9 @@ class GatherSentences(Node):
 
     def execute(self):
         data = any_to_string(self.input())
-        if len(data) == 1:
-            if data[0] in ['.', '?', '!']:
-                self.received_sentence += data[0]
+        if len(data) > 0:
+            if data[-1] in ['.', '?', '!', ';']:
+                self.received_sentence += data
                 self.sentence_output.send(self.received_sentence)
                 self.received_sentence = ''
                 return
