@@ -8,6 +8,7 @@ from scipy.signal import stft
 import scipy.signal as signal
 # from fast_cwt import fast_cwt
 #from time import time
+import threading
 import dearpygui.dearpygui as dpg
 from dpg_system.node import Node
 from dpg_system.matrix_nodes import RollingBuffer
@@ -106,7 +107,7 @@ class MyCWT:
         self.wavelet_data = []
         for ind, width in enumerate(self.widths):
             # Potentially we can further speed up by changing the 10 below to a smaller number sacrificing accuracy
-            wavelet_length = np.min([10 * width, self.subframe_size])
+            wavelet_length = int(np.min([10.0 * width, self.subframe_size]))
             self.wavelet_data.append(np.conj(self.wavelet(wavelet_length, width)[::-1]))
 
     def set_mode(self, mode):
@@ -183,7 +184,7 @@ class TorchUltraCWTNode(TorchDeviceDtypeNode):
         super().__init__(label, data, args)
 
         self.subframe_size = 1000
-        self.widths = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512]
+        self.widths = [1.4, 2, 2.8, 4, 5.6, 8, 11.3, 16, 22.6, 32, 45.2, 64]
         if len(args) > 0:
             self.subframe_size = any_to_int(args[0])
         if len(args) > 1:
@@ -193,22 +194,22 @@ class TorchUltraCWTNode(TorchDeviceDtypeNode):
 
         self.setup_dtype_device_grad(args)
         self.dtype = torch.float32
+        self.width_lock = threading.Lock()
         # self.dtype_input.set('complex64')
 
         self.cwt = MyTorchCWT(signal.morlet2, self.subframe_size, self.widths, dtype=self.dtype, device=self.device)
         self.input = self.add_input('in 1', triggers_execution=True)
 
-        self.frame_size_widget = self.add_input('scales', widget_type='drag_int', default_value=self.subframe_size)
+        self.frame_size_widget = self.add_input('frame size', widget_type='drag_int', default_value=self.subframe_size)
         self.frame_size_widget.add_callback(self.frame_size_changed)
-
-        self.cwt_mode = self.add_property('mode', widget_type='combo', default_value='normal')
-        self.cwt_mode.widget.combo_items = ['normal', 'half', 'unskewed']
 
         widths_string = any_to_string(self.widths)
         self.widths_property = self.add_input('scales', widget_type='text_input', default_value=widths_string)
         self.widths_property.add_callback(self.widths_changed)
         self.output = self.add_output('cwt out')
         self.phase_out = self.add_output('phase out')
+        self.create_dtype_device_grad_properties(option=True)
+
 
     def device_changed(self):
         super().device_changed()
@@ -220,24 +221,29 @@ class TorchUltraCWTNode(TorchDeviceDtypeNode):
         self.cwt = MyTorchCWT(signal.morlet2, self.subframe_size, self.widths, dtype=self.dtype, device=self.device)
 
     def widths_changed(self, val=0):
+        self.width_lock.acquire(blocking=True)
         self.cwt = None
         widths = self.widths_property()
-        widths_list = re.findall(r'[-+]?\d+', widths)
+        widths_list = re.findall(r'[-+]?\d*\.\d+|\d+', widths)
+        print(widths_list)
         widths = []
         for dim_text in widths_list:
-            widths.append(any_to_int(dim_text))
+            widths.append(any_to_float(dim_text))
         self.widths = widths
         self.cwt = MyTorchCWT(signal.morlet2, self.subframe_size, self.widths, dtype=self.dtype, device=self.device)
+        self.width_lock.release()
 
     def execute(self):
-        input_value = any_to_tensor(self.input(), dtype=self.dtype, device=self.device)
-        input_value = torch.flatten(input_value)
-        if self.cwt != None:
-            cwt_out, phase_out = self.cwt.receive_new_data(input_value)
-            if phase_out is not None:
-                self.phase_out.send(phase_out)
-            if cwt_out is not None:
-                self.output.send(cwt_out)
+        if self.width_lock.acquire(blocking=False):
+            input_value = any_to_tensor(self.input(), dtype=self.dtype, device=self.device)
+            input_value = torch.flatten(input_value)
+            if self.cwt != None:
+                cwt_out, phase_out = self.cwt.receive_new_data(input_value)
+                if phase_out is not None:
+                    self.phase_out.send(phase_out)
+                if cwt_out is not None:
+                    self.output.send(cwt_out)
+            self.width_lock.release()
 
 
 class MyTorchCWT:
@@ -264,7 +270,7 @@ class MyTorchCWT:
         self.dtype = dtype
         self.device = device
 
-        w = np.asarray(wavelet(1, widths[0]))
+        # w = np.asarray(wavelet(1, widths[0]))
         # if w.dtype.char in 'FDG':
         #     self.result_dtype = torch.complex64
 
@@ -274,7 +280,7 @@ class MyTorchCWT:
         self.wavelet_data = []
         for ind, width in enumerate(self.widths):
             # Potentially we can further speed up by changing the 10 below to a smaller number sacrificing accuracy
-            wavelet_length = np.min([10 * width, self.subframe_size])
+            wavelet_length = int(np.min([10.0 * width, self.subframe_size]))
             wavelet_np = np.conj(self.wavelet(wavelet_length, width)[::-1]).astype(np.complex64)
             torch_wavelet_real = torch.from_numpy(wavelet_np.real).to(self.device)
             torch_wavelet_imag = torch.from_numpy(wavelet_np.imag).to(self.device)
@@ -336,13 +342,15 @@ class MyTorchCWT:
             # Potentially we can further speed up by changing the 10 below to a smaller number sacrificing accuracy
             wavelet_real = self.wavelet_data[ind][0]
             wavelet_imag = self.wavelet_data[ind][1]
-            wavelet_length = np.min([10 * width, self.subframe_size])
+            wavelet_length = int(np.min([10.0 * width, self.subframe_size]))
+            # print(wavelet_length, end=' ')
             convolve_data_trimmed = convolve_data[-wavelet_length:, :]
             convolve_real_out = torch.matmul(wavelet_real, convolve_data_trimmed)
             convolve_imag_out = torch.matmul(wavelet_imag, convolve_data_trimmed)
             convolve_out = torch.sqrt(torch.pow(convolve_real_out, 2) + torch.pow(convolve_imag_out, 2))
-            self.ultra_last_frame[:, ind, -1] = convolve_out
+            self.ultra_last_frame[:, ind, -1] = convolve_out / width
             self.ultra_last_phase[:, ind, -1] = convolve_imag_out
         self.input_buffer.release_buffer()
+        # print()
         return self.ultra_last_frame[:, :, -1], self.ultra_last_phase[:, :, -1]
 

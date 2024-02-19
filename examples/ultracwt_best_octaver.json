@@ -1,0 +1,471 @@
+{
+    "height": 1127,
+    "width": 1085,
+    "position": [
+        100,
+        100
+    ],
+    "id": 163,
+    "name": "ultracwt_best_octaver",
+    "path": "/Users/drokeby/dpg_system/examples/ultracwt_best_octaver.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 194,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "name": "take",
+            "id": 244,
+            "position_x": 47,
+            "position_y": 4,
+            "width": 123,
+            "height": 156,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on/off",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "speed",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "frame",
+                    "value": 1186,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "load",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "4": {
+                    "name": "path",
+                    "value": "/Users/drokeby/dpg_system/dpg_system/take.npz",
+                    "value_type": "string"
+                }
+            }
+        },
+        "2": {
+            "name": "gl_context",
+            "id": 303,
+            "position_x": 9,
+            "position_y": 583,
+            "width": 70,
+            "height": 66,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "fov",
+                    "value": 60.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "3": {
+            "name": "gl_body",
+            "id": 329,
+            "position_x": 13,
+            "position_y": 733,
+            "width": 187,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "skeleton_only",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "show joint motion",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "joint data type",
+                    "value": "diff_axis-angle",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "joint motion scale",
+                    "value": 5.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "joint motion smoothing",
+                    "value": 0.800000011920929,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "joint motion alpha",
+                    "value": 0.5,
+                    "value_type": "float"
+                }
+            }
+        },
+        "4": {
+            "name": "gl_translate",
+            "id": 391,
+            "position_x": 109,
+            "position_y": 543,
+            "width": 99,
+            "height": 120,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "z",
+                    "value": -1.649999976158142,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "reset",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "5": {
+            "name": "active_joints",
+            "id": 433,
+            "position_x": 62,
+            "position_y": 267,
+            "width": 144,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "6": {
+            "name": "t.ultracwt",
+            "id": 448,
+            "position_x": 48,
+            "position_y": 341,
+            "width": 154,
+            "height": 102,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "frame size",
+                    "value": 1000,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "scales",
+                    "value": "1.4 2 2.8 4 5.7 8 11.3 16 22.6 32 45.2 64",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "device",
+                    "value": "mps",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "7": {
+            "init": "float frame_time",
+            "name": "float",
+            "id": 492,
+            "position_x": 49,
+            "position_y": 986,
+            "width": 130,
+            "height": 48,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0.007476091384887695,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "frame_time",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "large_font",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "8": {
+            "name": "t.info",
+            "id": 533,
+            "position_x": 73,
+            "position_y": 865,
+            "width": 88,
+            "height": 102,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
+            "name": "elapsed",
+            "id": 572,
+            "position_x": 54,
+            "position_y": 172,
+            "width": 143,
+            "height": 66,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 17.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "output integers",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "10": {
+            "name": "t[]",
+            "id": 594,
+            "position_x": 221,
+            "position_y": 4,
+            "width": 208,
+            "height": 66,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": "[68:80]",
+                    "value_type": "string"
+                }
+            }
+        },
+        "11": {
+            "name": "heat_scroll",
+            "id": 615,
+            "position_x": 464,
+            "position_y": 20,
+            "width": 308,
+            "height": 994,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "style",
+                    "value": "heat_scroll",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "array fills plot",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 942,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 0.019999999552965164,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "12": {
+            "name": "t[]",
+            "id": 674,
+            "position_x": 224,
+            "position_y": 148,
+            "width": 208,
+            "height": 66,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": "[68:80]",
+                    "value_type": "string"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 244,
+            "source_output_index": 0,
+            "dest_node": 329,
+            "dest_input_index": 0
+        },
+        "1": {
+            "source_node": 244,
+            "source_output_index": 0,
+            "dest_node": 433,
+            "dest_input_index": 0
+        },
+        "2": {
+            "source_node": 244,
+            "source_output_index": 0,
+            "dest_node": 572,
+            "dest_input_index": 0
+        },
+        "3": {
+            "source_node": 303,
+            "source_output_index": 0,
+            "dest_node": 391,
+            "dest_input_index": 0
+        },
+        "4": {
+            "source_node": 391,
+            "source_output_index": 0,
+            "dest_node": 329,
+            "dest_input_index": 1
+        },
+        "5": {
+            "source_node": 433,
+            "source_output_index": 0,
+            "dest_node": 448,
+            "dest_input_index": 0
+        },
+        "6": {
+            "source_node": 448,
+            "source_output_index": 0,
+            "dest_node": 533,
+            "dest_input_index": 0
+        },
+        "7": {
+            "source_node": 448,
+            "source_output_index": 0,
+            "dest_node": 594,
+            "dest_input_index": 0
+        },
+        "8": {
+            "source_node": 448,
+            "source_output_index": 1,
+            "dest_node": 674,
+            "dest_input_index": 0
+        },
+        "9": {
+            "source_node": 594,
+            "source_output_index": 0,
+            "dest_node": 615,
+            "dest_input_index": 0
+        }
+    }
+}
