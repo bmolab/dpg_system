@@ -339,16 +339,16 @@ class RollingBuffer:
                 self.order = 'F'
                 self.buffer = np.zeros((1, self.sample_count * 2), order=self.order)
         elif self.update_style == t_BufferCircularVertical:
-                if roll_along_x:
-                    self.order = 'C'
-                    self.sample_count = shape[0]
-                    self.breadth = shape[1]
-                    self.buffer = np.zeros((self.sample_count * 2, self.breadth), order=self.order)
-                else:
-                    self.order = 'F'
-                    self.sample_count = shape[0]
-                    self.breadth = shape[1]
-                    self.buffer = np.zeros((self.breadth, self.sample_count * 2), order=self.order)
+            if roll_along_x:
+                self.order = 'C'
+                self.sample_count = shape[0]
+                self.breadth = shape[1]
+                self.buffer = np.zeros((self.sample_count * 2, self.breadth), order=self.order)
+            else:
+                self.order = 'F'
+                self.sample_count = shape[0]
+                self.breadth = shape[1]
+                self.buffer = np.zeros((self.breadth, self.sample_count * 2), order=self.order)
         self.roll_along_x = roll_along_x
         self.write_pos = 0
         if self.buffer_changed_callback is not None:

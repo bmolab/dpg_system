@@ -56,6 +56,7 @@ class TorchNode(Node):
             return input_tensor
         return None
 
+
 class TorchDeviceDtypeNode(TorchNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
@@ -143,7 +144,6 @@ class TorchDeviceDtypeNode(TorchNode):
             device_string = 'cuda'
             device_list.append(device_string)
         return device_list
-
 
 
 class TorchInfoNode(TorchNode):
