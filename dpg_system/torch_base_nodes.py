@@ -75,9 +75,11 @@ class TorchDeviceDtypeNode(TorchNode):
         self.parse_args_for_dtype_and_device(args)
         self.device = torch.device(self.device_string)
         self.dtype = self.dtype_dict[self.dtype_string]
-        self.create_device_property()
-        self.create_dtype_property()
-        self.create_requires_grad_property()
+
+    def create_dtype_device_grad_properties(self, option=False):
+        self.create_device_property(option)
+        self.create_dtype_property(option)
+        self.create_requires_grad_property(option)
 
     def parse_args_for_dtype_and_device(self, args):
         for i in range(len(args)):
@@ -86,18 +88,29 @@ class TorchDeviceDtypeNode(TorchNode):
             elif args[i] in list(self.dtype_dict.keys()):
                 self.dtype_string = args[i]
 
-    def create_device_property(self):
-        self.device_input = self.add_input('device', widget_type='combo', default_value=self.device_string,
-                                                 callback=self.device_changed)
+    def create_device_property(self, option=False):  # test
+        if option:
+            self.device_input = self.add_option('device', widget_type='combo', default_value=self.device_string, callback=self.device_changed)
+        else:
+            self.device_input = self.add_input('device', widget_type='combo', default_value=self.device_string, callback=self.device_changed)
         self.device_input.widget.combo_items = self.device_list
 
-    def create_dtype_property(self):
-        self.dtype_input = self.add_input('dtype', widget_type='combo', widget_width=120, default_value=self.dtype_string,
+    def create_dtype_property(self, option=False):
+        if option:
+            self.dtype_input = self.add_option('dtype', widget_type='combo', width=120, default_value=self.dtype_string,
                                               callback=self.dtype_changed)
+        else:
+            self.dtype_input = self.add_input('dtype', widget_type='combo', widget_width=120, default_value=self.dtype_string,
+                                              callback=self.dtype_changed)
+
         self.dtype_input.widget.combo_items = list(self.dtype_dict.keys())
 
-    def create_requires_grad_property(self):
-        self.grad_input = self.add_input('requires_grad', widget_type='checkbox', default_value=self.requires_grad,
+    def create_requires_grad_property(self, option=False):
+        if option:
+            self.grad_input = self.add_option('requires_grad', widget_type='checkbox', default_value=self.requires_grad,
+                                             callback=self.requires_grad_changed)
+        else:
+            self.grad_input = self.add_input('requires_grad', widget_type='checkbox', default_value=self.requires_grad,
                                               callback=self.requires_grad_changed)
 
     def device_changed(self):

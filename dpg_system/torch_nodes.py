@@ -78,6 +78,8 @@ class TensorNode(TorchDeviceDtypeNode):
         self.input = self.add_input('in', triggers_execution=True)
         self.setup_dtype_device_grad(args)
         self.output = self.add_output('tensor out')
+        self.create_dtype_device_grad_properties()
+
 
     def execute(self):
         in_data = self.input_to_tensor()
@@ -189,6 +191,8 @@ class TorchBufferNode(TorchDeviceDtypeNode):
         self.update_style_option.widget.combo_items = ['buffer holds one sample of input', 'input is stream of samples', 'input is multi-channel sample']
         self.output_style_option = self.add_option('output style', widget_type='combo', default_value='output samples on demand by index', width=250, callback=self.output_style_changed)
         self.output_style_option.widget.combo_items = ['output buffer on every input', 'output samples on demand by index']
+        self.create_dtype_device_grad_properties()
+
         self.buffer = torch.zeros((self.sample_count), dtype=self.dtype, device=self.device)
         self.write_pos = 0
 
@@ -460,6 +464,7 @@ class TorchRollingBufferNode(TorchDeviceDtypeNode):
         self.sample_count_option = self.add_option('sample count', widget_type='drag_int', default_value=self.sample_count)
         self.update_style_option = self.add_option('update style', widget_type='combo', default_value='input is stream of samples', width=250, callback=self.update_style_changed)
         self.update_style_option.widget.combo_items = ['buffer holds one sample of input', 'input is stream of samples', 'input is multi-channel sample']
+        self.create_dtype_device_grad_properties()
 
     def update_style_changed(self):
         update_style = self.update_style_option()

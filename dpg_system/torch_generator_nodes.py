@@ -81,6 +81,8 @@ class TorchGeneratorNode(TorchDeviceDtypeNode):
         elif self.label == 't.zeros':
             out_label = 'tensor of zeros'
         self.output = self.add_output(out_label)
+        self.create_dtype_device_grad_properties()
+
 
     def range_changed(self):
         self.min = self.min_input()
@@ -517,6 +519,8 @@ class TorchFullNode(TorchDeviceDtypeNode):
 
         out_label = 'filled tensor'
         self.output = self.add_output(out_label)
+        self.create_dtype_device_grad_properties()
+
 
     def val_changed(self):
         self.value = self.value_input()
@@ -556,6 +560,8 @@ class TorchGeneratorLikeNode(TorchDeviceDtypeNode):
         elif self.label == 't.zeros_like':
             out_label = 'tensor of zeros'
         self.output = self.add_output(out_label)
+        self.create_dtype_device_grad_properties()
+
 
     def range_changed(self):
         self.min = self.min_input()
@@ -644,6 +650,8 @@ class TorchLinSpaceNode(TorchDeviceDtypeNode):
         self.setup_dtype_device_grad(args)
 
         self.output = self.add_output(out_label)
+        self.create_dtype_device_grad_properties()
+
 
     def execute(self):
         self.start = self.start_property()
@@ -693,6 +701,8 @@ class TorchRangeNode(TorchDeviceDtypeNode):
         self.setup_dtype_device_grad(args)
 
         self.output = self.add_output(out_label)
+        self.create_dtype_device_grad_properties()
+
 
     def execute(self):
         self.start = self.start_property()
@@ -723,6 +733,8 @@ class TorchEyeNode(TorchDeviceDtypeNode):
 
         out_label = 'eye tensor'
         self.output = self.add_output(out_label)
+        self.create_dtype_device_grad_properties()
+
 
     def n_changed(self):
         self.n = self.n_input()

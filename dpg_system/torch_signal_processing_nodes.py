@@ -83,6 +83,7 @@ class TorchWindowNode_(TorchDeviceDtypeNode):
         self.sym = self.add_input('sym', widget_type='checkbox', default_value=sym)
         self.setup_dtype_device_grad(args)
         self.output = self.add_output('window tensor out')
+        self.create_dtype_device_grad_properties()
 
     def custom_create(self, from_file):
         if self.param_1_name == '':
