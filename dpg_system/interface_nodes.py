@@ -918,11 +918,12 @@ class ValueNode(Node):
                     if self.input.widget.widget in ['drag_float', 'drag_int', 'input_float', 'input_int', 'slider_float', 'slider_int', 'knob_float', 'knob_int']:
                         if not is_number(in_data[0]):
                             if type(in_data[0]) == str:
-                                if len(in_data) == 2 and is_number(in_data[1]):
-                                    value = in_data[1]
-                                    self.input.widget.set(value, propagate=False)
-                                    output = False
-                    if not output:
+                                if in_data[0] == 'set':
+                                    if len(in_data) == 2 and is_number(in_data[1]):
+                                        value = in_data[1]
+                                        self.input.widget.set(value, propagate=False)
+                                        output = False
+                    if output:
                         value = in_data
             elif t in [float, int]:
                 value = in_data

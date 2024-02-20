@@ -206,6 +206,9 @@ class TorchUltraCWTNode(TorchDeviceDtypeNode):
         widths_string = any_to_string(self.widths)
         self.widths_property = self.add_input('scales', widget_type='text_input', default_value=widths_string)
         self.widths_property.add_callback(self.widths_changed)
+        self.unskew_property = self.add_input('unskew', widget_type='checkbox', default_value=False)
+        self.unskew_scale_property = self.add_input('unskew_scale', widget_type='drag_int', default_value=5)
+        self.attentuate_property = self.add_input('scale based attenuation', widget_type='checkbox', default_value=True)
         self.output = self.add_output('cwt out')
         self.phase_out = self.add_output('phase out')
         self.create_dtype_device_grad_properties(option=True)
@@ -238,7 +241,7 @@ class TorchUltraCWTNode(TorchDeviceDtypeNode):
             input_value = any_to_tensor(self.input(), dtype=self.dtype, device=self.device)
             input_value = torch.flatten(input_value)
             if self.cwt != None:
-                cwt_out, phase_out = self.cwt.receive_new_data(input_value)
+                cwt_out, phase_out = self.cwt.receive_new_data(input_value, self.unskew_property(), self.unskew_scale_property(), self.attentuate_property())
                 if phase_out is not None:
                     self.phase_out.send(phase_out)
                 if cwt_out is not None:
@@ -286,14 +289,14 @@ class MyTorchCWT:
             torch_wavelet_imag = torch.from_numpy(wavelet_np.imag).to(self.device)
             self.wavelet_data.append([torch_wavelet_real, torch_wavelet_imag])
 
-    def receive_new_data(self, data_frame):
+    def receive_new_data(self, data_frame, unskew=False, unskew_scale=5, attenuate=True):
         if len(data_frame) != self.ultra_last_frame.shape[0]:
             new_batch = len(data_frame)
             self.ultra_last_frame = torch.zeros([new_batch, len(self.widths), self.subframe_size], dtype=self.result_dtype, device=self.device)
             self.ultra_last_phase = torch.zeros([new_batch, len(self.widths), self.subframe_size], dtype=self.result_dtype, device=self.device)
 
         self.input_buffer.update(data_frame)
-        results, phases = self.ultra_cwt()
+        results, phases = self.ultra_cwt(unskew, unskew_scale, attenuate)
         if results is None:
             return None, None
         return results, phases
@@ -325,14 +328,14 @@ class MyTorchCWT:
         self.ultra_last_frame = torch.zeros([len(self.widths), self.subframe_size], dtype=self.result_dtype, device=self.device)
         self.ultra_last_phase = torch.zeros([len(self.widths), self.subframe_size], dtype=self.result_dtype, device=self.device)
 
-    def ultra_cwt(self):
+    def ultra_cwt(self, unskew=False, unskew_scale=5, attenuate=True):
         """
         The ultra fast cwt implementation, where we only calculate the boundary of the triangle and thus save time
 
         :return: The cwt result for the current frame
         """
-        self.ultra_last_frame[:, :-1] = self.ultra_last_frame[:, 1:]
-        self.ultra_last_phase[:, :-1] = self.ultra_last_phase[:, 1:]
+        self.ultra_last_frame[:, :, :-1] = self.ultra_last_frame[:, :, 1:]
+        self.ultra_last_phase[:, :, :-1] = self.ultra_last_phase[:, :, 1:]
 
         convolve_data = self.input_buffer.get_buffer()
         if convolve_data is None:
@@ -343,14 +346,31 @@ class MyTorchCWT:
             wavelet_real = self.wavelet_data[ind][0]
             wavelet_imag = self.wavelet_data[ind][1]
             wavelet_length = int(np.min([10.0 * width, self.subframe_size]))
-            # print(wavelet_length, end=' ')
             convolve_data_trimmed = convolve_data[-wavelet_length:, :]
             convolve_real_out = torch.matmul(wavelet_real, convolve_data_trimmed)
             convolve_imag_out = torch.matmul(wavelet_imag, convolve_data_trimmed)
             convolve_out = torch.sqrt(torch.pow(convolve_real_out, 2) + torch.pow(convolve_imag_out, 2))
-            self.ultra_last_frame[:, ind, -1] = convolve_out / width
+            if unskew:
+                skew = int(width * unskew_scale)
+                # self.ultra_last_frame[:, ind, -1] = convolve_out / width
+                if attenuate:
+                    cc = convolve_out / width
+                else:
+                    cc = convolve_out
+                ccc = cc.unsqueeze(dim=1)
+                self.ultra_last_frame[:, ind, -skew:] = ccc
+            #   each width has a delay, so current value should be written into the skew space
+            #   skew space is 2 * width?
+            #   self.ultra_last_frame[:, ind, -skew:] = convolve_out / width
+            else:
+                if attenuate:
+                    self.ultra_last_frame[:, ind, -1] = convolve_out / width
+                else:
+                    self.ultra_last_frame[:, ind, -1] = convolve_out
             self.ultra_last_phase[:, ind, -1] = convolve_imag_out
         self.input_buffer.release_buffer()
-        # print()
-        return self.ultra_last_frame[:, :, -1], self.ultra_last_phase[:, :, -1]
+        if not unskew:
+            return self.ultra_last_frame[:, :, -1], self.ultra_last_phase[:, :, -1]
+        else:
+            return self.ultra_last_frame, self.ultra_last_phase
 
