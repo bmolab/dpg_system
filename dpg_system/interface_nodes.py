@@ -923,7 +923,7 @@ class ValueNode(Node):
                                         value = in_data[1]
                                         self.input.widget.set(value, propagate=False)
                                         output = False
-                    if output:
+                    else:
                         value = in_data
             elif t in [float, int]:
                 value = in_data
