@@ -1036,8 +1036,11 @@ class OSCButtonNode(OSCReceiver, OSCSender, ButtonNode):
         OSCReceiver.cleanup(self)
 
     def receive(self, data):
+        if type(data) == str:
+            if data[0] == '/':
+                return
         data = any_to_bool(data)
-        if data == True:
+        if data:
             ButtonNode.execute(self)
 
     def execute(self):
@@ -1080,6 +1083,9 @@ class OSCToggleNode(OSCReceiver, OSCSender, ToggleNode):
         OSCReceiver.cleanup(self)
 
     def receive(self, data):
+        if type(data) == str:
+            if data[0] == '/':
+                return
         self.value = any_to_bool(data)
         self.input.set(self.value)
         ToggleNode.execute(self)
@@ -1124,6 +1130,9 @@ class OSCMenuNode(OSCReceiver, OSCSender, MenuNode):
         OSCReceiver.cleanup(self)
 
     def receive(self, data):
+        if type(data) == str:
+            if data[0] == '/':
+                return
         self.choice.set(data)
         self.set_choice_internal(data)
 
@@ -1167,6 +1176,9 @@ class OSCRadioButtonsNode(OSCReceiver, OSCSender, RadioButtonsNode):
         OSCReceiver.cleanup(self)
 
     def receive(self, data):
+        if type(data) == str:
+            if data[0] == '/':
+                return
         value = any_to_int(data)
         self.radio_group.set(value)
         RadioButtonsNode.execute(self)

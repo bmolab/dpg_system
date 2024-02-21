@@ -984,9 +984,10 @@ class ValueNode(Node):
     def update(self, propagate=True):
         value = dpg.get_value(self.value)
         if type(value) == str:
-            value = value.split(' ')
-            if len(value) == 1:
-                value = value[0]
+            if self.input.widget.widget == 'text_input':
+                value = value.split(' ')
+                if len(value) == 1:
+                    value = value[0]
         if self.variable is not None and propagate:
             self.variable.set(value, from_client=self)
 
