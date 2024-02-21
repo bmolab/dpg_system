@@ -948,6 +948,9 @@ class OSCValueNode(OSCReceiver, OSCSender, ValueNode):
         self.target_address_property = self.add_option('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
         self.source_name_property = self.target_name_property
         self.source_address_property = self.target_address_property
+        if label == 'osc_string':
+            self.space_replacement = self.add_option('replace spaces in osc messages', widget_type='checkbox',
+                                                     default_value=True)
 
     def name_changed(self):
         OSCReceiver.name_changed(self)
@@ -973,6 +976,10 @@ class OSCValueNode(OSCReceiver, OSCSender, ValueNode):
         t = type(data)
         if t == tuple:
             data = list(data)
+        if self.label == 'osc_string':
+            data = any_to_string(data)
+            if self.space_replacement():
+                data = data.replace('_', ' ')
         self.inputs[0].receive_data(data)
         ValueNode.execute(self)
 
@@ -986,6 +993,10 @@ class OSCValueNode(OSCReceiver, OSCSender, ValueNode):
         if self.label == 'osc_message' and t == str:
             data = data.split(' ')
             data, homogenous, types = list_to_hybrid_list(data)
+        elif self.label == 'osc_string':
+            data = any_to_string(data)
+            if self.space_replacement():
+                data = data.replace(' ', '_')
         if data is not None:
             if self.target and self.address != '':
                 self.target.send_message(self.address, data)
