@@ -976,6 +976,8 @@ class OSCValueNode(OSCReceiver, OSCSender, ValueNode):
         t = type(data)
         if t == tuple:
             data = list(data)
+        if t == str and self.label not in ['osc_string', 'osc_message']:
+            return
         if self.label == 'osc_string':
             data = any_to_string(data)
             if self.space_replacement():
