@@ -793,6 +793,9 @@ class ValueNode(Node):
             self.min_property = self.add_option('min', widget_type='drag_float', default_value=self.min, callback=self.options_changed)
             self.max_property = self.add_option('max', widget_type='drag_float', default_value=self.max, callback=self.options_changed)
 
+        if widget_type == 'slider_float':
+            self.power = self.add_option('power', widget_type='drag_float', default_value=1.0)
+
         self.width_option = self.add_option('width', widget_type='drag_int', default_value=widget_width, callback=self.options_changed)
         if widget_type == 'text_input':
             self.grow_option = self.add_option('adapt_width', widget_type='combo', default_value='grow_to_fit', callback=self.options_changed)
@@ -973,6 +976,9 @@ class ValueNode(Node):
                 dpg.configure_item(self.input.widget.uuid, width=adjusted_width)
                 self.width_option.set(adjusted_width)
         if output:
+            if self.input.widget.widget == 'slider_float':
+                if self.power() != 1.0:
+                    value = pow(value, self.power())
             self.outputs[0].send(value)
 
     def update(self, propagate=True):
@@ -986,6 +992,9 @@ class ValueNode(Node):
 
         if self.input.widget.widget == 'text_input':
             self.input.widget.adjust_to_text_width(max=2048)
+        if self.input.widget.widget == 'slider_float':
+            if self.power() != 1.0:
+                value = pow(value, self.power())
         self.outputs[0].send(value)
 
 
