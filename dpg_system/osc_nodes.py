@@ -973,11 +973,13 @@ class OSCValueNode(OSCReceiver, OSCSender, ValueNode):
         OSCReceiver.cleanup(self)
 
     def receive(self, data):
-        t = type(data)
-        if t == tuple:
-            data = list(data)
-        if t == str and self.label not in ['osc_string', 'osc_message']:
-            return
+        t = type(data)()
+        data = any_to_list(data)
+
+        if self.label not in ['osc_string', 'osc_message']:
+            if type(data[0]) == str:
+                if data[0][0] == '/':
+                    return
         if self.label == 'osc_string':
             data = any_to_string(data)
             if self.space_replacement():
@@ -1038,8 +1040,9 @@ class OSCButtonNode(OSCReceiver, OSCSender, ButtonNode):
         OSCReceiver.cleanup(self)
 
     def receive(self, data):
-        if type(data) == str:
-            if data[0] == '/':
+        data = any_to_list(data)
+        if type(data[0]) == str:
+            if data[0][0] == '/':
                 return
         data = any_to_bool(data)
         if data:
@@ -1085,7 +1088,8 @@ class OSCToggleNode(OSCReceiver, OSCSender, ToggleNode):
         OSCReceiver.cleanup(self)
 
     def receive(self, data):
-        if type(data) == str:
+        data = any_to_list(data)
+        if type(data[0]) == str:
             if data[0] == '/':
                 return
         self.value = any_to_bool(data)
@@ -1132,8 +1136,9 @@ class OSCMenuNode(OSCReceiver, OSCSender, MenuNode):
         OSCReceiver.cleanup(self)
 
     def receive(self, data):
-        if type(data) == str:
-            if data[0] == '/':
+        data = any_to_list(data)
+        if type(data[0]) == str:
+            if data[0][0] == '/':
                 return
         self.choice.set(data)
         self.set_choice_internal(data)
@@ -1178,8 +1183,9 @@ class OSCRadioButtonsNode(OSCReceiver, OSCSender, RadioButtonsNode):
         OSCReceiver.cleanup(self)
 
     def receive(self, data):
-        if type(data) == str:
-            if data[0] == '/':
+        data = any_to_list(data)
+        if type(data[0]) == str:
+            if data[0][0] == '/':
                 return
         value = any_to_int(data)
         self.radio_group.set(value)
