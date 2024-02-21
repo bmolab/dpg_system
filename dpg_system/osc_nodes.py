@@ -973,7 +973,7 @@ class OSCValueNode(OSCReceiver, OSCSender, ValueNode):
         OSCReceiver.cleanup(self)
 
     def receive(self, data):
-        t = type(data)()
+        t = type(data)
         data = any_to_list(data)
 
         if self.label not in ['osc_string', 'osc_message']:

@@ -54,7 +54,7 @@ def any_to_list(data):
     if t == list:
         return data
     elif t == tuple:
-        return list(tuple)
+        return list(data)
     elif t == str:
         return string_to_list(data)
     elif t in [float, int, bool]:
