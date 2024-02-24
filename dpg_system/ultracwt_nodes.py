@@ -349,7 +349,8 @@ class MyTorchCWT:
             convolve_data_trimmed = convolve_data[-wavelet_length:, :]
             convolve_real_out = torch.matmul(wavelet_real, convolve_data_trimmed)
             convolve_imag_out = torch.matmul(wavelet_imag, convolve_data_trimmed)
-            convolve_out = torch.sqrt(torch.pow(convolve_real_out, 2) + torch.pow(convolve_imag_out, 2))
+            convolve_out = torch.hypot(convolve_real_out, convolve_imag_out)
+            # phase_out = torch.atan2(convolve_imag_out, convolve_real_out)
             if unskew:
                 skew = int(width * unskew_scale)
                 # self.ultra_last_frame[:, ind, -1] = convolve_out / width

@@ -8,11 +8,16 @@ import numpy as np
 import json
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
+from elevenlabs import client, stream, generate, Voice, VoiceSettings
+from elevenlabs.client import ElevenLabs
+from queue import Queue
+
 api_key = 'be1eae804441ec11f0fe872f82ad44f3'
 
 
 def register_elevenlab_nodes():
     Node.app.register_node("eleven_lab", ElevenLabNode.factory)
+    Node.app.register_node("eleven_labs", ElevenLabsNode.factory)
 
 
 class ElevenLabNode(Node):
@@ -44,7 +49,7 @@ class ElevenLabNode(Node):
             name = rj['voices'][i]['name']
             id = rj['voices'][i]['voice_id']
             self.voices[name] = id
-        self.voices['David']= 'p1NETszyIlYTrbi495Pf'
+        self.voices['David'] = 'p1NETszyIlYTrbi495Pf'
 
         voice_names = list(self.voices.keys())
         self.voice = self.add_input('voice', widget_type='combo')
@@ -68,4 +73,80 @@ class ElevenLabNode(Node):
         audio_data = response.content
         audio_segment = AudioSegment.from_file(io.BytesIO(audio_data), format="mp3")
         play(audio_segment)
+
+
+class ElevenLabsNode(Node):
+    instances = []
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ElevenLabsNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.text_input = self.add_input('text to speak', triggers_execution=True)
+
+        self.client = ElevenLabs(api_key=api_key)
+        self.voices = self.client.voices.get_all()
+        self.models = self.client.models.get_all()
+        self.voice_name = 'David'
+        self.active = False
+        if len(args) > 0:
+            voice_name = any_to_string(args[0])
+        else:
+            voice_name = self.voice_name
+        for voice in self.voices.voices:
+            if voice.name == voice_name:
+                self.voice_name = voice_name
+                self.voice_id = voice.voice_id
+                break
+
+        self.voice_dict = {}
+        for voice in self.voices.voices:
+            name = voice.name
+            id = voice.voice_id
+            self.voice_dict[name] = id
+        self.model_dict = {}
+        for model in self.models:
+            name = model.name
+            self.model_dict[name] = model.model_id
+
+        voice_names = list(self.voice_dict.keys())
+        self.voice_name_input = self.add_input('voice', widget_type='combo', default_value=self.voice_name, callback=self.voice_changed)
+        self.voice_name_input.widget.combo_items = voice_names
+        self.model_choice = self.add_input('model', widget_type='combo', widget_width=250, default_value="Eleven Turbo v2")
+        self.model_choice.widget.combo_items = list(self.model_dict.keys())
+        self.stability = self.add_input('stability', widget_type='drag_float', default_value=.02, callback=self.voice_changed)
+        self.similarity_boost = self.add_input('similarity_boost', widget_type='drag_float', default_value=1.0, callback=self.voice_changed)
+        self.style = self.add_input('style exaggeration', widget_type='drag_float', default_value=0.5, callback=self.voice_changed)
+        self.latency = self.add_input('latency', widget_type='combo', default_value='0')
+        self.latency.widget.combo_items = ['0', '1', '2', '3', '4']
+        self.voice_record = None
+        ElevenLabsNode.instances.append(self)
+        self.phrase_queue = Queue(16)
+
+    def voice_changed(self):
+        self.voice_record = None
+        current_voice_name = self.voice_name_input()
+        if current_voice_name in self.voice_dict:
+            self.voice_id = self.voice_dict[current_voice_name]
+        self.voice_record = Voice(voice_id=self.voice_id, settings=VoiceSettings(stability=self.stability(), similarity_boost=self.similarity_boost(), style=self.style()))
+
+    def post_creation_callback(self):
+        self.voice_record = Voice(voice_id=self.voice_id, settings=VoiceSettings(stability=self.stability(), similarity_boost=self.similarity_boost(), style=self.style()))
+
+    def execute(self):
+        self.text_to_speak = any_to_string(self.text_input())
+        self.phrase_queue.put(self.text_to_speak)
+
+    def service_queue(self):
+        if not self.active and not self.phrase_queue.empty():
+            self.active = True
+            text = self.phrase_queue.get()
+            model = self.model_dict[self.model_choice()]
+            latency = int(self.latency())
+            audio_stream = generate(api_key=api_key, text=text, voice=self.voice_record, model=model, stream=True, latency=latency)
+            audio = stream(audio_stream)
+            self.active = False
 

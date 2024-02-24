@@ -26,73 +26,74 @@ smpl_active = True
 prompt_active = True
 sockets_active = True
 easy_mode = False
-ultracwt_active = False
+ultracwt_active = True
+pybullet_active = False
 
-print('Options active:', end=' ')
-with open('dpg_system/dpg_system_config.json', 'r') as f:
-    config = json.load(f)
-    if 'easy' in config:
-        easy_mode = config['easy']
-    if 'OSC' in config:
-        osc_active = config['OSC']
-        if osc_active:
-            print('OSC', end=' ')
-    if 'OpenGL' in config:
-        opengl_active = config['OpenGL']
-        if opengl_active:
-            print('OpenGL', end=' ')
-    if 'OpenCV' in config:
-        opencv_active = config['OpenCV']
-        if opencv_active:
-            print('OpenCV', end=' ')
-    if 'ElevenLabs' in config:
-        elevenlabs_active = config['ElevenLabs']
-        if elevenlabs_active:
-            print('ElevenLabs', end=' ')
-    if 'MoveSense' in config:
-        movesense_active = config['MoveSense']
-        if movesense_active:
-            print('MoveSense', end=' ')
-    if 'MoCap' in config:
-        mocap_active = config['MoCap']
-        if mocap_active:
-            print('MoCap', end=' ')
-    if 'SpaCy' in config:
-        spacy_active = config['SpaCy']
-        if spacy_active:
-            print('SpaCy', end=' ')
-    if 'CLIP' in config:
-        clip_active = config['CLIP']
-        if clip_active:
-            print('CLIP', end=' ')
-    if 'Numpy' in config:
-        numpy_active = config['Numpy']
-        if numpy_active:
-            print('Numpy', end=' ')
-    if 'Pytorch' in config:
-        pytorch_active = config['Pytorch']
-        if pytorch_active:
-            print('Pytorch', end=' ')
-    if 'SMPL' in config:
-        smpl_active = config['SMPL']
-        if smpl_active:
-            print('SMPL', end=' ')
-    if 'prompt' in config:
-        prompt_active = config['prompt']
-        if prompt_active:
-            print('prompt', end=' ')
-    if 'pybullet' in config:
-        pybullet_active = config['pybullet']
-        if pybullet_active:
-            print('pybullet', end=' ')
-    if 'sockets' in config:
-        sockets_active = config['sockets']
-        if sockets_active:
-            print('sockets', end=' ')
-    if 'ultracwt' in config:
-        ultracwt_active = config['ultracwt']
-        if ultracwt_active:
-            print('ultracwt', end=' ')
+# print('Options active:', end=' ')
+# with open('dpg_system_config.json', 'r') as f:
+#     config = json.load(f)
+#     if 'easy' in config:
+#         easy_mode = config['easy']
+#     if 'OSC' in config:
+#         osc_active = config['OSC']
+#         if osc_active:
+#             print('OSC', end=' ')
+#     if 'OpenGL' in config:
+#         opengl_active = config['OpenGL']
+#         if opengl_active:
+#             print('OpenGL', end=' ')
+#     if 'OpenCV' in config:
+#         opencv_active = config['OpenCV']
+#         if opencv_active:
+#             print('OpenCV', end=' ')
+#     if 'ElevenLabs' in config:
+#         elevenlabs_active = config['ElevenLabs']
+#         if elevenlabs_active:
+#             print('ElevenLabs', end=' ')
+#     if 'MoveSense' in config:
+#         movesense_active = config['MoveSense']
+#         if movesense_active:
+#             print('MoveSense', end=' ')
+#     if 'MoCap' in config:
+#         mocap_active = config['MoCap']
+#         if mocap_active:
+#             print('MoCap', end=' ')
+#     if 'SpaCy' in config:
+#         spacy_active = config['SpaCy']
+#         if spacy_active:
+#             print('SpaCy', end=' ')
+#     if 'CLIP' in config:
+#         clip_active = config['CLIP']
+#         if clip_active:
+#             print('CLIP', end=' ')
+#     if 'Numpy' in config:
+#         numpy_active = config['Numpy']
+#         if numpy_active:
+#             print('Numpy', end=' ')
+#     if 'Pytorch' in config:
+#         pytorch_active = config['Pytorch']
+#         if pytorch_active:
+#             print('Pytorch', end=' ')
+#     if 'SMPL' in config:
+#         smpl_active = config['SMPL']
+#         if smpl_active:
+#             print('SMPL', end=' ')
+#     if 'prompt' in config:
+#         prompt_active = config['prompt']
+#         if prompt_active:
+#             print('prompt', end=' ')
+#     if 'pybullet' in config:
+#         pybullet_active = config['pybullet']
+#         if pybullet_active:
+#             print('pybullet', end=' ')
+#     if 'sockets' in config:
+#         sockets_active = config['sockets']
+#         if sockets_active:
+#             print('sockets', end=' ')
+#     if 'ultracwt' in config:
+#         ultracwt_active = config['ultracwt']
+#         if ultracwt_active:
+#             print('ultracwt', end=' ')
 
 print('')
 
@@ -1838,7 +1839,7 @@ class App:
                     self.frame_clock_conduit.transmit('bang')
                     self.frame_time_variable.set(elapsed)
                     if do_osc_async:
-                        OSCSource.osc_manager.relay_pending_messages()
+                        OSCThreadingSource.osc_manager.relay_pending_messages()
                     dpg.render_dearpygui_frame()
                     then = time.time()
                     elapsed = then - now
