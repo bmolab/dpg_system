@@ -29,6 +29,7 @@ from dpg_system.torch_calculation_nodes import *
 from dpg_system.torch_manipulation_nodes import *
 from dpg_system.torch_generator_nodes import *
 from dpg_system.torch_signal_processing_nodes import *
+from dpg_system.torch_butterworth_nodes import *
 from dpg_system.torchvision_nodes import *
 from dpg_system.torch_kornia_nodes import *
 torchaudio_avail = True
@@ -60,6 +61,7 @@ def register_torch_nodes():
     register_torch_manipulation_nodes()
     register_torch_generator_nodes()
     register_torch_signal_processing_nodes()
+    register_torch_butterworth_nodes()
     register_torchvision_nodes()
     register_kornia_nodes()
     if torchaudio_avail:
