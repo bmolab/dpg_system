@@ -27,19 +27,28 @@ class TorchBandPassFilterBankNode(TorchDeviceDtypeNode):
         self.order = 1
 
         #  these should be algorithmically generated as octaves
-        low_cut = 0.3125
+        low_cut = 0.03125
         high_cut = 16
         num_bands = 8
+        # add facility to have band overlap...
+        # take multiplier from band to band - sqrt of multiplier is 1/2 step, pow(0.25) is 1/4 step?
+        #   take multiplier from band to band, math.log2(multiplier) gives band power
+        # expand band up and down by pow(2, overlap * band_power
+
+        # order 3 .75 overlap seems interesting, but not sure about overshoot...
+
 
         self.sample_frequency = 60
         self.filter_type = 'bandpass'
         self.filter_design = 'butter'
         self.nyquist = self.sample_frequency * 0.5
+        self.overlap = 0
 
         self.setup_dtype_device_grad(args)
         self.dtype = torch.float32
 
         self.input = self.add_input("signal", triggers_execution=True)
+        self.capture_input = self.add_input('reset', widget_type='button', callback=self.capture)
         self.filter_type_property = self.add_property('filter type', widget_type='combo', default_value=self.filter_type, callback=self.params_changed)
         self.filter_type_property.widget.combo_items = ['bandpass', 'lowpass', 'highpass', 'bandstop']
         self.filter_design_property = self.add_property('filter design', widget_type='combo', default_value=self.filter_design, callback=self.params_changed)
@@ -51,22 +60,42 @@ class TorchBandPassFilterBankNode(TorchDeviceDtypeNode):
         self.low_cut_property = self.add_property('low', widget_type='drag_float', default_value=low_cut, callback=self.params_changed)
         self.high_cut_property = self.add_property('high', widget_type='drag_float', default_value=high_cut, callback=self.params_changed)
         self.num_bands = self.add_property('number of bands', widget_type='input_int', default_value=num_bands, callback=self.params_changed)
+        self.band_scaling = self.add_property('band scaling', widget_type='combo', default_value='log', callback=self.params_changed)
+        self.band_scaling.widget.combo_items = ['log', 'linear']
+        self.overlap = self.add_property('overlap fraction', widget_type='drag_float', default_value=0.0, callback=self.params_changed)
 
         self.sample_frequency_property = self.add_property('sample freq', widget_type='drag_float', default_value=self.sample_frequency, callback=self.params_changed)
         self.bands = []
         self.output = self.add_output('filtered')
         self.filter = None
+        self.capture = False
         self.create_dtype_device_grad_properties(option=True)
 
     def custom_create(self, from_file):
         self.params_changed()
 
+    def capture(self):
+        self.capture = True
+
     def calc_bands(self):
         self.bands = []
-        np_bands = np.logspace(np.log10(self.low_cut_property()), np.log10(self.high_cut_property()), self.num_bands())
-        for i in range(self.num_bands() - 1):
-            self.bands.append([np_bands[i], np_bands[i + 1]])
-        print(self.bands)
+        if self.num_bands() == 1:
+            np_bands = np.linspace(self.high_cut_property(), self.low_cut_property(), 2)
+        else:
+            if self.band_scaling() == 'log':
+                np_bands = np.logspace(np.log10(self.high_cut_property()), np.log10(self.low_cut_property()), self.num_bands())
+            else:
+                np_bands = np.linspace(self.high_cut_property(), self.low_cut_property(), self.num_bands())
+        factor = np_bands[-2] / np_bands[-1]
+
+        band_power = math.log2(factor)
+        overlap_factor = pow(2, band_power * self.overlap())
+
+        if self.num_bands() == 1:
+            self.bands = [[np_bands[1] / overlap_factor, np_bands[0] * overlap_factor]]
+        else:
+            for i in range(self.num_bands() - 1):
+                self.bands.append([np_bands[i + 1] / overlap_factor, np_bands[i] * overlap_factor])
 
     def params_changed(self):
         self.filter = None
@@ -83,27 +112,34 @@ class TorchBandPassFilterBankNode(TorchDeviceDtypeNode):
         if self.low_cut > self.high_cut:
             self.low_cut = self.high_cut * .5
         if self.filter_type in ['bandpass', 'bandstop']:
-            self.filter = TorchIIR2Filter(self.order, self.bands, filter_type=self.filter_type, design=self.filter_design, fs=self.sample_frequency)
+            self.filter = TorchIIR2Filter(self.order, self.bands, filter_type=self.filter_type, design=self.filter_design, fs=self.sample_frequency, device=self.device, dtype=self.dtype)
         elif self.filter_type == 'lowpass':
             low_bands = []
             for band in self.bands:
-                low_bands.append(band[1])
-            self.filter = TorchIIR2Filter(self.order, low_bands, filter_type=self.filter_type, design=self.filter_design, fs=self.sample_frequency)
+                low_bands.append([band[1]])
+            self.filter = TorchIIR2Filter(self.order, low_bands, filter_type=self.filter_type, design=self.filter_design, fs=self.sample_frequency, device=self.device, dtype=self.dtype)
         elif self.filter_type == 'highpass':
             high_bands = []
             for band in self.bands:
-                high_bands.append(band[1])
-            self.filter = TorchIIR2Filter(self.order, high_bands, filter_type=self.filter_type, design=self.filter_design, fs=self.sample_frequency)
+                high_bands.append([band[1]])
+            self.filter = TorchIIR2Filter(self.order, high_bands, filter_type=self.filter_type, design=self.filter_design, fs=self.sample_frequency, device=self.device, dtype=self.dtype)
+
+    def device_changed(self):
+        super().device_changed()
+        self.params_changed()
 
     def execute(self):
         signal = self.input()
         if self.filter is not None:
+            if self.capture:
+                self.filter.capture(signal)
+                self.capture = False
             signal_out = self.filter.filter(signal)
             self.output.send(signal_out)
 
 
 class TorchIIR2Filter:
-    def __init__(self, order, bands, filter_type, design='butter', rp=1, rs=1, fs=0):
+    def __init__(self, order, bands, filter_type, design='butter', rp=1, rs=1, fs=0, device='cpu', dtype=torch.float32):
         self.designs = ['butter', 'cheby1', 'cheby2']
         self.filter_types_1 = ['lowpass', 'highpass', 'Lowpass', 'Highpass', 'low', 'high']
         self.filter_types_2 = ['bandstop', 'bandpass', 'Bandstop', 'Bandpass']
@@ -117,16 +153,14 @@ class TorchIIR2Filter:
         self.fs = fs
         self.filter_type = filter_type
         self.design = design
+        self.device = device
+        self.dtype = dtype
         self.coefficients = self.create_coefficients()
         self.buffers = None
         self.n = 0
 
     def allocate_buffers(self, width):
-        self.buffers = torch.zeros(self.coefficients.shape[0], 3, len(self.bands), width)
-
-    def change_bands(self, bands):
-        self.bands = bands
-        self.update_filter(self.order, self.filter_type, self.design, self.rp, self.rs, self.fs)
+        self.buffers = torch.zeros([self.coefficients.shape[0], 3, len(self.bands), width], dtype=self.dtype, device=self.device)
 
     def update_filter(self, order, filter_type, design='butter', rp=1, rs=1, fs=0):
         self.order = order
@@ -138,8 +172,15 @@ class TorchIIR2Filter:
         self.allocate_buffers(self.buffers.shape[3])
         self.coefficients = self.create_coefficients()
 
+    def capture(self, input):
+        input = any_to_tensor(input, device=self.device).flatten()
+        if self.buffers is None or self.buffers.shape[3] != input.shape[0]:
+            self.allocate_buffers(input.shape[0])
+        self.buffers[:, :, :] = input
+
+
     def filter(self, input):
-        input = any_to_tensor(input)
+        input = any_to_tensor(input, device=self.device).flatten()
         if self.buffers is None or self.buffers.shape[3] != input.shape[0]:
             self.allocate_buffers(input.shape[0])
 
@@ -200,14 +241,13 @@ class TorchIIR2Filter:
             if self.fs and self.error_flag == 0:
                 for i in range(len(band)):
                     band[i] = band[i] / self.fs * 2
-
             print(band)
             if self.design == 'butter' and self.error_flag == 0:
-                coefficients = torch.from_numpy(signal.butter(self.order, band, self.filter_type, output='sos'))
+                coefficients = torch.from_numpy(signal.butter(self.order, band, self.filter_type, output='sos')).to(device=self.device, dtype=self.dtype)
             elif self.design == 'cheby1' and self.error_flag == 0:
-                coefficients = torch.from_numpy(signal.cheby1(self.order, self.rp, band, self.filter_type, output='sos'))
+                coefficients = torch.from_numpy(signal.cheby1(self.order, self.rp, band, self.filter_type, output='sos')).to(device=self.device, dtype=self.dtype)
             elif self.design == 'cheby2' and self.error_flag == 0:
-                coefficients = torch.from_numpy(signal.cheby2(self.order, self.rs, band, self.filter_type, output='sos'))
+                coefficients = torch.from_numpy(signal.cheby2(self.order, self.rs, band, self.filter_type, output='sos')).to(device=self.device, dtype=self.dtype)
             #  coefficients shape is [order, 6]
             if coefficients is not None:
                 coefficients = coefficients.unsqueeze(-1)        # [order, 6, 1]

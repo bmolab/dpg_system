@@ -14,6 +14,7 @@ def register_signal_nodes():
     Node.app.register_node("smooth", FilterNode.factory)
     Node.app.register_node("diff_filter_bank", MultiDiffFilterNode.factory)
     Node.app.register_node("diff_filter", MultiDiffFilterNode.factory)
+    Node.app.register_node("multi_filter", MultiFilterNode.factory)
     Node.app.register_node("random", RandomNode.factory)
     Node.app.register_node("random.gauss", RandomGaussNode.factory)
     Node.app.register_node("random.normalvariate", RandomGaussNode.factory)
@@ -808,6 +809,66 @@ class MultiDiffFilterNode(Node):
         self.accums = self.accums * self.degrees + input_value * self.minus_degrees
         out_values = self.accums[:-1] - self.accums[1:]
         self.output.send(out_values)
+
+    def set(self, message, args):
+        set_count = len(args)
+        if set_count > self.filter_count:
+            set_count = self.filter_count
+        for i in range(set_count):
+            self.accums[i] = float(args[i])
+
+    def clear(self, message, args):
+        self.accums.fill(0)
+
+
+class MultiFilterNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = MultiFilterNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.filter_count = 2
+        self.degrees = np.array([0.7, 0.9])
+        self.accums = np.array([0.0, 0.0])
+        self.ones = np.array([1.0, 1.0])
+        self.out_values = None
+
+        if args is not None and len(args) > 0:
+            self.filter_count = len(args)
+            self.degrees.resize([self.filter_count])
+            self.accums = np.zeros([self.filter_count])
+            self.ones = np.ones([self.filter_count])
+            for index, degree_str in enumerate(args):
+                degree = any_to_float(degree_str)
+                if degree > 1.0:
+                    degree = 1.0
+                elif degree < 0.0:
+                    degree = 0.0
+                self.degrees[index] = degree
+        self.minus_degrees = self.ones - self.degrees
+        self.input = self.add_input('in', triggers_execution=True)
+        self.filter_degree_inputs = []
+        for i in range(self.filter_count):
+            input_ = self.add_input('filter ' + str(i), widget_type='drag_float', min=0.0, max=1.0, default_value=float(self.degrees[i]), callback=self.degree_changed)
+            self.filter_degree_inputs.append(input_)
+        self.output = self.add_output('out')
+        self.message_handlers['set'] = self.set
+        self.message_handlers['clear'] = self.clear
+
+    def degree_changed(self):
+        for i in range(self.filter_count):
+            self.degrees[i] = self.filter_degree_inputs[i]()
+        self.minus_degrees = self.ones - self.degrees
+
+    def execute(self):
+        input_value = self.input.get_data()
+        # handled, do_output = self.check_for_messages(input_value)
+        # if not handled:
+        self.accums = self.accums * self.degrees + input_value * self.minus_degrees
+        self.output.send(self.accums)
 
     def set(self, message, args):
         set_count = len(args)

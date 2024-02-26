@@ -233,7 +233,7 @@ def any_to_tensor(data, device='cpu', dtype=torch.float32, requires_grad=False, 
                     else:
                         tensor_ = tensor_.to(dtype=dtype)
                 elif tensor_.requires_grad != requires_grad:
-                    tensor_.to(requires_grad=requires_grad)
+                    tensor_ = tensor_.to(requires_grad=requires_grad)
                 return tensor_
             else:
                 if dtype != tensor_.dtype:
@@ -243,9 +243,9 @@ def any_to_tensor(data, device='cpu', dtype=torch.float32, requires_grad=False, 
                         tensor_ = tensor_.to(dtype=dtype, device=device)
 
                 elif tensor_.requires_grad != requires_grad:
-                    tensor_.to(device=device, requires_grad=requires_grad)
+                    tensor_ = tensor_.to(device=device, requires_grad=requires_grad)
                 else:
-                    tensor_.to(device=device)
+                    tensor_ = tensor_.to(device=device)
                 return tensor_
     if validate:
         return None

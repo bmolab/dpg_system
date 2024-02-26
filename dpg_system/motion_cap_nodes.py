@@ -1,3 +1,5 @@
+import torch
+
 from dpg_system.body_base import *
 
 
@@ -5,7 +7,9 @@ def register_mocap_nodes():
     Node.app.register_node('gl_body', MoCapGLBody.factory)
     Node.app.register_node('take', MoCapTakeNode.factory)
     Node.app.register_node('body_to_joints', MoCapBody.factory)
+    Node.app.register_node('shadow_body_to_joints', MoCapBody.factory)
     Node.app.register_node('pose', PoseNode.factory)
+    Node.app.register_node('shadow_pose', PoseNode.factory)
     Node.app.register_node('active_joints', ActiveJointsNode.factory)
 
 class MoCapNode(Node):
@@ -32,7 +36,31 @@ class MoCapNode(Node):
         'right_wrist': 24
     }
 
-    shadow_to_active_joints_index = [2, 17, 1, 32, 31, 4, 14, 12, 8, 28, 26, 22, 13, 5, 9, 10, 27, 19, 23, 24]
+    active_joint_map = {
+        'base_of_skull': 0,
+        'upper_vertebrae': 1,
+        'mid_vertebrae': 2,
+        'lower_vertebrae': 3,
+        'spine_pelvis': 4,
+        'pelvis_anchor': 5,
+        'left_hip': 6,
+        'left_knee': 7,
+        'left_ankle': 8,
+        'right_hip': 9,
+        'right_knee': 10,
+        'right_ankle': 11,
+        'left_shoulder_blade': 12,
+        'left_shoulder': 13,
+        'left_elbow': 14,
+        'left_wrist': 15,
+        'right_shoulder_blade': 16,
+        'right_shoulder': 17,
+        'right_elbow': 18,
+        'right_wrist': 19
+    }
+
+    active_to_shadow_map = [2, 17, 1, 32, 31, 4, 14, 12, 8, 28, 26, 22, 13, 5, 9, 10, 27, 19, 23, 24]
+    shadow_to_active_map = joints_to_input_vector
 
     @staticmethod
     def factory(name, data, args=None):
@@ -41,6 +69,11 @@ class MoCapNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+
+        self.joint_offsets = []
+        for key in self.joint_map:
+            index = self.joint_map[key]
+            self.joint_offsets.append(index)
 
 
 class MoCapTakeNode(MoCapNode):
@@ -186,29 +219,45 @@ class PoseNode(MoCapNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.joint_offsets = []
-        for key in self.joint_map:
-            index = self.joint_map[key]
-            self.joint_offsets.append(index)
-
+        self.shadow = False
         self.joint_inputs = []
-        for key in self.joint_map:
-            stripped_key = key.replace('_', ' ')
-            input = self.add_input(stripped_key, triggers_execution=True)
-            self.joint_inputs.append(input)
+        if label == 'shadow_pose':
+            self.shadow = True
+            for key in self.joint_map:
+                stripped_key = key.replace('_', ' ')
+                input_ = self.add_input(stripped_key, triggers_execution=True)
+                self.joint_inputs.append(input_)
+        else:
+            for key in self.active_joint_map:
+                stripped_key = key.replace('_', ' ')
+                input_ = self.add_input(stripped_key, triggers_execution=True)
+                self.joint_inputs.append(input_)
 
         self.output = self.add_output('pose out')
 
     def execute(self):
         # we need to know the size of the pose vector...
-        pose = np.array([[1.0, 0.0, 0.0, 0.0]] * 37)
-        for index, input in enumerate(self.joint_inputs):
-            incoming = input()
-            t = type(incoming)
-
-            if t == np.ndarray:
-                offset = self.joint_offsets[index]
-                pose[offset] = incoming
+        if self.shadow:
+            pose = np.array([[1.0, 0.0, 0.0, 0.0]] * 37)
+            for index, joint_input in enumerate(self.joint_inputs):
+                incoming = joint_input()
+                t = type(incoming)
+                if t == torch.Tensor:
+                    incoming = tensor_to_array(incoming)
+                    t = np.ndarray
+                if t == np.ndarray:
+                    offset = self.joint_offsets[index]
+                    pose[offset] = incoming
+        else:
+            pose = np.array([[1.0, 0.0, 0.0, 0.0]] * 20)
+            for index, joint_input in enumerate(self.joint_inputs):
+                incoming = joint_input()
+                t = type(incoming)
+                if t == torch.Tensor:
+                    incoming = tensor_to_array(incoming)
+                    t = np.ndarray
+                if t == np.ndarray:
+                    pose[index] = incoming
         self.output.send(pose)
 
 
@@ -221,29 +270,52 @@ class MoCapBody(MoCapNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.joint_offsets = []
-        for key in self.joint_map:
-            index = self.joint_map[key]
-            self.joint_offsets.append(index)
-
         self.input = self.add_input('pose in', triggers_execution=True)
         self.gl_chain_input = self.add_input('gl chain', triggers_execution=True)
         self.joint_outputs = []
+        self.shadow = False
+        if label == 'shadow_body_to_joints':
+            self.shadow = True
 
-        for key in self.joint_map:
-            stripped_key = key.replace('_', ' ')
-            output = self.add_output(stripped_key)
-            self.joint_outputs.append(output)
+        if self.shadow:
+            for key in self.joint_map:
+                stripped_key = key.replace('_', ' ')
+                output = self.add_output(stripped_key)
+                self.joint_outputs.append(output)
+        else:
+            for key in self.active_joint_map:
+                stripped_key = key.replace('_', ' ')
+                output = self.add_output(stripped_key)
+                self.joint_outputs.append(output)
 
     def execute(self):
         if self.input.fresh_input:
             incoming = self.input()
             t = type(incoming)
+            if t == torch.Tensor:
+                incoming = tensor_to_array(incoming)
+                t = np.ndarray
             if t == np.ndarray:
-                for i, index in enumerate(self.joint_offsets):
-                    if index < incoming.shape[0]:
-                        joint_value = incoming[index]
-                        self.joint_outputs[i].set_value(joint_value)
+                if self.shadow:
+                    if incoming.shape[0] == 37:
+                        for i, index in enumerate(self.joint_offsets):
+                            if index < incoming.shape[0]:
+                                joint_value = incoming[index]
+                                self.joint_outputs[i].set_value(joint_value)
+                    elif incoming.shape[0] == 20:
+                        for i, active_index in enumerate(self.active_to_shadow_map):
+                            if active_index < incoming.shape[0]:
+                                joint_value = incoming[active_index]
+                                self.joint_outputs[i].set_value(joint_value)
+                else:
+                    if incoming.shape[0] == 37:
+                        for i, index in enumerate(self.shadow_to_active_map):
+                            if index != -1 and index < len(self.joint_outputs):
+                                joint_value = incoming[i]
+                                self.joint_outputs[index].set_value(joint_value)
+                    elif incoming.shape[0] == 20:
+                        for i in range(20):
+                            self.joint_outputs[i].set_value(incoming[i])
                 self.send_all()
 
 
@@ -321,6 +393,7 @@ class MoCapGLBody(MoCapNode):
         self.joint_motion_scale = self.add_option('joint motion scale', widget_type='drag_float', default_value=5)
         self.diff_quat_smoothing = self.add_option('joint motion smoothing', widget_type='drag_float', default_value=0.8, max=1.0, min=0.0)
         self.joint_disk_alpha = self.add_option('joint motion alpha', widget_type='drag_float', default_value=0.5, max=1.0, min=0.0)
+        self.body_color_id = self.add_option('colour id', widget_type='input_int', default_value=0)
         self.body = BodyData()
         self.body.node = self
 
@@ -366,12 +439,19 @@ class MoCapGLBody(MoCapNode):
         if self.input.fresh_input:
             incoming = self.input()
             t = type(incoming)
+            if t == torch.Tensor:
+                incoming = tensor_to_array(incoming)
+                t = np.ndarray
             if t == np.ndarray:
                 # work on this!!!
                 if incoming.shape[0] == 37:
                     for joint_name in self.joint_map:
                         joint_id = self.joint_map[joint_name]
-                        self.body.update(joint_index=joint_id, quat=incoming[joint_id])
+                        self.body.update(joint_index=joint_id, quat=incoming[joint_id], label=self.body_color_id())
+                elif incoming.shape[0] == 20:
+                    for index, joint_name in enumerate(self.joint_map):
+                        joint_id = self.joint_map[joint_name]
+                        self.body.update(joint_index=joint_id, quat=incoming[index], label=self.body_color_id())
             elif t == list:
                 self.process_commands(incoming)
 
@@ -401,8 +481,11 @@ class ActiveJointsNode(MoCapNode):
     def execute(self):
         incoming = self.full_pose_in()
         t = type(incoming)
+        if t == torch.Tensor:
+            incoming = tensor_to_array(incoming)
+            t = np.ndarray
         if t == np.ndarray:
             # work on this!!!
             if incoming.shape[0] == 37:
-                active_joints = incoming[self.shadow_to_active_joints_index]
+                active_joints = incoming[self.active_to_shadow_map]
                 self.active_joints_out.send(active_joints)

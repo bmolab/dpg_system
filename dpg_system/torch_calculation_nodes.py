@@ -38,6 +38,8 @@ def register_torch_calculation_nodes():
     Node.app.register_node('t.cummin', TorchCumSumNode.factory)
     Node.app.register_node('t.logcumsumexp', TorchCumSumNode.factory)
 
+    Node.app.register_node('t.normalize', TorchNormalizeNode.factory)
+
     Node.app.register_node('t.copysign', TorchCopySignNode.factory)
 
     Node.app.register_node('t.linalg.qr', TorchLinalgRQNode.factory)
@@ -712,6 +714,25 @@ class CosineSimilarityNode(TorchNode):
                         self.output.send(similarity.item())
                     except Exception as e:
                         print(self.label, e)
+
+
+class TorchNormalizeNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchNormalizeNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.dim_input = self.add_input('dim', widget_type='input_int', default_value=1)
+        self.normalized_output = self.add_output('normalized tensor out')
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            n = torch.nn.functional.normalize(input_tensor, dim=self.dim_input())
+            self.normalized_output.send(n)
 
 
 class TorchLinalgRQNode(TorchNode):

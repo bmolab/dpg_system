@@ -1843,6 +1843,8 @@ class App:
                     dpg.render_dearpygui_frame()
                     then = time.time()
                     elapsed = then - now
+
+                    #  openGL separate thread?
                     if opengl_active:
                         if do_gl:
                             GLContextNode.maintenance_loop()

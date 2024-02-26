@@ -18,7 +18,7 @@ def register_basic_nodes():
     Node.app.register_node('append', AppendNode.factory)
     Node.app.register_node("type", TypeNode.factory)
     Node.app.register_node("info", TypeNode.factory)
-    Node.app.register_node("array", ArrayNode.factory)
+    Node.app.register_node('array', ArrayNode.factory)
     Node.app.register_node("string", StringNode.factory)
     Node.app.register_node("list", ListNode.factory)
     Node.app.register_node("counter", CounterNode.factory)
@@ -1600,9 +1600,12 @@ class ArrayNode(Node):
 
     def shape_changed(self):
         shape_text = self.shape_property()
-        shape_split = re.findall(r'\d+', shape_text)
-        shape_list, _, _ = list_to_hybrid_list(shape_split)
-        self.shape = shape_list
+        if shape_text != '':
+            shape_split = re.findall(r'\d+', shape_text)
+            shape_list, _, _ = list_to_hybrid_list(shape_split)
+            self.shape = shape_list
+        else:
+            self.shape = None
 
     def execute(self):
         in_data = self.input()
