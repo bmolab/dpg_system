@@ -28,6 +28,7 @@ sockets_active = True
 easy_mode = False
 ultracwt_active = True
 pybullet_active = False
+midi_active = True
 
 # print('Options active:', end=' ')
 # with open('dpg_system_config.json', 'r') as f:
@@ -237,6 +238,14 @@ if ultracwt_active:
         imported.append('ultracwt_nodes.py')
     except ModuleNotFoundError:
         ultracwt_active = False
+
+if midi_active:
+    try:
+        from dpg_system.midi_nodes import *
+        imported.append('midi_nodes.py')
+        print('imported midi')
+    except ModuleNotFoundError:
+        midi_active = False
 
 # import additional node files in folder
 
@@ -922,6 +931,9 @@ class App:
 
         if ultracwt_active and 'register_ultracwt_nodes' in globals():
             register_ultracwt_nodes()
+
+        if midi_active and 'register_midi_nodes' in globals():
+            register_midi_nodes()
 
 
     def get_variable_list(self):

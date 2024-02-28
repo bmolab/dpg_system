@@ -14,5 +14,6 @@
   "pybullet": true,
   "sockets": true,
   "ultracwt": true,
-  "easy": false
+  "easy": false,
+  "midi": true
 }
