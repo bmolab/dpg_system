@@ -1271,10 +1271,11 @@ class CombineFIFONode(Node):
                     break
             self.execute()
 
-        def clear_fifo(self, value):
+        def clear_fifo(self, value=0):
             self.combine_list = [''] * self.count
             output_string = ''
-            self.output.send(output_string)
+            self.output.send(self.combine_list)
+            self.string_output.send(output_string)
 
         def advance_age(self):
             now = time.time()
