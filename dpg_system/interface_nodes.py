@@ -560,7 +560,7 @@ class ToggleNode(Node):
                 if t == str:
                     variable_name = var_name
         self.reset_input = None
-        self.value = False
+        self.value = 0
         self.temp_block_output = False
         self.variable = None
         if self.label == 'set_reset':
@@ -615,6 +615,7 @@ class ToggleNode(Node):
             value = value.split(' ')
             if len(value) == 1:
                 value = value[0]
+        value = any_to_int(value)
         if self.variable is not None and propagate:
             self.variable.set(value, from_client=self)
         self.outputs[0].send(value)
@@ -632,22 +633,29 @@ class ToggleNode(Node):
                 received = self.input.get_received_data()     # so that we can catch 'bang' ?
                 if type(received) == str:
                     if received == 'bang':
-                        self.value = not self.value
+                        self.value = 1 - self.value
+                        # self.value = not self.value
                         self.input.set(self.value)
                 elif type(received) == list:
                     if type(received[0] == str):
                         if received[0] == 'set':
-                            self.value = any_to_bool(received[1])
+                            self.value = any_to_int(received[1])
+                            if self.value != 0:
+                                self.value = 1
                             self.input.set(self.value, propagate=False)
                             self.temp_block_output = True
                             if self.variable is not None:
                                 self.variable.set(self.value, from_client=self)
                             return
                 else:
-                    self.value = any_to_bool(received)
+                    self.value = any_to_int(received)
+                    if self.value != 0:
+                        self.value = 1
                     self.input.set(self.value)
             else:
-                self.value = any_to_bool(self.input())
+                self.value = any_to_int(self.input())
+                if self.value != 0:
+                    self.value = 1
         else:
             if self.active_input == self.input:
                 self.value = 1
