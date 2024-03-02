@@ -7,6 +7,8 @@ import mido
 def register_midi_nodes():
     Node.app.register_node('midi_in', MidiInNode.factory)
     Node.app.register_node('midi_out', MidiOutNode.factory)
+    Node.app.register_node('midi_control_out', MidiControlOutNode.factory)
+    Node.app.register_node('midi_note_out', MidiNoteOutNode.factory)
     Node.app.register_node('blue_board', BlueBoardNode.factory)
 
 
@@ -19,18 +21,18 @@ class MidiIn:
 
         if self.in_port_name is not None:
             self.in_port = mido.open_input(self.in_port_name, callback=self.receive)
-            print(self.in_port)
         else:
             self.in_port = mido.open_input(callback=self.receive)
-            print(self.in_port)
         self.input_list = mido.get_input_names()
-        print(self.input_list)
         self.in_port.callback = self.receive
 
     def receive(self, msg):
         pass
 
     def port_changed(self):
+        if self.in_port:
+            self.in_port.close()
+        self.in_port = mido.open_input(self.in_port_name, callback=self.receive)
         pass
 
 
@@ -52,6 +54,10 @@ class MidiInNode(MidiIn, Node):
     def receive(self, msg):
         self.output.send(msg.bytes())
 
+    def port_changed(self):
+        self.in_port_name = self.in_port_name_property()
+        super().port_changed()
+
 
 class MidiOut:
     def __init__(self, label: str, data, args):
@@ -62,15 +68,14 @@ class MidiOut:
 
         if self.out_port_name is not None:
             self.out_port = mido.open_output(self.out_port_name)
-            print(self.out_port_name)
         else:
             self.out_port = mido.open_output()
-            print(self.out_port_name)
         self.output_list = mido.get_output_names()
-        print(self.output_list)
 
     def port_changed(self):
-        pass
+        if self.out_port:
+            self.out_port.close()
+        self.out_port = mido.open_output(self.out_port_name)
 
 
 class MidiOutNode(MidiOut, Node):
@@ -85,19 +90,141 @@ class MidiOutNode(MidiOut, Node):
         Node.__init__(self, label, data, args)
 
         self.midi_to_send = self.add_input('midi to send', triggers_execution=True)
-        self.out_port_name = self.add_input('port', widget_type='combo', default_value=self.out_port.name, callback=self.port_changed)
-        self.out_port_name.widget.combo_items = self.output_list
-
-        self.output = self.add_output('midi out')
+        self.out_port_name_property = self.add_input('port', widget_type='combo', default_value=self.out_port.name, callback=self.port_changed)
+        self.out_port_name_property.widget.combo_items = self.output_list
 
 
     def execute(self):
-        midi_data = any_to_list(self.midi_to_send())
+        midi_data = any_to_numerical_list(self.midi_to_send())
         msg = mido.Message.from_bytes(midi_data)
         self.out_port.send(msg)
 
     def port_changed(self):
-        pass
+        self.out_port_name = self.out_port_name_property()
+        super().port_changed()
+
+
+class MidiControlOutNode(MidiOut, Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = MidiControlOutNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+
+        MidiOut.__init__(self, label, data, args)
+        Node.__init__(self, label, data, args)
+
+        controller = 64
+        if len(args) > 0:
+            controller = any_to_int(args[0])
+            if controller > 127:
+                controller = 127
+            elif controller < 0:
+                controller = 0
+
+        channel = 1
+        if len(args) > 1:
+            channel = any_to_int(args[1])
+            if channel > 16:
+                channel = 16
+            elif channel < 1:
+                channel = 1
+
+        self.midi_to_send = self.add_input('midi to send', triggers_execution=True)
+        self.control_number = self.add_input('controller #', widget_type='input_int', default_value=controller, min=0, max=127)
+        self.channel = self.add_option('channel', widget_type='input_int', default_value=channel, min=1, max=16)
+        self.out_port_name_property = self.add_option('port', widget_type='combo', default_value=self.out_port.name, callback=self.port_changed)
+        self.out_port_name_property.widget.combo_items = self.output_list
+
+    def execute(self):
+        controller_value = any_to_int(self.midi_to_send())
+        if controller_value > 127:
+            controller_value = 127
+        elif controller_value < 0:
+            controller_value = 0
+        midi_data = [self.channel() - 1 + 176, self.control_number(), controller_value]
+        msg = mido.Message.from_bytes(midi_data)
+        self.out_port.send(msg)
+
+    def port_changed(self):
+        self.out_port_name = self.out_port_name_property()
+        super().port_changed()
+
+
+class MidiNoteOutNode(MidiOut, Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = MidiNoteOutNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+
+        MidiOut.__init__(self, label, data, args)
+        Node.__init__(self, label, data, args)
+
+        velocity = 64
+        if len(args) > 0:
+            velocity = any_to_int(args[0])
+            if velocity > 127:
+                velocity = 127
+            elif velocity < 0:
+                velocity = 0
+        channel = 1
+        if len(args) > 1:
+            channel = any_to_int(args[1])
+            if channel > 16:
+                channel = 16
+            elif channel < 1:
+                channel = 1
+
+
+        self.midi_to_send = self.add_input('midi to send', triggers_execution=True)
+        self.velocity = self.add_input('velocity', widget_type='drag_int', default_value=velocity, min=0, max=127)
+        self.channel = self.add_option('channel', widget_type='input_int', default_value=channel, min=1, max=16)
+        self.out_port_name_property = self.add_option('port', widget_type='combo', default_value=self.out_port.name, callback=self.port_changed)
+        self.out_port_name_property.widget.combo_items = self.output_list
+
+    def execute(self):
+        input = self.midi_to_send()
+        note = 64
+        velocity = self.velocity()
+        channel = self.channel()
+
+        if type(input) in [list, tuple]:
+            length = len(input)
+            if length > 0:
+                note = any_to_int(input[0])
+                if note > 127:
+                    note = 127
+                if note < 0:
+                    note = 0
+            if length > 1:
+                velocity = any_to_int(input[1])
+                if velocity > 127:
+                    velocity = 127
+                if velocity < 0:
+                    velocity = 0
+            if length > 2:
+                channel = any_to_int(input[2])
+                if channel > 16:
+                    channel = 16
+                if channel < 1:
+                    channel = 1
+        else:
+            note = any_to_int(input)
+            if note > 127:
+                note = 127
+            if note < 0:
+                note = 0
+        midi_code = 144
+        midi_data = [channel - 1 + midi_code, note, velocity]
+        msg = mido.Message.from_bytes(midi_data)
+        self.out_port.send(msg)
+
+    def port_changed(self):
+        self.out_port_name = self.out_port_name_property()
+        super().port_changed()
 
 
 class BlueBoardNode(MidiIn, MidiOut, Node):
