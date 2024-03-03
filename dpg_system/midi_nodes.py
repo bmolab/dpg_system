@@ -807,51 +807,74 @@ class BlueBoardNode(MidiIn, MidiOut, Node):
         MidiOut.__init__(self, label, data, force_args)
         Node.__init__(self, label, data, force_args)
 
-        self.set_A_input = self.add_input('set LED A', triggers_execution=True)
-        self.set_B_input = self.add_input('set LED B', triggers_execution=True)
-        self.set_C_input = self.add_input('set LED C', triggers_execution=True)
-        self.set_D_input = self.add_input('set LED D', triggers_execution=True)
-        # self.out_port_name = self.add_input('port', widget_type='combo', default_value=self.out_port.name,
-        #                                     callback=self.port_changed)
-        # self.out_port_name.widget.combo_items = self.output_list
-        #
-        # self.in_port_name_property = self.add_input('port', widget_type='combo', default_value=self.in_port.name, callback=self.port_changed)
-        # self.in_port_name_property.widget.combo_items = self.input_list
+        self.set_LED_inputs = []
+        self.modes = []
 
-        self.output_A = self.add_output('button A out')
-        self.output_B = self.add_output('button B out')
-        self.output_C = self.add_output('button C out')
-        self.output_D = self.add_output('button D out')
+        self.add_output('A')
+        self.modes.append(self.add_property('', widget_type='combo', default_value='momentary'))
+        self.set_LED_inputs.append(self.add_input('LED', widget_type='checkbox', triggers_execution=True))
+        self.add_spacer()
+        self.add_output('B')
+        self.modes.append(self.add_property('', widget_type='combo', default_value='momentary'))
+        self.set_LED_inputs.append(self.add_input('LED', widget_type='checkbox', triggers_execution=True))
+        self.add_spacer()
+        self.add_output('C')
+        self.modes.append(self.add_property('', widget_type='combo', default_value='momentary'))
+        self.set_LED_inputs.append(self.add_input('LED', widget_type='checkbox', triggers_execution=True))
+        self.add_spacer()
+        self.add_output('D')
+        self.modes.append(self.add_property('', widget_type='combo', default_value='momentary'))
+        self.set_LED_inputs.append(self.add_input('LED', widget_type='checkbox', triggers_execution=True))
+
+        self.states = [0, 0, 0, 0]
+
+        for mode in self.modes:
+            mode.widget.combo_items = ['toggle', 'momentary', 'raw']
+
+        self.in_port.add_client(self, code=None)
 
     def receive_midi_bytes(self, midi_bytes):
         state = midi_bytes[2]
         if state == 127:
             state = 1
-        if midi_bytes[1] == 20:
-            self.output_A.send(state)
-        elif midi_bytes[1] == 21:
-            self.output_B.send(state)
-        elif midi_bytes[1] == 22:
-            self.output_C.send(state)
-        elif midi_bytes[1] == 23:
-            self.output_D.send(state)
+        which = midi_bytes[1] - 20
+        mode = self.modes[which]()
+        if mode == 'momentary':
+            self.states[which] = state
+            self.set_LED(which, state)
+        elif mode == 'toggle':
+            if state == 1:
+                self.states[which] = 1 - self.states[which]
+                self.set_LED(which, self.states[which])
+            else:
+                return
+        else:
+            self.states[which] = state
+        self.outputs[which].send(self.states[which])
+
+    def set_LED(self, which, state):
+        midi_data = [controller_code, which + 20, state * 127]
+        msg = mido.Message.from_bytes(midi_data)
+        self.out_port.send(msg)
+        self.set_LED_inputs[which].set(state)
 
     def execute(self):
         out = 0
-        which = 20
-        if self.active_input == self.set_A_input:
-            out = self.set_A_input() * 127
-            which = 20
-        elif self.active_input == self.set_B_input:
-            out = self.set_B_input() * 127
-            which = 21
-        elif self.active_input == self.set_C_input:
-            out = self.set_C_input() * 127
-            which = 22
-        elif self.active_input == self.set_D_input:
-            out = self.set_D_input() * 127
-            which = 23
-        midi_data = [controller_code, which, out]
+        controller = 20
+
+        for which, set_LED in enumerate(self.set_LED_inputs):
+            if set_LED == self.active_input:
+                if self.modes[which]() in ['toggle', 'momentary']:
+                    if self.states[which] != self.active_input():
+                        self.states[which] = self.active_input()
+                        self.outputs[which].send(self.states[which])
+                out = self.active_input() * 127
+                controller = 20 + which
+                break
+
+        midi_data = [controller_code, controller, out]
         msg = mido.Message.from_bytes(midi_data)
         self.out_port.send(msg)
 
+    def custom_cleanup(self):
+        self.in_port.remove_client(self)
