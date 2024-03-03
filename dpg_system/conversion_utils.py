@@ -809,3 +809,33 @@ def is_float(s):
     return False
 
 
+def conform_type(a, b):
+    t_a = type(a)
+    t_b = type(b)
+
+    if t_a == t_b:
+        return a
+
+    if t_a == str:
+        if t_b in [int, np.int64]:
+            return any_to_int(a)
+        elif t_b in [float, np.float32, np.double]:
+            return any_to_float(a)
+        elif t_b in [bool, np.bool_]:
+            return any_to_bool(a)
+        elif t_b in [list, tuple, np.ndarray]:
+            return any_to_array(a)
+    elif t_b in [int, np.int64]:
+        return any_to_int(a)
+    elif t_b in [float, np.float32, np.double]:
+        return any_to_float(a)
+    elif t_b == str:
+        return any_to_string(a)
+    elif t_b == list:
+        return any_to_list(a)
+    elif t_b == np.ndarray:
+        return any_to_array(a)
+
+
+
+

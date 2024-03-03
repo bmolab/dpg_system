@@ -5,6 +5,7 @@ from dpg_system.conversion_utils import *
 import json
 from typing import List, Any, Callable, Union, Tuple
 from fuzzywuzzy import fuzz
+import sys
 
 
 def register_base_nodes():
@@ -39,7 +40,7 @@ class NodeOutput:
 
     def set_label(self, name):
         self._label = name
-        if self.label_uuid == None:
+        if self.label_uuid is None:
             self.label_uuid = dpg.add_text(self._label)
         else:
             dpg.set_value(self.label_uuid, self._label)
@@ -428,13 +429,13 @@ class PropertyWidget:
                 if self.min is not None:
                     min = self.min
                 else:
-                    min = 0
-                    self.min = 0
+                    min = sys.float_info.min
+                    self.min = min
                 if self.max is not None:
                     max = self.max
                 else:
-                    max = 100
-                    self.max = 100
+                    max = sys.float_info.max
+                    self.max = max
                 dpg.add_input_float(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node, default_value=self.default_value, step=self.step, min_value=min, max_value=max)
             elif self.widget == 'input_int':
                 if self.min is not None:
@@ -445,8 +446,9 @@ class PropertyWidget:
                 if self.max is not None:
                     max = self.max
                 else:
-                    max = 100
-                    self.max = 100
+                    max = sys.maxsize
+                    self.max = max
+
                 dpg.add_input_int(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node, default_value=self.default_value, step=self.step, min_value=min, max_value=max)
             elif self.widget == 'checkbox':
                 check = dpg.add_checkbox(label=self._label, tag=self.uuid, default_value=self.default_value, user_data=self)
@@ -596,11 +598,28 @@ class PropertyWidget:
 
     def get_text_width(self, pad=12, minimum_width=100):
         ttt = any_to_string(self.value)
-        size = dpg.get_text_size(ttt, font=dpg.get_item_font(self.uuid))
+        font_id = dpg.get_item_font(self.uuid)
+        size = dpg.get_text_size(ttt, font=font_id)
         width = minimum_width
         if size is not None:
             width = size[0] + pad
-        font_scale = Node.app.font_scale_variable()
+        font_scale = 1.0
+        if font_id is not None:
+            font_scale = Node.app.font_scale_variable()
+        if width < minimum_width / font_scale:
+            width = minimum_width / font_scale
+        return width * font_scale
+
+    def get_label_width(self, pad=12, minimum_width=100):
+        label = dpg.get_item_label(self.uuid)
+        font_id = dpg.get_item_font(self.uuid)
+        size = dpg.get_text_size(label, font=font_id)
+        width = minimum_width
+        if size is not None:
+            width = size[0] + pad
+        font_scale = 1.0
+        if font_id is not None:
+            font_scale = Node.app.font_scale_variable()
         if width < minimum_width / font_scale:
             width = minimum_width / font_scale
         return width * font_scale

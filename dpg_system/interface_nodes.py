@@ -67,8 +67,8 @@ class ButtonNode(Node):
 
         self.bound_action = self.add_option('bind to', widget_type='text_input', width=120, default_value=self.action_name, callback=self.binding_changed)
         self.message = self.add_option('message', widget_type='text_input', default_value='bang', callback=self.message_changed)
-        self.width = self.add_option('width', widget_type='input_int', default_value=14, callback=self.size_changed)
-        self.height = self.add_option('height', widget_type='input_int', default_value=14, callback=self.size_changed)
+        self.width = self.add_option('width', widget_type='input_int', default_value=14, min=14, max=None, callback=self.size_changed)
+        self.height = self.add_option('height', widget_type='input_int', default_value=14, min=14, max=None, callback=self.size_changed)
         self.flash_duration = self.add_option('flash_duration', widget_type='drag_float', min=0, max=1.0, default_value=flash_duration)
 
         with dpg.theme() as self.active_theme:
@@ -109,10 +109,9 @@ class ButtonNode(Node):
 
         if new_name != 'bang':
             dpg.set_item_label(self.input.widget.uuid, new_name)
-            width = self.input.widget.get_text_width()
-            if width < 14:
-                width = 14
+            width = self.input.widget.get_label_width(minimum_width=14)
             dpg.set_item_width(self.input.widget.uuid, width)
+            self.width.set(width)
 
     def clicked_function(self, input=None):
         self.target_time = time.time() + self.flash_duration()
@@ -122,7 +121,7 @@ class ButtonNode(Node):
     def custom_create(self, from_file):
         if self.action_name != '':
             self.binding_changed()
-        width = self.input.widget.get_text_width()
+        width = self.input.widget.get_label_width(minimum_width=14)
         if width < 14:
             width = 14
         dpg.set_item_width(self.input.widget.uuid, width)
@@ -560,7 +559,7 @@ class ToggleNode(Node):
                 if t == str:
                     variable_name = var_name
         self.reset_input = None
-        self.value = False
+        self.value = 0
         self.temp_block_output = False
         self.variable = None
         if self.label == 'set_reset':
@@ -615,6 +614,7 @@ class ToggleNode(Node):
             value = value.split(' ')
             if len(value) == 1:
                 value = value[0]
+        value = any_to_int(value)
         if self.variable is not None and propagate:
             self.variable.set(value, from_client=self)
         self.outputs[0].send(value)
@@ -632,22 +632,29 @@ class ToggleNode(Node):
                 received = self.input.get_received_data()     # so that we can catch 'bang' ?
                 if type(received) == str:
                     if received == 'bang':
-                        self.value = not self.value
+                        self.value = 1 - self.value
+                        # self.value = not self.value
                         self.input.set(self.value)
                 elif type(received) == list:
                     if type(received[0] == str):
                         if received[0] == 'set':
-                            self.value = any_to_bool(received[1])
+                            self.value = any_to_int(received[1])
+                            if self.value != 0:
+                                self.value = 1
                             self.input.set(self.value, propagate=False)
                             self.temp_block_output = True
                             if self.variable is not None:
                                 self.variable.set(self.value, from_client=self)
                             return
                 else:
-                    self.value = any_to_bool(received)
+                    self.value = any_to_int(received)
+                    if self.value != 0:
+                        self.value = 1
                     self.input.set(self.value)
             else:
-                self.value = any_to_bool(self.input())
+                self.value = any_to_int(self.input())
+                if self.value != 0:
+                    self.value = 1
         else:
             if self.active_input == self.input:
                 self.value = 1
@@ -798,7 +805,7 @@ class ValueNode(Node):
 
         self.width_option = self.add_option('width', widget_type='drag_int', default_value=widget_width, callback=self.options_changed)
         if widget_type == 'text_input':
-            self.grow_option = self.add_option('adapt_width', widget_type='combo', default_value='grow_to_fit', callback=self.options_changed)
+            self.grow_option = self.add_option('adapt_width', widget_type='combo', width=150, default_value='grow_to_fit', callback=self.options_changed)
             self.grow_option.widget.combo_items = ['grow_to_fit', 'grow_or_shrink_to_fit', 'fixed_width']
         if widget_type in ['drag_float', 'slider_float', 'drag_int', 'knob_int', 'input_int']:
             self.format_property = self.add_option('format', widget_type='text_input', default_value=self.format, callback=self.options_changed)

@@ -321,7 +321,7 @@ class ComparisonAndPassNode(Node):
                            '<': self.less, '<=': self.less_equal, 'always': self.no_op}
         if label == 'change':
             self.operation = '!='
-            force_int = True
+            # force_int = True
         elif label == 'increasing':
             self.operation = '>'
         elif label == 'decreasing':
@@ -332,21 +332,24 @@ class ComparisonAndPassNode(Node):
             if args[0] in self.operations:
                 self.operation = args[0]
 
-        self.operand = 0
+        self.operand = None
         self_compare = False
 
         if self.simple:
             if len(args) > 1:
-                self.operand = self.arg_as_number(default_value=0.0, index=1)
+                t, self.operand = decode_arg(args, 1)
+            #     # self.operand = self.arg_as_number(default_value=0.0, index=1)
             else:
                 self_compare = True
         else:
             if len(args) > 2:
-                self.operand = self.arg_as_number(default_value=0.0, index=2)
+                t, self.operand = decode_arg(args, 2)
+                # self.operand = self.arg_as_number(default_value=0.0, index=2)
             else:
                 self_compare = True
 
         self.input = self.add_input('in', triggers_execution=True)
+
         if self.simple:
             self.comparison_property = self.add_option('', widget_type='combo', default_value=self.operation, callback=self.comparison_changed)
             self.comparison_property.widget.combo_items = list(self.operations)
@@ -372,9 +375,16 @@ class ComparisonAndPassNode(Node):
 
     def execute(self):
         if not self.simple and self.operand_property.fresh_input:
-            self.operand = any_to_numerical(self.operand_property())
+            self.operand = self.operand_property()
 
-        input_value = any_to_numerical(self.input())
+        input_value = self.input()
+        if self.operand is not None:
+            input_value = conform_type(input_value, self.operand)
+        else:
+            t = type(input_value)
+            if t not in [float, int, np.int64, np.float32, np.double]:
+                self.force_int_property.set(False)
+        # input_value = any_to_numerical(self.input())
 
         if type(input_value) == np.ndarray:
             if type(self.operand) != np.ndarray:
@@ -404,8 +414,8 @@ class ComparisonAndPassNode(Node):
             if type(self.operand) == np.ndarray:
                 self.operand = 0
             if self.force_int_property():
-                input_value = int(input_value)
-                op = int(self.operand)
+                input_value = any_to_int(input_value)
+                op = any_to_int(self.operand)
             else:
                 op = self.operand
             output_value = self.operations[self.operation](input_value, op)
