@@ -23,6 +23,15 @@ def register_midi_nodes():
     Node.app.register_node('blue_board', BlueBoardNode.factory)
 
 
+note_off_code = 128
+note_on_code = 144
+poly_pressure_code = 160
+controller_code = 176
+program_code = 192
+aftertouch_code = 208
+pitch_bend_code = 224
+
+
 class MidiInPort:
     ports = {}
 
@@ -35,18 +44,19 @@ class MidiInPort:
 
         if self.port_name is not None:
             if self.port_name in MidiInPort.ports:
-                self.port = MidiInPort.ports[self.port_name]
+                self.port = MidiInPort.ports[self.port_name].port
             else:
                 self.port = mido.open_input(self.port_name, callback=self.receive)
-                MidiInPort.ports[self.port_name] = self.port
+                MidiInPort.ports[self.port_name] = self
         else:
             keys = list(MidiInPort.ports.keys())
             if len(keys) > 0:
-                self.port = MidiInPort.ports[keys[0]]
+                self.port = MidiInPort.ports[keys[0]].port
             else:
                 self.port = mido.open_input(callback=self.receive)
             self.port_name = self.port.name
-            self.ports[self.port_name] = self
+            if self.port_name not in MidiInPort.ports:
+                MidiInPort.ports[self.port_name] = self
 
     def add_client(self, client, code=None):
         if code is None:
@@ -84,6 +94,7 @@ class MidiIn:
         super().__init__(label, data, args)
         self.in_port_name = None
         self.in_port = None
+        self.codes = [None]
 
         if len(args) > 0:
             val, t = decode_arg(args, 0)
@@ -108,10 +119,16 @@ class MidiIn:
         pass
 
     def port_changed(self):
-        if self.in_port_name in MidiIn.ports:
+        if self.in_port is not None:
+            for code in self.codes:
+                self.in_port.remove_client(self, code=code)
+        if self.in_port_name in MidiInPort.ports:
             self.in_port = MidiInPort.ports[self.in_port_name]
         else:
             self.in_port = MidiInPort(self.in_port_name)
+        if self.in_port is not None:
+            for code in self.codes:
+                self.in_port.add_client(self, code=code)
 
 
 class MidiInNode(MidiIn, Node):
@@ -141,184 +158,127 @@ class MidiInNode(MidiIn, Node):
         self.in_port.remove_client(self)
 
 
-class MidiControllerInNode(MidiIn, Node):
+class MidiMessageInNode(MidiIn, Node):
+    def __init__(self, label: str, data, args):
+        MidiIn.__init__(self, label, data, args)
+        Node.__init__(self, label, data, args)
+
+        self.codes = [None]
+        self.channel = 1
+        self.controller = 0     # only for controller in
+        self.channel_property = None
+        self.in_port_name_property = None
+        self.output = None
+
+    def finish_init(self, out_name):
+        self.create_channel_and_port()
+
+        self.output = self.add_output(out_name)
+        self.codes = self.make_codes()
+        self.attach_to_port()
+
+    def create_channel_and_port(self):
+        self.channel_property = self.add_option('channel', widget_type='input_int', default_value=self.channel, min=1,
+                                                max=16,
+                                                callback=self.params_changed)
+
+        self.in_port_name_property = self.add_input('port', widget_type='combo', default_value=self.in_port.port.name,
+                                                    callback=self.port_changed)
+        self.in_port_name_property.widget.combo_items = self.input_list
+
+    def make_codes(self):
+        return [None]
+
+    def params_changed(self):
+        self.channel = self.channel_property()
+        new_codes = self.make_codes()
+        if new_codes[0] != self.codes[0]:
+            for code in self.codes:
+                self.in_port.remove_client(self, code=code)
+            self.codes = new_codes
+            for code in self.codes:
+                self.in_port.add_client(self, code=code)
+
+    def receive_midi_bytes(self, midi_bytes):
+        pass
+
+    def constrain_channel(self, channel):
+        if channel > 16:
+            channel = 16
+        elif channel < 1:
+            channel = 1
+        return channel
+
+    def port_changed(self):
+        if self.in_port_name_property is not None:
+            self.in_port_name = self.in_port_name_property()
+            super().port_changed()
+
+    def attach_to_port(self):
+        if self.in_port:
+            for code in self.codes:
+                self.in_port.add_client(self, code=code)
+
+    def custom_cleanup(self):
+        if self.in_port:
+            for code in self.codes:
+                self.in_port.remove_client(self, code=code)
+
+
+class MidiControllerInNode(MidiMessageInNode):
     @staticmethod
     def factory(name, data, args=None):
         node = MidiControllerInNode(name, data, args)
         return node
 
     def __init__(self, label: str, data, args):
-        MidiIn.__init__(self, label, data, args)
-        Node.__init__(self, label, data, args)
+        super().__init__(label, data, args)
 
-        controller = 64
-        channel = 1
+        self.controller = 64
         control_found = False
 
         for i in range(len(args)):
             val, t = decode_arg(args, i)
             if t == int:
                 if control_found:
-                    channel = val
-                    if channel > 16:
-                        channel = 16
-                    elif channel < 1:
-                        channel = 1
+                    self.channel = self.constrain_channel(val)
                 else:
                     controller = val
                     if controller > 127:
                         controller = 127
                     elif controller < 0:
                         controller = 0
+                    self.controller = controller
                     control_found = True
 
-        self.control_number = self.add_input('controller #', widget_type='input_int', default_value=controller, min=0, max=127, callback=self.params_changed)
-        self.channel = self.add_option('channel', widget_type='input_int', default_value=channel, min=1, max=16, callback=self.params_changed)
+        self.control_number = self.add_input('controller #', widget_type='input_int', default_value=self.controller, min=0,
+                                             max=127, callback=self.controller_changed)
+        self.finish_init('controller out')
 
-        self.in_port_name_property = self.add_input('port', widget_type='combo', default_value=self.in_port.port.name, callback=self.port_changed)
-        self.in_port_name_property.widget.combo_items = self.input_list
+    def controller_changed(self):
+        self.controller = self.control_number()
+        self.params_changed()
 
-        self.output = self.add_output('controller out')
-        self.code = self.make_code(channel, controller)
-        if self.in_port:
-            self.in_port.add_client(self, code=self.code)
-
-    def make_code(self, channel, controller):
-        return (176 + channel - 1) * 256 + controller
-
-    def params_changed(self):
-        new_code = self.make_code(self.channel(), self.control_number())
-        if new_code != self.code:
-            self.in_port.remove_client(self, code=self.code)
-            self.code = new_code
-            self.in_port.add_client(self, self.code)
+    def make_codes(self):
+        return [(controller_code + self.channel - 1) * 256 + self.controller]
 
     def receive_midi_bytes(self, midi_bytes):
         self.output.send(midi_bytes[2])
 
-    def port_changed(self):
-        self.in_port_name = self.in_port_name_property()
-        super().port_changed()
 
-    def custom_cleanup(self):
-        self.in_port.remove_client(self, code=self.code)
-
-
-class MidiControllerInNode(MidiIn, Node):
-    @staticmethod
-    def factory(name, data, args=None):
-        node = MidiControllerInNode(name, data, args)
-        return node
-
-    def __init__(self, label: str, data, args):
-        MidiIn.__init__(self, label, data, args)
-        Node.__init__(self, label, data, args)
-
-        controller = 64
-        channel = 1
-        control_found = False
-
-        for i in range(len(args)):
-            val, t = decode_arg(args, i)
-            if t == int:
-                if control_found:
-                    channel = val
-                    if channel > 16:
-                        channel = 16
-                    elif channel < 1:
-                        channel = 1
-                else:
-                    controller = val
-                    if controller > 127:
-                        controller = 127
-                    elif controller < 0:
-                        controller = 0
-                    control_found = True
-
-        self.control_number = self.add_input('controller #', widget_type='input_int', default_value=controller, min=0, max=127, callback=self.params_changed)
-        self.channel = self.add_option('channel', widget_type='input_int', default_value=channel, min=1, max=16, callback=self.params_changed)
-
-        self.in_port_name_property = self.add_input('port', widget_type='combo', default_value=self.in_port.port.name, callback=self.port_changed)
-        self.in_port_name_property.widget.combo_items = self.input_list
-
-        self.output = self.add_output('midi out')
-        self.code = self.make_code(channel, controller)
-        if self.in_port:
-            self.in_port.add_client(self, code=self.code)
-
-    def make_code(self, channel, controller):
-        return (176 + channel - 1) * 256 + controller
-
-    def params_changed(self):
-        new_code = self.make_code(self.channel(), self.control_number())
-        if new_code != self.code:
-            self.in_port.remove_client(self, code=self.code)
-            self.code = new_code
-            self.in_port.add_client(self, self.code)
-
-    def receive_midi_bytes(self, midi_bytes):
-        self.output.send(midi_bytes[2])
-
-    def port_changed(self):
-        self.in_port_name = self.in_port_name_property()
-        super().port_changed()
-
-    def custom_cleanup(self):
-        self.in_port.remove_client(self, code=self.code)
-
-
-class MidiSingleParamInNode(MidiIn, Node):
+class MidiSingleParamInNode(MidiMessageInNode):
     @staticmethod
     def factory(name, data, args=None):
         node = MidiSingleParamInNode(name, data, args)
         return node
 
     def __init__(self, label: str, data, args):
-        MidiIn.__init__(self, label, data, args)
-        Node.__init__(self, label, data, args)
-
-        channel = 1
+        super().__init__(label, data, args)
 
         for i in range(len(args)):
             val, t = decode_arg(args, i)
             if t == int:
-                channel = val
-                if channel > 16:
-                    channel = 16
-                elif channel < 1:
-                    channel = 1
-
-        self.channel = self.add_option('channel', widget_type='input_int', default_value=channel, min=1, max=16,
-                                       callback=self.params_changed)
-
-        self.in_port_name_property = self.add_input('port', widget_type='combo', default_value=self.in_port.port.name,
-                                                    callback=self.port_changed)
-        self.in_port_name_property.widget.combo_items = self.input_list
-
-        self.output = self.add_output('out')
-        self.code = self.make_code(channel)
-        if self.in_port:
-            self.in_port.add_client(self, code=self.code)
-
-    def make_code(self, channel):
-        return (224 + channel - 1) * 256 + 128
-
-    def params_changed(self):
-        new_code = self.make_code(self.channel())
-        if new_code != self.code:
-            self.in_port.remove_client(self, code=self.code)
-            self.code = new_code
-            self.in_port.add_client(self, self.code)
-
-    def receive_midi_bytes(self, midi_bytes):
-        pass
-
-    def port_changed(self):
-        self.in_port_name = self.in_port_name_property()
-        super().port_changed()
-
-    def custom_cleanup(self):
-        self.in_port.remove_client(self, code=self.code)
+                self.channel = self.constrain_channel(val)
 
 
 class MidiPitchBendInNode(MidiSingleParamInNode):
@@ -329,12 +289,10 @@ class MidiPitchBendInNode(MidiSingleParamInNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+        self.finish_init('pitch bend out')
 
-    def post_creation_callback(self):
-        self.output.set_label('pitchbend out')
-
-    def make_code(self, channel):
-        return (224 + channel - 1) * 256 + 128
+    def make_codes(self):
+        return [(pitch_bend_code + self.channel - 1) * 256 + 128]
 
     def receive_midi_bytes(self, midi_bytes):
         self.output.send(midi_bytes[1] + midi_bytes[2] * 128)
@@ -348,12 +306,10 @@ class MidiProgramInNode(MidiSingleParamInNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+        self.finish_init('program out')
 
-    def post_creation_callback(self):
-        self.output.set_label('program change out')
-
-    def make_code(self, channel):
-        return (192 + channel - 1) * 256 + 128
+    def make_codes(self):
+        return [(program_code + self.channel - 1) * 256 + 128]
 
     def receive_midi_bytes(self, midi_bytes):
         self.output.send(midi_bytes[1])
@@ -367,126 +323,72 @@ class MidiChannelAfterTouchNode(MidiSingleParamInNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+        self.finish_init('after touch out')
 
-    def post_creation_callback(self):
-        self.output.set_label('after touch out')
-
-    def make_code(self, channel):
-        return (208 + channel - 1) * 256 + 128
+    def make_codes(self):
+        return [(aftertouch_code + self.channel - 1) * 256 + 128]
 
     def receive_midi_bytes(self, midi_bytes):
         self.output.send(midi_bytes[1])
 
 
-class MidiNoteInNode(MidiIn, Node):
+class MidiNoteInNode(MidiMessageInNode):
     @staticmethod
     def factory(name, data, args=None):
         node = MidiNoteInNode(name, data, args)
         return node
 
     def __init__(self, label: str, data, args):
-        MidiIn.__init__(self, label, data, args)
-        Node.__init__(self, label, data, args)
+        super().__init__(label, data, args)
 
-        channel = 1
         for i in range(len(args)):
             val, t = decode_arg(args, i)
             if t == int:
-                channel = val
-                if channel > 16:
-                    channel = 16
-                elif channel < 1:
-                    channel = 1
+                self.channel = self.constrain_channel(val)
                 break
 
-        self.channel = self.add_option('channel', widget_type='input_int', default_value=channel, min=1, max=16, callback=self.params_changed)
-        self.in_port_name_property = self.add_input('port', widget_type='combo', default_value=self.in_port.port.name, callback=self.port_changed)
-        self.in_port_name_property.widget.combo_items = self.input_list
+        self.create_channel_and_port()
 
         self.note_output = self.add_output('note out')
         self.velocity_output = self.add_output('velocity out')
-        self.code_on, self.code_off = self.make_codes(channel)
+        self.codes = self.make_codes()
+        self.attach_to_port()
 
-        self.in_port.add_client(self, code=self.code_on)
-        self.in_port.add_client(self, code=self.code_off)
-
-    def make_codes(self, channel):
-        return (144 + channel - 1) * 256 + 128, (128 + channel - 1) * 256 + 128
+    def make_codes(self):
+        return [(note_on_code + self.channel - 1) * 256 + 128, (note_off_code + self.channel - 1) * 256 + 128]
 
     def receive_midi_bytes(self, msg_bytes):
         self.velocity_output.send(int(msg_bytes[2]))
         self.note_output.send(int(msg_bytes[1]))
 
-    def params_changed(self):
-        new_code_on, new_code_off = self.make_codes(self.channel())
-        if new_code_on != self.code_on:
-            self.in_port.remove_client(self, code=self.code_on)
-            self.in_port.remove_client(self, code=self.code_off)
-            self.code_on = new_code_on
-            self.code_off = new_code_off
-            self.in_port.add_client(self, self.code_on)
-            self.in_port.add_client(self, self.code_off)
 
-    def port_changed(self):
-        self.in_port_name = self.in_port_name_property()
-        super().port_changed()
-
-    def custom_cleanup(self):
-        self.in_port.remove_client(self, code=self.code_on)
-        self.in_port.remove_client(self, code=self.code_off)
-
-
-class MidiPolyPressureInNode(MidiIn, Node):
+class MidiPolyPressureInNode(MidiMessageInNode):
     @staticmethod
     def factory(name, data, args=None):
         node = MidiPolyPressureInNode(name, data, args)
         return node
 
     def __init__(self, label: str, data, args):
-        MidiIn.__init__(self, label, data, args)
-        Node.__init__(self, label, data, args)
+        super().__init__(label, data, args)
 
-        channel = 1
         for i in range(len(args)):
             val, t = decode_arg(args, i)
             if t == int:
-                channel = val
-                if channel > 16:
-                    channel = 16
-                elif channel < 1:
-                    channel = 1
+                self.channel = self.constrain_channel(val)
                 break
 
-        self.channel = self.add_option('channel', widget_type='input_int', default_value=channel, min=1, max=16, callback=self.params_changed)
-        self.in_port_name_property = self.add_input('port', widget_type='combo', default_value=self.in_port.port.name, callback=self.port_changed)
-        self.in_port_name_property.widget.combo_items = self.input_list
-
+        self.create_channel_and_port()
         self.note_output = self.add_output('note out')
         self.pressure_output = self.add_output('pressure out')
-        self.code = self.make_code(channel)
+        self.code = self.make_codes()
+        self.attach_to_port()
 
-        self.in_port.add_client(self, code=self.code)
-
-    def make_code(self, channel):
-        return (160 + channel - 1) * 256 + 128
+    def make_codes(self):
+        return (poly_pressure_code + self.channel - 1) * 256 + 128
 
     def receive_midi_bytes(self, msg_bytes):
         self.pressure_output.send(int(msg_bytes[2]))
         self.note_output.send(int(msg_bytes[1]))
-
-    def params_changed(self):
-        new_code = self.make_code(self.channel())
-        if new_code != self.code:
-            self.in_port.remove_client(self, code=self.code)
-            self.code = new_code
-            self.in_port.add_client(self, self.code)
-
-    def port_changed(self):
-        self.in_port_name = self.in_port_name_property()
-        super().port_changed()
-
-    def custom_cleanup(self):
-        self.in_port.remove_client(self, code=self.code)
 
 
 class MidiOutPort:
@@ -615,7 +517,7 @@ class MidiControlOutNode(MidiOut, Node):
             controller_value = 127
         elif controller_value < 0:
             controller_value = 0
-        midi_data = [self.channel() - 1 + 176, self.control_number(), controller_value]
+        midi_data = [controller_code + self.channel() - 1, self.control_number(), controller_value]
         msg = mido.Message.from_bytes(midi_data)
         self.out_port.send(msg)
 
@@ -653,7 +555,7 @@ class MidiPitchBendOutNode(MidiOut, Node):
     def execute(self):
         control_val_msb = int(self.midi_to_send() / 128)
         control_val_lsb = int(self.midi_to_send() % 128)
-        midi_data = [self.channel() - 1 + 224, control_val_lsb, control_val_msb]
+        midi_data = [self.channel() - 1 + pitch_bend_code, control_val_lsb, control_val_msb]
         msg = mido.Message.from_bytes(midi_data)
         self.out_port.send(msg)
 
@@ -694,7 +596,7 @@ class MidiProgramOutNode(MidiOut, Node):
             val = 127
         elif val < 0:
             val = 0
-        midi_data = [self.channel() - 1 + 192, val]
+        midi_data = [program_code + self.channel() - 1, val]
         msg = mido.Message.from_bytes(midi_data)
         self.out_port.send(msg)
 
@@ -736,7 +638,7 @@ class MidiAftertouchOutNode(MidiOut, Node):
             val = 127
         elif val < 0:
             val = 0
-        midi_data = [self.channel() - 1 + 208, val]
+        midi_data = [aftertouch_code + self.channel() - 1, val]
         msg = mido.Message.from_bytes(midi_data)
         self.out_port.send(msg)
 
@@ -810,8 +712,7 @@ class MidiNoteOutNode(MidiOut, Node):
                 note = 127
             if note < 0:
                 note = 0
-        midi_code = 144
-        midi_data = [channel - 1 + midi_code, note, velocity]
+        midi_data = [note_on_code + channel - 1, note, velocity]
         msg = mido.Message.from_bytes(midi_data)
         self.out_port.send(msg)
 
@@ -885,8 +786,7 @@ class MidiPolyPressureOutNode(MidiOut, Node):
                 note = 127
             if note < 0:
                 note = 0
-        midi_code = 160
-        midi_data = [channel - 1 + midi_code, note, pressure]
+        midi_data = [poly_pressure_code + channel - 1, note, pressure]
         msg = mido.Message.from_bytes(midi_data)
         self.out_port.send(msg)
 
@@ -951,7 +851,7 @@ class BlueBoardNode(MidiIn, MidiOut, Node):
         elif self.active_input == self.set_D_input:
             out = self.set_D_input() * 127
             which = 23
-        midi_data = [176, which, out]
+        midi_data = [controller_code, which, out]
         msg = mido.Message.from_bytes(midi_data)
         self.out_port.send(msg)
 
