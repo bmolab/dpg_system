@@ -124,6 +124,7 @@ joint_index_to_name = {
     36: 'Tracker3'
 }
 
+
 joint_linear_index_to_name = {
     0: 'BaseOfSkull',
     1: 'UpperVertebrae',

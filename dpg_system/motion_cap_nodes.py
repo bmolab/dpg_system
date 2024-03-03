@@ -1,7 +1,13 @@
+
 import torch
-
 from dpg_system.body_base import *
+from pyquaternion import Quaternion
+import xml.etree.ElementTree as ET
+from xml.etree.ElementTree import XML
 
+print('about to import shadow')
+import dpg_system.MotionSDK as shadow
+print('imported shadow')
 
 def register_mocap_nodes():
     Node.app.register_node('gl_body', MoCapGLBody.factory)
@@ -11,6 +17,8 @@ def register_mocap_nodes():
     Node.app.register_node('pose', PoseNode.factory)
     Node.app.register_node('shadow_pose', PoseNode.factory)
     Node.app.register_node('active_joints', ActiveJointsNode.factory)
+    Node.app.register_node('shadow', MotionShadowNode.factory)
+
 
 class MoCapNode(Node):
     joint_map = {
@@ -489,3 +497,156 @@ class ActiveJointsNode(MoCapNode):
             if incoming.shape[0] == 37:
                 active_joints = incoming[self.active_to_shadow_map]
                 self.active_joints_out.send(active_joints)
+
+
+def shadow_service_loop():
+    while True:
+        for node in MotionShadowNode.shadow_nodes:
+            node.receive_data()
+        # time.sleep(.01)
+
+
+class MotionShadowNode(MoCapNode):
+    shadow_nodes = []
+    @staticmethod
+    def factory(name, data, args=None):
+        node = MotionShadowNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        self.num_bodies = 0
+        super().__init__(label, data, args)
+
+        self.__mutex = threading.Lock()
+        self.client = shadow.Client("", 32076)
+        self.origin = [0.0, 0.0, 0.0] * 4
+        self.positions = np.ndarray((4, 37, 3))
+        self.quaternions = np.ndarray((4, 37, 4))
+
+        self.joints_mapped = False
+        self.jointMap = [0, 0] * 37
+
+        self.thread = threading.Thread(target=shadow_service_loop)
+        self.thread_started = False
+
+        xml_definition = \
+            "<?xml version=\"1.0\"?>" \
+            "<configurable inactive=\"1\">" \
+            "<Lq/>" \
+            "<c/>" \
+            "</configurable>"
+
+        if self.client.writeData(xml_definition):
+            print("Sent active channel definition to Configurable service")
+
+        self.body_quat_1 = self.add_output('body 1 quaternions')
+        self.body_pos_1 = self.add_output('body 1 positions')
+        self.body_quat_2 = self.add_output('body 2 quaternions')
+        self.body_pos_2 = self.add_output('body 2 positions')
+        self.body_quat_3 = self.add_output('body 3 quaternions')
+        self.body_pos_3 = self.add_output('body 3 positions')
+        self.body_quat_4 = self.add_output('body 4 quaternions')
+        self.body_pos_4 = self.add_output('body 4 positions')
+        MotionShadowNode.shadow_nodes.append(self)
+        self.new_data = False
+        if not self.thread_started:
+            self.thread.start()
+            self.thread_started = True
+        self.add_frame_task()
+
+    def receive_data(self):
+        data = self.client.readData()
+        if data is not None:
+            if data.startswith(b'<?xml'):
+                xml_node_list = data
+                name_map = self.parse_name_map(xml_node_list)
+
+                for it in name_map:
+                    thisName = name_map[it]
+                    for idx, name_index in enumerate(joint_index_to_name):
+                        shadow_name = joint_to_shadow_limb[joint_index_to_name[name_index]]
+                        if thisName[0] == shadow_name:
+                            self.jointMap[it] = [idx + 1, thisName[1]]
+                            break
+                self.joints_mapped = True
+                return
+
+            configData = shadow.Format.Configurable(data)
+            if configData is not None:
+                lock = ScopedLock(self.__mutex)
+                for key in configData:
+                    master_key = self.jointMap[key][0] - 1          # keys start at 1
+                    body_index = self.jointMap[key][1]
+
+                    joint = joint_index_to_name[master_key]
+
+                    joint_data = configData[key]
+
+                    # configData[key] is [q0, q1, q2, q3, p0, p1, p2]
+                    if joint == 'Hips' and self.origin is None:
+                        self.origin[body_index] = [joint_data.value(5) / 100, joint_data.value(6) / 100, joint_data.value(7) / 100]
+                    self.positions[body_index, master_key] = [joint_data.value(5) / 100, joint_data.value(6) / 100, joint_data.value(7) / 100]
+                    self.quaternions[body_index, master_key] = [joint_data.value(0), joint_data.value(1), joint_data.value(2), joint_data.value(3)]
+                self.new_data = True
+                lock = None
+                # if self.num_bodies > 0:
+                #     self.body_quat_1.send(self.quaternions[0])
+                #     self.body_pos_1.send(self.positions[0])
+                # if self.num_bodies > 1:
+                #     self.body_quat_2.send(self.quaternions[1])
+                #     self.body_pos_2.send(self.positions[1])
+                # if self.num_bodies > 2:
+                #     self.body_quat_3.send(self.quaternions[2])
+                #     self.body_pos_3.send(self.positions[2])
+                # if self.num_bodies > 3:
+                #     self.body_quat_4.send(self.quaternions[3])
+                #     self.body_pos_4.send(self.positions[3])
+
+    def frame_task(self):
+        if not self.new_data:
+            return
+        self.new_data = False
+        if self.num_bodies > 0:
+            self.body_quat_1.send(self.quaternions[0])
+            self.body_pos_1.send(self.positions[0])
+        if self.num_bodies > 1:
+            self.body_quat_2.send(self.quaternions[1])
+            self.body_pos_2.send(self.positions[1])
+        if self.num_bodies > 2:
+            self.body_quat_3.send(self.quaternions[2])
+            self.body_pos_3.send(self.positions[2])
+        if self.num_bodies > 3:
+            self.body_quat_4.send(self.quaternions[3])
+            self.body_pos_4.send(self.positions[3])
+
+    def parse_name_map(self, xml_node_list):
+        name_map = {}
+
+        tree = XML(xml_node_list)
+
+        regex = re.compile(r'(\d+|\s+)')
+
+        # <node key="N" id="Name"> ... </node>
+        list = tree.findall(".//node")
+        for itr in list:
+            node_name = itr.get("id")
+            node_local = node_name
+            node_body = 0
+            for code in joint_index_to_name:
+                node_code = joint_to_shadow_limb[joint_index_to_name[code]]
+                if len(node_code) == len(node_name) - 1:
+                    if node_name.find(node_code) >= 0:
+                        node_local = node_code
+                        node_body = int(node_name[-1])
+                        break
+                elif len(node_code) == len(node_name):
+                    if node_name.find(node_code) >= 0:
+                        node_local = node_code
+                        node_body = 0
+                        break
+
+            name_map[int(itr.get("key"))] = [node_local, node_body]
+            if node_body >= self.num_bodies:
+                self.num_bodies = node_body + 1
+        return name_map
+
