@@ -528,7 +528,7 @@ class MotionShadowNode(MoCapNode):
 
         self.thread = threading.Thread(target=shadow_service_loop)
         self.thread_started = False
-
+        self.direct_out = self.add_property('direct_out', widget_type='checkbox', default_value=False, callback=self.direct_out_changed)
         xml_definition = \
             "<?xml version=\"1.0\"?>" \
             "<configurable inactive=\"1\">" \
@@ -553,6 +553,12 @@ class MotionShadowNode(MoCapNode):
             self.thread.start()
             self.thread_started = True
         self.add_frame_task()
+
+    def direct_out_changed(self):
+        if self.direct_out():
+            self.remove_frame_tasks()
+        else:
+            self.add_frame_task()
 
     def receive_data(self):
         data = self.client.readData()
@@ -589,18 +595,8 @@ class MotionShadowNode(MoCapNode):
                     self.quaternions[body_index, master_key] = [joint_data.value(0), joint_data.value(1), joint_data.value(2), joint_data.value(3)]
                 self.new_data = True
                 lock = None
-                # if self.num_bodies > 0:
-                #     self.body_quat_1.send(self.quaternions[0])
-                #     self.body_pos_1.send(self.positions[0])
-                # if self.num_bodies > 1:
-                #     self.body_quat_2.send(self.quaternions[1])
-                #     self.body_pos_2.send(self.positions[1])
-                # if self.num_bodies > 2:
-                #     self.body_quat_3.send(self.quaternions[2])
-                #     self.body_pos_3.send(self.positions[2])
-                # if self.num_bodies > 3:
-                #     self.body_quat_4.send(self.quaternions[3])
-                #     self.body_pos_4.send(self.positions[3])
+                if self.direct_out():
+                    self.frame_task()
 
     def frame_task(self):
         if not self.new_data:

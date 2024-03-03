@@ -1664,7 +1664,8 @@ class App:
             dpg.add_file_extension(".json")
 
     def add_frame_task(self, dest):
-        self.frame_tasks.append(dest)
+        if dest not in self.frame_tasks:
+            self.frame_tasks.append(dest)
 
     def register_node(self, label, factory, data=None):
         self.node_factory_container.add_node_factory(NodeFactory(label, factory, data))
