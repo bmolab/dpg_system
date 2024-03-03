@@ -40,7 +40,7 @@ class NodeOutput:
 
     def set_label(self, name):
         self._label = name
-        if self.label_uuid == None:
+        if self.label_uuid is None:
             self.label_uuid = dpg.add_text(self._label)
         else:
             dpg.set_value(self.label_uuid, self._label)
