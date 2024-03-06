@@ -476,9 +476,8 @@ class OpSingleNode(Node):
     def execute(self):
         # get values from static attributes
         input_value = self.input()
-        t = type(input_value)
-        if t in [int, bool, np.int64, np.bool_]:
-            input_value = float(input_value)
+        input_value = any_to_float(input_value)
+
         output_value = self.op(input_value)
         self.output.send(output_value)
 

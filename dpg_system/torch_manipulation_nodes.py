@@ -563,7 +563,8 @@ class TorchSubtensorNode(TorchNode):
         self.output = self.add_output('output')
 
     def dim_changed(self):
-        dim_text = self.indices_input()
+        dim_text = any_to_string(self.indices_input())
+
         dim_split = dim_text.split(',')
         dimmers = []
 

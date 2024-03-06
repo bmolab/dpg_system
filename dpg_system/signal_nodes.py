@@ -176,7 +176,7 @@ class RandomGaussNode(Node):
         self.output = self.add_output('out')
 
     def execute(self):
-        output_value = self.op(self.mean(), self.dev())
+        output_value = self.op(any_to_float(self.mean()), any_to_float(self.dev()))
         self.output.send(output_value)
 
 
@@ -210,7 +210,7 @@ class RandomGammaNode(Node):
         self.output = self.add_output('out')
 
     def execute(self):
-        output_value = self.op(self.alpha(), self.beta())
+        output_value = self.op(any_to_float(self.alpha()), any_to_float(self.beta()))
         self.output.send(output_value)
 
 
@@ -243,7 +243,7 @@ class RandomTriangularNode(Node):
         self.output = self.add_output('out')
 
     def execute(self):
-        output_value = random.triangular(self.low(), self.high(), self.mode())
+        output_value = random.triangular(any_to_float(self.low()), any_to_float(self.high()), any_to_float(self.mode()))
         self.output.send(output_value)
 
 
@@ -271,7 +271,7 @@ class RandomParetoNode(Node):
         self.output = self.add_output('out')
 
     def execute(self):
-        output_value = self.op(self.alpha())
+        output_value = self.op(any_to_float(self.alpha()))
         self.output.send(output_value)
 
 

@@ -48,7 +48,6 @@ def register_numpy_nodes():
     Node.app.register_node('np.line_intersection', NumpyLineIntersectionNode.factory)
 
 
-
 class NumpyGeneratorNode(Node):
     operations = {'np.rand': np.random.Generator.random, 'np.ones': np.ones, 'np.zeros': np.zeros}
     @staticmethod
@@ -198,7 +197,7 @@ class NumpyLinSpaceNode(Node):
             self.dtype = self.dtype_dict[dtype]
 
     def execute(self):
-        out_array = self.op(self.start(), self.stop(), self.steps(), dtype=self.dtype)
+        out_array = self.op(any_to_float(self.start()), any_to_float(self.stop()), any_to_int(self.steps()), dtype=self.dtype)
         self.output.send(out_array)
 
 

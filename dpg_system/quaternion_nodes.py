@@ -32,7 +32,7 @@ class QuaternionToEulerNode(Node):
         self.degrees = self.add_option('degrees', widget_type='checkbox', default_value=True)
 
     def execute(self):
-        offset = np.array([self.x_offset(), self.y_offset(), self.z_offset()], dtype=float)
+        offset = np.array([any_to_float(self.x_offset()), any_to_float(self.y_offset()), any_to_float(self.z_offset())], dtype=float)
 
         if self.input.fresh_input:
             data = any_to_array(self.input())

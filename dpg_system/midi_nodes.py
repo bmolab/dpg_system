@@ -20,6 +20,7 @@ def register_midi_nodes():
     Node.app.register_node('midi_note_out', MidiNoteOutNode.factory)
     Node.app.register_node('midi_poly_pressure_out', MidiPolyPressureOutNode.factory)
 
+    Node.app.register_node('midi_device', MidiDeviceNode.factory)
     Node.app.register_node('blue_board', BlueBoardNode.factory)
 
 
@@ -46,17 +47,29 @@ class MidiInPort:
             if self.port_name in MidiInPort.ports:
                 self.port = MidiInPort.ports[self.port_name].port
             else:
-                self.port = mido.open_input(self.port_name, callback=self.receive)
-                MidiInPort.ports[self.port_name] = self
+                try:
+                    self.port = mido.open_input(self.port_name, callback=self.receive)
+                    MidiInPort.ports[self.port_name] = self
+                except Exception as e:
+                    print('could not find port', self.port_name)
+                    self.port = None
         else:
             keys = list(MidiInPort.ports.keys())
             if len(keys) > 0:
                 self.port = MidiInPort.ports[keys[0]].port
             else:
-                self.port = mido.open_input(callback=self.receive)
+                try:
+                    self.port = mido.open_input(callback=self.receive)
+                except Exception as e:
+                    print('could not find MIDI in port')
+                    self.port = None
+
+        if self.port:
             self.port_name = self.port.name
             if self.port_name not in MidiInPort.ports:
                 MidiInPort.ports[self.port_name] = self
+        else:
+            self.port_name = ''
 
     def add_client(self, client, code=None):
         if code is None:
@@ -400,18 +413,31 @@ class MidiOutPort:
 
         if self.port_name is not None:
             if self.port_name in MidiOutPort.ports:
-                self.port = MidiOutPort.ports[self.port_name]
+                self.port = MidiOutPort.ports[self.port_name].port
             else:
-                self.port = mido.open_output(self.port_name)
-                MidiOutPort.ports[self.port_name] = self.port
+                try:
+                    self.port = mido.open_output(self.port_name)
+                    MidiOutPort.ports[self.port_name] = self
+                except Exception as e:
+                    print('could not find', self.port_name)
+                    self.port = None
         else:
             keys = list(MidiOutPort.ports.keys())
             if len(keys) > 0:
-                self.port = MidiOutPort.ports[keys[0]]
+                self.port = MidiOutPort.ports[keys[0]].port
             else:
-                self.port = mido.open_output()
-            self.port_name = self.port.name
-            self.ports[self.port_name] = self
+                try:
+                    self.port = mido.open_output()
+                except Exception as e:
+                    print('could not find MIDI out port')
+                    self.port = None
+
+            if self.port:
+                self.port_name = self.port.name
+                if self.port_name not in MidiOutPort.ports:
+                    MidiOutPort.ports[self.port_name] = self
+            else:
+                self.port_name = ''
 
     def send(self, msg):
         if self.port:
@@ -433,7 +459,7 @@ class MidiOut:
             if self.out_port_name in MidiOutPort.ports:
                 self.out_port = MidiOutPort.ports[self.out_port_name]
             else:
-                self.out_port = mido.open_output(self.out_port_name)
+                self.out_port = MidiOutPort(self.out_port_name)
         else:
             keys = list(MidiOutPort.ports.keys())
             if len(keys) > 0:
@@ -795,7 +821,66 @@ class MidiPolyPressureOutNode(MidiOut, Node):
         super().port_changed()
 
 
-class BlueBoardNode(MidiIn, MidiOut, Node):
+class MidiDeviceNode(MidiIn, MidiOut, Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = MidiDeviceNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        MidiIn.__init__(self, label, data, args)
+        MidiOut.__init__(self, label, data, args)
+        Node.__init__(self, label, data, args)
+
+        channel = 1
+        for i in range(len(args)):
+            val, t = decode_arg(args, i)
+            if t == int:
+                channel = val
+                if channel > 16:
+                    channel = 16
+                elif channel < 1:
+                    channel = 1
+
+        self.create_properties_inputs_and_outputs()
+        self.in_port.add_client(self, code=None)
+        self.channel = self.add_option('channel', widget_type='input_int', default_value=channel, min=1, max=16)
+        port_name = ''
+        if self.in_port:
+            port_name = self.in_port.port_name
+        self.in_port_name_property = self.add_option('in port', widget_type='combo', default_value=port_name, callback=self.port_changed)
+        self.in_port_name_property.widget.combo_items = self.input_list
+        port_name = ''
+        if self.out_port:
+            port_name = self.out_port.port_name
+        self.out_port_name_property = self.add_option('out port', widget_type='combo', default_value=port_name, callback=self.port_changed)
+        self.out_port_name_property.widget.combo_items = self.output_list
+
+    def create_properties_inputs_and_outputs(self):
+        self.add_input('midi to send', triggers_execution=True)
+        self.add_output('midi received')
+
+    def receive_midi_bytes(self, midi_bytes):
+        if len(self.outputs) > 0:
+           self.outputs[0].send(midi_bytes)
+
+    def execute(self):
+        if len(self.inputs) > 0:
+            midi_data = any_to_numerical_list(self.inputs[0]())
+            msg = mido.Message.from_bytes(midi_data)
+            self.out_port.send(msg)
+
+    def port_changed(self):
+        self.in_port_name = self.in_port_name_property()
+        self.out_port_name = self.out_port_name_property()
+        MidiOut.port_changed(self)
+        MidiIn.port_changed(self)
+
+    def custom_cleanup(self):
+        self.in_port.remove_client(self)
+
+
+class BlueBoardNode(MidiDeviceNode):
     @staticmethod
     def factory(name, data, args=None):
         node = BlueBoardNode(name, data, args)
@@ -803,9 +888,7 @@ class BlueBoardNode(MidiIn, MidiOut, Node):
 
     def __init__(self, label: str, data, args):
         force_args = ['iRig BlueBoard Bluetooth']
-        MidiIn.__init__(self, label, data, force_args)
-        MidiOut.__init__(self, label, data, force_args)
-        Node.__init__(self, label, data, force_args)
+        super().__init__(label, data, force_args)
 
         self.set_LED_inputs = []
         self.modes = []
@@ -831,7 +914,8 @@ class BlueBoardNode(MidiIn, MidiOut, Node):
         for mode in self.modes:
             mode.widget.combo_items = ['toggle', 'momentary', 'raw']
 
-        self.in_port.add_client(self, code=None)
+    def create_properties_inputs_and_outputs(self):
+        pass
 
     def receive_midi_bytes(self, midi_bytes):
         state = midi_bytes[2]
@@ -875,6 +959,3 @@ class BlueBoardNode(MidiIn, MidiOut, Node):
         midi_data = [controller_code, controller, out]
         msg = mido.Message.from_bytes(midi_data)
         self.out_port.send(msg)
-
-    def custom_cleanup(self):
-        self.in_port.remove_client(self)
