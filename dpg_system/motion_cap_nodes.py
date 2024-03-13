@@ -11,6 +11,7 @@ print('imported shadow')
 
 def register_mocap_nodes():
     Node.app.register_node('gl_body', MoCapGLBody.factory)
+    Node.app.register_node('gl_simple_body', SimpleMoCapGLBody.factory)
     Node.app.register_node('take', MoCapTakeNode.factory)
     Node.app.register_node('body_to_joints', MoCapBody.factory)
     Node.app.register_node('shadow_body_to_joints', MoCapBody.factory)
@@ -460,6 +461,7 @@ class MoCapGLBody(MoCapNode):
                     for index, joint_name in enumerate(self.joint_map):
                         joint_id = self.joint_map[joint_name]
                         self.body.update(joint_index=joint_id, quat=incoming[index], label=self.body_color_id())
+
             elif t == list:
                 self.process_commands(incoming)
 
@@ -473,6 +475,124 @@ class MoCapGLBody(MoCapNode):
                 self.body.diffQuatSmoothingA = smoothing
                 self.body.joint_disk_alpha = self.joint_disk_alpha()
                 self.body.draw(self.show_joint_spheres(), self.skeleton_only())
+
+
+class SimpleMoCapGLBody(MoCapNode):
+    smpl_limb_to_joint_dict = {
+        'left_hip': 'LeftHip',
+        'right_hip': 'RightHip',
+        'lower_back': 'SpinePelvis',
+        'left_thigh': 'LeftKnee',
+        'right_thigh': 'RightKnee',
+        'mid_back': 'LowerVertebrae',
+        'left_lower_leg': 'LeftFoot',
+        'right_lower_leg': 'RightFoot',
+        'upper_back': 'MidVertebrae',
+        'left_foot': 'LeftBallOfFoot',
+        'right_foot': 'RightBallOfFoot',
+        'lower_neck': 'UpperVertebrae',
+        'left_shoulder_blade': 'LeftShoulderBladeBase',
+        'right_shoulder_blade': 'RightShoulderBladeBase',
+        'upper_neck': 'BaseOfSkull',
+        'left_shoulder': 'LeftShoulder',
+        'right_shoulder': 'RightShoulder',
+        'left_upper_arm': 'LeftElbow',
+        'right_upper_arm': 'RightElbow',
+        'left_forearm': 'LeftWrist',
+        'right_forearm': 'RightWrist',
+        'left_hand': 'LeftKnuckle',
+        'right_hand': 'RightKnuckle'
+    }
+
+    joint_mapped = {
+        'base_of_skull': 0,
+        'upper_vertebrae': 1,
+        'mid_vertebrae': 2,
+        'lower_vertebrae': 3,
+        'spine_pelvis': 4,
+        'pelvis_anchor': 5,
+        'left_hip': 6,
+        'left_knee': 7,
+        'left_ankle': 8,
+        'right_hip': 9,
+        'right_knee': 10,
+        'right_ankle': 11,
+        'left_shoulder_blade': 12,
+        'left_shoulder': 13,
+        'left_elbow': 14,
+        'left_wrist': 15,
+        'right_shoulder_blade': 16,
+        'right_shoulder': 17,
+        'right_elbow': 18,
+        'right_wrist': 19
+    }
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = SimpleMoCapGLBody(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('pose in', triggers_execution=True)
+        self.gl_chain_input = self.add_input('gl chain', triggers_execution=True)
+        self.gl_chain_output = self.add_output('gl_chain')
+
+        self.skeleton_only = self.add_option('skeleton_only', widget_type='checkbox', default_value=False)
+        self.multi_body_translation_x = self.add_option('multi offset x', widget_type='drag_float', default_value=0.0)
+        self.multi_body_translation_y = self.add_option('multi offset y', widget_type='drag_float', default_value=0.0)
+        self.multi_body_translation_z = self.add_option('multi offset z', widget_type='drag_float', default_value=0.0)
+        self.body = SimpleBodyData()
+        self.body.node = self
+
+    # def joint_callback(self):
+    #     self.gl_chain_output.send('draw')
+    #
+    def process_commands(self, command):
+        if type(command[0]) == str:
+            print(command)
+            if command[0] in self.smpl_limb_to_joint_dict:
+                target_joint = self.smpl_limb_to_joint_dict[command[0]]
+                if target_joint in joint_name_to_index:
+                    target_joint_index = joint_name_to_index[target_joint]
+                    self.body.joints[target_joint_index].bone_dim = command[1:]
+                    self.body.joints[target_joint_index].set_matrix()
+                # self.body.joints[target_joint_index].set_mass()
+
+    def execute(self):
+        if self.input.fresh_input:
+            incoming = self.input()
+            t = type(incoming)
+            if t == torch.Tensor:
+                incoming = tensor_to_array(incoming)
+                t = np.ndarray
+            if t == np.ndarray:
+                if len(incoming.shape) == 1:
+                    if incoming.shape[0] == 80:
+                        self.body.update_quats(np.reshape(incoming, [20, 4]))
+                elif len(incoming.shape) == 2:
+                    if incoming.shape[0] == 20:
+                        if incoming.shape[1] == 4:
+                            self.body.update_quats(incoming)
+                    elif incoming.shape[0] == 80:
+                        count = incoming.shape[1]
+                        self.body.update_quats(np.reshape(incoming, [20, 4, count]))
+                elif len(incoming.shape) == 3:
+                    if incoming.shape[1] == 20:
+                        if incoming.shape[2] == 4:
+                            self.body.update_quats(incoming)
+
+            elif t == list:
+                self.process_commands(incoming)
+
+        elif self.gl_chain_input.fresh_input:
+            translation = [self.multi_body_translation_x(), self.multi_body_translation_y(), self.multi_body_translation_z()]
+            self.body.multi_body_translation = translation
+            incoming = self.gl_chain_input()
+            t = type(incoming)
+            if t == str and incoming == 'draw':
+                self.body.draw(self.skeleton_only())
 
 
 class ActiveJointsNode(MoCapNode):
@@ -619,8 +739,6 @@ class MotionShadowNode(MoCapNode):
         name_map = {}
 
         tree = XML(xml_node_list)
-
-        regex = re.compile(r'(\d+|\s+)')
 
         # <node key="N" id="Name"> ... </node>
         list = tree.findall(".//node")

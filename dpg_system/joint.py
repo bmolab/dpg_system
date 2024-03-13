@@ -17,12 +17,12 @@ class Joint:
 
         self.do_draw = False
         self.children = []
-        self.ref_vector = (0.0, 0.0, 1.0)
+        self.ref_vector = np.array([0.0, 0.0, 1.0])
         self.thickness = (.1, .1)
         self.matrix = None
         self.length = 1.0
         self.mass = [0.0, 0.0, 0.0]
-        self.bone_dim = [0.0, 0.0, 1.0]
+        self.bone_dim = np.array([0.0, 0.0, 1.0])
 
         self.set_vector_index()
         self.set_thickness()
@@ -75,14 +75,17 @@ class Joint:
         elif self.joint_index == t_LowerVertebrae:
             self.thickness = (.2, .11)
 
+    def set_bone_dim(self, dims):
+        self.bone_dim = np.array(dims)
+
     def set_limb_vector(self):
-        self.ref_vector = (0.0, 0.0, 1.0)
+        self.ref_vector = np.array([0.0, 0.0, 1.0])
         if self.joint_index in [t_Body, t_PelvisAnchor, t_Reference, t_Tracker0, t_Tracker1, t_Tracker2, t_Tracker3]:
-            self.ref_vector = (1.0, 0.0, 0.0)
+            self.ref_vector = np.array([1.0, 0.0, 0.0])
         elif self.joint_index in [t_LeftHeel, t_RightHeel]:
-            self.ref_vector = (0.0, 1.0, 0.0)
+            self.ref_vector = np.array([0.0, 1.0, 0.0])
         elif self.joint_index in [t_LeftToeTip, t_RightToeTip]:
-            self.ref_vector = (0.0, 0.0001, 1.0)
+            self.ref_vector = np.array([0.0, 0.0001, 1.0])
 
     def set_children(self):
         if self.joint_index == t_MidVertebrae:
@@ -161,8 +164,8 @@ class Joint:
 
     def set_matrix(self):
         try:
-            base_vector = np.array(self.ref_vector)  # like an up vector
-            limb_vector = np.array(self.bone_dim)  # vector defining limb extension from parent joint at T-Pose
+            base_vector = self.ref_vector  # like an up vector
+            limb_vector = self.bone_dim  # vector defining limb extension from parent joint at T-Pose
 
             scale = np.linalg.norm(limb_vector)  # limb length
             limb_vector /= scale

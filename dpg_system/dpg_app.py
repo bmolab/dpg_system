@@ -507,6 +507,7 @@ class App:
         self.fresh_patcher = True
         self.pausing = False
         self.load_recent_patchers_list()
+        self.gl_on_separate_thread = False
 
     def get_local_project_name(self):
         self.project_name = os.path.basename(__file__).split('.')[0]
@@ -1824,6 +1825,17 @@ class App:
         dpg.show_viewport()
         self.open_default_patch()
 
+    def set_dpg_gl_context(self):
+        if opengl_active:
+            hold_context = glfw.get_current_context()
+            glfw.make_context_current(self.window_context)
+            return hold_context
+        return None
+
+    def restore_gl_context(self, held_context):
+        if held_context:
+            glfw.make_context_current(held_context)
+
     def run_loop(self):
         elapsed = 0
         do_gl = False
@@ -1836,9 +1848,10 @@ class App:
         while dpg.is_dearpygui_running():
             try:
                 if not self.pausing:
-                    if opengl_active:
-                        hold_context = glfw.get_current_context()
-                        glfw.make_context_current(self.window_context)
+                    hold_context = None
+                    if not self.gl_on_separate_thread:
+                        hold_context = self.set_dpg_gl_context()
+
                     now = time.time()
                     for node_editor in self.node_editors:
                         node_editor.reset_pins()
@@ -1858,10 +1871,12 @@ class App:
                     elapsed = then - now
 
                     #  openGL separate thread?
-                    if opengl_active:
-                        if do_gl:
-                            GLContextNode.maintenance_loop()
-                        glfw.make_context_current(hold_context)
+                    if not self.gl_on_separate_thread:
+                        if opengl_active:
+                            if do_gl:
+                                GLContextNode.maintenance_loop()
+                            self.restore_gl_context(hold_context)
+                            # glfw.make_context_current(hold_context)
                 # else:
                 #     print('p', end='')
             except Exception as exc_:

@@ -49,6 +49,97 @@ def save_templates_and_distances(path, pose_proximities, templates):
     np.savez(path, templates=temp_np, proximities=pose_prox)
 
 
+def quaternion_to_matrix(q):
+    x = q[0]
+    y = q[1]
+    z = q[2]
+    w = q[3]
+
+    x2 = x * x
+    y2 = y * y
+    z2 = z * z
+    xy = x * y
+    xz = x * z
+    yz = y * z
+    wx = w * x
+    wy = w * y
+    wz = w * z
+    n = 2.0
+
+    matrix = [1.0 - n * (y2 + z2),
+        n * (xy - wz),
+        n * (xz + wy),
+        0.0,
+
+        n * (xy + wz),
+        1.0 - n * (x2 + z2),
+        n * (yz - wx),
+        0.0,
+
+        n * (xz - wy),
+        n * (yz + wx),
+        1.0 - n * (x2 + y2),
+        0.0,
+
+        0.0,
+        0.0,
+        0.0,
+        1.0
+    ]
+
+    return matrix
+
+
+# input shape is [num_bodies, num_joints, 4]
+def quaternions_to_R3_rotation(qs):
+    qs = any_to_array(qs)
+    qs = np.reshape(qs, (-1, 20, 4))
+    quats_squared = qs * qs         #   x^2 y^2 z^2 w^2
+
+    xs = qs[:, :, 0]                #   x
+    ys = qs[:, :, 1]                #   y
+    zs = qs[:, :, 2]                #   z
+    ws = qs[:, :, 3]                #   w
+
+    xy_s = xs * ys                  #   x * y
+    xz_s = xs * zs
+    xw_s = xs * ws
+    yz_s = ys * zs
+    yw_s = ys * ws
+    zw_s = zs * ws
+
+    norm_carre = quats_squared.sum(axis=2)
+
+    matrices = np.zeros([qs.shape[0], qs.shape[1], 16])
+    norm_carre = np.maximum(norm_carre, 1e-6)
+    # norm_carre += 1e-6
+    matrices[:, :, 15] = norm_carre
+
+    # matrices[:, :, 0] = quats_squared[:, :, 0] + quats_squared[:, :, 1] - quats_squared[:, :, 2] - quats_squared[:, :, 3]
+    # matrices[:, :, 1] = (yz_s[:, :] - xw_s[:, :]) * 2
+    # matrices[:, :, 2] = (xz_s[:, :] + yw_s[:, :]) * 2
+    # matrices[:, :, 4] = (xw_s[:, :] + yz_s[:, :]) * 2
+    # matrices[:, :, 5] = quats_squared[:, :, 0] - quats_squared[:, :, 1] + quats_squared[:, :, 2] - quats_squared[:, :, 3]
+    # matrices[:, :, 6] = (zw_s[:, :] - xy_s[:, :]) * 2
+    # matrices[:, :, 8] = (yw_s[:, :] - xz_s[:, :]) * 2
+    # matrices[:, :, 9] = (xy_s[:, :] + zw_s[:, :]) * 2
+    # matrices[:, :, 10] = quats_squared[:, :, 0] - quats_squared[:, :, 1] - quats_squared[:, :, 2] + quats_squared[:, :, 3]
+    matrices[:, :, 0] = quats_squared[:, :, 0] + quats_squared[:, :, 1] - quats_squared[:, :, 2] - quats_squared[:, :, 3]
+    matrices[:, :, 4] = (yz_s[:, :] - xw_s[:, :]) * 2
+    matrices[:, :, 8] = (xz_s[:, :] + yw_s[:, :]) * 2
+
+    matrices[:, :, 1] = (xw_s[:, :] + yz_s[:, :]) * 2
+    matrices[:, :, 5] = quats_squared[:, :, 0] - quats_squared[:, :, 1] + quats_squared[:, :, 2] - quats_squared[:, :, 3]
+    matrices[:, :, 9] = (zw_s[:, :] - xy_s[:, :]) * 2
+
+    matrices[:, :, 2] = (yw_s[:, :] - xz_s[:, :]) * 2
+    matrices[:, :, 6] = (xy_s[:, :] + zw_s[:, :]) * 2
+    matrices[:, :, 10] = quats_squared[:, :, 0] - quats_squared[:, :, 1] - quats_squared[:, :, 2] + quats_squared[:, :, 3]
+    norm_carre = np.expand_dims(norm_carre, axis=2)
+    matrices = matrices / norm_carre
+    return matrices
+
+
 def quaternion_to_R3_rotation(q):
     a = q[0]
     b = q[1]
@@ -56,15 +147,16 @@ def quaternion_to_R3_rotation(q):
     d = q[3]
 
     aa = a * a
+    bb = b * b
+    cc = c * c
+    dd = d * d
+
     ab = a * b
     ac = a * c
     ad = a * d
-    bb = b * b
     bc = b * c
     bd = b * d
-    cc = c * c
     cd = c * d
-    dd = d * d
 
     norme_carre = aa + bb + cc + dd
 
@@ -146,7 +238,7 @@ class BodyData:
                 y = tuple(i / 100.0 for i in trans_float)
                 joint_name = shadow_limb_to_joint[node.attrib['id']]
                 joint_index = joint_name_to_index[joint_name]
-                self.joints[joint_index].bone_dim = y
+                self.joints[joint_index].set_bone_dim(y)
         for joint in self.joints:
             joint.set_matrix()
             joint.set_mass()
@@ -732,3 +824,318 @@ class BodyData:
             next_limb_index = joint_index
         self.draw_quaternion_distance_sphere(next_limb_index, joint_data)
         glPopMatrix()
+
+
+class LimbGeometry:
+    def __init__(self):
+        self.points = []
+        self.normals = [None] * 6
+        self.list_index = -1
+
+    def set_points(self, points):
+        self.points = np.ndarray([8, 3])
+        for index, point in enumerate(points):
+            self.points[index] = point
+
+    def calc_normals(self):
+        self.normals = np.ndarray([6, 3])
+        self.normals[0] = self.calc_normal(self.points[0], self.points[1], self.points[2])
+        self.normals[1] = self.calc_normal(self.points[2], self.points[3], self.points[4])
+        self.normals[2] = self.calc_normal(self.points[4], self.points[5], self.points[6])
+        self.normals[3] = self.calc_normal(self.points[6], self.points[7], self.points[0])
+        self.normals[4] = self.calc_normal(self.points[3], self.points[5], self.points[7])
+        self.normals[5] = self.calc_normal(self.points[2], self.points[4], self.points[6])
+
+    def draw(self):
+        if self.list_index == -1:
+            self.list_index = glGenLists(1)
+            glNewList(self.list_index, GL_COMPILE)
+
+            glBegin(GL_TRIANGLE_STRIP)
+
+            glNormal3fv(self.normals[0])
+            glVertex3fv(self.points[0])
+            glVertex3fv(self.points[1])
+            glVertex3fv(self.points[2])
+            glVertex3fv(self.points[3])
+
+            glNormal3fv(self.normals[1])
+            glVertex3fv(self.points[4])
+            glVertex3fv(self.points[5])
+
+            glNormal3fv(self.normals[2])
+            glVertex3fv(self.points[6])
+            glVertex3fv(self.points[7])
+
+            glNormal3fv(self.normals[3])
+            glVertex3fv(self.points[0])
+            glVertex3fv(self.points[1])
+            glVertex3fv(self.points[1])
+            glVertex3fv(self.points[1])
+
+            glNormal3fv(self.normals[4])
+            glVertex3fv(self.points[1])
+            glVertex3fv(self.points[3])
+            glVertex3fv(self.points[7])
+            glVertex3fv(self.points[5])
+
+            glVertex3fv(self.points[5])
+            glVertex3fv(self.points[0])
+
+            glNormal3fv(self.normals[5])
+            glVertex3fv(self.points[0])
+            glVertex3fv(self.points[2])
+            glVertex3fv(self.points[6])
+            glVertex3fv(self.points[4])
+
+            glEnd()
+            glEndList()
+        if self.list_index != -1:
+            glCallList(self.list_index)
+
+    def calc_normal(self, v1, v2, v3):
+        v_1 = np.array([v1[0], v1[1], v1[2]])
+        v_2 = np.array([v2[0], v2[1], v2[2]])
+        v_3 = np.array([v3[0], v3[1], v3[2]])
+        temp1 = v_2 - v_1
+        temp2 = v_3 - v_1
+        normal = np.cross(temp1, temp2)
+        normal = normal / np.linalg.norm(normal)
+        return (normal[0], normal[1], normal[2])
+
+    def __del__(self):
+        if self.list_index != -1:
+            glDeleteLists(self.list_index, 1)
+
+
+class SimpleBodyData:
+    def __init__(self):
+        self.node = None
+        self.label = 0
+        self.skeleton = False
+        self.multi_body_translation = [0.0, 0.0, 0.0]
+        self.joint_matrices = None
+        self.joint_quats = None
+
+        self.joints = []
+        self.limbs = [None] * 37
+        for joint_index in joint_index_to_name:
+            name = joint_index_to_name[joint_index]
+            new_joint = Joint(self, name, joint_index)
+            self.joints.append(new_joint)
+
+        self.joint_mapper = [-1] * 37
+        for joint_rel in actual_joints:
+            mapping = actual_joints[joint_rel]
+            self.joint_mapper[mapping[1]] = mapping[0]
+
+        tree = ET.parse('dpg_system/definition.xml')
+        root = tree.getroot()
+        for node in root.iter('node'):
+            if 'translate' in node.attrib:
+                trans = node.attrib['translate']
+                trans_float = tuple(map(float, trans.split(' ')))
+                y = tuple(i / 100.0 for i in trans_float)
+                joint_name = shadow_limb_to_joint[node.attrib['id']]
+                joint_index = joint_name_to_index[joint_name]
+                self.joints[joint_index].bone_dim = y
+        for joint in self.joints:
+            joint.set_matrix()
+            joint.set_mass()
+
+        self.num_bodies = 1
+        self.current_body = 0
+
+        #  coordinate non active joints --- use [1, 0, 0, 0]
+
+        self.base_material = [0.5, 0.5, 0.5, 1.0]
+        self.quaternions_np = np.zeros((20, 4, 1), dtype=float)
+        default_quat = np.array([1.0, 0.0, 0.0, 0.0])
+        self.default_gl_transform = quaternion_to_R3_rotation(default_quat)
+        self.default_gl_transform = self.transform_to_opengl(self.default_gl_transform)
+        self.__mutex = threading.Lock()
+
+    def update_quats(self, quats):
+        if len(quats.shape) > 2:
+            self.quaternions_np = quats
+            self.num_bodies = quats.shape[0]
+        else:
+            self.quaternions_np = np.expand_dims(quats, axis=0)
+            self.num_bodies = 1
+        self.joint_matrices = quaternions_to_R3_rotation(self.quaternions_np)
+        self.joint_quats = self.quaternions_np.copy()
+
+    def transform_to_opengl(self, transform):
+        if transform is not None and len(transform) == 16:
+            # Transpose matrix for OpenGL column-major order.
+            for i in range(0, 4):
+                for j in range((i + 1), 4):
+                    temp = transform[4 * i + j]
+                    transform[4 * i + j] = transform[4 * j + i]
+                    transform[4 * j + i] = temp
+        return transform
+
+    def draw(self, skeleton=False):
+        hold_shade = glGetInteger(GL_SHADE_MODEL)
+        glShadeModel(GL_FLAT)
+        glPushMatrix()
+        glScalef(scale, scale, 1.0)
+        glTranslatef(0.0, -1.0, 0.0)
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, self.base_material)
+
+        for i in range(self.num_bodies):
+            self.current_body = i
+            self.skeleton = skeleton
+
+            glPushMatrix()
+
+            # UI for showing closeness to captured, but also labels...???
+            self.move_to(t_PelvisAnchor)
+
+            glPushMatrix()
+            self.draw_to(t_LeftHip, t_PelvisAnchor)
+            self.draw_to(t_LeftKnee, t_LeftHip)
+            self.draw_to(t_LeftAnkle, t_LeftKnee)
+
+            glPushMatrix()
+            self.draw_to(t_LeftHeel, t_NoJoint)
+            glPopMatrix()
+
+            self.draw_to(t_LeftBallOfFoot, t_LeftAnkle)
+            self.draw_to(t_LeftToeTip, t_LeftBallOfFoot)
+            glPopMatrix()
+
+            glPushMatrix()
+            self.draw_to(t_RightHip, t_PelvisAnchor)
+            self.draw_to(t_RightKnee, t_RightHip)
+            self.draw_to(t_RightAnkle, t_RightKnee)
+
+            glPushMatrix()
+            self.draw_to(t_RightHeel, t_NoJoint)
+            glPopMatrix()
+
+            self.draw_to(t_RightBallOfFoot, t_RightAnkle)
+            self.draw_to(t_RightToeTip, t_RightBallOfFoot)
+            glPopMatrix()
+
+            glPushMatrix()
+            self.draw_to(t_SpinePelvis, t_PelvisAnchor)
+            self.draw_to(t_LowerVertebrae, t_SpinePelvis)
+            self.draw_to(t_MidVertebrae, t_LowerVertebrae)
+
+            glPushMatrix()
+            self.draw_to(t_LeftShoulderBladeBase, t_MidVertebrae)
+            self.draw_to(t_LeftShoulder, t_LeftShoulderBladeBase)
+            self.draw_to(t_LeftElbow, t_LeftShoulder)
+            self.draw_to(t_LeftWrist, t_LeftElbow)
+            self.draw_to(t_LeftKnuckle, t_LeftWrist)
+            self.draw_to(t_LeftFingerTip, t_LeftKnuckle)
+            glPopMatrix()
+
+            glPushMatrix()
+            self.draw_to(t_RightShoulderBladeBase, t_MidVertebrae)
+            self.draw_to(t_RightShoulder, t_RightShoulderBladeBase)
+            self.draw_to(t_RightElbow, t_RightShoulder)
+            self.draw_to(t_RightWrist, t_RightElbow)
+            self.draw_to(t_RightKnuckle, t_RightWrist)
+            self.draw_to(t_RightFingerTip, t_RightKnuckle)
+            glPopMatrix()
+
+            self.draw_to(t_UpperVertebrae, t_MidVertebrae)
+            self.draw_to(t_BaseOfSkull, t_UpperVertebrae)
+            self.draw_to(t_TopOfHead, t_BaseOfSkull)
+
+            glPopMatrix()
+            glPopMatrix()
+
+            glTranslatef(self.multi_body_translation[0], self.multi_body_translation[1], self.multi_body_translation[2])
+
+        glPopMatrix()
+        glShadeModel(hold_shade)
+
+    def move_to(self, jointIndex):
+        if jointIndex != t_NoJoint:
+            transform = self.default_gl_transform
+            linear_index = self.joint_mapper[jointIndex]
+            if linear_index != -1:
+                if self.joint_matrices is not None:
+                    transform = self.joint_matrices[self.current_body, linear_index]
+
+            glTranslatef(self.joints[jointIndex].bone_dim[0], self.joints[jointIndex].bone_dim[1], self.joints[jointIndex].bone_dim[2])
+            glMultMatrixf(transform)
+
+    def draw_to(self, joint_index, prev_limb_index=-1, orientation=False, show_disks=False):
+        transform = self.default_gl_transform
+        if joint_index != t_NoJoint:
+            linear_index = self.joint_mapper[joint_index]
+            if linear_index != -1:
+                if self.joint_matrices is not None:
+                    transform = self.joint_matrices[self.current_body, linear_index]
+
+        joint_data = self.joints[joint_index]
+
+        m = joint_data.matrix
+        length = joint_data.length
+        widths = joint_data.thickness
+
+        if joint_data.do_draw:
+            glPushMatrix()
+            glMultMatrixf(m)
+            glLineWidth(2.0)
+
+            self.draw_block(joint_index, (widths[0], length, widths[1]))
+
+            glPopMatrix()
+
+        glTranslatef(joint_data.bone_dim[0], joint_data.bone_dim[1], joint_data.bone_dim[2])
+        glMultMatrixf(transform)
+        # glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, self.base_material)
+
+    def draw_block(self, joint_index, dim):
+        if self.skeleton:
+            dim_z = dim[1]
+            glBegin(GL_LINES)
+            glVertex3f(0, 0, 0)
+            glVertex3f(0, 0, dim_z)
+            glEnd()
+
+        else:
+            if self.limbs[joint_index] is None:
+                self.limbs[joint_index] = LimbGeometry()
+
+                dim_x = dim[0] / 2
+                dim_z = dim[1] - .02
+                dim_y = dim[2] / 2
+
+                points = []
+                points.append((-dim_x, -dim_y, 0))
+                points.append((-dim_x, -dim_y, dim_z))
+                points.append((dim_x, -dim_y, 0))
+                points.append((dim_x, -dim_y, dim_z))
+                points.append((dim_x, dim_y, 0))
+                points.append((dim_x, dim_y, dim_z))
+                points.append((-dim_x, dim_y, 0))
+                points.append((-dim_x, dim_y, dim_z))
+                self.limbs[joint_index].set_points(points)
+                self.limbs[joint_index].calc_normals()
+
+            self.limbs[joint_index].draw()
+
+    def calc_normal(self, v1, v2, v3):
+        v_1 = np.array([v1[0], v1[1], v1[2]])
+        v_2 = np.array([v2[0], v2[1], v2[2]])
+        v_3 = np.array([v3[0], v3[1], v3[2]])
+        temp1 = v_2 - v_1
+        temp2 = v_3 - v_1
+        normal = np.cross(temp1, temp2)
+        normal = normal / np.linalg.norm(normal)
+        return (normal[0], normal[1], normal[2])
+
+    def __del__(self):
+        if self.__mutex is not None:
+            lock = ScopedLock(self.__mutex)
+            self.__mutex = None
+        for limb in self.limbs:
+            delete(limb)
+
+

@@ -84,18 +84,24 @@ class TorchBandPassFilterBankNode(TorchDeviceDtypeNode):
         else:
             if self.band_scaling() == 'log':
                 np_bands = np.logspace(np.log10(self.high_cut_property()), np.log10(self.low_cut_property()), self.num_bands())
+                factor = np_bands[-2] / np_bands[-1]
+                band_power = math.log2(factor)
+                overlap_factor = pow(2, band_power * self.overlap())
+                if self.num_bands() == 1:
+                    self.bands = [[np_bands[1] / overlap_factor, np_bands[0] * overlap_factor]]
+                else:
+                    for i in range(self.num_bands() - 1):
+                        self.bands.append([np_bands[i + 1] / overlap_factor, np_bands[i] * overlap_factor])
             else:
                 np_bands = np.linspace(self.high_cut_property(), self.low_cut_property(), self.num_bands())
-        factor = np_bands[-2] / np_bands[-1]
+                factor = np_bands[-2] - np_bands[-1]
+                overlap_factor = factor * self.overlap()
+                if self.num_bands() == 1:
+                    self.bands = [[np_bands[1] - overlap_factor, np_bands[0] + overlap_factor]]
+                else:
+                    for i in range(self.num_bands() - 1):
+                        self.bands.append([np_bands[i + 1] - overlap_factor, np_bands[i] + overlap_factor])
 
-        band_power = math.log2(factor)
-        overlap_factor = pow(2, band_power * self.overlap())
-
-        if self.num_bands() == 1:
-            self.bands = [[np_bands[1] / overlap_factor, np_bands[0] * overlap_factor]]
-        else:
-            for i in range(self.num_bands() - 1):
-                self.bands.append([np_bands[i + 1] / overlap_factor, np_bands[i] * overlap_factor])
 
     def params_changed(self):
         self.filter = None

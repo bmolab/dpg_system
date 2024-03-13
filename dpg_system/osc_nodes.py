@@ -1,3 +1,5 @@
+import queue
+
 import dearpygui.dearpygui as dpg
 from pythonosc import osc_server
 from pythonosc.udp_client import SimpleUDPClient
@@ -83,6 +85,7 @@ class OSCManager:
 
         OSCBase.osc_manager = self
         self.lock = threading.Lock()
+        self.pending_message_queue = queue.Queue()
         # if not self.started:
         #     osc_thread()
 
@@ -106,23 +109,38 @@ class OSCManager:
         return None
 
     def receive_pending_message(self, source, message, args):
-        if self.lock.acquire(blocking=True):
-            self.pending_messages[self.pending_message_buffer].append([source, message, args])
-            self.lock.release()
+        self.pending_message_queue.put([source, message, args], block=False)
+        # if self.lock.acquire(blocking=True):
+        #     self.pending_messages[self.pending_message_buffer].append([source, message, args])
+        #     self.lock.release()
 
-    def swap_pending_message_buffer(self):
-        self.pending_message_buffer = 1 - self.pending_message_buffer
+    # def swap_pending_message_buffer(self):
+    #     self.pending_message_buffer = 1 - self.pending_message_buffer
 
     def relay_pending_messages(self):
-        self.swap_pending_message_buffer()
-        for osc_message in self.pending_messages[1 - self.pending_message_buffer]:
-            if len(osc_message) >= 3:
+        while not self.pending_message_queue.empty():
+            osc_message = None
+            try:
+                osc_message = self.pending_message_queue.get(block=False)
+            except Exception as e:
+                osc_message = None
+                break
+            if osc_message:
                 source = osc_message[0]
                 address = osc_message[1]
                 args_ = osc_message[2]
 
                 source.relay_osc(address, args_)
-                self.pending_messages[1 - self.pending_message_buffer] = []
+
+        # self.swap_pending_message_buffer()
+        # for osc_message in self.pending_messages[1 - self.pending_message_buffer]:
+        #     if len(osc_message) >= 3:
+        #         source = osc_message[0]
+        #         address = osc_message[1]
+        #         args_ = osc_message[2]
+        #
+        #         source.relay_osc(address, args_)
+        #         self.pending_messages[1 - self.pending_message_buffer] = []
 
     def get_target_list(self):
         return list(self.targets.keys())
@@ -352,15 +370,21 @@ class OSCSource(OSCBase):
         self.lock = threading.Lock()
 
         self.handle_in_loop = False
+        # self.use_queue = False
+        # self.queue = queue.Queue()
 
     def osc_handler(self, address, *args):
+        # if self.lock.acquire(blocking=True):
+        if type(args) == tuple:
+            args = list(args)
+        if self.handle_in_loop:
+        #     self.osc_manager.receive_pending_message(self, address, args)
+        #     self.lock.release()
+        #     return
+        # if self.use_queue:
+            self.osc_manager.receive_pending_message(self, address, args)
+            return
         if self.lock.acquire(blocking=True):
-            if type(args) == tuple:
-                args = list(args)
-            if self.handle_in_loop:
-                self.osc_manager.receive_pending_message(self, address, args)
-                self.lock.release()
-                return
             if address in self.receive_nodes:
                 self.receive_nodes[address].receive(args)
                 self.lock.release()
@@ -404,7 +428,6 @@ class OSCSource(OSCBase):
     def unregister_receive_node(self, receive_node):
         if receive_node.address in self.receive_nodes:
             self.receive_nodes.pop(receive_node.address)
-
 
 class OSCThreadingSource(OSCSource):
     def __init__(self, label: str, data, args):
@@ -518,6 +541,7 @@ class OSCSourceNode(OSCThreadingSource, Node):
 
         self.source_name_property = self.add_property('name', widget_type='text_input', default_value=self.name, callback=self.source_changed)
         self.source_port_property = self.add_property('port', widget_type='text_input', default_value=str(self.source_port), callback=self.source_changed)
+        self.use_queue = self.add_option('use_queue', widget_type='checkbox', default_value=False)
         self.output = self.add_output('osc received')
         self.start_serving()
 

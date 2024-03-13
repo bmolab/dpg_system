@@ -4,9 +4,13 @@ import OpenGL.GL as gl
 import OpenGL.GLU as glu
 import math
 import numpy as np
+import threading
+
+
 
 
 class MyGLContext:
+    gl_thread = None
     inited = False
 
     @staticmethod
@@ -19,6 +23,7 @@ class MyGLContext:
             if not glfw.init():
                 print("library is not initialized")
                 return
+            # MyGLContext.gl_thread = threading.Thread(target=run_gl_thread)
             self.inited = True
 #        Create a windowed mode window and its OpenGL context
 #         print(glfw.get_version())
@@ -123,5 +128,6 @@ class MyGLContext:
     #             color.red += color.blue
     #             color.blue = color.red - color.blue
     #             color.red = color.red - color.blue
+
 
 

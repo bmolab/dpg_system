@@ -837,5 +837,134 @@ def conform_type(a, b):
         return any_to_array(a)
 
 
+BOOLEAN_MASK = 1
+INT_MASK = 2
+FLOAT_MASK = 4
+ARRAY_MASK = 8
+LIST_MASK = 16
+STRING_MASK = 32
+TENSOR_MASK = 64
+
+def create_type_mask_from_list(type_list):
+    mask = 0
+    if bool in type_list:
+        mask += BOOLEAN_MASK
+    if int in type_list:
+        mask += INT_MASK
+    if float in type_list:
+        mask += FLOAT_MASK
+    if np.ndarray in type_list:
+        mask += ARRAY_MASK
+    if list in type_list:
+        mask += LIST_MASK
+    if str in type_list:
+        mask += STRING_MASK
+    if torch.Tensor in type_list:
+        mask += TENSOR_MASK
+    return mask
+
+
+def conform_to_type_mask(data, type_mask):
+    t = type(data)
+    if t == str:
+        if type_mask & LIST_MASK:
+            return string_to_list(data)
+        if type_mask & ARRAY_MASK:
+            return string_to_array(data)
+        if type_mask & INT_MASK:
+            return string_to_int(data)
+        if type_mask & FLOAT_MASK:
+            return string_to_float(data)
+        if type_mask & TENSOR_MASK:
+            return string_to_tensor(data)
+        if type_mask & BOOLEAN_MASK:
+            return string_to_bool(data)
+
+    if t in [int, np.int64]:
+        if type_mask & FLOAT_MASK:
+            return any_to_float(data)
+        if type_mask & STRING_MASK:
+            return any_to_string(data)
+        if type_mask & ARRAY_MASK:
+            return any_to_array(data)
+        if type_mask & TENSOR_MASK:
+            return any_to_tensor(data)
+        if type_mask & BOOLEAN_MASK:
+            return any_to_bool(data)
+        if type_mask & LIST_MASK:
+            return any_to_list(data)
+
+    if t in [float, np.float32, np.double]:
+        if type_mask & ARRAY_MASK:
+            return any_to_array(data)
+        if type_mask & TENSOR_MASK:
+            return any_to_tensor(data)
+        if type_mask & INT_MASK:
+            return int(data)
+        if type_mask & BOOLEAN_MASK:
+            return any_to_bool(data)
+        if type_mask & STRING_MASK:
+            return any_to_string(data)
+        if type_mask & LIST_MASK:
+            return any_to_list(data)
+
+    if t in [bool, np.bool_]:
+        if type_mask & INT_MASK:
+            return any_to_int(data)
+        if type_mask & FLOAT_MASK:
+            return any_to_float(data)
+        if type_mask & STRING_MASK:
+            return any_to_string(data)
+        if type_mask & LIST_MASK:
+            return any_to_list(data)
+        if type_mask & ARRAY_MASK:
+            return any_to_array(data)
+        if type_mask & TENSOR_MASK:
+            return any_to_tensor(data)
+
+    if t in [tuple, list]:
+        if type_mask & LIST_MASK:
+            return any_to_list(data)
+        if type_mask & ARRAY_MASK:
+            return any_to_array(data)
+        if type_mask & TENSOR_MASK:
+            return any_to_tensor(data)
+        if type_mask & INT_MASK:
+            return any_to_int(data)
+        if type_mask & FLOAT_MASK:
+            return any_to_float(data)
+        if type_mask & STRING_MASK:
+            return any_to_string(data)
+        return data
+
+    if t == np.ndarray:
+        if type_mask & TENSOR_MASK:
+            return array_to_tensor(data)
+        if type_mask & LIST_MASK:
+            return any_to_list(data)
+        if type_mask & INT_MASK:
+            return any_to_int(data)
+        if type_mask & FLOAT_MASK:
+            return any_to_float(data)
+        if type_mask & STRING_MASK:
+            return any_to_string(data)
+        if type_mask & BOOLEAN_MASK:
+            return any_to_bool(data)
+        return data
+
+    if t == torch.Tensor:
+        if type_mask & ARRAY_MASK:
+            return tensor_to_array(data)
+        if type_mask & LIST_MASK:
+            return any_to_list(data)
+        if type_mask & FLOAT_MASK:
+            return any_to_float(data)
+        if type_mask & INT_MASK:
+            return any_to_int(data)
+        if type_mask & STRING_MASK:
+            return any_to_string(data)
+        if type_mask & BOOLEAN_MASK:
+            return any_to_bool(data)
+        return data
 
 

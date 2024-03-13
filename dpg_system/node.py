@@ -773,6 +773,8 @@ class NodeInput:
         self.user_data = None
         self.variable = None
         self.action = None
+        self.accepted_types = None
+        self.type_mask = 0
 
     def get_label(self):
         return self._label
@@ -896,11 +898,23 @@ class NodeInput:
             if self.node.visibility == 'show_all':
                 dpg.bind_item_theme(self.uuid, self._pin_active_theme)
                 Node.app.get_current_editor().add_active_pin(self.uuid)
+            if self.accepted_types:
+                if self.type_mask != 0:
+                    self.type_mask = create_type_mask_from_list(self.accepted_types)
+                data = conform_to_type_mask(data, self.type_mask)
             if self.widget:
                 self.widget.set(data)
             if self.callback:
                 self.callback()
             self.node.active_input = None
+
+    def conform_to_accepted_types(self, data):
+        if self.accepted_types:
+            t = type(data)
+            if t in self.accepted_types:
+                return data
+
+        return data
 
     def trigger(self):
         if self.triggers_execution:

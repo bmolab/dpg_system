@@ -922,8 +922,13 @@ class ValueNode(Node):
                 # value = in_data.split(' ')
             if t == list:
                 if len(in_data) == 1:
-                    value = in_data[0]
-                    t = type(value)
+                    in_data = in_data[0]
+                    value = in_data
+                    t = type(in_data)
+                    if self.input.widget.widget in ['drag_float', 'drag_int', 'input_float', 'input_int',
+                                                    'slider_float', 'slider_int', 'knob_float', 'knob_int']:
+                        if t in [float, int]:
+                            self.input.widget.set(value, propagate=False)
                 else:
                     if self.input.widget.widget in ['drag_float', 'drag_int', 'input_float', 'input_int', 'slider_float', 'slider_int', 'knob_float', 'knob_int']:
                         if not is_number(in_data[0]):
@@ -933,9 +938,15 @@ class ValueNode(Node):
                                         value = in_data[1]
                                         self.input.widget.set(value, propagate=False)
                                         output = False
+                        else:
+                            in_data = in_data[0]
+                            value = in_data
+                            t = type(in_data)
+                            if t in [float, int]:
+                                self.input.widget.set(value, propagate=False)
                     else:
                         value = in_data
-            elif t in [float, int]:
+            if t in [float, int]:
                 value = in_data
             elif t == bool:
                 if in_data:
