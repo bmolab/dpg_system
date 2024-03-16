@@ -467,7 +467,10 @@ server_to_stop = None
 
 def stop_server():
     global server_to_stop
-    server_to_stop.destroy_server()
+    if server_to_stop is not None:
+        server_to_stop.destroy_server()
+    else:
+        print('no server to stop')
 
 
 def start_async():
@@ -509,13 +512,14 @@ class OSCAsyncIOSource(OSCSource):
 
     def destroy_server(self):
         self.stop_serving()
-
         if self.transport is not None:
             self.transport.close()
         if self.async_loop:
             self.pending_dead_loop.append(self.async_loop)
             stop_async(self.async_loop)
             self.async_loop = None
+        self.server = None
+
 
     async def server_coroutine(self):
         self.server = osc_server.AsyncIOOSCUDPServer(('0.0.0.0', self.source_port), self.dispatcher,
@@ -743,7 +747,6 @@ class OSCDeviceNode(OSCAsyncIOSource, OSCTarget, Node):
                 if type(message) == list and len(message) == 1:
                     message = message[0]
                 self.send_message(message, content)
-
 
 
 class OSCReceiver(OSCBase):
@@ -1003,6 +1006,7 @@ class OSCRouteNode(OSCBase, Node):
         self.miss_out.send(self.input())
 
 
+# osc_toggle option to set on and off message....
 class OSCValueNode(OSCReceiver, OSCSender, ValueNode):
     @staticmethod
     def factory(name, data, args=None):

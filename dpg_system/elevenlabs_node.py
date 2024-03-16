@@ -11,6 +11,7 @@ from dpg_system.conversion_utils import *
 from elevenlabs import client, stream, generate, Voice, VoiceSettings
 from elevenlabs.client import ElevenLabs
 from queue import Queue
+import threading
 
 api_key = 'be1eae804441ec11f0fe872f82ad44f3'
 
@@ -75,6 +76,12 @@ class ElevenLabNode(Node):
         play(audio_segment)
 
 
+def service_eleven_labs():
+    while True:
+        for instance in ElevenLabsNode.instances:
+            instance.service_queue()
+
+
 class ElevenLabsNode(Node):
     instances = []
     @staticmethod
@@ -92,6 +99,7 @@ class ElevenLabsNode(Node):
         self.models = self.client.models.get_all()
         self.voice_name = 'David'
         self.active = False
+        self.audio_stream = None
         if len(args) > 0:
             voice_name = any_to_string(args[0])
         else:
@@ -122,9 +130,15 @@ class ElevenLabsNode(Node):
         self.style = self.add_input('style exaggeration', widget_type='drag_float', default_value=0.5, callback=self.voice_changed)
         self.latency = self.add_input('latency', widget_type='combo', default_value='0')
         self.latency.widget.combo_items = ['0', '1', '2', '3', '4']
+        self.stop_streaming_input = self.add_input('stop', widget_type='button', callback=self.stop_streaming)
+        self.accept_input = self.add_input('accept input', widget_type='checkbox')
+        self.active_output = self.add_output('speaking')
         self.voice_record = None
+        self.previously_active = False
         ElevenLabsNode.instances.append(self)
         self.phrase_queue = Queue(16)
+        self.thread = threading.Thread(target=service_eleven_labs)
+        self.thread.start()
 
     def voice_changed(self):
         self.voice_record = None
@@ -137,8 +151,18 @@ class ElevenLabsNode(Node):
         self.voice_record = Voice(voice_id=self.voice_id, settings=VoiceSettings(stability=self.stability(), similarity_boost=self.similarity_boost(), style=self.style()))
 
     def execute(self):
-        self.text_to_speak = any_to_string(self.text_input())
-        self.phrase_queue.put(self.text_to_speak)
+        if self.accept_input():
+            self.text_to_speak = any_to_string(self.text_input())
+            self.add_frame_task()
+            self.phrase_queue.put(self.text_to_speak)
+
+    def stop_streaming(self):
+        while not self.phrase_queue.empty():
+            try:
+                self.phrase_queue.get(block=False)
+            except Exception as e:
+                continue
+            self.phrase_queue.task_done()
 
     def service_queue(self):
         if not self.active and not self.phrase_queue.empty():
@@ -146,7 +170,12 @@ class ElevenLabsNode(Node):
             text = self.phrase_queue.get()
             model = self.model_dict[self.model_choice()]
             latency = int(self.latency())
-            audio_stream = generate(api_key=api_key, text=text, voice=self.voice_record, model=model, stream=True, latency=latency)
-            audio = stream(audio_stream)
+            self.audio_stream = generate(api_key=api_key, text=text, voice=self.voice_record, model=model, stream=True, latency=latency)
+            audio = stream(self.audio_stream)
             self.active = False
 
+
+    def frame_task(self):
+        if self.active != self.previously_active:
+            self.active_output.send(self.active)
+            self.previously_active = self.active

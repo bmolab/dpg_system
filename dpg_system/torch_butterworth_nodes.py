@@ -27,8 +27,8 @@ class TorchBandPassFilterBankNode(TorchDeviceDtypeNode):
         self.order = 1
 
         #  these should be algorithmically generated as octaves
-        low_cut = 0.03125
-        high_cut = 16
+        low_cut = 0.01
+        high_cut = 12
         num_bands = 8
         # add facility to have band overlap...
         # take multiplier from band to band - sqrt of multiplier is 1/2 step, pow(0.25) is 1/4 step?

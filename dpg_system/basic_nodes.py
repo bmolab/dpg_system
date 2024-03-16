@@ -60,6 +60,7 @@ def register_basic_nodes():
     Node.app.register_node('join', JoinNode.factory)
     Node.app.register_node('defer', DeferNode.factory)
     Node.app.register_node('gather_sentence', GatherSentences.factory)
+    Node.app.register_node('string_builder', StringBuilder.factory)
 
 
 # DeferNode -- delays received input until next frame
@@ -2428,6 +2429,7 @@ class GatherSentences(Node):
         super().__init__(label, data, args)
         self.received_sentence = ''
         self.input = self.add_input('string in', triggers_execution=True)
+        self.enforce_spaces = self.add_property('enforce sentences', widget_type='checkbox')
         self.sentence_output = self.add_output('sentences out')
 
     def execute(self):
@@ -2454,4 +2456,35 @@ class GatherSentences(Node):
                 self.sentence_output.send(self.received_sentence)
                 self.received_sentence = ''
                 return
+        if self.enforce_spaces() and len(self.received_sentence) > 0 and len(data) > 0:
+            if self.received_sentence[-1] != ' ' and data[0] != ' ':
+                self.received_sentence += ' '
         self.received_sentence += data
+
+
+class StringBuilder(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = StringBuilder(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.received_sentence = ''
+        self.trigger_input = self.add_input('issue text', triggers_execution=True)
+        self.input = self.add_input('string in', triggers_execution=True)
+        self.sentence_output = self.add_output('text out')
+
+    def execute(self):
+        if self.active_input == self.input:
+            data = any_to_string(self.input())
+            if len(self.received_sentence) > 0 and len(data) > 0:
+                if self.received_sentence[-1] != ' ' and data[0] != ' ':
+                    self.received_sentence += ' '
+            self.received_sentence += data
+        elif self.active_input == self.trigger_input:
+            if self.trigger_input() == 'clear':
+                self.received_sentence = ''
+            else:
+                self.sentence_output.send(self.received_sentence)
+                self.received_sentence = ''
