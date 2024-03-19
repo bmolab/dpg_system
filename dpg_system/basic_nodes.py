@@ -2429,37 +2429,42 @@ class GatherSentences(Node):
         super().__init__(label, data, args)
         self.received_sentence = ''
         self.input = self.add_input('string in', triggers_execution=True)
-        self.enforce_spaces = self.add_property('enforce sentences', widget_type='checkbox')
+        self.end_input = self.add_input('force string end', triggers_execution=True)
+        self.enforce_spaces = self.add_property('enforce spaces', widget_type='checkbox')
         self.sentence_output = self.add_output('sentences out')
 
     def execute(self):
-        data = any_to_string(self.input())
-        if len(data) > 0:
-            if data[-1] == '\n' and len(data) > 1:
-                if data[-2] == '\n':
-                    self.received_sentence += data
-                    # self.received_sentence = self.received_sentence.replace('\n', ' ')
+        if self.active_input == self.input:
+            data = any_to_string(self.input())
+            if len(data) > 0:
+                if data[-1] == '\n' and len(data) > 1:
+                    if data[-2] == '\n':
+                        self.received_sentence += data
+                        # self.received_sentence = self.received_sentence.replace('\n', ' ')
 
-                    self.sentence_output.send(self.received_sentence)
-                    self.received_sentence = ''
-                    return
-            if data[-1] == '-' and len(data) > 1:
-                if data[-2] == '-':
+                        self.sentence_output.send(self.received_sentence)
+                        self.received_sentence = ''
+                        return
+                if data[-1] == '-' and len(data) > 1:
+                    if data[-2] == '-':
+                        self.received_sentence += data
+                        # self.received_sentence = self.received_sentence.replace('\n', ' ')
+                        self.sentence_output.send(self.received_sentence)
+                        self.received_sentence = ''
+                        return
+                if data[-1] in ['.', '?', '!', ';', ':']:
                     self.received_sentence += data
                     # self.received_sentence = self.received_sentence.replace('\n', ' ')
                     self.sentence_output.send(self.received_sentence)
                     self.received_sentence = ''
                     return
-            if data[-1] in ['.', '?', '!', ';', ':']:
-                self.received_sentence += data
-                # self.received_sentence = self.received_sentence.replace('\n', ' ')
-                self.sentence_output.send(self.received_sentence)
-                self.received_sentence = ''
-                return
-        if self.enforce_spaces() and len(self.received_sentence) > 0 and len(data) > 0:
-            if self.received_sentence[-1] != ' ' and data[0] != ' ':
-                self.received_sentence += ' '
-        self.received_sentence += data
+            if self.enforce_spaces() and len(self.received_sentence) > 0 and len(data) > 0:
+                if self.received_sentence[-1] != ' ' and data[0] != ' ':
+                    self.received_sentence += ' '
+            self.received_sentence += data
+        else:
+            self.sentence_output.send(self.received_sentence)
+            self.received_sentence = ''
 
 
 class StringBuilder(Node):
