@@ -1143,6 +1143,7 @@ class PrintNode(Node):
         self.format_string = '{:.3f}'
         self.input = self.add_input('in', triggers_execution=True)
         self.precision = self.add_option(label='precision', widget_type='drag_int', default_value=self.precision, min=0, max=32, callback=self.change_format)
+        self.end = self.add_option(label='end', widget_type='text_input', default_value='\n')
 
     def change_format(self):
         precision = self.precision()
@@ -1171,18 +1172,18 @@ class PrintNode(Node):
         data = self.input()
         t = type(data)
         if t in [int, np.int64, bool, np.bool_, str]:
-            print(data)
+            print(data, end=self.end())
         elif t in [float, np.double]:
-            print(self.format_string.format(data))
+            print(self.format_string.format(data), end=self.end())
         elif t == list:
             self.print_list(data)
-            print('')
+            print('', end=self.end())
         elif t == np.ndarray:
             np.set_printoptions(precision=self.precision())
             print(data)
         elif self.app.torch_available and t == torch.Tensor:
             torch.set_printoptions(precision=self.precision())
-            print(data)
+            print(data, end=self.end())
 
 
 class LoadActionNode(Node):

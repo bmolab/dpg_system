@@ -1251,6 +1251,7 @@ class CombineFIFONode(Node):
             self.age = [1.0] * self.count
             self.last_time = time.time()
             self.decay_rate = .01
+            self.length_threshold = 100
 
             self.input = self.add_input("in", triggers_execution=True)
             self.progress_input = self.add_input("progress", triggers_execution=True)
@@ -1260,6 +1261,7 @@ class CombineFIFONode(Node):
             self.order = self.add_property('order', widget_type='combo', width=150, default_value='newest_at_end')
             self.order.widget.combo_items = ['newest_at_end', 'newest_at_start']
             self.decay_rate_property = self.add_property('decay_rate', widget_type='drag_float', default_value=self.decay_rate)
+            self.length_threshold_property = self.add_property('length_threshold', widget_type='drag_int', default_value=self.length_threshold)
             self.output = self.add_output("weighted out")
             self.string_output = self.add_output("string out")
             self.last_was_progress = False
@@ -1304,15 +1306,49 @@ class CombineFIFONode(Node):
 
             if self.input.fresh_input:
                 phrase = any_to_string(self.input())
-                # if self.last_was_progress:
-                #     self.pointer = (self.pointer - 1) % self.count
                 self.last_was_progress = False
                 self.advance_age()
 
-                self.combine_list[self.pointer] = phrase
+                length = len(phrase)
+                if length > self.length_threshold_property():
+                    sub_phrases = re.split(r'[\!\?\.\:\;\,]', phrase)
+                else:
+                    sub_phrases = phrase.split('.')
 
-                self.age[self.pointer] = 1.0
-                self.pointer = (self.pointer - 1) % self.count
+                joiners = []
+                adjusted_phrases = []
+                for index, sp in enumerate(sub_phrases):
+                    if len(sp) > 0:
+                        if len(sp) > 1 and sp[-1] == 'r':
+                            if sp[-2] in ['D', 'M']:
+                                joiners.append(index)
+                        elif len(sp) > 2 and sp[-1] == 's':
+                            if sp[-2] == 'r' and sp[-3] == 'M':
+                                joiners.append(index)
+                        if len(sp) > 1 and sp[-1] == 't':
+                            if sp[-2] == 'S':
+                                joiners.append(index)
+
+                join_next = False
+
+                for index, p in enumerate(sub_phrases):
+                    if len(p) > 0:
+                        if join_next:
+                            adjusted_phrases[-1] = adjusted_phrases[-1] + p + '.'
+                            join_next = False
+                        else:
+                            if p[-1] not in ['.', '?', '!']:
+                                adjusted_phrases.append(p + '.')
+                            else:
+                                adjusted_phrases.append(p)
+
+                        if index in joiners:
+                            join_next = True
+
+                for p in adjusted_phrases:
+                    self.combine_list[self.pointer] = p
+                    self.age[self.pointer] = 1.0
+                    self.pointer = (self.pointer - 1) % self.count
 
             output_string_list = []
             output_string = ''
