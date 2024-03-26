@@ -1318,6 +1318,8 @@ class CombineFIFONode(Node):
                 joiners = []
                 adjusted_phrases = []
                 for index, sp in enumerate(sub_phrases):
+                    if len(sp) == 1 and sp[0] == ' ':
+                        sp = ''
                     if len(sp) > 0:
                         if len(sp) > 1 and sp[-1] == 'r':
                             if sp[-2] in ['D', 'M']:
