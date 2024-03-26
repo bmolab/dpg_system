@@ -1295,6 +1295,7 @@ class CombineFIFONode(Node):
                     self.age[i] = 0
 
         def execute(self):
+            empty_phrase = False
             self.lock.acquire(blocking=True)
             if self.progress_input.fresh_input:
                 progress = any_to_string(self.progress_input())
@@ -1359,12 +1360,14 @@ class CombineFIFONode(Node):
                     self.combine_list[self.pointer] = p
                     self.age[self.pointer] = 1.0
                     self.pointer = (self.pointer - 1) % self.count
+                if len(adjusted_phrases) == 0:
+                    empty_phrase = True
 
             output_string_list = []
             output_string = ''
             pointer = self.pointer
 
-            if self.last_was_progress:
+            if self.last_was_progress or empty_phrase:
                 pointer = (self.pointer - 1) % self.count
 
             # added string out
