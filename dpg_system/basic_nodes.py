@@ -1268,6 +1268,7 @@ class CombineFIFONode(Node):
             self.output = self.add_output("weighted out")
             self.string_output = self.add_output("string out")
             self.last_was_progress = False
+            self.lock = threading.Lock()
 
         def dump_oldest(self, value):
             for i in range(self.count):
@@ -1294,9 +1295,10 @@ class CombineFIFONode(Node):
                     self.age[i] = 0
 
         def execute(self):
+            self.lock.acquire(blocking=True)
             if self.progress_input.fresh_input:
                 progress = any_to_string(self.progress_input())
-                if progress != '':
+                if progress != '' and progress != ' ':
                     self.advance_age()
 
                     p = self.pointer
@@ -1305,6 +1307,7 @@ class CombineFIFONode(Node):
                     self.last_was_progress = True
                 else:
                     if not self.input.fresh_input:
+                        self.lock.release()
                         return
 
             if self.input.fresh_input:
@@ -1319,7 +1322,6 @@ class CombineFIFONode(Node):
                     sub_phrases = phrase.split('.')
 
                 joiners = []
-                adjusted_phrases = []
                 for index, sp in enumerate(sub_phrases):
                     if len(sp) == 1 and sp[0] == ' ':
                         sp = ''
@@ -1335,12 +1337,13 @@ class CombineFIFONode(Node):
                                 joiners.append(index)
 
                 join_next = False
+                adjusted_phrases = []
 
                 for index, p in enumerate(sub_phrases):
                     if len(p) == 1 and p[0] == ' ':
                         p = ''
                     if len(p) > 0:
-                        if join_next:
+                        if join_next and len(adjusted_phrases) > 0:
                             adjusted_phrases[-1] = adjusted_phrases[-1] + p + '.'
                             join_next = False
                         else:
@@ -1360,6 +1363,7 @@ class CombineFIFONode(Node):
             output_string_list = []
             output_string = ''
             pointer = self.pointer
+
             if self.last_was_progress:
                 pointer = (self.pointer - 1) % self.count
 
@@ -1380,6 +1384,7 @@ class CombineFIFONode(Node):
                             output_string += (self.combine_list[j] + ' ')
             self.output.send(output_string_list)
             self.string_output.send(output_string)
+            self.lock.release()
 
 '''type : TypeNode
     description:
