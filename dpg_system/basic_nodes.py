@@ -327,6 +327,9 @@ class RampNode(Node):
             data = self.input.get_received_data()
             t = type(data)
             self.lock.acquire(blocking=True)
+            if t == str:
+                t = list
+                data = any_to_list(data)
             if t == list:
                 if len(data) == 2:
                     self.new_target = True
@@ -1334,6 +1337,8 @@ class CombineFIFONode(Node):
                 join_next = False
 
                 for index, p in enumerate(sub_phrases):
+                    if len(p) == 1 and p[0] == ' ':
+                        p = ''
                     if len(p) > 0:
                         if join_next:
                             adjusted_phrases[-1] = adjusted_phrases[-1] + p + '.'
