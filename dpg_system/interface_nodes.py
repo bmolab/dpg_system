@@ -7,7 +7,7 @@ from dpg_system.node import Node
 import threading
 from dpg_system.conversion_utils import *
 from dpg_system.matrix_nodes import RollingBuffer
-
+import pygame
 
 def register_interface_nodes():
     Node.app.register_node("menu", MenuNode.factory)
@@ -40,6 +40,7 @@ def register_interface_nodes():
     Node.app.register_node('archive', PresetsNode.factory)
     Node.app.register_node('versions', PresetsNode.factory)
     Node.app.register_node('gain', GainNode.factory)
+    Node.app.register_node('keys', KeyNode.factory)
 
 
 class ButtonNode(Node):
@@ -2048,4 +2049,170 @@ class ColorPickerNode(Node):
         data = list(self.input())
         self.output.send(data)
 
+
+class KeyNode(Node):
+    node_list = []
+    inited = False
+    map = {}
+    reverse_map = {}
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = KeyNode(name, data, args)
+        return node
+#
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        if not KeyNode.inited:
+            self.init()
+        KeyNode.node_list.append(self)
+        self.key_list = []
+        self.output_dict = {}
+        for arg in args:
+            if arg in KeyNode.map:
+                self.key_list.append(KeyNode.map[arg])
+                out = self.add_output(arg)
+                self.output_dict[arg] = out
+
+    def key_down(self):
+        for key in self.key_list:
+            if key in KeyNode.reverse_map:
+                if dpg.is_key_down(key):
+                    real_key = KeyNode.reverse_map[key]
+                    if real_key in self.output_dict:
+                        self.output_dict[real_key].send('bang')
+
+    def init(self):
+        KeyNode.inited = True
+        for i in range(ord('a'), ord('z'), 1):
+            c = chr(i)
+            KeyNode.map['0'] = dpg.mvKey_0
+            KeyNode.map['1'] = dpg.mvKey_1
+            KeyNode.map['2'] = dpg.mvKey_2
+            KeyNode.map['3'] = dpg.mvKey_3
+            KeyNode.map['4'] = dpg.mvKey_4
+            KeyNode.map['5'] = dpg.mvKey_5
+            KeyNode.map['6'] = dpg.mvKey_6
+            KeyNode.map['7'] = dpg.mvKey_7
+            KeyNode.map['8'] = dpg.mvKey_8
+            KeyNode.map['9'] = dpg.mvKey_9
+            # KeyNode.map['&'] = dpg.mvKey_AMPERSAND
+            # KeyNode.map['*'] = dpg.mvKey_ASTERISK
+            # KeyNode.map['@'] = dpg.mvKey_AT
+            KeyNode.map['BACKQUOTE'] = dpg.mvKey_Quote
+            # KeyNode.map['\\'] = dpg.mvKey_BACKSLASH
+            # KeyNode.map['BACKSPACE'] = dpg.mvKey_BACKSPACE
+            # KeyNode.map['BREAK'] = dpg.mvKey_BREAK
+            # KeyNode.map['CAPSLOCK'] = dpg.mvKey_CAPSLOCK
+            # KeyNode.map['CARET'] = dpg.mvKey_CARET
+            KeyNode.map['CLEAR'] = dpg.mvKey_Clear
+            KeyNode.map[':'] = dpg.mvKey_Colon
+            KeyNode.map[','] = dpg.mvKey_Comma
+            # KeyNode.map['CURRENCYSUBUNIT'] = dpg.mvKey_CURRENCYSUBUNIT
+            # KeyNode.map['$'] = dpg.mvKey_CURRENCYUNIT
+            KeyNode.map['DELETE'] = dpg.mvKey_Delete
+            # KeyNode.map['$'] = dpg.mvKey_DOLLAR
+            KeyNode.map['DOWN'] = dpg.mvKey_Down
+            KeyNode.map['END'] = dpg.mvKey_End
+            # KeyNode.map['='] = dpg.mvKey_EQUALS
+            KeyNode.map['ESCAPE'] = dpg.mvKey_Escape
+            # KeyNode.map['EURO'] = dpg.mvKey_EURO
+            # KeyNode.map['!'] = dpg.mvKey_EXCLAIM
+            KeyNode.map['F1'] = dpg.mvKey_F1
+            KeyNode.map['F10'] = dpg.mvKey_F10
+            KeyNode.map['F11'] = dpg.mvKey_F11
+            KeyNode.map['F12'] = dpg.mvKey_F12
+            KeyNode.map['F13'] = dpg.mvKey_F13
+            KeyNode.map['F14'] = dpg.mvKey_F14
+            KeyNode.map['F15'] = dpg.mvKey_F15
+            KeyNode.map['F2'] = dpg.mvKey_F2
+            KeyNode.map['F3'] = dpg.mvKey_F3
+            KeyNode.map['F4'] = dpg.mvKey_F4
+            KeyNode.map['F5'] = dpg.mvKey_F5
+            KeyNode.map['F6'] = dpg.mvKey_F6
+            KeyNode.map['F7'] = dpg.mvKey_F7
+            KeyNode.map['F8'] = dpg.mvKey_F8
+            KeyNode.map['F9'] = dpg.mvKey_F9
+            # KeyNode.map['>'] = dpg.mvKey_GREATER
+            # KeyNode.map['#'] = dpg.mvKey_HASH
+            KeyNode.map['HELP'] = dpg.mvKey_Help
+            KeyNode.map['HOME'] = dpg.mvKey_Home
+            KeyNode.map['INSERT'] = dpg.mvKey_Insert
+            KeyNode.map['LALT'] = dpg.mvKey_Alt
+            KeyNode.map['LCTRL'] = dpg.mvKey_LControl
+            KeyNode.map['LEFT'] = dpg.mvKey_Left
+            KeyNode.map['['] = dpg.mvKey_Open_Brace
+            KeyNode.map['('] = dpg.mvKey_Open_Brace
+            KeyNode.map['<'] = dpg.mvKey_Comma
+            # KeyNode.map['LGUI'] = dpg.mvKey_LGUI
+            KeyNode.map['LMETA'] = dpg.mvKey_LWin
+            KeyNode.map['LSHIFT'] = dpg.mvKey_LShift
+            # KeyNode.map['LSUPER'] = dpg.mvKey_LSUPER
+            # KeyNode.map['MENU'] = dpg.mvKey_MENU
+            KeyNode.map['MINUS'] = dpg.mvKey_Minus
+            # KeyNode.map['MODE'] = dpg.mvKey_MODE
+            KeyNode.map['NUMLOCK'] = dpg.mvKey_NumLock
+            # KeyNode.map['NUMLOCKCLEAR'] = dpg.mvKey_NUMLOCKCLEAR
+            # KeyNode.map['PAGEDOWN'] = dpg.mvKey_PAGEDOWN
+            # KeyNode.map['PAGEUP'] = dpg.mvKey_PAGEUP
+            KeyNode.map['PAUSE'] = dpg.mvKey_Pause
+            # KeyNode.map['PERCENT'] = dpg.mvKey_PERCENT
+            KeyNode.map['PERIOD'] = dpg.mvKey_Period
+            KeyNode.map['PLUS'] = dpg.mvKey_Plus
+            # KeyNode.map['POWER'] = dpg.mvKey_POWER
+            KeyNode.map['PRINT'] = dpg.mvKey_Print
+            KeyNode.map['PRINTSCREEN'] = dpg.mvKey_PrintScreen
+            # KeyNode.map['?'] = dpg.mvKey_QUESTION
+            KeyNode.map["'"] = dpg.mvKey_Quote
+            KeyNode.map['"'] = dpg.mvKey_Quote
+            KeyNode.map['RALT'] = dpg.mvKey_Alt
+            KeyNode.map['RCTRL'] = dpg.mvKey_RControl
+            KeyNode.map['RETURN'] = dpg.mvKey_Return
+            # KeyNode.map['RGUI'] = dpg.mvKey_RGUI
+            KeyNode.map['RIGHT'] = dpg.mvKey_Right
+            KeyNode.map[']'] = dpg.mvKey_Close_Brace
+            KeyNode.map[')'] = dpg.mvKey_Close_Brace
+            KeyNode.map['RMETA'] = dpg.mvKey_RWin
+            KeyNode.map['RSHIFT'] = dpg.mvKey_RShift
+            # KeyNode.map['RSUPER'] = dpg.mvKey_RSUPER
+            KeyNode.map['SCROLLLOCK'] = dpg.mvKey_ScrollLock
+            # KeyNode.map['SCROLLOCK'] = dpg.mvKey_SCROLLOCK
+            # KeyNode.map['SEMICOLON'] = dpg.mvKey_Colon
+            KeyNode.map['/'] = dpg.mvKey_Slash
+            KeyNode.map[' '] = dpg.mvKey_Spacebar
+            # KeyNode.map['SYSREQ'] = dpg.mvKey_SYSREQ
+            KeyNode.map['TAB'] = dpg.mvKey_Tab
+            # KeyNode.map['_'] = dpg.mvKey_UNDERSCORE
+            # KeyNode.map['UNKNOWN'] = dpg.mvKey_UNKNOWN
+            KeyNode.map['UP'] = dpg.mvKey_Up
+            KeyNode.map['a'] = dpg.mvKey_A
+            KeyNode.map['b'] = dpg.mvKey_B
+            KeyNode.map['c'] = dpg.mvKey_C
+            KeyNode.map['d'] = dpg.mvKey_D
+            KeyNode.map['e'] = dpg.mvKey_E
+            KeyNode.map['f'] = dpg.mvKey_F
+            KeyNode.map['g'] = dpg.mvKey_G
+            KeyNode.map['h'] = dpg.mvKey_H
+            KeyNode.map['i'] = dpg.mvKey_I
+            KeyNode.map['j'] = dpg.mvKey_J
+            KeyNode.map['k'] = dpg.mvKey_K
+            KeyNode.map['l'] = dpg.mvKey_L
+            KeyNode.map['m'] = dpg.mvKey_M
+            KeyNode.map['n'] = dpg.mvKey_N
+            KeyNode.map['o'] = dpg.mvKey_O
+            KeyNode.map['p'] = dpg.mvKey_P
+            KeyNode.map['q'] = dpg.mvKey_Q
+            KeyNode.map['r'] = dpg.mvKey_R
+            KeyNode.map['s'] = dpg.mvKey_S
+            KeyNode.map['t'] = dpg.mvKey_T
+            KeyNode.map['u'] = dpg.mvKey_U
+            KeyNode.map['v'] = dpg.mvKey_V
+            KeyNode.map['w'] = dpg.mvKey_W
+            KeyNode.map['x'] = dpg.mvKey_X
+            KeyNode.map['y'] = dpg.mvKey_Y
+            KeyNode.map['z'] = dpg.mvKey_Z
+
+            for k in KeyNode.map:
+                v = KeyNode.map[k]
+                KeyNode.reverse_map[v] = k
 

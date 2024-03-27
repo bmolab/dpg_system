@@ -1338,6 +1338,11 @@ class App:
     # def mouse_drag_handler(self):
     #     print('dragged', self.active_widget)
 
+    def key_handler(self):
+        from dpg_system.interface_nodes import KeyNode
+        for node in KeyNode.node_list:
+            node.key_down()
+
     def up_handler(self):
         handled = False
         if self.hovered_item is not None:
@@ -1792,6 +1797,7 @@ class App:
                         self.node_editors[0].create(self.center_panel)
                         with dpg.handler_registry():
                             # dpg.add_mouse_drag_handler(callback=self.mouse_drag_handler)
+                            dpg.add_key_press_handler(-1, callback=self.key_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Up, callback=self.up_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Down, callback=self.down_handler)
                             dpg.add_key_press_handler(dpg.mvKey_I, callback=self.int_handler)
