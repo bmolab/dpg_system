@@ -7,7 +7,6 @@ from dpg_system.node import Node
 import threading
 from dpg_system.conversion_utils import *
 from dpg_system.matrix_nodes import RollingBuffer
-import pygame
 
 def register_interface_nodes():
     Node.app.register_node("menu", MenuNode.factory)
