@@ -61,6 +61,10 @@ def register_basic_nodes():
     Node.app.register_node('defer', DeferNode.factory)
     Node.app.register_node('gather_sentence', GatherSentences.factory)
     Node.app.register_node('string_builder', StringBuilder.factory)
+    Node.app.register_node('character', CharConverterNode.factory)
+    Node.app.register_node('ascii', ASCIIConverterNode.factory)
+    Node.app.register_node('char', CharConverterNode.factory)
+    Node.app.register_node('ord', ASCIIConverterNode.factory)
 
 
 # DeferNode -- delays received input until next frame
@@ -2544,3 +2548,42 @@ class StringBuilder(Node):
             else:
                 self.sentence_output.send(self.received_sentence)
                 self.received_sentence = ''
+
+
+class CharConverterNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = CharConverterNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('char code in', triggers_execution=True)
+        self.output = self.add_output('character out')
+
+    def execute(self):
+        code = any_to_int(self.input())
+        char = chr(code)
+        self.output.send(char)
+
+class ASCIIConverterNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ASCIIConverterNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('character in', triggers_execution=True)
+        self.output = self.add_output('ascii out')
+
+    def execute(self):
+        codes = []
+        string = any_to_string(self.input())
+        for char in string:
+            code = ord(char)
+            codes.append(code)
+        if len(codes) == 1:
+            self.output.send(codes[0])
+        else:
+            self.output.send(codes)
