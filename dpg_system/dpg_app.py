@@ -1338,10 +1338,14 @@ class App:
     # def mouse_drag_handler(self):
     #     print('dragged', self.active_widget)
 
-    def key_handler(self):
+    def key_handler(self, sender, app_data, user_data):
         from dpg_system.interface_nodes import KeyNode
         for node in KeyNode.node_list:
-            node.key_down()
+            node.key_down(app_data)
+    def key_release_handler(self, sender, app_data, user_data):
+        from dpg_system.interface_nodes import KeyNode
+        for node in KeyNode.node_list:
+            node.key_up(app_data)
 
     def up_handler(self):
         handled = False
@@ -1798,6 +1802,7 @@ class App:
                         with dpg.handler_registry():
                             # dpg.add_mouse_drag_handler(callback=self.mouse_drag_handler)
                             dpg.add_key_press_handler(-1, callback=self.key_handler)
+                            dpg.add_key_release_handler(-1, callback=self.key_release_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Up, callback=self.up_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Down, callback=self.down_handler)
                             dpg.add_key_press_handler(dpg.mvKey_I, callback=self.int_handler)
@@ -1864,6 +1869,7 @@ class App:
                     for task in self.frame_tasks:
                         if task.created:
                             task.frame_task()
+
                     jobs = dpg.get_callback_queue()  # retrieves and clears queue
                     dpg.run_callbacks(jobs)
                     self.frame_number += 1

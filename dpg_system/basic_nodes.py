@@ -2569,7 +2569,6 @@ class CharConverterNode(Node):
         self.output.send(char)
 
 
-
 class ASCIIConverterNode(Node):
     @staticmethod
     def factory(name, data, args=None):

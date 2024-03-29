@@ -1577,7 +1577,7 @@ class Node:
         if self.unparsed_args is not None:
             for arg in self.unparsed_args:
                 handled = False
-                if '=' in arg:
+                if '=' in arg and arg != '=':
  #                   print('found', arg)
                     arg_parts = arg.split('=')
                     if len(arg_parts) == 2:

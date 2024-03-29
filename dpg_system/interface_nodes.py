@@ -2053,7 +2053,7 @@ class KeyNode(Node):
     node_list = []
     inited = False
     map = {}
-    reverse_map = {}
+    # reverse_map = {}
 
     @staticmethod
     def factory(name, data, args=None):
@@ -2065,25 +2065,136 @@ class KeyNode(Node):
         if not KeyNode.inited:
             self.init()
         KeyNode.node_list.append(self)
-        self.key_list = []
+        self.shift_key_pressed = False
+        self.meta_key_pressed = False
+        self.control_key_pressed = False
+        self.alt_key_pressed = False
+
+        self.key_list = {}
         self.output_dict = {}
         self.print_keys_button = self.add_input('list keys', widget_type='button', callback=self.list_keys)
         for arg in args:
             if arg in KeyNode.map:
-                self.key_list.append(KeyNode.map[arg])
+                self.key_list[arg] = KeyNode.map[arg]
                 out = self.add_output(arg)
                 self.output_dict[arg] = out
+        if len(args) == 0:
+            self.output = self.add_output('character out')
+            self.code_output = self.add_output('key code out')
+        self.shift_key_output = self.add_output('shift')
+        self.control_key_output = self.add_output('control')
+        self.meta_key_output = self.add_output('command / window')
+        self.alt_key_output = self.add_output('alt / option')
+        self.shift_key_changed = False
+        self.control_key_changed = False
+        self.meta_key_changed = False
+        self.alt_key_changed = False
 
+        self.shifted_keys = {}
+        self.shifted_keys['1'] = '!'
+        self.shifted_keys['2'] = '@'
+        self.shifted_keys['3'] = '#'
+        self.shifted_keys['4'] = '$'
+        self.shifted_keys['5'] = '%'
+        self.shifted_keys['6'] = '^'
+        self.shifted_keys['7'] = '&'
+        self.shifted_keys['8'] = '*'
+        self.shifted_keys['9'] = '('
+        self.shifted_keys['0'] = ')'
+        self.shifted_keys['`'] = '~'
+        self.shifted_keys['-'] = '_'
+        self.shifted_keys['='] = '+'
+        self.shifted_keys['['] = '{'
+        self.shifted_keys[']'] = '}'
+        self.shifted_keys['\\'] = '|'
+        self.shifted_keys[';'] = ':'
+        self.shifted_keys["'"] = '"'
+        self.shifted_keys[','] = '<'
+        self.shifted_keys['.'] = '>'
+        self.shifted_keys["/"] = '?'
 
-    def key_down(self):
+    def key_up(self, key_ascii):
+        if key_ascii in [dpg.mvKey_Shift, dpg.mvKey_LShift, dpg.mvKey_RShift]:
+            if self.shift_key_pressed:
+                self.shift_key_pressed = False
+                self.shift_key_changed = True
+        elif key_ascii in [dpg.mvKey_LWin, dpg.mvKey_RWin]:
+            if self.meta_key_pressed:
+                self.meta_key_pressed = False
+                self.meta_key_changed = True
+        elif key_ascii in [dpg.mvKey_LControl, dpg.mvKey_RControl, dpg.mvKey_Control]:
+            if self.control_key_pressed:
+                self.control_key_pressed = False
+                self.control_key_changed = True
+        elif key_ascii == dpg.mvKey_Alt:
+            if self.alt_key_pressed:
+                self.alt_key_pressed = False
+                self.alt_key_changed = True
+
+        if self.shift_key_changed:
+            self.shift_key_changed = False
+            self.shift_key_output.send(self.shift_key_pressed)
+        if self.alt_key_changed:
+            self.alt_key_changed = False
+            self.alt_key_output.send(self.alt_key_pressed)
+        if self.control_key_changed:
+            self.control_key_changed = False
+            self.control_key_output.send(self.control_key_pressed)
+        if self.meta_key_changed:
+            self.meta_key_changed = False
+            self.meta_key_output.send(self.meta_key_pressed)
+
+    def key_down(self, key_ascii):
+        if key_ascii in [dpg.mvKey_Shift, dpg.mvKey_LShift, dpg.mvKey_RShift]:
+            if not self.shift_key_pressed:
+                self.shift_key_pressed = True
+                self.shift_key_changed = True
+        elif key_ascii in [dpg.mvKey_LWin, dpg.mvKey_RWin]:
+            if not self.meta_key_pressed:
+                self.meta_key_pressed = True
+                self.meta_key_changed = True
+        elif key_ascii in [dpg.mvKey_LControl, dpg.mvKey_RControl, dpg.mvKey_Control]:
+            if not self.control_key_pressed:
+                self.control_key_pressed = True
+                self.control_key_changed = True
+        elif key_ascii == dpg.mvKey_Alt:
+            if not self.alt_key_pressed:
+                self.alt_key_pressed = True
+                self.alt_key_changed = True
+
+        character = chr(key_ascii)
+
+        if self.shift_key_pressed:
+            if ord('A') <= key_ascii <= ord('Z'):
+                character = character.upper()
+            else:
+                if character in self.shifted_keys:
+                    character = self.shifted_keys[character]
+        else:
+            if ord('A') <= key_ascii <= ord('Z'):
+                character = character.lower()
+
         if len(self.key_list) > 0:
-            for key in self.key_list:
-                if key in KeyNode.reverse_map:
-                    if dpg.is_key_down(key):
-                        real_key = KeyNode.reverse_map[key]
-                        if real_key in self.output_dict:
-                            self.output_dict[real_key].send('bang')
-
+            if character in self.key_list:
+                if character in self.output_dict:
+                    self.output_dict[character].send('bang')
+        else:
+            if self.output is not None:
+                self.code_output.send(key_ascii)
+                if key_ascii < 256 and character.isprintable():
+                    self.output.send(character)
+                if self.shift_key_changed:
+                    self.shift_key_changed = False
+                    self.shift_key_output.send(self.shift_key_pressed)
+                if self.alt_key_changed:
+                    self.alt_key_changed = False
+                    self.alt_key_output.send(self.alt_key_pressed)
+                if self.control_key_changed:
+                    self.control_key_changed = False
+                    self.control_key_output.send(self.control_key_pressed)
+                if self.meta_key_changed:
+                    self.meta_key_changed = False
+                    self.meta_key_output.send(self.meta_key_pressed)
 
     def list_keys(self):
         keys = list(KeyNode.map.keys())
@@ -2101,158 +2212,168 @@ class KeyNode(Node):
     def init(self):
         KeyNode.inited = True
 
-        KeyNode.map['0'] = dpg.mvKey_0
-        KeyNode.map['1'] = dpg.mvKey_1
-        KeyNode.map['2'] = dpg.mvKey_2
-        KeyNode.map['3'] = dpg.mvKey_3
-        KeyNode.map['4'] = dpg.mvKey_4
-        KeyNode.map['5'] = dpg.mvKey_5
-        KeyNode.map['6'] = dpg.mvKey_6
-        KeyNode.map['7'] = dpg.mvKey_7
-        KeyNode.map['8'] = dpg.mvKey_8
-        KeyNode.map['9'] = dpg.mvKey_9
-        KeyNode.map['numpad_0'] = dpg.mvKey_NumPad0
-        KeyNode.map['numpad_1'] = dpg.mvKey_NumPad1
-        KeyNode.map['numpad_2'] = dpg.mvKey_NumPad2
-        KeyNode.map['numpad_3'] = dpg.mvKey_NumPad3
-        KeyNode.map['numpad_4'] = dpg.mvKey_NumPad4
-        KeyNode.map['numpad_5'] = dpg.mvKey_NumPad5
-        KeyNode.map['numpad_6'] = dpg.mvKey_NumPad6
-        KeyNode.map['numpad_7'] = dpg.mvKey_NumPad7
-        KeyNode.map['numpad_8'] = dpg.mvKey_NumPad8
-        KeyNode.map['numpad_9'] = dpg.mvKey_NumPad9
-        KeyNode.map['numpad_/'] = dpg.mvKey_Divide
-        KeyNode.map['numpad_*'] = dpg.mvKey_Multiply
-        KeyNode.map['numpad_+'] = dpg.mvKey_Add
-        KeyNode.map['numpad_-'] = dpg.mvKey_Subtract
-        KeyNode.map['numpad_.'] = dpg.mvKey_Decimal
-        KeyNode.map['capital'] = dpg.mvKey_Capital
+        KeyNode.map['0'] = [dpg.mvKey_0, False]
+        KeyNode.map['1'] = [dpg.mvKey_1, False]
+        KeyNode.map['2'] = [dpg.mvKey_2, False]
+        KeyNode.map['3'] = [dpg.mvKey_3, False]
+        KeyNode.map['4'] = [dpg.mvKey_4, False]
+        KeyNode.map['5'] = [dpg.mvKey_5, False]
+        KeyNode.map['6'] = [dpg.mvKey_6, False]
+        KeyNode.map['7'] = [dpg.mvKey_7, False]
+        KeyNode.map['8'] = [dpg.mvKey_8, False]
+        KeyNode.map['9'] = [dpg.mvKey_9, False]
 
-        # KeyNode.map['&'] = dpg.mvKey_AMPERSAND
-        # KeyNode.map['*'] = dpg.mvKey_ASTERISK
-        # KeyNode.map['@'] = dpg.mvKey_AT
-        KeyNode.map['backquote'] = dpg.mvKey_Quote
-        # KeyNode.map['\\'] = dpg.mvKey_BACKSLASH
-        # KeyNode.map['BACKSPACE'] = dpg.mvKey_BACKSPACE
-        # KeyNode.map['BREAK'] = dpg.mvKey_BREAK
-        # KeyNode.map['CAPSLOCK'] = dpg.mvKey_CAPSLOCK
-        # KeyNode.map['CARET'] = dpg.mvKey_CARET
-        KeyNode.map['clear'] = dpg.mvKey_Clear
-        KeyNode.map[':'] = dpg.mvKey_Colon
-        KeyNode.map[','] = dpg.mvKey_Comma
-        # KeyNode.map['CURRENCYSUBUNIT'] = dpg.mvKey_CURRENCYSUBUNIT
-        # KeyNode.map['$'] = dpg.mvKey_CURRENCYUNIT
-        KeyNode.map['delete'] = dpg.mvKey_Delete
-        # KeyNode.map['$'] = dpg.mvKey_DOLLAR
-        KeyNode.map['down'] = dpg.mvKey_Down
-        KeyNode.map['end'] = dpg.mvKey_End
-        # KeyNode.map['='] = dpg.mvKey_EQUALS
-        KeyNode.map['escape'] = dpg.mvKey_Escape
-        # KeyNode.map['EURO'] = dpg.mvKey_EURO
-        # KeyNode.map['!'] = dpg.mvKey_EXCLAIM
-        KeyNode.map['F1'] = dpg.mvKey_F1
-        KeyNode.map['F10'] = dpg.mvKey_F10
-        KeyNode.map['F11'] = dpg.mvKey_F11
-        KeyNode.map['F12'] = dpg.mvKey_F12
-        KeyNode.map['F13'] = dpg.mvKey_F13
-        KeyNode.map['F14'] = dpg.mvKey_F14
-        KeyNode.map['F15'] = dpg.mvKey_F15
-        KeyNode.map['F2'] = dpg.mvKey_F2
-        KeyNode.map['F3'] = dpg.mvKey_F3
-        KeyNode.map['F4'] = dpg.mvKey_F4
-        KeyNode.map['F5'] = dpg.mvKey_F5
-        KeyNode.map['F6'] = dpg.mvKey_F6
-        KeyNode.map['F7'] = dpg.mvKey_F7
-        KeyNode.map['F8'] = dpg.mvKey_F8
-        KeyNode.map['F9'] = dpg.mvKey_F9
-        # KeyNode.map['>'] = dpg.mvKey_GREATER
-        # KeyNode.map['#'] = dpg.mvKey_HASH
-        KeyNode.map['help'] = dpg.mvKey_Help
-        KeyNode.map['home'] = dpg.mvKey_Home
-        KeyNode.map['insert'] = dpg.mvKey_Insert
-        # KeyNode.map['LALT'] = dpg.mvKey_Alt
-        KeyNode.map['left_control'] = dpg.mvKey_LControl
-        KeyNode.map['left'] = dpg.mvKey_Left
-        KeyNode.map['['] = dpg.mvKey_Open_Brace
-        # KeyNode.map['{'] = dpg.mvKey_Open_Brace
-        KeyNode.map['<'] = dpg.mvKey_Comma
-        # KeyNode.map['LGUI'] = dpg.mvKey_LGUI
-        KeyNode.map['left_meta'] = dpg.mvKey_LWin
-        KeyNode.map['left_shift'] = dpg.mvKey_LShift
-        # KeyNode.map['LSUPER'] = dpg.mvKey_LSUPER
-        # KeyNode.map['MENU'] = dpg.mvKey_MENU
-        KeyNode.map['-'] = dpg.mvKey_Minus
-        # KeyNode.map['MODE'] = dpg.mvKey_MODE
-        KeyNode.map['num_lock'] = dpg.mvKey_NumLock
-        # KeyNode.map['NUMLOCKCLEAR'] = dpg.mvKey_NUMLOCKCLEAR
-        # KeyNode.map['PAGEDOWN'] = dpg.mvKey_PAGEDOWN
-        # KeyNode.map['PAGEUP'] = dpg.mvKey_PAGEUP
-        KeyNode.map['pause'] = dpg.mvKey_Pause
-        # KeyNode.map['PERCENT'] = dpg.mvKey_PERCENT
-        KeyNode.map['.'] = dpg.mvKey_Period
-        KeyNode.map['+'] = dpg.mvKey_Plus
-        # KeyNode.map['POWER'] = dpg.mvKey_POWER
-        KeyNode.map['print'] = dpg.mvKey_Print
-        KeyNode.map['print_screen'] = dpg.mvKey_PrintScreen
-        # KeyNode.map['?'] = dpg.mvKey_QUESTION
-        KeyNode.map["'"] = dpg.mvKey_Quote
-        KeyNode.map['"'] = dpg.mvKey_Quote
-        KeyNode.map['alt'] = dpg.mvKey_Alt
-        KeyNode.map['right_control'] = dpg.mvKey_RControl
-        KeyNode.map['return'] = dpg.mvKey_Return
-        # KeyNode.map['RGUI'] = dpg.mvKey_RGUI
-        KeyNode.map['right'] = dpg.mvKey_Right
-        KeyNode.map[']'] = dpg.mvKey_Close_Brace
-        # KeyNode.map[')'] = dpg.mvKey_Close_Brace
-        KeyNode.map['right_meta'] = dpg.mvKey_RWin
-        KeyNode.map['right_shift'] = dpg.mvKey_RShift
-        # KeyNode.map['RSUPER'] = dpg.mvKey_RSUPER
-        KeyNode.map['scroll_lock'] = dpg.mvKey_ScrollLock
-        # KeyNode.map['SCROLLOCK'] = dpg.mvKey_SCROLLOCK
-        # KeyNode.map['SEMICOLON'] = dpg.mvKey_Colon
-        KeyNode.map['/'] = dpg.mvKey_Slash
-        KeyNode.map['space'] = dpg.mvKey_Spacebar
-        # KeyNode.map['SYSREQ'] = dpg.mvKey_SYSREQ
-        KeyNode.map['tab'] = dpg.mvKey_Tab
-        # KeyNode.map['_'] = dpg.mvKey_UNDERSCORE
-        # KeyNode.map['UNKNOWN'] = dpg.mvKey_UNKNOWN
-        KeyNode.map['up'] = dpg.mvKey_Up
-        KeyNode.map['a'] = dpg.mvKey_A
-        KeyNode.map['b'] = dpg.mvKey_B
-        KeyNode.map['c'] = dpg.mvKey_C
-        KeyNode.map['d'] = dpg.mvKey_D
-        KeyNode.map['e'] = dpg.mvKey_E
-        KeyNode.map['f'] = dpg.mvKey_F
-        KeyNode.map['g'] = dpg.mvKey_G
-        KeyNode.map['h'] = dpg.mvKey_H
-        KeyNode.map['i'] = dpg.mvKey_I
-        KeyNode.map['j'] = dpg.mvKey_J
-        KeyNode.map['k'] = dpg.mvKey_K
-        KeyNode.map['l'] = dpg.mvKey_L
-        KeyNode.map['m'] = dpg.mvKey_M
-        KeyNode.map['n'] = dpg.mvKey_N
-        KeyNode.map['o'] = dpg.mvKey_O
-        KeyNode.map['p'] = dpg.mvKey_P
-        KeyNode.map['q'] = dpg.mvKey_Q
-        KeyNode.map['r'] = dpg.mvKey_R
-        KeyNode.map['s'] = dpg.mvKey_S
-        KeyNode.map['t'] = dpg.mvKey_T
-        KeyNode.map['u'] = dpg.mvKey_U
-        KeyNode.map['v'] = dpg.mvKey_V
-        KeyNode.map['w'] = dpg.mvKey_W
-        KeyNode.map['x'] = dpg.mvKey_X
-        KeyNode.map['y'] = dpg.mvKey_Y
-        KeyNode.map['z'] = dpg.mvKey_Z
-        KeyNode.map['~'] = dpg.mvKey_Tilde
-        KeyNode.map['media_play_pause'] = dpg.mvKey_Media_Play_Pause
-        KeyNode.map['media_stop'] = dpg.mvKey_Media_Stop
-        KeyNode.map['media_next_track'] = dpg.mvKey_Media_Next_Track
-        KeyNode.map['media_previous_track'] = dpg.mvKey_Media_Prev_Track
-        KeyNode.map['volume_up'] = dpg.mvKey_Volume_Up
-        KeyNode.map['volume_down'] = dpg.mvKey_Volume_Down
-        KeyNode.map['volume_mute'] = dpg.mvKey_Volume_Mute
+        KeyNode.map[')'] = [dpg.mvKey_0, True]
+        KeyNode.map['!'] = [dpg.mvKey_1, True]
+        KeyNode.map['@'] = [dpg.mvKey_2, True]
+        KeyNode.map['#'] = [dpg.mvKey_3, True]
+        KeyNode.map['$'] = [dpg.mvKey_4, True]
+        KeyNode.map['%'] = [dpg.mvKey_5, True]
+        KeyNode.map['^'] = [dpg.mvKey_6, True]
+        KeyNode.map['&'] = [dpg.mvKey_7, True]
+        KeyNode.map['*'] = [dpg.mvKey_8, True]
+        KeyNode.map['('] = [dpg.mvKey_9, True]
 
-        for k in KeyNode.map:
-            v = KeyNode.map[k]
-            KeyNode.reverse_map[v] = k
+        KeyNode.map['numpad_0'] = [dpg.mvKey_NumPad0, False]
+        KeyNode.map['numpad_1'] = [dpg.mvKey_NumPad1, False]
+        KeyNode.map['numpad_2'] = [dpg.mvKey_NumPad2, False]
+        KeyNode.map['numpad_3'] = [dpg.mvKey_NumPad3, False]
+        KeyNode.map['numpad_4'] = [dpg.mvKey_NumPad4, False]
+        KeyNode.map['numpad_5'] = [dpg.mvKey_NumPad5, False]
+        KeyNode.map['numpad_6'] = [dpg.mvKey_NumPad6, False]
+        KeyNode.map['numpad_7'] = [dpg.mvKey_NumPad7, False]
+        KeyNode.map['numpad_8'] = [dpg.mvKey_NumPad8, False]
+        KeyNode.map['numpad_9'] = [dpg.mvKey_NumPad9, False]
+        KeyNode.map['numpad_/'] = [dpg.mvKey_Divide, False]
+        KeyNode.map['numpad_*'] = [dpg.mvKey_Multiply, False]
+        KeyNode.map['numpad_+'] = [dpg.mvKey_Add, False]
+        KeyNode.map['numpad_-'] = [dpg.mvKey_Subtract, False]
+        KeyNode.map['numpad_.'] = [dpg.mvKey_Decimal, False]
+        KeyNode.map['capital'] = [dpg.mvKey_Capital, False]
 
+        KeyNode.map['`'] = [dpg.mvKey_Tilde, False]
+        KeyNode.map['~'] = [dpg.mvKey_Tilde, True]
+        KeyNode.map['\\'] = [dpg.mvKey_Separator, False]
+        KeyNode.map['|'] = [dpg.mvKey_Separator, True]
+        KeyNode.map['clear'] = [dpg.mvKey_Clear, False]
+        KeyNode.map[':'] = [dpg.mvKey_Colon, False]
+        KeyNode.map[';'] = [dpg.mvKey_Colon, True]
+        KeyNode.map[','] = [dpg.mvKey_Comma, False]
+        KeyNode.map['<'] = [dpg.mvKey_Comma, True]
+        KeyNode.map['delete'] = [dpg.mvKey_Delete, False]
+        KeyNode.map['down'] = [dpg.mvKey_Down, False]
+        KeyNode.map['end'] = [dpg.mvKey_End, False]
+        KeyNode.map['escape'] = [dpg.mvKey_Escape, False]
+        KeyNode.map['F1'] = [dpg.mvKey_F1, False]
+        KeyNode.map['F10'] = [dpg.mvKey_F10, False]
+        KeyNode.map['F11'] = [dpg.mvKey_F11, False]
+        KeyNode.map['F12'] = [dpg.mvKey_F12, False]
+        KeyNode.map['F13'] = [dpg.mvKey_F13, False]
+        KeyNode.map['F14'] = [dpg.mvKey_F14, False]
+        KeyNode.map['F15'] = [dpg.mvKey_F15, False]
+        KeyNode.map['F2'] = [dpg.mvKey_F2, False]
+        KeyNode.map['F3'] = [dpg.mvKey_F3, False]
+        KeyNode.map['F4'] = [dpg.mvKey_F4, False]
+        KeyNode.map['F5'] = [dpg.mvKey_F5, False]
+        KeyNode.map['F6'] = [dpg.mvKey_F6, False]
+        KeyNode.map['F7'] = [dpg.mvKey_F7, False]
+        KeyNode.map['F8'] = [dpg.mvKey_F8, False]
+        KeyNode.map['F9'] = [dpg.mvKey_F9, False]
+        KeyNode.map['help'] = [dpg.mvKey_Help, False]
+        KeyNode.map['home'] = [dpg.mvKey_Home, False]
+        KeyNode.map['insert'] = [dpg.mvKey_Insert, False]
+        KeyNode.map['left_control'] = [dpg.mvKey_LControl, False]
+        KeyNode.map['left'] = [dpg.mvKey_Left, False]
+        KeyNode.map['['] = [dpg.mvKey_Open_Brace, False]
+        KeyNode.map['{'] = [dpg.mvKey_Open_Brace, True]
+        KeyNode.map['left_meta'] = [dpg.mvKey_LWin, False]
+        KeyNode.map['left_shift'] = [dpg.mvKey_LShift, False]
+        KeyNode.map['-'] = [dpg.mvKey_Minus, False]
+        KeyNode.map['_'] = [dpg.mvKey_Minus, True]
+        KeyNode.map['num_lock'] = [dpg.mvKey_NumLock, False]
+        KeyNode.map['pause'] = [dpg.mvKey_Pause, False]
+        KeyNode.map['.'] = [dpg.mvKey_Period, False]
+        KeyNode.map['+'] = [dpg.mvKey_Plus, True]
+        KeyNode.map['='] = [dpg.mvKey_Plus, False]
+        KeyNode.map['print'] = [dpg.mvKey_Print, False]
+        KeyNode.map['print_screen'] = [dpg.mvKey_PrintScreen, False]
+        KeyNode.map["'"] = [dpg.mvKey_Quote, False]
+        KeyNode.map['"'] = [dpg.mvKey_Quote, True]
+        KeyNode.map['alt'] = [dpg.mvKey_Alt, False]
+        KeyNode.map['right_control'] = [dpg.mvKey_RControl, False]
+        KeyNode.map['return'] = [dpg.mvKey_Return, False]
+        KeyNode.map['right'] = [dpg.mvKey_Right, False]
+        KeyNode.map[']'] = [dpg.mvKey_Close_Brace, False]
+        KeyNode.map['}'] = [dpg.mvKey_Close_Brace, True]
+        KeyNode.map['right_meta'] = [dpg.mvKey_RWin, False]
+        KeyNode.map['right_shift'] = [dpg.mvKey_RShift, False]
+        KeyNode.map['scroll_lock'] = [dpg.mvKey_ScrollLock, False]
+        KeyNode.map['/'] = [dpg.mvKey_Slash, False]
+        KeyNode.map['?'] = [dpg.mvKey_Slash, True]
+        KeyNode.map['space'] = [dpg.mvKey_Spacebar, False]
+        KeyNode.map['tab'] = [dpg.mvKey_Tab, False]
+        KeyNode.map['up'] = [dpg.mvKey_Up, False]
+        KeyNode.map['a'] = [dpg.mvKey_A, False]
+        KeyNode.map['b'] = [dpg.mvKey_B, False]
+        KeyNode.map['c'] = [dpg.mvKey_C, False]
+        KeyNode.map['d'] = [dpg.mvKey_D, False]
+        KeyNode.map['e'] = [dpg.mvKey_E, False]
+        KeyNode.map['f'] = [dpg.mvKey_F, False]
+        KeyNode.map['g'] = [dpg.mvKey_G, False]
+        KeyNode.map['h'] = [dpg.mvKey_H, False]
+        KeyNode.map['i'] = [dpg.mvKey_I, False]
+        KeyNode.map['j'] = [dpg.mvKey_J, False]
+        KeyNode.map['k'] = [dpg.mvKey_K, False]
+        KeyNode.map['l'] = [dpg.mvKey_L, False]
+        KeyNode.map['m'] = [dpg.mvKey_M, False]
+        KeyNode.map['n'] = [dpg.mvKey_N, False]
+        KeyNode.map['o'] = [dpg.mvKey_O, False]
+        KeyNode.map['p'] = [dpg.mvKey_P, False]
+        KeyNode.map['q'] = [dpg.mvKey_Q, False]
+        KeyNode.map['r'] = [dpg.mvKey_R, False]
+        KeyNode.map['s'] = [dpg.mvKey_S, False]
+        KeyNode.map['t'] = [dpg.mvKey_T, False]
+        KeyNode.map['u'] = [dpg.mvKey_U, False]
+        KeyNode.map['v'] = [dpg.mvKey_V, False]
+        KeyNode.map['w'] = [dpg.mvKey_W, False]
+        KeyNode.map['x'] = [dpg.mvKey_X, False]
+        KeyNode.map['y'] = [dpg.mvKey_Y, False]
+        KeyNode.map['z'] = [dpg.mvKey_Z, False]
+        KeyNode.map['A'] = [dpg.mvKey_A, True]
+        KeyNode.map['B'] = [dpg.mvKey_B, True]
+        KeyNode.map['C'] = [dpg.mvKey_C, True]
+        KeyNode.map['D'] = [dpg.mvKey_D, True]
+        KeyNode.map['E'] = [dpg.mvKey_E, True]
+        KeyNode.map['F'] = [dpg.mvKey_F, True]
+        KeyNode.map['G'] = [dpg.mvKey_G, True]
+        KeyNode.map['H'] = [dpg.mvKey_H, True]
+        KeyNode.map['I'] = [dpg.mvKey_I, True]
+        KeyNode.map['J'] = [dpg.mvKey_J, True]
+        KeyNode.map['K'] = [dpg.mvKey_K, True]
+        KeyNode.map['L'] = [dpg.mvKey_L, True]
+        KeyNode.map['M'] = [dpg.mvKey_M, True]
+        KeyNode.map['N'] = [dpg.mvKey_N, True]
+        KeyNode.map['O'] = [dpg.mvKey_O, True]
+        KeyNode.map['P'] = [dpg.mvKey_P, True]
+        KeyNode.map['Q'] = [dpg.mvKey_Q, True]
+        KeyNode.map['R'] = [dpg.mvKey_R, True]
+        KeyNode.map['S'] = [dpg.mvKey_S, True]
+        KeyNode.map['T'] = [dpg.mvKey_T, True]
+        KeyNode.map['U'] = [dpg.mvKey_U, True]
+        KeyNode.map['V'] = [dpg.mvKey_V, True]
+        KeyNode.map['W'] = [dpg.mvKey_W, True]
+        KeyNode.map['X'] = [dpg.mvKey_X, True]
+        KeyNode.map['Y'] = [dpg.mvKey_Y, True]
+        KeyNode.map['Z'] = [dpg.mvKey_Z, True]
+        KeyNode.map['media_play_pause'] = [dpg.mvKey_Media_Play_Pause, False]
+        KeyNode.map['media_stop'] = [dpg.mvKey_Media_Stop, False]
+        KeyNode.map['media_next_track'] = [dpg.mvKey_Media_Next_Track, False]
+        KeyNode.map['media_previous_track'] = [dpg.mvKey_Media_Prev_Track, False]
+        KeyNode.map['volume_up'] = [dpg.mvKey_Volume_Up, False]
+        KeyNode.map['volume_down'] = [dpg.mvKey_Volume_Down, False]
+        KeyNode.map['volume_mute'] = [dpg.mvKey_Volume_Mute, False]
+
+        # for k in KeyNode.map:
+        #     v = KeyNode.map[k][0]
+        #     KeyNode.reverse_map[v] = k
+        #

@@ -7,8 +7,6 @@ import numpy as np
 import threading
 
 
-
-
 class MyGLContext:
     gl_thread = None
     inited = False
