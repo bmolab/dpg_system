@@ -3,6 +3,7 @@ import math
 import numpy as np
 import random
 import time
+import string
 
 import torch
 
@@ -65,6 +66,7 @@ def register_basic_nodes():
     Node.app.register_node('ascii', ASCIIConverterNode.factory)
     Node.app.register_node('char', CharConverterNode.factory)
     Node.app.register_node('ord', ASCIIConverterNode.factory)
+    Node.app.register_node('printable', PrintableNode.factory)
 
 
 # DeferNode -- delays received input until next frame
@@ -2566,6 +2568,8 @@ class CharConverterNode(Node):
         char = chr(code)
         self.output.send(char)
 
+
+
 class ASCIIConverterNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -2587,3 +2591,23 @@ class ASCIIConverterNode(Node):
             self.output.send(codes[0])
         else:
             self.output.send(codes)
+
+
+class PrintableNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = PrintableNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('characters in', triggers_execution=True)
+        self.output = self.add_output('printable characters out')
+
+    def execute(self):
+        a_string = any_to_string(self.input())
+        filtered_string = ''.join(filter(lambda x: x in string.printable, a_string))
+        if len(filtered_string) == 1:
+            self.output.send(filtered_string[0])
+        elif len(filtered_string) > 0:
+            self.output.send(filtered_string)

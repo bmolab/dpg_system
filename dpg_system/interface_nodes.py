@@ -2074,13 +2074,16 @@ class KeyNode(Node):
                 out = self.add_output(arg)
                 self.output_dict[arg] = out
 
+
     def key_down(self):
-        for key in self.key_list:
-            if key in KeyNode.reverse_map:
-                if dpg.is_key_down(key):
-                    real_key = KeyNode.reverse_map[key]
-                    if real_key in self.output_dict:
-                        self.output_dict[real_key].send('bang')
+        if len(self.key_list) > 0:
+            for key in self.key_list:
+                if key in KeyNode.reverse_map:
+                    if dpg.is_key_down(key):
+                        real_key = KeyNode.reverse_map[key]
+                        if real_key in self.output_dict:
+                            self.output_dict[real_key].send('bang')
+
 
     def list_keys(self):
         keys = list(KeyNode.map.keys())

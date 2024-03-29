@@ -167,6 +167,28 @@ class GLContextNode(Node):
         self.fov = 60.0
         self.command_parser = GLContextCommandParser()
         self.pending_commands = []
+        self.shifted_keys = {}
+        self.shifted_keys['1'] = '!'
+        self.shifted_keys['2'] = '@'
+        self.shifted_keys['3'] = '#'
+        self.shifted_keys['4'] = '$'
+        self.shifted_keys['5'] = '%'
+        self.shifted_keys['6'] = '^'
+        self.shifted_keys['7'] = '&'
+        self.shifted_keys['8'] = '*'
+        self.shifted_keys['9'] = '('
+        self.shifted_keys['0'] = ')'
+        self.shifted_keys['`'] = '~'
+        self.shifted_keys['-'] = '_'
+        self.shifted_keys['='] = '+'
+        self.shifted_keys['['] = '{'
+        self.shifted_keys[']'] = '}'
+        self.shifted_keys['\\'] = '|'
+        self.shifted_keys[';'] = ':'
+        self.shifted_keys["'"] = '"'
+        self.shifted_keys[','] = '<'
+        self.shifted_keys['.'] = '>'
+        self.shifted_keys["/"] = '?'
 
         for i in range(len(args)):
             val, t = decode_arg(args, i)
@@ -206,6 +228,21 @@ class GLContextNode(Node):
             self.context.set_fov(self.fov)
 
     def handle_key(self, key, mods):
+        if mods == 1:
+            if ord('A') <= key <= ord('Z'):
+                char = chr(key)
+                char = char.upper()
+                key = ord(char)
+            else:
+                char = chr(key)
+                if char in self.shifted_keys:
+                    char = self.shifted_keys[char]
+                    key = ord(char)
+        else:
+            if ord('A') <= key <= ord('Z'):
+                char = chr(key)
+                char = char.lower()
+                key = ord(char)
         self.ui_output.send(['key', key])
 
     def create_context(self):
