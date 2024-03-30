@@ -758,15 +758,17 @@ class NodeEditor:
     def enter_presentation_state(self):
         self.presenting = True
         for node in self._nodes:
-            node.set_visibility(node.presentation_state)
-            node.set_draggable(False)
+            if node.label != '':
+                node.set_visibility(node.presentation_state)
+                node.set_draggable(False)
         dpg.bind_theme(self.node_presentation_theme)
 
     def enter_edit_state(self):
         self.presenting = False
         for node in self._nodes:
-            node.set_visibility('show_all')
-            node.set_draggable(True)
+            if node.label != '':
+                node.set_visibility('show_all')
+                node.set_draggable(True)
         dpg.bind_theme(self.node_theme)
 
     def patchify_selection(self):
@@ -869,6 +871,7 @@ class NodeEditor:
             patch_container['parent_node_uuid'] = self.patcher_node.uuid
         if self.patch_name != '':
             patch_container['name'] = self.patch_name
+            print(self.patch_name)
         if self.file_path != '':
             patch_container['path'] = self.file_path
 

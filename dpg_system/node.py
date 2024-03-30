@@ -1759,6 +1759,7 @@ class PatcherNode(Node):
             s, t = decode_arg(args, 0)
             if t == str:
                 self.patcher_name = s
+                print('patcher name', s)
         self.home_editor = self.app.get_current_editor()
         self.home_editor_index = self.app.current_node_editor
         # print('init', self.patcher_name, self.home_editor)
@@ -1876,6 +1877,7 @@ class PatcherNode(Node):
         if not from_file:
             # hold_current_patcher = self.app.get_current_editor()
             self.patch_editor = self.app.add_node_editor()
+            self.patch_editor.set_name(self.patcher_name)
             self.app.set_tab_title(len(self.app.node_editors) - 1, self.patcher_name)
 
             # self.home_editor.add_subpatch(self.patch_editor)

@@ -715,6 +715,7 @@ class App:
                                 patch_name = parts[0]
 
                     self.patches_name = patch_name
+                    current_editor.set_name(patch_name)
                     file_container = {}
                     file_container['name'] = self.patches_name
                     file_container['path'] = self.patches_path
@@ -1117,16 +1118,18 @@ class App:
 
     def int_handler(self):
         if self.active_widget == -1:
-            node = ValueNode.factory("int", None)
-            self.place_node(node)
-            node.name_id = dpg.generate_uuid()
-            self.set_widget_focus(node.uuid)
+            if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+                node = ValueNode.factory("int", None)
+                self.place_node(node)
+                node.name_id = dpg.generate_uuid()
+                self.set_widget_focus(node.uuid)
 
     def float_handler(self):
         if self.active_widget == -1:
-            node = ValueNode.factory("float", None)
-            self.place_node(node)
-            self.set_widget_focus(node.uuid)
+            if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+                node = ValueNode.factory("float", None)
+                self.place_node(node)
+                self.set_widget_focus(node.uuid)
 
     def vector_handler(self):
         if self.active_widget == -1:
@@ -1136,67 +1139,72 @@ class App:
 
     def comment_handler(self):
         if self.active_widget == -1:
-            self.new_handler('comment')
-
+            if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+                self.new_handler('comment')
 
     def toggle_handler(self):
         if self.active_widget == -1:
-            node = ToggleNode.factory("toggle", None)
-            self.place_node(node)
+            if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+                node = ToggleNode.factory("toggle", None)
+                self.place_node(node)
 
     def button_handler(self):
         if self.active_widget == -1:
-            node = ButtonNode.factory("b", None)
-            self.place_node(node)
+            if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+                node = ButtonNode.factory("b", None)
+                self.place_node(node)
 
     def message_handler(self):
         if self.active_widget == -1:
-            node = ValueNode.factory("message", None)
-            self.place_node(node)
-            self.set_widget_focus(node.input.widget.uuid)
+            if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+                node = ValueNode.factory("message", None)
+                self.place_node(node)
+                self.set_widget_focus(node.input.widget.uuid)
 
     def options_handler(self):
         if self.active_widget == -1:
-            selected_nodes_uuids = dpg.get_selected_nodes(self.get_current_editor().uuid)
-            for selected_nodes_uuid in selected_nodes_uuids:
-                node_object = dpg.get_item_user_data(selected_nodes_uuid)
-                node_object.toggle_show_hide_options()
+            if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+                selected_nodes_uuids = dpg.get_selected_nodes(self.get_current_editor().uuid)
+                for selected_nodes_uuid in selected_nodes_uuids:
+                    node_object = dpg.get_item_user_data(selected_nodes_uuid)
+                    node_object.toggle_show_hide_options()
 
     def M_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
             if self.get_current_editor() is not None:
                 self.show_minimap()
 
     def C_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
             if self.get_current_editor() is not None:
                 self.clipboard = self.get_current_editor().copy_selection()
         else:
-            self.comment_handler()
+            if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+                self.comment_handler()
 
     def plus_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
             self.space_out_selected()
 
     def minus_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
             self.tighten_selected()
 
     def space_handler(self):
         pass
 
     def P_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
             if self.get_current_editor() is not None:
                 self.clipboard = self.get_current_editor().patchify_selection()
 
     def R_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
             if self.get_current_editor() is not None:
                 self.get_current_editor().reset_origin()
 
     def hide_selected(self):
-        # if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+        # if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
         if self.get_current_editor() is not None:
             selected_nodes_uuids = dpg.get_selected_nodes(self.get_current_editor().uuid)
             for selected_nodes_uuid in selected_nodes_uuids:
@@ -1219,7 +1227,7 @@ class App:
                 node.toggle_show_hide_options()
 
     def show_widget_only_for_selected(self):
-        # if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+        # if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
         if self.get_current_editor() is not None:
             selected_nodes_uuids = dpg.get_selected_nodes(self.get_current_editor().uuid)
             for selected_nodes_uuid in selected_nodes_uuids:
@@ -1242,77 +1250,91 @@ class App:
             editor = self.get_current_editor()
             if editor.presenting:
                 editor.enter_edit_state()
-                dpg.set_item_label(self.presentation_edit_menu_item, 'Enter Presentation Mode')
+                dpg.set_item_label(self.presentation_edit_menu_item, 'Enter Presentation Mode (E)')
             else:
                 editor.enter_presentation_state()
-                dpg.set_item_label(self.presentation_edit_menu_item, 'Enter Edit Mode')
+                dpg.set_item_label(self.presentation_edit_menu_item, 'Enter Edit Mode (E)')
 
     def X_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
             if self.get_current_editor() is not None:
-                self.clipboard = self.get_current_editor().cut_selection()
+                if not self.get_current_editor().presenting:
+                    self.clipboard = self.get_current_editor().cut_selection()
 
     def S_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
             self.save_nodes()
 
     def O_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
             self.load_nodes()
         else:
-            self.options_handler()
+            if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+                self.options_handler()
 
     def K_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
-            self.connect_selected()
+        if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+            if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
+                self.connect_selected()
 
     def Y_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
-            self.align_distribute_selected()
+        if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+            if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
+                self.align_distribute_selected()
 
     def N_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
             self.add_node_editor()
         else:
-            self.new_handler()
+            if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+                self.new_handler()
 
     def W_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
             self.close_current_node_editor()
 
     def V_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
             self.paste_selected()
         else:
-            self.vector_handler()
+            if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+                self.vector_handler()
 
     def D_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin):
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
             if self.active_widget == -1:
                 if self.get_current_editor() is not None:
                     self.get_current_editor().duplicate_selection()
 
-    def duplicate_handler(self):
-        if self.active_widget == -1:
+    def E_handler(self):
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
             if self.get_current_editor() is not None:
+                self.toggle_presentation()
+
+    def duplicate_handler(self):
+        if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+            if self.active_widget == -1:
                 self.get_current_editor().duplicate_selection()
 
     def patchify_handler(self):
-        if self.get_current_editor() is not None:
+        if self.get_current_editor() is not None and not self.get_current_editor().presenting:
             self.get_current_editor().patchify_selection()
 
     def cut_selected(self):
         if self.active_widget == -1:
-            if self.get_current_editor() is not None:
+            if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 self.get_current_editor().cut_selection()
 
     def copy_selected(self):
         if self.active_widget == -1:
-            if self.get_current_editor() is not None:
+            if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 self.get_current_editor().copy_selection()
 
     def mouse_down_handler(self):
-        self.dragging_created_nodes = False
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
+            self.toggle_presentation()
+        else:
+            self.dragging_created_nodes = False
 
     def drag_create_nodes(self):
         if self.dragging_created_nodes:
@@ -1342,6 +1364,7 @@ class App:
         from dpg_system.interface_nodes import KeyNode
         for node in KeyNode.node_list:
             node.key_down(app_data)
+
     def key_release_handler(self, sender, app_data, user_data):
         from dpg_system.interface_nodes import KeyNode
         for node in KeyNode.node_list:
@@ -1811,6 +1834,7 @@ class App:
                             dpg.add_key_press_handler(dpg.mvKey_B, callback=self.button_handler)
                             dpg.add_key_press_handler(dpg.mvKey_M, callback=self.message_handler)
 
+                            dpg.add_key_press_handler(dpg.mvKey_E, callback=self.E_handler)
                             dpg.add_key_press_handler(dpg.mvKey_D, callback=self.D_handler)
                             dpg.add_key_press_handler(dpg.mvKey_C, callback=self.C_handler)
                             dpg.add_key_press_handler(dpg.mvKey_V, callback=self.V_handler)
