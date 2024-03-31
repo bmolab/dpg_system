@@ -1434,6 +1434,68 @@ class App:
     def update(self):
         pass
 
+    def connect_link(self, links_container, index, link_index, node_editor_uuid):
+        source_node = None
+        dest_node = None
+        link_container = links_container[link_index]
+        new_link = link_container
+
+        source_node_loaded_uuid = link_container['source_node']
+        if source_node_loaded_uuid in self.created_nodes:
+            source_node = self.created_nodes[source_node_loaded_uuid]
+            new_link['source_node'] = source_node.uuid
+        dest_node_loaded_uuid = link_container['dest_node']
+        if dest_node_loaded_uuid in self.created_nodes:
+            dest_node = self.created_nodes[dest_node_loaded_uuid]
+            new_link['dest_node'] = dest_node.uuid
+        if source_node is not None and dest_node is not None:
+            source_output_name = ''
+            source_output_index = link_container['source_output_index']
+            if 'source_output_name' in link_container:
+                source_output_name = link_container['source_output_name']
+            dest_input_index = link_container['dest_input_index']
+            dest_input_name = ''
+            if 'dest_input_name' in link_container:
+                dest_input_name = link_container['dest_input_name']
+            if source_output_index < len(source_node.outputs):
+                source_output = source_node.outputs[source_output_index]
+                found_output = True
+                if source_output_name != '':
+                    found_output = False
+                    if source_output.get_label() != source_output_name:
+                        for index, output in enumerate(source_node.inputs):
+                            if output.get_label() == source_output_name:
+                                source_output_index = index
+                                source_output = output
+                                found_output = True
+                                break
+                    else:
+                        found_output = True
+
+                if dest_input_index < len(dest_node.inputs):
+                    dest_input = dest_node.inputs[dest_input_index]
+                    found_input = True
+                    if dest_input_name != '':
+                        found_input = False
+                        if dest_input.get_label() != dest_input_name:
+                            for index, input in enumerate(dest_node.inputs):
+                                if input.get_label() == dest_input_name:
+                                    dest_input_index = index
+                                    dest_input = input
+                                    found_input = True
+                                    break
+                        else:
+                            found_input = True
+
+                    if found_output and found_input:
+                        source_output.add_child(dest_input, node_editor_uuid)
+                    else:
+                        if not found_output:
+                            print('could not locate output', source_output_name, 'in', source_node)
+                        if not found_input:
+                            print('could not locate input', dest_input_name, 'in', dest_node)
+        return new_link
+
     def load_from_file(self, path):
         self.loading = True
         self.loaded_patcher_nodes = []
@@ -1518,23 +1580,24 @@ class App:
                 for node_editor_uuid in self.links_containers:
                     links_container = self.links_containers[node_editor_uuid]
                     for index, link_index in enumerate(links_container):
-                        source_node = None
-                        dest_node = None
-                        link_container = links_container[link_index]
-                        source_node_loaded_uuid = link_container['source_node']
-                        if source_node_loaded_uuid in self.created_nodes:
-                            source_node = self.created_nodes[source_node_loaded_uuid]
-                        dest_node_loaded_uuid = link_container['dest_node']
-                        if dest_node_loaded_uuid in self.created_nodes:
-                            dest_node = self.created_nodes[dest_node_loaded_uuid]
-                        if source_node is not None and dest_node is not None:
-                            source_output_index = link_container['source_output_index']
-                            dest_input_index = link_container['dest_input_index']
-                            if source_output_index < len(source_node.outputs):
-                                source_output = source_node.outputs[source_output_index]
-                                if dest_input_index < len(dest_node.inputs):
-                                    dest_input = dest_node.inputs[dest_input_index]
-                                    source_output.add_child(dest_input, node_editor_uuid)
+                        self.connect_link(links_container, index, link_index, node_editor_uuid)
+                        # source_node = None
+                        # dest_node = None
+                        # link_container = links_container[link_index]
+                        # source_node_loaded_uuid = link_container['source_node']
+                        # if source_node_loaded_uuid in self.created_nodes:
+                        #     source_node = self.created_nodes[source_node_loaded_uuid]
+                        # dest_node_loaded_uuid = link_container['dest_node']
+                        # if dest_node_loaded_uuid in self.created_nodes:
+                        #     dest_node = self.created_nodes[dest_node_loaded_uuid]
+                        # if source_node is not None and dest_node is not None:
+                        #     source_output_index = link_container['source_output_index']
+                        #     dest_input_index = link_container['dest_input_index']
+                        #     if source_output_index < len(source_node.outputs):
+                        #         source_output = source_node.outputs[source_output_index]
+                        #         if dest_input_index < len(dest_node.inputs):
+                        #             dest_input = dest_node.inputs[dest_input_index]
+                        #             source_output.add_child(dest_input, node_editor_uuid)
 
                 for uuid in self.created_nodes:
                     node = self.created_nodes[uuid]
