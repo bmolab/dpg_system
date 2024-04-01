@@ -1528,8 +1528,9 @@ class Node:
                             if a_label == property_label:
                                 if 'value' in property_container:
                                     value = property_container['value']
-                                    input.widget.set(value)
-                                    input.widget.value_changed(force=True)
+                                    if input.widget.widget != 'button':
+                                        input.widget.set(value)
+                                        input.widget.value_changed(force=True)
                                 found = True
                                 break
                     if not found:
@@ -1551,8 +1552,9 @@ class Node:
                                 if a_label == property_label:
                                     if 'value' in property_container:
                                         value = property_container['value']
-                                        option.widget.set(value)
-                                        option.widget.value_changed(force=True)
+                                        if option.widget.widget != 'button':
+                                            option.widget.set(value)
+                                            option.widget.value_changed(force=True)
                                     found = True
                                     break
         self.load_custom(node_container)
