@@ -2078,6 +2078,16 @@ class KeyNode(Node):
                 self.key_list[arg] = KeyNode.map[arg]
                 out = self.add_output(arg)
                 self.output_dict[arg] = out
+        self.reverse_shifted_key_list = {}
+        self.reverse_key_list = {}
+
+        for key in self.key_list:
+            k = self.key_list[key]
+            if k[1]:
+                self.reverse_shifted_key_list[k[0]] = key
+            else:
+                self.reverse_key_list[k[0]] = key
+
         if len(args) == 0:
             self.output = self.add_output('character out')
             self.code_output = self.add_output('key code out')
@@ -2163,14 +2173,15 @@ class KeyNode(Node):
                 self.alt_key_changed = True
 
         character = chr(key_ascii)
-
         if self.shift_key_pressed:
+            character = self.reverse_shifted_key_list[key_ascii]
             if ord('A') <= key_ascii <= ord('Z'):
                 character = character.upper()
             else:
                 if character in self.shifted_keys:
                     character = self.shifted_keys[character]
         else:
+            character = self.reverse_key_list[key_ascii]
             if ord('A') <= key_ascii <= ord('Z'):
                 character = character.lower()
 
@@ -2200,7 +2211,7 @@ class KeyNode(Node):
         keys = list(KeyNode.map.keys())
         counter = 0
         for key in keys:
-            print(key, end=' ')
+            print(key, KeyNode.map[key], end=' ')
             counter += 1
             if counter % 10 == 0:
                 print()
