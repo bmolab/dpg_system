@@ -2174,14 +2174,16 @@ class KeyNode(Node):
 
         character = chr(key_ascii)
         if self.shift_key_pressed:
-            character = self.reverse_shifted_key_list[key_ascii]
+            if key_ascii in self.reverse_shifted_key_list:
+                character = self.reverse_shifted_key_list[key_ascii]
             if ord('A') <= key_ascii <= ord('Z'):
                 character = character.upper()
             else:
                 if character in self.shifted_keys:
                     character = self.shifted_keys[character]
         else:
-            character = self.reverse_key_list[key_ascii]
+            if key_ascii in self.reverse_key_list:
+                character = self.reverse_key_list[key_ascii]
             if ord('A') <= key_ascii <= ord('Z'):
                 character = character.lower()
 
