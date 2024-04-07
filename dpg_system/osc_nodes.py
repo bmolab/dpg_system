@@ -110,12 +110,6 @@ class OSCManager:
 
     def receive_pending_message(self, source, message, args):
         self.pending_message_queue.put([source, message, args], block=False)
-        # if self.lock.acquire(blocking=True):
-        #     self.pending_messages[self.pending_message_buffer].append([source, message, args])
-        #     self.lock.release()
-
-    # def swap_pending_message_buffer(self):
-    #     self.pending_message_buffer = 1 - self.pending_message_buffer
 
     def relay_pending_messages(self):
         while not self.pending_message_queue.empty():
@@ -131,16 +125,6 @@ class OSCManager:
                 args_ = osc_message[2]
 
                 source.relay_osc(address, args_)
-
-        # self.swap_pending_message_buffer()
-        # for osc_message in self.pending_messages[1 - self.pending_message_buffer]:
-        #     if len(osc_message) >= 3:
-        #         source = osc_message[0]
-        #         address = osc_message[1]
-        #         args_ = osc_message[2]
-        #
-        #         source.relay_osc(address, args_)
-        #         self.pending_messages[1 - self.pending_message_buffer] = []
 
     def get_target_list(self):
         return list(self.targets.keys())
@@ -370,18 +354,12 @@ class OSCSource(OSCBase):
         self.lock = threading.Lock()
 
         self.handle_in_loop = False
-        # self.use_queue = False
-        # self.queue = queue.Queue()
 
     def osc_handler(self, address, *args):
         # if self.lock.acquire(blocking=True):
         if type(args) == tuple:
             args = list(args)
         if self.handle_in_loop:
-        #     self.osc_manager.receive_pending_message(self, address, args)
-        #     self.lock.release()
-        #     return
-        # if self.use_queue:
             self.osc_manager.receive_pending_message(self, address, args)
             return
         if self.lock.acquire(blocking=True):
@@ -429,6 +407,7 @@ class OSCSource(OSCBase):
         if receive_node.address in self.receive_nodes:
             self.receive_nodes.pop(receive_node.address)
 
+
 class OSCThreadingSource(OSCSource):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
@@ -436,7 +415,6 @@ class OSCThreadingSource(OSCSource):
     def start_serving(self):
         try:
             self.create_dispatcher()
-
             self.server = osc_server.ThreadingOSCUDPServer(('0.0.0.0', self.source_port), self.dispatcher)
             self.server_thread = threading.Thread(target=self.server.serve_forever)
             self.server_thread.start()
@@ -519,7 +497,6 @@ class OSCAsyncIOSource(OSCSource):
             stop_async(self.async_loop)
             self.async_loop = None
         self.server = None
-
 
     async def server_coroutine(self):
         self.server = osc_server.AsyncIOOSCUDPServer(('0.0.0.0', self.source_port), self.dispatcher,

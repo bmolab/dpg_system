@@ -67,6 +67,7 @@ def register_basic_nodes():
     Node.app.register_node('char', CharConverterNode.factory)
     Node.app.register_node('ord', ASCIIConverterNode.factory)
     Node.app.register_node('printable', PrintableNode.factory)
+    Node.app.register_node('present', PresentationModeNode.factory)
 
 
 # DeferNode -- delays received input until next frame
@@ -2610,3 +2611,21 @@ class PrintableNode(Node):
             self.output.send(filtered_string[0])
         elif len(filtered_string) > 0:
             self.output.send(filtered_string)
+
+
+class PresentationModeNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = PresentationModeNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.open_as_presentation = self.add_property('open as presentation', widget_type='checkbox', callback=self.present)
+
+    def present(self):
+        if self.open_as_presentation():
+            self.app.get_current_editor().enter_presentation_state()
+        else:
+            self.app.get_current_editor().enter_edit_state()

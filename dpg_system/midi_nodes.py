@@ -894,19 +894,19 @@ class BlueBoardNode(MidiDeviceNode):
         self.modes = []
 
         self.add_output('A')
-        self.modes.append(self.add_property('', widget_type='combo', default_value='momentary'))
+        self.modes.append(self.add_property('###A_mode', widget_type='combo', default_value='momentary'))
         self.set_LED_inputs.append(self.add_input('LED', widget_type='checkbox', triggers_execution=True))
         self.add_spacer()
         self.add_output('B')
-        self.modes.append(self.add_property('', widget_type='combo', default_value='momentary'))
+        self.modes.append(self.add_property('###B_mode', widget_type='combo', default_value='momentary'))
         self.set_LED_inputs.append(self.add_input('LED', widget_type='checkbox', triggers_execution=True))
         self.add_spacer()
         self.add_output('C')
-        self.modes.append(self.add_property('', widget_type='combo', default_value='momentary'))
+        self.modes.append(self.add_property('###C_mode', widget_type='combo', default_value='momentary'))
         self.set_LED_inputs.append(self.add_input('LED', widget_type='checkbox', triggers_execution=True))
         self.add_spacer()
         self.add_output('D')
-        self.modes.append(self.add_property('', widget_type='combo', default_value='momentary'))
+        self.modes.append(self.add_property('###D_mode', widget_type='combo', default_value='momentary'))
         self.set_LED_inputs.append(self.add_input('LED', widget_type='checkbox', triggers_execution=True))
 
         self.states = [0, 0, 0, 0]
