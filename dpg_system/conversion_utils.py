@@ -489,7 +489,7 @@ def string_to_numerical(input_string, validate=False):
             return arr[0]
         return arr
     except Exception as e:
-        print(string_to_numerical, e)
+        print('string_to_numerical', e)
     if validate:
         return None
     return np.zeros((1))

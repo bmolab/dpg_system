@@ -33,20 +33,6 @@ def register_osc_nodes():
     Node.app.register_node('osc_radio', OSCRadioButtonsNode.factory)
 
 
-# def osc_handler(address, *args):
-#     if address == '/filter':
-#         for arg in args:
-#             print(arg)
-#
-#
-# def osc_thread():
-#     dispatcher = Dispatcher()
-#     dispatcher.map('/filter', osc_handler)
-#
-#     OSCserver = osc_server.ThreadingOSCUDPServer((ip, port), dispatcher)
-#     OSCserver_thread = threading.Thread(target=OSCserver.serve_forever)
-#     OSCserver_thread.start()
-
 class OSCBase:
     osc_manager = None
 
@@ -74,22 +60,17 @@ class OSCBase:
 
 
 class OSCManager:
-    # started = False
     def __init__(self, label: str, data, args):
         self.pending_message_buffer = 0
         self.targets = {}
         self.sources = {}
         self.send_nodes = []
         self.receive_nodes = []
-        self.pending_messages = [[], []]
 
         OSCBase.osc_manager = self
         self.lock = threading.Lock()
         self.pending_message_queue = queue.Queue()
-        # if not self.started:
-        #     osc_thread()
 
-    # --
     def register_target(self, target):
         if target is not None:
             name = target.name
@@ -97,7 +78,6 @@ class OSCManager:
                 self.targets[name] = target
                 self.connect_new_target_to_send_nodes(target)
 
-    # --
     def remove_target(self, target):
         target.disconnect_from_send_nodes()
         if target.name in self.targets:
@@ -118,13 +98,20 @@ class OSCManager:
                 osc_message = self.pending_message_queue.get(block=False)
             except Exception as e:
                 osc_message = None
-                break
+                print('relay_pending_messages exception', e)
+
+                return
             if osc_message:
                 source = osc_message[0]
                 address = osc_message[1]
                 args_ = osc_message[2]
 
                 source.relay_osc(address, args_)
+            else:
+                with self.pending_message_queue.mutex:
+                    self.pending_message_queue.queue.clear()
+                print('relay_pending_messages - no osc message')
+                return
 
     def get_target_list(self):
         return list(self.targets.keys())
@@ -239,7 +226,7 @@ class OSCTarget(OSCBase):
             self.client = SimpleUDPClient(self.ip, self.target_port)
         except Exception as e:
             self.client = None
-            print(e)
+            print('OSCTarget.create_client', e)
 
     def destroy_client(self):
         # self.osc_manager.remove_target(self)
@@ -479,7 +466,6 @@ class OSCAsyncIOSource(OSCSource):
     def start_serving(self):
         try:
             self.create_dispatcher()
-
             self.async_loop = start_async()
             submit_async(self.server_coroutine(), self.async_loop)
 

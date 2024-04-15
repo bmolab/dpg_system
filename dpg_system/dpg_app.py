@@ -1979,5 +1979,5 @@ class App:
                 # else:
                 #     print('p', end='')
             except Exception as exc_:
-                print(exc_)
+                print('run_loop exception', exc_)
 
