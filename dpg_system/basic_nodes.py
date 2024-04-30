@@ -54,6 +54,7 @@ def register_basic_nodes():
     Node.app.register_node('fuzzy_match', FuzzyMatchNode.factory)
     Node.app.register_node('length', LengthNode.factory)
     Node.app.register_node('time_between', TimeBetweenNode.factory)
+    Node.app.register_node('int_replace', IntReplaceNode.factory)
     Node.app.register_node('word_replace', WordReplaceNode.factory)
     Node.app.register_node('string_replace', StringReplaceNode.factory)
     Node.app.register_node('word_trigger', WordTriggerNode.factory)
@@ -2411,6 +2412,42 @@ class WordReplaceNode(Node):
         else:
             self.output.send(data)
 
+class IntReplaceNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = IntReplaceNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        find = ''
+        replace = ''
+        if len(args) > 1:
+            find = any_to_int(args[0])
+            replace = any_to_int(args[1])
+        self.input = self.add_input('int in', triggers_execution=True)
+        self.find_input = self.add_input('find', widget_type='drag_int', default_value=find)
+        self.replace_input = self.add_input('replace', widget_type='drag_int', default_value=replace)
+        self.output = self.add_output('string out')
+
+    def execute(self):
+        data = self.input()
+        find = self.find_input()
+        replace = self.replace_input()
+        if type(data) == list:
+            for i, w in enumerate(data):
+                if type(w) == int:
+                    if w == find:
+                        data[i] = replace
+            self.output.send(data)
+        elif type(data) == int:
+            if data == find:
+                self.output.send(replace)
+            else:
+                self.output.send(data)
+        else:
+            self.output.send(data)
+
 class StringReplaceNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -2489,33 +2526,40 @@ class GatherSentences(Node):
         self.input = self.add_input('string in', triggers_execution=True)
         self.end_input = self.add_input('force string end', triggers_execution=True)
         self.enforce_spaces = self.add_property('enforce spaces', widget_type='checkbox')
+        self.auto_sentence_end = self.add_property('auto sentence end', widget_type='checkbox', default_value=True)
+        self.end_on_return = self.add_property('end on return', widget_type='checkbox')
         self.sentence_output = self.add_output('sentences out')
 
     def execute(self):
         if self.active_input == self.input:
             data = any_to_string(self.input())
             if len(data) > 0:
-                if data[-1] == '\n' and len(data) > 1:
-                    if data[-2] == '\n':
-                        self.received_sentence += data
-                        # self.received_sentence = self.received_sentence.replace('\n', ' ')
+                if self.auto_sentence_end():
+                    if data[-1] == '\n' and len(data) > 1:
+                        if data[-2] == '\n':
+                            self.received_sentence += data
+                            # self.received_sentence = self.received_sentence.replace('\n', ' ')
 
-                        self.sentence_output.send(self.received_sentence)
-                        self.received_sentence = ''
-                        return
-                if data[-1] == '-' and len(data) > 1:
-                    if data[-2] == '-':
+                            self.sentence_output.send(self.received_sentence)
+                            self.received_sentence = ''
+                            return
+                    if data[-1] == '-' and len(data) > 1:
+                        if data[-2] == '-':
+                            self.received_sentence += data
+                            # self.received_sentence = self.received_sentence.replace('\n', ' ')
+                            self.sentence_output.send(self.received_sentence)
+                            self.received_sentence = ''
+                            return
+                    if data[-1] in ['.', '?', '!', ';', ':']:
                         self.received_sentence += data
                         # self.received_sentence = self.received_sentence.replace('\n', ' ')
                         self.sentence_output.send(self.received_sentence)
                         self.received_sentence = ''
                         return
-                if data[-1] in ['.', '?', '!', ';', ':']:
-                    self.received_sentence += data
-                    # self.received_sentence = self.received_sentence.replace('\n', ' ')
-                    self.sentence_output.send(self.received_sentence)
-                    self.received_sentence = ''
-                    return
+                elif self.end_on_return():
+                    if data[0] == '\n':
+                        self.sentence_output.send(self.received_sentence)
+                        self.received_sentence = ''
             if self.enforce_spaces() and len(self.received_sentence) > 0 and len(data) > 0:
                 if self.received_sentence[-1] != ' ' and data[0] != ' ':
                     self.received_sentence += ' '

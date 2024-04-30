@@ -79,7 +79,10 @@ class ElevenLabNode(Node):
 def service_eleven_labs():
     while True:
         for instance in ElevenLabsNode.instances:
-            instance.service_queue()
+            try:
+                instance.service_queue()
+            except Exception as e:
+                print('service_eleven_labs', e)
 
 
 class ElevenLabsNode(Node):
