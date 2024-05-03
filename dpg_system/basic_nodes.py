@@ -12,7 +12,7 @@ import threading
 from dpg_system.conversion_utils import *
 import json
 from fuzzywuzzy import fuzz
-from dpg_system.elevenlabs_node import ElevenLabsNode
+
 
 def register_basic_nodes():
     Node.app.register_node('prepend', PrependNode.factory)
