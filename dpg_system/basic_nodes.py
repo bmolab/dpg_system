@@ -12,7 +12,7 @@ import threading
 from dpg_system.conversion_utils import *
 import json
 from fuzzywuzzy import fuzz
-
+from dpg_system.elevenlabs_node import ElevenLabsNode
 
 def register_basic_nodes():
     Node.app.register_node('prepend', PrependNode.factory)
@@ -39,6 +39,8 @@ def register_basic_nodes():
     Node.app.register_node('repeat', RepeatNode.factory)
     Node.app.register_node("timer", TimerNode.factory)
     Node.app.register_node("elapsed", TimerNode.factory)
+    Node.app.register_node("date_time", DateTimeNode.factory)
+
     Node.app.register_node("decode", SelectNode.factory)
     Node.app.register_node("t", TriggerNode.factory)
     Node.app.register_node('var', VariableNode.factory)
@@ -57,6 +59,7 @@ def register_basic_nodes():
     Node.app.register_node('int_replace', IntReplaceNode.factory)
     Node.app.register_node('word_replace', WordReplaceNode.factory)
     Node.app.register_node('string_replace', StringReplaceNode.factory)
+    Node.app.register_node('replace', ReplaceNode.factory)
     Node.app.register_node('word_trigger', WordTriggerNode.factory)
     Node.app.register_node('split', SplitNode.factory)
     Node.app.register_node('join', JoinNode.factory)
@@ -402,6 +405,41 @@ class TimeBetweenNode(Node):
             self.end_time = time.time()
             elapsed = (self.end_time - self.start_time) * self.units
             self.output.send(elapsed)
+
+
+class DateTimeNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = DateTimeNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('get time', triggers_execution=True)
+        self.hours_output = self.add_output('hours')
+        self.minutes_output = self.add_output('minutes')
+        self.seconds_output = self.add_output('seconds')
+        self.day_output = self.add_output('day')
+        self.month_output = self.add_output('month')
+        self.year_output = self.add_output('year')
+        self.date_string_output = self.add_output('date string')
+        self.time_string_output = self.add_output('time string')
+
+    def execute(self):
+        date_time = time.localtime()
+        date_string = str(date_time[0]) + '-' + str(date_time[1]) + '-' + str(date_time[2])
+        time_string = str(date_time[3]) + ':' + str(date_time[4]) + ':' + str(date_time[5])
+
+        self.date_string_output.send(date_string)
+        self.time_string_output.send(time_string)
+
+        self.year_output.send(date_time[0])
+        self.month_output.send(date_time[1])
+        self.day_output.send(date_time[2])
+        self.hours_output.send(date_time[3])
+        self.minutes_output.send(date_time[4])
+        self.seconds_output.send(date_time[5])
 
 
 class TimerNode(Node):
@@ -1928,6 +1966,8 @@ class CollectionNode(Node):
         self.store_input = self.add_input('store', triggers_execution=True)
         self.collection_name_property = self.add_property('name', widget_type='text_input', default_value=self.collection_name)
         self.output = self.add_output("out")
+        self.unmatched_output = self.add_output('unmatched')
+
         self.message_handlers['clear'] = self.clear_message
         self.message_handlers['dump'] = self.dump
         self.message_handlers['save'] = self.save_message
@@ -1995,9 +2035,13 @@ class CollectionNode(Node):
                     self.output.send(self.collection[data])
                 elif address in self.collection:
                     self.output.send(self.collection[address])
+                else:
+                    self.unmatched_output.send(data)
             elif t == str:
                 if address in self.collection:
                     self.output.send(self.collection[address])
+                else:
+                    self.unmatched_output.send(data)
             elif t in [list]:
                 index = any_to_string(data[0])
                 if index == 'delete':
@@ -2029,7 +2073,9 @@ class CollectionNode(Node):
             t = type(data)
 
             if t == list:
-                index = any_to_string(data[0])
+                index = data[0]
+                if type(index) not in [str, int]:
+                    index = any_to_string(data[0])
                 data = data[1:]
                 if len(data) == 1:
                     t = type(data[0])
@@ -2412,6 +2458,62 @@ class WordReplaceNode(Node):
         else:
             self.output.send(data)
 
+
+class ReplaceNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ReplaceNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        find = ''
+        replace = ''
+        if len(args) > 1:
+            find = args[0]
+            replace = args[1]
+        self.input = self.add_input('int in', triggers_execution=True)
+        self.find_input = self.add_input('find', widget_type='text_input', default_value=find)
+        self.replace_input = self.add_input('replace', widget_type='text_input', default_value=replace)
+        self.output = self.add_output('out')
+
+    def execute(self):
+        data = self.input()
+        find = self.find_input()
+        replace = self.replace_input()
+        enlisted = False
+
+        t = type(data)
+        if t in [str, int, float]:
+            data = [data]
+            enlisted = True
+        out_data = data.copy()
+        for index, d in enumerate(data):
+            out_data[index] = self.replace_el(d, find, replace)
+        if enlisted:
+            out_data = data[0]
+        self.output.send(out_data)
+
+    def replace_el(self, d, find, replace):
+        t = type(d)
+        out_el = d
+        if t == str:
+            out_el = re.sub(r"{}".format(find), replace, d)
+        elif t == int:
+            find = any_to_int(find)
+            if d == find:
+                out_el = any_to_int(replace)
+        elif t == float:
+            find = any_to_float(find)
+            if d == find:
+                out_el = any_to_float(replace)
+        elif t == list:
+            out_el = d.copy()
+            for index_index, e in enumerate(d):
+                out_el[index_index] = self.replace_el(e, find, replace)
+        return out_el
+
+
 class IntReplaceNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -2478,11 +2580,8 @@ class StringReplaceNode(Node):
                         data[i] = w
                 self.output.send(data)
             elif type(data) == str:
-                if type(data) == str:
-                    data = re.sub(r"{}".format(find), replace, data)
-                    self.output.send(data)
-                else:
-                    self.output.send(data)
+                data = re.sub(r"{}".format(find), replace, data)
+                self.output.send(data)
             else:
                 self.output.send(data)
         else:

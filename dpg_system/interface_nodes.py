@@ -925,9 +925,12 @@ class ValueNode(Node):
                     in_data = in_data[0]
                     value = in_data
                     t = type(in_data)
-                    if self.input.widget.widget in ['drag_float', 'drag_int', 'input_float', 'input_int',
-                                                    'slider_float', 'slider_int', 'knob_float', 'knob_int']:
-                        if t in [float, int]:
+                    if is_number(in_data[0]):
+                        if self.input.widget.widget in ['drag_float', 'input_float', 'slider_float', 'knob_float']:
+                            value = any_to_float(value)
+                            self.input.widget.set(value, propagate=False)
+                        if self.input.widget.widget in ['drag_int', 'input_int', 'slider_int', 'knob_int']:
+                            value = any_to_int(value)
                             self.input.widget.set(value, propagate=False)
                 else:
                     if self.input.widget.widget in ['drag_float', 'drag_int', 'input_float', 'input_int', 'slider_float', 'slider_int', 'knob_float', 'knob_int']:
@@ -941,9 +944,13 @@ class ValueNode(Node):
                         else:
                             in_data = in_data[0]
                             value = in_data
-                            t = type(in_data)
-                            if t in [float, int]:
-                                self.input.widget.set(value, propagate=False)
+                            if is_number(value):
+                                if self.input.widget.widget in ['drag_float', 'input_float', 'slider_float', 'knob_float']:
+                                    value = any_to_float(value)
+                                    self.input.widget.set(value, propagate=False)
+                                if self.input.widget.widget in ['drag_int', 'input_int', 'slider_int', 'knob_int']:
+                                    value = any_to_int(value)
+                                    self.input.widget.set(value, propagate=False)
                     else:
                         value = in_data
             if t in [float, int]:
