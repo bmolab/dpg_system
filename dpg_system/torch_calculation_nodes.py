@@ -283,6 +283,7 @@ class TorchDiffNode(TorchWithDimNode):
                     result = torch.diff(input_tensor, n=self.n())
                 self.output.send(result)
             except Exception as e:
+                traceback.print_exception(e)
                 if self.app.verbose:
                     print(self.label, e)
 
@@ -315,6 +316,7 @@ class TorchEnergyNode(TorchWithDimNode):
                 result = result.abs().sum()
                 self.output.send(result)
             except Exception as e:
+                traceback.print_exception(e)
                 if self.app.verbose:
                     print(self.label, e)
 
@@ -681,6 +683,7 @@ class TorchCopySignNode(TorchNode):
                     try:
                         self.output.send(torch.copysign(input_tensor, sign_tensor))
                     except Exception as error:
+                        traceback.print_exception(error)
                         print('t.copysign:', error)
 
 
@@ -713,6 +716,7 @@ class CosineSimilarityNode(TorchNode):
                         similarity = self.cos(vector_1, self.vector_2)
                         self.output.send(similarity.item())
                     except Exception as e:
+                        traceback.print_exception(e)
                         print(self.label, e)
 
 

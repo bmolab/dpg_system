@@ -12,6 +12,7 @@ from elevenlabs import client, stream, generate, Voice, VoiceSettings
 from elevenlabs.client import ElevenLabs
 from queue import Queue
 import threading
+import traceback
 import time
 api_key = 'be1eae804441ec11f0fe872f82ad44f3'
 
@@ -82,7 +83,9 @@ def service_eleven_labs():
             try:
                 instance.service_queue()
             except Exception as e:
-                print('service_eleven_labs', e)
+                print('service_eleven_labs:')
+                traceback.print_exception(e)
+
         time.sleep(0.1)
 
 

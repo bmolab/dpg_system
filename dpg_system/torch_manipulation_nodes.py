@@ -118,6 +118,7 @@ class TorchViewNode(TorchNode):
                     view_tensor = input_tensor.reshape(self.shape)
                 self.output.send(view_tensor)
             except Exception as e:
+                traceback.print_exception(e)
                 print(self.label, e)
 
 
@@ -539,6 +540,7 @@ class TorchRollNode(TorchNode):
                 rolled = torch.roll(input_tensor, self.shifts_tuple, self.dims_tuple)
                 self.output.send(rolled)
             except Exception as e:
+                traceback.print_exception(e)
                 if self.app.verbose:
                     print(self.label, e)
 
@@ -680,6 +682,7 @@ class TorchMaskedSelectNode(TorchNode):
                         out_tensor = torch.masked_select(input_tensor, mask_tensor)
                         self.out.send(out_tensor)
                     except Exception as e:
+                        traceback.print_exception(e)
                         print(self.label, e)
 
 
@@ -706,6 +709,7 @@ class TorchTakeNode(TorchNode):
                         taken = torch.take(input_tensor, index_tensor)
                         self.output.send(taken)
                     except Exception as e:
+                        traceback.print_exception(e)
                         print(self.label, e)
                 else:
                     if self.app.verbose:
@@ -741,6 +745,7 @@ class TorchTakeAlongDimNode(TorchWithDimNode):
                             taken = torch.take_along_dim(input_tensor, indices=index_tensor, dim=self.dim)
                             self.output.send(taken)
                         except Exception as e:
+                            traceback.print_exception(e)
                             print(self.label, 'failed')
                 else:
                     if self.app.verbose:

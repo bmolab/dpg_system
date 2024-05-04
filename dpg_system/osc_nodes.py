@@ -98,7 +98,8 @@ class OSCManager:
                 osc_message = self.pending_message_queue.get(block=False)
             except Exception as e:
                 osc_message = None
-                print('relay_pending_messages exception', e)
+                print('relay_pending_messages exception:')
+                traceback.print_exception(e)
 
                 return
             if osc_message:
@@ -226,7 +227,8 @@ class OSCTarget(OSCBase):
             self.client = SimpleUDPClient(self.ip, self.target_port)
         except Exception as e:
             self.client = None
-            print('OSCTarget.create_client', e)
+            print('OSCTarget.create_client:')
+            traceback.print_exception(e)
 
     def destroy_client(self):
         # self.osc_manager.remove_target(self)

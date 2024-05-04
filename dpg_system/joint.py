@@ -199,6 +199,7 @@ class Joint:
             self.matrix = joint_matrix  # matrix defining rotation at parent joint in T-Pose
             self.length = scale
         except Exception as e:
-            print(e)
+            print('set_matrix:')
+            traceback.print_exception(e)
 
 

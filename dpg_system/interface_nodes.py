@@ -399,8 +399,10 @@ class PresetsNode(Node):
                         self.add_frame_task()
                         self.patch_preset_paste_pending = True
                 except Exception as e:
-                    print('error restoring patch', e)
-                # self.app.resume()
+                    print('error restoring patch:')
+                    traceback.print_exception(e)
+
+                    # self.app.resume()
                 PresetsNode.restoring_patch = False
             else:
                 kids = self.output.get_children()

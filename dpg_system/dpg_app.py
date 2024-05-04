@@ -9,6 +9,7 @@ from os.path import exists
 import json
 import os
 import platform as platform_
+import traceback
 
 # make new tab pop up when new file is opened
 
@@ -1612,8 +1613,9 @@ class App:
                 # now reorder deeper subpatchers?
 
         except Exception as exc_:
-            print(exc_)
             print('load failed while loading', self.currently_loading_patch_name, self.currently_loading_node_name)
+            traceback.print_exception(exc_)
+
         if main_editor is not None:
             self.current_node_editor = main_editor
         self.select_editor_tab(self.current_node_editor)
@@ -1979,5 +1981,6 @@ class App:
                 # else:
                 #     print('p', end='')
             except Exception as exc_:
-                print('run_loop exception', exc_)
+                print('run_loop exception:')
+                traceback.print_exception(exc_)
 
