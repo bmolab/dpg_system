@@ -927,7 +927,7 @@ class ValueNode(Node):
                     in_data = in_data[0]
                     value = in_data
                     t = type(in_data)
-                    if is_number(in_data[0]):
+                    if is_number(value):
                         if self.input.widget.widget in ['drag_float', 'input_float', 'slider_float', 'knob_float']:
                             value = any_to_float(value)
                             self.input.widget.set(value, propagate=False)
@@ -936,7 +936,7 @@ class ValueNode(Node):
                             self.input.widget.set(value, propagate=False)
                 else:
                     if self.input.widget.widget in ['drag_float', 'drag_int', 'input_float', 'input_int', 'slider_float', 'slider_int', 'knob_float', 'knob_int']:
-                        if not is_number(in_data[0]):
+                        if not is_number(value):
                             if type(in_data[0]) == str:
                                 if in_data[0] == 'set':
                                     if len(in_data) == 2 and is_number(in_data[1]):
