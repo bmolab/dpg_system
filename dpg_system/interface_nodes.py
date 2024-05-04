@@ -411,10 +411,11 @@ class PresetsNode(Node):
                         node = kid.node
                         if node is not None:
                             key = str(node.uuid)
-                            if remember_mode == 'nodes' and node != self:
-                                node.restore_properties(self.presets[current_preset_index][key])
-                            elif remember_mode == 'ui':
-                                node.set_preset_state(self.presets[current_preset_index][key])
+                            if key in self.presets[current_preset_index]:
+                                if remember_mode == 'nodes' and node != self:
+                                    node.restore_properties(self.presets[current_preset_index][key])
+                                elif remember_mode == 'ui':
+                                    node.set_preset_state(self.presets[current_preset_index][key])
                 else:
                     for node in editor._nodes:
                         key = str(node.uuid)
