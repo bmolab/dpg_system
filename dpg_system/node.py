@@ -568,8 +568,8 @@ class PropertyWidget:
             if index < len(self.combo_items):
                 val = self.combo_items[index]
                 self.set(val)
-        else:
-            self.node.increment_widget(self.widget)
+        # else:
+        #     self.node.increment_widget(self.widget)
         if self.callback is not None:
             self.callback()
 
@@ -591,8 +591,8 @@ class PropertyWidget:
             if index >= 0:
                 val = self.combo_items[index]
                 self.set(val)
-        else:
-            self.node.decrement_widget(self.widget)
+        # else:
+        #     self.node.decrement_widget(self.widget)
         if self.callback is not None:
             self.callback()
 
@@ -649,7 +649,13 @@ class PropertyWidget:
             dpg.set_value(self.uuid, val)
             self.value = val
         elif self.widget == 'text_input':
-            val = any_to_string(data)
+            if type(data) == list:
+                if len(data) > 0 and type(data[0]) == list:
+                    val = str(data)
+                else:
+                    val = any_to_string(data)
+            else:
+                val = any_to_string(data)
             dpg.set_value(self.uuid, val)
             self.value = val
             # self.adjust_to_text_width(max=2048)
@@ -899,7 +905,7 @@ class NodeInput:
                 dpg.bind_item_theme(self.uuid, self._pin_active_theme)
                 Node.app.get_current_editor().add_active_pin(self.uuid)
             if self.accepted_types:
-                if self.type_mask != 0:
+                if self.type_mask == 0:
                     self.type_mask = create_type_mask_from_list(self.accepted_types)
                 data = conform_to_type_mask(data, self.type_mask)
             if self.widget:

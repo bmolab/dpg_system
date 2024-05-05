@@ -19,6 +19,7 @@ def register_interface_nodes():
     Node.app.register_node("int", ValueNode.factory)
     Node.app.register_node("slider", ValueNode.factory)
     Node.app.register_node("message", ValueNode.factory)
+    Node.app.register_node("string", ValueNode.factory)
     Node.app.register_node("knob", ValueNode.factory)
     Node.app.register_node("plot", PlotNode.factory)
     Node.app.register_node("heat_map", PlotNode.factory)
@@ -629,6 +630,14 @@ class ToggleNode(Node):
     def call_execute(self, input=None):
         self.execute()
 
+    # def increment_widget(self, widget):
+    #     widget.increment()
+    #     self.execute()
+    #
+    # def decrement_widget(self, widget):
+    #     widget.decrement()
+    #     self.execute()
+
     def execute(self):
         if not self.set_reset:
             if self.input.fresh_input:
@@ -792,6 +801,8 @@ class ValueNode(Node):
         else:
             self.input = self.add_input('', triggers_execution=True, widget_type=widget_type, widget_uuid=self.value, widget_width=widget_width, trigger_button=True, max=self.max)
         # print(self.input)
+        if label == 'string':
+            self.input.accepted_types = [str]
         if self.variable_name != '':
             self.output = self.add_output(self.variable_name)
         else:
@@ -916,6 +927,8 @@ class ValueNode(Node):
     def execute(self):
         value = None
         output = True
+        display_data = None
+        output_data = None
         if self.inputs[0].fresh_input:
             in_data = self.inputs[0]()
             t = type(in_data)
@@ -926,74 +939,101 @@ class ValueNode(Node):
             if t == list:
                 if len(in_data) == 1:
                     in_data = in_data[0]
-                    value = in_data
                     t = type(in_data)
-                    if is_number(value):
+                    if is_number(in_data):
                         if self.input.widget.widget in ['drag_float', 'input_float', 'slider_float', 'knob_float']:
-                            value = any_to_float(value)
-                            self.input.widget.set(value, propagate=False)
+                            display_data = in_data[0]
+                            display_data = any_to_float(display_data)
+                            self.input.widget.set(display_data, propagate=False)
+                            output_data = display_data
                         if self.input.widget.widget in ['drag_int', 'input_int', 'slider_int', 'knob_int']:
-                            value = any_to_int(value)
-                            self.input.widget.set(value, propagate=False)
+                            display_data = in_data[0]
+                            display_data = any_to_int(display_data)
+                            self.input.widget.set(display_data, propagate=False)
+                            output_data = display_data
                 else:
                     if self.input.widget.widget in ['drag_float', 'drag_int', 'input_float', 'input_int', 'slider_float', 'slider_int', 'knob_float', 'knob_int']:
-                        if not is_number(value):
+                        if not is_number(in_data[0]):
                             if type(in_data[0]) == str:
                                 if in_data[0] == 'set':
                                     if len(in_data) == 2 and is_number(in_data[1]):
-                                        value = in_data[1]
-                                        self.input.widget.set(value, propagate=False)
+                                        display_value = in_data[1]
+                                        if self.input.widget.widget in ['drag_float', 'input_float', 'slider_float',
+                                                                        'knob_float']:
+                                            display_data = any_to_float(display_data)
+                                        else:
+                                            display_data = any_to_int(display_data)
+                                        self.input.widget.set(display_value, propagate=False)
                                         output = False
-                        else:
-                            in_data = in_data[0]
-                            value = in_data
-                            if is_number(value):
+                        elif len(in_data) > 0:
+                            display_data = in_data[0]
+                            if is_number(display_data):
                                 if self.input.widget.widget in ['drag_float', 'input_float', 'slider_float', 'knob_float']:
-                                    value = any_to_float(value)
-                                    self.input.widget.set(value, propagate=False)
+                                    display_data = any_to_float(display_data)
+                                    self.input.widget.set(display_data, propagate=False)
+                                    output_data = display_data
                                 if self.input.widget.widget in ['drag_int', 'input_int', 'slider_int', 'knob_int']:
-                                    value = any_to_int(value)
-                                    self.input.widget.set(value, propagate=False)
+                                    display_data = any_to_int(display_data)
+                                    self.input.widget.set(display_data, propagate=False)
+                                    output_data = display_data
                     else:
-                        value = in_data
+                        display_data = in_data
+                        output_data = display_data
             if t in [float, int]:
-                value = in_data
+                display_data = in_data
+                output_data = display_data
             elif t == bool:
                 if in_data:
-                    value = 1
+                    display_data = 1
                 else:
-                    value = 0
+                    display_data = 0
+                output_data = display_data
             else:
                 if self.input.widget.widget == 'text_input':
                     if t == np.ndarray:
-                        value = in_data.tolist()
+                        display_data = in_data.tolist()
+                        output_data = in_data
                     elif Node.app.torch_available and t == torch.Tensor:
-                        value = in_data.tolist()
+                        display_data = in_data.tolist()
+                        output_data = in_data
+                    elif t == list:
+                        if self.label == 'string':
+                            display_data = any_to_string(in_data)
+                            output_data = display_data
+                            self.data = output_data
+                        else:
+                            if len(in_data) > 0 and type(in_data[0]) == list:
+                                display_data = in_data
+                                output_data = display_data
+                            else:
+                                display_data = any_to_string(in_data)
+                                output_data = in_data
                     else:
-                        value = any_to_string(in_data)
-            if self.variable is not None:
-                self.variable.set(value, from_client=self)
+                        display_data = any_to_string(in_data)
+                        output_data = in_data
+            if self.variable is not None and output_data is not None:
+                self.variable.set(output_data, from_client=self)  # !!!!!
         else:
-            value = dpg.get_value(self.value)
-            if type(value) == str:
-                if len(value) > 0:
+            output_data = dpg.get_value(self.value)
+            if type(output_data) == str:
+                if len(output_data) > 0:
                     is_list = False
-                    if value[0] == '[':
+                    if output_data[0] == '[':
                         try:
-                            value = string_to_list(value)
+                            output_data = string_to_list(output_data)
                             is_list = True
                         except:
                             pass
                     if not is_list:
-                        value = value.split(' ')
-                        if len(value) == 1:
-                            value = value[0]
+                        output_data = output_data.split(' ')
+                        if len(output_data) == 1:
+                            output_value = output_data[0]
                 if self.input.widget.widget in ['drag_float', 'drag_int', 'input_float', 'input_int', 'slider_float', 'slider_int', 'knob_float', 'knob_int']:
-                    if not is_number(value):
+                    if not is_number(output_data):
                         return
 
             if self.variable is not None:
-                self.variable.set(value, from_client=self)
+                self.variable.set(output_data, from_client=self)
         if self.input.widget.widget == 'text_input':
             adjusted_width = self.input.widget.get_text_width()
             if self.grow_mode == 'grow_to_fit':
@@ -1003,11 +1043,11 @@ class ValueNode(Node):
             elif self.grow_mode == 'grow_or_shrink_to_fit':
                 dpg.configure_item(self.input.widget.uuid, width=adjusted_width)
                 self.width_option.set(adjusted_width)
-        if output:
+        if output and output_data is not None:
             if self.input.widget.widget == 'slider_float':
                 if self.power() != 1.0:
-                    value = pow(value, self.power())
-            self.outputs[0].send(value)
+                    output_data = pow(output_data, self.power())
+            self.outputs[0].send(output_data)
 
     def update(self, propagate=True):
         value = dpg.get_value(self.value)

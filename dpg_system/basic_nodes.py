@@ -20,7 +20,7 @@ def register_basic_nodes():
     Node.app.register_node("type", TypeNode.factory)
     Node.app.register_node("info", TypeNode.factory)
     Node.app.register_node('array', ArrayNode.factory)
-    Node.app.register_node("string", StringNode.factory)
+    # Node.app.register_node("string", StringNode.factory)
     Node.app.register_node("list", ListNode.factory)
     Node.app.register_node("counter", CounterNode.factory)
     Node.app.register_node('coll', CollectionNode.factory)

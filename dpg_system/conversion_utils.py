@@ -408,6 +408,10 @@ def int_to_string(input):
 
 def string_to_list(input_string):
     if input_string[0] == '[':
+        if input_string[-1] == ']':
+            if input_string[1:-1].find(']') == -1:
+                substrings = input_string[1:-1].split(' ')
+                return substrings
         arr_str = input_string.replace(" ]", "]").replace("][", "],[").replace(", ", ",").replace(" ", ",").replace("\n", "")
         substrings = ast.literal_eval(arr_str)
     else:
