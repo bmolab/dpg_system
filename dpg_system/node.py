@@ -46,6 +46,7 @@ class NodeOutput:
             dpg.set_value(self.label_uuid, self._label)
 
     def create_pin_themes(self):
+        #   could add other colours?
         with dpg.theme() as self._pin_active_theme:
             with dpg.theme_component(0):
                 dpg.add_theme_color(dpg.mvNodeCol_Pin, (51, 170, 255), category=dpg.mvThemeCat_Nodes)

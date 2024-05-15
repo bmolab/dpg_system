@@ -2627,9 +2627,12 @@ class GatherSentences(Node):
         self.enforce_spaces = self.add_property('enforce spaces', widget_type='checkbox')
         self.auto_sentence_end = self.add_property('auto sentence end', widget_type='checkbox', default_value=True)
         self.end_on_return = self.add_property('end on return', widget_type='checkbox')
+        self.skip_framed_by = self.add_property('skip framed by', widget_type='text_input')
         self.sentence_output = self.add_output('sentences out')
 
     def execute(self):
+        self.skipper = self.skip_framed_by()
+
         if self.active_input == self.input:
             data = any_to_string(self.input())
             if len(data) > 0:
@@ -2639,33 +2642,47 @@ class GatherSentences(Node):
                             self.received_sentence += data
                             # self.received_sentence = self.received_sentence.replace('\n', ' ')
 
-                            self.sentence_output.send(self.received_sentence)
-                            self.received_sentence = ''
+                            self.send_sentence()
                             return
                     if data[-1] == '-' and len(data) > 1:
                         if data[-2] == '-':
                             self.received_sentence += data
                             # self.received_sentence = self.received_sentence.replace('\n', ' ')
-                            self.sentence_output.send(self.received_sentence)
-                            self.received_sentence = ''
+                            self.send_sentence()
                             return
                     if data[-1] in ['.', '?', '!', ';', ':']:
                         self.received_sentence += data
                         # self.received_sentence = self.received_sentence.replace('\n', ' ')
-                        self.sentence_output.send(self.received_sentence)
-                        self.received_sentence = ''
+                        self.send_sentence()
                         return
                 elif self.end_on_return():
                     if data[0] == '\n':
-                        self.sentence_output.send(self.received_sentence)
-                        self.received_sentence = ''
+                        self.send_sentence()
+
             if self.enforce_spaces() and len(self.received_sentence) > 0 and len(data) > 0:
                 if self.received_sentence[-1] != ' ' and data[0] != ' ':
                     self.received_sentence += ' '
             self.received_sentence += data
         else:
-            self.sentence_output.send(self.received_sentence)
-            self.received_sentence = ''
+            self.send_sentence()
+
+    def send_sentence(self):
+        skipping = False
+        self.skipper = self.skip_framed_by()
+        if len(self.skipper) == 1:
+            stripped_sentence = ''
+            for i in range(len(self.received_sentence)):
+                if self.received_sentence[i] == self.skipper:
+                    if not skipping:
+                        skipping = True
+                    else:
+                        skipping = False
+                elif not skipping:
+                    stripped_sentence += self.received_sentence[i]
+            self.received_sentence = stripped_sentence
+
+        self.sentence_output.send(self.received_sentence)
+        self.received_sentence = ''
 
 
 class StringBuilder(Node):

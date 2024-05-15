@@ -22,6 +22,7 @@ def register_midi_nodes():
 
     Node.app.register_node('midi_device', MidiDeviceNode.factory)
     Node.app.register_node('blue_board', BlueBoardNode.factory)
+    Node.app.register_node('mpd218', MPD218Node.factory)
 
 
 note_off_code = 128
@@ -959,3 +960,57 @@ class BlueBoardNode(MidiDeviceNode):
         midi_data = [controller_code, controller, out]
         msg = mido.Message.from_bytes(midi_data)
         self.out_port.send(msg)
+
+
+class MPD218Node(MidiDeviceNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = MPD218Node(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        force_args = ['MPD218 Port A']
+        super().__init__(label, data, force_args)
+
+        self.pad_out = self.add_output('pad')
+        self.controller_out = self.add_output('controller')
+
+        self.last_pad = -1
+        self.active_pad = -1
+
+    def create_properties_inputs_and_outputs(self):
+        pass
+
+    def receive_midi_bytes(self, midi_bytes):
+        sys_byte = midi_bytes[0]
+        if sys_byte & 0xF0 == 0x90 or sys_byte & 0xF0 == 0x80:
+            note_byte = midi_bytes[1]
+            velocity_byte = midi_bytes[2]
+            if velocity_byte > 0:
+                self.disable_pressed()
+                self.active_pad = note_byte
+                self.enable(note_byte)
+            else:
+                if note_byte == self.active_pad:
+                    self.enable(note_byte)
+        elif sys_byte & 0xF0 == 0xB0:
+            controller_code = midi_bytes[1]
+            controller_value = midi_bytes[2]
+            self.controller_out.send([controller_code, controller_value])
+
+
+    def disable_pressed(self):
+        if self.last_pad != -1:
+            midi_data = [0x80, self.last_pad, 0]
+            self.last_pad = -1
+            msg = mido.Message.from_bytes(midi_data)
+            self.out_port.send(msg)
+
+    def enable(self, pad):
+        midi_data = [0x90, pad, 127]
+        self.last_pad = pad
+        msg = mido.Message.from_bytes(midi_data)
+        self.out_port.send(msg)
+        self.pad_out.send(pad)
+
+
