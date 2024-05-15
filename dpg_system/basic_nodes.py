@@ -1049,7 +1049,7 @@ class RouteNode(Node):
             # this does not update the label
             dpg.set_item_label(self.outputs[i].uuid, label=new_routers[i])
             sel, t = decode_arg(new_routers, i)
-            self.routers[i] = any_to_string(sel)
+            self.routers[i] = sel
 
     def execute(self):
         if self.new_routers:
@@ -1068,6 +1068,13 @@ class RouteNode(Node):
                     message = data[1:]
                     if index < len(self.outputs):
                         self.outputs[index].send(message)
+                elif is_number(data[0]):
+                    num_router = any_to_int(data[0])
+                    if num_router in self.routers:
+                        index = self.routers.index(num_router)
+                        message = data[1:]
+                        if index < len(self.outputs):
+                            self.outputs[index].send(message)
                 else:
                     self.miss_out.send(self.input())
             else:
