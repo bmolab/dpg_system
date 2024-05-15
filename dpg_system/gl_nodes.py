@@ -1528,6 +1528,7 @@ class GLTextNode(GLNode):
         self.text_color = self.add_option('alpha', widget_type='color_picker', default_value=[1.0, 1.0, 1.0, 1.0], callback=self.color_changed)
         self.text_font = self.add_option('font', widget_type='text_input', default_value=self.font_path, callback=self.font_changed)
         self.text_size = self.add_option('size', widget_type='drag_int', default_value=self.font_size, callback=self.size_changed)
+        self.alpha_power = self.add_option('alpha power', widget_type='drag_float', default_value=1.0)
         self.ready = True
         self.context = None
         self.texture = -1
@@ -1688,31 +1689,39 @@ class GLTextNode(GLNode):
 
                 glEndList()
             elif type(text) == list:
+                alpha_power = self.alpha_power()
+
                 glNewList(self.display_list, GL_COMPILE)
 
                 glEnable(GL_BLEND)
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
                 glEnable(GL_TEXTURE_2D)
                 for fragment in text:
+                    this_text = ''
                     if type(fragment) == list:
-                        this_text = fragment[0] + ' '
                         this_alpha = fragment[1]
-                        glColor4f(self.color[0], self.color[1], self.color[2], self.text_alpha_input() * this_alpha)
+
+                        if this_alpha > 0.0:
+                            this_alpha = pow(this_alpha, alpha_power)
+                            this_text = fragment[0] + ' '
+                            glColor4f(self.color[0], self.color[1], self.color[2], self.text_alpha_input() * this_alpha)
+
                     elif type(fragment) == str:
                         this_text = fragment + ' '
-                    for index, c in enumerate(this_text):
-                        if c in self.characters:
-                            ch = self.characters[c]
-                            width = self.glyph_shape[0] * scale
-                            height = self.glyph_shape[1] * scale
-                            vertices = self.get_rendering_buffer(pos[0], pos[1], width, height, ch.texture_coords)
-                            glBegin(GL_TRIANGLES)
-                            for i in range(6):
-                                glTexCoord2f(vertices[i * 4 + 2], vertices[i * 4 + 3])
-                                glVertex2f(vertices[i * 4], vertices[i * 4 + 1])
-                            glEnd()
-                            # self.coords[index] = vertices.copy()
-                            pos[0] += ((ch.advance >> 6) * scale)
+                    if len(this_text) > 0:
+                        for index, c in enumerate(this_text):
+                            if c in self.characters:
+                                ch = self.characters[c]
+                                width = self.glyph_shape[0] * scale
+                                height = self.glyph_shape[1] * scale
+                                vertices = self.get_rendering_buffer(pos[0], pos[1], width, height, ch.texture_coords)
+                                glBegin(GL_TRIANGLES)
+                                for i in range(6):
+                                    glTexCoord2f(vertices[i * 4 + 2], vertices[i * 4 + 3])
+                                    glVertex2f(vertices[i * 4], vertices[i * 4 + 1])
+                                glEnd()
+                                # self.coords[index] = vertices.copy()
+                                pos[0] += ((ch.advance >> 6) * scale)
 
                 glEndList()
 
