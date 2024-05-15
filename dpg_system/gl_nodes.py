@@ -1529,6 +1529,8 @@ class GLTextNode(GLNode):
         self.text_font = self.add_option('font', widget_type='text_input', default_value=self.font_path, callback=self.font_changed)
         self.text_size = self.add_option('size', widget_type='drag_int', default_value=self.font_size, callback=self.size_changed)
         self.alpha_power = self.add_option('alpha power', widget_type='drag_float', default_value=1.0)
+        self.separator = self.add_option('separator', widget_type='text_input', default_value=' ')
+
         self.ready = True
         self.context = None
         self.texture = -1
@@ -1690,6 +1692,7 @@ class GLTextNode(GLNode):
                 glEndList()
             elif type(text) == list:
                 alpha_power = self.alpha_power()
+                separator = self.separator()
 
                 glNewList(self.display_list, GL_COMPILE)
 
@@ -1703,11 +1706,11 @@ class GLTextNode(GLNode):
 
                         if this_alpha > 0.0:
                             this_alpha = pow(this_alpha, alpha_power)
-                            this_text = fragment[0] + ' '
+                            this_text = fragment[0] + separator
                             glColor4f(self.color[0], self.color[1], self.color[2], self.text_alpha_input() * this_alpha)
 
                     elif type(fragment) == str:
-                        this_text = fragment + ' '
+                        this_text = fragment + separator
                     if len(this_text) > 0:
                         for index, c in enumerate(this_text):
                             if c in self.characters:

@@ -27,6 +27,7 @@ def register_basic_nodes():
     Node.app.register_node('dict', CollectionNode.factory)
     Node.app.register_node("combine", CombineNode.factory)
     Node.app.register_node("kombine", CombineNode.factory)
+    Node.app.register_node("concat", ConcatenateNode.factory)
     Node.app.register_node("delay", DelayNode.factory)
     Node.app.register_node("select", SelectNode.factory)
     Node.app.register_node("route", RouteNode.factory)
@@ -1257,6 +1258,37 @@ class SplitNode(Node):
             splits = in_string.split(self.split_token())
         splits = in_string.split(self.split_token())
         self.output.send(splits)
+
+
+class ConcatenateNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ConcatenateNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.count = 2
+        if len(args) > 0:
+            val, t = decode_arg(args, 0)
+            if t == int:
+                self.count = val
+        self.input_list = []
+        for i in range(self.count):
+            in_ = self.add_input('list in ' + str(i + 1))
+            self.input_list.append(in_)
+        self.input_list[0].triggers_execution = True
+        self.output = self.add_output("concatenated list out")
+
+    def execute(self):
+        out_list = self.input_list[0]()
+        for i in range(self.count - 1):
+            l = self.input_list[i + 1]()
+            out_list += l
+        self.output.send(out_list)
+
+
 
 
 class JoinNode(Node):
