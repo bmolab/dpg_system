@@ -1285,10 +1285,10 @@ class ConcatenateNode(Node):
     def all_trigger(self):
         if self.all_inputs_trigger():
             for i in range(self.count - 1):
-                self.input_list[i].triggers_execution = True
+                self.input_list[i + 1].triggers_execution = True
         else:
             for i in range(self.count - 1):
-                self.input_list[i].triggers_execution = False
+                self.input_list[i + 1].triggers_execution = False
 
     def execute(self):
         out_list = self.input_list[0]()
