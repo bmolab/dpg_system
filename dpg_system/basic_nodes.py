@@ -1280,6 +1280,15 @@ class ConcatenateNode(Node):
             self.input_list.append(in_)
         self.input_list[0].triggers_execution = True
         self.output = self.add_output("concatenated list out")
+        self.all_inputs_trigger = self.add_option('all inputs trigger', widget_type='checkbox', callback=self.all_trigger)
+
+    def all_trigger(self):
+        if self.all_inputs_trigger():
+            for i in range(self.count - 1):
+                self.input_list[i].triggers_execution = True
+        else:
+            for i in range(self.count - 1):
+                self.input_list[i].triggers_execution = False
 
     def execute(self):
         out_list = self.input_list[0]()
