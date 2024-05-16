@@ -1523,7 +1523,7 @@ class GLTextNode(GLNode):
         self.text_input = self.add_input('text', callback=self.text_changed)
         self.position_x_input = self.add_input('position_x', widget_type='drag_float', default_value=0.0, callback=self.text_changed)
         self.position_y_input = self.add_input('position_y', widget_type='drag_float', default_value=0.0, callback=self.text_changed)
-        self.text_alpha_input = self.add_input('alpha', widget_type='drag_float', default_value=1.0)
+        self.text_alpha_input = self.add_input('alpha', widget_type='drag_float', default_value=1.0, callback=self.text_changed)
         self.scale_input = self.add_input('scale', widget_type='drag_float', default_value=1.0, callback=self.text_changed)
         self.text_color = self.add_option('alpha', widget_type='color_picker', default_value=[1.0, 1.0, 1.0, 1.0], callback=self.color_changed)
         self.text_font = self.add_option('font', widget_type='text_input', default_value=self.font_path, callback=self.font_changed)

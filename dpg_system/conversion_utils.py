@@ -175,6 +175,10 @@ def any_to_numerical(data, validate=False):
     elif t == str:
         return string_to_numerical(data)
     elif t in [list, tuple]:
+        if len(data) == 1:
+            data = data[0]
+            if is_number(data):
+                return data
         return list_to_array(list(data), validate)
     elif t in [np.int64]:
         return int(data)
