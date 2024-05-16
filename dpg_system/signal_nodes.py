@@ -438,14 +438,38 @@ class SubSampleNode(Node):
         self.input = self.add_input('input', triggers_execution=True)
         self.rate = self.add_input('rate', widget_type='drag_int', default_value=subsampler, min=0, max=math.inf)
         self.output = self.add_output('out')
+        self.output_period = 0
+        self.last_time = time.time()
+        self.add_frame_task()
+        self.forced = False
+        self.active = False
 
     def execute(self):
-        if self.input.fresh_input:
+         if self.input.fresh_input:
+            self.forced = False
+            self.active = True
+            now = time.time()
+            elapsed = now - self.last_time
+            self.last_time = now
+
             self.input.fresh_input = False
             self.sample_count += 1
             if self.sample_count >= self.rate():
                 self.sample_count = 0
                 self.output.send(self.input())
+
+            self.output_period = self.output_period * 0.9 + elapsed * 0.1
+
+    def frame_task(self):
+        if self.active and not self.forced:
+            now = time.time()
+            elapsed = now - self.last_time
+            if elapsed > self.output_period * self.rate():
+                self.last_time = now
+                self.output.send(self.input())
+                self.forced = True
+                self.active = False
+                self.sample_count = 0
 
 
 class NoiseGateNode(Node):
