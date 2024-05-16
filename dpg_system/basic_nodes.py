@@ -1291,10 +1291,10 @@ class ConcatenateNode(Node):
                 self.input_list[i + 1].triggers_execution = False
 
     def execute(self):
-        out_list = self.input_list[0]()
+        out_list = self.input_list[0]().copy()
         if type(out_list) == list:
             for i in range(self.count - 1):
-                l = self.input_list[i + 1]()
+                l = self.input_list[i + 1]().copy()
                 if type(l) == list:
                     out_list += l
             self.output.send(out_list)
