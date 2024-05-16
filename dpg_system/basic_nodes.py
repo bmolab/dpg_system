@@ -1294,9 +1294,9 @@ class ConcatenateNode(Node):
         out_list = self.input_list[0]().copy()
         if type(out_list) == list:
             for i in range(self.count - 1):
-                l = self.input_list[i + 1]().copy()
+                l = self.input_list[i + 1]()
                 if type(l) == list:
-                    out_list += l
+                    out_list += l.copy()
             self.output.send(out_list)
 
 
