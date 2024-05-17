@@ -136,26 +136,6 @@ class OSCManager:
     def get_source_list(self):
         return list(self.sources.keys())
 
-    def connect_my_receivers(self, source):
-        new_receivers = []
-        for r in self.receive_nodes:
-            r_source_name = any_to_string(r.source_name_property())
-            if r_source_name == source.name:
-                print('connect_my_receivers - source name match', source.name, r.address)
-                r.source = source
-                new_receivers.append(r)
-        return new_receivers
-
-    def connect_my_senders(self, target):
-        new_senders = []
-        for s in self.send_nodes:
-            s_target_name = any_to_string(s.target_name_property())
-            if s_target_name == target.name:
-                print('connect_my_senders - target name match', target.name, s.address)
-                s.target = target
-                new_senders.append(s)
-        return new_senders
-
     def connect_send_node_to_target(self, send_node, target):
         if target:
             target.register_send_node(send_node)
@@ -312,6 +292,7 @@ class OSCTargetNode(OSCTarget, Node):
             self.osc_manager.remove_target(self)
             self.name = name
             self.osc_manager.register_target(self)
+            self.osc_manager.connect_new_target_to_send_nodes(self)
 
     def cleanup(self):
         self.destroy_client()
@@ -551,7 +532,6 @@ class OSCSourceNode(OSCThreadingSource, Node):
             self.start_serving()
 
         if name != self.name:
-            print('source changed', name)
             poppers = []
             for address in self.receive_nodes:
                 receive_node = self.receive_nodes[address]
@@ -564,9 +544,10 @@ class OSCSourceNode(OSCThreadingSource, Node):
             self.name = name
             self.osc_manager.register_source(self)
 
-            new_receivers = self.osc_manager.connect_my_receivers(self)
-            for r in new_receivers:
-                self.receive_nodes[r.address] = r
+            self.osc_manager.connect_new_source_to_receive_nodes(self)
+            # new_receivers = self.osc_manager.connect_my_receivers(self)
+            # for r in new_receivers:
+            #     self.receive_nodes[r.address] = r
 
 
         # go to osc_manager and see if any existing receiveNodes refer to this new name
@@ -677,9 +658,10 @@ class OSCDeviceNode(OSCAsyncIOSource, OSCTarget, Node):
             self.osc_manager.remove_target(self)
             self.name = name
             self.osc_manager.register_target(self)
-            new_senders = self.osc_manager.connect_my_senders(self)
-            for s in new_senders:
-                self.send_nodes[s.address] = s
+            self.osc_manager.connect_new_target_to_send_nodes(self)
+            # new_senders = self.osc_manager.connect_my_senders(self)
+            # for s in new_senders:
+            #     self.send_nodes[s.address] = s
         self.source_changed(force=True)
 
     def source_changed(self, force=False):
@@ -705,9 +687,10 @@ class OSCDeviceNode(OSCAsyncIOSource, OSCTarget, Node):
             self.name = name
             self.osc_manager.register_source(self)
 
-            new_receivers = self.osc_manager.connect_my_receivers(self)
-            for r in new_receivers:
-                self.receive_nodes[r.address] = r
+            self.osc_manager.connect_new_source_to_receive_nodes(self)
+            # new_receivers = self.osc_manager.connect_new_source_to_receive_nodes(self)
+            # for r in new_receivers:
+            #     self.receive_nodes[r.address] = r
 
         # go to osc_manager and see if any existing receiveNodes refer to this new name
 
