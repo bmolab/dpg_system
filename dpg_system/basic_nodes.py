@@ -1300,8 +1300,6 @@ class ConcatenateNode(Node):
             self.output.send(out_list)
 
 
-
-
 class JoinNode(Node):
     @staticmethod
     def factory(name, data, args=None):

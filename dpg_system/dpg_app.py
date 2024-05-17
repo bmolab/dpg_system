@@ -724,6 +724,11 @@ class App:
 
                     json.dump(file_container, f, indent=4)
                     self.add_to_recent(self.patches_name, self.patches_path)
+            if current_editor.patcher_node is not None:
+                current_editor.patcher_node.name_option.set(self.patches_name)
+                current_editor.patcher_node.name_changed()
+
+
 
     def save_setup(self, save_path):
         with open(save_path, 'w') as f:

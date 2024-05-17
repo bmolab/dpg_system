@@ -136,6 +136,26 @@ class OSCManager:
     def get_source_list(self):
         return list(self.sources.keys())
 
+    def connect_my_receivers(self, source):
+        new_receivers = []
+        for r in self.receive_nodes:
+            r_source_name = any_to_string(r.source_name_property())
+            if r_source_name == source.name:
+                print('connect_my_receivers - source name match', source.name, r.address)
+                r.source = source
+                new_receivers.append(r)
+        return new_receivers
+
+    def connect_my_senders(self, target):
+        new_senders = []
+        for s in self.send_nodes:
+            s_target_name = any_to_string(s.target_name_property())
+            if s_target_name == target.name:
+                print('connect_my_senders - target name match', target.name, s.address)
+                s.target = target
+                new_senders.append(s)
+        return new_senders
+
     def connect_send_node_to_target(self, send_node, target):
         if target:
             target.register_send_node(send_node)
@@ -522,7 +542,7 @@ class OSCSourceNode(OSCThreadingSource, Node):
             self.output.send(out_list)
 
     def source_changed(self):
-        name = self.source_name_property()
+        name = any_to_string(self.source_name_property())
         port = any_to_int(self.source_port_property())
 
         if port != self.source_port:
@@ -531,6 +551,7 @@ class OSCSourceNode(OSCThreadingSource, Node):
             self.start_serving()
 
         if name != self.name:
+            print('source changed', name)
             poppers = []
             for address in self.receive_nodes:
                 receive_node = self.receive_nodes[address]
@@ -542,6 +563,11 @@ class OSCSourceNode(OSCThreadingSource, Node):
             self.osc_manager.remove_source(self)
             self.name = name
             self.osc_manager.register_source(self)
+
+            new_receivers = self.osc_manager.connect_my_receivers(self)
+            for r in new_receivers:
+                self.receive_nodes[r.address] = r
+
 
         # go to osc_manager and see if any existing receiveNodes refer to this new name
 
@@ -582,7 +608,7 @@ class OSCAsyncIOSourceNode(OSCAsyncIOSource, Node):
             self.output.send(out_list)
 
     def source_changed(self):
-        name = self.source_name_property()
+        name = any_to_string(self.source_name_property())
         port = any_to_int(self.source_port_property())
 
         if port != self.source_port:
@@ -629,10 +655,10 @@ class OSCDeviceNode(OSCAsyncIOSource, OSCTarget, Node):
 
         self.input = self.add_input('osc to send', triggers_execution=True)
 
-        self.name_property = self.add_property('name', widget_type='text_input', default_value=self.name, callback=self.target_changed)
-        self.target_ip_property = self.add_property('ip', widget_type='text_input', default_value=str(self.ip), callback=self.target_changed)
-        self.target_port_property = self.add_property('target port', widget_type='text_input', default_value=str(self.target_port), callback=self.target_changed)
-        self.source_port_property = self.add_property('source port', widget_type='text_input', default_value=str(self.source_port), callback=self.source_changed)
+        self.name_property = self.add_input('name', widget_type='text_input', default_value=self.name, callback=self.target_changed)
+        self.target_ip_property = self.add_input('ip', widget_type='text_input', default_value=str(self.ip), callback=self.target_changed)
+        self.target_port_property = self.add_input('target port', widget_type='text_input', default_value=str(self.target_port), callback=self.target_changed)
+        self.source_port_property = self.add_input('source port', widget_type='text_input', default_value=str(self.source_port), callback=self.source_changed)
         self.output = self.add_output('osc received')
         self.handle_in_loop_option = self.add_option('handle in main loop', widget_type='checkbox', default_value=self.handle_in_loop, callback=self.handle_in_loop_changed)
 
@@ -651,8 +677,12 @@ class OSCDeviceNode(OSCAsyncIOSource, OSCTarget, Node):
             self.osc_manager.remove_target(self)
             self.name = name
             self.osc_manager.register_target(self)
+            new_senders = self.osc_manager.connect_my_senders(self)
+            for s in new_senders:
+                self.send_nodes[s.address] = s
+        self.source_changed(force=True)
 
-    def source_changed(self):
+    def source_changed(self, force=False):
         name = self.name_property()
         port = any_to_int(self.source_port_property())
 
@@ -662,7 +692,7 @@ class OSCDeviceNode(OSCAsyncIOSource, OSCTarget, Node):
             self.start_serving()
             # self.create_server()
 
-        if name != self.name:
+        if name != self.name or force:
             poppers = []
             for address in self.receive_nodes:
                 receive_node = self.receive_nodes[address]
@@ -674,6 +704,10 @@ class OSCDeviceNode(OSCAsyncIOSource, OSCTarget, Node):
             self.osc_manager.remove_source(self)
             self.name = name
             self.osc_manager.register_source(self)
+
+            new_receivers = self.osc_manager.connect_my_receivers(self)
+            for r in new_receivers:
+                self.receive_nodes[r.address] = r
 
         # go to osc_manager and see if any existing receiveNodes refer to this new name
 
@@ -730,10 +764,10 @@ class OSCReceiver(OSCBase):
             if len(args) > 1:
                 self.address = args[1]
 
-    def name_changed(self):
+    def name_changed(self, force=False):
         if self.source_name_property is not None:
-            new_name = self.source_name_property()
-            if new_name != self.name:
+            new_name = any_to_string(self.source_name_property())
+            if new_name != self.name or force:
                 if self.source is not None:
                     self.osc_manager.unregister_receive_node(self)
                 self.name = new_name
@@ -742,7 +776,7 @@ class OSCReceiver(OSCBase):
 
     def address_changed(self):
         if self.source_address_property is not None:
-            new_address = self.source_address_property()
+            new_address = any_to_string(self.source_address_property())
             if new_address != self.address:
                 self.osc_manager.receive_node_address_changed(self, new_address, self.source)
 
@@ -804,10 +838,10 @@ class OSCSender(OSCBase):
         self.target_name_property = None
         self.target_address_property = None
 
-    def name_changed(self):
+    def name_changed(self, force=False):
         if self.target_name_property is not None:
-            new_name = self.target_name_property()
-            if new_name != self.name:
+            new_name = any_to_string(self.target_name_property())
+            if new_name != self.name or force:
                 if self.target is not None:
                     self.osc_manager.unregister_send_node(self)
                 self.name = new_name
@@ -815,7 +849,7 @@ class OSCSender(OSCBase):
 
     def address_changed(self):
         if self.target_address_property is not None:
-            new_address = self.target_address_property()
+            new_address = any_to_string(self.target_address_property())
             if new_address != self.address:
                 self.osc_manager.unregister_send_node(self)
                 self.address = new_address
@@ -990,19 +1024,19 @@ class OSCValueNode(OSCReceiver, OSCSender, ValueNode):
 
     def name_changed(self):
         OSCReceiver.name_changed(self)
-        OSCSender.name_changed(self)
-        self.outputs[0].set_label(self.target_name_property() + ':' + self.target_address_property())
+        OSCSender.name_changed(self, force=True)
+        self.outputs[0].set_label(any_to_string(self.target_name_property()) + ':' + any_to_string(self.target_address_property()))
 
     def address_changed(self):
         OSCReceiver.address_changed(self)
         OSCSender.address_changed(self)
-        self.outputs[0].set_label(self.target_name_property() + ':' + self.target_address_property())
+        self.outputs[0].set_label( any_to_string(self.target_name_property()) + ':' + any_to_string(self.target_address_property()))
 
     def custom_create(self, from_file):
         if self.name != '':
             self.find_target_node(self.name)
             self.find_source_node(self.name)
-        self.output.set_label(self.target_name_property() + ':' + self.target_address_property())
+        self.output.set_label( any_to_string(self.target_name_property()) + ':' + any_to_string(self.target_address_property()))
 
     def cleanup(self):
         OSCSender.cleanup(self)
@@ -1022,6 +1056,26 @@ class OSCValueNode(OSCReceiver, OSCSender, ValueNode):
                 data = data.replace('_', ' ')
         self.inputs[0].receive_data(data)
         ValueNode.execute(self)
+
+    def variable_update(self):
+        if self.variable is not None:
+            data = self.variable.get_value()
+            self.input.set(data, propagate=False)
+            t = type(data)
+            if t not in [str, int, float, bool, np.int64, np.double]:
+                data = list(data)
+                data, homogenous, types = list_to_hybrid_list(data)
+            if self.label == 'osc_message' and t == str:
+                data = data.split(' ')
+                data, homogenous, types = list_to_hybrid_list(data)
+            elif self.label == 'osc_string':
+                data = any_to_string(data)
+                if self.space_replacement():
+                    data = data.replace(' ', '_')
+            if data is not None:
+                if self.target and self.address != '':
+                    self.target.send_message(self.address, data)
+        self.update(propagate=False)
 
     def execute(self):
         ValueNode.execute(self)
@@ -1057,19 +1111,19 @@ class OSCButtonNode(OSCReceiver, OSCSender, ButtonNode):
 
     def name_changed(self):
         OSCReceiver.name_changed(self)
-        OSCSender.name_changed(self)
-        self.output.set_label(self.target_name_property() + ':' + self.target_address_property())
+        OSCSender.name_changed(self, force=True)
+        self.output.set_label( any_to_string(self.target_name_property()) + ':' + any_to_string(self.target_address_property()))
 
     def address_changed(self):
         OSCReceiver.address_changed(self)
         OSCSender.address_changed(self)
-        self.output.set_label(self.target_name_property() + ':' + self.target_address_property())
+        self.output.set_label( any_to_string(self.target_name_property()) + ':' + any_to_string(self.target_address_property()))
 
     def custom_create(self, from_file):
         if self.name != '':
             self.find_target_node(self.name)
             self.find_source_node(self.name)
-        self.output.set_label(self.target_name_property() + ':' + self.target_address_property())
+        self.output.set_label( any_to_string(self.target_name_property()) + ':' + any_to_string(self.target_address_property()))
 
     def cleanup(self):
         OSCSender.cleanup(self)
@@ -1105,19 +1159,19 @@ class OSCToggleNode(OSCReceiver, OSCSender, ToggleNode):
 
     def name_changed(self):
         OSCReceiver.name_changed(self)
-        OSCSender.name_changed(self)
-        self.output.set_label(self.target_name_property() + ':' + self.source_address_property())
+        OSCSender.name_changed(self, force=True)
+        self.output.set_label( any_to_string(self.target_name_property()) + ':' + any_to_string(self.source_address_property()))
 
     def address_changed(self):
         OSCReceiver.address_changed(self)
         OSCSender.address_changed(self)
-        self.output.set_label(self.target_name_property() + ':' + self.source_address_property())
+        self.output.set_label( any_to_string(self.target_name_property()) + ':' + any_to_string(self.source_address_property()))
 
     def custom_create(self, from_file):
         if self.name != '':
             self.find_target_node(self.name)
             self.find_source_node(self.name)
-        self.output.set_label(self.target_name_property() + ':' + self.target_address_property())
+        self.output.set_label( any_to_string(self.target_name_property()) + ':' + any_to_string(self.target_address_property()))
 
     def cleanup(self):
         OSCSender.cleanup(self)
@@ -1153,19 +1207,19 @@ class OSCMenuNode(OSCReceiver, OSCSender, MenuNode):
 
     def name_changed(self):
         OSCReceiver.name_changed(self)
-        OSCSender.name_changed(self)
-        self.output.set_label(self.target_name_property() + ':' + self.source_address_property())
+        OSCSender.name_changed(self, force=True)
+        self.output.set_label( any_to_string(self.target_name_property()) + ':' + any_to_string(self.source_address_property()))
 
     def address_changed(self):
         OSCReceiver.address_changed(self)
         OSCSender.address_changed(self)
-        self.output.set_label(self.target_name_property() + ':' + self.source_address_property())
+        self.output.set_label( any_to_string(self.target_name_property()) + ':' + any_to_string(self.source_address_property()))
 
     def custom_create(self, from_file):
         if self.name != '':
             self.find_target_node(self.name)
             self.find_source_node(self.name)
-        self.output.set_label(self.target_name_property() + ':' + self.target_address_property())
+        self.output.set_label( any_to_string(self.target_name_property()) + ':' + any_to_string(self.target_address_property()))
 
     def cleanup(self):
         OSCSender.cleanup(self)
@@ -1200,19 +1254,19 @@ class OSCRadioButtonsNode(OSCReceiver, OSCSender, RadioButtonsNode):
 
     def name_changed(self):
         OSCReceiver.name_changed(self)
-        OSCSender.name_changed(self)
-        self.output.set_label(self.target_name_property() + ':' + self.source_address_property())
+        OSCSender.name_changed(self, force=True)
+        self.output.set_label( any_to_string(self.target_name_property()) + ':' + any_to_string(self.source_address_property()))
 
     def address_changed(self):
         OSCReceiver.address_changed(self)
         OSCSender.address_changed(self)
-        self.output.set_label(self.target_name_property() + ':' + self.source_address_property())
+        self.output.set_label( any_to_string(self.target_name_property()) + ':' + any_to_string(self.source_address_property()))
 
     def custom_create(self, from_file):
         if self.name != '':
             self.find_target_node(self.name)
             self.find_source_node(self.name)
-        self.output.set_label(self.target_name_property() + ':' + self.target_address_property())
+        self.output.set_label( any_to_string(self.target_name_property()) + ':' + any_to_string(self.target_address_property()))
 
     def cleanup(self):
         OSCSender.cleanup(self)

@@ -1028,6 +1028,7 @@ class ValueNode(Node):
                         output_data = output_data.split(' ')
                         if len(output_data) == 1:
                             output_value = output_data[0]
+                            output_data = output_value
                 if self.input.widget.widget in ['drag_float', 'drag_int', 'input_float', 'input_int', 'slider_float', 'slider_int', 'knob_float', 'knob_int']:
                     if not is_number(output_data):
                         return
