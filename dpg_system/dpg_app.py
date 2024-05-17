@@ -700,6 +700,7 @@ class App:
         current_editor = self.get_current_editor()
         if current_editor is not None:
             if len(current_editor.subpatches) == 0:
+                current_editor.set_path(save_path)
                 current_editor.save(save_path)
                 self.patches_name = self.get_current_editor().patch_name
                 self.patches_path = save_path
@@ -717,6 +718,7 @@ class App:
 
                     self.patches_name = patch_name
                     current_editor.set_name(patch_name)
+                    current_editor.set_path(save_path)
                     file_container = {}
                     file_container['name'] = self.patches_name
                     file_container['path'] = self.patches_path

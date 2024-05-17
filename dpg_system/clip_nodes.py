@@ -41,6 +41,7 @@ class ClipEmbeddingNode(ClipNode):
             tokens = self.__class__.tokenizer([input], padding=True, return_tensors="pt")
             if tokens['input_ids'].shape[1] > 77:
                 tokens['input_ids'] = tokens['input_ids'][:, :77]
+                tokens['attention_mask'] = tokens['attention_mask'][:, :77]
             outputs = self.__class__.model(**tokens)
             pooled_output = outputs.pooler_output
             embedding = pooled_output[0].numpy()
@@ -64,6 +65,7 @@ class ClipEmbeddingDistanceNode(ClipNode):
         tokens = self.__class__.tokenizer([input], padding=True, return_tensors="pt")
         if tokens['input_ids'].shape[1] > 77:
             tokens['input_ids'] = tokens['input_ids'][:, :77]
+            tokens['attention_mask'] = tokens['attention_mask'][:, :77]
         outputs = self.__class__.model(**tokens)
         pooled_output = outputs.pooler_output
         euclidean_length = torch.pow(pooled_output[0], 2).sum()

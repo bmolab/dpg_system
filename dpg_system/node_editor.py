@@ -58,6 +58,9 @@ class NodeEditor:
         self.patch_name = name
         self.app.set_editor_tab_title(self, name)
 
+    def set_path(self, path):
+        self.file_path = path
+
     def add_subpatch(self, subpatch_editor):
         self.subpatches.append(subpatch_editor)
 
@@ -912,7 +915,6 @@ class NodeEditor:
             patch_container['parent_node_uuid'] = self.patcher_node.uuid
         if self.patch_name != '':
             patch_container['name'] = self.patch_name
-            print(self.patch_name)
         if self.file_path != '':
             patch_container['path'] = self.file_path
 
