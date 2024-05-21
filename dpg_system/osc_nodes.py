@@ -125,6 +125,7 @@ class OSCManager:
                 self.connect_new_source_to_receive_nodes(source)
 
     def remove_source(self, source):
+        source.disconnect_from_receive_nodes()
         if source.name in self.sources:
             self.sources.pop(source.name)
 
@@ -164,7 +165,7 @@ class OSCManager:
         for receive_node in self.receive_nodes:
             if receive_node.name == source.name:
                 source.register_receive_node(receive_node)
-                receive_node.source = source
+                # receive_node.source = source
 
     def receive_node_address_changed(self, receive_node, new_address, source):
         if source is not None:
@@ -234,25 +235,37 @@ class OSCTarget(OSCBase):
         # self.osc_manager.remove_target(self)
         self.client = None
 
+    # this is really just to allow us who might call us so that we can tell them we are gone.
+    def register_send_node(self, send_node):
+        self.send_nodes[send_node.address] = send_node
+        send_node.set_target(self)
+
+    def unregister_send_node(self, send_node):
+        if send_node.address in self.send_nodes:
+            self.send_nodes.pop(send_node.address)
+
     def disconnect_from_send_nodes(self):
         poppers = []
         for send_address in self.send_nodes:
             send_node = self.send_nodes[send_address]
-            send_node.target_going_away(self)
-            poppers.append(send_address)
+            if send_node is not None:
+                send_node.target_going_away(self)
+                poppers.append(send_address)
         for pop_address in poppers:
             self.send_nodes.pop(pop_address)
 
-    # this is really just to allow us who might call us so that we can tell them we are gone.
-    def register_send_node(self, send_node):
-        send_address = send_node.address
-        self.send_nodes[send_address] = send_node
-        send_node.set_target(self)
+    def handle_target_change(self, name, port, ip, force=False):
+        if port != self.target_port or ip != self.ip:
+            self.destroy_client()
+            self.target_port = port
+            self.ip = ip
+            self.create_client()
 
-    def unregister_send_node(self, send_node):
-        address = send_node.address
-        if address in self.send_nodes:
-            self.send_nodes.pop(address)
+        if name != self.name or force:
+            self.osc_manager.remove_target(self)
+            self.name = name
+            self.osc_manager.register_target(self)
+            self.osc_manager.connect_new_target_to_send_nodes(self)
 
     def send_message(self, address, args_):
         if self.client is not None:
@@ -260,6 +273,7 @@ class OSCTarget(OSCBase):
             if t not in [str]:
                 args_ = any_to_list(args_)
             self.client.send_message(address, args_)
+
 
 
 class OSCTargetNode(OSCTarget, Node):
@@ -282,17 +296,18 @@ class OSCTargetNode(OSCTarget, Node):
         port = any_to_int(self.target_port_property())
         ip = self.target_ip_property()
 
-        if port != self.target_port or ip != self.ip:
-            self.destroy_client()
-            self.target_port = port
-            self.ip = ip
-            self.create_client()
-
-        if name != self.name:
-            self.osc_manager.remove_target(self)
-            self.name = name
-            self.osc_manager.register_target(self)
-            self.osc_manager.connect_new_target_to_send_nodes(self)
+        self.handle_target_change(name, port, ip)
+        # if port != self.target_port or ip != self.ip:
+        #     self.destroy_client()
+        #     self.target_port = port
+        #     self.ip = ip
+        #     self.create_client()
+        #
+        # if name != self.name:
+        #     self.osc_manager.remove_target(self)
+        #     self.name = name
+        #     self.osc_manager.register_target(self)
+        #     self.osc_manager.connect_new_target_to_send_nodes(self)
 
     def cleanup(self):
         self.destroy_client()
@@ -392,10 +407,34 @@ class OSCSource(OSCBase):
 
     def register_receive_node(self, receive_node):
         self.receive_nodes[receive_node.address] = receive_node
+        receive_node.set_source(self)  # would match OSCTarget
 
     def unregister_receive_node(self, receive_node):
         if receive_node.address in self.receive_nodes:
             self.receive_nodes.pop(receive_node.address)
+
+    def disconnect_from_receive_nodes(self):
+        poppers = []
+        for address in self.receive_nodes:
+            receive_node = self.receive_nodes[address]
+            if receive_node is not None:
+                receive_node.source_going_away(self)
+                poppers.append(address)
+        for address in poppers:
+            self.receive_nodes.pop(address)
+
+    def handle_source_change(self, name, port, force=False):
+        if port != self.source_port:
+            self.destroy_server()
+            self.source_port = port
+            self.start_serving()
+
+        if name != self.name or force:
+            # self.disconnect_from_receive_nodes()
+            self.osc_manager.remove_source(self)
+            self.name = name
+            self.osc_manager.register_source(self)
+            self.osc_manager.connect_new_source_to_receive_nodes(self)
 
 
 class OSCThreadingSource(OSCSource):
@@ -526,25 +565,26 @@ class OSCSourceNode(OSCThreadingSource, Node):
         name = any_to_string(self.source_name_property())
         port = any_to_int(self.source_port_property())
 
-        if port != self.source_port:
-            self.destroy_server()
-            self.source_port = port
-            self.start_serving()
-
-        if name != self.name:
-            poppers = []
-            for address in self.receive_nodes:
-                receive_node = self.receive_nodes[address]
-                if receive_node is not None:
-                    receive_node.source_going_away(self)
-                    poppers.append(address)
-            for address in poppers:
-                self.receive_nodes.pop(address)
-            self.osc_manager.remove_source(self)
-            self.name = name
-            self.osc_manager.register_source(self)
-
-            self.osc_manager.connect_new_source_to_receive_nodes(self)
+        self.handle_source_change(name, port)
+        # if port != self.source_port:
+        #     self.destroy_server()
+        #     self.source_port = port
+        #     self.start_serving()
+        #
+        # if name != self.name:
+        #     poppers = []
+        #     for address in self.receive_nodes:
+        #         receive_node = self.receive_nodes[address]
+        #         if receive_node is not None:
+        #             receive_node.source_going_away(self)
+        #             poppers.append(address)
+        #     for address in poppers:
+        #         self.receive_nodes.pop(address)
+        #     self.osc_manager.remove_source(self)
+        #     self.name = name
+        #     self.osc_manager.register_source(self)
+        #
+        #     self.osc_manager.connect_new_source_to_receive_nodes(self)
             # new_receivers = self.osc_manager.connect_my_receivers(self)
             # for r in new_receivers:
             #     self.receive_nodes[r.address] = r
@@ -592,24 +632,25 @@ class OSCAsyncIOSourceNode(OSCAsyncIOSource, Node):
         name = any_to_string(self.source_name_property())
         port = any_to_int(self.source_port_property())
 
-        if port != self.source_port:
-            self.stop_serving()
-            self.source_port = port
-            self.start_serving()
-            # self.create_server()
-
-        if name != self.name:
-            poppers = []
-            for address in self.receive_nodes:
-                receive_node = self.receive_nodes[address]
-                if receive_node is not None:
-                    receive_node.source_going_away(self)
-                    poppers.append(address)
-            for address in poppers:
-                self.receive_nodes.pop(address)
-            self.osc_manager.remove_source(self)
-            self.name = name
-            self.osc_manager.register_source(self)
+        self.handle_source_change(name, port)
+        # if port != self.source_port:
+        #     self.stop_serving()
+        #     self.source_port = port
+        #     self.start_serving()
+        #     # self.create_server()
+        #
+        # if name != self.name:
+        #     poppers = []
+        #     for address in self.receive_nodes:
+        #         receive_node = self.receive_nodes[address]
+        #         if receive_node is not None:
+        #             receive_node.source_going_away(self)
+        #             poppers.append(address)
+        #     for address in poppers:
+        #         self.receive_nodes.pop(address)
+        #     self.osc_manager.remove_source(self)
+        #     self.name = name
+        #     self.osc_manager.register_source(self)
 
         # go to osc_manager and see if any existing receiveNodes refer to this new name
 
@@ -648,46 +689,49 @@ class OSCDeviceNode(OSCAsyncIOSource, OSCTarget, Node):
         port = any_to_int(self.target_port_property())
         ip = self.target_ip_property()
 
-        if port != self.target_port or ip != self.ip:
-            self.destroy_client()
-            self.target_port = port
-            self.ip = ip
-            self.create_client()
-
-        if name != self.name:
-            self.osc_manager.remove_target(self)
-            self.name = name
-            self.osc_manager.register_target(self)
-            self.osc_manager.connect_new_target_to_send_nodes(self)
-            # new_senders = self.osc_manager.connect_my_senders(self)
-            # for s in new_senders:
-            #     self.send_nodes[s.address] = s
+        self.handle_target_change(name, port, ip)
+        # if port != self.target_port or ip != self.ip:
+        #     self.destroy_client()
+        #     self.target_port = port
+        #     self.ip = ip
+        #     self.create_client()
+        #
+        # if name != self.name:
+        #     self.osc_manager.remove_target(self)
+        #     self.name = name
+        #     self.osc_manager.register_target(self)
+        #     self.osc_manager.connect_new_target_to_send_nodes(self)
+        #     # new_senders = self.osc_manager.connect_my_senders(self)
+        #     # for s in new_senders:
+        #     #     self.send_nodes[s.address] = s
         self.source_changed(force=True)
 
     def source_changed(self, force=False):
         name = self.name_property()
         port = any_to_int(self.source_port_property())
 
-        if port != self.source_port:
-            self.stop_serving()
-            self.source_port = port
-            self.start_serving()
-            # self.create_server()
+        self.handle_source_change(name, port, force=force)
 
-        if name != self.name or force:
-            poppers = []
-            for address in self.receive_nodes:
-                receive_node = self.receive_nodes[address]
-                if receive_node is not None:
-                    receive_node.source_going_away(self)
-                    poppers.append(address)
-            for address in poppers:
-                self.receive_nodes.pop(address)
-            self.osc_manager.remove_source(self)
-            self.name = name
-            self.osc_manager.register_source(self)
-
-            self.osc_manager.connect_new_source_to_receive_nodes(self)
+        # if port != self.source_port:
+        #     self.stop_serving()
+        #     self.source_port = port
+        #     self.start_serving()
+        #     # self.create_server()
+        #
+        # if name != self.name or force:
+        #     poppers = []
+        #     for address in self.receive_nodes:
+        #         receive_node = self.receive_nodes[address]
+        #         if receive_node is not None:
+        #             receive_node.source_going_away(self)
+        #             poppers.append(address)
+        #     for address in poppers:
+        #         self.receive_nodes.pop(address)
+        #     self.osc_manager.remove_source(self)
+        #     self.name = name
+        #     self.osc_manager.register_source(self)
+        #
+        #     self.osc_manager.connect_new_source_to_receive_nodes(self)
             # new_receivers = self.osc_manager.connect_new_source_to_receive_nodes(self)
             # for r in new_receivers:
             #     self.receive_nodes[r.address] = r
@@ -762,6 +806,9 @@ class OSCReceiver(OSCBase):
             new_address = any_to_string(self.source_address_property())
             if new_address != self.address:
                 self.osc_manager.receive_node_address_changed(self, new_address, self.source)
+
+    def set_source(self, source):
+        self.source = source
 
     def find_source_node(self, name):
         if self.osc_manager is not None:
