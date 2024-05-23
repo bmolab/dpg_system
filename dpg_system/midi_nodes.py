@@ -52,7 +52,7 @@ class MidiInPort:
                     self.port = mido.open_input(self.port_name, callback=self.receive)
                     MidiInPort.ports[self.port_name] = self
                 except Exception as e:
-                    print('could not find port', self.port_name)
+                    print('MidiInPort init: exception: could not find in port', self.port_name)
                     self.port = None
         else:
             keys = list(MidiInPort.ports.keys())
@@ -62,7 +62,7 @@ class MidiInPort:
                 try:
                     self.port = mido.open_input(callback=self.receive)
                 except Exception as e:
-                    print('could not find MIDI in port')
+                    print('MidiInPort init: exception could not find MIDI in port')
                     self.port = None
 
         if self.port:
@@ -434,7 +434,7 @@ class MidiOutPort:
                 try:
                     self.port = mido.open_output()
                 except Exception as e:
-                    print('could not find MIDI out port')
+                    print('MidiOutPort init exception could not find MIDI out port', self.port_name)
                     self.port = None
 
             if self.port:
