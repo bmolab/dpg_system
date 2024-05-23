@@ -488,7 +488,7 @@ class MidiOut:
         if self.out_port_name in MidiOutPort.ports:
             self.out_port = MidiOutPort.ports[self.out_port_name]
             print('found out port', self.out_port_name, 'in', MidiOutPort.ports.keys())
-            print(MidiOutPort.ports[self.out_port_name].name)
+            # print(MidiOutPort.ports[self.out_port_name].name)
         else:
             self.out_port = MidiOutPort(self.out_port_name)
             print('created out port', self.out_port_name, 'ports:', MidiOutPort.ports.keys())
