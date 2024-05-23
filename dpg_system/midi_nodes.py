@@ -138,11 +138,15 @@ class MidiIn:
                 self.in_port.remove_client(self, code=code)
         if self.in_port_name in MidiInPort.ports:
             self.in_port = MidiInPort.ports[self.in_port_name]
+            print('found in port')
         else:
             self.in_port = MidiInPort(self.in_port_name)
+            print('created in port')
         if self.in_port is not None:
             for code in self.codes:
                 self.in_port.add_client(self, code=code)
+        else:
+            print('no in port')
 
 
 class MidiInNode(MidiIn, Node):
@@ -473,8 +477,10 @@ class MidiOut:
     def port_changed(self):
         if self.out_port_name in MidiOutPort.ports:
             self.out_port = MidiOutPort.ports[self.out_port_name]
+            print('found out port')
         else:
             self.out_port = MidiOutPort(self.out_port_name)
+            print('created out port')
 
 
 class MidiOutNode(MidiOut, Node):
