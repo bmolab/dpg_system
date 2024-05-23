@@ -1001,6 +1001,7 @@ class MPD218Node(MidiDeviceNode):
 
         self.last_pad = -1
         self.active_pad = -1
+        self.disable_all()
 
     def create_properties_inputs_and_outputs(self):
         pass
@@ -1022,6 +1023,11 @@ class MPD218Node(MidiDeviceNode):
             controller_value = midi_bytes[2]
             self.controller_out.send([controller_code, controller_value])
 
+    def disable_all(self):
+        for pad in range(16):
+            midi_data = [0x80, pad, 0]
+            msg = mido.Message.from_bytes(midi_data)
+            self.out_port.send(msg)
 
     def disable_pressed(self):
         if self.last_pad != -1:
