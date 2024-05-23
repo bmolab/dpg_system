@@ -430,6 +430,7 @@ class MidiOutPort:
             keys = list(MidiOutPort.ports.keys())
             if len(keys) > 0:
                 self.port = MidiOutPort.ports[keys[0]].port
+                print('MidiOutPort self-assigned', MidiOutPort.ports[keys[0]].name)
             else:
                 try:
                     self.port = mido.open_output()
