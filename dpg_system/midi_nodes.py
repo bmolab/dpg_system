@@ -141,7 +141,7 @@ class MidiIn:
             print('found in port', self.in_port_name, 'in', MidiInPort.ports.keys())
         else:
             self.in_port = MidiInPort(self.in_port_name)
-            print('created in port')
+            print('created in port', self.in_port_name, 'ports:', MidiInPort.ports.keys())
         if self.in_port is not None:
             for code in self.codes:
                 self.in_port.add_client(self, code=code)
@@ -480,7 +480,7 @@ class MidiOut:
             print('found out port', self.out_port_name, 'in', MidiOutPort.ports.keys())
         else:
             self.out_port = MidiOutPort(self.out_port_name)
-            print('created out port')
+            print('created out port', self.out_port_name, 'ports:', MidiOutPort.ports.keys())
 
 
 class MidiOutNode(MidiOut, Node):
