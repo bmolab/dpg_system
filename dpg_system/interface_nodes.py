@@ -329,7 +329,7 @@ class PresetsNode(Node):
         editor = self.my_editor
         remember_mode = self.remember_mode()
         current_preset_index = string_to_int(self.radio_group()) - 1
-        if len(self.presets) > current_preset_index + 1:
+        if len(self.presets) >= current_preset_index + 1:
             if self.presets[current_preset_index] is None:
                 self.presets[current_preset_index] = {}
             if remember_mode == 'patch':
@@ -388,7 +388,7 @@ class PresetsNode(Node):
         remember_mode = self.remember_mode()
         self.preset_clipboard = self.copy_to_clipboard()
         current_preset_index = string_to_int(self.radio_group()) - 1
-        if len(self.presets) > current_preset_index + 1:
+        if len(self.presets) >= current_preset_index + 1:
             if self.presets[current_preset_index] is None:
                 return
             if remember_mode == 'patch':
