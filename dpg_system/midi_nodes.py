@@ -996,6 +996,7 @@ class MPD218Node(MidiDeviceNode):
         force_args = ['MPD218 Port A']
         super().__init__(label, data, force_args)
 
+        self.select_in = self.add_input('select', triggers_execution=True)
         self.pad_out = self.add_output('pad')
         self.controller_out = self.add_output('controller')
 
@@ -1042,5 +1043,9 @@ class MPD218Node(MidiDeviceNode):
         msg = mido.Message.from_bytes(midi_data)
         self.out_port.send(msg)
         self.pad_out.send(pad)
+
+    def execute(self):
+        selection = self.select_in()
+        self.enable(selection)
 
 
