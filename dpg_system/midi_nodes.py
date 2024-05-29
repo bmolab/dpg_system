@@ -1045,6 +1045,7 @@ class MPD218Node(MidiDeviceNode):
         self.pad_out.send(pad)
 
     def execute(self):
+        self.disable_all()
         selection = self.select_in()
         self.enable(selection)
 
