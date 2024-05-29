@@ -1936,3 +1936,4 @@ class GLButtonGridNode(GLNode):
             glCallList(self.display_list)
         glColor4f(1.0, 1.0, 1.0, 1.0)
         glEnable(GL_LIGHTING)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
