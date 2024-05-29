@@ -24,6 +24,7 @@ def register_gl_nodes():
     Node.app.register_node('gl_text', GLTextNode.factory)
     Node.app.register_node('gl_billboard', GLBillboard.factory)
     Node.app.register_node('gl_rotation_disk', GLXYZDiskNode.factory)
+    Node.app.register_node('gl_button_grid', GLButtonGridNode.factory)
 
 class GLCommandParser:
     def __init__(self):
@@ -1857,3 +1858,81 @@ class GLXYZDiskNode(GLQuadricNode):
         # glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, hold_ambient_material)
         # glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, hold_diffuse_material)
 
+
+class GLButtonGridNode(GLNode):
+    @staticmethod
+    def factory(node_name, data, args=None):
+        node = GLButtonGridNode(node_name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.display_list = -1
+        self.initialized = False
+        self.new_selection = True
+        self.selection = 0
+        self.selection_input = self.add_input('selection', widget_type='drag_int', default_value=self.selection, callback=self.display_changed)
+        self.position_x_input = self.add_input('position_x', widget_type='drag_float', default_value=0.0,
+                                               callback=self.display_changed)
+        self.position_y_input = self.add_input('position_y', widget_type='drag_float', default_value=0.0,
+                                               callback=self.display_changed)
+        self.spacing_input = self.add_input('spacing', widget_type='drag_float', default_value=0.10, callback=self.display_changed)
+        self.text_alpha_input = self.add_input('alpha', widget_type='drag_float', default_value=1.0,
+                                               callback=self.display_changed)
+        self.scale_input = self.add_input('scale', widget_type='drag_float', default_value=1.0,
+                                          callback=self.display_changed)
+
+
+    def display_changed(self):
+        self.selection = self.selection_input()
+        self.new_selection = True
+
+    def create_call_list(self, which_highlight):
+        self.space = self.spacing_input()
+        if self.display_list != -1:
+            glDeleteLists(self.display_list, 1)
+        self.display_list = glGenLists(1)
+
+        pos = [self.position_x_input(), self.position_y_input()]
+        scale = self.scale_input()
+
+        glNewList(self.display_list, GL_COMPILE)
+
+        glEnable(GL_BLEND)
+        glLineWidth(2.0)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+        glColor4f(1.0, 1.0, 1.0, self.text_alpha_input())
+        glBegin(GL_QUADS)
+
+        for row in range(4):
+            for column in range(4):
+                button_id = row * 4 + column
+                fill = False
+                if which_highlight == button_id:
+                    fill = True
+                if fill:
+                    glColor4f(1.0, 0.0, 0.0, self.text_alpha_input())
+                else:
+                    glColor4f(0.5, 0.5, 0.5, self.text_alpha_input())
+                glVertex2f(column * scale + pos[0], row * scale + pos[1])
+                glVertex2f(column * scale + pos[0], (row + 1) * scale - scale * self.space + pos[1])
+                glVertex2f((column + 1) * scale - scale * self.space + pos[0], (row + 1) * scale - scale * self.space + pos[1])
+                glVertex2f((column + 1) * scale - scale * self.space + pos[0], row * scale + pos[1])
+
+        glEnd()
+        glColor4f(1.0, 1.0, 1.0, 1.0)
+        glEndList()
+
+    def draw(self):
+        if self.new_selection:
+            self.create_call_list(self.selection)
+            self.new_selection = False
+
+        glTranslatef(0, 0, -2)
+        glDisable(GL_LIGHTING)
+        glColor4f(1.0, 1.0, 1.0, self.text_alpha_input())
+        if self.display_list != -1:
+            glCallList(self.display_list)
+        glColor4f(1.0, 1.0, 1.0, 1.0)
+        glEnable(GL_LIGHTING)
