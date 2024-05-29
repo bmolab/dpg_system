@@ -1876,10 +1876,13 @@ class GLButtonGridNode(GLNode):
                                                callback=self.display_changed)
         self.position_y_input = self.add_input('position_y', widget_type='drag_float', default_value=0.0,
                                                callback=self.display_changed)
-        self.spacing_input = self.add_input('spacing', widget_type='drag_float', default_value=0.10, callback=self.display_changed)
+        self.spacing_input = self.add_input('spacing', widget_type='drag_float', default_value=0.20, callback=self.display_changed)
+        self.line_thickness_input = self.add_input('thickness', widget_type='drag_int', default_value=4,
+                                            callback=self.display_changed)
+
         self.text_alpha_input = self.add_input('alpha', widget_type='drag_float', default_value=1.0,
                                                callback=self.display_changed)
-        self.scale_input = self.add_input('scale', widget_type='drag_float', default_value=1.0,
+        self.scale_input = self.add_input('scale', widget_type='drag_float', default_value=.1,
                                           callback=self.display_changed)
 
 
@@ -1899,7 +1902,7 @@ class GLButtonGridNode(GLNode):
         glNewList(self.display_list, GL_COMPILE)
 
         glEnable(GL_BLEND)
-        glLineWidth(2.0)
+        glLineWidth(self.line_thickness_input())
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
         glColor4f(1.0, 1.0, 1.0, self.text_alpha_input())
