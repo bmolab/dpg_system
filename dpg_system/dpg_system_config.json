@@ -2,7 +2,7 @@
   "OSC": true,
   "OpenGL": true,
   "OpenCV": true,
-  "ElevenLabs": true,
+  "ElevenLabs": false,
   "MoveSense": true,
   "MoCap": true,
   "SpaCy": true,

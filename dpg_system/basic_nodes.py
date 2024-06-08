@@ -73,6 +73,7 @@ def register_basic_nodes():
     Node.app.register_node('ord', ASCIIConverterNode.factory)
     Node.app.register_node('printable', PrintableNode.factory)
     Node.app.register_node('present', PresentationModeNode.factory)
+    Node.app.register_node('text_file', TextFileNode.factory)
 
 
 # DeferNode -- delays received input until next frame
@@ -2135,6 +2136,100 @@ class CollectionNode(Node):
                         self.collection[index] = data
                 else:
                     self.collection[index] = data
+
+
+def save_text_file_callback(sender, app_data):
+    global save_path
+    if 'file_path_name' in app_data:
+        save_path = app_data['file_path_name']
+        text_file_node = dpg.get_item_user_data(sender)
+        if save_path != '':
+            text_file_node.save_data(save_path)
+    else:
+        print('no file chosen')
+    dpg.delete_item(sender)
+    Node.app.active_widget = -1
+
+
+def load_text_file_callback(sender, app_data):
+    global load_path
+    if 'file_path_name' in app_data:
+        load_path = app_data['file_path_name']
+        text_file_node = dpg.get_item_user_data(sender)
+        if load_path != '':
+            text_file_node.load_data(load_path)
+    else:
+        print('no file chosen')
+    dpg.delete_item(sender)
+    Node.app.active_widget = -1
+
+
+class TextFileNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TextFileNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.text_contexts = ''
+        self.file_name = ''
+        self.save_pointer = -1
+        self.read_pointer = -1
+
+        self.file_name = self.arg_as_string(default_value='untitled')
+
+        self.dump_button = self.add_input('output', widget_type='button', triggers_execution=True)
+        self.load_button = self.add_input('load', widget_type='button', callback=self.load_message)
+        self.save_button = self.add_input('save', widget_type='button', callback=self.save_message)
+
+        self.file_name_property = self.add_property('name', widget_type='text_input', width=200, default_value=self.file_name)
+        self.output = self.add_output("out")
+
+    def save_dialog(self):
+        with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, user_data=self, callback=save_text_file_callback,
+                             tag="text_dialog_id"):
+            dpg.add_file_extension(".txt")
+
+    def save_data(self, path):
+        with open(path, 'w+') as f:
+            f.write(self.text_contexts)
+        self.file_name_property.set(path)
+
+    def save_message(self, message='', data=[]):
+        if len(data) > 0:
+            path = data[0]
+            self.save_data(path)
+        else:
+            self.save_dialog()
+
+    def save_custom(self, container):
+        container['collection'] = self.collection
+
+    def load_custom(self, container):
+        if 'collection' in container:
+            self.collection = container['collection']
+
+    def load_dialog(self):
+        with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, user_data=self, callback=load_text_file_callback,
+                             tag="text_dialog_id"):
+            dpg.add_file_extension(".txt")
+
+    def load_message(self, message='', data=[]):
+        if len(data) > 0:
+            path = data[0]
+            self.load_data(path)
+        else:
+            self.load_dialog()
+
+    def load_data(self, path):
+        with open(path, 'r') as f:
+            self.text_contexts = f.read()
+        self.file_name_property.set(path)
+
+    def execute(self):
+        self.output.send(self.text_contexts)
 
 
 class RepeatNode(Node):

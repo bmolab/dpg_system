@@ -101,37 +101,49 @@ class ElevenLabsNode(Node):
 
         self.text_input = self.add_input('text to speak', triggers_execution=True)
 
-        self.client = ElevenLabs(api_key=api_key)
-        self.voices = self.client.voices.get_all()
-        self.models = self.client.models.get_all()
-        self.voice_name = 'David'
-        self.active = False
-        self.audio_stream = None
-        if len(args) > 0:
-            voice_name = any_to_string(args[0])
-        else:
-            voice_name = self.voice_name
-        for voice in self.voices.voices:
-            if voice.name == voice_name:
-                self.voice_name = voice_name
-                self.voice_id = voice.voice_id
-                break
+        try:
+            self.client = ElevenLabs(api_key=api_key)
+            self.voices = self.client.voices.get_all()
+            self.models = self.client.models.get_all()
+            self.voice_name = 'David'
+            self.active = False
+            self.audio_stream = None
+            if len(args) > 0:
+                voice_name = any_to_string(args[0])
+            else:
+                voice_name = self.voice_name
+            for voice in self.voices.voices:
+                if voice.name == voice_name:
+                    self.voice_name = voice_name
+                    self.voice_id = voice.voice_id
+                    break
 
-        self.voice_dict = {}
-        for voice in self.voices.voices:
-            name = voice.name
-            id = voice.voice_id
-            self.voice_dict[name] = id
-        self.model_dict = {}
-        for model in self.models:
-            name = model.name
-            self.model_dict[name] = model.model_id
+            self.voice_dict = {}
+            for voice in self.voices.voices:
+                name = voice.name
+                id = voice.voice_id
+                self.voice_dict[name] = id
+            self.model_dict = {}
+            for model in self.models:
+                name = model.name
+                self.model_dict[name] = model.model_id
 
-        voice_names = list(self.voice_dict.keys())
+            voice_names = list(self.voice_dict.keys())
+        except Exception as e:
+            self.client = None
+            self.voices = None
+            self.models = None
+            voice_names = []
+            self.voice_name = ''
+            self.active = False
+            self.audio_stream = None
+            self.voice_dict = {}
+
         self.voice_name_input = self.add_input('voice', widget_type='combo', default_value=self.voice_name, callback=self.voice_changed)
         self.voice_name_input.widget.combo_items = voice_names
         self.model_choice = self.add_input('model', widget_type='combo', widget_width=250, default_value="Eleven Turbo v2")
-        self.model_choice.widget.combo_items = list(self.model_dict.keys())
+        if self.client is not None:
+            self.model_choice.widget.combo_items = list(self.model_dict.keys())
         self.stability = self.add_input('stability', widget_type='drag_float', default_value=.02, callback=self.voice_changed)
         self.similarity_boost = self.add_input('similarity_boost', widget_type='drag_float', default_value=1.0, callback=self.voice_changed)
         self.style = self.add_input('style exaggeration', widget_type='drag_float', default_value=0.5, callback=self.voice_changed)
@@ -151,11 +163,13 @@ class ElevenLabsNode(Node):
         self.voice_record = None
         current_voice_name = self.voice_name_input()
         if current_voice_name in self.voice_dict:
-            self.voice_id = self.voice_dict[current_voice_name]
-        self.voice_record = Voice(voice_id=self.voice_id, settings=VoiceSettings(stability=self.stability(), similarity_boost=self.similarity_boost(), style=self.style()))
+            if self.client is not None:
+                self.voice_id = self.voice_dict[current_voice_name]
+                self.voice_record = Voice(voice_id=self.voice_id, settings=VoiceSettings(stability=self.stability(), similarity_boost=self.similarity_boost(), style=self.style()))
 
     def post_creation_callback(self):
-        self.voice_record = Voice(voice_id=self.voice_id, settings=VoiceSettings(stability=self.stability(), similarity_boost=self.similarity_boost(), style=self.style()))
+        if self.client is not None:
+            self.voice_record = Voice(voice_id=self.voice_id, settings=VoiceSettings(stability=self.stability(), similarity_boost=self.similarity_boost(), style=self.style()))
 
     def execute(self):
         if self.accept_input():
@@ -172,7 +186,7 @@ class ElevenLabsNode(Node):
             self.phrase_queue.task_done()
 
     def service_queue(self):
-        if not self.active and not self.phrase_queue.empty():
+        if not self.active and not self.phrase_queue.empty() and self.client is not None:
             self.active = True
             text = self.phrase_queue.get()
             model = self.model_dict[self.model_choice()]
@@ -181,8 +195,9 @@ class ElevenLabsNode(Node):
             audio = stream(self.audio_stream)
             self.active = False
 
-
     def frame_task(self):
         if self.active != self.previously_active:
             self.active_output.send(self.active)
             self.previously_active = self.active
+
+
