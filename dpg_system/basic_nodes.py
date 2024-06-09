@@ -2178,7 +2178,7 @@ class TextFileNode(Node):
         self.save_pointer = -1
         self.read_pointer = -1
 
-        self.file_name = self.arg_as_string(default_value='untitled')
+        self.file_name = self.arg_as_string(default_value='')
 
         self.dump_button = self.add_input('output', widget_type='button', triggers_execution=True)
         self.load_button = self.add_input('load', widget_type='button', callback=self.load_message)
@@ -2186,6 +2186,10 @@ class TextFileNode(Node):
 
         self.file_name_property = self.add_property('name', widget_type='text_input', width=200, default_value=self.file_name)
         self.output = self.add_output("out")
+
+    def post_load_callback(self):
+        if self.file_name_property() != '':
+            self.load_data(self.file_name_property())
 
     def save_dialog(self):
         with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, user_data=self, callback=save_text_file_callback,
@@ -2204,13 +2208,6 @@ class TextFileNode(Node):
         else:
             self.save_dialog()
 
-    def save_custom(self, container):
-        container['collection'] = self.collection
-
-    def load_custom(self, container):
-        if 'collection' in container:
-            self.collection = container['collection']
-
     def load_dialog(self):
         with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, user_data=self, callback=load_text_file_callback,
                              tag="text_dialog_id"):
@@ -2222,6 +2219,9 @@ class TextFileNode(Node):
             self.load_data(path)
         else:
             self.load_dialog()
+
+    def load_data_from_file_name(self):
+        self.load_data(self.file_name_property())
 
     def load_data(self, path):
         with open(path, 'r') as f:
