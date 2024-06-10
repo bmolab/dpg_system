@@ -74,6 +74,7 @@ def register_basic_nodes():
     Node.app.register_node('printable', PrintableNode.factory)
     Node.app.register_node('present', PresentationModeNode.factory)
     Node.app.register_node('text_file', TextFileNode.factory)
+    Node.app.register_node('text_editor', TextFileNode.factory)
 
 
 # DeferNode -- delays received input until next frame
@@ -2173,19 +2174,27 @@ class TextFileNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.text_contexts = ''
+        self.text_contents = ''
         self.file_name = ''
         self.save_pointer = -1
         self.read_pointer = -1
 
         self.file_name = self.arg_as_string(default_value='')
-
-        self.dump_button = self.add_input('output', widget_type='button', triggers_execution=True)
+        self.text_input = self.add_input('text in', triggers_execution=True)
+        self.append_text_input = self.add_input('append text in', triggers_execution=True)
+        self.dump_button = self.add_input('send', widget_type='button', triggers_execution=True)
+        self.text_editor = self.add_property('###text', widget_type='text_editor', width=500)
         self.load_button = self.add_input('load', widget_type='button', callback=self.load_message)
         self.save_button = self.add_input('save', widget_type='button', callback=self.save_message)
 
-        self.file_name_property = self.add_property('name', widget_type='text_input', width=200, default_value=self.file_name)
+        self.file_name_property = self.add_property('name', widget_type='text_input', width=500, default_value=self.file_name)
         self.output = self.add_output("out")
+        self.editor_width = self.add_option('editor width', widget_type='drag_int', default_value=500, callback=self.adjust_editor)
+        self.editor_height = self.add_option('editor height', widget_type='drag_int', default_value=200, callback=self.adjust_editor)
+
+    def adjust_editor(self):
+        dpg.set_item_width(self.text_editor.widget.uuid, self.editor_width())
+        dpg.set_item_height(self.text_editor.widget.uuid, self.editor_height())
 
     def post_load_callback(self):
         if self.file_name_property() != '':
@@ -2197,13 +2206,15 @@ class TextFileNode(Node):
             dpg.add_file_extension(".txt")
 
     def save_data(self, path):
+        self.text_contents = self.text_editor()
         with open(path, 'w+') as f:
-            f.write(self.text_contexts)
+            f.write(self.text_contents)
         self.file_name_property.set(path)
 
-    def save_message(self, message='', data=[]):
-        if len(data) > 0:
-            path = data[0]
+    def save_message(self):
+        data = self.save_button()
+        if data is not None:
+            path = any_to_string(data)
             self.save_data(path)
         else:
             self.save_dialog()
@@ -2213,9 +2224,10 @@ class TextFileNode(Node):
                              tag="text_dialog_id"):
             dpg.add_file_extension(".txt")
 
-    def load_message(self, message='', data=[]):
-        if len(data) > 0:
-            path = data[0]
+    def load_message(self):
+        data = self.load_button()
+        if data is not None:
+            path = any_to_string(data)
             self.load_data(path)
         else:
             self.load_dialog()
@@ -2225,11 +2237,26 @@ class TextFileNode(Node):
 
     def load_data(self, path):
         with open(path, 'r') as f:
-            self.text_contexts = f.read()
+            self.text_contents = f.read()
         self.file_name_property.set(path)
+        self.text_editor.set(self.text_contents)
 
     def execute(self):
-        self.output.send(self.text_contexts)
+        if self.active_input == self.dump_button:
+            self.text_contents = self.text_editor()
+            self.output.send(self.text_contents)
+        elif self.active_input == self.append_text_input:
+            self.text_contents = self.text_editor()
+            data = any_to_string(self.append_text_input())
+            if self.text_contents[-1] not in [' ', '\n']:
+                self.text_contents += ' '
+            self.text_contents += data
+            self.text_editor.set(self.text_contents)
+        else:
+            data = any_to_string(self.text_input())
+            self.text_contents = data
+            self.text_editor.set(self.text_contents)
+
 
 
 class RepeatNode(Node):

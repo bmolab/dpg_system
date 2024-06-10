@@ -867,7 +867,7 @@ class ValueNode(Node):
                     default = 0.0
                 elif self.input.widget.widget in ['drag_int', 'slider_int', "knob_int", 'input_int']:
                     default = 0
-                elif self.input.widget.widget in ['combo', 'text_input', 'radio_group']:
+                elif self.input.widget.widget in ['combo', 'text_input', 'radio_group', 'text_editor']:
                     default = ''
                 v = Node.app.add_variable(variable_name, default_value=default)
             if v:
@@ -989,7 +989,7 @@ class ValueNode(Node):
                     display_data = 0
                 output_data = display_data
             else:
-                if self.input.widget.widget == 'text_input':
+                if self.input.widget.widget in ['text_input', 'text_editor']:
                     if t == np.ndarray:
                         display_data = in_data.tolist()
                         output_data = in_data

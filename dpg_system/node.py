@@ -267,7 +267,7 @@ class NodeProperty:
             if len(data) == 1:
                 data = data[0]
             else:
-                if self.widget.widget in ['text_input', 'combo', 'radio_group']:
+                if self.widget.widget in ['text_input', 'combo', 'radio_group', 'text_editor']:
                     data = any_to_string(data)
                 else:
                     data = data[0]
@@ -360,7 +360,7 @@ class PropertyWidget:
                 if type(self.default_value) is not float:
                     self.default_value = 0
             self.value = self.default_value
-        elif self.widget in ['text_input', 'combo', 'radio_group']:
+        elif self.widget in ['text_input', 'combo', 'radio_group', 'text_editor']:
             if self.default_value is None:
                 self.default_value = ''
             self.value = self.default_value
@@ -464,6 +464,9 @@ class PropertyWidget:
                 dpg.bind_item_theme(button, item_theme)
             elif self.widget == 'text_input':
                 dpg.add_input_text(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node, default_value=self.default_value, on_enter=True)
+            elif self.widget == 'text_editor':
+                dpg.add_input_text(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node,
+                                   default_value=self.default_value, on_enter=False, multiline=True)
             elif self.widget == 'combo':
                 dpg.add_combo(self.combo_items, label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node, default_value=self.default_value)
             elif self.widget == 'color_picker':
@@ -500,7 +503,7 @@ class PropertyWidget:
             self.default_value = any_to_int(data)
         elif self.widget == 'checkbox':
             self.default_value = any_to_bool(data)
-        elif self.widget in ['text_input', 'combo', 'list_box', 'radio_group']:
+        elif self.widget in ['text_input', 'combo', 'list_box', 'radio_group', 'text_editor']:
             self.default_value = any_to_string(data)
         elif self.widget == 'color_picker':
             self.default_value = tuple(any_to_list(data))
@@ -649,7 +652,7 @@ class PropertyWidget:
             val = any_to_string(data)
             dpg.set_value(self.uuid, val)
             self.value = val
-        elif self.widget == 'text_input':
+        elif self.widget in ['text_input', 'text_editor']:
             if type(data) == list:
                 if len(data) > 0 and type(data[0]) == list:
                     val = str(data)
@@ -955,7 +958,7 @@ class NodeInput:
             if len(data) == 1:
                 data = data[0]
             else:
-                if self.widget is not None and self.widget.widget in ['text_input', 'combo', 'radio_group']:
+                if self.widget is not None and self.widget.widget in ['text_input', 'combo', 'radio_group', 'text_editor']:
                     data = any_to_string(data)
                 else:
                     data = data[0]

@@ -33,6 +33,8 @@ class MyGLContext:
         self.pending_fov = 60
         self.fov = 30
         self.node = None
+        self.last_key = -1
+        self.last_mods = 0
         # print('about to create window')
 
 #        gl.glutInitDisplayMode(glfw.GLUT_RGB | glfw.GLUT_DOUBLE | glfw.GLUT_DEPTH)
@@ -112,6 +114,11 @@ class MyGLContext:
         if action == glfw.PRESS:
             if self.node is not None:
                 self.node.handle_key(key, mods)
+                self.last_key = key
+                self.last_mods = mods
+        elif action == glfw.REPEAT:
+            if self.node is not None:
+                self.node.handle_key(self.last_key, self.last_mods)
 
     # def on_key(self, window, key, scancode, action, mods):
     #     if action == glfw.PRESS:
