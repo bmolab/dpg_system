@@ -76,9 +76,23 @@ class AudioSource:
             self.stream = None
         return self.stream is not None
 
+    def get_max_input_channels(self):
+        return self.device_info['maxInputChannels']
+
+    def get_default_sample_rate(self):
+        return int(self.device_info['defaultSampleRate'])
+
     def check_format(self, rate, channels, data_format):
-        print('check format', rate, channels, data_format)
-        return self.audio.is_format_supported(rate=rate, input_device=self.device_index, input_channels=channels, input_format=data_format)
+        # print('check format', rate, channels, data_format)
+        try:
+            supported = self.audio.is_format_supported(rate=rate, input_device=self.device_index, input_channels=channels, input_format=data_format)
+            return supported
+        except Exception as ex:
+            if ex == ValueError:
+                print('unsupported audio source parameters')
+        return False
+
+
 
 
 class TorchAudioSourceNode(TorchNode):
@@ -104,11 +118,11 @@ class TorchAudioSourceNode(TorchNode):
                                            callback=self.stream_on_off)
         self.source_choice = self.add_property('source', widget_type='combo', width=180, default_value=self.source_name, callback=self.source_params_changed)
         self.source_choice.widget.combo_items = self.source.get_device_list()
-        self.channels = self.add_property('channels', widget_type='input_int', default_value=1, callback=self.source_params_changed)
-        self.sample_rate = self.add_property('sample_rate', widget_type='drag_int', default_value=16000, callback=self.source_params_changed)
+        self.channels = self.add_input('channels', widget_type='input_int', default_value=1, callback=self.source_params_changed)
+        self.sample_rate = self.add_input('sample_rate', widget_type='drag_int', default_value=16000, callback=self.source_params_changed)
         self.format = self.add_property('sample format', widget_type='combo', default_value='float', callback=self.source_params_changed)
         self.format.widget.combo_items = ['float', 'int32', 'int24', 'int16']
-        self.chunk_size = self.add_property('chunk_size', widget_type='drag_int', default_value=1024, callback=self.source_params_changed)
+        self.chunk_size = self.add_input('chunk_size', widget_type='drag_int', default_value=1024, callback=self.source_params_changed)
         self.output = self.add_output('audio tensors')
 
     def source_params_changed(self):
@@ -118,6 +132,7 @@ class TorchAudioSourceNode(TorchNode):
         if source != self.source_name:
             source_changed = True
             self.source_name = source
+
         channels = self.channels()
         if channels != self.source.channels:
             changed = True
@@ -137,9 +152,13 @@ class TorchAudioSourceNode(TorchNode):
 
         streaming = self.streaming
         if changed or source_changed:
-            if source_changed:
-                self.source.change_source(source)
-            if self.source.check_format(sample_rate, channels, data_format) or source_changed:
+            self.source.change_source(source)
+            maxChannels = self.source.get_max_input_channels()
+            if channels > maxChannels:
+                channels = maxChannels
+                self.channels.set(channels)
+
+            if self.source.check_format(sample_rate, channels, data_format):
                 self.source.stop()
                 self.source.channels = channels
                 self.source.rate = sample_rate
@@ -148,10 +167,24 @@ class TorchAudioSourceNode(TorchNode):
                 if streaming:
                     self.streaming = self.source.start()
             else:
-                print('Audio Source format invalid: channels =', channels, 'rate =', sample_rate, 'format =', data_format)
+                sample_rate = self.source.get_default_sample_rate()
+                if self.source.check_format(sample_rate, channels, data_format):
+                    self.source.stop()
+                    self.source.channels = channels
+                    self.source.rate = sample_rate
+                    self.sample_rate.set(self.source.rate)
+                    self.source.format = data_format
+                    self.source.chunk = chunk
+                    if streaming:
+                        self.streaming = self.source.start()
+                else:
+                    print('Audio Source format invalid: channels =', channels, 'rate =', sample_rate, 'format =', data_format)
 
     def audio_callback(self, data, frame_count, time_info, flag):
         numpy_audio_data = np.frombuffer(buffer=data, dtype=np.float32).copy()
+        chans = self.source.channels
+        if chans > 1:
+            numpy_audio_data = numpy_audio_data.reshape(-1, chans).swapaxes(0, 1)
         torch_audio_data = torch.from_numpy(numpy_audio_data)
         self.output.send(torch_audio_data)
         return data, pyaudio.paContinue
