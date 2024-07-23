@@ -852,8 +852,8 @@ class TCPNumpyReceiveLatentNode(Node):
             if self.app.verbose:
                 print('output')
             self.serial_out.send(self.serial)
-            self.position_out.send(self.position)
-            self.data_out.send(self.received)
+            self.position_out.send(self.position[0])
+            self.data_out.send(self.received[0])
             self.received = None
         if self.reconnect:
             if self.app.verbose:
