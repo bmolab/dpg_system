@@ -1598,6 +1598,7 @@ class TypeNode(Node):
             elif t == bool:
                 self.type_property.set('bool')
             elif t == np.ndarray:
+                comp = 'unknown'
                 shape = input.shape
                 if input.dtype == float:
                     comp = 'float'

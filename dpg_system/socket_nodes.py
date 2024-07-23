@@ -14,12 +14,15 @@ import select
 import netifaces
 from dpg_system.numpysocket import NumpySocket
 
+
 def register_socket_nodes():
     Node.app.register_node("udp_numpy_send", UDPNumpySendNode.factory)
     Node.app.register_node("udp_numpy_receive", UDPNumpyReceiveNode.factory)
     Node.app.register_node('process_group', ProcessGroupNode.factory)
     Node.app.register_node('tcp_numpy_send', TCPNumpySendNode.factory)
     Node.app.register_node('tcp_numpy_receive', TCPNumpyReceiveNode.factory)
+    Node.app.register_node('tcp_latent_send', TCPNumpySendLatentNode.factory)
+    Node.app.register_node('tcp_latent_receive', TCPNumpyReceiveLatentNode.factory)
     Node.app.register_node('ip_address', IPAddressNode.factory)
 
 
@@ -426,6 +429,146 @@ class TCPNumpySendNode(Node):
             self.numpysocket = None
 
 
+class TCPNumpySendLatentNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TCPNumpySendLatentNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.numpysocket = None
+        self.ip = '127.0.0.1'
+        self.port = 4501
+        self.connected = False
+        self.server_has_changed = False
+        self.connection_lost = False
+        if len(args) > 0:
+            ip = args[0]
+            if string_is_valid_ip(ip):
+                self.ip = ip
+
+        if len(args) > 1:
+            port = any_to_int(args[1], validate=True)
+            if port is not None:
+                self.port = port
+        self.data_input = self.add_input('latents', triggers_execution=True)
+        self.position_input = self.add_input('position')
+        self.serial_input = self.add_input('serial')
+
+        self.ip_property = self.add_property('ip', widget_type='text_input', width=120, default_value=self.ip)
+        self.port_property = self.add_property('port', widget_type='input_int', default_value=self.port, max=32767)
+        self.connected_out = self.add_output('connected')
+        self.add_frame_task()
+
+    def server_changed(self):
+        if self.app.verbose:
+            print('server changed')
+        self.ip = self.ip_property()
+        self.port = self.port_property()
+        self.socket_release()
+        # if self.connected:
+        #     if self.app.verbose:
+        #         print('was connected')
+        #     self.connected = False
+        #     if self.numpysocket is not None:
+        #         if self.app.verbose:
+        #             print('shutting down send socket')
+        #         try:
+        #             self.numpysocket.shutdown(socket.SHUT_RDWR)
+        #             self.numpysocket.close()
+        #             if self.app.verbose:
+        #                 print('send socket closed')
+        #         except Exception as e:
+        #             print('send socket trying to shut down')
+        # self.numpysocket = None
+        # if self.app.verbose:
+        #     print('send destroyed self.numpysocket')
+
+    def frame_task(self):
+        self.connected_out.send(self.connected)
+
+    def socket_release(self):
+        if self.connected:
+            if self.app.verbose:
+                print('socket_release was connected')
+            self.connected = False
+        if self.numpysocket is not None:
+            if self.app.verbose:
+                print('socket_release shutting down send socket')
+            try:
+                self.numpysocket.shutdown(socket.SHUT_RDWR)
+            except Exception as e:
+                if self.app.verbose:
+                    print('send socket_release socket trying to shut down')
+            self.numpysocket.close()
+            if self.app.verbose:
+                print('send socket_release socket closed')
+        self.numpysocket = None
+
+    def execute(self):
+        port = self.port_property()
+        ip = self.ip_property()
+        if ip != self.ip or port != self.port:
+            if string_is_valid_ip(ip):
+                self.server_changed()
+
+        if self.numpysocket is None:
+            if self.app.verbose:
+                print('send created socket')
+            self.connected = False
+            self.numpysocket = NumpySocket()
+
+        if self.numpysocket is not None:
+            if not self.connected:
+                try:
+                    if self.app.verbose:
+                        print('send connecting to', self.ip, self.port)
+                    self.numpysocket.connect((self.ip, self.port))
+                    print('send socket connected to', self.ip, self.port)
+                    self.connected = True
+                except Exception as e:
+                    if self.app.verbose:
+                        print('send trying to connect', e)
+                    self.socket_release()
+            if self.connected:
+                if self.active_input == self.data_input:
+                    data = self.data_input()
+                    data = any_to_array(data, validate=True)
+                    position = self.position_input()
+                    serial = self.serial_input()
+
+                    if data is not None:
+                        if self.app.verbose:
+                            print('send')
+                        try:
+                            self.numpysocket.sendall_latent(data, position, serial)
+                            self.connection_lost = False
+                        except Exception as e:
+                            if hasattr(e, 'errno'):
+                                if e.errno == errno.ECONNRESET:
+                                    print('send failed due to connection reset')
+                                    self.connected = False
+                                elif e.errno == errno.EPIPE:
+                                    if not self.connection_lost:
+                                        print('send to', self.ip, self.port, 'failed due to broken pipe')
+                                        self.connection_lost = True
+                                    self.connected = False
+                                else:
+                                    print('trying to send other error', e)
+                            else:
+                                print('trying to send other error', e)
+
+    def custom_cleanup(self):
+        if self.numpysocket is not None:
+            if self.connected:
+                self.numpysocket.shutdown(socket.SHUT_RDWR)
+                self.numpysocket.close()
+            self.numpysocket = None
+
+
+
+
 # receive does not reconnect when changing ports up and down
 class TCPNumpyReceiveNode(Node):
     @staticmethod
@@ -592,6 +735,222 @@ class TCPNumpyReceiveNode(Node):
                                     try:
                                         frame = self.connection.recv(1024)
                                         if len(frame) > 0:
+                                            self.received = frame
+                                        else:
+                                            print('recv lost connection')
+                                            self.socket_release()
+                                    except Exception as e:
+                                        if hasattr(e, 'errno'):
+                                            if e.errno != 35:
+                                                print('connection.recv error', e)
+                                        # else:
+                                        #     print('socket', self.port, e)
+                            if self.app.verbose:
+                                print('connected or running == False')
+                            if self.connection is not None:
+                                self.connection.close()
+                                self.connection = None
+
+                # except Exception as e:
+                #     if hasattr(e, 'errno'):
+                #         if e.errno == 35:
+                #             if self.socket_released:
+                #                 print('receive lost connection', e)
+                #                 self.socket_released = False
+        self.socket_release()
+        if self.app.verbose:
+            print('running == False... cleaning up receive socket')
+        # try:
+        #     self.numpysocket.shutdown(socket.SHUT_RDWR)
+        # except Exception as e:
+        #     print('exception while shutting server socket down', e)
+        # self.numpysocket.close()
+        print('exiting receive thread')
+
+    def custom_cleanup(self):
+        print('tcp_numpy_receive cleaning up')
+        self.running = False
+        if self.app.verbose:
+            print('join')
+        self.receive_thread.join()
+        if self.app.verbose:
+            print('joined')
+
+
+class TCPNumpyReceiveLatentNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TCPNumpyReceiveLatentNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.port = 4500
+        self.serving_ip = '127.0.0.1'
+        self.get_default_ip()
+        self.numpysocket = None
+        if len(args) > 1:
+            ip = args[0]
+            if string_is_valid_ip(ip):
+                self.serving_ip = ip
+            port = any_to_int(args[1], validate=True)
+            if port is not None:
+                self.port = port
+        elif len(args) > 0:
+            port = any_to_int(args[0], validate=True)
+            if port is not None:
+                self.port = port
+        self.listening = False
+        self.running = True
+        self.listening = False
+        self.connection = None
+        self.reconnect = False
+        self.client_Address = ''
+        self.connection = None
+        self.socket_released = False
+        self.received = None
+        self.position = 0
+        self.serial = 0
+        self.ready_to_listen = True
+        self.ip_serving_address_property = self.add_property('serving ip', widget_type='text_input', width=120,
+                                                             default_value=self.serving_ip)
+        self.port_property = self.add_property('port', widget_type='input_int', default_value=self.port, max=32767)
+        self.data_out = self.add_output('latents')
+        self.position_out = self.add_output('position')
+        self.serial_out = self.add_output('serial')
+        self.connected_out = self.add_output('connected')
+
+    def get_default_ip(self):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(('8.8.8.8', 80))
+        self.serving_ip = s.getsockname()[0]
+        s.close()
+
+    def post_creation_callback(self):
+        if self.app.verbose:
+            print('receive post_create')
+        self.port = self.port_property()
+        self.socket_init()
+        self.receive_thread = threading.Thread(target=self.receive_thread)
+        self.receive_thread.start()
+        self.add_frame_task()
+
+    # determine how to have a call after any port changes have loaded, to create the socket them
+    #     def port_has_changed(self):
+    #         if self.numpysocket is not None:
+    #             print('receive port changed callback')
+    #             self.port = self.port_property()
+    #             self.port_changed = True
+
+    def frame_task(self):
+        if self.connection is not None:
+            self.connected_out.send(True)
+        else:
+            self.connected_out.send(False)
+
+        if self.received is not None:
+            if self.app.verbose:
+                print('output')
+            self.serial_out.send(self.serial)
+            self.position_out.send(self.position)
+            self.data_out.send(self.received)
+            self.received = None
+        if self.reconnect:
+            if self.app.verbose:
+                print('receive reconnecting')
+            self.reconnect = False
+            self.socket_release()
+            if self.app.verbose:
+                print('creating new socket receive')
+            self.numpysocket = NumpySocket()
+            if self.app.verbose:
+                print('binding to', self.port)
+            self.numpysocket.setblocking(False)
+            self.numpysocket.bind((self.serving_ip, self.port))
+            self.ready_to_listen = True
+
+    def socket_release(self):
+        if self.app.verbose:
+            print('receive releasing socket')
+        if self.numpysocket is not None:
+            if self.connection is not None:
+                if self.app.verbose:
+                    print('receive closing connection')
+                try:
+                    self.connection.close()
+                except Exception as e:
+                    print('receive connection close error', e)
+                self.connection = None
+            if self.listening:
+                try:
+                    if self.app.verbose:
+                        print('receive shutting down')
+                    self.numpysocket.shutdown(socket.SHUT_RDWR)
+                except Exception as e:
+                    if self.app.verbose:
+                        print('receive shutting down error', e)
+                self.listening = False
+            try:
+                self.numpysocket.close()
+            except Exception as e:
+                print('receive socket close error', e)
+            self.numpysocket = None
+            self.socket_released = True
+
+    def socket_init(self):
+        self.numpysocket = NumpySocket()
+        try:
+            self.numpysocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            # self.numpysocket.setblocking(False)
+            if self.app.verbose:
+                print('bind to', self.port)
+            self.numpysocket.bind((self.serving_ip, self.port))
+            self.numpysocket.listen()
+            self.ready_to_listen = True
+            self.listening = True
+        except Exception as e:
+            print('receive socket_init_exception', e)
+
+    def receive_thread(self):
+        print('enter receive_thread')
+        while self.running:
+            if self.port != self.port_property() or self.serving_ip != self.ip_serving_address_property():
+                if self.app.verbose:
+                    print('receive ip or port changed')
+                self.port = self.port_property()
+                self.serving_ip = self.ip_serving_address_property()
+                self.socket_release()
+            if self.numpysocket is None:
+                self.socket_init()
+
+            if self.ready_to_listen:
+                if not self.listening:
+                    if self.app.verbose:
+                        print('listen')
+                    try:
+                        self.numpysocket.listen()
+                        self.listening = True
+                    except Exception as e:
+                        print('receive thread listen exception', e)
+                readable, writable, exceptional = select.select([self.numpysocket], [], [], 1.0)
+                if len(readable) > 0:
+                    if readable[0] == self.numpysocket:
+                        self.connection, addr = self.numpysocket.accept()
+                        if self.connection is not None:
+                            print('receive connected to', addr[0], self.port)
+                            while self.connection is not None and self.running:
+                                if self.port != self.port_property() or self.serving_ip != self.ip_serving_address_property():
+                                    if self.app.verbose:
+                                        print('receive closing due to port change')
+                                    self.port = self.port_property()
+                                    self.serving_ip = self.ip_serving_address_property()
+                                    self.socket_release()
+                                else:
+                                    try:
+                                        frame, position, serial = self.connection.recv_latents(1024)
+                                        if len(frame) > 0:
+                                            self.position = position
+                                            self.serial = serial
                                             self.received = frame
                                         else:
                                             print('recv lost connection')

@@ -11,11 +11,19 @@ class NumpySocket(socket.socket):
         super().__init__(family, type, proto, fileno)
         self.remaining_buffer = None
 
+    def sendall_latent(self, frame, position, serial):
+        if not isinstance(frame, np.ndarray):
+            raise TypeError("input frame is not a valid numpy array")  # should this just call super intead?
+
+        out = self.__pack_latent_frame(frame, position, serial)
+        super().sendall(out)
+        logging.debug("latent frame sent")
+
     def sendall(self, frame):
         if not isinstance(frame, np.ndarray):
             raise TypeError("input frame is not a valid numpy array")  # should this just call super intead?
 
-        out = self.__pack_frame(frame)
+        out = self.__pack_latent_frame(frame)
         super().sendall(out)
         logging.debug("frame sent")
 
@@ -81,6 +89,70 @@ class NumpySocket(socket.socket):
         logging.debug("frame received")
         return frame
 
+    def recv_latents(self, bufsize=1024):
+        length = None
+        frameBuffer = None
+        if self.remaining_buffer is not None:
+            frameBuffer = self.remaining_buffer
+            self.remaining_buffer = None
+        else:
+            frameBuffer = bytearray()
+
+        while True:
+            data = np.array([])
+            try:
+                data = super().recv(bufsize)
+            except Exception as e:
+                if length is None:
+                    raise e
+
+            if len(data) == 0:
+                return np.array([])
+            frameBuffer += data
+            # print(len(frameBuffer))
+
+            if len(frameBuffer) == length:
+                break
+
+            loop = True
+            while loop:
+                if length is None:
+                    if b':' not in frameBuffer:
+                        break
+                    # remove the length bytes from the front of frameBuffer
+                    # leave any remaining bytes in the frameBuffer!
+                    length_str, ignored, frameBuffer = frameBuffer.partition(b':')
+                    if len(length_str) > 16:
+                        print('recv length_str longer than 16 bytes')
+                    else:
+                        try:
+                            length = int(length_str)
+                        except Exception as e:
+                            print('recv length_str does not convert to int')
+
+                # print(len(frameBuffer), end='')
+                if len(frameBuffer) < length:
+                    break
+                # split off the full message from the remaining bytes
+                # leave any remaining bytes in the frameBuffer!
+                # print('length or more', len(frameBuffer), length)
+
+                if len(frameBuffer) > length:
+                    self.remaining_buffer = frameBuffer[length:]
+                    # print('remainder', self.remaining_buffer)
+                frameBuffer = frameBuffer[:length]
+                length = None
+                loop = False
+
+            if not loop:
+                break
+
+        frame = np.load(BytesIO(frameBuffer), allow_pickle=True)['frame']
+        position = np.load(BytesIO(frameBuffer), allow_pickle=True)['position']
+        serial = np.load(BytesIO(frameBuffer), allow_pickle=True)['serial']
+        logging.debug("frame received")
+        return frame, position, serial
+
     def accept(self):
         fd, addr = super()._accept()
         sock = NumpySocket(super().family, super().type, super().proto, fileno=fd)
@@ -95,6 +167,24 @@ class NumpySocket(socket.socket):
         f = BytesIO()
         np.savez(f, frame=frame)
         
+        packet_size = len(f.getvalue())
+        header = '{0}:'.format(packet_size)
+        header = bytes(header.encode())  # prepend length of array
+
+        out = bytearray()
+        out += header
+
+        f.seek(0)
+        out += f.read()
+        return out
+
+    @staticmethod
+    def __pack_latent_frame(frame, position, serial):
+        f = BytesIO()
+        position_np = np.array([position])
+        serial_np = np.array([serial])
+        np.savez(f, frame=frame, position=position_np, serial=serial_np)
+
         packet_size = len(f.getvalue())
         header = '{0}:'.format(packet_size)
         header = bytes(header.encode())  # prepend length of array
