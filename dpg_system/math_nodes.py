@@ -476,7 +476,13 @@ class OpSingleNode(Node):
     def execute(self):
         # get values from static attributes
         input_value = self.input()
-        input_value = any_to_float(input_value)
+        t = type(input_value)
+        if t == np.ndarray:
+            pass
+        elif self.app.torch_available and t == torch.Tensor:
+            pass
+        else:
+            input_value = any_to_float(input_value)
 
         output_value = self.op(input_value)
         self.output.send(output_value)
