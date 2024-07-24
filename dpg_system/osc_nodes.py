@@ -272,7 +272,10 @@ class OSCTarget(OSCBase):
             t = type(args_)
             if t not in [str]:
                 args_ = any_to_list(args_)
-            self.client.send_message(address, args_)
+            try:
+                self.client.send_message(address, args_)
+            except Exception as e:
+                pass
 
 
 

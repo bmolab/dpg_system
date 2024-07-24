@@ -1,4 +1,4 @@
-name: dpg_system
+name: dpg_system_2024
 channels:
   - defaults
   - conda-forge
@@ -138,4 +138,4 @@ dependencies:
     - typing-extensions
     - urllib3
     - wasabi
-prefix: /Users/drokeby/miniforge3/envs/dpg_system
+prefix: /Users/drokeby/miniforge3/envs/dpg_system_2024

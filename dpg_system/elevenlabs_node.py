@@ -174,8 +174,9 @@ class ElevenLabsNode(Node):
     def execute(self):
         if self.accept_input():
             self.text_to_speak = any_to_string(self.text_input())
-            self.add_frame_task()
-            self.phrase_queue.put(self.text_to_speak)
+            if len(self.text_to_speak) > 0:
+                self.add_frame_task()
+                self.phrase_queue.put(self.text_to_speak)
 
     def stop_streaming(self):
         while not self.phrase_queue.empty():

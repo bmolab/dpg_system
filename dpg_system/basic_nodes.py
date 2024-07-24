@@ -4,6 +4,7 @@ import numpy as np
 import random
 import time
 import string
+import sys
 
 import torch
 
@@ -12,7 +13,9 @@ import threading
 from dpg_system.conversion_utils import *
 import json
 from fuzzywuzzy import fuzz
-
+NOPRINT_TRANS_TABLE = {
+                i: None for i in range(0, sys.maxunicode + 1) if not chr(i).isprintable()
+            }
 
 def register_basic_nodes():
     Node.app.register_node('prepend', PrependNode.factory)
@@ -2850,6 +2853,8 @@ class GatherSentences(Node):
                 elif not skipping:
                     stripped_sentence += self.received_sentence[i]
             self.received_sentence = stripped_sentence
+        if self.received_sentence.isprintable() == False:
+            self.received_sentence = self.received_sentence.translate(NOPRINT_TRANS_TABLE)
 
         self.sentence_output.send(self.received_sentence)
         self.received_sentence = ''
