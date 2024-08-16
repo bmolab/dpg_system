@@ -34,6 +34,7 @@ def register_signal_nodes():
     Node.app.register_node('trigger', ThresholdTriggerNode.factory)
     Node.app.register_node('hysteresis', ThresholdTriggerNode.factory)
     Node.app.register_node('sample_hold', SampleHoldNode.factory)
+    Node.app.register_node('register', SampleAndTriggerNode.factory)
     Node.app.register_node('band_pass', BandPassFilterNode.factory)
     Node.app.register_node('filter_bank', FilterBankNode.factory)
     Node.app.register_node('spectrum', SpectrumNode.factory)
@@ -1034,6 +1035,29 @@ class SampleHoldNode(Node):
             self.sample = self.input()
         self.output.send(self.sample)
 
+
+class SampleAndTriggerNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = SampleAndTriggerNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.register_value = 0
+        self.sample_input = self.add_input('sample', callback=self.sample)
+        self.trigger_input = self.add_input('trigger', triggers_execution=True)
+        self.input = self.add_input('input')
+        self.output = self.add_output('out')
+
+    def sample(self):
+        sample = self.input()
+        if sample is not None:
+            self.register_value = sample
+
+    def execute(self):
+        self.output.send(self.register_value)
 
 class TogEdgeNode(Node):
     @staticmethod

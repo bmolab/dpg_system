@@ -15,5 +15,7 @@
   "sockets": true,
   "ultracwt": true,
   "easy": false,
-  "midi": true
+  "midi": true,
+  "depth-anything": true,
+  "vae": true
 }

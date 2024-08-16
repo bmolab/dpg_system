@@ -30,6 +30,8 @@ easy_mode = False
 ultracwt_active = True
 pybullet_active = False
 midi_active = True
+depth_anything_active = True
+vae_active = True
 
 # print('Options active:', end=' ')
 # with open('dpg_system_config.json', 'r') as f:
@@ -247,6 +249,22 @@ if midi_active:
         print('imported midi')
     except ModuleNotFoundError:
         midi_active = False
+
+if depth_anything_active:
+    try:
+        from dpg_system.depthanything_nodes import *
+        imported.append('depthanything_nodes.py')
+        print('imported depthanything')
+    except ModuleNotFoundError:
+        depth_anything_active = False
+
+if vae_active:
+    try:
+        from dpg_system.VAE_nodes import *
+        imported.append('VAE_nodes.py')
+        print('imported vae')
+    except ModuleNotFoundError:
+        vae_active = False
 
 # import additional node files in folder
 
@@ -944,6 +962,12 @@ class App:
 
         if midi_active and 'register_midi_nodes' in globals():
             register_midi_nodes()
+
+        if depth_anything_active and 'register_depth_anything_nodes' in globals():
+            register_depth_anything_nodes()
+
+        if vae_active and 'register_vae_nodes' in globals():
+            register_vae_nodes()
 
 
     def get_variable_list(self):

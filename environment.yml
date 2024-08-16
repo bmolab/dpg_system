@@ -138,4 +138,6 @@ dependencies:
     - typing-extensions
     - urllib3
     - wasabi
+    - psutil
+    - scikit-learn
 prefix: /Users/drokeby/miniforge3/envs/dpg_system
