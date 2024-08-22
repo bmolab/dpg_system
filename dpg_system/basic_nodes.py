@@ -2187,6 +2187,7 @@ class TextFileNode(Node):
         self.text_input = self.add_input('text in', triggers_execution=True)
         self.append_text_input = self.add_input('append text in', triggers_execution=True)
         self.dump_button = self.add_input('send', widget_type='button', triggers_execution=True)
+        self.clear_button = self.add_input('clear', widget_type='button', callback=self.clear_text)
         self.text_editor = self.add_property('###text', widget_type='text_editor', width=500)
         self.load_button = self.add_input('load', widget_type='button', callback=self.load_message)
         self.save_button = self.add_input('save', widget_type='button', callback=self.save_message)
@@ -2195,6 +2196,10 @@ class TextFileNode(Node):
         self.output = self.add_output("out")
         self.editor_width = self.add_option('editor width', widget_type='drag_int', default_value=500, callback=self.adjust_editor)
         self.editor_height = self.add_option('editor height', widget_type='drag_int', default_value=200, callback=self.adjust_editor)
+
+    def clear_text(self):
+        self.text_contents = ''
+        self.text_editor.set(self.text_contents)
 
     def adjust_editor(self):
         dpg.set_item_width(self.text_editor.widget.uuid, self.editor_width())
@@ -2252,8 +2257,9 @@ class TextFileNode(Node):
         elif self.active_input == self.append_text_input:
             self.text_contents = self.text_editor()
             data = any_to_string(self.append_text_input())
-            if self.text_contents[-1] not in [' ', '\n']:
-                self.text_contents += ' '
+            # if len(self.text_contents) > 0:
+            #     if self.text_contents[-1] not in [' ', '\n']:
+            #         self.text_contents += ' '
             self.text_contents += data
             self.text_editor.set(self.text_contents)
         else:

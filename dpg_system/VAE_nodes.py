@@ -52,6 +52,9 @@ class VAENode(Node):
         self.latents_out = self.add_output('latents out')
         self.decoded_out = self.add_output('decoded out')
 
+        self.dataloader = None
+        self.optimizer = None
+
         self.model = VAE(self.input_dim, self.hidden_dim, self.latent_dim)
 
     def load_model(self):
@@ -135,6 +138,105 @@ class VAENode(Node):
                 self.decoded_out.send(reconstruction)
             except Exception as e:
                 print(e)
+
+    # def prepare_training(self):
+    #     self.previous_updates = 0
+    #     self.epoch = 0
+    #
+    # def training_epoch(self):
+    #     self.train_output.send(['epoch', (self.epoch + 1) / self.num_epochs])
+    #     self.previous_updates = self.train(self.previous_updates)
+    #     self.test()
+    #
+    # def train(self, prev_updates):
+    #     """
+    #     Trains the model on the given data.
+    #
+    #     Args:
+    #         model (nn.Module): The model to train.
+    #         dataloader (torch.utils.data.DataLoader): The data loader.
+    #         loss_fn: The loss function.
+    #         optimizer: The optimizer.
+    #     """
+    #     self.model.train()  # Set the model to training mode
+    #
+    #     # for batch_idx, (data, target) in enumerate(tqdm(dataloader)):
+    #     for batch_idx, (data, target) in enumerate(self.dataloader):
+    #         n_upd = prev_updates + batch_idx
+    #
+    #         data = data.to(self.device)
+    #
+    #         self.optimizer.zero_grad()  # Zero the gradients
+    #
+    #         output = self.model(data)  # Forward pass
+    #         loss = output.loss
+    #
+    #         loss.backward()
+    #
+    #         if n_upd % 100 == 0:
+    #             # Calculate and log gradient norms
+    #             total_norm = 0.0
+    #             for p in self.model.parameters():
+    #                 if p.grad is not None:
+    #                     param_norm = p.grad.data.norm(2)
+    #                     total_norm += param_norm.item() ** 2
+    #
+    #             self.train_output.send(['error', loss.item(), output.loss_recon.item(), output.loss_kl.item()])
+    #
+    #         # gradient clipping
+    #         torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
+    #
+    #         self.optimizer.step()  # Update the model parameters
+    #
+    #     return prev_updates + len(self.dataloader)
+    #
+    # def test(self):
+    #     """
+    #     Tests the model on the given data.
+    #
+    #     Args:
+    #         model (nn.Module): The model to test.
+    #         dataloader (torch.utils.data.DataLoader): The data loader.
+    #         cur_step (int): The current step.
+    #         writer: The TensorBoard writer.
+    #     """
+    #     self.model.eval()  # Set the model to evaluation mode
+    #     test_loss = 0
+    #     test_recon_loss = 0
+    #     test_kl_loss = 0
+    #
+    #     with torch.no_grad():
+    #         for data, target in self.dataloader:
+    #             data = data.to(self.device)
+    #             data = data.view(data.size(0), -1)  # Flatten the data
+    #
+    #             output = self.model(data, compute_loss=True)  # Forward pass
+    #
+    #             test_loss += output.loss.item()
+    #             test_recon_loss += output.loss_recon.item()
+    #             test_kl_loss += output.loss_kl.item()
+    #
+    #     test_loss /= len(self.dataloader)
+    #     test_recon_loss /= len(self.dataloader)
+    #     test_kl_loss /= len(self.dataloader)
+    #
+    #     self.train_output.send(['test error', test_loss, output.loss_recon.item(), output.loss_kl.item()])
+    #
+    #     # print(f'====> Test set loss: {test_loss:.4f} (BCE: {test_recon_loss:.4f}, KLD: {test_kl_loss:.4f})')
+    #
+    #     # if writer is not None:
+    #     #     writer.add_scalar('Loss/Test', test_loss, global_step=cur_step)
+    #     #     writer.add_scalar('Loss/Test/BCE', output.loss_recon.item(), global_step=cur_step)
+    #     #     writer.add_scalar('Loss/Test/KLD', output.loss_kl.item(), global_step=cur_step)
+    #     #
+    #     #     # Log reconstructions
+    #     #     writer.add_images('Test/Reconstructions', output.x_recon.view(-1, 1, 28, 28), global_step=cur_step)
+    #     #     writer.add_images('Test/Originals', data.view(-1, 1, 28, 28), global_step=cur_step)
+    #     #
+    #     #     # Log random samples from the latent space
+    #     #     z = torch.randn(16, latent_dim).to(device)
+    #     #     samples = model.decode(z)
+    #     #     writer.add_images('Test/Samples',
 
 
 class VAE(nn.Module):
@@ -281,3 +383,101 @@ class VAEOutput:
     loss: torch.Tensor
     loss_recon: torch.Tensor
     loss_kl: torch.Tensor
+
+
+def train(model, dataloader, optimizer, prev_updates, writer=None):
+    """
+    Trains the model on the given data.
+
+    Args:
+        model (nn.Module): The model to train.
+        dataloader (torch.utils.data.DataLoader): The data loader.
+        loss_fn: The loss function.
+        optimizer: The optimizer.
+    """
+    model.train()  # Set the model to training mode
+
+    # for batch_idx, (data, target) in enumerate(tqdm(dataloader)):
+    for batch_idx, (data, target) in enumerate(dataloader):
+        n_upd = prev_updates + batch_idx
+
+        data = data.to(device)
+
+        optimizer.zero_grad()  # Zero the gradients
+
+        output = model(data)  # Forward pass
+        loss = output.loss
+
+        loss.backward()
+
+        if n_upd % 100 == 0:
+            # Calculate and log gradient norms
+            total_norm = 0.0
+            for p in model.parameters():
+                if p.grad is not None:
+                    param_norm = p.grad.data.norm(2)
+                    total_norm += param_norm.item() ** 2
+            total_norm = total_norm ** (1. / 2)
+
+            print(
+                f'Step {n_upd:,} (N samples: {n_upd * batch_size:,}), Loss: {loss.item():.4f} (Recon: {output.loss_recon.item():.4f}, KL: {output.loss_kl.item():.4f}) Grad: {total_norm:.4f}')
+
+            if writer is not None:
+                global_step = n_upd
+                writer.add_scalar('Loss/Train', loss.item(), global_step)
+                writer.add_scalar('Loss/Train/BCE', output.loss_recon.item(), global_step)
+                writer.add_scalar('Loss/Train/KLD', output.loss_kl.item(), global_step)
+                writer.add_scalar('GradNorm/Train', total_norm, global_step)
+
+        # gradient clipping
+        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+
+        optimizer.step()  # Update the model parameters
+
+    return prev_updates + len(dataloader)
+
+
+def test(model, dataloader, cur_step, writer=None):
+    """
+    Tests the model on the given data.
+
+    Args:
+        model (nn.Module): The model to test.
+        dataloader (torch.utils.data.DataLoader): The data loader.
+        cur_step (int): The current step.
+        writer: The TensorBoard writer.
+    """
+    model.eval()  # Set the model to evaluation mode
+    test_loss = 0
+    test_recon_loss = 0
+    test_kl_loss = 0
+
+    with torch.no_grad():
+        for data, target in dataloader:
+            data = data.to(device)
+            data = data.view(data.size(0), -1)  # Flatten the data
+
+            output = model(data, compute_loss=True)  # Forward pass
+
+            test_loss += output.loss.item()
+            test_recon_loss += output.loss_recon.item()
+            test_kl_loss += output.loss_kl.item()
+
+    test_loss /= len(dataloader)
+    test_recon_loss /= len(dataloader)
+    test_kl_loss /= len(dataloader)
+    print(f'====> Test set loss: {test_loss:.4f} (BCE: {test_recon_loss:.4f}, KLD: {test_kl_loss:.4f})')
+
+    if writer is not None:
+        writer.add_scalar('Loss/Test', test_loss, global_step=cur_step)
+        writer.add_scalar('Loss/Test/BCE', output.loss_recon.item(), global_step=cur_step)
+        writer.add_scalar('Loss/Test/KLD', output.loss_kl.item(), global_step=cur_step)
+
+        # Log reconstructions
+        writer.add_images('Test/Reconstructions', output.x_recon.view(-1, 1, 28, 28), global_step=cur_step)
+        writer.add_images('Test/Originals', data.view(-1, 1, 28, 28), global_step=cur_step)
+
+        # Log random samples from the latent space
+        z = torch.randn(16, latent_dim).to(device)
+        samples = model.decode(z)
+        writer.add_images('Test/Samples', samples.view(-1, 1, 28, 28), global_step=cur_step)
