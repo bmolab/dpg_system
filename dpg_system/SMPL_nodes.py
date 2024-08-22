@@ -21,6 +21,8 @@ def register_smpl_nodes():
     Node.app.register_node("smpl_pose_to_joints", SMPLPoseToJointsNode.factory)
     Node.app.register_node("smpl_body", SMPLBodyNode.factory)
 
+    Node.app.register_node("smpl_quats_to_joints", SMPLPoseQuatsToJointsNode.factory)
+
 class SMPLNode(Node):
     joint_names = [
         'pelvis', 'left_hip', 'right_hip', 'spine1', 'left_knee', 'right_knee',
@@ -330,6 +332,46 @@ class SMPLPoseToJointsNode(SMPLNode):
                             rot = scipy.spatial.transform.Rotation.from_rotvec(any_to_list(joint_value), degrees=self.use_degrees())
                             q = rot.as_euler('XYZ', degrees=self.use_degrees())
                             joint_value = np.array([q[3], q[0], q[1], q[2]])
+                        self.joint_outputs[i].set_value(joint_value)
+                self.send_all()
+
+class SMPLPoseQuatsToJointsNode(SMPLNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = SMPLPoseQuatsToJointsNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.joint_offsets = []
+        for index, key in enumerate(self.joint_names):
+            if index < 22:
+                self.joint_offsets.append(index)
+
+        self.input = self.add_input('pose in', triggers_execution=True)
+        # self.output_as = self.add_property('output_as', widget_type='combo', default_value='quaternions')
+         # self.gl_chain_input = self.add_input('gl chain', triggers_execution=True)
+        self.joint_outputs = []
+
+        for index, key in enumerate(self.joint_names):
+            if index < 22:
+                stripped_key = key.replace('_', ' ')
+                output = self.add_output(stripped_key)
+                self.joint_outputs.append(output)
+
+    def execute(self):
+        if self.input.fresh_input:
+            incoming = self.input()
+
+            t = type(incoming)
+            if t == torch.Tensor:
+                incoming = any_to_array(incoming)
+                t = type(incoming)
+            if t == np.ndarray:
+                for i, index in enumerate(self.joint_offsets):
+                    if index < incoming.shape[0]:
+                        joint_value = incoming[index]
                         self.joint_outputs[i].set_value(joint_value)
                 self.send_all()
 

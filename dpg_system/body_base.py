@@ -637,7 +637,7 @@ class BodyData:
         glMultMatrixf(transform)
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, self.base_material)
 
-    def draw_block(self, dim):
+    def draw_block(self, dim):  # draw_block could include colours for each end of the block to reflect
 
         if self.skeleton:
             dim_z = dim[1]
@@ -846,7 +846,7 @@ class LimbGeometry:
         self.normals[4] = self.calc_normal(self.points[3], self.points[5], self.points[7])
         self.normals[5] = self.calc_normal(self.points[2], self.points[4], self.points[6])
 
-    def draw(self):
+    def draw(self):  #  limb structure could include colors and if so, do not use call_list... do vertex colors and manipulate GL_COLOR_MATERIAL
         if self.list_index == -1:
             self.list_index = glGenLists(1)
             glNewList(self.list_index, GL_COMPILE)
@@ -945,6 +945,9 @@ class SimpleBodyData:
 
         self.num_bodies = 1
         self.current_body = 0
+        # add color records for each vertex or end or limb?
+        self.joint_colors = [None] * 20     # each can be None (use material), [r, g, b] (set colour of whole limb, [r, g, b] * 2 (set colours of ends of limb), [r, g, b] * 8 (set all vertex colours)
+        # separate functions can set colours based on current mode and current state of motion i.e. colour ends of limbs based on motion at joints at each end...
 
         #  coordinate non active joints --- use [1, 0, 0, 0]
 
@@ -1117,6 +1120,7 @@ class SimpleBodyData:
                 points.append((-dim_x, dim_y, 0))
                 points.append((-dim_x, dim_y, dim_z))
                 self.limbs[joint_index].set_points(points)
+                # set colours - what would determine the colours?
                 self.limbs[joint_index].calc_normals()
 
             self.limbs[joint_index].draw()
