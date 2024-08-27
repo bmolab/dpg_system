@@ -76,7 +76,7 @@ dependencies:
     - contourpy
     - cycler
     - cymem
-    - dearpygui
+    - dearpygui==1.9.1
     - ffmpeg-python
     - filelock
     - fonttools
@@ -98,7 +98,7 @@ dependencies:
     - murmurhash
     - networkx
     - numba
-    - numpy
+    - numpy==1.6.4
     - numpy-quaternion
     - opencv-python
     - packaging
