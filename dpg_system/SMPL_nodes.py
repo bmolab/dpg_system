@@ -15,6 +15,19 @@ import chumpy as ch
 from chumpy.ch import MatVecMult
 import cv2
 import scipy.sparse as sp
+import torch.utils.data as tudata
+from pathlib import Path
+import hashlib
+from _hashlib import HASH as Hash
+import json
+import argparse
+import functools
+import os
+from shutil import unpack_archive
+import joblib
+from tqdm.auto import tqdm
+import gzip
+
 
 def register_smpl_nodes():
     Node.app.register_node("smpl_take", SMPLTakeNode.factory)
@@ -614,4 +627,322 @@ def verts_core(pose, v, J, weights, kintree_table, want_Jtr=False, xp=ch):
         return v
     Jtr = xp.vstack([g[:3, 3] for g in A_global])
     return (v, Jtr)
+
+
+#######
+
+hashes = {
+    "ACCAD.tar.bz2": {
+        "unpacks_to": "ACCAD",
+        "hash": "193442a2ab66cb116932b8bce08ecb89",
+    },
+    "BMLhandball.tar.bz2": {
+        "unpacks_to": "BMLhandball",
+        "hash": "8947df17dd59d052ae618daf24ccace3",
+    },
+    "BMLmovi.tar.bz2": {
+        "unpacks_to": "BMLmovi",
+        "hash": "6dfb134273f284152aa2d0838d7529d5",
+    },
+    "CMU.tar.bz2": {"unpacks_to": "CMU", "hash": "f04bc3f37f3eafebfb12ba0cf706ca72"},
+    "DFaust67.tar.bz2": {
+        "unpacks_to": "DFaust_67",
+        "hash": "7e5f11ed897da72c5159ef3c747383b8",
+    },
+    "EKUT.tar.bz2": {"unpacks_to": "EKUT", "hash": "221ee4a27a03afd1808cbb11af067879"},
+    "HumanEva.tar.bz2": {
+        "unpacks_to": "HumanEva",
+        "hash": "ca781438b08caafd8a42b91cce905a03",
+    },
+    "KIT.tar.bz2": {"unpacks_to": "KIT", "hash": "3813500a3909f6ded1a1fffbd27ff35a"},
+    "MPIHDM05.tar.bz2": {
+        "unpacks_to": "MPI_HDM05",
+        "hash": "f76da8deb9e583c65c618d57fbad1be4",
+    },
+    "MPILimits.tar.bz2": {
+        "unpacks_to": "MPI_Limits",
+        "hash": "72398ec89ff8ac8550813686cdb07b00",
+    },
+    "MPImosh.tar.bz2": {
+        "unpacks_to": "MPI_mosh",
+        "hash": "a00019cac611816b7ac5b7e2035f3a8a",
+    },
+    "SFU.tar.bz2": {"unpacks_to": "SFU", "hash": "cb10b931509566c0a49d72456e0909e2"},
+    "SSMsynced.tar.bz2": {
+        "unpacks_to": "SSM_synced",
+        "hash": "7cc15af6bf95c34e481d58ed04587b58",
+    },
+    "TCDhandMocap.tar.bz2": {
+        "unpacks_to": "TCD_handMocap",
+        "hash": "c500aa07973bf33ac1587a521b7d66d3",
+    },
+    "TotalCapture.tar.bz2": {
+        "unpacks_to": "TotalCapture",
+        "hash": "b2c6833d3341816f4550799b460a1b27",
+    },
+    "Transitionsmocap.tar.bz2": {
+        "unpacks_to": "Transitions_mocap",
+        "hash": "705e8020405357d9d65d17580a6e9b39",
+    },
+    "EyesJapanDataset.tar.bz2": {
+        "unpacks_to": "Eyes_Japan_Dataset",
+        "hash": "d19fc19771cfdbe8efe2422719e5f3f1",
+    },
+    "BMLrub.tar.bz2": {
+        "unpacks_to": "BioMotionLab_NTroje",
+        "hash": "8b82ffa6c79d42a920f5dde1dcd087c3",
+    },
+    "DanceDB.tar.bz2": {
+        "unpacks_to": "DanceDB",
+        "hash": "9ce35953c4234489036ecb1c26ae38bc",
+    },
+}
+
+class ProgressParallel(joblib.Parallel):
+    def __call__(self, *args, **kwargs):
+        with tqdm(total=kwargs["total"]) as self._pbar:
+            del kwargs["total"]
+            return joblib.Parallel.__call__(self, *args, **kwargs)
+
+    def print_progress(self):
+        self._pbar.n = self.n_completed_tasks
+        self._pbar.refresh()
+
+
+def md5_update_from_file(filename: Union[str, Path], hash: Hash) -> Hash:
+    assert Path(filename).is_file()
+    with open(str(filename), "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash.update(chunk)
+    return hash
+
+
+def md5_file(filename: Union[str, Path]) -> str:
+    return str(md5_update_from_file(filename, hashlib.md5()).hexdigest())
+
+
+def md5_update_from_dir(directory: Union[str, Path], hash: Hash) -> Hash:
+    assert Path(directory).is_dir()
+    for path in sorted(Path(directory).iterdir(), key=lambda p: str(p).lower()):
+        hash.update(path.name.encode())
+        if path.is_file():
+            hash = md5_update_from_file(path, hash)
+        elif path.is_dir():
+            hash = md5_update_from_dir(path, hash)
+    return hash
+
+
+def md5_dir(directory: Union[str, Path]) -> str:
+    return str(md5_update_from_dir(directory, hashlib.md5()).hexdigest())
+
+
+def npz_paths(npz_directory):
+    npz_directory = Path(npz_directory).resolve()
+    npz_paths = []
+    for r, d, f in os.walk(npz_directory, followlinks=True):
+        for fname in f:
+            if "npz" == fname.split(".")[-1] and fname != "shape.npz":
+                yield os.path.join(npz_directory, r, fname)
+
+
+def npz_len(npz_path, strict=True):
+    cdata = np.load(npz_path)
+    h = md5_file(npz_path)
+    dirs = [hashes[h]['unpacks_to'] for h in hashes]
+    if strict:
+        m = []
+        for p in Path(npz_path).parents:
+            m += [d for d in dirs if p.name == d]
+        assert len(m) == 1, f"Subdir of {npz_path} contains {len(m)} of {dirs}"
+        subdir = m[0]
+    else:
+        subdir = Path(npz_path).parts[-2]
+    return subdir, h, cdata["poses"].shape[0]
+
+
+def npz_lens(unpacked_directory, n_jobs, strict=True):
+    paths = [p for p in npz_paths(unpacked_directory)]
+    return ProgressParallel(n_jobs=n_jobs)(
+        [joblib.delayed(npz_len)(npz_path, strict=strict) for npz_path in paths], total=len(paths)
+    )
+
+
+def save_lens(save_path, npz_file_lens):
+    with gzip.open(save_path, "wt") as f:
+        f.write(json.dumps(npz_file_lens))
+
+def keep_slice(n, keep):
+    drop = (1.0 - keep) / 2.0
+    return slice(int(n * drop), int(n * keep + n * drop))
+
+
+def viable_slice(cdata, keep):
+    """
+    Inspects a dictionary loaded from `.npz` numpy dumps
+    and creates a slice of the viable indexes.
+    args:
+
+        - `cdata`: dictionary containing keys:
+            ['poses', 'gender', 'mocap_framerate', 'betas',
+             'marker_data', 'dmpls', 'marker_labels', 'trans']
+        - `keep`: ratio of the file to keep, between zero and 1.,
+            drops leading and trailing ends of the arrays
+
+    returns:
+
+        - viable: slice that can access frames in the arrays:
+            cdata['poses'], cdata['marker_data'], cdata['dmpls'], cdata['trans']
+    """
+    assert (
+        keep > 0.0 and keep <= 1.0
+    ), "Proportion of array to keep must be between zero and one"
+    n = cdata["poses"].shape[0]
+    return keep_slice(n, keep)
+
+# Cell
+def npz_contents(
+    npz_path,
+    clip_length,
+    overlapping,
+    keep=0.8,
+    keys=("poses", "dmpls", "trans", "betas", "gender"),
+    shuffle=False,
+    seed=None,
+):
+    # cache this because we will often be accessing the same file multiple times
+    cdata = np.load(npz_path)
+
+    # slice of viable indices
+    viable = viable_slice(cdata, keep)
+
+    # slice iterator
+    # every time the file is opened the non-overlapping slices will be the same
+    # this may not be preferred, but loading overlapping means a lot of repetitive data
+    def clip_slices(viable, clip_length, overlapping):
+        i = 0
+        step = 1 if overlapping else clip_length
+        for i in range(viable.start, viable.stop, step):
+            if i + clip_length < viable.stop:
+                yield slice(i, i + clip_length)
+
+    # buffer the iterator and shuffle here, when implementing that
+    buf_clip_slices = [s for s in clip_slices(viable, clip_length, overlapping)]
+    if shuffle:
+        # this will be correlated over workers
+        # seed should be passed drawn from torch Generator
+        seed = seed if seed else random.randint(1e6)
+        random.Random(seed).shuffle(buf_clip_slices)
+
+    # iterate over slices
+    for s in buf_clip_slices:
+        data = {}
+        # unpack and enforce data type
+        to_load = [k for k in ("poses", "dmpls", "trans") if k in keys]
+        for k in to_load:
+            data[k] = cdata[k][s].astype(np.float32)
+        if "betas" in keys:
+            r = s.stop - s.start
+            data["betas"] = np.repeat(
+                cdata["betas"][np.newaxis].astype(np.float32), repeats=r, axis=0
+            )
+        if "gender" in keys:
+
+            def gender_to_int(g):
+                # casting gender to integer will raise a warning in future
+                g = str(g.astype(str))
+                return {"male": -1, "neutral": 0, "female": 1}[g]
+
+            data["gender"] = np.array(
+                [gender_to_int(cdata["gender"]) for _ in range(s.start, s.stop)]
+            )
+        yield data
+
+
+class AMASS(tudata.IterableDataset):
+    def __init__(
+        self,
+        amass_location,
+        clip_length,
+        overlapping,
+        keep=0.8,
+        transform=None,
+        data_keys=("poses", "trans"),
+        file_list_seed=0,
+        shuffle=False,
+        seed=None,
+        strict=True
+    ):
+        assert clip_length > 0 and type(clip_length) is int
+        self.transform = transform
+        self.data_keys = data_keys
+        self.amass_location = amass_location
+        # these should be shuffled but pull shuffle argument out of dataloader worker arguments
+        self._npz_paths = [npz_path for npz_path in npz_paths(amass_location)]
+        random.Random(file_list_seed).shuffle(self._npz_paths)
+        self._npz_paths = tuple(self._npz_paths)
+        self.npz_paths = self._npz_paths
+        self.clip_length = clip_length
+        self.overlapping = overlapping
+        self.keep = keep
+        self.shuffle = shuffle
+        self.seed = seed if seed else random.randint(0, 1e6)
+        self.strict = strict
+
+    def infer_len(self, n_jobs=4):
+        # uses known dimensions of the npz files in the AMASS dataset to infer the length
+        # with clip_length and overlapping settings stored
+        lenfile = Path(self.amass_location) / Path("npz_file_lens.json.gz")
+        # try to load file
+        if lenfile.exists():
+            with gzip.open(lenfile, "rt") as f:
+                self.npz_lens = json.load(f)
+                def filter_lens(npz_lens):
+                    # filter out file length information to only existing dirs
+                    datasets = [p.name for p in Path(self.amass_location).glob('*') if p.is_dir()]
+                    return [(p, h, l) for p, h, l in npz_lens
+                            if p in datasets]
+                self.npz_lens = filter_lens(self.npz_lens)
+        else:  # if it's not there, recompute it and create the file
+            print(f'Inspecting {len(self.npz_paths)} files to determine dataset length'
+                  f', saving the result to {lenfile}')
+            self.npz_lens = npz_lens(self.amass_location, n_jobs, strict=self.strict)
+            save_lens(lenfile, self.npz_lens)
+
+        # using stored lengths to infer the total dataset length
+        def lenslice(s):
+            if self.overlapping:
+                return (s.stop - s.start) - (self.clip_length - 1)
+            else:
+                return math.floor((s.stop - s.start) / self.clip_length)
+
+        N = 0
+        for p, h, l in self.npz_lens:
+            s = keep_slice(l, keep=self.keep)
+            N += lenslice(s)
+
+        return N
+
+    def __len__(self):
+        if hasattr(self, "N"):
+            return self.N
+        else:
+            self.N = self.infer_len()
+            return self.N
+
+    def __iter__(self):
+        if self.shuffle:
+            self.npz_paths = list(self.npz_paths)
+            random.Random(self.seed).shuffle(self.npz_paths)
+        for npz_path in self.npz_paths:
+            for data in npz_contents(
+                npz_path,
+                self.clip_length,
+                self.overlapping,
+                keys=self.data_keys,
+                keep=self.keep,
+                shuffle=self.shuffle,
+                seed=self.seed,
+            ):
+                self.seed += 1  # increment to vary shuffle over files
+                yield {k: self.transform(data[k]) for k in data}
 

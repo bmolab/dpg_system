@@ -165,7 +165,7 @@ class Joint:
     def set_matrix(self):
         try:
             base_vector = self.ref_vector  # like an up vector
-            limb_vector = self.bone_dim  # vector defining limb extension from parent joint at T-Pose
+            limb_vector = self.bone_dim.copy()  # vector defining limb extension from parent joint at T-Pose
 
             scale = np.linalg.norm(limb_vector)  # limb length
             limb_vector /= scale

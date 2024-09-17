@@ -222,12 +222,20 @@ class BodyData:
         self.joint_disk_material.diffuse = [0.7038, 0.27048, 0.0828, self.joint_disk_alpha]
         self.joint_disk_material.specular = [0.256777, 0.137622, 0.086014, self.joint_disk_alpha]
         self.joint_disk_material.shininess = 12.8
+        self.joint_matrices = None
+        self.joint_quats = None
 
         self.joints = []
+        self.limbs = [None] * 37
         for joint_index in joint_index_to_name:
             name = joint_index_to_name[joint_index]
             new_joint = Joint(self, name, joint_index)
             self.joints.append(new_joint)
+
+        self.joint_mapper = [-1] * 37
+        for joint_rel in actual_joints:
+            mapping = actual_joints[joint_rel]
+            self.joint_mapper[mapping[1]] = mapping[0]
 
         tree = ET.parse('dpg_system/definition.xml')
         root = tree.getroot()
@@ -243,6 +251,7 @@ class BodyData:
             joint.set_matrix()
             joint.set_mass()
 
+        self.current_body = 0
         self.base_material = [0.5, 0.5, 0.5, 1.0]
         self.color = []
         self.create_colours()
@@ -252,6 +261,10 @@ class BodyData:
         self.error_band = 0.00
         self.pose_similarity = 0
         self.input_vector = np.zeros(80, dtype=float)
+        default_quat = np.array([1.0, 0.0, 0.0, 0.0])
+        self.quaternions_np = np.zeros((20, 4, 1), dtype=float)
+        self.default_gl_transform = quaternion_to_R3_rotation(default_quat)
+        self.default_gl_transform = self.transform_to_opengl(self.default_gl_transform)
 
         self.__mutex = threading.Lock()
         for joint_index in joint_index_to_name:
@@ -337,6 +350,12 @@ class BodyData:
             self.base_material[1] = 0.5
             self.base_material[2] = 0.5
 
+    def update_quats(self, quats):
+        self.quaternions_np = np.expand_dims(quats, axis=0)
+        self.joint_matrices = quaternions_to_R3_rotation(self.quaternions_np)
+        self.joint_quats = self.quaternions_np.copy()
+        # self.calc_diff_quaternions()
+
     def update(self, joint_index, quat, position=None, label=0, paused=False):
         if position is not None:
             if joint_index == 4 and self.origin is None:
@@ -360,6 +379,12 @@ class BodyData:
         self.quaternionDiff[joint_index] = q2 - q1
         self.rotationAxis[joint_index] = list(self.quaternionDiff[joint_index].unit.axis)
         self.set_label(label - 1)
+
+    # def calc_diff_quaternions(self):
+    #     self.smoothed_quaternions_a = self.smoothed_quaternions_a * self.diffQuatSmoothingA + self.joint_quats * (1.0 - self.diffQuatSmoothingA)
+    #     self.smoothed_quaternions_b = self.smoothed_quaternions_b * self.diffQuatSmoothingB + self.joint_quats * (1.0 - self.diffQuatSmoothingB)
+    #     self.diff_quats = self.smoothed_quaternions_a - self.smoothed_quaternions_b
+    #     self.diffQuatAbsSum = np.abs(self.diff_quats).sum(axis=1)
 
     def calc_diff_quaternion(self, jointIndex):
         w = self.quaternions[jointIndex][0]  # - self.previousQuats[jointIndex][0]
@@ -584,21 +609,39 @@ class BodyData:
         glPopMatrix()
 
     def move_to(self, jointIndex):
+        if jointIndex != t_NoJoint:
+            transform = self.default_gl_transform
+            linear_index = self.joint_mapper[jointIndex]
+            if linear_index != -1:
+                if self.joint_matrices is not None:
+                    transform = self.joint_matrices[self.current_body, linear_index]
+
+            glTranslatef(self.joints[jointIndex].bone_dim[0], self.joints[jointIndex].bone_dim[1], self.joints[jointIndex].bone_dim[2])
+            glMultMatrixf(transform)
+
         # get quat and convert to matrix
         # apply matrix
         # draw line from 0,0 to limb translation
         # translate along limb
-        if jointIndex != t_NoJoint:
-            quat = self.quaternions[jointIndex]
-            transform = quaternion_to_R3_rotation(quat)
-            transform = self.transform_to_opengl(transform)
-            glTranslatef(self.joints[jointIndex].bone_dim[0], self.joints[jointIndex].bone_dim[1], self.joints[jointIndex].bone_dim[2])
-            glMultMatrixf(transform)
+        # if jointIndex != t_NoJoint:
+        #     quat = self.quaternions[jointIndex]
+        #     transform = quaternion_to_R3_rotation(quat)
+        #     transform = self.transform_to_opengl(transform)
+        #     glTranslatef(self.joints[jointIndex].bone_dim[0], self.joints[jointIndex].bone_dim[1], self.joints[jointIndex].bone_dim[2])
+        #     glMultMatrixf(transform)
 
     def draw_to(self, joint_index, prev_limb_index=-1, orientation=False, show_disks=False):
-        quat = self.quaternions[joint_index]
-        transform = quaternion_to_R3_rotation(quat)
-        transform = self.transform_to_opengl(transform)
+        # quat = self.quaternions[joint_index]
+        # transform = quaternion_to_R3_rotation(quat)
+        # transform = self.transform_to_opengl(transform)
+
+        transform = self.default_gl_transform
+        if joint_index != t_NoJoint:
+            linear_index = self.joint_mapper[joint_index]
+            if linear_index != -1:
+                if self.joint_matrices is not None:
+                    transform = self.joint_matrices[self.current_body, linear_index]
+
         joint_data = self.joints[joint_index]
 
         m = joint_data.matrix
@@ -620,7 +663,7 @@ class BodyData:
             if not orientation:
             #     self.show_orientation(joint_index, next_limb_index)
             # else:
-                self.draw_block((widths[0], length, widths[1]))
+                self.draw_block(joint_index, (widths[0], length, widths[1]))
             # could call out to node...
             # to draw velocity or force indicators?
             # how?
@@ -637,7 +680,7 @@ class BodyData:
         glMultMatrixf(transform)
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, self.base_material)
 
-    def draw_block(self, dim):  # draw_block could include colours for each end of the block to reflect
+    def draw_block(self, joint_index, dim):  # draw_block could include colours for each end of the block to reflect
 
         if self.skeleton:
             dim_z = dim[1]
@@ -647,72 +690,94 @@ class BodyData:
             glEnd()
 
         else:
-            dim_x = dim[0] / 2
-            dim_z = dim[1] - .02
-            dim_y = dim[2] / 2
+            if self.limbs[joint_index] is None:
+                self.limbs[joint_index] = LimbGeometry()
 
-            points = []
-            points.append((-dim_x, -dim_y, 0))
-            points.append((-dim_x, -dim_y, dim_z))
-            points.append((dim_x, -dim_y, 0))
-            points.append((dim_x, -dim_y, dim_z))
-            points.append((dim_x, dim_y, 0))
-            points.append((dim_x, dim_y, dim_z))
-            points.append((-dim_x, dim_y, 0))
-            points.append((-dim_x, dim_y, dim_z))
+                dim_x = dim[0] / 2
+                dim_z = dim[1] - .02
+                dim_y = dim[2] / 2
 
-            glBegin(GL_TRIANGLE_STRIP)
+                points = []
+                points.append((-dim_x, -dim_y, 0))
+                points.append((-dim_x, -dim_y, dim_z))
+                points.append((dim_x, -dim_y, 0))
+                points.append((dim_x, -dim_y, dim_z))
+                points.append((dim_x, dim_y, 0))
+                points.append((dim_x, dim_y, dim_z))
+                points.append((-dim_x, dim_y, 0))
+                points.append((-dim_x, dim_y, dim_z))
+                self.limbs[joint_index].set_points(points)
+                # set colours - what would determine the colours?
+                self.limbs[joint_index].calc_normals()
 
-            normal = self.calc_normal(points[0], points[1], points[2])
-            glNormal3fv(normal)
+            self.limbs[joint_index].draw()
 
-            glVertex3fv(points[0])
-            glVertex3fv(points[1])
-            glVertex3fv(points[2])
-            glVertex3fv(points[3])
-
-            normal = self.calc_normal(points[2], points[3], points[4])
-            glNormal3fv(normal)
-
-            glVertex3fv(points[4])
-            glVertex3fv(points[5])
-
-            normal = self.calc_normal(points[4], points[5], points[6])
-            glNormal3fv(normal)
-
-            glVertex3fv(points[6])
-            glVertex3fv(points[7])
-
-            normal = self.calc_normal(points[6], points[7], points[0])
-            glNormal3fv(normal)
-
-            glVertex3fv(points[0])
-            glVertex3fv(points[1])
-
-            glVertex3fv(points[1])
-            glVertex3fv(points[1])
-
-            # DEGENERATE TRIANGLE ISSUE
-            normal = self.calc_normal(points[3], points[5], points[7])
-            glNormal3fv(normal)
-
-            glVertex3fv(points[1])
-            glVertex3fv(points[3])
-            glVertex3fv(points[7])
-            glVertex3fv(points[5])
-
-            glVertex3fv(points[5])
-            glVertex3fv(points[0])
-
-            normal = self.calc_normal(points[2], points[4], points[6])
-            glNormal3fv(normal)
-
-            glVertex3fv(points[0])
-            glVertex3fv(points[2])
-            glVertex3fv(points[6])
-            glVertex3fv(points[4])
-
-            glEnd()
+            # dim_x = dim[0] / 2
+            # dim_z = dim[1] - .02
+            # dim_y = dim[2] / 2
+            #
+            # points = []
+            # points.append((-dim_x, -dim_y, 0))
+            # points.append((-dim_x, -dim_y, dim_z))
+            # points.append((dim_x, -dim_y, 0))
+            # points.append((dim_x, -dim_y, dim_z))
+            # points.append((dim_x, dim_y, 0))
+            # points.append((dim_x, dim_y, dim_z))
+            # points.append((-dim_x, dim_y, 0))
+            # points.append((-dim_x, dim_y, dim_z))
+            #
+            # glBegin(GL_TRIANGLE_STRIP)
+            #
+            # normal = self.calc_normal(points[0], points[1], points[2])
+            # glNormal3fv(normal)
+            #
+            # glVertex3fv(points[0])
+            # glVertex3fv(points[1])
+            # glVertex3fv(points[2])
+            # glVertex3fv(points[3])
+            #
+            # normal = self.calc_normal(points[2], points[3], points[4])
+            # glNormal3fv(normal)
+            #
+            # glVertex3fv(points[4])
+            # glVertex3fv(points[5])
+            #
+            # normal = self.calc_normal(points[4], points[5], points[6])
+            # glNormal3fv(normal)
+            #
+            # glVertex3fv(points[6])
+            # glVertex3fv(points[7])
+            #
+            # normal = self.calc_normal(points[6], points[7], points[0])
+            # glNormal3fv(normal)
+            #
+            # glVertex3fv(points[0])
+            # glVertex3fv(points[1])
+            #
+            # glVertex3fv(points[1])
+            # glVertex3fv(points[1])
+            #
+            # # DEGENERATE TRIANGLE ISSUE
+            # normal = self.calc_normal(points[3], points[5], points[7])
+            # glNormal3fv(normal)
+            #
+            # glVertex3fv(points[1])
+            # glVertex3fv(points[3])
+            # glVertex3fv(points[7])
+            # glVertex3fv(points[5])
+            #
+            # glVertex3fv(points[5])
+            # glVertex3fv(points[0])
+            #
+            # normal = self.calc_normal(points[2], points[4], points[6])
+            # glNormal3fv(normal)
+            #
+            # glVertex3fv(points[0])
+            # glVertex3fv(points[2])
+            # glVertex3fv(points[6])
+            # glVertex3fv(points[4])
+            #
+            # glEnd()
 
     def calc_normal(self, v1, v2, v3):
         v_1 = np.array([v1[0], v1[1], v1[2]])

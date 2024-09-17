@@ -808,6 +808,7 @@ class TCPNumpyReceiveLatentNode(Node):
         self.client_Address = ''
         self.connection = None
         self.socket_released = False
+        self.refresh_socket = False
         self.received = None
         self.position = 0
         self.serial = 0
@@ -866,8 +867,20 @@ class TCPNumpyReceiveLatentNode(Node):
             if self.app.verbose:
                 print('binding to', self.port)
             self.numpysocket.setblocking(False)
-            self.numpysocket.bind((self.serving_ip, self.port))
+            try:
+                self.numpysocket.bind((self.serving_ip, self.port))
+            except Exception as e:
+                #  how to determine when the connection has terminated!!~!
+                if hasattr(e, 'errno'):
+                    if e.errno == 48:
+                        print('was in use')
+                        self.reconnect = True
             self.ready_to_listen = True
+        # if self.connection is not None:
+        #     error_code = self.numpysocket.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR)
+        #     if error_code != 0:
+        #         self.socket_release()
+        #         print('connection lost')
 
     def socket_release(self):
         if self.app.verbose:
@@ -959,6 +972,11 @@ class TCPNumpyReceiveLatentNode(Node):
                                         if hasattr(e, 'errno'):
                                             if e.errno != 35:
                                                 print('connection.recv error', e)
+                                        if e.__class__.__name__ == 'ValueError':
+                                            print('no connection', e)
+                                            self.reconnect = True
+                                            self.ready_to_listen = False
+                                            break
                                         # else:
                                         #     print('socket', self.port, e)
                             if self.app.verbose:
