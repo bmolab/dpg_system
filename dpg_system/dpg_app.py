@@ -32,6 +32,7 @@ pybullet_active = False
 midi_active = True
 depth_anything_active = True
 vae_active = True
+vive_tracker_active = True
 
 # print('Options active:', end=' ')
 # with open('dpg_system_config.json', 'r') as f:
@@ -265,6 +266,15 @@ if vae_active:
         print('imported vae')
     except ModuleNotFoundError:
         vae_active = False
+        
+if vive_tracker_active:
+    try:
+        from dpg_system.vive_tracker_node import *
+        imported.append('vive_tracker_node.py')
+        print('imported vive_tracker')
+    except ModuleNotFoundError:
+        vive_tracker_active = False
+
 
 # import additional node files in folder
 
@@ -969,6 +979,8 @@ class App:
         if vae_active and 'register_vae_nodes' in globals():
             register_vae_nodes()
 
+        if vive_tracker_active and 'register_vive_tracker_nodes' in globals():
+            register_vive_tracker_nodes()
 
     def get_variable_list(self):
         v_list = list(self.variables.keys())
