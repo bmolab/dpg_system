@@ -1078,21 +1078,28 @@ class VectorNode(Node):
         super().__init__(label, data, args)
 
         self.max_component_count = 32
+        if len(args) > 0:
+            self.max_component_count = any_to_int(args[0])
         self.format = '%.3f'
 
         self.current_component_count = self.arg_as_int(default_value=4)
 
         self.input = self.add_input('in', triggers_execution=True)
         self.input.bang_repeats_previous = False
+        self.zero_input = self.add_input('zero', widget_type='button', callback=self.zero)
         self.component_properties = []
         for i in range(self.max_component_count):
-            cp = self.add_property('##' + str(i), widget_type='drag_float', callback=self.component_changed)
+            cp = self.add_input('##' + str(i), widget_type='drag_float', callback=self.component_changed)
             self.component_properties.append(cp)
 
         self.output = self.add_output('out')
 
         self.component_count_property = self.add_option('component count', widget_type='drag_int', default_value=self.current_component_count, callback=self.component_count_changed)
         self.format_option = self.add_option(label='number format', widget_type='text_input', default_value=self.format, callback=self.change_format)
+
+    def zero(self):
+        for i in range(self.max_component_count):
+            self.component_properties[i].set(0.0)
 
     def get_preset_state(self):
         preset = {}

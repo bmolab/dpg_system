@@ -32,6 +32,7 @@ pybullet_active = False
 midi_active = True
 depth_anything_active = True
 vae_active = True
+lighting_active = True
 
 # print('Options active:', end=' ')
 # with open('dpg_system_config.json', 'r') as f:
@@ -265,6 +266,14 @@ if vae_active:
         print('imported vae')
     except ModuleNotFoundError:
         vae_active = False
+
+if lighting_active:
+    try:
+        from dpg_system.lighting_console_nodes import *
+        imported.append('lighting_console_nodes.py')
+        print('imported lighting')
+    except ModuleNotFoundError:
+        lighting_active = False
 
 # import additional node files in folder
 
@@ -969,6 +978,8 @@ class App:
         if vae_active and 'register_vae_nodes' in globals():
             register_vae_nodes()
 
+        if lighting_active and 'register_lighting_nodes' in globals():
+            register_lighting_nodes()
 
     def get_variable_list(self):
         v_list = list(self.variables.keys())
