@@ -6,11 +6,15 @@ from dpg_system.conversion_utils import *
 import quaternion
 import scipy
 
+
 def register_quaternion_nodes():
     Node.app.register_node('quaternion_to_euler', QuaternionToEulerNode.factory)
+    Node.app.register_node('quaternion_to_rotvec', QuaternionToRotVecNode.factory)
     Node.app.register_node('euler_to_quaternion', EulerToQuaternionNode.factory)
+    Node.app.register_node('rotvec_to_quaternion', RotVecToQuaternionNode.factory)
     Node.app.register_node('quaternion_to_matrix', QuaternionToRotationMatrixNode.factory)
     Node.app.register_node('quaternion_distance', QuaternionDistanceNode.factory)
+    Node.app.register_node('rotvec_to_quaternion', RotVecToQuaternionNode.factory)
 
 
 class QuaternionToEulerNode(Node):
@@ -48,6 +52,60 @@ class QuaternionToEulerNode(Node):
                     print('quaternion_to_euler received improperly formatted input')
 
 
+class QuaternionToRotVecNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = QuaternionToRotVecNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.degree_factor = 180.0 / math.pi
+
+        self.input = self.add_input('quaternion', triggers_execution=True)
+        self.output = self.add_output('euler angles')
+
+    def execute(self):
+        if self.input.fresh_input:
+            data = any_to_array(self.input())
+            if data.shape[-1] % 4 == 0:
+                q = quaternion.as_quat_array(data)
+                rot_vec = quaternion.as_rotation_vector(q)
+                self.output.send(rot_vec)
+            else:
+                if self.app.verbose:
+                    print('quaternion_to_rotvec received improperly formatted input')
+
+
+class RotVecToQuaternionNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = RotVecToQuaternionNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('rotation vector', triggers_execution=True)
+        self.output = self.add_output('quaternion')
+
+    def my_quaternion_from_rotvec(self, rot_vec):
+        rot = scipy.spatial.transform.Rotation.from_rotvec(rot_vec)
+        q = rot.as_quat(scalar_first=True)
+        return q
+
+    def execute(self):
+        if self.input.fresh_input:
+            data = any_to_array(self.input())
+            if data.shape[-1] % 3 == 0:
+                quat = self.my_quaternion_from_rotvec(data)
+                self.output.send(quat)
+            else:
+                if self.app.verbose:
+                    print('rot_vec_to_quaternion received improperly formatted input')
+
+
 class EulerToQuaternionNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -79,9 +137,9 @@ class EulerToQuaternionNode(Node):
                     print('euler_to_quaternion received improperly formatted input')
 
     def my_quaternion_from_euler(self, eulers):
-        rot = scipy.spatial.transform.Rotation.from_euler(self.order(), any_to_list(eulers), degrees=self.degrees())
+        rot = scipy.spatial.transform.Rotation.from_euler(self.order(), eulers, degrees=self.degrees())
         q = rot.as_quat()
-        qq = np.array([q[3], q[0], q[1], q[2]])
+        qq = q[:, [3, 0, 1, 2]]
         return qq
 
 

@@ -27,6 +27,8 @@ from shutil import unpack_archive
 import joblib
 from tqdm.auto import tqdm
 import gzip
+import scipy
+
 
 
 def register_smpl_nodes():
@@ -35,6 +37,11 @@ def register_smpl_nodes():
     Node.app.register_node("smpl_body", SMPLBodyNode.factory)
 
     Node.app.register_node("smpl_quats_to_joints", SMPLPoseQuatsToJointsNode.factory)
+
+    Node.app.register_node("smpl_to_active", SMPLToActivePoseNode.factory)
+    Node.app.register_node("active_to_smpl", ActiveToSMPLPoseNode.factory)
+
+
 
 class SMPLNode(Node):
     joint_names = [
@@ -81,6 +88,209 @@ class SMPLNode(Node):
             print('load_SMPL_R_model_file failed', e)
             return None
         return None
+
+
+class SMPLShadowTranslator():
+    smpl_joints = {
+        'pelvis': 0,
+        'left_hip': 1,
+        'right_hip': 2,
+        'spine1': 3,
+        'left_knee': 4,
+        'right_knee': 5,
+        'spine2': 6,
+        'left_ankle': 7,
+        'right_ankle': 8,
+        'spine3': 9,
+        'left_foot': 10,
+        'right_foot': 11,
+        'neck': 12,
+        'left_collar': 13,
+        'right_collar': 14,
+        'head': 15,
+        'left_shoulder': 16,
+        'right_shoulder': 17,
+        'left_elbow': 18,
+        'right_elbow': 19,
+        'left_wrist': 20,
+        'right_wrist': 21
+    }
+
+    active_joints = {
+        'base_of_skull': 0,
+        'upper_vertebrae': 1,
+        'mid_vertebrae': 2,
+        'lower_vertebrae': 3,
+        'spine_pelvis': 4,
+        'pelvis_anchor': 5,
+        'left_hip': 6,
+        'left_knee': 7,
+        'left_ankle': 8,
+        'right_hip': 9,
+        'right_knee': 10,
+        'right_ankle': 11,
+        'left_shoulder_blade': 12,
+        'left_shoulder': 13,
+        'left_elbow': 14,
+        'left_wrist': 15,
+        'right_shoulder_blade': 16,
+        'right_shoulder': 17,
+        'right_elbow': 18,
+        'right_wrist': 19
+    }
+
+    smpl_to_active_joint_map = {
+        'head': 'base_of_skull',
+        'neck': 'upper_vertebrae',
+        'spine3': 'mid_vertebrae',
+        'spine2': 'lower_vertebrae',
+        'spine1': 'spine_pelvis',
+        'pelvis': 'pelvis_anchor',
+        'left_hip': 'left_hip',
+        'left_knee': 'left_knee',
+        'left_ankle': 'left_ankle',
+        'right_hip': 'right_hip',
+        'right_knee': 'right_knee',
+        'right_ankle': 'right_ankle',
+        'left_collar': 'left_shoulder_blade',
+        'left_shoulder': 'left_shoulder',
+        'left_elbow': 'left_elbow',
+        'left_wrist': 'left_wrist',
+        'right_collar': 'right_shoulder_blade',
+        'right_shoulder': 'right_shoulder',
+        'right_elbow': 'right_elbow',
+        'right_wrist': 'right_wrist'
+    }
+
+    smpl_from_active_joint_map = {
+        'head': 'base_of_skull',
+        'neck': 'upper_vertebrae',
+        'spine3': 'mid_vertebrae',
+        'spine2': 'lower_vertebrae',
+        'spine1': 'spine_pelvis',
+        'pelvis': 'pelvis_anchor',
+        'left_hip': 'left_hip',
+        'left_knee': 'left_knee',
+        'left_ankle': 'left_ankle',
+        'left_foot': 'empty',
+        'right_hip': 'right_hip',
+        'right_knee': 'right_knee',
+        'right_ankle': 'right_ankle',
+        'right_foot': 'empty',
+        'left_collar': 'left_shoulder_blade',
+        'left_shoulder': 'left_shoulder',
+        'left_elbow': 'left_elbow',
+        'left_wrist': 'left_wrist',
+        'right_collar': 'right_shoulder_blade',
+        'right_shoulder': 'right_shoulder',
+        'right_elbow': 'right_elbow',
+        'right_wrist': 'right_wrist'
+    }
+
+    @staticmethod
+    def translate_from_smpl_to_active(smpl_pose): #  expects n x 3 in, outputs 20 x 3
+        output_size = len(SMPLShadowTranslator.smpl_to_active_joint_map)
+        active_pose = np.zeros((output_size, 3), dtype=np.float32)
+        for smpl_joint in SMPLShadowTranslator.smpl_to_active_joint_map:
+            smpl_index = SMPLShadowTranslator.smpl_joints[smpl_joint]
+            active_joint = SMPLShadowTranslator.smpl_to_active_joint_map[smpl_joint]
+            active_index = SMPLShadowTranslator.active_joints[active_joint]
+            active_pose[active_index] = smpl_pose[smpl_index]
+        return active_pose
+
+    @staticmethod
+    def translate_from_active_to_smpl(active_pose): #  expects 20 x 3 in, outputs 20 x 3
+        output_size = len(SMPLShadowTranslator.smpl_from_active_joint_map)
+        smpl_pose = np.zeros((output_size, active_pose.shape[1]), dtype=np.float32)
+        for smpl_joint in SMPLShadowTranslator.smpl_from_active_joint_map:
+            smpl_index = SMPLShadowTranslator.smpl_joints[smpl_joint]
+            active_joint = SMPLShadowTranslator.smpl_from_active_joint_map[smpl_joint]
+            if active_joint in SMPLShadowTranslator.active_joints:
+                active_index = SMPLShadowTranslator.active_joints[active_joint]
+                smpl_pose[smpl_index] = active_pose[active_index]
+            else:
+                if active_pose.shape[1] == 3:
+                    smpl_pose[smpl_index] = [0.0, 0.0, 0.0]
+                elif active_pose.shape[1] == 4:
+                    smpl_pose[smpl_index] = [1.0, 0.0, 0.0, 0.0]
+        return smpl_pose
+
+    def __init__(self, label, data, args):
+        pass
+
+    
+class SMPLToActivePoseNode(SMPLShadowTranslator, Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = SMPLToActivePoseNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        SMPLShadowTranslator.__init__(self, label, data, args)
+        Node.__init__(self, label, data, args)
+
+        self.input = self.add_input('smpl pose', triggers_execution=True)
+        self.output_format_in = self.add_input('output_format', widget_type='combo', default_value='quaternions')
+        self.output_format_in.widget.combo_items = ['quaternions', 'rotation_vectors']
+        self.output = self.add_output('active pose')
+
+    def execute(self):
+        smpl_pose = self.input()
+        smpl_pose = any_to_array(smpl_pose)
+        if self.output_format_in() == 'quaternions':
+            active_pose = np.zeros((22, 4))
+            active_pose[:, 0] = 1.0
+        else:
+            active_pose = np.zeros((22, 3))
+        if len(smpl_pose.shape) > 1:
+            if smpl_pose.shape[1] == 3:
+                active_pose = SMPLShadowTranslator.translate_from_smpl_to_active(smpl_pose)
+                if self.output_format_in() == 'quaternions':
+                    rot = scipy.spatial.transform.Rotation.from_rotvec(active_pose)
+                    active_pose = rot.as_quat(scalar_first=True)
+            elif smpl_pose.shape[1] == 4:
+                active_pose = SMPLShadowTranslator.translate_from_smpl_to_active(smpl_pose)
+                if self.output_format_in() != 'quaternions':
+                    rot = scipy.spatial.transform.Rotation.from_quat(active_pose, scalar_first=True)
+                    active_pose = rot.as_rotvec()
+        self.output.send(active_pose)
+
+
+class ActiveToSMPLPoseNode(SMPLShadowTranslator, Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ActiveToSMPLPoseNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        SMPLShadowTranslator.__init__(self, label, data, args)
+        Node.__init__(self, label, data, args)
+
+        self.input = self.add_input('smpl pose', triggers_execution=True)
+        self.output_format_in = self.add_input('output_format', widget_type='combo', default_value='rotation_vectors')
+        self.output_format_in.widget.combo_items = ['quaternions', 'rotation_vectors']
+        self.output = self.add_output('active pose')
+
+    def execute(self):
+        active_pose = self.input()
+        active_pose = any_to_array(active_pose)
+        if self.output_format_in() == 'quaternions':
+            smpl_pose = np.zeros((20, 4))
+            smpl_pose[:, 0] = 1.0
+        else:
+            smpl_pose = np.zeros((20, 3))
+        if len(active_pose.shape) > 1:
+            if active_pose.shape[1] == 3:
+                smpl_pose = SMPLShadowTranslator.translate_from_active_to_smpl(active_pose)
+                if self.output_format_in() == 'quaternions':
+                    rot = scipy.spatial.transform.Rotation.from_rotvec(smpl_pose)
+                    smpl_pose = rot.as_quat(scalar_first=True)
+            elif active_pose.shape[1] == 4:
+                smpl_pose = SMPLShadowTranslator.translate_from_active_to_smpl(active_pose)
+                if self.output_format_in() != 'quaternions':
+                    rot = scipy.spatial.transform.Rotation.from_quat(smpl_pose, scalar_first=True)
+                    smpl_pose = rot.as_rotvec()
+        self.output.send(smpl_pose)
 
 
 class SMPLBodyNode(SMPLNode):
