@@ -574,7 +574,7 @@ def list_to_array_or_list_if_hetero(input):
             return np.array(hybrid_list), True
     else:
         if len(types) == 2:
-            if str not in types:
+            if str not in types and list not in types:
                 return np.array(hybrid_list), True
     return hybrid_list, False
 

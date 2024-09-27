@@ -422,6 +422,19 @@ class MoCapGLBody(MoCapNode):
                     self.body.joints[target_joint_index].bone_dim = command[1:]
                     self.body.joints[target_joint_index].set_matrix()
                 # self.body.joints[target_joint_index].set_mass()
+            elif command[0] == 'limb_vertices':
+                joint_name = command[1]
+                limb_vertices = []
+                for i in range(len(command) - 2):
+                    spec = any_to_list(command[i + 2])
+                    if len(spec) < 3:
+                        for i in range(3 - len(spec)):
+                            spec.append(0)
+                    limb_vertices.append(spec)
+                self.set_limb_vertices(joint_name, limb_vertices)
+
+    def set_limb_vertices(self, name, vertices):
+        self.body.set_limb_vertices(name, vertices)
 
     def joint_callback(self, joint_index):
         glPushMatrix()

@@ -14,7 +14,7 @@ from dpg_system.joint import *
 from dpg_system.node import *
 from dpg_system.gl_nodes import GLMaterial
 
-scale = 1.6
+scale = 1.0
 
 joint_quats_np = None
 
@@ -212,6 +212,7 @@ class BodyData:
         self.node = None
         self.captured_quaternions = []
         self.label = 0
+        self.box = False
         self.skeleton = False
         self.joint_sphere = gluNewQuadric()
         self.joint_disk = gluNewQuadric()
@@ -225,6 +226,63 @@ class BodyData:
         self.joint_matrices = None
         self.joint_quats = None
 
+        standard_box = []
+        if self.box:
+            standard_box.append((-1.0, -1.0, 0))
+            standard_box.append((-1.0, -1.0, 1.0))
+            standard_box.append((1.0, -1.0, 0))
+            standard_box.append((1.0, -1.0, 1.0))
+            standard_box.append((1.0, 1.0, 0))
+            standard_box.append((1.0, 1.0, 1.0))
+            standard_box.append((-1.0, 1.0, 0))
+            standard_box.append((-1.0, 1.0, 1.0))
+        else:
+            standard_box.append((-.5, -.5, 0)) # [[-.5 -.5 0][-1 -1 .5][.5 -.5 0][1 -1 .5][.5 .5 0][1 1 .5][-.5 .5 0][-1 1 .5][-.5 -.5 1][.5 -.5 1][.5 .5 1][-.5 .5 1]]
+            standard_box.append((-1.0, -1.0, 0.5))
+            standard_box.append((.5, -.5, 0))
+            standard_box.append((1.0, -1.0, 0.5))
+            standard_box.append((.5, .5, 0))
+            standard_box.append((1.0, 1.0, 0.5))
+            standard_box.append((-.5, .5, 0))
+            standard_box.append((-1.0, 1.0, .5))
+
+            standard_box.append((-.5, -.5, 1.0))
+            standard_box.append((.5, -.5, 1.0))
+            standard_box.append((.5, .5, 1.0))
+            standard_box.append((-.5, .5, 1.0))
+
+        self.limb_vertices = []
+        for i in range(37):
+            self.limb_vertices.append(standard_box)
+
+        self.limb_vertices[t_TopOfHead] = self.define_limb_shape(.8, 1.0, 0.9)
+
+        self.limb_vertices[t_BaseOfSkull] = self.define_limb_shape(1, .9, .8)
+        self.limb_vertices[t_MidVertebrae] = self.define_limb_shape(.7, .8, .9)
+        self.limb_vertices[t_LowerVertebrae] = self.define_limb_shape(.9, .9, .9)
+        self.limb_vertices[t_SpinePelvis] = [[-0.2, -1.0, -1.5], [-1.0, -1.0, 0.0], [0.2, -1.0, -1.5], [1.0, -1.0, 0.0], [-0.2, 1.0, -1.0], [1.0, 1.0, 0.0], [-0.2, 1.0, -1.0], [-1.0, 1.0, 0.0], [-1.0, -1.0, 1.0], [1.0, -1.0, 1.0], [1.0, 1.0, 1.0], [-1.0, 1.0, 1.0]]
+        self.limb_vertices[t_RightKnee] = self.define_limb_shape(1., 1, .9)
+        self.limb_vertices[t_LeftKnee] = self.define_limb_shape(1., 1, .9)
+        self.limb_vertices[t_RightAnkle] = self.define_limb_shape(1, 1, .7)
+        self.limb_vertices[t_LeftAnkle] = self.define_limb_shape(1, 1, .7)
+        self.limb_vertices[t_RightElbow] = self.define_limb_shape(.9, 1, .8)
+        self.limb_vertices[t_LeftElbow] = self.define_limb_shape(.9, 1, .8)
+        self.limb_vertices[t_RightWrist] = self.define_limb_shape(1., 1, .7)
+        self.limb_vertices[t_LeftWrist] = self.define_limb_shape(1., 1, .7)
+        self.limb_vertices[t_RightKnuckle] = self.define_limb_shape(.7, 1, .9)
+        self.limb_vertices[t_LeftKnuckle] = self.define_limb_shape(.7, 1, .9)
+        self.limb_vertices[t_RightFingerTip] = self.define_limb_shape(1, .85, .7)
+        self.limb_vertices[t_LeftFingerTip] = self.define_limb_shape(1, .85, .7)
+        self.limb_vertices[t_RightBallOfFoot] = self.define_limb_shape(.8, .9, 1.0)
+        self.limb_vertices[t_LeftBallOfFoot] = self.define_limb_shape(.8, .9, 1.0)
+        self.limb_vertices[t_RightToeTip] = self.define_limb_shape(1, .9, .8)
+        self.limb_vertices[t_LeftToeTip] = self.define_limb_shape(1, .9, .8)
+
+        self.limb_vertices[t_RightHip] = self.define_limb_shape(.7, 1.5, .7)
+        self.limb_vertices[t_LeftHip] = self.define_limb_shape(.7, 1.5, .7)
+
+        self.limb_vertices[t_LeftShoulderBladeBase] = [[-0.18, -0.9, 0.06], [-0.37, -0.97, 0.16], [0.91, -1.96, 0.31], [0.93, -1.96, 0.67], [1.27, 0.12, 0.29], [1.5, 0.38, 0.5], [-0.09, 0.18, -0.05], [0.34, 1.07, 0.21], [-0.85, -0.72, 0.91], [0.62, -1.29, 1.33], [1.3, 1.0, 1.26], [-0.56, 1.2, 1.11]]
+        self.limb_vertices[t_RightShoulderBladeBase] = [[-0.91, -1.85, 0.3], [-0.93, -1.96, 0.67], [0.18, -0.9, 0.06], [0.37, -0.97, 0.16], [-0.09, 0.18, -0.06], [-0.34, 1.07, 0.21], [-1.27, -0.12, 0.29], [-1.49, 0.38, 0.5], [-0.62, -1.29, 1.33], [0.85, -0.72, 0.91], [0.56, 1.2, 1.11], [-1.33, 1.0, 1.26]]
         self.joints = []
         self.limbs = [None] * 37
         for joint_index in joint_index_to_name:
@@ -336,6 +394,24 @@ class BodyData:
         self.color.append([0.5, 0.0, 0.75, 1.0])
         self.color.append([0.0, 0.5, 0.75, 1.0])
 
+    def define_limb_shape(self, start_thickness, middle_thickness, end_thickness):
+        shape = []
+        shape.append((-start_thickness, -start_thickness, 0))
+        shape.append((-middle_thickness, -middle_thickness, 0.5))
+        shape.append((start_thickness, -start_thickness, 0))
+        shape.append((middle_thickness, -middle_thickness, 0.5))
+        shape.append((start_thickness, start_thickness, 0))
+        shape.append((middle_thickness, middle_thickness, 0.5))
+        shape.append((-start_thickness, start_thickness, 0))
+        shape.append((-middle_thickness, middle_thickness, .5))
+
+        shape.append((-end_thickness, -end_thickness, 1.0))
+        shape.append((end_thickness, -end_thickness, 1.0))
+        shape.append((end_thickness, end_thickness, 1.0))
+        shape.append((-end_thickness, end_thickness, 1.0))
+
+        return shape
+
     def zero_pelvis(self):
         self.quaternions[t_PelvisAnchor] = [1, 0, 0, 0]
 
@@ -405,6 +481,26 @@ class BodyData:
         self.diffDiff[jointIndex][3] = self.diffQuaternionA[jointIndex][3] - self.diffQuaternionB[jointIndex][3]
 
         self.diffQuaternionAbsSum[jointIndex] = abs(self.diffDiff[jointIndex][0]) + abs(self.diffDiff[jointIndex][1]) + abs(self.diffDiff[jointIndex][2]) + abs(self.diffDiff[jointIndex][3])
+
+    def set_limb_vertices(self, limb_name, vertices):
+        joint_index = joint_name_to_index[limb_name]
+
+        self.limb_vertices[joint_index] = vertices
+
+        joint_data = self.joints[joint_index]
+
+        length = joint_data.length
+        widths = joint_data.thickness
+        dim_x = widths[0] / 2
+        dim_z = length - .02
+        dim_y = widths[1] / 2
+
+        if self.limb_vertices[joint_index] is not None:
+            points = []
+            for vertex in self.limb_vertices[joint_index]:
+                points.append([vertex[0] * dim_x, vertex[1] * dim_y, vertex[2] * dim_z])
+            self.limbs[joint_index].set_points(points)
+            self.limbs[joint_index].calc_normals()
 
     def actual_joint_to_shadow_joint(self, actual_joint):
         data = actual_joints[actual_joint]
@@ -697,87 +793,35 @@ class BodyData:
                 dim_z = dim[1] - .02
                 dim_y = dim[2] / 2
 
-                points = []
-                points.append((-dim_x, -dim_y, 0))
-                points.append((-dim_x, -dim_y, dim_z))
-                points.append((dim_x, -dim_y, 0))
-                points.append((dim_x, -dim_y, dim_z))
-                points.append((dim_x, dim_y, 0))
-                points.append((dim_x, dim_y, dim_z))
-                points.append((-dim_x, dim_y, 0))
-                points.append((-dim_x, dim_y, dim_z))
-                self.limbs[joint_index].set_points(points)
+                if self.limb_vertices[joint_index] is not None:
+                    points = []
+                    for vertex in self.limb_vertices[joint_index]:
+                        points.append([vertex[0] * dim_x, vertex[1] * dim_y, vertex[2] * dim_z])
+                    # points.append((-dim_x, -dim_y, 0))
+                    # points.append((-dim_x, -dim_y, dim_z))
+                    # points.append((dim_x, -dim_y, 0))
+                    # points.append((dim_x, -dim_y, dim_z))
+                    # points.append((dim_x, dim_y, 0))
+                    # points.append((dim_x, dim_y, dim_z))
+                    # points.append((-dim_x, dim_y, 0))
+                    # points.append((-dim_x, dim_y, dim_z))
+                    self.limbs[joint_index].set_points(points)
+
+                else:
+                    points = []
+                    points.append((-dim_x, -dim_y, 0))
+                    points.append((-dim_x, -dim_y, dim_z))
+                    points.append((dim_x, -dim_y, 0))
+                    points.append((dim_x, -dim_y, dim_z))
+                    points.append((dim_x, dim_y, 0))
+                    points.append((dim_x, dim_y, dim_z))
+                    points.append((-dim_x, dim_y, 0))
+                    points.append((-dim_x, dim_y, dim_z))
+                    self.limbs[joint_index].set_points(points)
                 # set colours - what would determine the colours?
                 self.limbs[joint_index].calc_normals()
 
             self.limbs[joint_index].draw()
-
-            # dim_x = dim[0] / 2
-            # dim_z = dim[1] - .02
-            # dim_y = dim[2] / 2
-            #
-            # points = []
-            # points.append((-dim_x, -dim_y, 0))
-            # points.append((-dim_x, -dim_y, dim_z))
-            # points.append((dim_x, -dim_y, 0))
-            # points.append((dim_x, -dim_y, dim_z))
-            # points.append((dim_x, dim_y, 0))
-            # points.append((dim_x, dim_y, dim_z))
-            # points.append((-dim_x, dim_y, 0))
-            # points.append((-dim_x, dim_y, dim_z))
-            #
-            # glBegin(GL_TRIANGLE_STRIP)
-            #
-            # normal = self.calc_normal(points[0], points[1], points[2])
-            # glNormal3fv(normal)
-            #
-            # glVertex3fv(points[0])
-            # glVertex3fv(points[1])
-            # glVertex3fv(points[2])
-            # glVertex3fv(points[3])
-            #
-            # normal = self.calc_normal(points[2], points[3], points[4])
-            # glNormal3fv(normal)
-            #
-            # glVertex3fv(points[4])
-            # glVertex3fv(points[5])
-            #
-            # normal = self.calc_normal(points[4], points[5], points[6])
-            # glNormal3fv(normal)
-            #
-            # glVertex3fv(points[6])
-            # glVertex3fv(points[7])
-            #
-            # normal = self.calc_normal(points[6], points[7], points[0])
-            # glNormal3fv(normal)
-            #
-            # glVertex3fv(points[0])
-            # glVertex3fv(points[1])
-            #
-            # glVertex3fv(points[1])
-            # glVertex3fv(points[1])
-            #
-            # # DEGENERATE TRIANGLE ISSUE
-            # normal = self.calc_normal(points[3], points[5], points[7])
-            # glNormal3fv(normal)
-            #
-            # glVertex3fv(points[1])
-            # glVertex3fv(points[3])
-            # glVertex3fv(points[7])
-            # glVertex3fv(points[5])
-            #
-            # glVertex3fv(points[5])
-            # glVertex3fv(points[0])
-            #
-            # normal = self.calc_normal(points[2], points[4], points[6])
-            # glNormal3fv(normal)
-            #
-            # glVertex3fv(points[0])
-            # glVertex3fv(points[2])
-            # glVertex3fv(points[6])
-            # glVertex3fv(points[4])
-            #
-            # glEnd()
 
     def calc_normal(self, v1, v2, v3):
         v_1 = np.array([v1[0], v1[1], v1[2]])
@@ -896,63 +940,147 @@ class LimbGeometry:
         self.points = []
         self.normals = [None] * 6
         self.list_index = -1
+        self.new_shape = False
 
     def set_points(self, points):
-        self.points = np.ndarray([8, 3])
+        self.points = np.ndarray([len(points), 3])
         for index, point in enumerate(points):
             self.points[index] = point
+        # if self.list_index != -1:
+        #     glDeleteLists(self.list_index, 1)
+        self.new_shape = True
 
     def calc_normals(self):
-        self.normals = np.ndarray([6, 3])
-        self.normals[0] = self.calc_normal(self.points[0], self.points[1], self.points[2])
-        self.normals[1] = self.calc_normal(self.points[2], self.points[3], self.points[4])
-        self.normals[2] = self.calc_normal(self.points[4], self.points[5], self.points[6])
-        self.normals[3] = self.calc_normal(self.points[6], self.points[7], self.points[0])
-        self.normals[4] = self.calc_normal(self.points[3], self.points[5], self.points[7])
-        self.normals[5] = self.calc_normal(self.points[2], self.points[4], self.points[6])
+        if len(self.points) == 8:
+            self.normals = np.ndarray([6, 3])
+            self.normals[0] = self.calc_normal(self.points[0], self.points[1], self.points[2])
+            self.normals[1] = self.calc_normal(self.points[2], self.points[3], self.points[4])
+            self.normals[2] = self.calc_normal(self.points[4], self.points[5], self.points[6])
+            self.normals[3] = self.calc_normal(self.points[6], self.points[7], self.points[0])
+            self.normals[4] = self.calc_normal(self.points[3], self.points[5], self.points[7])
+            self.normals[5] = self.calc_normal(self.points[2], self.points[4], self.points[6])
+        else:
+            self.normals = np.ndarray([10, 3])
+            self.normals[0] = self.calc_normal(self.points[0], self.points[1], self.points[2])
+            self.normals[1] = self.calc_normal(self.points[2], self.points[3], self.points[4])
+            self.normals[2] = self.calc_normal(self.points[4], self.points[5], self.points[6])
+            self.normals[3] = self.calc_normal(self.points[6], self.points[7], self.points[0])
+
+            self.normals[4] = self.calc_normal(self.points[1], self.points[8], self.points[3])
+            self.normals[5] = self.calc_normal(self.points[3], self.points[9], self.points[5])
+            self.normals[6] = self.calc_normal(self.points[5], self.points[10], self.points[7])
+            self.normals[7] = self.calc_normal(self.points[7], self.points[11], self.points[1])
+
+            self.normals[8] = self.calc_normal(self.points[9], self.points[10], self.points[11])
+            self.normals[9] = self.calc_normal(self.points[2], self.points[4], self.points[6])
 
     def draw(self):  #  limb structure could include colors and if so, do not use call_list... do vertex colors and manipulate GL_COLOR_MATERIAL
+        if self.new_shape:
+            self.new_shape = False
+            print('new_shape')
+            if self.list_index != -1:
+                glDeleteLists(self.list_index, 1)
+                print('deleted list', self.list_index)
+            self.list_index = -1
+
         if self.list_index == -1:
             self.list_index = glGenLists(1)
+            print('new_call_list', self.list_index)
             glNewList(self.list_index, GL_COMPILE)
 
             glBegin(GL_TRIANGLE_STRIP)
 
-            glNormal3fv(self.normals[0])
-            glVertex3fv(self.points[0])
-            glVertex3fv(self.points[1])
-            glVertex3fv(self.points[2])
-            glVertex3fv(self.points[3])
+            if len(self.points) == 8:
 
-            glNormal3fv(self.normals[1])
-            glVertex3fv(self.points[4])
-            glVertex3fv(self.points[5])
+                glNormal3fv(self.normals[0])
+                glVertex3fv(self.points[0])
+                glVertex3fv(self.points[1])
+                glVertex3fv(self.points[2])
+                glVertex3fv(self.points[3])
 
-            glNormal3fv(self.normals[2])
-            glVertex3fv(self.points[6])
-            glVertex3fv(self.points[7])
+                glNormal3fv(self.normals[1])
+                glVertex3fv(self.points[4])
+                glVertex3fv(self.points[5])
 
-            glNormal3fv(self.normals[3])
-            glVertex3fv(self.points[0])
-            glVertex3fv(self.points[1])
-            glVertex3fv(self.points[1])
-            glVertex3fv(self.points[1])
+                glNormal3fv(self.normals[2])
+                glVertex3fv(self.points[6])
+                glVertex3fv(self.points[7])
 
-            glNormal3fv(self.normals[4])
-            glVertex3fv(self.points[1])
-            glVertex3fv(self.points[3])
-            glVertex3fv(self.points[7])
-            glVertex3fv(self.points[5])
+                glNormal3fv(self.normals[3])
+                glVertex3fv(self.points[0])
+                glVertex3fv(self.points[1])
+                glVertex3fv(self.points[1])
+                glVertex3fv(self.points[1])
 
-            glVertex3fv(self.points[5])
-            glVertex3fv(self.points[0])
+                glNormal3fv(self.normals[4])
+                glVertex3fv(self.points[1])
+                glVertex3fv(self.points[3])
+                glVertex3fv(self.points[7])
+                glVertex3fv(self.points[5])
 
-            glNormal3fv(self.normals[5])
-            glVertex3fv(self.points[0])
-            glVertex3fv(self.points[2])
-            glVertex3fv(self.points[6])
-            glVertex3fv(self.points[4])
+                glVertex3fv(self.points[5])
+                glVertex3fv(self.points[0])
 
+                glNormal3fv(self.normals[5])
+                glVertex3fv(self.points[0])
+                glVertex3fv(self.points[2])
+                glVertex3fv(self.points[6])
+                glVertex3fv(self.points[4])
+            else:
+                glNormal3fv(self.normals[0])
+                glVertex3fv(self.points[0])
+                glVertex3fv(self.points[1])
+                glVertex3fv(self.points[2])
+                glVertex3fv(self.points[3])
+
+                glNormal3fv(self.normals[1])
+                glVertex3fv(self.points[4])
+                glVertex3fv(self.points[5])
+
+                glNormal3fv(self.normals[2])
+                glVertex3fv(self.points[6])
+                glVertex3fv(self.points[7])
+
+                glNormal3fv(self.normals[3])
+                glVertex3fv(self.points[0])
+                glVertex3fv(self.points[1])
+                glVertex3fv(self.points[1])
+                glVertex3fv(self.points[1])
+
+                glNormal3fv(self.normals[4])
+                glVertex3fv(self.points[1])
+                glVertex3fv(self.points[8])
+                glVertex3fv(self.points[3])
+                glVertex3fv(self.points[9])
+
+                glNormal3fv(self.normals[5])
+                glVertex3fv(self.points[5])
+                glVertex3fv(self.points[10])
+
+                glNormal3fv(self.normals[6])
+                glVertex3fv(self.points[7])
+                glVertex3fv(self.points[11])
+
+                glNormal3fv(self.normals[7])
+                glVertex3fv(self.points[1])
+                glVertex3fv(self.points[8])
+                glVertex3fv(self.points[8])
+                glVertex3fv(self.points[8])
+
+                glNormal3fv(self.normals[8])
+                glVertex3fv(self.points[8])
+                glVertex3fv(self.points[9])
+                glVertex3fv(self.points[11])
+                glVertex3fv(self.points[10])
+
+                glVertex3fv(self.points[10])
+                glVertex3fv(self.points[0])
+
+                glNormal3fv(self.normals[9])
+                glVertex3fv(self.points[0])
+                glVertex3fv(self.points[2])
+                glVertex3fv(self.points[6])
+                glVertex3fv(self.points[4])
             glEnd()
             glEndList()
         if self.list_index != -1:

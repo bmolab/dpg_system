@@ -667,6 +667,10 @@ class VPoserNode(Node):
         self.num_neurons = 512
         self.latent_dim = 32
         self.input_dim = 63
+
+        if len(args) > 1:
+            self.num_neurons = any_to_int(args[0])
+            self.latent_dim = any_to_int(args[1])
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.input_in = self.add_input('input in', triggers_execution=True)
         # self.forward_in = self.add_input('forward in', triggers_execution=True)

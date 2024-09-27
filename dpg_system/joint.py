@@ -46,9 +46,9 @@ class Joint:
         elif self.joint_index in [t_LeftShoulder, t_RightShoulder]:
             self.thickness = (.08, .06)
         elif self.joint_index in [t_LeftKnuckle, t_RightKnuckle]:
-            self.thickness = (.08, .04)
+            self.thickness = (.07, .025)
         elif self.joint_index in [t_LeftFingerTip, t_RightFingerTip]:
-            self.thickness = (.07, .03)
+            self.thickness = (.07, .02)
         elif self.joint_index in [t_LeftAnkle, t_RightAnkle]:
             self.thickness = (.06, .08)
         elif self.joint_index in [t_LeftElbow, t_RightElbow]:
