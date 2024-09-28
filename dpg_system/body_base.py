@@ -255,28 +255,31 @@ class BodyData:
         for i in range(37):
             self.limb_vertices.append(standard_box)
 
-        self.limb_vertices[t_TopOfHead] = self.define_limb_shape(.8, 1.0, 0.9)
+        self.limb_vertices[t_TopOfHead] = [[-0.7, -1.0, 0.0], [-1.3, -1.2, 0.5], [0.7, -1.0, 0.0], [1.3, -1.2, 0.5], [0.7, 0.4, 0.0], [1.3, 1.2, 0.5], [-0.7, 0.4, 0.0], [-1.3, 1.2, 0.5], [-0.8, -1.0, 1.0], [0.8, -1.0, 1.0], [0.8, 1.0, 1.0], [-0.8, 1.0, 1.0]]
 
-        self.limb_vertices[t_BaseOfSkull] = self.define_limb_shape(1, .9, .8)
+        self.limb_vertices[t_BaseOfSkull] = self.define_limb_shape(1, .95, .9)
         self.limb_vertices[t_MidVertebrae] = self.define_limb_shape(.7, .8, .9)
         self.limb_vertices[t_LowerVertebrae] = self.define_limb_shape(.9, .9, .9)
         self.limb_vertices[t_SpinePelvis] = [[-0.2, -1.0, -1.5], [-1.0, -1.0, 0.0], [0.2, -1.0, -1.5], [1.0, -1.0, 0.0], [-0.2, 1.0, -1.0], [1.0, 1.0, 0.0], [-0.2, 1.0, -1.0], [-1.0, 1.0, 0.0], [-1.0, -1.0, 1.0], [1.0, -1.0, 1.0], [1.0, 1.0, 1.0], [-1.0, 1.0, 1.0]]
-        self.limb_vertices[t_RightKnee] = self.define_limb_shape(1., 1, .9)
-        self.limb_vertices[t_LeftKnee] = self.define_limb_shape(1., 1, .9)
-        self.limb_vertices[t_RightAnkle] = self.define_limb_shape(1, 1, .7)
-        self.limb_vertices[t_LeftAnkle] = self.define_limb_shape(1, 1, .7)
-        self.limb_vertices[t_RightElbow] = self.define_limb_shape(.9, 1, .8)
-        self.limb_vertices[t_LeftElbow] = self.define_limb_shape(.9, 1, .8)
+        self.limb_vertices[t_RightKnee] = self.define_limb_shape(1., 1.2, .9)
+        self.limb_vertices[t_LeftKnee] = self.define_limb_shape(1., 1.2, .9)
+        self.limb_vertices[t_RightAnkle] = self.define_limb_shape(1.1, 1, .7)
+        self.limb_vertices[t_LeftAnkle] = self.define_limb_shape(1.1, 1, .7)
+        self.limb_vertices[t_RightElbow] = self.define_limb_shape(1., 1.1, .9)
+        self.limb_vertices[t_LeftElbow] = self.define_limb_shape(1., 1.1, .9)
         self.limb_vertices[t_RightWrist] = self.define_limb_shape(1., 1, .7)
         self.limb_vertices[t_LeftWrist] = self.define_limb_shape(1., 1, .7)
+        self.limb_vertices[t_RightHeel] = self.define_limb_shape(.8, .8, .8)
+        self.limb_vertices[t_LeftHeel] = self.define_limb_shape(.8, .8, .8)
+
         self.limb_vertices[t_RightKnuckle] = self.define_limb_shape(.7, 1, .9)
         self.limb_vertices[t_LeftKnuckle] = self.define_limb_shape(.7, 1, .9)
-        self.limb_vertices[t_RightFingerTip] = self.define_limb_shape(1, .85, .7)
-        self.limb_vertices[t_LeftFingerTip] = self.define_limb_shape(1, .85, .7)
+        self.limb_vertices[t_RightFingerTip] = self.define_limb_shape(.9, .75, .6)
+        self.limb_vertices[t_LeftFingerTip] = self.define_limb_shape(.9, .75, .6)
         self.limb_vertices[t_RightBallOfFoot] = self.define_limb_shape(.8, .9, 1.0)
         self.limb_vertices[t_LeftBallOfFoot] = self.define_limb_shape(.8, .9, 1.0)
-        self.limb_vertices[t_RightToeTip] = self.define_limb_shape(1, .9, .8)
-        self.limb_vertices[t_LeftToeTip] = self.define_limb_shape(1, .9, .8)
+        self.limb_vertices[t_RightToeTip] = self.define_limb_shape(1, .9, .6)
+        self.limb_vertices[t_LeftToeTip] = self.define_limb_shape(1, .9, .6)
 
         self.limb_vertices[t_RightHip] = self.define_limb_shape(.7, 1.5, .7)
         self.limb_vertices[t_LeftHip] = self.define_limb_shape(.7, 1.5, .7)
