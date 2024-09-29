@@ -30,7 +30,8 @@ def any_to_match(data, match):
 def any_to_string(data):
     t = type(data)
     if t == str:
-        return data
+        out_string = data.replace('\n', '')
+        return out_string
     elif t in [int, bool, np.int64, np.bool_]:
         return str(data)
     elif t in [float, np.double, np.float32]:
@@ -648,28 +649,33 @@ def list_to_bool(input, validate=False):
 
 
 def list_to_string(data, validate=False):
-    out_string = ''
-    string_list = []
-    try:
-        for v in data:
-            tt = type(v)
-            if tt == str:
-                string_list.append(v)
-            elif tt in [float, np.double]:
-                string_list.append('%.3f' % v)
-            elif tt in [int, np.int64, bool, np.bool_]:
-                string_list.append(str(v))
-            elif v is None:
-                string_list.append('None')
-            elif tt == list:
-                list_string = list_to_string(v)
-                string_list.append(list_string)
-        out_string = ' '.join(string_list)
-    except:
-        if validate:
-            return None
-        pass
-    return out_string
+    return_string = str(data)
+    # return_string = return_string.replace('\n', '')
+    return_string = ' '.join(return_string.split())
+
+    return return_string
+    # out_string = ''
+    # string_list = []
+    # try:
+    #     for v in data:
+    #         tt = type(v)
+    #         if tt == str:
+    #             string_list.append(v)
+    #         elif tt in [float, np.double]:
+    #             string_list.append('%.3f' % v)
+    #         elif tt in [int, np.int64, bool, np.bool_]:
+    #             string_list.append(str(v))
+    #         elif v is None:
+    #             string_list.append('None')
+    #         elif tt == list:
+    #             list_string = list_to_string(v)
+    #             string_list.append(list_string)
+    #     out_string = ' '.join(string_list)
+    # except:
+    #     if validate:
+    #         return None
+    #     pass
+    # return out_string
 
 
 def string_to_float(input, validate=False):
@@ -778,6 +784,10 @@ def decode_arg(args, index):
             return arg, str
         elif t == list:
             return arg, list
+        elif t == np.ndarray:
+            return arg, np.ndarray
+        elif torch_available and t == torch.Tensor:
+            return arg, torch.Tensor
     return None, type(None)
 
 

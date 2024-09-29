@@ -712,7 +712,10 @@ class UnpackNode(Node):
         out_names = []
         self.types = {'s': str, 'i': int, 'f': float, 'l': list, 'b': bool, 'a': np.ndarray}
         self.kinds = [str, int, float, list, bool, np.ndarray]
-        # self.output_function = {'s': self.output_string, 'i': self.output_int, 'f': self.output_float, 'l': self.output_list, 'b': self.output_bool, 'a': self.output_array}
+
+        if torch_available:
+            self.types['t'] = torch.Tensor
+            self.kinds.append(torch.Tensor)
 
         if len(args) > 0:
             if is_number(args[0]):
@@ -721,28 +724,22 @@ class UnpackNode(Node):
                 self.num_outs = self.arg_as_int(default_value=1)
                 for i in range(self.num_outs):
                     self.out_types.append(None)
-                    # self.out_functions.append(self.output_any)
                     out_names.append('out ' + str(i))
             else:
                 self.num_outs = len(args)
                 for arg in args:
                     if arg in self.types:
                         self.out_types.append(self.types[arg])
-                        # self.out_functions.append(self.output_function[arg])
                         out_names.append(self.types[arg].__name__)
                     else:
                         if is_number(arg):
                             self.out_types.append(any_to_numerical(arg))
                             out_names.append(any_to_numerical(arg))
-                            # self.out_functions.append(self.output_literal)
                         else:
                             self.out_types.append(any_to_string(arg))
                             out_names.append(any_to_string(arg))
-                            # self.out_functions.append(self.output_literal)
-
         else:
             self.out_types = [None, None]
-            # self.out_functions = [self.output_any, self.output_any]
 
         self.input = self.add_input("", triggers_execution=True)
 
@@ -760,6 +757,8 @@ class UnpackNode(Node):
                     self.add_bool_output(out_names[i])
                 elif self.out_types[i] == np.ndarray:
                     self.add_array_output(out_names[i])
+                elif self.out_types[i] == torch.Tensor and torch_available:
+                    self.add_tensor_output(out_names[i])
             else:
                 self.add_output(out_names[i])
 
@@ -770,7 +769,6 @@ class UnpackNode(Node):
             t = type(value)
             if t in [float, int, bool, np.float32, np.int64]:
                 self.outputs[0].set_value(value)
-                # self.out_functions[0](0, self.input)
             elif t == 'str':
                 listing, _, _ = string_to_hybrid_list(value)
                 out_count = len(listing)
@@ -778,23 +776,26 @@ class UnpackNode(Node):
                     out_count = self.num_outs
                 for i in range(out_count):
                     self.outputs[i].set_value(listing[i])
-                    # self.out_functions[i](i, listing[i])
             elif t == list:
                 listing, _, _ = list_to_hybrid_list(value)
-                # print(listing)
                 out_count = len(listing)
                 if out_count > self.num_outs:
                     out_count = self.num_outs
                 for i in range(out_count):
                     self.outputs[i].set_value(listing[i])
-                    # self.out_functions[i](i, listing[i])
             elif t == np.ndarray:
                 out_count = value.shape[0]
                 if out_count > self.num_outs:
                     out_count = self.num_outs
                 for i in range(out_count):
                     self.outputs[i].set_value(value[i])
-                    # self.out_functions[i](i, value[i])
+            elif torch_available:
+                if t == torch.Tensor:
+                    out_count = value.shape[0]
+                    if out_count > self.num_outs:
+                        out_count = self.num_outs
+                    for i in range(out_count):
+                        self.outputs[i].set_value(value[i])
             self.send_all()
 
 
@@ -806,21 +807,64 @@ class PackNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+        self.num_ins = 2
+        self.in_types = []
+        in_names = []
+        self.types = {'s': str, 'i': int, 'f': float, 'l': list, 'b': bool, 'a': np.ndarray}
+        self.kinds = [str, int, float, list, bool, np.ndarray]
 
-        self.num_ins = self.arg_as_int(default_value=2)
+        if torch_available:
+            self.types['t'] = torch.Tensor
+            self.kinds.append(torch.Tensor)
+
+
+        if len(args) > 0:
+            if is_number(args[0]):
+                self.num_ins = self.arg_as_int(default_value=2)
+                for i in range(self.num_ins):
+                    self.in_types.append(None)
+                    in_names.append('out ' + str(i))
+            else:
+                self.num_ins = len(args)
+                for arg in args:
+                    if arg in self.types:
+                        self.in_types.append(self.types[arg])
+                        in_names.append(self.types[arg].__name__)
+                    else:
+                        if is_number(arg):
+                            self.in_types.append(any_to_numerical(arg))
+                            in_names.append(any_to_numerical(arg))
+                        else:
+                            self.in_types.append(any_to_string(arg))
+                            in_names.append(any_to_string(arg))
+        else:
+            self.in_types = [None, None]
 
         for i in range(self.num_ins):
-            if i == 0:
-                self.add_input("in " + str(i + 1), triggers_execution=True)
+            triggers = False
+            if label == 'pak' or i == 0:
+                triggers = True
+            if self.in_types[i] in self.kinds:
+                if self.in_types[i] == str:
+                    self.add_string_input(in_names[i], triggers_execution=triggers)
+                elif self.in_types[i] == int:
+                    self.add_int_input(in_names[i], triggers_execution=triggers)
+                elif self.in_types[i] == float:
+                    self.add_float_input(in_names[i], triggers_execution=triggers)
+                elif self.in_types[i] == list:
+                    self.add_list_input(in_names[i], triggers_execution=triggers)
+                elif self.in_types[i] == bool:
+                    self.add_bool_input(in_names[i], triggers_execution=triggers)
+                elif self.in_types[i] == np.ndarray:
+                    self.add_array_input(in_names[i], triggers_execution=triggers)
+                elif torch_available and self.in_types[i] == torch.Tensor:
+                    self.add_tensor_input(in_names[i], triggers_execution=triggers)
             else:
-                if label == 'pak':
-                    self.add_input("in " + str(i + 1), triggers_execution=True)
-                else:
-                    self.add_input("in " + str(i + 1))
+                self.add_input(in_names[i], triggers_execution=triggers)
 
         self.output = self.add_output("out")
-        self.output_preference_option = self.add_option('output pref', widget_type='combo')
-        self.output_preference_option.widget.combo_items = ['list', 'array']
+        self.output_preference_option = self.add_option('output pref', widget_type='combo', default_value='list')
+        self.output_preference_option.widget.combo_items = ['list', 'array', 'tensor']
 
     def custom_create(self, from_file):
         for i in range(self.num_ins):
@@ -833,20 +877,81 @@ class PackNode(Node):
         elif self.inputs[0].fresh_input:
             trigger = True
         if trigger:
-            out_list = []
-            for i in range(self.num_ins):
-                value = self.inputs[i].get_data()
-                t = type(value)
-                # print(t)
-                if t in [list, tuple]:
-                    out_list += [value]
-                elif t == np.ndarray:
-                    array_list = any_to_list(value)
-                    out_list += [array_list]
+            output_option = self.output_preference_option()
+            if output_option == 'list':
+                out_list = []
+                for i in range(self.num_ins):
+                    value = self.inputs[i].get_data()
+                    t = type(value)
+                    if t in [list, tuple]:
+                        out_list += [value]
+                    elif t == np.ndarray:
+                        array_list = any_to_list(value)
+                        out_list += [array_list]
+                    else:
+                        out_list.append(value)
+                self.output.send(out_list)
+            elif output_option == 'array':
+                out_list = []
+                dims = len(self.inputs[0].get_data().shape)
+                all_array = True
+                for i in range(self.num_ins):
+                    if self.in_types[i] != np.ndarray:
+                        all_array = False
+                        break
+                for i in range(self.num_ins):
+                    out_list.append(self.inputs[i].get_data())
+
+                if all_array:
+                    try:
+                        out_array = np.stack(out_list)
+                        self.output.send(out_array)
+                    except:
+                        self.output.send(out_list)
                 else:
-                    out_list.append(value)
-            out_list, _ = list_to_array_or_list_if_hetero(out_list)
-            self.output.send(out_list)
+                    for i in range(self.num_ins):
+                        value = self.inputs[i].get_data()
+                        t = type(value)
+                        if t in [list, tuple]:
+                            out_list += [value]
+                        elif t == np.ndarray:
+                            array_list = any_to_list(value)
+                            out_list += [array_list]
+                        else:
+                            out_list.append(value)
+                    out_list, _ = list_to_array_or_list_if_hetero(out_list)
+                    self.output.send(out_list)
+            elif output_option == 'tensor':
+                out_list = []
+                all_tensors = True
+                for i in range(self.num_ins):
+                    if self.in_types[i] != torch.Tensor:
+                        all_tensors = False
+                        break
+                for i in range(self.num_ins):
+                    out_list.append(self.inputs[i].get_data())
+
+                if all_tensors:
+                    try:
+                        out_tensor = torch.stack(out_list)
+                        self.output.send(out_tensor)
+                    except:
+                        self.output.send(out_list)
+                else:
+                    for i in range(self.num_ins):
+                        value = self.inputs[i].get_data()
+                        t = type(value)
+                        if t in [list, tuple]:
+                            out_list += [value]
+                        elif t == np.ndarray:
+                            array_list = any_to_list(value)
+                            out_list += [array_list]
+                        else:
+                            out_list.append(value)
+                    out_list, _ = list_to_array_or_list_if_hetero(out_list)
+                    if type(out_list) is np.ndarray:
+                        out_list = torch.from_numpy(out_list)
+                    self.output.send(out_list)
 
 
 class BucketBrigadeNode(Node):

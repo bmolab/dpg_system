@@ -232,6 +232,22 @@ class NodeArrayOutput(NodeOutput):
         super().set_value(array_value)
 
 
+class NodeTensorOutput(NodeOutput):
+    def __init__(self, label: str = "output", node=None, pos=None):
+        super().__init__(label, node, pos)
+
+    def send(self, data=None):
+        if data is not None and torch_available:
+            tensor_data = any_to_tensor(data)
+            super().send(tensor_data)
+        else:
+            super().send()
+    def set_value(self, data):
+        if torch_available:
+            tensor_value = any_to_tensor(data)
+            super().set_value(tensor_value)
+
+
 class NodeDisplay:
     def __init__(self, label: str = "", uuid=None, node=None, width=80):
         self.uuid = dpg.generate_uuid()
@@ -865,7 +881,11 @@ class NodeInput:
         self.input_index = -1
         self.fresh_input = False
         self.node_attribute = None
+
         self.bang_repeats_previous = True
+        if widget_type == 'checkbox':
+            self.bang_repeats_previous = False
+
         self.widget = None
         self.widget_has_trigger = trigger_button
         if widget_type:
@@ -1070,9 +1090,73 @@ class NodeInput:
         return self._data
 
 
+class NodeIntInput(NodeInput):
+    def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
+        super().__init__(label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
+
+    def receive_data(self, data):
+        int_data = any_to_int(data)
+        super().receive_data(int_data)
+
+
+class NodeFloatInput(NodeInput):
+    def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
+        super().__init__(label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
+
+    def receive_data(self, data):
+        float_data = any_to_float(data)
+        super().receive_data(float_data)
+
+
+class NodeBoolInput(NodeInput):
+    def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
+        super().__init__(label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
+
+    def receive_data(self, data):
+        bool_data = any_to_bool(data)
+        super().receive_data(bool_data)
+
+
+class NodeStringInput(NodeInput):
+    def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
+        super().__init__(label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
+
+    def receive_data(self, data):
+        string_data = any_to_string(data)
+        super().receive_data(string_data)
+
+
+class NodeListInput(NodeInput):
+    def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
+        super().__init__(label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
+
+    def receive_data(self, data):
+        list_data = any_to_list(data)
+        super().receive_data(list_data)
+
+
+class NodeArrayInput(NodeInput):
+    def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
+        super().__init__(label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
+
+    def receive_data(self, data):
+        array_data = any_to_array(data)
+        super().receive_data(array_data)
+
+
+class NodeTensorInput(NodeInput):
+    def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
+        super().__init__(label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
+
+    def receive_data(self, data):
+        if torch_available:
+            tensor_data = any_to_tensor(data)
+            super().receive_data(tensor_data)
+
+
 class NodeNumericalInput(NodeInput):
     def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
-        super().__init__(self, label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
+        super().__init__(label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
         self.numerical_data = None
         if default_value is not None:
             self.to_numerical(default_value)
@@ -1345,17 +1429,55 @@ class Node:
 
     def add_input(self, label: str = "", uuid=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, callback=None):
         new_input = NodeInput(label, uuid, self, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
-        if widget_type == 'checkbox':
-            new_input.bang_repeats_previous = False
+        # if widget_type == 'checkbox':
+        #     new_input.bang_repeats_previous = False
+        self.install_input(new_input, callback=callback)
+        return new_input
+
+    def install_input(self, new_input, callback):
         self.inputs.append(new_input)
         new_input.input_index = len(self.inputs) - 1
 
         self.ordered_elements.append(new_input)
         if callback is not None:
             new_input.add_callback(callback=callback, user_data=self)
-        if widget_type is not None:
-            self.property_registery[label] = new_input
-            self.message_handlers[label] = self.property_message
+        if new_input.widget is not None:
+            self.property_registery[new_input.get_label()] = new_input
+            self.message_handlers[new_input.get_label()] = self.property_message
+
+    def add_int_input(self, label: str = "", uuid=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, callback=None):
+        new_input = NodeIntInput(label, uuid, self, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
+        self.install_input(new_input, callback=callback)
+        return new_input
+
+    def add_float_input(self, label: str = "", uuid=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, callback=None):
+        new_input = NodeFloatInput(label, uuid, self, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
+        self.install_input(new_input, callback=callback)
+        return new_input
+
+    def add_bool_input(self, label: str = "", uuid=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, callback=None):
+        new_input = NodeBoolInput(label, uuid, self, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
+        self.install_input(new_input, callback=callback)
+        return new_input
+
+    def add_string_input(self, label: str = "", uuid=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, callback=None):
+        new_input = NodeStringInput(label, uuid, self, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
+        self.install_input(new_input, callback=callback)
+        return new_input
+
+    def add_list_input(self, label: str = "", uuid=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, callback=None):
+        new_input = NodeListInput(label, uuid, self, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
+        self.install_input(new_input, callback=callback)
+        return new_input
+
+    def add_array_input(self, label: str = "", uuid=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, callback=None):
+        new_input = NodeArrayInput(label, uuid, self, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
+        self.install_input(new_input, callback=callback)
+        return new_input
+
+    def add_tensor_input(self, label: str = "", uuid=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, callback=None):
+        new_input = NodeTensorInput(label, uuid, self, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
+        self.install_input(new_input, callback=callback)
         return new_input
 
     def add_output(self, label: str = "output", pos=None):
@@ -1399,6 +1521,15 @@ class Node:
         self.outputs.append(new_output)
         self.ordered_elements.append(new_output)
         return new_output
+
+    def add_tensor_output(self, label: str = "output", pos=None):
+        print('t')
+        if torch_available:
+            new_output = NodeTensorOutput(label, self, pos)
+            self.outputs.append(new_output)
+            self.ordered_elements.append(new_output)
+            return new_output
+        return None
 
     def add_handler_to_widgets(self):
         for input_ in self.inputs:
