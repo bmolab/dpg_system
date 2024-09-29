@@ -1,6 +1,7 @@
 import dearpygui.dearpygui as dpg
 import time
 
+import numpy as np
 import torch
 
 from dpg_system.node import Node
@@ -988,6 +989,24 @@ class ValueNode(Node):
                 else:
                     display_data = 0
                 output_data = display_data
+            elif t in [np.float32]:
+                display_data = float(in_data)
+                output_data = display_data
+            elif t in [np.int64]:
+                display_data = int(in_data)
+                output_data = display_data
+            elif t == np.ndarray:
+                if in_data.dtype in [np.float32, np.float64, np.int64, np.int32, np.int16, np.int8, np.uint8, np.uint16, np.uint32, np.uint64]:
+                    if self.input.widget.widget in ['drag_float', 'input_float', 'slider_float', 'knob_float']:
+                        display_data = in_data
+                        display_data = any_to_float(display_data)
+                        self.input.widget.set(display_data, propagate=False)
+                        output_data = display_data
+                    if self.input.widget.widget in ['drag_int', 'input_int', 'slider_int', 'knob_int']:
+                        display_data = in_data
+                        display_data = any_to_int(display_data)
+                        self.input.widget.set(display_data, propagate=False)
+                        output_data = display_data
             else:
                 if self.input.widget.widget in ['text_input', 'text_editor']:
                     if t == np.ndarray:

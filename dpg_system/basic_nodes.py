@@ -706,19 +706,71 @@ class UnpackNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+        self.num_outs = 2
+        self.out_types = []
+        # self.out_functions = []
+        out_names = []
+        self.types = {'s': str, 'i': int, 'f': float, 'l': list, 'b': bool, 'a': np.ndarray}
+        self.kinds = [str, int, float, list, bool, np.ndarray]
+        # self.output_function = {'s': self.output_string, 'i': self.output_int, 'f': self.output_float, 'l': self.output_list, 'b': self.output_bool, 'a': self.output_array}
 
-        self.num_outs = self.arg_as_int(default_value=1)
+        if len(args) > 0:
+            if is_number(args[0]):
+                self.out_types = []
+                self.out_functions = []
+                self.num_outs = self.arg_as_int(default_value=1)
+                for i in range(self.num_outs):
+                    self.out_types.append(None)
+                    # self.out_functions.append(self.output_any)
+                    out_names.append('out ' + str(i))
+            else:
+                self.num_outs = len(args)
+                for arg in args:
+                    if arg in self.types:
+                        self.out_types.append(self.types[arg])
+                        # self.out_functions.append(self.output_function[arg])
+                        out_names.append(self.types[arg].__name__)
+                    else:
+                        if is_number(arg):
+                            self.out_types.append(any_to_numerical(arg))
+                            out_names.append(any_to_numerical(arg))
+                            # self.out_functions.append(self.output_literal)
+                        else:
+                            self.out_types.append(any_to_string(arg))
+                            out_names.append(any_to_string(arg))
+                            # self.out_functions.append(self.output_literal)
+
+        else:
+            self.out_types = [None, None]
+            # self.out_functions = [self.output_any, self.output_any]
+
         self.input = self.add_input("", triggers_execution=True)
 
         for i in range(self.num_outs):
-            self.add_output("out " + str(i))
+            if self.out_types[i] in self.kinds:
+                if self.out_types[i] == str:
+                    self.add_string_output(out_names[i])
+                elif self.out_types[i] == int:
+                    self.add_int_output(out_names[i])
+                elif self.out_types[i] == float:
+                    self.add_float_output(out_names[i])
+                elif self.out_types[i] == list:
+                    self.add_list_output(out_names[i])
+                elif self.out_types[i] == bool:
+                    self.add_bool_output(out_names[i])
+                elif self.out_types[i] == np.ndarray:
+                    self.add_array_output(out_names[i])
+            else:
+                self.add_output(out_names[i])
+
 
     def execute(self):
         if self.input.fresh_input:
             value = self.input()
             t = type(value)
-            if t in [float, int, bool]:
+            if t in [float, int, bool, np.float32, np.int64]:
                 self.outputs[0].set_value(value)
+                # self.out_functions[0](0, self.input)
             elif t == 'str':
                 listing, _, _ = string_to_hybrid_list(value)
                 out_count = len(listing)
@@ -726,6 +778,7 @@ class UnpackNode(Node):
                     out_count = self.num_outs
                 for i in range(out_count):
                     self.outputs[i].set_value(listing[i])
+                    # self.out_functions[i](i, listing[i])
             elif t == list:
                 listing, _, _ = list_to_hybrid_list(value)
                 # print(listing)
@@ -734,16 +787,14 @@ class UnpackNode(Node):
                     out_count = self.num_outs
                 for i in range(out_count):
                     self.outputs[i].set_value(listing[i])
+                    # self.out_functions[i](i, listing[i])
             elif t == np.ndarray:
-                out_count = value.size
+                out_count = value.shape[0]
                 if out_count > self.num_outs:
                     out_count = self.num_outs
-                if value.dtype in [np.double, float, np.float32]:
-                    for i in range(out_count):
-                        self.outputs[i].set_value(float(value[i]))
-                elif value.dtype in [np.int64, int, np.bool_]:
-                    for i in range(out_count):
-                        self.outputs[i].set_value(int(value[i]))
+                for i in range(out_count):
+                    self.outputs[i].set_value(value[i])
+                    # self.out_functions[i](i, value[i])
             self.send_all()
 
 

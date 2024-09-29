@@ -805,7 +805,7 @@ def is_number(s):
                 return s.replace('.', '', 1).isdigit()
         else:
             return False
-    elif type(s) in [float, int, complex]:
+    elif type(s) in [float, int, complex, np.int64, np.float32]:
         return True
     else:
         return False

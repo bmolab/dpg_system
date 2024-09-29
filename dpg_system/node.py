@@ -140,6 +140,98 @@ class NodeOutput:
         output_container['children'] = children
 
 
+class NodeIntOutput(NodeOutput):
+    def __init__(self, label: str = "output", node=None, pos=None):
+        super().__init__(label, node, pos)
+
+    def send(self, data=None):
+        if data is not None:
+            int_data = any_to_int(data)
+            super().send(int_data)
+        else:
+            super().send()
+
+    def set_value(self, data):
+        int_data = any_to_int(data)
+        super().set_value(int_data)
+
+
+class NodeFloatOutput(NodeOutput):
+    def __init__(self, label: str = "output", node=None, pos=None):
+        super().__init__(label, node, pos)
+
+    def send(self, data=None):
+        if data is not None:
+            float_data = any_to_float(data)
+            super().send(float_data)
+        else:
+            super().send()
+
+    def set_value(self, data):
+        float_data = any_to_float(data)
+        super().set_value(float_data)
+
+
+class NodeBoolOutput(NodeOutput):
+    def __init__(self, label: str = "output", node=None, pos=None):
+        super().__init__(label, node, pos)
+
+    def send(self, data=None):
+        if data is not None:
+            bool_data = any_to_bool(data)
+            super().send(bool_data)
+        else:
+            super().send()
+
+    def set_value(self, data):
+        bool_data = any_to_bool(data)
+        super().set_value(bool_data)
+
+
+class NodeListOutput(NodeOutput):
+    def __init__(self, label: str = "output", node=None, pos=None):
+        super().__init__(label, node, pos)
+
+    def send(self, data=None):
+        if data is not None:
+            list_data = any_to_list(data)
+            super().send(list_data)
+        else:
+            super().send()
+    def set_value(self, data):
+        list_data = any_to_list(data)
+        super().set_value(list_data)
+
+class NodeStringOutput(NodeOutput):
+    def __init__(self, label: str = "output", node=None, pos=None):
+        super().__init__(label, node, pos)
+
+    def send(self, data=None):
+        if data is not None:
+            string_data = any_to_string(data)
+            super().send(string_data)
+        else:
+            super().send()
+    def set_value(self, data):
+        string_data = any_to_string(data)
+        super().set_value(string_data)
+
+
+class NodeArrayOutput(NodeOutput):
+    def __init__(self, label: str = "output", node=None, pos=None):
+        super().__init__(label, node, pos)
+
+    def send(self, data=None):
+        if data is not None:
+            array_data = any_to_array(data)
+            super().send(array_data)
+        else:
+            super().send()
+    def set_value(self, data):
+        array_value = any_to_array(data)
+        super().set_value(array_value)
+
+
 class NodeDisplay:
     def __init__(self, label: str = "", uuid=None, node=None, width=80):
         self.uuid = dpg.generate_uuid()
@@ -828,7 +920,7 @@ class NodeInput:
 
     def create(self, parent):
         self.node_attribute = dpg.node_attribute(parent=parent, attribute_type=dpg.mvNode_Attr_Input, user_data=self, id=self.uuid)
-        # print(self, self._label)
+
         with self.node_attribute:
             if self.widget is None:
                 self.label_uuid = dpg.add_text(self._label)
@@ -980,7 +1072,7 @@ class NodeInput:
 
 class NodeNumericalInput(NodeInput):
     def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
-        super().__init(self, label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
+        super().__init__(self, label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
         self.numerical_data = None
         if default_value is not None:
             self.to_numerical(default_value)
@@ -1268,6 +1360,42 @@ class Node:
 
     def add_output(self, label: str = "output", pos=None):
         new_output = NodeOutput(label, self, pos)
+        self.outputs.append(new_output)
+        self.ordered_elements.append(new_output)
+        return new_output
+
+    def add_int_output(self, label: str = "output", pos=None):
+        new_output = NodeIntOutput(label, self, pos)
+        self.outputs.append(new_output)
+        self.ordered_elements.append(new_output)
+        return new_output
+
+    def add_float_output(self, label: str = "output", pos=None):
+        new_output = NodeFloatOutput(label, self, pos)
+        self.outputs.append(new_output)
+        self.ordered_elements.append(new_output)
+        return new_output
+
+    def add_bool_output(self, label: str = "output", pos=None):
+        new_output = NodeBoolOutput(label, self, pos)
+        self.outputs.append(new_output)
+        self.ordered_elements.append(new_output)
+        return new_output
+
+    def add_string_output(self, label: str = "output", pos=None):
+        new_output = NodeStringOutput(label, self, pos)
+        self.outputs.append(new_output)
+        self.ordered_elements.append(new_output)
+        return new_output
+
+    def add_list_output(self, label: str = "output", pos=None):
+        new_output = NodeListOutput(label, self, pos)
+        self.outputs.append(new_output)
+        self.ordered_elements.append(new_output)
+        return new_output
+
+    def add_array_output(self, label: str = "output", pos=None):
+        new_output = NodeArrayOutput(label, self, pos)
         self.outputs.append(new_output)
         self.ordered_elements.append(new_output)
         return new_output
