@@ -493,7 +493,17 @@ def string_to_numerical(input_string, validate=False):
         force_list = False
         if input_string[0] == '[':
             force_list = True
-        input_string = " ".join(input_string.split())
+        chunks = input_string.split()
+        if len(chunks) == 1 and not force_list:
+            val = any_to_float_or_int(chunks[0])
+            return val
+        if not force_list:
+            lister = []
+            for chunk in chunks:
+                val = any_to_float_or_int(chunk)
+                lister.append(val)
+            return lister
+        input_string = " ".join(chunks)
         arr_str = input_string.replace(" ]", "]").replace(" ", ",").replace("\n", "")
         arr = np.array(ast.literal_eval(arr_str))
         if arr.size == 1 and not force_list:

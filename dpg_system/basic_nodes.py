@@ -817,9 +817,8 @@ class PackNode(Node):
             self.types['t'] = torch.Tensor
             self.kinds.append(torch.Tensor)
 
-
         if len(args) > 0:
-            if is_number(args[0]):
+            if is_number(args[0]) and len(args) == 1:
                 self.num_ins = self.arg_as_int(default_value=2)
                 for i in range(self.num_ins):
                     self.in_types.append(None)
@@ -832,6 +831,7 @@ class PackNode(Node):
                         in_names.append(self.types[arg].__name__)
                     else:
                         if is_number(arg):
+                            print('num')
                             self.in_types.append(any_to_numerical(arg))
                             in_names.append(any_to_numerical(arg))
                         else:
@@ -860,15 +860,26 @@ class PackNode(Node):
                 elif torch_available and self.in_types[i] == torch.Tensor:
                     self.add_tensor_input(in_names[i], triggers_execution=triggers)
             else:
-                self.add_input(in_names[i], triggers_execution=triggers)
+                if type(self.in_types[i]) is str:
+                    print(self.in_types[i], 'string')
+                    inp = self.add_string_input(in_names[i], triggers_execution=triggers, default_value=self.in_types[i])
+                elif type(self.in_types[i]) in [int, np.int64]:
+                    inp = self.add_int_input(in_names[i], triggers_execution=triggers,
+                                                default_value=self.in_types[i])
+                elif type(self.in_types[i]) in [float, np.float32, np.float64]:
+                    inp = self.add_float_input(in_names[i], triggers_execution=triggers,
+                                                default_value=self.in_types[i])
+                else:
+                    inp = self.add_input(in_names[i], triggers_execution=triggers,
+                                               default_value=self.in_types[i])
 
         self.output = self.add_output("out")
         self.output_preference_option = self.add_option('output pref', widget_type='combo', default_value='list')
         self.output_preference_option.widget.combo_items = ['list', 'array', 'tensor']
 
-    def custom_create(self, from_file):
-        for i in range(self.num_ins):
-            self.inputs[i].receive_data(0)
+    # def custom_create(self, from_file):
+    #     for i in range(self.num_ins):
+    #         self.inputs[i].receive_data(0)
 
     def execute(self):
         trigger = False
@@ -882,6 +893,7 @@ class PackNode(Node):
                 out_list = []
                 for i in range(self.num_ins):
                     value = self.inputs[i].get_data()
+                    print(i, value)
                     t = type(value)
                     if t in [list, tuple]:
                         out_list += [value]
@@ -893,16 +905,18 @@ class PackNode(Node):
                 self.output.send(out_list)
             elif output_option == 'array':
                 out_list = []
-                dims = len(self.inputs[0].get_data().shape)
-                all_array = True
-                for i in range(self.num_ins):
-                    if self.in_types[i] != np.ndarray:
-                        all_array = False
-                        break
-                for i in range(self.num_ins):
-                    out_list.append(self.inputs[i].get_data())
+                all_array = False
+                first_data = self.inputs[0].get_data()
+                if type(first_data) is np.ndarray:
+                    all_array = True
+                    for i in range(self.num_ins):
+                        if self.in_types[i] != np.ndarray:
+                            all_array = False
+                            break
 
                 if all_array:
+                    for i in range(self.num_ins):
+                        out_list.append(self.inputs[i].get_data())
                     try:
                         out_array = np.stack(out_list)
                         self.output.send(out_array)

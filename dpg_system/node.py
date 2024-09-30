@@ -874,6 +874,9 @@ class NodeInput:
         self.label_uuid = None
         self._parents = []  # input attribute
         self._data = 0
+        if default_value is not None:
+            self._data = default_value
+            print('data', self._data)
         self.executor = False
         self.triggers_execution = triggers_execution
         self.node = node
@@ -1074,6 +1077,8 @@ class NodeInput:
                     data = any_to_string(data)
                 else:
                     data = data[0]
+        print('set', data)
+        self._data = data
         if self.widget:
             # print('set widget', data)
             self.widget.set(data, False)
@@ -1095,6 +1100,8 @@ class NodeIntInput(NodeInput):
         super().__init__(label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
 
     def receive_data(self, data):
+        if data == 'bang':
+            data = self._data
         int_data = any_to_int(data)
         super().receive_data(int_data)
 
@@ -1104,6 +1111,8 @@ class NodeFloatInput(NodeInput):
         super().__init__(label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
 
     def receive_data(self, data):
+        if data == 'bang':
+            data = self._data
         float_data = any_to_float(data)
         super().receive_data(float_data)
 
@@ -1113,6 +1122,8 @@ class NodeBoolInput(NodeInput):
         super().__init__(label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
 
     def receive_data(self, data):
+        if data == 'bang':
+            data = self._data
         bool_data = any_to_bool(data)
         super().receive_data(bool_data)
 
@@ -1122,6 +1133,8 @@ class NodeStringInput(NodeInput):
         super().__init__(label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
 
     def receive_data(self, data):
+        if data == 'bang':
+            data = self._data
         string_data = any_to_string(data)
         super().receive_data(string_data)
 
@@ -1131,6 +1144,8 @@ class NodeListInput(NodeInput):
         super().__init__(label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
 
     def receive_data(self, data):
+        if data == 'bang':
+            data = self._data
         list_data = any_to_list(data)
         super().receive_data(list_data)
 
@@ -1140,6 +1155,8 @@ class NodeArrayInput(NodeInput):
         super().__init__(label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
 
     def receive_data(self, data):
+        if data == 'bang':
+            data = self._data
         array_data = any_to_array(data)
         super().receive_data(array_data)
 
@@ -1150,6 +1167,8 @@ class NodeTensorInput(NodeInput):
 
     def receive_data(self, data):
         if torch_available:
+            if data == 'bang':
+                data = self._data
             tensor_data = any_to_tensor(data)
             super().receive_data(tensor_data)
 

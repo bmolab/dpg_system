@@ -261,8 +261,8 @@ class BodyData:
         self.limb_vertices[t_MidVertebrae] = self.define_limb_shape(.7, .8, .9)
         self.limb_vertices[t_LowerVertebrae] = self.define_limb_shape(.9, .9, .9)
         self.limb_vertices[t_SpinePelvis] = [[-0.2, -1.0, -1.5], [-1.0, -1.0, 0.0], [0.2, -1.0, -1.5], [1.0, -1.0, 0.0], [-0.2, 1.0, -1.0], [1.0, 1.0, 0.0], [-0.2, 1.0, -1.0], [-1.0, 1.0, 0.0], [-1.0, -1.0, 1.0], [1.0, -1.0, 1.0], [1.0, 1.0, 1.0], [-1.0, 1.0, 1.0]]
-        self.limb_vertices[t_RightKnee] = self.define_limb_shape(1., 1.2, .9)
-        self.limb_vertices[t_LeftKnee] = self.define_limb_shape(1., 1.2, .9)
+        self.limb_vertices[t_RightKnee] = self.define_limb_shape(1.3, 1.2, .9)
+        self.limb_vertices[t_LeftKnee] = self.define_limb_shape(1.3, 1.2, .9)
         self.limb_vertices[t_RightAnkle] = self.define_limb_shape(1.1, 1, .7)
         self.limb_vertices[t_LeftAnkle] = self.define_limb_shape(1.1, 1, .7)
         self.limb_vertices[t_RightElbow] = self.define_limb_shape(1., 1.1, .9)
