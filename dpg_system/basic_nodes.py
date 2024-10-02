@@ -209,8 +209,8 @@ class MetroNode(Node):
         self.streaming = False
 
         # set inputs / properties / outputs / options
-        self.on_off_input = self.add_input('on', widget_type='checkbox', callback=self.start_stop)
-        self.period_input = self.add_input('period', widget_type='drag_float', default_value=self.period, callback=self.change_period)
+        self.on_off_input = self.add_bool_input('on', widget_type='checkbox', callback=self.start_stop)
+        self.period_input = self.add_float_input('period', widget_type='drag_float', default_value=self.period, callback=self.change_period)
         self.units_property = self.add_property('units', widget_type='combo', default_value='milliseconds', callback=self.set_units)
         self.units_property.widget.combo_items = ['seconds', 'milliseconds', 'minutes', 'hours']
         self.output = self.add_output('')
@@ -476,7 +476,7 @@ class TimerNode(Node):
             self.mode = 1
             self.input = self.add_input('', widget_type='drag_float', triggers_execution=True)
         else:
-            self.input = self.add_input('on', widget_type='checkbox', triggers_execution=True, callback=self.start_stop)
+            self.input = self.add_bool_input('on', widget_type='checkbox', triggers_execution=True, callback=self.start_stop)
         self.units_property = self.add_property('units', widget_type='combo', default_value=default_units, width=100, callback=self.set_units)
         self.units_property.widget.combo_items = ['seconds', 'milliseconds', 'minutes', 'hours']
         self.output = self.add_output("")
@@ -572,8 +572,8 @@ class CounterNode(Node):
 
         self.input = self.add_input("input", triggers_execution=True)
         self.input.bang_repeats_previous = False
-        self.max_input = self.add_input('count', widget_type='drag_int', default_value=self.max_count, callback=self.update_max_count_from_widget)
-        self.step_input = self.add_input('step', widget_type='drag_int', default_value=self.step, callback=self.update_step_from_widget)
+        self.max_input = self.add_int_input('count', widget_type='drag_int', default_value=self.max_count, callback=self.update_max_count_from_widget)
+        self.step_input = self.add_int_input('step', widget_type='drag_int', default_value=self.step, callback=self.update_step_from_widget)
         self.output = self.add_output("count out")
         self.carry_output = self.add_output("carry out")
         self.carry_output.output_always = False
@@ -633,9 +633,9 @@ class GateNode(Node):
         self.bool_state = False
 
         if self.num_gates > 1:
-            self.choice_input = self.add_input('', widget_type='drag_int', triggers_execution=True, default_value=self.state, callback=self.change_state, max=self.num_gates, min=0)
+            self.choice_input = self.add_int_input('', widget_type='drag_int', triggers_execution=True, default_value=self.state, callback=self.change_state, max=self.num_gates, min=0)
         else:
-            self.choice_input = self.add_input('', widget_type='checkbox', triggers_execution=True, default_value=self.bool_state, widget_width=40, callback=self.change_state)
+            self.choice_input = self.add_bool_input('', widget_type='checkbox', triggers_execution=True, default_value=self.bool_state, widget_width=40, callback=self.change_state)
         self.gated_input = self.add_input("input", triggers_execution=True)
 
         for i in range(self.num_gates):
@@ -672,7 +672,7 @@ class SwitchNode(Node):
         self.state = 0
         self.bool_state = False
 
-        self.choice_input = self.add_input('which input', widget_type='input_int', callback=self.change_state)
+        self.choice_input = self.add_int_input('which input', widget_type='input_int', callback=self.change_state)
         self.switch_inputs = []
         for i in range(self.num_switches):
             self.switch_inputs.append(self.add_input('in ' + str(i + 1)))
@@ -1011,7 +1011,7 @@ class DelayNode(Node):
         self.buffer_position = 0
 
         self.input = self.add_input("in")
-        self.delay_input = self.add_input('delay', widget_type='drag_int', default_value=self.delay, min=0, max=4000, callback=self.delay_changed)
+        self.delay_input = self.add_int_input('delay', widget_type='drag_int', default_value=self.delay, min=0, max=4000, callback=self.delay_changed)
         self.cancel_input = self.add_input('cancel', callback=self.delay_cancelled)
         self.output = self.add_output("out")
 
@@ -1416,10 +1416,12 @@ class SplitNode(Node):
         super().__init__(label, data, args)
 
         self.input = self.add_input('in', triggers_execution=True)
-        self.split_token = None
+        self.split_token = ''
         if len(args) > 0:
-            split_token = any_to_string(args[0])
-        self.split_token = self.add_input('split at', widget_type='text_input', default_value=split_token)
+            self.split_token = any_to_string(args[0])
+            if self.split_token == '\\n':
+                self.split_token = '<return>'
+        self.split_token_in = self.add_input('split at', widget_type='text_input', default_value=self.split_token)
         self.output = self.add_output("substrings out")
 
     def execute(self):
@@ -1427,11 +1429,13 @@ class SplitNode(Node):
         t = type(in_string)
         if t == list:
             in_string = ' '.join(in_string)
-        if self.split_token == None:
+        if self.split_token == '':
             splits = in_string.split()
+        elif self.split_token == '<return>':
+            splits = in_string.split('\n')
         else:
-            splits = in_string.split(self.split_token())
-        splits = in_string.split(self.split_token())
+            splits = in_string.split(self.split_token_in())
+        # splits = in_string.split(self.split_token())
         self.output.send(splits)
 
 
@@ -1916,7 +1920,7 @@ class ArrayNode(Node):
             shape_list, _, _ = list_to_hybrid_list(shape_split)
             self.shape = shape_list
 
-        self.input = self.add_input("in", triggers_execution=True)
+        self.input = self.add_array_input("in", triggers_execution=True)
         self.output = self.add_output('array out')
 
         self.shape_property = self.add_option('shape', widget_type='text_input', default_value=shape_text, callback=self.shape_changed)
@@ -1931,11 +1935,12 @@ class ArrayNode(Node):
             self.shape = None
 
     def execute(self):
-        in_data = self.input()
-        out_array = any_to_array(in_data)
-        if self.shape is not None:
-            out_array = np.reshape(out_array, tuple(self.shape))
-        self.output.send(out_array)
+        out_array = self.input()
+        # out_array = any_to_array(in_data)
+        if type(out_array) is np.ndarray:
+            if self.shape is not None:
+                out_array = np.reshape(out_array, tuple(self.shape))
+            self.output.send(out_array)
 
 '''string : StringNode
     description:
@@ -1959,13 +1964,11 @@ class StringNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.input = self.add_input("in", triggers_execution=True)
+        self.input = self.add_string_input("in", triggers_execution=True)
         self.output = self.add_output('string out')
 
     def execute(self):
-        in_data = self.input()
-        out_string = any_to_string(in_data)
-        self.output.send(out_string)
+        self.output.send(self.input())
 
 
 '''list : ListNode
@@ -2354,8 +2357,10 @@ class TextFileNode(Node):
         self.read_pointer = -1
 
         self.file_name = self.arg_as_string(default_value='')
-        self.text_input = self.add_input('text in', triggers_execution=True)
-        self.append_text_input = self.add_input('append text in', triggers_execution=True)
+        self.text_input = self.add_string_input('text in', triggers_execution=True)
+        self.text_input.set_strip_returns(False)
+        self.append_text_input = self.add_string_input('append text in', triggers_execution=True)
+        self.append_text_input.set_strip_returns(False)
         self.dump_button = self.add_input('send', widget_type='button', triggers_execution=True)
         self.clear_button = self.add_input('clear', widget_type='button', callback=self.clear_text)
         self.text_editor = self.add_property('###text', widget_type='text_editor', width=500)
@@ -2426,14 +2431,14 @@ class TextFileNode(Node):
             self.output.send(self.text_contents)
         elif self.active_input == self.append_text_input:
             self.text_contents = self.text_editor()
-            data = any_to_string(self.append_text_input())
+            data = any_to_string(self.append_text_input(), strip_returns=False)
             # if len(self.text_contents) > 0:
             #     if self.text_contents[-1] not in [' ', '\n']:
             #         self.text_contents += ' '
             self.text_contents += data
             self.text_editor.set(self.text_contents)
         else:
-            data = any_to_string(self.text_input())
+            data = any_to_string(self.text_input(), strip_returns=False)
             self.text_contents = data
             self.text_editor.set(self.text_contents)
 

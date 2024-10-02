@@ -20,6 +20,7 @@ def register_interface_nodes():
     Node.app.register_node("int", ValueNode.factory)
     Node.app.register_node("slider", ValueNode.factory)
     Node.app.register_node("message", ValueNode.factory)
+    Node.app.register_node("text", ValueNode.factory)
     Node.app.register_node("string", ValueNode.factory)
     Node.app.register_node("knob", ValueNode.factory)
     Node.app.register_node("plot", PlotNode.factory)
@@ -743,9 +744,11 @@ class ValueNode(Node):
         self.min_property = None
         self.max_property = None
         self.start_value = None
+        self.height_option = None
         self.format_property = None
         self.grow_option = None
         self.grow_mode = 'grow_to_fit'
+        self.input = None
 
         if label in ['float', 'osc_float']:
             widget_type = 'drag_float'
@@ -756,6 +759,9 @@ class ValueNode(Node):
                 elif t == str:
                     if val == '+':
                         widget_type = 'input_float'
+            self.input = self.add_float_input('', triggers_execution=True, widget_type=widget_type,
+                                            widget_uuid=self.value, widget_width=widget_width, trigger_button=True)
+
         elif label in ['int', 'osc_int']:
             widget_type = 'drag_int'
             for i in range(len(ordered_args)):
@@ -765,6 +771,10 @@ class ValueNode(Node):
                 elif t == str:
                     if val == '+':
                         widget_type = 'input_int'
+            if self.max is None:
+                self.input = self.add_int_input('', triggers_execution=True, widget_type=widget_type,
+                                            widget_uuid=self.value, widget_width=widget_width, trigger_button=True)
+
         elif label in ['slider', 'osc_slider']:
             widget_type = 'slider_float'
             if ordered_args is not None:
@@ -776,8 +786,21 @@ class ValueNode(Node):
                     elif t == int:
                         widget_type = 'slider_int'
                         self.max = val
-            if self.max is None:
-                self.max = 1.0
+
+            if widget_type == 'slider_float':
+                if self.max is None:
+                    self.max = 1.0
+                self.input = self.add_float_input('', triggers_execution=True, widget_type=widget_type,
+                                            widget_uuid=self.value, widget_width=widget_width, trigger_button=True,
+                                            max=self.max)
+            else:
+                if self.max is None:
+                    self.max = 100
+                self.input = self.add_int_input('', triggers_execution=True, widget_type=widget_type,
+                                                  widget_uuid=self.value, widget_width=widget_width,
+                                                  trigger_button=True,
+                                                  max=self.max)
+
         elif label in ['knob', 'osc_knob']:
             widget_type = 'knob_float'
             if ordered_args is not None:
@@ -787,21 +810,38 @@ class ValueNode(Node):
                         self.max = val
             if self.max is None:
                 self.max = 100
-        elif label in ['string', 'message', 'osc_string', 'osc_message']:
+            self.input = self.add_float_input('', triggers_execution=True, widget_type=widget_type,
+                                            widget_uuid=self.value, widget_width=widget_width,
+                                            trigger_button=True,
+                                            max=self.max)
+        elif label in ['string', 'osc_string']:
             widget_type = 'text_input'
-
+            self.input = self.add_string_input('', triggers_execution=True, widget_type=widget_type,
+                                        widget_uuid=self.value, widget_width=widget_width,
+                                        trigger_button=True)
+        elif label in ['message', 'osc_message']:
+            widget_type = 'text_input'
+            self.input = self.add_input('', triggers_execution=True, widget_type=widget_type,
+                                              widget_uuid=self.value, widget_width=widget_width,
+                                              trigger_button=True)
+        elif label in ['text']:
+            widget_type = 'text_editor'
+            self.input = self.add_string_input('', triggers_execution=True, widget_type=widget_type,
+                                        widget_uuid=self.value, widget_width=400,
+                                        trigger_button=True)
+            self.input.set_strip_returns(False)
         if ordered_args is not None and len(ordered_args) > 0:
             for i in range(len(ordered_args)):
                 var_name, t = decode_arg(ordered_args, i)
                 if t == str:
                     if widget_type not in ['input_int', 'input_float'] or var_name != '+':
                         self.variable_name = var_name
-
-        if self.max is None:
-            self.input = self.add_input('', triggers_execution=True, widget_type=widget_type, widget_uuid=self.value, widget_width=widget_width, trigger_button=True)
-        else:
-            self.input = self.add_input('', triggers_execution=True, widget_type=widget_type, widget_uuid=self.value, widget_width=widget_width, trigger_button=True, max=self.max)
-        # print(self.input)
+        if self.input is None:
+            if self.max is None:
+                self.input = self.add_input('', triggers_execution=True, widget_type=widget_type, widget_uuid=self.value, widget_width=widget_width, trigger_button=True)
+            else:
+                self.input = self.add_input('', triggers_execution=True, widget_type=widget_type, widget_uuid=self.value, widget_width=widget_width, trigger_button=True, max=self.max)
+            # print(self.input)
         if label == 'string':
             self.input.accepted_types = [str]
         if self.variable_name != '':
@@ -822,6 +862,10 @@ class ValueNode(Node):
         if widget_type == 'text_input':
             self.grow_option = self.add_option('adapt_width', widget_type='combo', width=150, default_value='grow_to_fit', callback=self.options_changed)
             self.grow_option.widget.combo_items = ['grow_to_fit', 'grow_or_shrink_to_fit', 'fixed_width']
+        if widget_type == 'text_editor':
+            self.height_option = self.add_option('height', widget_type='drag_int', default_value=200,
+                                                callback=self.options_changed)
+
         if widget_type in ['drag_float', 'slider_float', 'drag_int', 'knob_int', 'input_int']:
             self.format_property = self.add_option('format', widget_type='text_input', default_value=self.format, callback=self.options_changed)
         if widget_type != 'knob':
@@ -885,6 +929,8 @@ class ValueNode(Node):
         if self.start_value is not None:
             self.input.set(self.start_value)
         self.input.set_font(self.app.default_font)
+        if self.input.widget.widget == 'text_editor':
+            dpg.set_item_height(self.input.widget.uuid, 200)
 
     def options_changed(self):
         if self.min_property is not None and self.max_property is not None:
@@ -898,6 +944,9 @@ class ValueNode(Node):
 
         width = self.width_option()
         dpg.set_item_width(self.input.widget.uuid, width)
+
+        if self.height_option is not None:
+            dpg.set_item_height(self.input.widget.uuid, self.height_option())
 
         if self.grow_option is not None:
             self.grow_mode = self.grow_option()
@@ -934,8 +983,13 @@ class ValueNode(Node):
             in_data = self.inputs[0]()
             t = type(in_data)
             if t == str:
-                in_data, _, _ = string_to_hybrid_list(in_data)
-                t = list
+                if self.label != 'string':
+                    in_data, _, _ = string_to_hybrid_list(in_data)
+                    t = list
+                else:
+                    display_data = in_data
+                    self.input.widget.set(display_data, propagate=False)
+                    output_data = display_data
                 # value = in_data.split(' ')
             if t == list:
                 if len(in_data) == 1:
@@ -1034,6 +1088,7 @@ class ValueNode(Node):
                 self.variable.set(output_data, from_client=self)  # !!!!!
         else:
             output_data = dpg.get_value(self.value)
+            self.input.set(output_data, propagate=False)
             if type(output_data) == str:
                 if len(output_data) > 0:
                     is_list = False

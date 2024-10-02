@@ -222,6 +222,7 @@ class NumpyUnaryNode(Node):
                 self.axis = d
         output_name = label.split('.')[0]
         self.input = self.add_input('in', triggers_execution=True)
+        self.dim_option = self.add_option('axis', widget_type='input_int', default_value=self.axis)
         self.output = self.add_output(output_name)
 
     def execute(self):

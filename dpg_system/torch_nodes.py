@@ -85,12 +85,12 @@ class TensorNode(TorchDeviceDtypeNode):
         self.output = self.add_output('tensor out')
         self.create_dtype_device_grad_properties()
 
-
     def execute(self):
-        in_data = self.input_to_tensor()
+        in_data = self.input()
         if in_data is not None:
-            out_array = any_to_tensor(in_data, self.device, self.dtype, self.requires_grad)
-            self.output.send(out_array)
+            out_array = any_to_tensor(in_data, self.device, self.dtype, self.requires_grad, validate=True)
+            if out_array is not None:
+                self.output.send(out_array)
 
 
 class TorchNumElNode(TorchNode):
