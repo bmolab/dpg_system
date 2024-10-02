@@ -211,8 +211,9 @@ class NumpyUnaryNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-
-        self.axis = 0
+        self.full_axis_items = ['None', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+        self.axis_dict = { 'None': None, '0': 0, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9}
+        self.axis = None
         self.op = np.sum
         if label in self.operations:
             self.op = self.operations[label]
@@ -220,19 +221,36 @@ class NumpyUnaryNode(Node):
             d, t = decode_arg(args, 0)
             if t == int:
                 self.axis = d
+        self.current_axis_count = 2
         output_name = label.split('.')[0]
         self.input = self.add_input('in', triggers_execution=True)
-        self.dim_option = self.add_option('axis', widget_type='input_int', default_value=self.axis)
+        self.dim_option = self.add_input('axis', widget_type='combo', default_value=str(self.axis), callback=self.axis_changed)
+        self.dim_option.widget.combo_items = ['None', '0', '1']
         self.output = self.add_output(output_name)
 
     def execute(self):
         input_value = any_to_array(self.input())
-        if len(input_value.shape) > self.axis:
+
+        dims = len(input_value.shape)
+        if dims != self.current_axis_count:
+            dpg.configure_item(self.dim_option.widget.uuid, items=self.full_axis_items[:dims + 1])
+            self.current_axis_count = dims
+            if self.axis is not None and self.axis >= self.current_axis_count:
+                self.axis = self.current_axis_count - 1
+                num_str = self.full_axis_items[self.axis + 1]
+                self.dim_option.set(num_str)
+        # self.dim_option.widget.combo_items = self.full_axis_items[:dims + 1]
+        if self.axis is None or len(input_value.shape) > self.axis:
             output_value = self.op(input_value, axis=self.axis)
             self.output.send(output_value)
         else:
             if self.app.verbose:
                 print(self.label, 'dim =', self.axis, 'out of range', 'for shape', input_value.shape)
+
+    def axis_changed(self):
+        axis_string = self.dim_option()
+        if axis_string in self.axis_dict:
+            self.axis = self.axis_dict[axis_string]
 
 
 class NumpyBinaryNode(Node):

@@ -1099,7 +1099,7 @@ class NodeIntInput(NodeInput):
         super().__init__(label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
 
     def receive_data(self, data):
-        if data == 'bang':
+        if type(data) is str and data == 'bang':
             data = self._data
         int_data = any_to_int(data, validate=True)
         if int_data is not None:

@@ -3,6 +3,7 @@ from dpg_system.node import Node
 import threading
 from dpg_system.osc_nodes import *
 
+
 def register_lighting_nodes():
     Node.app.register_node('color_source', ColorSourceNode.factory)
 
@@ -24,7 +25,7 @@ class ColorSourceNode(OSCSender, Node):
         self.blue = 0
         self.lime = 0
         self.indigo = 0
-        self.address = '/eos/chan/'
+        self.address = '/eos/user/0/chan/'
 
         if len(args) > 0:
             self.channel = any_to_int(args[0])
@@ -41,9 +42,6 @@ class ColorSourceNode(OSCSender, Node):
 
         self.lime_input = self.add_input('lime', widget_type='slider_int', widget_width=120, min=0, max=100,
                                               default_value=self.lime, callback=self.lime_changed)
-
-        self.indigo_input = self.add_input('indigo', widget_type='slider_int', widget_width=120, min=0, max=100,
-                                              default_value=self.indigo, callback=self.indigo_changed)
 
         self.target_name_property = self.add_input('target name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
         self.target_address_property = self.add_input('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
@@ -76,11 +74,6 @@ class ColorSourceNode(OSCSender, Node):
         self.changed = True
         self.lime_changed = True
 
-    def indigo_changed(self):
-        self.indigo = self.indigo_input()
-        self.changed = True
-        self.indigo_changed = True
-
     def frame_task(self):
         if self.target and self.address != '':
             if self.changed:
@@ -106,10 +99,6 @@ class ColorSourceNode(OSCSender, Node):
                 if self.lime_changed:
                     self.lime_changed = False
                     self.target.send_message(address + 'lime', self.lime)
-
-                if self.indigo_changed:
-                    self.indigo_changed = False
-                    self.target.send_message(address + 'indigo', self.indigo)
 
 
 
