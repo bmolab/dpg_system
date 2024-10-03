@@ -1,5 +1,5 @@
 import dearpygui.dearpygui as dpg
-from dpg_system.node import Node
+from dpg_system.node import Node, NodeInput
 from dpg_system.conversion_utils import *
 import time
 import numpy as np
@@ -212,7 +212,7 @@ class NumpyUnaryNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.full_axis_items = ['None', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
-        self.axis_dict = { 'None': None, '0': 0, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9}
+        self.axis_dict = {'None': None, '0': 0, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9}
         self.axis = None
         self.op = np.sum
         if label in self.operations:

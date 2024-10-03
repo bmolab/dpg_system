@@ -78,6 +78,7 @@ def register_basic_nodes():
     Node.app.register_node('present', PresentationModeNode.factory)
     Node.app.register_node('text_file', TextFileNode.factory)
     Node.app.register_node('text_editor', TextFileNode.factory)
+    Node.app.register_node('clamp', ClampNode.factory)
 
 
 # DeferNode -- delays received input until next frame
@@ -255,6 +256,42 @@ class MetroNode(Node):
 
     def execute(self):
         self.output.send('bang')
+
+
+class ClampNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ClampNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('in', triggers_execution=True)
+        self.min_input = self.add_input('min', widget_type='drag_float', default_value=0.0)
+        self.max_input = self.add_input('max', widget_type='drag_float', default_value=1.0)
+        self.output = self.add_output('clamped output')
+
+    def execute(self):
+        data = self.input()
+        t = type(data)
+        if t in [int, float, np.int64, np.float32, np.float64]:
+            if data < self.min_input():
+                data =  self.min_input()
+            elif data > self.max_input():
+                data = self.max_input()
+            self.output.send(data)
+        elif t is list:
+            a = any_to_array(data, validate=True)
+            if a is not None:
+                a = np.clip(a, self.min_input(), self.max_input())
+                self.output.send(a)
+        elif t is np.ndarray:
+            a = np.clip(data, self.min_input(), self.max_input())
+            self.output.send(a)
+        elif torch_available and t is torch.Tensor:
+            a = torch.clamp(data, self.min_input(), self.max_input())
+            self.output.send(a)
 
 
 class RampNode(Node):

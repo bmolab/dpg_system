@@ -563,10 +563,16 @@ def list_to_array(input, validate=False):
     if homogenous:
         t = type(hybrid_list[0])
         if t in [float, int, bool, list]:
-            return np.array(hybrid_list)
+            try:
+                return np.array(hybrid_list)
+            except Exception as e:
+                pass
     else:
         if str not in types:
-            return np.array(hybrid_list)
+            try:
+                return np.array(hybrid_list)
+            except Exception as e:
+                pass
     if validate:
         return None
     return np.ndarray(0)
