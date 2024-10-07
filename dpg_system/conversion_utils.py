@@ -429,11 +429,18 @@ def int_to_string(input):
 
 
 def string_to_list(input_string):
+    if len(input_string) == 0:
+        return []
     if input_string[0] == '[':
+        if len(input_string) == 1:
+            return [input_string]
         if input_string[-1] == ']':
             if input_string[1:-1].find(']') == -1:
                 substrings = input_string[1:-1].split(' ')
                 return substrings
+        else:
+            substrings = input_string.split(' ')
+            return substrings
         arr_str = input_string.replace(" ]", "]").replace("][", "],[").replace(", ", ",").replace("  ", " ").replace(" ", ",").replace("\n", "").replace(",,", ",")
         substrings = ast.literal_eval(arr_str)
     else:

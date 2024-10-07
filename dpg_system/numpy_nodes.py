@@ -7,8 +7,8 @@ import numpy as np
 
 # add random, linspace, ones, zeros
 def register_numpy_nodes():
-    Node.app.register_node('np.linalg.norm', NumpyUnaryLinearAlgebraNode.factory)
-    Node.app.register_node('euclidean_distance', NumpyUnaryLinearAlgebraNode.factory)
+    Node.app.register_node('np.linalg.norm', NumpyLinalgNormNode.factory)
+    Node.app.register_node('euclidean_distance', NumpyLinalgNormNode.factory)
     Node.app.register_node('np.linalg.det', NumpyUnaryLinearAlgebraNode.factory)
     Node.app.register_node('np.linalg.matrix_rank', NumpyUnaryLinearAlgebraNode.factory)
     Node.app.register_node('flatten', FlattenMatrixNode.factory)
@@ -201,7 +201,49 @@ class NumpyLinSpaceNode(Node):
         self.output.send(out_array)
 
 
-class NumpyUnaryNode(Node):
+class NumpyNodeWithAxisNode(Node):
+    full_axis_items = ['None', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+    axis_dict = {'None': None, '0': 0, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9}
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.axis = None
+        self.current_axis_count = 2
+        self.dim_option = None
+        self.first_dim_option = 0
+
+    def add_dim_option(self, none_allowed=True):
+        self.dim_option = self.add_input('axis', widget_type='combo', default_value=str(self.axis),
+                                         callback=self.axis_changed)
+
+        if none_allowed:
+            self.first_dim_option = 0
+            self.dim_option.widget.combo_items = ['None', '0', '1']
+        else:
+            self.first_dim_option = 1
+            self.dim_option.widget.combo_items = ['0', '1']
+
+    def axis_changed(self):
+        if self.dim_option is not None:
+            axis_string = self.dim_option()
+            if axis_string in self.axis_dict:
+                self.axis = self.axis_dict[axis_string]
+
+    def adjust_dim_option(self, data):
+        dims = len(data.shape)
+        if dims != self.current_axis_count and self.dim_option is not None:
+            dpg.configure_item(self.dim_option.widget.uuid, items=NumpyNodeWithAxisNode.full_axis_items[self.first_dim_option:dims + 1])
+            self.current_axis_count = dims
+            if self.axis is not None and self.axis >= self.current_axis_count:
+                self.axis = self.current_axis_count - 1
+                num_str = NumpyNodeWithAxisNode.full_axis_items[self.axis + 1]
+                self.dim_option.set(num_str)
+        if self.axis is None or dims > self.axis:
+            return True
+        return False
+
+
+class NumpyUnaryNode(NumpyNodeWithAxisNode):
     operations = {'np.sum': np.sum, 'np.mean': np.mean, 'np.std': np.std, 'np.var': np.var, 'np.median': np.median}
 
     @staticmethod
@@ -211,9 +253,6 @@ class NumpyUnaryNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.full_axis_items = ['None', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
-        self.axis_dict = {'None': None, '0': 0, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9}
-        self.axis = None
         self.op = np.sum
         if label in self.operations:
             self.op = self.operations[label]
@@ -221,28 +260,17 @@ class NumpyUnaryNode(Node):
             d, t = decode_arg(args, 0)
             if t == int:
                 self.axis = d
-        self.current_axis_count = 2
         output_name = label.split('.')[0]
         self.input = self.add_input('in', triggers_execution=True)
-        self.dim_option = self.add_input('axis', widget_type='combo', default_value=str(self.axis), callback=self.axis_changed)
-        self.dim_option.widget.combo_items = ['None', '0', '1']
+        self.add_dim_option(none_allowed=False)
         self.output = self.add_output(output_name)
 
     def execute(self):
         input_value = any_to_array(self.input())
-
-        dims = len(input_value.shape)
-        if dims != self.current_axis_count:
-            dpg.configure_item(self.dim_option.widget.uuid, items=self.full_axis_items[:dims + 1])
-            self.current_axis_count = dims
-            if self.axis is not None and self.axis >= self.current_axis_count:
-                self.axis = self.current_axis_count - 1
-                num_str = self.full_axis_items[self.axis + 1]
-                self.dim_option.set(num_str)
-        # self.dim_option.widget.combo_items = self.full_axis_items[:dims + 1]
-        if self.axis is None or len(input_value.shape) > self.axis:
-            output_value = self.op(input_value, axis=self.axis)
-            self.output.send(output_value)
+        if self.adjust_dim_option(input_value):
+            if self.axis is None or len(input_value.shape) > self.axis:
+                output_value = self.op(input_value, axis=self.axis)
+                self.output.send(output_value)
         else:
             if self.app.verbose:
                 print(self.label, 'dim =', self.axis, 'out of range', 'for shape', input_value.shape)
@@ -253,7 +281,7 @@ class NumpyUnaryNode(Node):
             self.axis = self.axis_dict[axis_string]
 
 
-class NumpyBinaryNode(Node):
+class NumpyBinaryNode(NumpyNodeWithAxisNode):
     operations = {'np.stack': np.stack, 'np.concatenate': np.concatenate}
 
     @staticmethod
@@ -272,6 +300,7 @@ class NumpyBinaryNode(Node):
         output_name = label.split('.')[0]
         self.input = self.add_input('in', triggers_execution=True)
         self.input_2 = self.add_input('in 2')
+        self.add_dim_option()
         self.output = self.add_output(output_name)
 
     def execute(self):
@@ -279,8 +308,9 @@ class NumpyBinaryNode(Node):
             self.input_2_vector = any_to_array(self.input_2())
 
         input_value = any_to_array(self.input())
-        if self.input_2_vector is not None:
-            self.output.send(self.op((input_value, self.input_2_vector), axis=self.axis))
+        if self.adjust_dim_option(input_value):
+            if self.input_2_vector is not None:
+                self.output.send(self.op((input_value, self.input_2_vector), axis=self.axis))
 
 
 class NumpyDotProductNode(Node):
@@ -854,8 +884,6 @@ class FlattenMatrixNode(Node):
 
 class NumpyUnaryLinearAlgebraNode(Node):
     operations = {
-        'np.linalg.norm': np.linalg.norm,
-        'euclidean_distance': np.linalg.norm,
         'np.linalg.det': np.linalg.det,
         'np.linalg.matrix_rank': np.linalg.matrix_rank
     }
@@ -871,10 +899,9 @@ class NumpyUnaryLinearAlgebraNode(Node):
         if label in self.operations:
             self.op = self.operations[label]
         self.input = self.add_input('input', triggers_execution=True)
-        out_name = 'norm'
-        if self.label == 'euclidean_distance':
-            out_name = 'euclidean_distance'
-        elif self.label == 'np.linalg.det':
+        out_name = 'determiner'
+
+        if self.label == 'np.linalg.det':
             out_name = 'determiner'
         elif self.label == 'np.linalg.matrix_rank':
             out_name = 'matrix rank'
@@ -884,6 +911,27 @@ class NumpyUnaryLinearAlgebraNode(Node):
         if self.input.fresh_input:
             data = any_to_array(self.input())
             self.output.send(self.op(data))
+
+
+class NumpyLinalgNormNode(NumpyNodeWithAxisNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyLinalgNormNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.op = np.linalg.norm
+        self.input = self.add_input('input', triggers_execution=True)
+
+        self.add_dim_option()
+        self.output = self.add_output('norm')
+
+    def execute(self):
+        input_value = any_to_array(self.input())
+
+        if self.adjust_dim_option(input_value):
+            self.output.send(np.linalg.norm(input_value, axis=self.axis))
 
 
 class NumpyShapeNode(Node):
