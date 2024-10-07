@@ -1140,7 +1140,7 @@ class App:
     def del_handler(self):
         if self.active_widget == -1:
             editor = self.get_current_editor()
-            if editor is not None:
+            if editor is not None and not editor.presenting:
                 node_uuids = dpg.get_selected_nodes(editor.uuid)
                 link_uuids = dpg.get_selected_links(editor.uuid)
 
@@ -1187,9 +1187,10 @@ class App:
 
     def vector_handler(self):
         if self.active_widget == -1:
-            node = VectorNode.factory("vector", None, args=['4'])
-            self.place_node(node)
-            self.set_widget_focus(node.uuid)
+            if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+                node = VectorNode.factory("vector", None, args=['4'])
+                self.place_node(node)
+                self.set_widget_focus(node.uuid)
 
     def comment_handler(self):
         if self.active_widget == -1:
@@ -1212,6 +1213,13 @@ class App:
         if self.active_widget == -1:
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 node = ValueNode.factory("message", None)
+                self.place_node(node)
+                self.set_widget_focus(node.input.widget.uuid)
+
+    def list_handler(self):
+        if self.active_widget == -1:
+            if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+                node = ValueNode.factory("list", None)
                 self.place_node(node)
                 self.set_widget_focus(node.input.widget.uuid)
 
@@ -1357,7 +1365,7 @@ class App:
     def D_handler(self):
         if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
             if self.active_widget == -1:
-                if self.get_current_editor() is not None:
+                if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                     self.get_current_editor().duplicate_selection()
 
     def E_handler(self):
@@ -1467,7 +1475,7 @@ class App:
 
 
     def new_handler(self, name=None):
-        if self.get_current_editor() is not None:
+        if self.get_current_editor() is not None and not self.get_current_editor().presenting:
             editor = self.get_current_editor()
 
             if self.active_widget == -1:
@@ -1951,6 +1959,7 @@ class App:
                             dpg.add_key_press_handler(dpg.mvKey_T, callback=self.toggle_handler)
                             dpg.add_key_press_handler(dpg.mvKey_B, callback=self.button_handler)
                             dpg.add_key_press_handler(dpg.mvKey_M, callback=self.message_handler)
+                            dpg.add_key_press_handler(dpg.mvKey_L, callback=self.list_handler)
 
                             dpg.add_key_press_handler(dpg.mvKey_E, callback=self.E_handler)
                             dpg.add_key_press_handler(dpg.mvKey_D, callback=self.D_handler)

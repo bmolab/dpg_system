@@ -24,7 +24,7 @@ def register_basic_nodes():
     Node.app.register_node("info", TypeNode.factory)
     Node.app.register_node('array', ArrayNode.factory)
     # Node.app.register_node("string", StringNode.factory)
-    Node.app.register_node("list", ListNode.factory)
+    # Node.app.register_node("list", ListNode.factory)
     Node.app.register_node("counter", CounterNode.factory)
     Node.app.register_node('coll', CollectionNode.factory)
     Node.app.register_node('dict', CollectionNode.factory)
@@ -1538,8 +1538,13 @@ class JoinNode(Node):
         t = type(in_list)
         if t == str:
             in_list = in_list.split(' ')
+            t = list
         elif t != list:
             in_list = any_to_list(in_list)
+        if t is list:
+            for index, el in enumerate(in_list):
+                in_list[index] = any_to_string(el)
+
         joined = self.join_token().join(in_list)
         self.output.send(joined)
 
@@ -2022,22 +2027,22 @@ class StringNode(Node):
 '''
 
 
-class ListNode(Node):
-    @staticmethod
-    def factory(name, data, args=None):
-        node = ListNode(name, data, args)
-        return node
-
-    def __init__(self, label: str, data, args):
-        super().__init__(label, data, args)
-
-        self.input = self.add_input("in", triggers_execution=True)
-        self.output = self.add_output('list out')
-
-    def execute(self):
-        in_data = self.input()
-        out_list = any_to_list(in_data)
-        self.output.send(out_list)
+# class ListNode(Node):
+#     @staticmethod
+#     def factory(name, data, args=None):
+#         node = ListNode(name, data, args)
+#         return node
+#
+#     def __init__(self, label: str, data, args):
+#         super().__init__(label, data, args)
+#
+#         self.input = self.add_input("in", triggers_execution=True)
+#         self.output = self.add_output('list out')
+#
+#     def execute(self):
+#         in_data = self.input()
+#         out_list = any_to_list(in_data)
+#         self.output.send(out_list)
 
 
 '''prepend : PrependNode

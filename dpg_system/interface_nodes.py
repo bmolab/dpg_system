@@ -22,6 +22,7 @@ def register_interface_nodes():
     Node.app.register_node("message", ValueNode.factory)
     Node.app.register_node("text", ValueNode.factory)
     Node.app.register_node("string", ValueNode.factory)
+    Node.app.register_node("list", ValueNode.factory)
     Node.app.register_node("knob", ValueNode.factory)
     Node.app.register_node("plot", PlotNode.factory)
     Node.app.register_node("heat_map", PlotNode.factory)
@@ -749,6 +750,9 @@ class ValueNode(Node):
         self.grow_option = None
         self.grow_mode = 'grow_to_fit'
         self.input = None
+        output_name = 'out'
+
+        self.output = None
 
         if label in ['float', 'osc_float']:
             widget_type = 'drag_float'
@@ -761,6 +765,7 @@ class ValueNode(Node):
                         widget_type = 'input_float'
             self.input = self.add_float_input('', triggers_execution=True, widget_type=widget_type,
                                             widget_uuid=self.value, widget_width=widget_width, trigger_button=True)
+            self.output = self.add_float_output('float out')
 
         elif label in ['int', 'osc_int']:
             widget_type = 'drag_int'
@@ -774,6 +779,7 @@ class ValueNode(Node):
             if self.max is None:
                 self.input = self.add_int_input('', triggers_execution=True, widget_type=widget_type,
                                             widget_uuid=self.value, widget_width=widget_width, trigger_button=True)
+                self.output = self.add_int_output('int out')
 
         elif label in ['slider', 'osc_slider']:
             widget_type = 'slider_float'
@@ -793,6 +799,7 @@ class ValueNode(Node):
                 self.input = self.add_float_input('', triggers_execution=True, widget_type=widget_type,
                                             widget_uuid=self.value, widget_width=widget_width, trigger_button=True,
                                             max=self.max)
+                self.output = self.add_float_output('float out')
             else:
                 if self.max is None:
                     self.max = 100
@@ -800,36 +807,60 @@ class ValueNode(Node):
                                                   widget_uuid=self.value, widget_width=widget_width,
                                                   trigger_button=True,
                                                   max=self.max)
+                self.output = self.add_int_output('int out')
 
         elif label in ['knob', 'osc_knob']:
             widget_type = 'knob_float'
+            value_type = float
             if ordered_args is not None:
                 for i in range(len(ordered_args)):
                     val, t = decode_arg(ordered_args, i)
                     if t in [float, int]:
                         self.max = val
+                        value_type = t
+                        break
+            if value_type is not float:
+                widget_type = 'knob_int'
             if self.max is None:
-                self.max = 100
-            self.input = self.add_float_input('', triggers_execution=True, widget_type=widget_type,
+                if value_type is float:
+                    self.max = 1.0
+                else:
+                    self.max = 100
+
+            if value_type is float:
+                self.input = self.add_float_input('', triggers_execution=True, widget_type=widget_type,
                                             widget_uuid=self.value, widget_width=widget_width,
                                             trigger_button=True,
                                             max=self.max)
+                self.output = self.add_float_output('float out')
+            else:
+                self.input = self.add_int_input('', triggers_execution=True, widget_type=widget_type,
+                                                  widget_uuid=self.value, widget_width=widget_width,
+                                                  trigger_button=True,
+                                                  max=self.max)
+                self.output = self.add_int_output('int out')
+
         elif label in ['string', 'osc_string']:
             widget_type = 'text_input'
             self.input = self.add_string_input('', triggers_execution=True, widget_type=widget_type,
                                         widget_uuid=self.value, widget_width=widget_width,
                                         trigger_button=True)
-        elif label in ['message', 'osc_message']:
+            self.output = self.add_string_output('string out')
+
+        elif label in ['message', 'osc_message', 'list', 'osc_list']:
             widget_type = 'text_input'
             self.input = self.add_input('', triggers_execution=True, widget_type=widget_type,
                                               widget_uuid=self.value, widget_width=widget_width,
                                               trigger_button=True)
+            self.output = self.add_list_output('list out')
+
         elif label in ['text']:
             widget_type = 'text_editor'
             self.input = self.add_string_input('', triggers_execution=True, widget_type=widget_type,
                                         widget_uuid=self.value, widget_width=400,
                                         trigger_button=True)
             self.input.set_strip_returns(False)
+            self.output = self.add_string_output('string out')
         if ordered_args is not None and len(ordered_args) > 0:
             for i in range(len(ordered_args)):
                 var_name, t = decode_arg(ordered_args, i)
@@ -842,12 +873,12 @@ class ValueNode(Node):
             else:
                 self.input = self.add_input('', triggers_execution=True, widget_type=widget_type, widget_uuid=self.value, widget_width=widget_width, trigger_button=True, max=self.max)
             # print(self.input)
-        if label == 'string':
-            self.input.accepted_types = [str]
-        if self.variable_name != '':
-            self.output = self.add_output(self.variable_name)
-        else:
-            self.output = self.add_output('out')
+
+        if self.output is None:
+            if self.variable_name != '':
+                self.output = self.add_output(self.variable_name)
+            else:
+                self.output = self.add_output('out')
 
         self.variable_binding_property = self.add_option('bind to', widget_type='text_input', width=120, default_value=self.variable_name, callback=self.binding_changed)
 
@@ -1090,19 +1121,20 @@ class ValueNode(Node):
             output_data = dpg.get_value(self.value)
             self.input.set(output_data, propagate=False)
             if type(output_data) == str:
-                if len(output_data) > 0:
-                    is_list = False
-                    if output_data[0] == '[':
-                        try:
-                            output_data = string_to_list(output_data)
-                            is_list = True
-                        except:
-                            pass
-                    if not is_list:
-                        output_data = output_data.split(' ')
-                        if len(output_data) == 1:
-                            output_value = output_data[0]
-                            output_data = output_value
+                if self.output.output_type is not str:
+                    if len(output_data) > 0:
+                        is_list = False
+                        if output_data[0] == '[':
+                            try:
+                                output_data = string_to_list(output_data)
+                                is_list = True
+                            except:
+                                pass
+                        if not is_list:
+                            output_data = output_data.split(' ')
+                            if len(output_data) == 1:
+                                output_value = output_data[0]
+                                output_data = output_value
                 if self.input.widget.widget in ['drag_float', 'drag_int', 'input_float', 'input_int', 'slider_float', 'slider_int', 'knob_float', 'knob_int']:
                     if not is_number(output_data):
                         return

@@ -32,6 +32,7 @@ class NodeOutput:
         self.node = node
         self.output_always = True
         self.new_output = False
+        self.output_type = None
         # self.loaded_uuid = -1
         # self.loaded_children = []
 
@@ -143,6 +144,7 @@ class NodeOutput:
 class NodeIntOutput(NodeOutput):
     def __init__(self, label: str = "output", node=None, pos=None):
         super().__init__(label, node, pos)
+        self.output_type = int
 
     def send(self, data=None):
         if data is not None:
@@ -159,6 +161,7 @@ class NodeIntOutput(NodeOutput):
 class NodeFloatOutput(NodeOutput):
     def __init__(self, label: str = "output", node=None, pos=None):
         super().__init__(label, node, pos)
+        self.output_type = float
 
     def send(self, data=None):
         if data is not None:
@@ -175,6 +178,7 @@ class NodeFloatOutput(NodeOutput):
 class NodeBoolOutput(NodeOutput):
     def __init__(self, label: str = "output", node=None, pos=None):
         super().__init__(label, node, pos)
+        self.output_type = bool
 
     def send(self, data=None):
         if data is not None:
@@ -191,6 +195,7 @@ class NodeBoolOutput(NodeOutput):
 class NodeListOutput(NodeOutput):
     def __init__(self, label: str = "output", node=None, pos=None):
         super().__init__(label, node, pos)
+        self.output_type = list
 
     def send(self, data=None):
         if data is not None:
@@ -205,6 +210,7 @@ class NodeListOutput(NodeOutput):
 class NodeStringOutput(NodeOutput):
     def __init__(self, label: str = "output", node=None, pos=None):
         super().__init__(label, node, pos)
+        self.output_type = str
 
     def send(self, data=None):
         if data is not None:
@@ -220,6 +226,7 @@ class NodeStringOutput(NodeOutput):
 class NodeArrayOutput(NodeOutput):
     def __init__(self, label: str = "output", node=None, pos=None):
         super().__init__(label, node, pos)
+        self.output_type = np.ndarray
 
     def send(self, data=None):
         if data is not None:
@@ -235,6 +242,7 @@ class NodeArrayOutput(NodeOutput):
 class NodeTensorOutput(NodeOutput):
     def __init__(self, label: str = "output", node=None, pos=None):
         super().__init__(label, node, pos)
+        self.output_type = torch.Tensor
 
     def send(self, data=None):
         if data is not None and torch_available:
