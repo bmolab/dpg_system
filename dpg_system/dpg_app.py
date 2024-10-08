@@ -1531,6 +1531,11 @@ class App:
                                 source_output = output
                                 found_output = True
                                 break
+                        if not found_output:
+                            if len(source_node.outputs) == 1:
+                                source_output_index = 0
+                                source_output = source_node.outputs[0]
+                                found_output = True
                     else:
                         found_output = True
 
@@ -1546,6 +1551,11 @@ class App:
                                     dest_input = input
                                     found_input = True
                                     break
+                            if not found_input:
+                                if len(dest_node.inputs) == 1:
+                                    dest_input_index = 0
+                                    dest_input = dest_node.inputs[0]
+                                    found_input = True
                         else:
                             found_input = True
 

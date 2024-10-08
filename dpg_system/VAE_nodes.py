@@ -634,9 +634,9 @@ def load_model(expr_dir, model_code=None,
 
     if comp_device == 'cpu' or not torch.cuda.is_available():
         print('No GPU detected. Loading on CPU!')
-        state_dict = torch.load(trained_weights_fname, map_location=torch.device('cpu'))['state_dict']
+        state_dict = torch.load(trained_weights_fname, map_location=torch.device('cpu'), weights_only=True)['state_dict']
     else:
-        state_dict = torch.load(trained_weights_fname)['state_dict']
+        state_dict = torch.load(trained_weights_fname, weights_only=True)['state_dict']
     if remove_words_in_model_weights is not None:
         words = '{}'.format(remove_words_in_model_weights)
         state_dict = {k.replace(words, '') if k.startswith(words) else k: v for k, v in state_dict.items()}
@@ -686,7 +686,7 @@ class VPoserNode(Node):
         self.model = VPoser(config)
 
     def load_model(self):
-        path = self.model_path_in()
+        path = any_to_string(self.model_path_in())
         if os.path.exists(path):
             self.model = load_model(path, model_code=VPoser, remove_words_in_model_weights='vp_model.', disable_grad=True)[0]
             # self.model.load_state_dict(torch.load(path, map_location='cpu'))

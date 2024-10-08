@@ -761,7 +761,7 @@ class UnpackNode(Node):
                 self.num_outs = self.arg_as_int(default_value=1)
                 for i in range(self.num_outs):
                     self.out_types.append(None)
-                    out_names.append('out ' + str(i))
+                    out_names.append('out ' + str(i + 1))
             else:
                 self.num_outs = len(args)
                 for arg in args:
@@ -859,7 +859,7 @@ class PackNode(Node):
                 self.num_ins = self.arg_as_int(default_value=2)
                 for i in range(self.num_ins):
                     self.in_types.append(None)
-                    in_names.append('out ' + str(i))
+                    in_names.append('in ' + str(i + 1))
             else:
                 self.num_ins = len(args)
                 for arg in args:

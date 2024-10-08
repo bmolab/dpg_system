@@ -980,15 +980,12 @@ class LimbGeometry:
     def draw(self):  #  limb structure could include colors and if so, do not use call_list... do vertex colors and manipulate GL_COLOR_MATERIAL
         if self.new_shape:
             self.new_shape = False
-            print('new_shape')
             if self.list_index != -1:
                 glDeleteLists(self.list_index, 1)
-                print('deleted list', self.list_index)
             self.list_index = -1
 
         if self.list_index == -1:
             self.list_index = glGenLists(1)
-            print('new_call_list', self.list_index)
             glNewList(self.list_index, GL_COMPILE)
 
             glBegin(GL_TRIANGLE_STRIP)
@@ -1096,7 +1093,12 @@ class LimbGeometry:
         temp1 = v_2 - v_1
         temp2 = v_3 - v_1
         normal = np.cross(temp1, temp2)
-        normal = normal / np.linalg.norm(normal)
+        if normal.any() == 0:
+            for i in range(3):
+                if normal[i] == 0:
+                    normal[i] = 1e-6
+        dist = np.linalg.norm(normal)
+        normal = normal / dist
         return (normal[0], normal[1], normal[2])
 
     def __del__(self):
