@@ -50,6 +50,7 @@ dependencies:
   - pcre2
   - pip
   - pixman
+  - pycairo
   - pyglfw
   - pyopengl
   - python
