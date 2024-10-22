@@ -22,6 +22,8 @@ def register_gl_nodes():
     Node.app.register_node('gl_align', GLAlignNode.factory)
     Node.app.register_node('gl_quaternion_rotate', GLQuaternionRotateNode.factory)
     Node.app.register_node('gl_text', GLTextNode.factory)
+    Node.app.register_node('gl_korean_text', GLKoreanTextNode.factory)
+
     Node.app.register_node('gl_billboard', GLBillboard.factory)
     Node.app.register_node('gl_rotation_disk', GLXYZDiskNode.factory)
     Node.app.register_node('gl_button_grid', GLButtonGridNode.factory)
@@ -1494,6 +1496,7 @@ class CharacterSlot:
         else:
             raise RuntimeError('unknown glyph type')
 
+
 class GLTextNode(GLNode):
     @staticmethod
     def factory(node_name, data, args=None):
@@ -1526,8 +1529,8 @@ class GLTextNode(GLNode):
         self.position_y_input = self.add_input('position_y', widget_type='drag_float', default_value=0.0, callback=self.text_changed)
         self.text_alpha_input = self.add_input('alpha', widget_type='drag_float', default_value=1.0, callback=self.text_changed)
         self.scale_input = self.add_input('scale', widget_type='drag_float', default_value=1.0, callback=self.text_changed)
+        self.text_font = self.add_string_input('font', widget_type='text_input', default_value=self.font_path, callback=self.font_changed)
         self.text_color = self.add_option('alpha', widget_type='color_picker', default_value=[1.0, 1.0, 1.0, 1.0], callback=self.color_changed)
-        self.text_font = self.add_option('font', widget_type='text_input', default_value=self.font_path, callback=self.font_changed)
         self.text_size = self.add_option('size', widget_type='drag_int', default_value=self.font_size, callback=self.size_changed)
         self.alpha_power = self.add_option('alpha power', widget_type='drag_float', default_value=1.0)
         self.separator = self.add_option('separator', widget_type='text_input', default_value=' ')
@@ -1635,6 +1638,319 @@ class GLTextNode(GLNode):
                         rgb_bm[(k * glyph.bitmap.width + j) * 4 + 3] = float(bm[k * glyph.bitmap.width + j]) / 255.0
 
                 cell = [i % 16, i // 16]
+                glyph_offset = [cell[0] * self.glyph_shape[0], cell[1] * self.glyph_shape[1]]
+                glTexSubImage2D(GL_TEXTURE_2D, 0, glyph_offset[0] + glyph.bitmap_left, glyph_offset[1] + (self.glyph_shape[1] - glyph.bitmap_top) + bottom, glyph.bitmap.width, glyph.bitmap.rows, GL_RGBA, GL_FLOAT, rgb_bm)
+                self.characters[chr(i)] = CharacterSlot(cell, self.glyph_shape, glyph, font_atlas_shape)
+
+        glBindTexture(GL_TEXTURE_2D, 0)
+
+    def remember_state(self):
+        self.was_lit = glGetBoolean(GL_LIGHTING)
+        if self.was_lit:
+            glDisable(GL_LIGHTING)
+        self.was_depth = glGetBoolean(GL_DEPTH_TEST)
+        if self.was_depth:
+            glDisable(GL_DEPTH_TEST)
+        glPushMatrix()
+
+    def restore_state(self):
+        glPopMatrix()
+        if self.was_lit:
+            glEnable(GL_LIGHTING)
+        if self.was_depth:
+            glEnable(GL_DEPTH_TEST)
+
+    def render_text(self):
+        if self.initialized:
+            self.new_text = False
+            if self.display_list != -1:
+                glDeleteLists(self.display_list, 1)
+            self.display_list = glGenLists(1)
+
+            pos = [self.position_x_input(), self.position_y_input()]
+            scale = self.scale_input() / 100
+            text = self.text_input()
+
+            if type(text) == str:
+                glNewList(self.display_list, GL_COMPILE)
+
+                glEnable(GL_BLEND)
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+                glEnable(GL_TEXTURE_2D)
+
+                # self.coords = np.ndarray((len(text), 24))
+                for index, c in enumerate(text):
+                    if c in self.characters:
+                        ch = self.characters[c]
+                        width = self.glyph_shape[0] * scale
+                        height = self.glyph_shape[1] * scale
+                        vertices = self.get_rendering_buffer(pos[0], pos[1], width, height, ch.texture_coords)
+                        glBegin(GL_TRIANGLES)
+                        for i in range(6):
+                            glTexCoord2f(vertices[i * 4 + 2], vertices[i * 4 + 3])
+                            glVertex2f(vertices[i * 4], vertices[i * 4 + 1])
+                        glEnd()
+                        # self.coords[index] = vertices.copy()
+                        pos[0] += ((ch.advance >> 6) * scale)
+
+                glEndList()
+            elif type(text) == list:
+                alpha_power = self.alpha_power()
+                separator = self.separator()
+
+                glNewList(self.display_list, GL_COMPILE)
+
+                glEnable(GL_BLEND)
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+                glEnable(GL_TEXTURE_2D)
+                for fragment in text:
+                    this_text = ''
+                    if type(fragment) == list:
+                        this_alpha = fragment[1]
+
+                        if this_alpha > 0.0:
+                            this_alpha = pow(this_alpha, alpha_power)
+                            this_text = fragment[0] + separator
+                            glColor4f(self.color[0], self.color[1], self.color[2], self.text_alpha_input() * this_alpha)
+
+                    elif type(fragment) == str:
+                        this_text = fragment + separator
+                    if len(this_text) > 0:
+                        for index, c in enumerate(this_text):
+                            if c in self.characters:
+                                ch = self.characters[c]
+                                width = self.glyph_shape[0] * scale
+                                height = self.glyph_shape[1] * scale
+                                vertices = self.get_rendering_buffer(pos[0], pos[1], width, height, ch.texture_coords)
+                                glBegin(GL_TRIANGLES)
+                                for i in range(6):
+                                    glTexCoord2f(vertices[i * 4 + 2], vertices[i * 4 + 3])
+                                    glVertex2f(vertices[i * 4], vertices[i * 4 + 1])
+                                glEnd()
+                                # self.coords[index] = vertices.copy()
+                                pos[0] += ((ch.advance >> 6) * scale)
+
+                glEndList()
+
+    # figure out drawing the text using drawlists or vertex_arrays
+    def draw(self):
+        if not self.ready:
+            return
+        if not self.initialized:
+            self.context = glfw.get_current_context()
+            self.update_font()
+            self.initialized = True
+        if self.new_text:
+            self.render_text()
+        # if self.coords is None:
+        #     self.render_text()
+        # if self.text_buffer == -1:
+        #     self.text_buffer = glGenBuffers(1)
+        #     self.text_vertex_buffer = glGenVertexArrays(1)
+        #     glBindVertexArray(self.text_vertex_buffer)
+
+        glActiveTexture(GL_TEXTURE0)
+        glBindTexture(GL_TEXTURE_2D, self.texture)
+        glTranslatef(0, 0, -2)
+
+        # glEnable(GL_BLEND)
+        # glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        # glEnable(GL_TEXTURE_2D)
+        glColor4f(self.color[0], self.color[1], self.color[2], self.text_alpha_input())
+        if self.display_list != -1:
+            glCallList(self.display_list)
+        # pos = [self.position_x_input(), self.position_y_input()]
+        # scale = self.scale_input() / 100
+        # text = self.text_input()
+        # glBindTexture(GL_TEXTURE_2D, self.texture)
+        #
+        # for c in text:
+        #     ch = self.characters[c]
+        #     width = self.glyph_shape[0] * scale
+        #     height = self.glyph_shape[1] * scale
+        #     vertices = self.get_rendering_buffer(pos[0], pos[1], width, height, ch.texture_coords)
+        #
+        #     glBegin(GL_TRIANGLES)
+        #     for i in range(6):
+        #         glTexCoord2f(vertices[i * 4 + 2], vertices[i * 4 + 3])
+        #         glVertex2f(vertices[i * 4], vertices[i * 4 + 1])
+        #     glEnd()
+        #
+        #     pos[0] += ((ch.advance >> 6) * scale)
+        # glBindBuffer(GL_ARRAY_BUFFER, self.text_buffer)
+        # glBufferData(GL_ARRAY_BUFFER, self.coords.size * self.coords.itemsize, self.coords.data, GL_DYNAMIC_DRAW)
+        # glBindBuffer(GL_ARRAY_BUFFER, 0)
+        #
+        # glDrawArrays(GL_TRIANGLES, 0, self.coords.shape[0] * 6)
+
+        glBindTexture(GL_TEXTURE_2D, 0)
+
+        glColor4f(1.0, 1.0, 1.0, 1.0)
+
+
+    def get_rendering_buffer(self, xpos, ypos, width, height, texture_coords, zfix=0.):
+        return np.asarray([
+            xpos, ypos - height, texture_coords[0], texture_coords[3],
+            xpos, ypos, texture_coords[0], texture_coords[1],
+            xpos + width, ypos, texture_coords[2], texture_coords[1],
+            xpos, ypos - height, texture_coords[0], texture_coords[3],
+            xpos + width, ypos, texture_coords[2], texture_coords[1],
+            xpos + width, ypos - height, texture_coords[2], texture_coords[3]
+        ], np.float32)
+
+    # def get_rendering_buffer(self, xpos, ypos, width, height, texture_coords, zfix=0.):
+    #     return np.asarray([
+    #         xpos, ypos - height, texture_coords[0], texture_coords[3],
+    #         xpos, ypos, texture_coords[0], texture_coords[1],
+    #         # xpos, ypos - height, texture_coords[0], texture_coords[3],
+    #         # xpos + width, ypos, texture_coords[2], texture_coords[1],
+    #         xpos + width, ypos - height, texture_coords[2], texture_coords[3],
+    #         xpos + width, ypos, texture_coords[2], texture_coords[1]
+    #     ], np.float32)
+
+class GLKoreanTextNode(GLNode):
+    @staticmethod
+    def factory(node_name, data, args=None):
+        node = GLKoreanTextNode(node_name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.ready = False
+        self.new_text = False
+        self.display_list = -1
+        self.characters = {}
+        self.initialized = False
+        self.font_size = 6
+        self.coords = None
+        self.text_buffer = -1
+        self.text_vertex_buffer = -1
+        self.color = [1.0, 1.0, 1.0, 1.0]
+        self.font_path = "Inconsolata-g.otf"
+        for i in range(len(args)):
+            v, t = decode_arg(args, i)
+            if t in [float, int]:
+                self.font_size = v
+            elif t == str:
+                self.font_path = v
+        self.face = None
+
+        self.text_input = self.add_input('text', callback=self.text_changed)
+        self.position_x_input = self.add_input('position_x', widget_type='drag_float', default_value=0.0, callback=self.text_changed)
+        self.position_y_input = self.add_input('position_y', widget_type='drag_float', default_value=0.0, callback=self.text_changed)
+        self.text_alpha_input = self.add_input('alpha', widget_type='drag_float', default_value=1.0, callback=self.text_changed)
+        self.scale_input = self.add_input('scale', widget_type='drag_float', default_value=1.0, callback=self.text_changed)
+        self.text_font = self.add_string_input('font', widget_type='text_input', default_value=self.font_path, callback=self.font_changed)
+        self.text_color = self.add_option('alpha', widget_type='color_picker', default_value=[1.0, 1.0, 1.0, 1.0], callback=self.color_changed)
+        self.text_size = self.add_option('size', widget_type='drag_int', default_value=self.font_size, callback=self.size_changed)
+        self.alpha_power = self.add_option('alpha power', widget_type='drag_float', default_value=1.0)
+        self.separator = self.add_option('separator', widget_type='text_input', default_value=' ')
+
+        self.ready = True
+        self.context = None
+        self.texture = -1
+        self.was_lit = False
+        self.was_depth = False
+
+    def custom_create(self, from_file):
+        dpg.configure_item(self.text_color.widget.uuid, no_alpha=True)
+        dpg.configure_item(self.text_color.widget.uuid, alpha_preview=dpg.mvColorEdit_AlphaPreviewNone)
+
+    def text_changed(self):
+        self.new_text = True
+
+    def color_changed(self):
+        self.color = self.text_color()
+        self.color[0] /= 255.0
+        self.color[1] /= 255.0
+        self.color[2] /= 255.0
+
+    def size_changed(self):
+        size = self.text_size()
+        if size != self.font_size:
+            self.font_size = size
+            self.initialized = False
+            self.new_text = True
+
+    def font_changed(self):
+        path = self.text_font()
+        if self.font_path != path:
+            self.font_path = path
+            self.initialized = False
+            self.new_text = True
+
+    def update_font(self):
+        print('update font')
+        hold_context = glfw.get_current_context()
+        glfw.make_context_current(self.context)
+
+        self.ready = False
+        if self.texture != -1:
+            glDeleteTextures(1, self.texture)
+        self.characters = {}
+        if self.face is not None:
+            del self.face
+        self.face = freetype.Face(self.font_path)
+        size = self.font_size * 256.0
+        self.face.set_char_size(int(size))
+        self.create_glyph_textures()
+        self.ready = True
+        glfw.make_context_current(hold_context)
+
+    def create_glyph_textures(self):
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
+
+        bottom = 1000
+        top = 0
+        left = 1000
+        right = 0
+        printable_count = 0
+
+        for i in range(0xAC00, 0xD7A3):
+            a = chr(i)
+            if a.isprintable():
+                printable_count += 1
+                self.face.load_char(chr(i))
+                glyph = self.face.glyph
+                if glyph.bitmap_top > top:
+                    top = glyph.bitmap_top
+                if glyph.bitmap_left < left:
+                    left = glyph.bitmap_left
+                if glyph.bitmap.width + glyph.bitmap_left > right:
+                    right = glyph.bitmap.rows + glyph.bitmap_left
+                if glyph.bitmap_top - glyph.bitmap.rows < bottom:
+                    bottom = glyph.bitmap_top - glyph.bitmap.rows
+
+        self.glyph_shape = [0, 0]
+        self.glyph_shape[0] = right - left
+        self.glyph_shape[1] = top - bottom
+
+        font_atlas_shape = [self.glyph_shape[0] * 16, self.glyph_shape[1] * 16]
+        self.texture = glGenTextures(1)
+        glBindTexture(GL_TEXTURE_2D, self.texture)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, font_atlas_shape[0], font_atlas_shape[1], 0, GL_RGBA, GL_FLOAT, None)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+
+        for i in range(0xAC00, 0xD7A3):
+            a = chr(i)
+            if a.isprintable():
+                self.face.load_char(chr(i))
+                glyph = self.face.glyph
+                bm = glyph.bitmap.buffer
+                rgb_bm = [0.0] * (glyph.bitmap.rows * glyph.bitmap.width * 4)
+                for k in range(glyph.bitmap.rows):
+                    for j in range(glyph.bitmap.width):
+                        rgb_bm[(k * glyph.bitmap.width + j) * 4] = 1.0
+                        rgb_bm[(k * glyph.bitmap.width + j) * 4 + 1] = 1.0
+                        rgb_bm[(k * glyph.bitmap.width + j) * 4 + 2] = 1.0
+                        rgb_bm[(k * glyph.bitmap.width + j) * 4 + 3] = float(bm[k * glyph.bitmap.width + j]) / 255.0
+
+                cell = [i % 128, i // 128]
+                a = cell[0] * self.glyph_shape[0]
+                b = cell[1] * self.glyph_shape[1]
                 glyph_offset = [cell[0] * self.glyph_shape[0], cell[1] * self.glyph_shape[1]]
                 glTexSubImage2D(GL_TEXTURE_2D, 0, glyph_offset[0] + glyph.bitmap_left, glyph_offset[1] + (self.glyph_shape[1] - glyph.bitmap_top) + bottom, glyph.bitmap.width, glyph.bitmap.rows, GL_RGBA, GL_FLOAT, rgb_bm)
                 self.characters[chr(i)] = CharacterSlot(cell, self.glyph_shape, glyph, font_atlas_shape)

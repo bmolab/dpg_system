@@ -34,6 +34,8 @@ depth_anything_active = True
 vae_active = True
 vive_tracker_active = True
 lighting_active = True
+translation_active = True
+layout_active = True
 
 # print('Options active:', end=' ')
 # with open('dpg_system_config.json', 'r') as f:
@@ -283,6 +285,23 @@ if lighting_active:
         print('imported lighting')
     except ModuleNotFoundError:
         lighting_active = False
+
+if translation_active:
+    try:
+        from dpg_system.google_translate_node import *
+        imported.append('google_translate_node.py')
+        print('imported google translate')
+    except ModuleNotFoundError:
+        translation_active = False
+
+if layout_active:
+    try:
+        from dpg_system.layout_node import *
+        imported.append('layout_node.py')
+        print('imported layout')
+    except ModuleNotFoundError:
+        print('import layout failed')
+        layout_active = False
 
 # import additional node files in folder
 
@@ -991,6 +1010,12 @@ class App:
             register_vive_tracker_nodes()
         if lighting_active and 'register_lighting_nodes' in globals():
             register_lighting_nodes()
+
+        if translation_active and 'register_google_translate_nodes' in globals():
+            register_google_translate_nodes()
+
+        if layout_active and 'register_layout_nodes' in globals():
+            register_layout_nodes()
 
     def get_variable_list(self):
         v_list = list(self.variables.keys())

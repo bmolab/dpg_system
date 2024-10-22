@@ -148,7 +148,7 @@ class ElevenLabsNode(Node):
         self.similarity_boost = self.add_input('similarity_boost', widget_type='drag_float', default_value=1.0, callback=self.voice_changed)
         self.style = self.add_input('style exaggeration', widget_type='drag_float', default_value=0.5, callback=self.voice_changed)
         self.latency = self.add_input('latency', widget_type='combo', default_value='0')
-        self.latency.widget.combo_items = ['0', '1', '2', '3', '4']
+        self.latency.widget.combo_items = ['0', '1', '2', '3', '4', '5']
         self.stop_streaming_input = self.add_input('stop', widget_type='button', callback=self.stop_streaming)
         self.accept_input = self.add_input('accept input', widget_type='checkbox')
         self.active_output = self.add_output('speaking')
