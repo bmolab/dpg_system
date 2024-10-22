@@ -98,7 +98,7 @@ dependencies:
     - murmurhash
     - networkx
     - numba
-    - numpy==1.6.4
+    - numpy==1.26.4
     - numpy-quaternion
     - opencv-python
     - packaging
