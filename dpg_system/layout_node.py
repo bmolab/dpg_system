@@ -283,6 +283,7 @@ class CairoTextLayoutNode(Node):
         self.command_input = self.add_input('command', triggers_execution=True)
         self.clear_button = self.add_input('clear', widget_type='button', callback=self.clear_layout)
         self.font_input = self.add_input('font path', widget_type='text_input', default_value='', callback=self.font_changed)
+        self.font_size_input = self.add_input('font size', widget_type='drag_float', default_value=40, callback=self.font_size_changed)
         self.active_line = self.add_input('active_line', widget_type='input_int', default_value=17, callback=self.active_line_changed)
         self.wrap_input = self.add_input('wrap text', widget_type='checkbox', default_value=True, callback=self.wrap_changed)
         self.image_output = self.add_output('layout')
@@ -298,6 +299,8 @@ class CairoTextLayoutNode(Node):
     def font_changed(self):
         self.layout.get_font(self.font_input())
 
+    def font_size_changed(self):
+        self.layout.set_font_size(self.font_size_input())
     def execute(self):
         if self.layout is not None:
             if self.active_input is self.input:

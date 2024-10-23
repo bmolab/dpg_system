@@ -611,6 +611,13 @@ class CairoTextLayout:
         self.active_line = line
         self.cursor_position = [pos[0], self.active_line * self.leading]
 
+    def set_font_size(self, size):
+        self.font_size = size
+        self.cr.set_font_size(self.font_size)
+        self.leading = int(self.font_size * 1.5)
+        self.list_leading = self.font_size
+        self.paragraph_indent = self.font_size * paragraph_indent_scaler
+
     def get_font(self, path):
         if path != '':
             self.face.append(create_cairo_font_face_for_file(path, 0))
@@ -656,11 +663,6 @@ class CairoTextLayout:
             f.flush()
             f.close()
 
-
-    # def add_word(self, word):
-    #     new_element = [self.cursor_position.copy(), word]
-    #     self.add_element_to_layout(new_element)
-    #
     def add_string(self, elements):
         for index, element in enumerate(elements):
             word = element[0]
