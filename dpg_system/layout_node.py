@@ -289,6 +289,8 @@ class CairoTextLayoutNode(Node):
         self.clear_button = self.add_input('clear', widget_type='button', callback=self.clear_layout)
         self.font_input = self.add_input('font path', widget_type='text_input', default_value='', callback=self.font_changed)
         self.font_size_input = self.add_input('font size', widget_type='drag_float', default_value=40, callback=self.font_size_changed)
+        self.text_brightness = self.add_input('brightness', widget_type='drag_float', default_value=1.0)
+        self.alpha_power = self.add_input('alpha power', widget_type='drag_float', default_value=0.1)
         self.leading_input = self.add_input('leading', widget_type='drag_float', default_value=60, callback=self.leading_changed)
         self.active_line = self.add_input('active_line', widget_type='input_int', default_value=17, callback=self.active_line_changed)
         self.wrap_input = self.add_input('wrap text', widget_type='checkbox', default_value=True, callback=self.wrap_changed)
@@ -367,10 +369,14 @@ class CairoTextLayoutNode(Node):
         for t in new_data:
             if type(t) == str:
                 t = [t, 1.0]
-            if t[1] != 0.0:
-                if '\\' in t[0]:
-                    t[0].replace('\\n', '\n')
-                self.layout.add_string([t])
+            elif type(t) is not list:
+                t = [any_to_string(t), 1.0]
+            if len(t) > 1:
+                t[1] = pow(t[1], self.alpha_power()) * self.text_brightness()
+                if t[1] != 0.0:
+                    if '\\' in t[0]:
+                        t[0].replace('\\n', '\n')
+                    self.layout.add_string([t])
 
         self.display_layout()
 

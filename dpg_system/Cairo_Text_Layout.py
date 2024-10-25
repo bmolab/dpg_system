@@ -608,7 +608,7 @@ class CairoTextLayout:
         ### for MacOS:
         else:
             self.face.append(
-                    create_cairo_font_face_for_file("AppleSDGothicNeoH00-18.otf",
+                    create_cairo_font_face_for_file("AppleSDGothicNeoUL00-14.otf",
                                                     0))  # utility
          # self.face.append(create_cairo_font_face_for_file("/Library/Fonts/RODE Noto Sans CJK SC R.otf", 0))  # utility
 

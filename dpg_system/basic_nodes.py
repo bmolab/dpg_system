@@ -1507,12 +1507,17 @@ class ConcatenateNode(Node):
                 self.input_list[i + 1].triggers_execution = False
 
     def execute(self):
-        out_list = self.input_list[0]().copy()
-        if type(out_list) == list:
-            for i in range(self.count - 1):
-                l = self.input_list[i + 1]()
-                if type(l) == list:
-                    out_list += l.copy()
+        # out_list = self.input_list[0]().copy()
+        out_value = any_to_list(self.input_list[0]())
+        outlist = []
+        if type(out_value) is list:
+            out_list = [out_value]
+
+        for i in range(self.count - 1):
+            l = self.input_list[i + 1]()
+            if type(l) == list:
+                out_list += l.copy()
+        if len(out_list) > 0:
             self.output.send(out_list)
 
 
