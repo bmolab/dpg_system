@@ -1,6 +1,7 @@
 import cairo
 import math
 import numpy as np
+import platform
 
 _initialized = False
 import ctypes as ct
@@ -57,11 +58,11 @@ def create_cairo_font_face_for_file (filename, faceindex=0, loadoptions=0):
 
     if not _initialized:
         # find shared objects
-        _freetype_so = ct.CDLL("libfreetype.6.dylib")
-        if _freetype_so is None:
+        if platform.system() == "Darwin":
+            _freetype_so = ct.CDLL("libfreetype.6.dylib")
+            _cairo_so = ct.CDLL("libcairo.2.dylib")
+        elif platform.system() == "Linux":
             _freetype_so = ct.CDLL("libfreetype.so.6")
-        _cairo_so = ct.CDLL("libcairo.2.dylib")
-        if _cairo_so is None:
             _cairo_so = ct.CDLL("libcairo.so.2")
 
         _cairo_so.cairo_ft_font_face_create_for_ft_face.restype = ct.c_void_p

@@ -647,6 +647,8 @@ class GLBillboard(GLNode):
             self.texture_data_pending = None
         half_width = self.width() / 2
         half_height = self.height() / 2
+        # color = self.color_input.get_widget_value()
+
         if self.numpy_texture is not None and self.numpy_texture.texture != -1:
             glEnable(GL_TEXTURE_2D)
             glBindTexture(GL_TEXTURE_2D, self.numpy_texture.texture)

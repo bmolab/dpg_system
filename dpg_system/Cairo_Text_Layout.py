@@ -101,11 +101,7 @@ class LLMLayout:
         # self.face.append(create_cairo_font_face_for_file("/usr/share/fonts/type1/gsfonts/c059013l.pfb", 0))  # New Century Schoolbook
 ### for MacOS: 
         else:
-            platform_ = platform.system()
-            if platform_ == 'Darwin':
-                self.face.append(create_cairo_font_face_for_file("/Users/drokeby/Library/Fonts/TradeGothicLTStd.otf", 0))  # utility
-            elif platform_ == 'Linux':
-                self.face.append(create_cairo_font_face_for_file("/usr/share/fonts/type1/gsfonts/c059013l.pfb",
+            self.face.append(create_cairo_font_face_for_file("AppleSDGothicNeoH00-18.otf",
                                                                  0))  # New Century Schoolbook
         # self.face.append(create_cairo_font_face_for_file("/Library/Fonts/RODE Noto Sans CJK SC R.otf", 0))  # utility
 
@@ -564,42 +560,26 @@ class CairoTextLayout:
         self.list_leading = self.font_size
         self.list = []
         self.paragraph_indent = self.font_size * paragraph_indent_scaler
-        # self.show_list = False
-        # self.choice_menu_position = [0, 0]
-        # self.choice_item_position = [0, 0]
         self.incomplete = False
         self.face = []
-        # self.chosen_id = -1
         self.forced_newline = False
-        #        frame = [frame[0] * 2, frame[1] * 2, frame[2] * 2, frame[3] * 2]
         self.cr, self.dest = self.prepare_drawing(frame)
-        # self.sorted_poss = None
-        # self.sorted_poss_ = None
-        # self.cmap = _viridis_data
-        # self.cmap2 = make_heatmap()
-        # self.cmap3 = make_coldmap()
-        # self.text_color_mode = 'white'
         self.choice_width = 0
         self.selected_word = ''
         self.dashboard_height = 0
         self.get_font(font_file_path)
         self.which_font = 0
         self.util_font = 0
-        # self.position_target = [0, 0]
-        # self.scroll_delta = self.leading / 3.0
-        # self.do_animate_scroll = False
         self.active_line = 8
         self.wrap_text = True
         self.cursor_position = [0, self.active_line * self.leading]
 
-        # self.most_prob = 0
         self.last_element_to_display = -1
         self.force_newline_next = False
         self.set_active_line(self.active_line)
         self.in_progress_start = 0
         self.in_progress_position = self.cursor_position.copy()
         self.in_progress_previous_position = self.cursor_position.copy()
-        # self.temp = 1.0
         self.draw_layout()
 
     def prepare_drawing(self, frame):
@@ -627,15 +607,10 @@ class CairoTextLayout:
         # self.face.append(create_cairo_font_face_for_file("/usr/share/fonts/type1/gsfonts/c059013l.pfb", 0))  # New Century Schoolbook
         ### for MacOS:
         else:
-            platform_ = platform.system()
-            if platform_ == 'Darwin':
-                self.face.append(
-                    create_cairo_font_face_for_file("/Users/drokeby/Library/Fonts/TradeGothicLTStd.otf",
+            self.face.append(
+                    create_cairo_font_face_for_file("AppleSDGothicNeoH00-18.otf",
                                                     0))  # utility
-            elif platform_ == 'Linux':
-                self.face.append(create_cairo_font_face_for_file("/usr/share/fonts/type1/gsfonts/c059013l.pfb",
-                                                                 0))  # New Century Schoolbook
-        # self.face.append(create_cairo_font_face_for_file("/Library/Fonts/RODE Noto Sans CJK SC R.otf", 0))  # utility
+         # self.face.append(create_cairo_font_face_for_file("/Library/Fonts/RODE Noto Sans CJK SC R.otf", 0))  # utility
 
         self.cr.set_font_face(self.face[- 1])
         self.which_font = len(self.face) - 1

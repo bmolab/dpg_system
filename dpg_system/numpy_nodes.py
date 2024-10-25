@@ -46,6 +46,7 @@ def register_numpy_nodes():
     Node.app.register_node('np.min', NumpyClipNode.factory)
     Node.app.register_node('np.max', NumpyClipNode.factory)
     Node.app.register_node('np.line_intersection', NumpyLineIntersectionNode.factory)
+    Node.app.register_node('np.add_alpha', NumpyAddAlphaNode.factory)
 
 
 class NumpyGeneratorNode(Node):
@@ -686,6 +687,27 @@ class NumpyRollNode(Node):
                 axis = len(data.shape) - 1
             repeated_data = np.roll(data, shift=self.shifts(), axis=axis)
             self.output.send(repeated_data)
+
+
+class NumpyAddAlphaNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyAddAlphaNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('input', triggers_execution=True)
+        self.output = self.add_output('image with alpha')
+
+    def execute(self):
+        if self.input.fresh_input:
+            data = any_to_array(self.input())
+            if len(data.shape) == 3:
+                mean = np.mean(data, axis=2, keepdims=True)
+                data = np.append(data, mean, axis=2)
+                self.output.send(data)
+
 
 
 class NumpyLineIntersectionNode(Node):

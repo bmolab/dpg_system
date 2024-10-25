@@ -50,7 +50,6 @@ dependencies:
   - pcre2
   - pip
   - pixman
-  - pycairo
   - pyglfw
   - pyopengl
   - python
@@ -142,5 +141,5 @@ dependencies:
     - psutil
     - scikit-learn
     - word2number
-    - pycairo
+    - pycairo==1.11.0
 prefix: dpg_system
