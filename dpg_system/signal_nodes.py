@@ -1047,9 +1047,15 @@ class SampleAndTriggerNode(Node):
 
         self.register_value = 0
         self.sample_input = self.add_input('sample', callback=self.sample)
-        self.trigger_input = self.add_input('trigger', triggers_execution=True)
+        self.trigger_input = self.add_input('trigger', callback=self.trigger)
         self.input = self.add_input('input')
         self.output = self.add_output('out')
+
+    def trigger(self):
+        sample = self.input()
+        if sample is not None:
+            self.register_value = sample
+            self.execute()
 
     def sample(self):
         sample = self.input()

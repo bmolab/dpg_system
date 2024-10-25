@@ -309,6 +309,7 @@ class CairoTextLayoutNode(Node):
 
     def font_size_changed(self):
         self.layout.set_font_size(self.font_size_input())
+
     def execute(self):
         if self.layout is not None:
             if self.active_input is self.input:
@@ -360,15 +361,16 @@ class CairoTextLayoutNode(Node):
 
     def add_text(self, new_data):
         tp = type(new_data)
+
         if tp is str:
             new_data = string_to_list(new_data)
         for t in new_data:
             if type(t) == str:
                 t = [t, 1.0]
-            if '\\' in t[0]:
-                t[0].replace('\\n', '\n')
-
-            self.layout.add_string([t])
+            if t[1] != 0.0:
+                if '\\' in t[0]:
+                    t[0].replace('\\n', '\n')
+                self.layout.add_string([t])
 
         self.display_layout()
 
