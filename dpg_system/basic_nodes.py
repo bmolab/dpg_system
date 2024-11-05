@@ -24,7 +24,7 @@ def register_basic_nodes():
     Node.app.register_node("info", TypeNode.factory)
     Node.app.register_node('array', ArrayNode.factory)
     # Node.app.register_node("string", StringNode.factory)
-    Node.app.register_node("list", ListNode.factory)
+    # Node.app.register_node("list", ListNode.factory)
     Node.app.register_node("counter", CounterNode.factory)
     Node.app.register_node('coll', CollectionNode.factory)
     Node.app.register_node('dict', CollectionNode.factory)
@@ -79,6 +79,7 @@ def register_basic_nodes():
     Node.app.register_node('present', PresentationModeNode.factory)
     Node.app.register_node('text_file', TextFileNode.factory)
     Node.app.register_node('text_editor', TextFileNode.factory)
+    Node.app.register_node('clamp', ClampNode.factory)
 
 
 # DeferNode -- delays received input until next frame
@@ -210,8 +211,8 @@ class MetroNode(Node):
         self.streaming = False
 
         # set inputs / properties / outputs / options
-        self.on_off_input = self.add_input('on', widget_type='checkbox', callback=self.start_stop)
-        self.period_input = self.add_input('period', widget_type='drag_float', default_value=self.period, callback=self.change_period)
+        self.on_off_input = self.add_bool_input('on', widget_type='checkbox', callback=self.start_stop)
+        self.period_input = self.add_float_input('period', widget_type='drag_float', default_value=self.period, callback=self.change_period)
         self.units_property = self.add_property('units', widget_type='combo', default_value='milliseconds', callback=self.set_units)
         self.units_property.widget.combo_items = ['seconds', 'milliseconds', 'minutes', 'hours']
         self.output = self.add_output('')
@@ -256,6 +257,42 @@ class MetroNode(Node):
 
     def execute(self):
         self.output.send('bang')
+
+
+class ClampNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ClampNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('in', triggers_execution=True)
+        self.min_input = self.add_input('min', widget_type='drag_float', default_value=0.0)
+        self.max_input = self.add_input('max', widget_type='drag_float', default_value=1.0)
+        self.output = self.add_output('clamped output')
+
+    def execute(self):
+        data = self.input()
+        t = type(data)
+        if t in [int, float, np.int64, np.float32, np.float64]:
+            if data < self.min_input():
+                data =  self.min_input()
+            elif data > self.max_input():
+                data = self.max_input()
+            self.output.send(data)
+        elif t is list:
+            a = any_to_array(data, validate=True)
+            if a is not None:
+                a = np.clip(a, self.min_input(), self.max_input())
+                self.output.send(a)
+        elif t is np.ndarray:
+            a = np.clip(data, self.min_input(), self.max_input())
+            self.output.send(a)
+        elif torch_available and t is torch.Tensor:
+            a = torch.clamp(data, self.min_input(), self.max_input())
+            self.output.send(a)
 
 
 class RampNode(Node):
@@ -477,7 +514,7 @@ class TimerNode(Node):
             self.mode = 1
             self.input = self.add_input('', widget_type='drag_float', triggers_execution=True)
         else:
-            self.input = self.add_input('on', widget_type='checkbox', triggers_execution=True, callback=self.start_stop)
+            self.input = self.add_bool_input('on', widget_type='checkbox', triggers_execution=True, callback=self.start_stop)
         self.units_property = self.add_property('units', widget_type='combo', default_value=default_units, width=100, callback=self.set_units)
         self.units_property.widget.combo_items = ['seconds', 'milliseconds', 'minutes', 'hours']
         self.output = self.add_output("")
@@ -573,8 +610,8 @@ class CounterNode(Node):
 
         self.input = self.add_input("input", triggers_execution=True)
         self.input.bang_repeats_previous = False
-        self.max_input = self.add_input('count', widget_type='drag_int', default_value=self.max_count, callback=self.update_max_count_from_widget)
-        self.step_input = self.add_input('step', widget_type='drag_int', default_value=self.step, callback=self.update_step_from_widget)
+        self.max_input = self.add_int_input('count', widget_type='drag_int', default_value=self.max_count, callback=self.update_max_count_from_widget)
+        self.step_input = self.add_int_input('step', widget_type='drag_int', default_value=self.step, callback=self.update_step_from_widget)
         self.output = self.add_output("count out")
         self.carry_output = self.add_output("carry out")
         self.carry_output.output_always = False
@@ -634,9 +671,9 @@ class GateNode(Node):
         self.bool_state = False
 
         if self.num_gates > 1:
-            self.choice_input = self.add_input('', widget_type='drag_int', triggers_execution=True, default_value=self.state, callback=self.change_state, max=self.num_gates, min=0)
+            self.choice_input = self.add_int_input('', widget_type='drag_int', triggers_execution=True, default_value=self.state, callback=self.change_state, max=self.num_gates, min=0)
         else:
-            self.choice_input = self.add_input('', widget_type='checkbox', triggers_execution=True, default_value=self.bool_state, widget_width=40, callback=self.change_state)
+            self.choice_input = self.add_bool_input('', widget_type='checkbox', triggers_execution=True, default_value=self.bool_state, widget_width=40, callback=self.change_state)
         self.gated_input = self.add_input("input", triggers_execution=True)
 
         for i in range(self.num_gates):
@@ -673,7 +710,7 @@ class SwitchNode(Node):
         self.state = 0
         self.bool_state = False
 
-        self.choice_input = self.add_input('which input', widget_type='input_int', callback=self.change_state)
+        self.choice_input = self.add_int_input('which input', widget_type='input_int', callback=self.change_state)
         self.switch_inputs = []
         for i in range(self.num_switches):
             self.switch_inputs.append(self.add_input('in ' + str(i + 1)))
@@ -707,18 +744,68 @@ class UnpackNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+        self.num_outs = 2
+        self.out_types = []
+        # self.out_functions = []
+        out_names = []
+        self.types = {'s': str, 'i': int, 'f': float, 'l': list, 'b': bool, 'a': np.ndarray}
+        self.kinds = [str, int, float, list, bool, np.ndarray]
 
-        self.num_outs = self.arg_as_int(default_value=1)
+        if torch_available:
+            self.types['t'] = torch.Tensor
+            self.kinds.append(torch.Tensor)
+
+        if len(args) > 0:
+            if is_number(args[0]):
+                self.out_types = []
+                self.out_functions = []
+                self.num_outs = self.arg_as_int(default_value=1)
+                for i in range(self.num_outs):
+                    self.out_types.append(None)
+                    out_names.append('out ' + str(i + 1))
+            else:
+                self.num_outs = len(args)
+                for arg in args:
+                    if arg in self.types:
+                        self.out_types.append(self.types[arg])
+                        out_names.append(self.types[arg].__name__)
+                    else:
+                        if is_number(arg):
+                            self.out_types.append(any_to_numerical(arg))
+                            out_names.append(any_to_numerical(arg))
+                        else:
+                            self.out_types.append(any_to_string(arg))
+                            out_names.append(any_to_string(arg))
+        else:
+            self.out_types = [None, None]
+
         self.input = self.add_input("", triggers_execution=True)
 
         for i in range(self.num_outs):
-            self.add_output("out " + str(i))
+            if self.out_types[i] in self.kinds:
+                if self.out_types[i] == str:
+                    self.add_string_output(out_names[i])
+                elif self.out_types[i] == int:
+                    self.add_int_output(out_names[i])
+                elif self.out_types[i] == float:
+                    self.add_float_output(out_names[i])
+                elif self.out_types[i] == list:
+                    self.add_list_output(out_names[i])
+                elif self.out_types[i] == bool:
+                    self.add_bool_output(out_names[i])
+                elif self.out_types[i] == np.ndarray:
+                    self.add_array_output(out_names[i])
+                elif self.out_types[i] == torch.Tensor and torch_available:
+                    self.add_tensor_output(out_names[i])
+            else:
+                self.add_output(out_names[i])
+
 
     def execute(self):
         if self.input.fresh_input:
             value = self.input()
             t = type(value)
-            if t in [float, int, bool]:
+            if t in [float, int, bool, np.float32, np.int64]:
                 self.outputs[0].set_value(value)
             elif t == 'str':
                 listing, _, _ = string_to_hybrid_list(value)
@@ -729,22 +816,24 @@ class UnpackNode(Node):
                     self.outputs[i].set_value(listing[i])
             elif t == list:
                 listing, _, _ = list_to_hybrid_list(value)
-                # print(listing)
                 out_count = len(listing)
                 if out_count > self.num_outs:
                     out_count = self.num_outs
                 for i in range(out_count):
                     self.outputs[i].set_value(listing[i])
             elif t == np.ndarray:
-                out_count = value.size
+                out_count = value.shape[0]
                 if out_count > self.num_outs:
                     out_count = self.num_outs
-                if value.dtype in [np.double, float, np.float32]:
+                for i in range(out_count):
+                    self.outputs[i].set_value(value[i])
+            elif torch_available:
+                if t == torch.Tensor:
+                    out_count = value.shape[0]
+                    if out_count > self.num_outs:
+                        out_count = self.num_outs
                     for i in range(out_count):
-                        self.outputs[i].set_value(float(value[i]))
-                elif value.dtype in [np.int64, int, np.bool_]:
-                    for i in range(out_count):
-                        self.outputs[i].set_value(int(value[i]))
+                        self.outputs[i].set_value(value[i])
             self.send_all()
 
 
@@ -756,25 +845,79 @@ class PackNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+        self.num_ins = 2
+        self.in_types = []
+        in_names = []
+        self.types = {'s': str, 'i': int, 'f': float, 'l': list, 'b': bool, 'a': np.ndarray}
+        self.kinds = [str, int, float, list, bool, np.ndarray]
 
-        self.num_ins = self.arg_as_int(default_value=2)
+        if torch_available:
+            self.types['t'] = torch.Tensor
+            self.kinds.append(torch.Tensor)
+
+        if len(args) > 0:
+            if is_number(args[0]) and len(args) == 1:
+                self.num_ins = self.arg_as_int(default_value=2)
+                for i in range(self.num_ins):
+                    self.in_types.append(None)
+                    in_names.append('in ' + str(i + 1))
+            else:
+                self.num_ins = len(args)
+                for arg in args:
+                    if arg in self.types:
+                        self.in_types.append(self.types[arg])
+                        in_names.append(self.types[arg].__name__)
+                    else:
+                        if is_number(arg):
+                            print('num')
+                            self.in_types.append(any_to_numerical(arg))
+                            in_names.append(any_to_numerical(arg))
+                        else:
+                            self.in_types.append(any_to_string(arg))
+                            in_names.append(any_to_string(arg))
+        else:
+            self.in_types = [None, None]
 
         for i in range(self.num_ins):
-            if i == 0:
-                self.add_input("in " + str(i + 1), triggers_execution=True)
+            triggers = False
+            if label == 'pak' or i == 0:
+                triggers = True
+            if self.in_types[i] in self.kinds:
+                if self.in_types[i] == str:
+                    self.add_string_input(in_names[i], triggers_execution=triggers)
+                elif self.in_types[i] == int:
+                    self.add_int_input(in_names[i], triggers_execution=triggers)
+                elif self.in_types[i] == float:
+                    self.add_float_input(in_names[i], triggers_execution=triggers)
+                elif self.in_types[i] == list:
+                    self.add_list_input(in_names[i], triggers_execution=triggers)
+                elif self.in_types[i] == bool:
+                    self.add_bool_input(in_names[i], triggers_execution=triggers)
+                elif self.in_types[i] == np.ndarray:
+                    self.add_array_input(in_names[i], triggers_execution=triggers)
+                elif torch_available and self.in_types[i] == torch.Tensor:
+                    self.add_tensor_input(in_names[i], triggers_execution=triggers)
             else:
-                if label == 'pak':
-                    self.add_input("in " + str(i + 1), triggers_execution=True)
+                if type(self.in_types[i]) is str:
+                    print(self.in_types[i], 'string')
+                    inp = self.add_string_input(in_names[i], triggers_execution=triggers, default_value=self.in_types[i])
+                elif type(self.in_types[i]) in [int, np.int64]:
+                    inp = self.add_int_input(in_names[i], triggers_execution=triggers,
+                                                default_value=self.in_types[i])
+                elif type(self.in_types[i]) in [float, np.float32, np.float64]:
+                    inp = self.add_float_input(in_names[i], triggers_execution=triggers,
+                                                default_value=self.in_types[i])
                 else:
-                    self.add_input("in " + str(i + 1))
+                    inp = self.add_input(in_names[i], triggers_execution=triggers,
+                                               default_value=self.in_types[i])
 
         self.output = self.add_output("out")
-        self.output_preference_option = self.add_option('output pref', widget_type='combo')
-        self.output_preference_option.widget.combo_items = ['list', 'array']
+        self.output_preference_option = self.add_option('output pref', widget_type='combo', default_value='list')
+        self.output_preference_option.widget.combo_items = ['list', 'array', 'tensor']
 
-    def custom_create(self, from_file):
-        for i in range(self.num_ins):
-            self.inputs[i].receive_data(0)
+    # def custom_create(self, from_file):
+    #     for i in range(self.num_ins):
+    #         self.inputs[i].receive_data(0)
 
     def execute(self):
         trigger = False
@@ -783,20 +926,84 @@ class PackNode(Node):
         elif self.inputs[0].fresh_input:
             trigger = True
         if trigger:
-            out_list = []
-            for i in range(self.num_ins):
-                value = self.inputs[i].get_data()
-                t = type(value)
-                # print(t)
-                if t in [list, tuple]:
-                    out_list += [value]
-                elif t == np.ndarray:
-                    array_list = any_to_list(value)
-                    out_list += [array_list]
+            output_option = self.output_preference_option()
+            if output_option == 'list':
+                out_list = []
+                for i in range(self.num_ins):
+                    value = self.inputs[i].get_data()
+                    print(i, value)
+                    t = type(value)
+                    if t in [list, tuple]:
+                        out_list += [value]
+                    elif t == np.ndarray:
+                        array_list = any_to_list(value)
+                        out_list += [array_list]
+                    else:
+                        out_list.append(value)
+                self.output.send(out_list)
+            elif output_option == 'array':
+                out_list = []
+                all_array = False
+                first_data = self.inputs[0].get_data()
+                if type(first_data) is np.ndarray:
+                    all_array = True
+                    for i in range(self.num_ins):
+                        if self.in_types[i] != np.ndarray:
+                            all_array = False
+                            break
+
+                if all_array:
+                    for i in range(self.num_ins):
+                        out_list.append(self.inputs[i].get_data())
+                    try:
+                        out_array = np.stack(out_list)
+                        self.output.send(out_array)
+                    except:
+                        self.output.send(out_list)
                 else:
-                    out_list.append(value)
-            out_list, _ = list_to_array_or_list_if_hetero(out_list)
-            self.output.send(out_list)
+                    for i in range(self.num_ins):
+                        value = self.inputs[i].get_data()
+                        t = type(value)
+                        if t in [list, tuple]:
+                            out_list += [value]
+                        elif t == np.ndarray:
+                            array_list = any_to_list(value)
+                            out_list += [array_list]
+                        else:
+                            out_list.append(value)
+                    out_list, _ = list_to_array_or_list_if_hetero(out_list)
+                    self.output.send(out_list)
+            elif output_option == 'tensor':
+                out_list = []
+                all_tensors = True
+                for i in range(self.num_ins):
+                    if self.in_types[i] != torch.Tensor:
+                        all_tensors = False
+                        break
+                for i in range(self.num_ins):
+                    out_list.append(self.inputs[i].get_data())
+
+                if all_tensors:
+                    try:
+                        out_tensor = torch.stack(out_list)
+                        self.output.send(out_tensor)
+                    except:
+                        self.output.send(out_list)
+                else:
+                    for i in range(self.num_ins):
+                        value = self.inputs[i].get_data()
+                        t = type(value)
+                        if t in [list, tuple]:
+                            out_list += [value]
+                        elif t == np.ndarray:
+                            array_list = any_to_list(value)
+                            out_list += [array_list]
+                        else:
+                            out_list.append(value)
+                    out_list, _ = list_to_array_or_list_if_hetero(out_list)
+                    if type(out_list) is np.ndarray:
+                        out_list = torch.from_numpy(out_list)
+                    self.output.send(out_list)
 
 
 class BucketBrigadeNode(Node):
@@ -842,7 +1049,7 @@ class DelayNode(Node):
         self.buffer_position = 0
 
         self.input = self.add_input("in")
-        self.delay_input = self.add_input('delay', widget_type='drag_int', default_value=self.delay, min=0, max=4000, callback=self.delay_changed)
+        self.delay_input = self.add_int_input('delay', widget_type='drag_int', default_value=self.delay, min=0, max=4000, callback=self.delay_changed)
         self.cancel_input = self.add_input('cancel', callback=self.delay_cancelled)
         self.output = self.add_output("out")
 
@@ -1247,10 +1454,12 @@ class SplitNode(Node):
         super().__init__(label, data, args)
 
         self.input = self.add_input('in', triggers_execution=True)
-        self.split_token = None
+        self.split_token = ''
         if len(args) > 0:
-            split_token = any_to_string(args[0])
-        self.split_token = self.add_input('split at', widget_type='text_input', default_value=split_token)
+            self.split_token = any_to_string(args[0])
+            if self.split_token == '\\n':
+                self.split_token = '<return>'
+        self.split_token_in = self.add_input('split at', widget_type='text_input', default_value=self.split_token)
         self.output = self.add_output("substrings out")
 
     def execute(self):
@@ -1258,11 +1467,13 @@ class SplitNode(Node):
         t = type(in_string)
         if t == list:
             in_string = ' '.join(in_string)
-        if self.split_token == None:
+        if self.split_token == '':
             splits = in_string.split()
+        elif self.split_token == '<return>':
+            splits = in_string.split('\n')
         else:
-            splits = in_string.split(self.split_token())
-        splits = in_string.split(self.split_token())
+            splits = in_string.split(self.split_token_in())
+        # splits = in_string.split(self.split_token())
         self.output.send(splits)
 
 
@@ -1297,12 +1508,17 @@ class ConcatenateNode(Node):
                 self.input_list[i + 1].triggers_execution = False
 
     def execute(self):
-        out_list = self.input_list[0]().copy()
-        if type(out_list) == list:
-            for i in range(self.count - 1):
-                l = self.input_list[i + 1]()
-                if type(l) == list:
-                    out_list += l.copy()
+        # out_list = self.input_list[0]().copy()
+        out_value = any_to_list(self.input_list[0]())
+        outlist = []
+        if type(out_value) is list:
+            out_list = out_value
+
+        for i in range(self.count - 1):
+            l = self.input_list[i + 1]()
+            if type(l) == list:
+                out_list += l.copy()
+        if len(out_list) > 0:
             self.output.send(out_list)
 
 
@@ -1328,8 +1544,13 @@ class JoinNode(Node):
         t = type(in_list)
         if t == str:
             in_list = in_list.split(' ')
+            t = list
         elif t != list:
             in_list = any_to_list(in_list)
+        if t is list:
+            for index, el in enumerate(in_list):
+                in_list[index] = any_to_string(el)
+
         joined = self.join_token().join(in_list)
         self.output.send(joined)
 
@@ -1747,7 +1968,7 @@ class ArrayNode(Node):
             shape_list, _, _ = list_to_hybrid_list(shape_split)
             self.shape = shape_list
 
-        self.input = self.add_input("in", triggers_execution=True)
+        self.input = self.add_array_input("in", triggers_execution=True)
         self.output = self.add_output('array out')
 
         self.shape_property = self.add_option('shape', widget_type='text_input', default_value=shape_text, callback=self.shape_changed)
@@ -1762,11 +1983,12 @@ class ArrayNode(Node):
             self.shape = None
 
     def execute(self):
-        in_data = self.input()
-        out_array = any_to_array(in_data)
-        if self.shape is not None:
-            out_array = np.reshape(out_array, tuple(self.shape))
-        self.output.send(out_array)
+        out_array = self.input()
+        # out_array = any_to_array(in_data)
+        if type(out_array) is np.ndarray:
+            if self.shape is not None:
+                out_array = np.reshape(out_array, tuple(self.shape))
+            self.output.send(out_array)
 
 '''string : StringNode
     description:
@@ -1790,13 +2012,11 @@ class StringNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.input = self.add_input("in", triggers_execution=True)
+        self.input = self.add_string_input("in", triggers_execution=True)
         self.output = self.add_output('string out')
 
     def execute(self):
-        in_data = self.input()
-        out_string = any_to_string(in_data)
-        self.output.send(out_string)
+        self.output.send(self.input())
 
 
 '''list : ListNode
@@ -1813,22 +2033,22 @@ class StringNode(Node):
 '''
 
 
-class ListNode(Node):
-    @staticmethod
-    def factory(name, data, args=None):
-        node = ListNode(name, data, args)
-        return node
-
-    def __init__(self, label: str, data, args):
-        super().__init__(label, data, args)
-
-        self.input = self.add_input("in", triggers_execution=True)
-        self.output = self.add_output('list out')
-
-    def execute(self):
-        in_data = self.input()
-        out_list = any_to_list(in_data)
-        self.output.send(out_list)
+# class ListNode(Node):
+#     @staticmethod
+#     def factory(name, data, args=None):
+#         node = ListNode(name, data, args)
+#         return node
+#
+#     def __init__(self, label: str, data, args):
+#         super().__init__(label, data, args)
+#
+#         self.input = self.add_input("in", triggers_execution=True)
+#         self.output = self.add_output('list out')
+#
+#     def execute(self):
+#         in_data = self.input()
+#         out_list = any_to_list(in_data)
+#         self.output.send(out_list)
 
 
 '''prepend : PrependNode
@@ -2185,8 +2405,10 @@ class TextFileNode(Node):
         self.read_pointer = -1
 
         self.file_name = self.arg_as_string(default_value='')
-        self.text_input = self.add_input('text in', triggers_execution=True)
-        self.append_text_input = self.add_input('append text in', triggers_execution=True)
+        self.text_input = self.add_string_input('text in', triggers_execution=True)
+        self.text_input.set_strip_returns(False)
+        self.append_text_input = self.add_string_input('append text in', triggers_execution=True)
+        self.append_text_input.set_strip_returns(False)
         self.dump_button = self.add_input('send', widget_type='button', triggers_execution=True)
         self.clear_button = self.add_input('clear', widget_type='button', callback=self.clear_text)
         self.text_editor = self.add_property('###text', widget_type='text_editor', width=500)
@@ -2257,14 +2479,14 @@ class TextFileNode(Node):
             self.output.send(self.text_contents)
         elif self.active_input == self.append_text_input:
             self.text_contents = self.text_editor()
-            data = any_to_string(self.append_text_input())
+            data = any_to_string(self.append_text_input(), strip_returns=False)
             # if len(self.text_contents) > 0:
             #     if self.text_contents[-1] not in [' ', '\n']:
             #         self.text_contents += ' '
             self.text_contents += data
             self.text_editor.set(self.text_contents)
         else:
-            data = any_to_string(self.text_input())
+            data = any_to_string(self.text_input(), strip_returns=False)
             self.text_contents = data
             self.text_editor.set(self.text_contents)
 

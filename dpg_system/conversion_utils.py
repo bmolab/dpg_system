@@ -2,6 +2,7 @@ import numpy as np
 import re
 import ast
 import traceback
+from word2number import w2n
 
 torch_available = False
 try:
@@ -27,16 +28,22 @@ def any_to_match(data, match):
     elif torch_available and t == torch.Tensor:
         return any_to_tensor(data, match.device)
 
-def any_to_string(data):
+def any_to_string(data, strip_returns=True):
     t = type(data)
     if t == str:
-        return data
+        if strip_returns:
+            out_string = data.replace('\n', '')
+        else:
+            out_string = data
+        return out_string
     elif t in [int, bool, np.int64, np.bool_]:
         return str(data)
     elif t in [float, np.double, np.float32]:
         return '%.3f' % data
-    elif t in [list, tuple]:
+    elif t in [tuple]:
         return list_to_string(list(data))
+    elif t is list:
+        return list_to_string(data)
     elif t == np.ndarray:
         np.set_printoptions(precision=3)
         out_string = str(data)
@@ -96,6 +103,7 @@ def any_to_numerical_list(data):
         return data.tolist()
     return []
 
+
 def any_to_int(data, validate=False):
     t = type(data)
     if t == int:
@@ -103,9 +111,14 @@ def any_to_int(data, validate=False):
     elif t in [float, bool]:
         return int(data)
     elif t == str:
-        return string_to_int(data)
-    elif t in [list, tuple]:
+        return string_to_int(data, validate=validate)
+    elif t is tuple:
         return list_to_int(list(data), validate=validate)
+    elif t is list:
+        if type(data[0]) is str:
+            return string_to_int(' '.join(data), validate=validate)
+        else:
+            return list_to_int(list(data), validate=validate)
     elif t == np.ndarray:
         return array_to_int(data)
     elif t in [np.int64, np.float32, np.double, np.bool_]:
@@ -117,16 +130,21 @@ def any_to_int(data, validate=False):
     return 0
 
 
-def any_to_float(data):
+def any_to_float(data, validate=False):
     t = type(data)
     if t == float:
         return data
     if t == str:
-        return string_to_float(data)
+        return string_to_float(data, validate=validate)
     elif t in [int, bool]:
         return float(data)
-    elif t in [list, tuple]:
+    elif t is tuple:
         return list_to_float(list(data))
+    elif t is list:
+        if type(data[0]) is str and not is_number(data[0]):
+            return string_to_float(' '.join(data), validate=validate)
+        else:
+            return list_to_float(list(data), validate=validate)
     elif t == np.ndarray:
         return array_to_float(data)
     elif t in [np.int64, np.float32, np.double, np.bool_]:
@@ -411,20 +429,31 @@ def int_to_string(input):
 
 
 def string_to_list(input_string):
+    if len(input_string) == 0:
+        return []
     if input_string[0] == '[':
-        if input_string[-1] == ']':
-            if input_string[1:-1].find(']') == -1:
-                substrings = input_string[1:-1].split(' ')
-                return substrings
-        arr_str = input_string.replace(" ]", "]").replace("][", "],[").replace(", ", ",").replace(" ", ",").replace("\n", "")
-        substrings = ast.literal_eval(arr_str)
+        if len(input_string) == 1:
+            return [input_string]
+        if input_string[-1] != ']':
+        #     if input_string[1:-1].find(']') == -1:
+        #         substrings = input_string[1:-1].split(' ')
+        #         return substrings
+        # else:
+            substrings = input_string.split(' ')
+            return substrings
+        arr_str = input_string.replace(" ]", "]").replace("][", "],[").replace(", ", ",").replace("  ", " ").replace(" ", ",").replace("\n", "").replace(",,", ",")
+        try:
+            substrings = ast.literal_eval(arr_str)
+        except Exception as e:
+            substrings = input_string.split(' ')
+            return substrings
     else:
         substrings = input_string.split(' ')
     return substrings
 
 
 def string_to_hybrid_list(input):
-    substrings = input.split(' ')
+    substrings = string_to_list(input)
     return list_to_hybrid_list(substrings)
 
 
@@ -452,9 +481,12 @@ def string_to_tensor(input, validate=False):
     if torch_available:
         out_tensor = torch.Tensor(0)
         try:
-            out_array = string_to_array(input)
+            out_array = string_to_array(input, validate=validate)
             # print('string_to_tensor', out_array)
-            out_tensor = torch.from_numpy(out_array)
+            if out_array is not None:
+                out_tensor = torch.from_numpy(out_array)
+            else:
+                return None
 
             # hybrid_list, homogenous, types = string_to_hybrid_list(input)
             # if homogenous:
@@ -492,7 +524,19 @@ def string_to_numerical(input_string, validate=False):
         force_list = False
         if input_string[0] == '[':
             force_list = True
-        input_string = " ".join(input_string.split())
+        # elif input_string[0] not in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-']:
+        #
+        chunks = input_string.split()
+        if len(chunks) == 1 and not force_list:
+            val = any_to_float_or_int(chunks[0])
+            return val
+        if not force_list:
+            lister = []
+            for chunk in chunks:
+                val = any_to_float_or_int(chunk)
+                lister.append(val)
+            return lister
+        input_string = " ".join(chunks)
         arr_str = input_string.replace(" ]", "]").replace(" ", ",").replace("\n", "")
         arr = np.array(ast.literal_eval(arr_str))
         if arr.size == 1 and not force_list:
@@ -530,10 +574,16 @@ def list_to_array(input, validate=False):
     if homogenous:
         t = type(hybrid_list[0])
         if t in [float, int, bool, list]:
-            return np.array(hybrid_list)
+            try:
+                return np.array(hybrid_list)
+            except Exception as e:
+                pass
     else:
         if str not in types:
-            return np.array(hybrid_list)
+            try:
+                return np.array(hybrid_list)
+            except Exception as e:
+                pass
     if validate:
         return None
     return np.ndarray(0)
@@ -553,13 +603,13 @@ def list_to_tensor(input, validate=False):
             else:  # all elements are string
                 data_string = ' '.join(hybrid_list)
                 # print('data_string', data_string)
-                return string_to_tensor(data_string)
+                return string_to_tensor(data_string, validate=validate)
         else:
             # print('not homo')
             if str not in types:
                 return torch.Tensor(hybrid_list)
         if validate:
-            None
+            return None
         return torch.Tensor(0)
     if validate:
         return None
@@ -574,7 +624,7 @@ def list_to_array_or_list_if_hetero(input):
             return np.array(hybrid_list), True
     else:
         if len(types) == 2:
-            if str not in types:
+            if str not in types and list not in types:
                 return np.array(hybrid_list), True
     return hybrid_list, False
 
@@ -648,28 +698,41 @@ def list_to_bool(input, validate=False):
 
 
 def list_to_string(data, validate=False):
-    out_string = ''
-    string_list = []
-    try:
-        for v in data:
-            tt = type(v)
-            if tt == str:
-                string_list.append(v)
-            elif tt in [float, np.double]:
-                string_list.append('%.3f' % v)
-            elif tt in [int, np.int64, bool, np.bool_]:
-                string_list.append(str(v))
-            elif v is None:
-                string_list.append('None')
-            elif tt == list:
-                list_string = list_to_string(v)
-                string_list.append(list_string)
-        out_string = ' '.join(string_list)
-    except:
-        if validate:
-            return None
-        pass
-    return out_string
+    simple_string = True
+    for i in range(len(data)):
+        if type(data[i]) != str:
+            simple_string = False
+            break
+    if simple_string:
+        return_string = ' '.join(data)
+    else:
+        return_string = str(data)
+    # return_string = return_string.replace('\n', '')
+        return_string = ' '.join(return_string.split())
+
+    return return_string
+    # out_string = ''
+    # string_list = []
+    # try:
+    #     for v in data:
+    #         tt = type(v)
+    #         if tt == str:
+    #             string_list.append(v)
+    #         elif tt in [float, np.double]:
+    #             string_list.append('%.3f' % v)
+    #         elif tt in [int, np.int64, bool, np.bool_]:
+    #             string_list.append(str(v))
+    #         elif v is None:
+    #             string_list.append('None')
+    #         elif tt == list:
+    #             list_string = list_to_string(v)
+    #             string_list.append(list_string)
+    #     out_string = ' '.join(string_list)
+    # except:
+    #     if validate:
+    #         return None
+    #     pass
+    # return out_string
 
 
 def string_to_float(input, validate=False):
@@ -690,6 +753,12 @@ def string_to_float(input, validate=False):
                 if validate:
                     return None
                 return 0.0
+    else:
+        try:
+            value = w2n.word_to_num(input)
+            return float(value)
+        except:
+            pass
     if validate:
         return None
     return 0.0
@@ -712,6 +781,12 @@ def string_to_int(input, validate=False):
                 if validate:
                     return None
                 return 0
+    else:
+        try:
+            value = w2n.word_to_num(input)
+            return int(value)
+        except:
+            pass
     if validate:
         return None
     return 0
@@ -729,6 +804,12 @@ def string_to_float_or_int(input):
                 return int(input)
             except:
                 return 0
+    else:
+        try:
+            value = w2n.word_to_num(input)
+            return value
+        except:
+            pass
     return 0
 
 
@@ -740,6 +821,8 @@ def string_to_bool(input):
     elif input == '0':
         return False
     elif input == '':
+        return False
+    elif input == 'zero':
         return False
     return True
 
@@ -778,6 +861,10 @@ def decode_arg(args, index):
             return arg, str
         elif t == list:
             return arg, list
+        elif t == np.ndarray:
+            return arg, np.ndarray
+        elif torch_available and t == torch.Tensor:
+            return arg, torch.Tensor
     return None, type(None)
 
 
@@ -805,7 +892,7 @@ def is_number(s):
                 return s.replace('.', '', 1).isdigit()
         else:
             return False
-    elif type(s) in [float, int, complex]:
+    elif type(s) in [float, int, complex, np.int64, np.float32]:
         return True
     else:
         return False
@@ -878,6 +965,8 @@ def create_type_mask_from_list(type_list):
 def conform_to_type_mask(data, type_mask):
     t = type(data)
     if t == str:
+        if type_mask & STRING_MASK:
+            return data
         if type_mask & LIST_MASK:
             return string_to_list(data)
         if type_mask & ARRAY_MASK:
@@ -892,6 +981,8 @@ def conform_to_type_mask(data, type_mask):
             return string_to_bool(data)
 
     if t in [int, np.int64]:
+        if type_mask & INT_MASK:
+            return int(data)
         if type_mask & FLOAT_MASK:
             return any_to_float(data)
         if type_mask & STRING_MASK:
@@ -906,6 +997,8 @@ def conform_to_type_mask(data, type_mask):
             return any_to_list(data)
 
     if t in [float, np.float32, np.double]:
+        if type_mask & FLOAT_MASK:
+            return float(data)
         if type_mask & ARRAY_MASK:
             return any_to_array(data)
         if type_mask & TENSOR_MASK:
@@ -920,6 +1013,8 @@ def conform_to_type_mask(data, type_mask):
             return any_to_list(data)
 
     if t in [bool, np.bool_]:
+        if type_mask & BOOLEAN_MASK:
+            return bool(data)
         if type_mask & INT_MASK:
             return any_to_int(data)
         if type_mask & FLOAT_MASK:
@@ -949,6 +1044,8 @@ def conform_to_type_mask(data, type_mask):
         return data
 
     if t == np.ndarray:
+        if type_mask & ARRAY_MASK:
+            return data
         if type_mask & TENSOR_MASK:
             return array_to_tensor(data)
         if type_mask & LIST_MASK:
@@ -964,6 +1061,8 @@ def conform_to_type_mask(data, type_mask):
         return data
 
     if t == torch.Tensor:
+        if type_mask & TENSOR_MASK:
+            return data
         if type_mask & ARRAY_MASK:
             return tensor_to_array(data)
         if type_mask & LIST_MASK:

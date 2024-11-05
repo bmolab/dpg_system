@@ -669,6 +669,11 @@ class VPoserNode(Node):
         self.num_neurons = 512
         self.latent_dim = 32
         self.input_dim = 63
+
+        if len(args) > 1:
+            self.num_neurons = any_to_int(args[0])
+            self.latent_dim = any_to_int(args[1])
+
         self.device = 'cpu'
         if torch.cuda.is_available():
             self.device = 'cuda'
@@ -688,9 +693,9 @@ class VPoserNode(Node):
         self.model = VPoser(config)
 
     def load_model(self):
-        path = self.model_path_in()
+        path = any_to_string(self.model_path_in())
         if os.path.exists(path):
-            self.model = load_model(path, model_code=VPoser, remove_words_in_model_weights='vp_model.', disable_grad=True, comp_device='cpu')[0]
+            self.model = load_model(path, model_code=VPoser, remove_words_in_model_weights='vp_model.', disable_grad=True)[0]
             # self.model.load_state_dict(torch.load(path, map_location='cpu'))
             self.model = self.model.to(self.device)
 

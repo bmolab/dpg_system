@@ -34,6 +34,8 @@ depth_anything_active = True
 vae_active = True
 vive_tracker_active = True
 lighting_active = True
+translation_active = True
+layout_active = True
 
 # print('Options active:', end=' ')
 # with open('dpg_system_config.json', 'r') as f:
@@ -283,6 +285,23 @@ if lighting_active:
         print('imported lighting')
     except ModuleNotFoundError:
         lighting_active = False
+
+if translation_active:
+    try:
+        from dpg_system.google_translate_node import *
+        imported.append('google_translate_node.py')
+        print('imported google translate')
+    except ModuleNotFoundError:
+        translation_active = False
+
+if layout_active:
+    try:
+        from dpg_system.layout_node import *
+        imported.append('layout_node.py')
+        print('imported layout')
+    except ModuleNotFoundError:
+        print('import layout failed')
+        layout_active = False
 
 # import additional node files in folder
 
@@ -992,6 +1011,12 @@ class App:
         if lighting_active and 'register_lighting_nodes' in globals():
             register_lighting_nodes()
 
+        if translation_active and 'register_google_translate_nodes' in globals():
+            register_google_translate_nodes()
+
+        if layout_active and 'register_layout_nodes' in globals():
+            register_layout_nodes()
+
     def get_variable_list(self):
         v_list = list(self.variables.keys())
         return v_list
@@ -1140,7 +1165,7 @@ class App:
     def del_handler(self):
         if self.active_widget == -1:
             editor = self.get_current_editor()
-            if editor is not None:
+            if editor is not None and not editor.presenting:
                 node_uuids = dpg.get_selected_nodes(editor.uuid)
                 link_uuids = dpg.get_selected_links(editor.uuid)
 
@@ -1187,9 +1212,10 @@ class App:
 
     def vector_handler(self):
         if self.active_widget == -1:
-            node = VectorNode.factory("vector", None, args=['4'])
-            self.place_node(node)
-            self.set_widget_focus(node.uuid)
+            if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+                node = VectorNode.factory("vector", None, args=['4'])
+                self.place_node(node)
+                self.set_widget_focus(node.uuid)
 
     def comment_handler(self):
         if self.active_widget == -1:
@@ -1212,6 +1238,13 @@ class App:
         if self.active_widget == -1:
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 node = ValueNode.factory("message", None)
+                self.place_node(node)
+                self.set_widget_focus(node.input.widget.uuid)
+
+    def list_handler(self):
+        if self.active_widget == -1:
+            if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+                node = ValueNode.factory("list", None)
                 self.place_node(node)
                 self.set_widget_focus(node.input.widget.uuid)
 
@@ -1357,7 +1390,7 @@ class App:
     def D_handler(self):
         if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
             if self.active_widget == -1:
-                if self.get_current_editor() is not None:
+                if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                     self.get_current_editor().duplicate_selection()
 
     def E_handler(self):
@@ -1467,7 +1500,7 @@ class App:
 
 
     def new_handler(self, name=None):
-        if self.get_current_editor() is not None:
+        if self.get_current_editor() is not None and not self.get_current_editor().presenting:
             editor = self.get_current_editor()
 
             if self.active_widget == -1:
@@ -1523,6 +1556,11 @@ class App:
                                 source_output = output
                                 found_output = True
                                 break
+                        if not found_output:
+                            if len(source_node.outputs) == 1:
+                                source_output_index = 0
+                                source_output = source_node.outputs[0]
+                                found_output = True
                     else:
                         found_output = True
 
@@ -1538,6 +1576,11 @@ class App:
                                     dest_input = input
                                     found_input = True
                                     break
+                            if not found_input:
+                                if len(dest_node.inputs) == 1:
+                                    dest_input_index = 0
+                                    dest_input = dest_node.inputs[0]
+                                    found_input = True
                         else:
                             found_input = True
 
@@ -1951,6 +1994,7 @@ class App:
                             dpg.add_key_press_handler(dpg.mvKey_T, callback=self.toggle_handler)
                             dpg.add_key_press_handler(dpg.mvKey_B, callback=self.button_handler)
                             dpg.add_key_press_handler(dpg.mvKey_M, callback=self.message_handler)
+                            dpg.add_key_press_handler(dpg.mvKey_L, callback=self.list_handler)
 
                             dpg.add_key_press_handler(dpg.mvKey_E, callback=self.E_handler)
                             dpg.add_key_press_handler(dpg.mvKey_D, callback=self.D_handler)

@@ -1,4 +1,6 @@
+import dpg_system.dpg_app
 from dpg_system.dpg_app import App
+
 import threading
 
 dpg_app = None

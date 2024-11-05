@@ -98,7 +98,7 @@ dependencies:
     - murmurhash
     - networkx
     - numba
-    - numpy==1.6.4
+    - numpy==1.26.4
     - numpy-quaternion
     - opencv-python
     - packaging
@@ -140,4 +140,6 @@ dependencies:
     - wasabi
     - psutil
     - scikit-learn
-prefix: /Users/drokeby/miniforge3/envs/dpg_system
+    - word2number
+    - pycairo==1.11.0
+prefix: dpg_system

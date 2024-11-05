@@ -16,7 +16,7 @@ class TorchNode(Node):
             if input_tensor is None:
                 return input_tensor
             if type(input_tensor) != torch.Tensor:
-                input_tensor = any_to_tensor(input_tensor)
+                input_tensor = any_to_tensor(input_tensor, validate=True)
             return input_tensor
         return None
 
