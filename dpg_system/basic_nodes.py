@@ -1511,7 +1511,7 @@ class ConcatenateNode(Node):
         out_value = any_to_list(self.input_list[0]())
         outlist = []
         if type(out_value) is list:
-            out_list = [out_value]
+            out_list = out_value
 
         for i in range(self.count - 1):
             l = self.input_list[i + 1]()

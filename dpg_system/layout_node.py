@@ -372,11 +372,12 @@ class CairoTextLayoutNode(Node):
             elif type(t) is not list:
                 t = [any_to_string(t), 1.0]
             if len(t) > 1:
-                t[1] = pow(t[1], self.alpha_power()) * self.text_brightness()
-                if t[1] != 0.0:
-                    if '\\' in t[0]:
-                        t[0].replace('\\n', '\n')
-                    self.layout.add_string([t])
+                tt = t.copy()
+                tt[1] = pow(tt[1], self.alpha_power()) * self.text_brightness()
+                if tt[1] != 0.0:
+                    if '\\' in tt[0]:
+                        tt[0].replace('\\n', '\n')
+                    self.layout.add_string([tt])
 
         self.display_layout()
 
