@@ -1,5 +1,7 @@
 
 import dearpygui.dearpygui as dpg
+from kornia.utils import map_location_to_cpu
+
 from dpg_system.conversion_utils import *
 from dpg_system.node import Node
 import torch
@@ -634,9 +636,9 @@ def load_model(expr_dir, model_code=None,
 
     if comp_device == 'cpu' or not torch.cuda.is_available():
         print('No GPU detected. Loading on CPU!')
-        state_dict = torch.load(trained_weights_fname, map_location=torch.device('cpu'), weights_only=True)['state_dict']
+        state_dict = torch.load(trained_weights_fname, map_location=torch.device('cpu'))['state_dict']
     else:
-        state_dict = torch.load(trained_weights_fname, weights_only=True)['state_dict']
+        state_dict = torch.load(trained_weights_fname)['state_dict']
     if remove_words_in_model_weights is not None:
         words = '{}'.format(remove_words_in_model_weights)
         state_dict = {k.replace(words, '') if k.startswith(words) else k: v for k, v in state_dict.items()}
@@ -671,7 +673,12 @@ class VPoserNode(Node):
         if len(args) > 1:
             self.num_neurons = any_to_int(args[0])
             self.latent_dim = any_to_int(args[1])
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+        self.device = 'cpu'
+        if torch.cuda.is_available():
+            self.device = 'cuda'
+        elif torch.has_mps:
+            self.device = 'mps'
         self.input_in = self.add_input('input in', triggers_execution=True)
         # self.forward_in = self.add_input('forward in', triggers_execution=True)
         self.latent_in = self.add_input('latent in', triggers_execution=True)
@@ -783,6 +790,11 @@ class VPoser(nn.Module):
         super(VPoser, self).__init__()
         num_neurons, self.latentD = model_ps.model_params.num_neurons, model_ps.model_params.latentD
 
+        self.device = torch.device('cpu')
+        if torch.cuda.is_available():
+            self.device = torch.device('cuda')
+        elif torch.has_mps:
+            self.device = torch.device('mps')
         self.num_joints = 21
         n_features = self.num_joints * 3
 
@@ -796,7 +808,7 @@ class VPoser(nn.Module):
             nn.Linear(num_neurons, num_neurons),
             nn.Linear(num_neurons, num_neurons),
             NormalDistDecoder(num_neurons, self.latentD)
-        )
+        ).to(device=self.device)
 
         self.decoder_net = nn.Sequential(
             nn.Linear(self.latentD, num_neurons),
@@ -806,7 +818,7 @@ class VPoser(nn.Module):
             nn.LeakyReLU(),
             nn.Linear(num_neurons, self.num_joints * 6),
             ContinousRotReprDecoder(),
-        )
+        ).to(device=self.device)
 
     def encode(self, pose_body):
         '''

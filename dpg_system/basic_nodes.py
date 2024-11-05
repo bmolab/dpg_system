@@ -65,6 +65,7 @@ def register_basic_nodes():
     Node.app.register_node('string_replace', StringReplaceNode.factory)
     Node.app.register_node('replace', ReplaceNode.factory)
     Node.app.register_node('word_trigger', WordTriggerNode.factory)
+    Node.app.register_node('first_letter_trigger', WordFirstLetterNode.factory)
     Node.app.register_node('split', SplitNode.factory)
     Node.app.register_node('join', JoinNode.factory)
     Node.app.register_node('defer', DeferNode.factory)
@@ -3011,7 +3012,35 @@ class WordTriggerNode(Node):
         data = any_to_string(self.input()).lower()
         if len(self.find_list) > 0:
             for index, word_trigger in enumerate(self.find_list):
-                if data.find(word_trigger) != -1:
+                if re.search(r'\b{}\b'.format(word_trigger), data) is not None:
+                    self.trigger_outputs[index].send('bang')
+
+
+class WordFirstLetterNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = WordFirstLetterNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.find_list = []
+        if len(args) > 0:
+            for i in range(len(args)):
+                self.find_list.append(args[i])
+        self.input = self.add_input('string in', triggers_execution=True)
+        self.trigger_outputs = []
+        for i in range(len(args)):
+            self.trigger_outputs.append(self.add_output(self.find_list[i]))
+
+    def execute(self):
+        data = any_to_string(self.input()).lower()
+        if len(self.find_list) > 0:
+
+            for index, first_letter_trigger in enumerate(self.find_list):
+                if data[0] == first_letter_trigger:
+                    self.trigger_outputs[index].send('bang')
+                elif data.find(' ' + first_letter_trigger) != -1:
                     self.trigger_outputs[index].send('bang')
 
 

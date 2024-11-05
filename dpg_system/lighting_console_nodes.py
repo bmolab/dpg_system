@@ -74,6 +74,11 @@ class ColorSourceNode(OSCSender, Node):
         self.changed = True
         self.lime_changed = True
 
+    def indigo_changed(self):
+        self.indigo = self.indigo_input()
+        self.changed = True
+        self.indigo_changed = True
+
     def frame_task(self):
         if self.target and self.address != '':
             if self.changed:
@@ -99,6 +104,10 @@ class ColorSourceNode(OSCSender, Node):
                 if self.lime_changed:
                     self.lime_changed = False
                     self.target.send_message(address + 'lime', self.lime)
+
+                if self.indigo_changed:
+                    self.indigo_changed = False
+                    self.target.send_message(address + 'indigo', self.indigo)
 
 
 

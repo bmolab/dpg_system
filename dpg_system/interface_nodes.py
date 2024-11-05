@@ -1206,6 +1206,7 @@ class VectorNode(Node):
     def zero(self):
         for i in range(self.max_component_count):
             self.component_properties[i].set(0.0)
+        self.execute()
 
     def get_preset_state(self):
         preset = {}
