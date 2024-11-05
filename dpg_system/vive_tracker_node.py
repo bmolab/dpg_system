@@ -26,6 +26,8 @@ class ViveTrackerNode(Node):
         self.interval = 1/250
         self.enable_in = self.add_input('enable_in', widget_type='checkbox', triggers_execution=True)
         self.output_format_in = self.add_input('output_format', widget_type='combo', default_value='quaternion')
+        self.which_tracker_in = self.add_input('which_tracker', widget_type='combo', default_value='tracker_1')
+        self.which_tracker_in.widget.combo_items = ['tracker_1', 'tracker_2', 'tracker_3', 'tracker_4']
         self.output_format_in.widget.combo_items = ['quaternion', 'euler', 'matrix']
         self.orientation_out = self.add_output('orientation')
         self.position_out = self.add_output('position')
@@ -34,34 +36,35 @@ class ViveTrackerNode(Node):
         self.position = None
 
     def frame_task(self):
-        if self.output_format_in() == 'quaternion':
-            orientation = ViveTrackerNode.open_vr.devices["tracker_1"].get_pose_quaternion()
-            if orientation is not None:
-                self.orientation = any_to_array(orientation[3:])
-                self.position = any_to_array(orientation[:3])
-                self.orientation_out.send(self.orientation)
-                self.position_out.send(self.position)
-        elif self.output_format_in() == 'euler':
-            orientation = ViveTrackerNode.open_vr.devices["tracker_1"].get_pose_euler()
-            if orientation is not None:
-                self.orientation = any_to_array(orientation[3:])
-                self.position = any_to_array(orientation[:3])
-                if self.previous_orientation is not None:
-                    if self.previous_orientation[0] - self.orientation[0] > 180:
-                        self.orientation[0] += 360
-                    elif self.previous_orientation[0] - self.orientation[0] < -180:
-                        self.orientation[0] -= 360
-                    if self.previous_orientation[1] - self.orientation[1] > 180:
-                        self.orientation[1] += 360
-                    elif self.previous_orientation[1] - self.orientation[1] < -180:
-                        self.orientation[1] -= 360
-                    if self.previous_orientation[2] - self.orientation[2] > 180:
-                        self.orientation[2] += 360
-                    elif self.previous_orientation[2] - self.orientation[2] < -180:
-                        self.orientation[2] -= 360
-                self.previous_orientation = self.orientation
-                self.orientation_out.send(self.orientation)
-                self.position_out.send(self.position)
+        if self.which_tracker_in() in ViveTrackerNode.open_vr.devices:
+            if self.output_format_in() == 'quaternion':
+                orientation = ViveTrackerNode.open_vr.devices[self.which_tracker_in()].get_pose_quaternion()
+                if orientation is not None:
+                    self.orientation = any_to_array(orientation[3:])
+                    self.position = any_to_array(orientation[:3])
+                    self.orientation_out.send(self.orientation)
+                    self.position_out.send(self.position)
+            elif self.output_format_in() == 'euler':
+                orientation = ViveTrackerNode.open_vr.devices[self.which_tracker_in()].get_pose_euler()
+                if orientation is not None:
+                    self.orientation = any_to_array(orientation[3:])
+                    self.position = any_to_array(orientation[:3])
+                    if self.previous_orientation is not None:
+                        if self.previous_orientation[0] - self.orientation[0] > 180:
+                            self.orientation[0] += 360
+                        elif self.previous_orientation[0] - self.orientation[0] < -180:
+                            self.orientation[0] -= 360
+                        if self.previous_orientation[1] - self.orientation[1] > 180:
+                            self.orientation[1] += 360
+                        elif self.previous_orientation[1] - self.orientation[1] < -180:
+                            self.orientation[1] -= 360
+                        if self.previous_orientation[2] - self.orientation[2] > 180:
+                            self.orientation[2] += 360
+                        elif self.previous_orientation[2] - self.orientation[2] < -180:
+                            self.orientation[2] -= 360
+                    self.previous_orientation = self.orientation
+                    self.orientation_out.send(self.orientation)
+                    self.position_out.send(self.position)
 
     def execute(self):
         if self.enable_in():
@@ -91,14 +94,14 @@ class ContinuousRotationNode(Node):
         rot = any_to_array(rotation)
         if self.previous is not None:
             for index in range(len(rot)):
-                if self.previous[index] - rot[index] > 180:
-                    over_rot = (rot[index] - self.previous[index]) // 360 + 1
+                if rot[index] < self.previous[index]:
+                    over_rot = (self.previous[index] - rot[index] + 179) // 360 * 360
                     print('over', over_rot)
-                    rot[index] += (over_rot * 360)
-                elif self.previous[index] - rot[index] < -180:
-                    under_rot = (rot[index] - self.previous[index]) // 360 + 1
+                    rot[index] += over_rot
+                elif rot[index] > self.previous[index]:
+                    under_rot = (rot[index] - self.previous[index] + 179) // 360 * 360
                     print('under', under_rot)
-                    rot[index] -= (under_rot * 360)
+                    rot[index] -= under_rot
         self.previous = rot.copy()
         self.output.send(rot)
 

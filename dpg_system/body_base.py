@@ -14,7 +14,7 @@ from dpg_system.joint import *
 from dpg_system.node import *
 from dpg_system.gl_nodes import GLMaterial
 
-scale = 1.6
+scale = 1.0
 
 joint_quats_np = None
 

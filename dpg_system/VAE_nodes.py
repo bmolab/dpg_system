@@ -1,5 +1,7 @@
 
 import dearpygui.dearpygui as dpg
+from kornia.utils import map_location_to_cpu
+
 from dpg_system.conversion_utils import *
 from dpg_system.node import Node
 import torch
@@ -667,7 +669,11 @@ class VPoserNode(Node):
         self.num_neurons = 512
         self.latent_dim = 32
         self.input_dim = 63
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.device = 'cpu'
+        if torch.cuda.is_available():
+            self.device = 'cuda'
+        elif torch.has_mps:
+            self.device = 'mps'
         self.input_in = self.add_input('input in', triggers_execution=True)
         # self.forward_in = self.add_input('forward in', triggers_execution=True)
         self.latent_in = self.add_input('latent in', triggers_execution=True)
@@ -684,7 +690,7 @@ class VPoserNode(Node):
     def load_model(self):
         path = self.model_path_in()
         if os.path.exists(path):
-            self.model = load_model(path, model_code=VPoser, remove_words_in_model_weights='vp_model.', disable_grad=True)[0]
+            self.model = load_model(path, model_code=VPoser, remove_words_in_model_weights='vp_model.', disable_grad=True, comp_device='cpu')[0]
             # self.model.load_state_dict(torch.load(path, map_location='cpu'))
             self.model = self.model.to(self.device)
 
@@ -779,6 +785,11 @@ class VPoser(nn.Module):
         super(VPoser, self).__init__()
         num_neurons, self.latentD = model_ps.model_params.num_neurons, model_ps.model_params.latentD
 
+        self.device = torch.device('cpu')
+        if torch.cuda.is_available():
+            self.device = torch.device('cuda')
+        elif torch.has_mps:
+            self.device = torch.device('mps')
         self.num_joints = 21
         n_features = self.num_joints * 3
 
@@ -792,7 +803,7 @@ class VPoser(nn.Module):
             nn.Linear(num_neurons, num_neurons),
             nn.Linear(num_neurons, num_neurons),
             NormalDistDecoder(num_neurons, self.latentD)
-        )
+        ).to(device=self.device)
 
         self.decoder_net = nn.Sequential(
             nn.Linear(self.latentD, num_neurons),
@@ -802,7 +813,7 @@ class VPoser(nn.Module):
             nn.LeakyReLU(),
             nn.Linear(num_neurons, self.num_joints * 6),
             ContinousRotReprDecoder(),
-        )
+        ).to(device=self.device)
 
     def encode(self, pose_body):
         '''
