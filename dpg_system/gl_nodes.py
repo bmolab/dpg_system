@@ -2278,6 +2278,7 @@ class GLNumpyLines(GLNode):
         self.line_width = self.add_input('line_width', widget_type='drag_int', default_value=1)
         self.selected_joints = self.add_input('selected_joints', widget_type='text_input', default_value='')
         self.colors = []
+        self.previous_array = None
         color = [1.0, 1.0, 1.0, 1.0]
         for i in range(20):
             self.colors.append(color.copy())
@@ -2336,6 +2337,10 @@ class GLNumpyLines(GLNode):
                     if 0 <= select_int < number_of_points:
                         selected[select_int] = True
             accent_scale = self.accent_scale()
+            motion_array = None
+            if self.motion_accent():
+                if self.previous_array is not None:
+                    motion_array = np.linalg.norm(self.line_array - self.previous_array, axis=2) * accent_scale
             gl.glLineWidth(self.line_width())
             for i in range(number_of_lines):
                 if selected[i]:
@@ -2343,11 +2348,14 @@ class GLNumpyLines(GLNode):
                     gl.glBegin(GL_LINE_STRIP)
                     for j in range(number_of_points):
                         alpha = 1.0
-                        if self.motion_accent():
-                            if j > 0:
-                                alpha = np.linalg.norm(self.line_array[j, i] - self.line_array[j - 1, i]) * accent_scale
-                            else:
-                                alpha = 0.0
+                        if self.motion_accent() and motion_array is not None:
+                            alpha = motion_array[j, i]
+                            # if self.previous_array is not None:
+                            #     motion = np.linalg.norm(self.line_array - self.previous_array) * accent_scale
+                            # if j > 0:
+                            #     alpha = np.linalg.norm(self.line_array[j, i] - self.line_array[j - 1, i]) * accent_scale
+                            # else:
+                            #     alpha = 0.0
                             if alpha > 1.0:
                                 alpha = 1.0
                             if self.accent_color():
@@ -2358,4 +2366,8 @@ class GLNumpyLines(GLNode):
                         gl.glColor4f(color[0], color[1], color[2], alpha)
                         gl.glVertex(self.line_array[j, i])
                     gl.glEnd()
+            if self.motion_accent():
+                self.previous_array = self.line_array.copy()
+            else:
+                self.previous_array = None
 
