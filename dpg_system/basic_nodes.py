@@ -5,7 +5,7 @@ import random
 import time
 import string
 import sys
-
+import os
 import torch
 
 from dpg_system.node import Node
@@ -2290,8 +2290,9 @@ class CollectionNode(Node):
             self.load_dialog()
 
     def load_data(self, path):
-        with open(path, 'r') as f:
-            self.collection = json.load(f)
+        if os.path.exists(path):
+            with open(path, 'r') as f:
+                self.collection = json.load(f)
 
     def clear_message(self, message='', data=[]):
         self.collection = {}
@@ -2468,10 +2469,13 @@ class TextFileNode(Node):
         self.load_data(self.file_name_property())
 
     def load_data(self, path):
-        with open(path, 'r') as f:
-            self.text_contents = f.read()
-        self.file_name_property.set(path)
-        self.text_editor.set(self.text_contents)
+        try:
+            with open(path, 'r') as f:
+                self.text_contents = f.read()
+            self.file_name_property.set(path)
+            self.text_editor.set(self.text_contents)
+        except FileNotFoundError:
+            print('TextFile node error:', path, 'not found')
 
     def execute(self):
         if self.active_input == self.dump_button:
@@ -2710,13 +2714,14 @@ class FuzzyMatchNode(Node):
     def load_match_file_from_json(self, path):
         print('load from json')
         self.list_path = path
-        with open(path, 'r') as f:
-            path = self.list_path.split('/')[-1]
-            self.file_name.set(path)
-            data = json.load(f)
-            self.option_list = []
-            for artist in data:
-                self.option_list.append(artist)
+        if os.path.exists(path):
+            with open(path, 'r') as f:
+                path = self.list_path.split('/')[-1]
+                self.file_name.set(path)
+                data = json.load(f)
+                self.option_list = []
+                for artist in data:
+                    self.option_list.append(artist)
 
     def execute(self):
         if self.input.fresh_input:

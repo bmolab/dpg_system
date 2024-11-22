@@ -47,6 +47,7 @@ def register_numpy_nodes():
     Node.app.register_node('np.max', NumpyClipNode.factory)
     Node.app.register_node('np.line_intersection', NumpyLineIntersectionNode.factory)
     Node.app.register_node('np.add_alpha', NumpyAddAlphaNode.factory)
+    Node.app.register_node('np.rolling_buffer', NumpyRollingBufferNode.factory)
 
 
 class NumpyGeneratorNode(Node):
@@ -1027,4 +1028,42 @@ class NumpyRotateNode(Node):
             if axis1 != axis2:
                 rotated_data = np.rot90(data, k=self.k(), axes=(axis1, axis2))
                 self.output.send(rotated_data)
+
+
+class NumpyRollingBufferNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyRollingBufferNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.shape = []
+        for arg in args:
+            dimension = any_to_int(arg)
+            self.shape.append(dimension)
+
+        self.buffer_shape = self.shape.copy()
+        self.buffer_shape[0] = self.buffer_shape[0] * 2
+        self.buffer = np.zeros(self.buffer_shape)
+        self.pointer = 0
+
+        self.input = self.add_input('input', triggers_execution=True)
+
+        self.output = self.add_output('out')
+
+    def execute(self):
+        input = any_to_array(self.input())
+        if len(input.shape) == len(self.shape):
+            input = input[0]
+        if len(input.shape) + 1 == len(self.shape):
+            if list(input.shape) == self.shape[1:]:
+                self.pointer -= 1
+                if self.pointer < 0:
+                    self.pointer = self.shape[0] - 1
+                self.buffer[self.pointer] = input
+                self.buffer[self.pointer + self.shape[0]] = input
+                self.output.send(self.buffer[self.pointer:self.pointer + self.shape[0]])
+
+
 

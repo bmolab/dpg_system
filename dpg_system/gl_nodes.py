@@ -5,7 +5,7 @@ import quaternion
 import freetype
 from dpg_system.open_gl_base import *
 from dpg_system.glfw_base import *
-
+from dpg_system.colormaps import _viridis_data, _magma_data, _plasma_data, _inferno_data, make_heatmap, make_coldmap
 # can create command parsers for various types of GLObjects?
 
 
@@ -27,6 +27,9 @@ def register_gl_nodes():
     Node.app.register_node('gl_billboard', GLBillboard.factory)
     Node.app.register_node('gl_rotation_disk', GLXYZDiskNode.factory)
     Node.app.register_node('gl_button_grid', GLButtonGridNode.factory)
+
+    Node.app.register_node('gl_line_array', GLNumpyLines.factory)
+
 
 class GLCommandParser:
     def __init__(self):
@@ -2257,3 +2260,102 @@ class GLButtonGridNode(GLNode):
             glCallList(self.display_list)
         glColor4f(1.0, 1.0, 1.0, 1.0)
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+
+
+class GLNumpyLines(GLNode):
+    @staticmethod
+    def factory(node_name, data, args=None):
+        node = GLNumpyLines(node_name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.array_input = self.add_input('array', triggers_execution=True)
+        self.alpha_fade = self.add_bool_input('alpha_fade', widget_type='checkbox', default_value=True)
+        self.motion_accent = self.add_input('accent_motion', widget_type='checkbox', default_value=False)
+        self.accent_color = self.add_input('accent_colour', widget_type='checkbox', default_value=False)
+        self.accent_scale = self.add_input('accent_scale', widget_type='drag_int', default_value=50)
+        self.line_width = self.add_input('line_width', widget_type='drag_int', default_value=1)
+        self.selected_joints = self.add_input('selected_joints', widget_type='text_input', default_value='')
+        self.colors = []
+        color = [1.0, 1.0, 1.0, 1.0]
+        for i in range(20):
+            self.colors.append(color.copy())
+        # self.colors_input = self.add_input('colors', triggers_execution=True)
+        self.color_index = self.add_input('color index', widget_type='input_int', default_value=0)
+        self.color_control = self.add_input('color_control', widget_type='color_picker', default_value=[1.0, 1.0, 1.0, 1.0], callback=self.color_changed)
+        self.line_array = None
+
+    def custom_create(self, from_file):
+        dpg.configure_item(self.color_control.widget.uuid, no_alpha=True)
+        dpg.configure_item(self.color_control.widget.uuid, alpha_preview=dpg.mvColorEdit_AlphaPreviewNone)
+
+    def color_changed(self):
+        index = self.color_index()
+        if index >= len(self.colors):
+            index = len(self.colors) - 1
+        color = self.color_control()
+        self.colors[index][0] = color[0] / 255.0
+        self.colors[index][1] = color[1] / 255.0
+        self.colors[index][2] = color[2] / 255.0
+        self.colors[index][3] = 1.0
+
+    def remember_state(self):
+        self.was_lit = glGetBoolean(GL_LIGHTING)
+        if self.was_lit:
+            glDisable(GL_LIGHTING)
+        self.was_depth = glGetBoolean(GL_DEPTH_TEST)
+        if self.was_depth:
+            glDisable(GL_DEPTH_TEST)
+        glPushMatrix()
+
+    def restore_state(self):
+        glPopMatrix()
+        if self.was_lit:
+            glEnable(GL_LIGHTING)
+        if self.was_depth:
+            glEnable(GL_DEPTH_TEST)
+    def execute(self):
+        if self.active_input == self.array_input:
+            incoming = any_to_array(self.array_input())
+            self.line_array = incoming.copy()
+        elif self.active_input == self.gl_input:
+            super().execute()
+
+    def draw(self):
+        if self.line_array is not None:
+            number_of_lines = self.line_array.shape[1]
+            number_of_points = self.line_array.shape[0]
+            select_list = any_to_list(self.selected_joints())
+            if len(select_list) == 0:
+                selected = [True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True]
+            else:
+                selected = [False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False]
+                for select in select_list:
+                    select_int = any_to_int(select)
+                    if 0 <= select_int < number_of_points:
+                        selected[select_int] = True
+            accent_scale = self.accent_scale()
+            gl.glLineWidth(self.line_width())
+            for i in range(number_of_lines):
+                if selected[i]:
+                    color = self.colors[i]
+                    gl.glBegin(GL_LINE_STRIP)
+                    for j in range(number_of_points):
+                        alpha = 1.0
+                        if self.motion_accent():
+                            if j > 0:
+                                alpha = np.linalg.norm(self.line_array[j, i] - self.line_array[j - 1, i]) * accent_scale
+                            else:
+                                alpha = 0.0
+                            if alpha > 1.0:
+                                alpha = 1.0
+                            if self.accent_color():
+                                color = _viridis_data[int(alpha * 255.0)]
+                                alpha = 1.0
+                        if self.alpha_fade():
+                            alpha = (number_of_points - j) / number_of_points * alpha
+                        gl.glColor4f(color[0], color[1], color[2], alpha)
+                        gl.glVertex(self.line_array[j, i])
+                    gl.glEnd()
+

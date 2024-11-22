@@ -1296,6 +1296,7 @@ class SimpleBodyData:
         if self.skeleton:
             dim_z = dim[1]
             glBegin(GL_LINES)
+
             glVertex3f(0, 0, 0)
             glVertex3f(0, 0, dim_z)
             glEnd()

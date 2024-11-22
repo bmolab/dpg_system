@@ -109,13 +109,18 @@ class MoCapTakeNode(MoCapNode):
         self.speed = self.add_input('speed', widget_type='drag_float', default_value=speed)
         self.input = self.add_input('frame', widget_type='drag_int', triggers_execution=True, callback=self.frame_widget_changed)
         self.load_button = self.add_property('load', widget_type='button', callback=self.load_take)
+        self.dump_button = self.add_property('dump', widget_type='button', callback=self.dump_take)
         self.file_name = self.add_label('')
         self.quaternions_out = self.add_output('quaternions')
         self.positions_out = self.add_output('positions')
         self.labels_out = self.add_output('labels')
+        self.dump_out = self.add_output('dump')
         load_path = ''
         self.load_path = self.add_option('path', widget_type='text_input', default_value=load_path, callback=self.load_from_load_path)
         self.message_handlers['load'] = self.load_take_message
+
+    def dump_take(self):
+        self.dump_out.send(self.position_buffer)
 
     def start_stop_streaming(self):
         if self.on_off():
@@ -170,6 +175,7 @@ class MoCapTakeNode(MoCapNode):
     def execute(self):
         if self.input.fresh_input:
             data = self.input()
+
             # handled, do_output = self.check_for_messages(data)
             # if not handled:
             t = type(data)

@@ -761,26 +761,27 @@ class App:
                 self.patches_path = save_path
                 self.add_to_recent(self.patches_name, self.patches_path)
             else:
-                with open(save_path, 'w') as f:
-                    self.patches_path = save_path
+                if os.path.exists(save_path):
+                    with open(save_path, 'w') as f:
+                        self.patches_path = save_path
 
-                    patch_name = save_path.split('/')[-1]
-                    if '.' in patch_name:
-                        parts = patch_name.split('.')
-                        if len(parts) == 2:
-                            if parts[1] == 'json':
-                                patch_name = parts[0]
+                        patch_name = save_path.split('/')[-1]
+                        if '.' in patch_name:
+                            parts = patch_name.split('.')
+                            if len(parts) == 2:
+                                if parts[1] == 'json':
+                                    patch_name = parts[0]
 
-                    self.patches_name = patch_name
-                    current_editor.set_name(patch_name)
-                    current_editor.set_path(save_path)
-                    file_container = {}
-                    file_container['name'] = self.patches_name
-                    file_container['path'] = self.patches_path
-                    file_container['patches'] = self.containerize_patch(current_editor)
+                        self.patches_name = patch_name
+                        current_editor.set_name(patch_name)
+                        current_editor.set_path(save_path)
+                        file_container = {}
+                        file_container['name'] = self.patches_name
+                        file_container['path'] = self.patches_path
+                        file_container['patches'] = self.containerize_patch(current_editor)
 
-                    json.dump(file_container, f, indent=4)
-                    self.add_to_recent(self.patches_name, self.patches_path)
+                        json.dump(file_container, f, indent=4)
+                        self.add_to_recent(self.patches_name, self.patches_path)
             if current_editor.patcher_node is not None:
                 current_editor.patcher_node.name_option.set(self.patches_name)
                 current_editor.patcher_node.name_changed()
@@ -788,29 +789,30 @@ class App:
 
 
     def save_setup(self, save_path):
-        with open(save_path, 'w') as f:
-            self.patches_path = save_path
+        if os.path.exists(save_path):
+            with open(save_path, 'w') as f:
+                self.patches_path = save_path
 
-            patch_name = save_path.split('/')[-1]
-            if '.' in patch_name:
-                parts = patch_name.split('.')
-                if len(parts) == 2:
-                    if parts[1] == 'json':
-                        patch_name = parts[0]
+                patch_name = save_path.split('/')[-1]
+                if '.' in patch_name:
+                    parts = patch_name.split('.')
+                    if len(parts) == 2:
+                        if parts[1] == 'json':
+                            patch_name = parts[0]
 
-            self.patches_name = patch_name
+                self.patches_name = patch_name
 
-            file_container = {}
-            file_container['name'] = self.patches_name
-            file_container['path'] = self.patches_path
+                file_container = {}
+                file_container['name'] = self.patches_name
+                file_container['path'] = self.patches_path
 
-            patches_container = {}
-            for index, node_editor in enumerate(self.node_editors):
-                patches_container = self.containerize_patch(node_editor, patches_container)
+                patches_container = {}
+                for index, node_editor in enumerate(self.node_editors):
+                    patches_container = self.containerize_patch(node_editor, patches_container)
 
-            file_container['patches'] = patches_container
-            json.dump(file_container, f, indent=4)
-            self.add_to_recent(self.patches_name, self.patches_path)
+                file_container['patches'] = patches_container
+                json.dump(file_container, f, indent=4)
+                self.add_to_recent(self.patches_name, self.patches_path)
 
     def recent_1_callback(self):
         self.recent_callback(0)
