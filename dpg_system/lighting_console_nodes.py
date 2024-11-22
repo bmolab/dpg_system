@@ -18,6 +18,7 @@ class ColorSourceNode(OSCSender, Node):
         OSCSender.__init__(self, label, data, args)
         Node.__init__(self, label, data, args)
 
+        self.changed = False
         self.channel = 1
         self.intensity = 0
         self.red = 0
