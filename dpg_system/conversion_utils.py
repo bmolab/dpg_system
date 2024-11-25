@@ -363,7 +363,7 @@ def tensor_to_array(input):
 
 def array_to_float(input):
     value = 0.0
-    if type(input) == np.ndarray:
+    if type(input) == np.ndarray and input.size > 0:
         if len(input.shape) == 0:
             value = input.item()
         elif len(input.shape) == 1:
@@ -509,13 +509,13 @@ def string_to_array(input_string, validate=False):
     arr = np.zeros((1))
     try:
         input_string = " ".join(input_string.split())
-        arr_str = input_string.replace(" ]", "]").replace(" ", ",").replace("\n", "")
+        arr_str = input_string.replace(" ]", "]").replace("[ ", "[").replace(" ", ",").replace("\n", "")
         # print('string_to_array', arr_str)
         arr = np.array(ast.literal_eval(arr_str))
     except:
         print('invalid string to cast as array')
-    if validate:
-        return None
+        if validate:
+            return None
     return arr
 
 
@@ -584,6 +584,15 @@ def list_to_array(input, validate=False):
                 return np.array(hybrid_list)
             except Exception as e:
                 pass
+    all_strings = True
+    for el in input:
+        if type(el) != str:
+            all_strings = False
+            break
+    if all_strings:
+        full_string = ' '.join(input)
+        return string_to_array(full_string, validate=validate)
+
     if validate:
         return None
     return np.ndarray(0)

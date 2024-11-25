@@ -35,6 +35,7 @@ class MyGLContext:
         self.node = None
         self.last_key = -1
         self.last_mods = 0
+        self.clear_color = [0.0, 0.0, 0.0, 1.0]
         # print('about to create window')
 
 #        gl.glutInitDisplayMode(glfw.GLUT_RGB | glfw.GLUT_DOUBLE | glfw.GLUT_DEPTH)
@@ -74,7 +75,7 @@ class MyGLContext:
             gl.glClearColor(0, 0, 0, 1)
             gl.glClear(gl.GL_COLOR_BUFFER_BIT)
             gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
-            gl.glColor4f(1.0, 1.0, 1.0, 1.0)
+            gl.glColor4fv(self.clear_color)
 
     #            self.update_fov()
 

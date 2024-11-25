@@ -13,6 +13,7 @@ print('imported shadow')
 def register_mocap_nodes():
     Node.app.register_node('gl_body', MoCapGLBody.factory)
     Node.app.register_node('gl_simple_body', SimpleMoCapGLBody.factory)
+    Node.app.register_node('gl_alt_body', AlternateMoCapGLBody.factory)
     Node.app.register_node('take', MoCapTakeNode.factory)
     Node.app.register_node('body_to_joints', MoCapBody.factory)
     Node.app.register_node('shadow_body_to_joints', MoCapBody.factory)
@@ -22,6 +23,8 @@ def register_mocap_nodes():
     Node.app.register_node('shadow', MotionShadowNode.factory)
     Node.app.register_node('local_to_global_body', LocalToGlobalBodyNode.factory)
     Node.app.register_node('global_to_local_body', GlobalToLocalBodyNode.factory)
+    Node.app.register_node('target_pose', TargetPoseNode.factory)
+    Node.app.register_node('calibrate_pose', PoseCalibrateNode.factory)
 
 class MoCapNode(Node):
     joint_map = {
@@ -278,6 +281,48 @@ class PoseNode(MoCapNode):
         self.output.send(pose)
 
 
+class PoseCalibrateNode(MoCapNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = PoseCalibrateNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.pose_correction = None
+        self.input = self.add_input('pose input', triggers_execution=True)
+        self.calibration_input = self.add_input('calibration input', callback=self.set_calibration)
+        self.calibrate_input = self.add_input('calibrate input', widget_type='button', callback=self.calibrate)
+
+        self.output = self.add_output('pose out')
+        self.calibration_output = self.add_output('calibration output')
+
+    def set_calibration(self):
+        self.pose_correction = any_to_array(self.calibration_input())
+
+    def calibrate(self):
+        # calculate inverse of input pose
+        in_pose = self.input()
+        if in_pose is not None and type(in_pose) is np.ndarray:
+            self.pose_correction = np.zeros_like(in_pose)
+            for i in range(in_pose.shape[0]):
+                q = Quaternion(in_pose[i])
+                qq = q.inverse
+                self.pose_correction[i] = np.array(qq.q)
+        self.calibration_output.send(self.pose_correction)
+
+    def execute(self):
+        in_pose = self.input()
+        if self.pose_correction is not None:
+            out_pose = np.zeros_like(in_pose)
+            for i in range(in_pose.shape[0]):
+                q = Quaternion(in_pose[i])
+                pc = Quaternion(self.pose_correction[i])
+                qq = q * pc
+                out_pose[i] = [qq.w, qq.x, qq.y, qq.z]
+            self.output.send(out_pose)
+
+
 class MoCapBody(MoCapNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -337,54 +382,6 @@ class MoCapBody(MoCapNode):
 
 
 class MoCapGLBody(MoCapNode):
-    smpl_limb_to_joint_dict = {
-        'left_hip': 'LeftHip',
-        'right_hip': 'RightHip',
-        'lower_back': 'SpinePelvis',
-        'left_thigh': 'LeftKnee',
-        'right_thigh': 'RightKnee',
-        'mid_back': 'LowerVertebrae',
-        'left_lower_leg': 'LeftFoot',
-        'right_lower_leg': 'RightFoot',
-        'upper_back': 'MidVertebrae',
-        'left_foot': 'LeftBallOfFoot',
-        'right_foot': 'RightBallOfFoot',
-        'lower_neck': 'UpperVertebrae',
-        'left_shoulder_blade': 'LeftShoulderBladeBase',
-        'right_shoulder_blade': 'RightShoulderBladeBase',
-        'upper_neck': 'BaseOfSkull',
-        'left_shoulder': 'LeftShoulder',
-        'right_shoulder': 'RightShoulder',
-        'left_upper_arm': 'LeftElbow',
-        'right_upper_arm': 'RightElbow',
-        'left_forearm': 'LeftWrist',
-        'right_forearm': 'RightWrist',
-        'left_hand': 'LeftKnuckle',
-        'right_hand': 'RightKnuckle'
-    }
-
-    joint_mapped = {
-        'base_of_skull': 0,
-        'upper_vertebrae': 1,
-        'mid_vertebrae': 2,
-        'lower_vertebrae': 3,
-        'spine_pelvis': 4,
-        'pelvis_anchor': 5,
-        'left_hip': 6,
-        'left_knee': 7,
-        'left_ankle': 8,
-        'right_hip': 9,
-        'right_knee': 10,
-        'right_ankle': 11,
-        'left_shoulder_blade': 12,
-        'left_shoulder': 13,
-        'left_elbow': 14,
-        'left_wrist': 15,
-        'right_shoulder_blade': 16,
-        'right_shoulder': 17,
-        'right_elbow': 18,
-        'right_wrist': 19
-    }
 
     @staticmethod
     def factory(name, data, args=None):
@@ -398,12 +395,13 @@ class MoCapGLBody(MoCapNode):
         self.input = self.add_input('pose in', triggers_execution=True)
         self.gl_chain_input = self.add_input('gl chain', triggers_execution=True)
         self.gl_chain_output = self.add_output('gl_chain')
-        self.absolute_quats_input = self.add_input('absolute quats', widget_type='checkbox')
+        self.capture_pose_input = self.add_input('capture pose', widget_type='button', callback=self.capture_pose)
         self.current_joint_output = self.add_output('current_joint_name')
-        # self.current_joint_quaternion_output = self.add_output('current_joint_quaternion')
         self.current_joint_rotation_axis_output = self.add_output('current_joint_quaternion_axis')
         self.current_joint_gl_output = self.add_output('current_joint_gl_chain')
 
+        self.absolute_quats_input = self.add_option('absolute quats', widget_type='checkbox')
+        self.calc_diff_quats = self.add_option('calc_diff_quats', widget_type='checkbox', default_value=False, callback=self.set_calc_diff)
         self.skeleton_only = self.add_option('skeleton_only', widget_type='checkbox', default_value=False)
         self.show_joint_spheres = self.add_option('show joint motion', widget_type='checkbox', default_value=self.show_joint_activity)
         self.joint_data_selection = self.add_option('joint data type', widget_type='combo', default_value='diff_axis-angle')
@@ -415,14 +413,20 @@ class MoCapGLBody(MoCapNode):
         self.body = BodyData()
         self.body.node = self
 
+    def set_calc_diff(self):
+        self.body.calc_diff = self.calc_diff_quats()
+
+    def capture_pose(self):
+        self.body.capture_current_pose()
+
     # def joint_callback(self):
     #     self.gl_chain_output.send('draw')
     #
     def process_commands(self, command):
         if type(command[0]) == str:
             print(command)
-            if command[0] in self.smpl_limb_to_joint_dict:
-                target_joint = self.smpl_limb_to_joint_dict[command[0]]
+            if command[0] in BodyDataBase.smpl_limb_to_joint_dict:
+                target_joint = BodyDataBase.smpl_limb_to_joint_dict[command[0]]
                 if target_joint in joint_name_to_index:
                     target_joint_index = joint_name_to_index[target_joint]
                     self.body.joints[target_joint_index].bone_dim = command[1:]
@@ -445,8 +449,8 @@ class MoCapGLBody(MoCapNode):
     def joint_callback(self, joint_index):
         glPushMatrix()
         mode = self.joint_data_selection()
-        joint_name = joint_index_to_name[joint_index]
-        self.current_joint_output.send(joint_name)
+        # joint_name = joint_index_to_name[joint_index]
+        self.current_joint_output.send(joint_index)
         if mode == 'diff_axis-angle':
             rotation = np.array(self.body.rotationAxis[joint_index])
             rotation = rotation / (np.linalg.norm(rotation) + 1e-6) * self.body.quaternionDistance[joint_index] * self.joint_motion_scale()
@@ -508,55 +512,6 @@ class MoCapGLBody(MoCapNode):
 
 
 class SimpleMoCapGLBody(MoCapNode):
-    smpl_limb_to_joint_dict = {
-        'left_hip': 'LeftHip',
-        'right_hip': 'RightHip',
-        'lower_back': 'SpinePelvis',
-        'left_thigh': 'LeftKnee',
-        'right_thigh': 'RightKnee',
-        'mid_back': 'LowerVertebrae',
-        'left_lower_leg': 'LeftFoot',
-        'right_lower_leg': 'RightFoot',
-        'upper_back': 'MidVertebrae',
-        'left_foot': 'LeftBallOfFoot',
-        'right_foot': 'RightBallOfFoot',
-        'lower_neck': 'UpperVertebrae',
-        'left_shoulder_blade': 'LeftShoulderBladeBase',
-        'right_shoulder_blade': 'RightShoulderBladeBase',
-        'upper_neck': 'BaseOfSkull',
-        'left_shoulder': 'LeftShoulder',
-        'right_shoulder': 'RightShoulder',
-        'left_upper_arm': 'LeftElbow',
-        'right_upper_arm': 'RightElbow',
-        'left_forearm': 'LeftWrist',
-        'right_forearm': 'RightWrist',
-        'left_hand': 'LeftKnuckle',
-        'right_hand': 'RightKnuckle'
-    }
-
-    joint_mapped = {
-        'base_of_skull': 0,
-        'upper_vertebrae': 1,
-        'mid_vertebrae': 2,
-        'lower_vertebrae': 3,
-        'spine_pelvis': 4,
-        'pelvis_anchor': 5,
-        'left_hip': 6,
-        'left_knee': 7,
-        'left_ankle': 8,
-        'right_hip': 9,
-        'right_knee': 10,
-        'right_ankle': 11,
-        'left_shoulder_blade': 12,
-        'left_shoulder': 13,
-        'left_elbow': 14,
-        'left_wrist': 15,
-        'right_shoulder_blade': 16,
-        'right_shoulder': 17,
-        'right_elbow': 18,
-        'right_wrist': 19
-    }
-
     @staticmethod
     def factory(name, data, args=None):
         node = SimpleMoCapGLBody(name, data, args)
@@ -576,19 +531,34 @@ class SimpleMoCapGLBody(MoCapNode):
         self.body = SimpleBodyData()
         self.body.node = self
 
-    # def joint_callback(self):
-    #     self.gl_chain_output.send('draw')
+
+    def joint_callback(self, index):
+        pass
     #
     def process_commands(self, command):
         if type(command[0]) == str:
             print(command)
-            if command[0] in self.smpl_limb_to_joint_dict:
-                target_joint = self.smpl_limb_to_joint_dict[command[0]]
+            if command[0] in BodyDataBase.smpl_limb_to_joint_dict:
+                target_joint = BodyDataBase.smpl_limb_to_joint_dict[command[0]]
                 if target_joint in joint_name_to_index:
                     target_joint_index = joint_name_to_index[target_joint]
-                    self.body.joints[target_joint_index].bone_dim = command[1:]
+                    if len(command) >= 2:
+                        # self.body.limbs[target_joint_index].dims[2] = any_to_float(command[1])
+                        self.body.joints[target_joint_index].length = any_to_float(command[3])
+                    if len(command) == 3:
+                        self.body.limbs[target_joint_index].dims[1] = any_to_float(command[2])
+                        self.body.limbs[target_joint_index].dims[0] = any_to_float(command[2])
+                        #self.body.joints[target_joint_index].thickness = (any_to_float(command[2]), any_to_float(command[2]))
+
+                    if len(command) == 4:
+                        self.body.limbs[target_joint_index].dims[0] = any_to_float(command[3])
+                        # self.body.joints[target_joint_index].thickness = (any_to_float(command[2]), any_to_float(command[2]))
+
                     self.body.joints[target_joint_index].set_matrix()
+                    self.body.limbs[target_joint_index] = None
+                    # self.body.limbs[target_joint_index].new_shape = True
                 # self.body.joints[target_joint_index].set_mass()
+
 
     def execute(self):
         if self.input.fresh_input:
@@ -622,16 +592,8 @@ class SimpleMoCapGLBody(MoCapNode):
             incoming = self.gl_chain_input()
             t = type(incoming)
             if t == str and incoming == 'draw':
-                self.body.draw(self.skeleton_only())
+                self.body.draw(False, self.skeleton_only())
 
-
-# def quaternion_multiply(quaternion1, quaternion0):
-#     w0, x0, y0, z0 = quaternion0
-#     w1, x1, y1, z1 = quaternion1
-#     return np.array([-x1 * x0 - y1 * y0 - z1 * z0 + w1 * w0,
-#     x1 * w0 + y1 * z0 - z1 * y0 + w1 * x0,
-#     -x1 * z0 + y1 * w0 + z1 * x0 + w1 * y0,
-#     x1 * y0 - y1 * x0 + z1 * w0 + w1 * z0])
 
 def quaternion_multiply(q1, q2):
     """Multiply quaternions q1*q2"""
@@ -650,15 +612,34 @@ def quaternion_multiply(q1, q2):
     # d = q1[1]*q2[0] + q1[2]*q2[3] - q1[3]*q2[2] + q1[0]*q2[1]
     return quaternion_norm(np.array([x, y, z, w]))  # x, y, z, w
 
+def quaternion_multiply_wxyz(q1, q2):
+    """Multiply quaternions q1*q2"""
+    w = q1[0]*q2[0] - q1[1]*q2[1] - q1[2]*q2[2] - q1[3]*q2[3]
+    x = q1[0]*q2[1] + q1[1]*q2[0] + q1[2]*q2[3] - q1[3]*q2[2]
+    y = q1[0]*q2[2] - q1[1]*q2[3] + q1[2]*q2[0] + q1[3]*q2[1]
+    z = q1[0]*q2[3] + q1[1]*q2[2] - q1[2]*q2[1] + q1[3]*q2[0]
+
+    # a = q1[1]*q2[1] - q1[2]*q2[2] - q1[3]*q2[3] - q1[0]*q2[0]
+    # b = q1[1]*q2[2] + q1[2]*q2[1] + q1[3]*q2[0] - q1[0]*q2[3]
+    # c = q1[1]*q2[3] - q1[2]*q2[0] + q1[3]*q2[1] + q1[0]*q2[2]
+    # d = q1[1]*q2[0] + q1[2]*q2[3] - q1[3]*q2[2] + q1[0]*q2[1]
+    return quaternion_norm(np.array([w, x, y, z]))  # x, y, z, w
+
 def quaternion_divide(q1, q2):
     conj = quaternion_conj(q2)  # x, y, z, w
     div = quaternion_multiply(q1, conj)
     return quaternion_norm(div)
 
-def quaternion_reciprocal(q):
+def quaternion_reciprocal_wxyz(q):
     """Return reciprocal (inverse) of quaternion q.inverse"""
     norm = q[0] ** 2 + q[1] ** 2 + q[2] ** 2 + q[3] ** 2
     return np.array([-q[0] / norm, -q[1] / norm, -q[2] / norm, q[3] / norm])
+
+def quaternion_reciprocal_xyzw(q):
+    # incoming is x, y, z, w
+    """Return reciprocal (inverse) of quaternion q.inverse"""
+    norm = q[0] ** 2 + q[1] ** 2 + q[2] ** 2 + q[3] ** 2
+    return np.array([q[0] / norm, -q[1] / norm, -q[2] / norm, -q[3] / norm])    # x, y, z, w
 
 def quaternion_conj(q):
     index = [3, 0, 1, 2]
@@ -824,115 +805,115 @@ class GlobalToLocalBodyNode(MoCapNode):
         # spine1
         offset = self.active_joint_map['spine_pelvis']
         previous_offset = self.active_joint_map['pelvis_anchor']
-        spine_pelvis_rel_quat = quaternion_reciprocal(quaternion_multiply(quaternion_reciprocal(active_joints_data[offset]), active_joints_data[previous_offset]))
+        spine_pelvis_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
         self.pose_data[offset] = spine_pelvis_rel_quat
 
         # spine2
         offset = self.active_joint_map['lower_vertebrae']
         previous_offset = self.active_joint_map['spine_pelvis']
-        lower_vertebrae_rel_quat = quaternion_reciprocal(quaternion_multiply(quaternion_reciprocal(active_joints_data[offset]), active_joints_data[previous_offset]))
+        lower_vertebrae_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
         self.pose_data[offset] = lower_vertebrae_rel_quat
 
         # spine3
         offset = self.active_joint_map['mid_vertebrae']
         previous_offset = self.active_joint_map['lower_vertebrae']
-        mid_vertebrae_rel_quat = quaternion_reciprocal(quaternion_multiply(quaternion_reciprocal(active_joints_data[offset]), active_joints_data[previous_offset]))
+        mid_vertebrae_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
         self.pose_data[offset] = mid_vertebrae_rel_quat
 
         # neck
         offset = self.active_joint_map['upper_vertebrae']
         previous_offset = self.active_joint_map['mid_vertebrae']
-        upper_vertebrae_rel_quat = quaternion_reciprocal(quaternion_multiply(quaternion_reciprocal(active_joints_data[offset]), active_joints_data[previous_offset]))
+        upper_vertebrae_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
         self.pose_data[offset] = upper_vertebrae_rel_quat
 
         # head
         offset = self.active_joint_map['base_of_skull']
         previous_offset = self.active_joint_map['upper_vertebrae']
-        base_of_skull_rel_quat = quaternion_reciprocal(quaternion_multiply(quaternion_reciprocal(active_joints_data[offset]), active_joints_data[previous_offset]))
+        base_of_skull_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
         self.pose_data[offset] = base_of_skull_rel_quat
 
         # left_collar
         offset = self.active_joint_map['left_shoulder_blade']
         previous_offset = self.active_joint_map['mid_vertebrae']
-        left_shoulder_blade_rel_quat = quaternion_reciprocal(quaternion_multiply(quaternion_reciprocal(active_joints_data[offset]), active_joints_data[previous_offset]))
+        left_shoulder_blade_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(v(active_joints_data[offset]), active_joints_data[previous_offset]))
         self.pose_data[offset] = left_shoulder_blade_rel_quat
 
         # left_shoulder
         offset = self.active_joint_map['left_shoulder']
         previous_offset = self.active_joint_map['left_shoulder_blade']
-        left_shoulder_rel_quat = quaternion_reciprocal(quaternion_multiply(quaternion_reciprocal(active_joints_data[offset]), active_joints_data[previous_offset]))
+        left_shoulder_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
         self.pose_data[offset] = left_shoulder_rel_quat
 
         # left_elbow
         offset = self.active_joint_map['left_elbow']
         previous_offset = self.active_joint_map['left_shoulder']
-        left_elbow_rel_quat = quaternion_reciprocal(quaternion_multiply(quaternion_reciprocal(active_joints_data[offset]), active_joints_data[previous_offset]))
+        left_elbow_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
         self.pose_data[offset] = left_elbow_rel_quat
 
         # left_wrist
         offset = self.active_joint_map['left_wrist']
         previous_offset = self.active_joint_map['left_elbow']
-        left_wrist_rel_quat = quaternion_reciprocal(quaternion_multiply(quaternion_reciprocal(active_joints_data[offset]), active_joints_data[previous_offset]))
+        left_wrist_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
         self.pose_data[offset] = left_wrist_rel_quat
 
         # right_collar
         offset = self.active_joint_map['right_shoulder_blade']
         previous_offset = self.active_joint_map['mid_vertebrae']
-        right_shoulder_blade_rel_quat = quaternion_reciprocal(quaternion_multiply(quaternion_reciprocal(active_joints_data[offset]), active_joints_data[previous_offset]))
+        right_shoulder_blade_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
         self.pose_data[offset] = right_shoulder_blade_rel_quat
 
         # right_shoulder
         offset = self.active_joint_map['right_shoulder']
         previous_offset = self.active_joint_map['right_shoulder_blade']
-        right_shoulder_rel_quat = quaternion_reciprocal(quaternion_multiply(quaternion_reciprocal(active_joints_data[offset]), active_joints_data[previous_offset]))
+        right_shoulder_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
         self.pose_data[offset] = right_shoulder_rel_quat
 
         # right_elbow
         offset = self.active_joint_map['right_elbow']
         previous_offset = self.active_joint_map['right_shoulder']
-        right_elbow_rel_quat = quaternion_reciprocal(quaternion_multiply(quaternion_reciprocal(active_joints_data[offset]), active_joints_data[previous_offset]))
+        right_elbow_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
         self.pose_data[offset] = right_elbow_rel_quat
 
         # right_wrist
         offset = self.active_joint_map['right_wrist']
         previous_offset = self.active_joint_map['right_elbow']
-        right_wrist_rel_quat = quaternion_reciprocal(quaternion_multiply(quaternion_reciprocal(active_joints_data[offset]), active_joints_data[previous_offset]))
+        right_wrist_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
         self.pose_data[offset] = right_wrist_rel_quat
 
         # left_hip
         offset = self.active_joint_map['left_hip']
         previous_offset = self.active_joint_map['pelvis_anchor']
-        left_hip_rel_quat = quaternion_reciprocal(quaternion_multiply(quaternion_reciprocal(active_joints_data[offset]), active_joints_data[previous_offset]))
+        left_hip_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
         self.pose_data[offset] = left_hip_rel_quat
 
         # left_knee
         offset = self.active_joint_map['left_knee']
         previous_offset = self.active_joint_map['left_hip']
-        left_knee_rel_quat = quaternion_reciprocal(quaternion_multiply(quaternion_reciprocal(active_joints_data[offset]), active_joints_data[previous_offset]))
+        left_knee_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
         self.pose_data[offset] = left_knee_rel_quat
 
         # left_ankle
         offset = self.active_joint_map['left_ankle']
         previous_offset = self.active_joint_map['left_knee']
-        left_ankle_rel_quat = quaternion_reciprocal(quaternion_multiply(quaternion_reciprocal(active_joints_data[offset]), active_joints_data[previous_offset]))
+        left_ankle_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
         self.pose_data[offset] = left_ankle_rel_quat
 
         # right_hip
         offset = self.active_joint_map['right_hip']
         previous_offset = self.active_joint_map['pelvis_anchor']
-        right_hip_rel_quat = quaternion_reciprocal(quaternion_multiply(quaternion_reciprocal(active_joints_data[offset]), active_joints_data[previous_offset]))
+        right_hip_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
         self.pose_data[offset] = right_hip_rel_quat
 
         # right_knee
         offset = self.active_joint_map['right_knee']
         previous_offset = self.active_joint_map['right_hip']
-        right_knee_rel_quat = quaternion_reciprocal(quaternion_multiply(quaternion_reciprocal(active_joints_data[offset]), active_joints_data[previous_offset]))
+        right_knee_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
         self.pose_data[offset] = right_knee_rel_quat
 
         # right_ankle
         offset = self.active_joint_map['right_ankle']
         previous_offset = self.active_joint_map['right_knee']
-        right_ankle_rel_quat = quaternion_reciprocal(quaternion_multiply(quaternion_reciprocal(active_joints_data[offset]), active_joints_data[previous_offset]))
+        right_ankle_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
         self.pose_data[offset] = right_ankle_rel_quat
 
 
@@ -1104,4 +1085,160 @@ class MotionShadowNode(MoCapNode):
             if node_body >= self.num_bodies:
                 self.num_bodies = node_body + 1
         return name_map
+
+
+class TargetPoseNode(MoCapNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TargetPoseNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.pose_in = self.add_input('pose in', triggers_execution=True)
+        self.capture_in = self.add_input('capture in', widget_type='button', callback=self.capture)
+        self.target_pose = np.zeros((20, 4))
+        self.target_pose[:, 0] = 1.0
+        self.capturing = False
+        self.capture_once = False
+        self.output = self.add_output('score out')
+        self.axis_distances_out = self.add_output('axis distances out')
+
+    def capture(self):
+        data = self.capture_in()
+        if type(data) is bool:
+            self.capturing = data
+        else:
+            self.capture_once = True
+
+    def execute(self):
+        if self.capturing:
+            self.target_pose = self.pose_in().copy()
+            self.target_pose = self.target_pose / np.linalg.norm(self.target_pose, axis=1, keepdims=True)
+        elif self.capture_once:
+            self.target_pose = self.pose_in().copy()
+            self.target_pose = self.target_pose / np.linalg.norm(self.target_pose, axis=1, keepdims=True)
+            self.capture_once = False
+        else:
+            pose = self.pose_in()
+            pose = pose / np.linalg.norm(pose, axis=1, keepdims=True)
+            distances = np.zeros(pose.shape[0])
+            for index, q in enumerate(pose):
+                diff = np.dot(self.target_pose[index], q)
+                if diff > 1:
+                    diff = 1
+                if diff < -1:
+                    diff = -1
+                distances[index] = math.acos(2 * diff * diff - 1)
+            distance = np.sum(distances)
+            self.axis_distances_out.send(distances)
+            self.output.send(distance)
+
+
+class AlternateMoCapGLBody(MoCapNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = AlternateMoCapGLBody(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('pose in', triggers_execution=True)
+        self.gl_chain_input = self.add_input('gl chain', triggers_execution=True)
+        self.shape_input = self.add_input('shape', widget_type='combo', default_value='humanoid', callback=self.change_shape)
+        self.fragment_input = self.add_input('fragment', widget_type='checkbox', default_value=False, callback=self.fragment)
+        self.shape_input.widget.combo_items = ['linear', 'humanoid', 'medusa', 'bird', 'branch', 'cocoon', 'moth']
+        self.gl_chain_output = self.add_output('gl_chain')
+
+        self.skeleton_only = self.add_option('skeleton_only', widget_type='checkbox', default_value=False)
+        self.multi_body_translation_x = self.add_option('multi offset x', widget_type='drag_float', default_value=0.0)
+        self.multi_body_translation_y = self.add_option('multi offset y', widget_type='drag_float', default_value=0.0)
+        self.multi_body_translation_z = self.add_option('multi offset z', widget_type='drag_float', default_value=0.0)
+        self.body = AlternateBodyData()
+        self.body.node = self
+
+    def change_shape(self):
+        self.body.shape = self.shape_input()
+        self.body.connect_limbs()
+
+    def fragment(self):
+        if self.fragment_input():
+            self.new_fragmentation = True
+            for limb in self.body.limbs:
+                if limb is not None:
+                    off = np.random.random(3) * .5
+                    limb.offset = off
+        else:
+            for limb in self.body.limbs:
+                if limb is not None:
+                    off = np.zeros(3)
+                    limb.offset = off
+
+    def joint_callback(self, index):
+        pass
+    #
+    def process_commands(self, command):
+        if type(command[0]) == str:
+            print(command)
+            if command[0] in BodyDataBase.smpl_limb_to_joint_dict:
+                target_joint = BodyDataBase.smpl_limb_to_joint_dict[command[0]]
+                if target_joint in joint_name_to_index:
+                    target_joint_index = joint_name_to_index[target_joint]
+                    if len(command) >= 2:
+                        # self.body.limbs[target_joint_index].dims[2] = any_to_float(command[1])
+                        self.body.joints[target_joint_index].length = any_to_float(command[3])
+                    if len(command) == 3:
+                        self.body.limbs[target_joint_index].dims[1] = any_to_float(command[2])
+                        self.body.limbs[target_joint_index].dims[0] = any_to_float(command[2])
+                        #self.body.joints[target_joint_index].thickness = (any_to_float(command[2]), any_to_float(command[2]))
+
+                    if len(command) == 4:
+                        self.body.limbs[target_joint_index].dims[0] = any_to_float(command[3])
+                        # self.body.joints[target_joint_index].thickness = (any_to_float(command[2]), any_to_float(command[2]))
+
+                    self.body.joints[target_joint_index].set_matrix()
+                    self.body.limbs[target_joint_index] = None
+                    # self.body.limbs[target_joint_index].new_shape = True
+                # self.body.joints[target_joint_index].set_mass()
+
+
+    def execute(self):
+        if self.input.fresh_input:
+            incoming = self.input()
+            t = type(incoming)
+            if t == torch.Tensor:
+                incoming = tensor_to_array(incoming)
+                t = np.ndarray
+            if t == np.ndarray:
+                if len(incoming.shape) == 1:
+                    if incoming.shape[0] == 80:
+                        self.body.update_quats(np.reshape(incoming, [20, 4]))
+                elif len(incoming.shape) == 2:
+                    if incoming.shape[0] == 20:
+                        if incoming.shape[1] == 4:
+                            self.body.update_quats(incoming)
+                    elif incoming.shape[0] == 80:
+                        count = incoming.shape[1]
+                        self.body.update_quats(np.reshape(incoming, [20, 4, count]))
+                elif len(incoming.shape) == 3:
+                    if incoming.shape[1] == 20:
+                        if incoming.shape[2] == 4:
+                            self.body.update_quats(incoming)
+
+            elif t == list:
+                self.process_commands(incoming)
+
+        elif self.gl_chain_input.fresh_input:
+            translation = [self.multi_body_translation_x(), self.multi_body_translation_y(), self.multi_body_translation_z()]
+            self.body.multi_body_translation = translation
+            incoming = self.gl_chain_input()
+            t = type(incoming)
+            if t == str and incoming == 'draw':
+                self.body.draw(False, self.skeleton_only())
+
+
+
+
 

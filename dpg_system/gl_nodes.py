@@ -742,7 +742,7 @@ class GLSphereNode(GLQuadricNode):
         stacks = self.arg_as_int(index =2, default_value=32)
 
         self.gl_input = self.add_input('gl chain in', triggers_execution=True)
-        self.size = self.add_property('size', widget_type='drag_float', default_value=size)
+        self.size = self.add_input('size', widget_type='drag_float', default_value=size)
         self.gl_output = self.add_output('gl chain out')
 
         self.slices = self.add_option('slices', widget_type='drag_int', default_value=slices)
