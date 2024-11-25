@@ -2286,6 +2286,8 @@ class GLNumpyLines(GLNode):
         self.color_index = self.add_input('color index', widget_type='input_int', default_value=0)
         self.color_control = self.add_input('color_control', widget_type='color_picker', default_value=[1.0, 1.0, 1.0, 1.0], callback=self.color_changed)
         self.line_array = None
+        self.new_array = False
+        self.motion_array = None
 
     def custom_create(self, from_file):
         dpg.configure_item(self.color_control.widget.uuid, no_alpha=True)
@@ -2316,10 +2318,20 @@ class GLNumpyLines(GLNode):
             glEnable(GL_LIGHTING)
         if self.was_depth:
             glEnable(GL_DEPTH_TEST)
+
     def execute(self):
         if self.active_input == self.array_input:
             incoming = any_to_array(self.array_input())
             self.line_array = incoming.copy()
+
+            accent_scale = self.accent_scale()
+            if self.motion_accent():
+                if self.previous_array is not None:
+                    self.motion_array = np.linalg.norm(self.line_array - self.previous_array, axis=2) * accent_scale
+                self.previous_array = self.line_array.copy()
+            else:
+                self.previous_array = None
+                self.motion_array = None
         elif self.active_input == self.gl_input:
             super().execute()
 
@@ -2337,14 +2349,7 @@ class GLNumpyLines(GLNode):
                     if 0 <= select_int < number_of_points:
                         selected[select_int] = True
             accent_scale = self.accent_scale()
-            motion_array = None
-            if self.motion_accent():
-                if self.previous_array is not None:
-                    motion_array = np.linalg.norm(self.line_array - self.previous_array, axis=2) * accent_scale
-                self.previous_array = self.line_array.copy()
-            else:
-                self.previous_array = None
-                motion_array = None
+
             gl.glLineWidth(self.line_width())
             for i in range(number_of_lines):
                 if selected[i]:
@@ -2352,8 +2357,8 @@ class GLNumpyLines(GLNode):
                     gl.glBegin(GL_LINE_STRIP)
                     for j in range(number_of_points):
                         alpha = 1.0
-                        if self.motion_accent() and motion_array is not None:
-                            alpha = motion_array[j, i]
+                        if self.motion_accent() and self.motion_array is not None:
+                            alpha = self.motion_array[j, i]
                             # if self.previous_array is not None:
                             #     motion = np.linalg.norm(self.line_array - self.previous_array) * accent_scale
                             # if j > 0:
