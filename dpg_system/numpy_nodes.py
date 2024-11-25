@@ -9,6 +9,7 @@ import numpy as np
 def register_numpy_nodes():
     Node.app.register_node('np.linalg.norm', NumpyLinalgNormNode.factory)
     Node.app.register_node('euclidean_distance', NumpyLinalgNormNode.factory)
+    Node.app.register_node('np.distance_from_target', NumpyDistanceFromTargetNode.factory)
     Node.app.register_node('np.linalg.det', NumpyUnaryLinearAlgebraNode.factory)
     Node.app.register_node('np.linalg.matrix_rank', NumpyUnaryLinearAlgebraNode.factory)
     Node.app.register_node('flatten', FlattenMatrixNode.factory)
@@ -935,6 +936,34 @@ class NumpyUnaryLinearAlgebraNode(Node):
         if self.input.fresh_input:
             data = any_to_array(self.input())
             self.output.send(self.op(data))
+
+
+class NumpyDistanceFromTargetNode(NumpyNodeWithAxisNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyDistanceFromTargetNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('input', triggers_execution=True)
+        self.set_target = self.add_input('set target', widget_type='button', callback=self.set_the_target)
+        self.target = None
+        self.add_dim_option()
+        self.output = self.add_output('norm')
+
+    def set_the_target(self):
+        target = self.input()
+        if target is not None:
+            self.target = any_to_array(target)
+            self.execute()
+
+    def execute(self):
+        input_value = any_to_array(self.input())
+        if self.target is not None:
+            diff = input_value - self.target
+            if self.adjust_dim_option(input_value):
+                self.output.send(np.linalg.norm(diff, axis=self.axis))
 
 
 class NumpyLinalgNormNode(NumpyNodeWithAxisNode):
