@@ -1502,11 +1502,11 @@ class AlternateBodyData(BodyDataBase):
             if index in [t_Body, t_PelvisAnchor, t_Reference, t_Tracker0, t_Tracker1, t_Tracker2,
                                     t_Tracker3]:
                 joint.ref_vector = np.array([1.0, 0.0, 0.0])
-            elif index == t_LeftHip:
+            elif index == t_LeftShoulderBladeBase:
                 joint.set_bone_dim((0.075, 0.0, 0.075))  # bone_dim is key!!!!
                 joint.ref_vector = np.array([0.0, 0.0, 1.0])
                 joint.set_thickness([.01, .1])
-            elif index == t_RightHip:
+            elif index == t_RightShoulderBladeBase:
                 joint.set_bone_dim((-0.075, 0.0, 0.075))
                 joint.ref_vector = np.array([0.0, 0.0, 1.0])
                 joint.set_thickness([.01, .1])
@@ -1516,7 +1516,7 @@ class AlternateBodyData(BodyDataBase):
             elif index in [t_MidVertebrae, t_UpperVertebrae]:
                 joint.set_bone_dim((0.0, 0.2, 0.0))
                 joint.ref_vector = np.array([0.0, 0.0, 1.0])
-            elif index in [t_RightKnee, t_RightAnkle, t_RightWrist, t_RightElbow, t_RightShoulder, t_RightShoulderBladeBase]:
+            elif index in [t_RightKnee, t_RightAnkle, t_RightWrist, t_RightElbow, t_RightShoulder, t_RightHip]:
                 joint.set_bone_dim((-0.075, 0.0, 0.0))
                 joint.ref_vector = np.array([0.0, 0.0, 1.0])
                 joint.set_thickness([.01, .1])
@@ -1537,21 +1537,22 @@ class AlternateBodyData(BodyDataBase):
         self.limb_vertices[t_SpinePelvis] = self.define_limb_shape(1.0, .7, .1)
 
 
-        self.joints[t_PelvisAnchor].immed_children = [t_LeftHip, t_RightHip, t_SpinePelvis, t_MidVertebrae]
+        self.joints[t_PelvisAnchor].immed_children = [t_LeftShoulderBladeBase, t_RightShoulderBladeBase, t_SpinePelvis, t_MidVertebrae]
 
+        self.joints[t_LeftShoulderBladeBase].immed_children = [t_LeftShoulder]
+        self.joints[t_LeftShoulder].immed_children = [t_LeftElbow]
+        self.joints[t_LeftElbow].immed_children = [t_LeftWrist]
+        self.joints[t_LeftWrist].immed_children = [t_LeftHip]
         self.joints[t_LeftHip].immed_children = [t_LeftKnee]
         self.joints[t_LeftKnee].immed_children = [t_LeftAnkle]
-        self.joints[t_LeftAnkle].immed_children = [t_LeftWrist]
-        self.joints[t_LeftWrist].immed_children = [t_LeftElbow]
-        self.joints[t_LeftElbow].immed_children = [t_LeftShoulder]
-        self.joints[t_LeftShoulder].immed_children = [t_LeftShoulderBladeBase]
 
+        self.joints[t_RightShoulderBladeBase].immed_children = [t_RightShoulder]
+        self.joints[t_RightShoulder].immed_children = [t_RightElbow]
+        self.joints[t_RightElbow].immed_children = [t_RightWrist]
+        self.joints[t_RightWrist].immed_children = [t_RightHip]
         self.joints[t_RightHip].immed_children = [t_RightKnee]
         self.joints[t_RightKnee].immed_children = [t_RightAnkle]
-        self.joints[t_RightAnkle].immed_children = [t_RightWrist]
-        self.joints[t_RightWrist].immed_children = [t_RightElbow]
-        self.joints[t_RightElbow].immed_children = [t_RightShoulder]
-        self.joints[t_RightShoulder].immed_children = [t_RightShoulderBladeBase]
+
 
         # self.joints[t_SpinePelvis].immed_children = [t_LowerVertebrae]
         # self.joints[t_MidVertebrae].immed_children = [t_UpperVertebrae]
