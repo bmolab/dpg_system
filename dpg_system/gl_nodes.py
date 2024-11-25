@@ -2341,6 +2341,10 @@ class GLNumpyLines(GLNode):
             if self.motion_accent():
                 if self.previous_array is not None:
                     motion_array = np.linalg.norm(self.line_array - self.previous_array, axis=2) * accent_scale
+                self.previous_array = self.line_array.copy()
+            else:
+                self.previous_array = None
+                motion_array = None
             gl.glLineWidth(self.line_width())
             for i in range(number_of_lines):
                 if selected[i]:
@@ -2366,8 +2370,5 @@ class GLNumpyLines(GLNode):
                         gl.glColor4f(color[0], color[1], color[2], alpha)
                         gl.glVertex(self.line_array[j, i])
                     gl.glEnd()
-            if self.motion_accent():
-                self.previous_array = self.line_array.copy()
-            else:
-                self.previous_array = None
+
 
