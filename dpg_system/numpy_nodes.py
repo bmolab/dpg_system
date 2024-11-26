@@ -1035,6 +1035,18 @@ class NumpyProximityTriggerNode(NumpyNodeWithAxisNode):
             self.target = any_to_array(target)
             self.execute()
 
+    def save_custom(self, container):
+        if self.target is not None:
+            container['target_x'] = float(self.target[0])
+            container['target_y'] = float(self.target[1])
+            container['target_z'] = float(self.target[2])
+    def load_custom(self, container):
+        x = float(container['target_x'])
+        y = float(container['target_y'])
+        z = float(container['target_z'])
+        self.target = np.array([x, y, z])
+
+
     def execute(self):
         if self.arm_input():
             input_value = any_to_array(self.input())
