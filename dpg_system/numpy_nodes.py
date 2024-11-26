@@ -10,6 +10,9 @@ def register_numpy_nodes():
     Node.app.register_node('np.linalg.norm', NumpyLinalgNormNode.factory)
     Node.app.register_node('euclidean_distance', NumpyLinalgNormNode.factory)
     Node.app.register_node('np.distance_from_target', NumpyDistanceFromTargetNode.factory)
+    Node.app.register_node('np.proximity_to_target', NumpyProximityToTargetNode.factory)
+    Node.app.register_node('proximity_trigger', NumpyProximityTriggerNode.factory)
+
     Node.app.register_node('np.linalg.det', NumpyUnaryLinearAlgebraNode.factory)
     Node.app.register_node('np.linalg.matrix_rank', NumpyUnaryLinearAlgebraNode.factory)
     Node.app.register_node('flatten', FlattenMatrixNode.factory)
@@ -964,6 +967,86 @@ class NumpyDistanceFromTargetNode(NumpyNodeWithAxisNode):
             diff = input_value - self.target
             if self.adjust_dim_option(input_value):
                 self.output.send(np.linalg.norm(diff, axis=self.axis))
+
+
+class NumpyProximityToTargetNode(NumpyNodeWithAxisNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyProximityToTargetNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('input', triggers_execution=True)
+        self.set_target = self.add_input('set target', widget_type='button', callback=self.set_the_target)
+        self.threshold = self.add_property('threshold', widget_type='drag_float', min=0.001, default_value=.5)
+        self.target = None
+        self.add_dim_option()
+        self.output = self.add_output('norm')
+
+    def set_the_target(self):
+        target = self.input()
+        if target is not None:
+            self.target = any_to_array(target)
+            self.execute()
+
+    def execute(self):
+        input_value = any_to_array(self.input())
+        if self.target is not None:
+            diff = input_value - self.target
+            if self.adjust_dim_option(input_value):
+                distance = np.linalg.norm(diff, axis=self.axis)
+                proximity = (self.threshold() - distance) / self.threshold()
+                if proximity < 0:
+                    proximity = 0
+                self.output.send(proximity)
+
+
+class NumpyProximityTriggerNode(NumpyNodeWithAxisNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyProximityTriggerNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('input', triggers_execution=True)
+        self.arm_input = self.add_input('arm', widget_type='checkbox', default_value=False)
+        self.reset_count_input = self.add_input('reset_count', widget_type='button', callback=self.reset_counter)
+        self.set_target = self.add_input('set target', widget_type='button', callback=self.set_the_target)
+        self.threshold = self.add_property('threshold', widget_type='drag_float', min=0.001, default_value=.5)
+        self.target = None
+        self.active = False
+        self.counter = 0
+        self.add_dim_option()
+        self.output = self.add_output('state')
+        self.count_out = self.add_output('count')
+
+    def reset_counter(self):
+        self.counter = 0
+
+    def set_the_target(self):
+        target = self.input()
+        if target is not None:
+            self.target = any_to_array(target)
+            self.execute()
+
+    def execute(self):
+        if self.arm_input():
+            input_value = any_to_array(self.input())
+            if self.target is not None:
+                diff = input_value - self.target
+                if self.adjust_dim_option(input_value):
+                    distance = np.linalg.norm(diff, axis=self.axis)
+                    if distance < self.threshold() and not self.active:
+                        self.active = True
+                        self.counter += 1
+                        self.count_out.send(self.counter)
+                        self.output.send(self.active)
+                    elif distance >= self.threshold() and self.active:
+                        self.active = False
+                        self.output.send(self.active)
+
 
 
 class NumpyLinalgNormNode(NumpyNodeWithAxisNode):

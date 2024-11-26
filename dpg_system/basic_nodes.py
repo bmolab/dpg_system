@@ -46,6 +46,7 @@ def register_basic_nodes():
     Node.app.register_node("date_time", DateTimeNode.factory)
 
     Node.app.register_node("decode", SelectNode.factory)
+    Node.app.register_node("decode_message", DecodeToNode.factory)
     Node.app.register_node("t", TriggerNode.factory)
     Node.app.register_node('var', VariableNode.factory)
     Node.app.register_node('send', ConduitSendNode.factory)
@@ -1410,6 +1411,92 @@ class TriggerNode(Node):
                 elif trig_mode == 6:
                     self.outputs[j].set_value('bang')
             self.send_all()
+
+
+class DecodeToNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = DecodeToNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.trigger_count = 0
+        if args is not None:
+            self.trigger_count = len(args)
+        self.triggers = []
+        self.trigger_options = []
+        self.trigger_pass = []
+        self.force_trigger = False
+        self.target_time = 0
+        self.flash_duration = .100
+
+        self.input = self.add_input("decode", widget_type='drag_int', triggers_execution=True, callback=self.call_execution)
+
+        for i in range(self.trigger_count):
+            self.add_output(any_to_string(args[i]))
+        self.combined_output = self.add_output('combined')
+        for i in range(self.trigger_count):
+            val, t = decode_arg(args, i)
+            self.triggers.append(val)
+        for i in range(self.trigger_count):
+            an_option = self.add_option('trigger ' + str(i), widget_type='text_input', default_value=args[i], callback=self.triggers_changed)
+            self.trigger_options.append(an_option)
+            self.trigger_pass.append(0)
+
+        self.new_triggers = True
+
+        with dpg.theme() as self.active_theme:
+            with dpg.theme_component(dpg.mvAll):
+                dpg.add_theme_color(dpg.mvThemeCol_Button, (255, 255, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, (255, 255, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, (255, 255, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
+        with dpg.theme() as self.inactive_theme:
+            with dpg.theme_component(dpg.mvAll):
+                dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
+
+    def triggers_changed(self):
+        self.new_triggers = True
+        self.update_triggers()
+
+    def update_triggers(self):
+        new_triggers = []
+        for i in range(self.trigger_count):
+            new_triggers.append(self.trigger_options[i]())
+        for i in range(self.trigger_count):
+            self.outputs[i].label = new_triggers[i]
+            dpg.set_value(self.outputs[i].label_uuid, new_triggers[i])
+            # dpg.set_item_label(self.outputs[i].uuid, label=new_triggers[i])
+            sel, t = decode_arg(new_triggers, i)
+            self.triggers[i] = sel
+
+    def call_execution(self, value=0):
+        self.force_trigger = True
+        self.target_time = time.time() + self.flash_duration
+        dpg.bind_item_theme(self.input.widget.uuid, self.active_theme)
+        self.add_frame_task()
+        self.execute()
+
+    def frame_task(self):
+        now = time.time()
+        if now >= self.target_time:
+            dpg.bind_item_theme(self.input.widget.uuid, self.inactive_theme)
+            self.remove_frame_tasks()
+
+    def execute(self):
+        if self.new_triggers:
+            self.update_triggers()
+            self.new_triggers = False
+
+        if self.input.fresh_input or self.force_trigger:
+            self.force_trigger = False
+            in_data = any_to_int(self.input())
+            if 0 <= in_data < self.trigger_count:
+                self.outputs[in_data].send(self.triggers[in_data])
+                self.combined_output.send(self.triggers[in_data])
+
 
 
 class CombineNode(Node):

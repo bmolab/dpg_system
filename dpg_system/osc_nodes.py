@@ -31,6 +31,7 @@ def register_osc_nodes():
     Node.app.register_node('osc_toggle', OSCToggleNode.factory)
     Node.app.register_node('osc_menu', OSCMenuNode.factory)
     Node.app.register_node('osc_radio', OSCRadioButtonsNode.factory)
+    Node.app.register_node('osc_cue', OSCCueNode.factory)
 
 
 class OSCBase:
@@ -267,11 +268,12 @@ class OSCTarget(OSCBase):
             self.osc_manager.register_target(self)
             self.osc_manager.connect_new_target_to_send_nodes(self)
 
-    def send_message(self, address, args_):
+    def send_message(self, address, args_=None):
         if self.client is not None:
-            t = type(args_)
-            if t not in [str]:
-                args_ = any_to_list(args_)
+            if args_ is not None:
+                t = type(args_)
+                if t not in [str]:
+                    args_ = any_to_list(args_)
             try:
                 self.client.send_message(address, args_)
             except Exception as e:
@@ -951,6 +953,41 @@ class OSCSendNode(OSCSender, Node):
             if data is not None:
                 if self.target and self.address != '':
                     self.target.send_message(self.address, data)
+
+
+class OSCCueNode(OSCSender, Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = OSCCueNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_int_input('cue # to send', triggers_execution=True)
+        self.target_name_property = self.add_input('target name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
+
+    def custom_create(self, from_file):
+        if self.name != '':
+            self.find_target_node(self.name)
+
+    def find_target_node(self, name):
+        if self.osc_manager is not None:
+            self.target = self.osc_manager.find_target(name)
+            if self.target is not None:
+                self.osc_manager.connect_send_node_to_target(self, self.target)
+                return True
+            else:
+                self.osc_manager.connect_send_node_to_target(self, None)
+        return False
+
+    def cleanup(self):
+        super().cleanup()
+
+    def execute(self):
+        cue = self.input()
+        if self.target:
+            self.target.send_message('/cue/' + str(cue) + '/go')
 
 
 class OSCRouteNode(OSCBase, Node):
