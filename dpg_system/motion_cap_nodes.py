@@ -1163,18 +1163,41 @@ class AlternateMoCapGLBody(MoCapNode):
         self.body.shape = self.shape_input()
         self.body.connect_limbs()
 
+    def offset_all_children(self, index, offset):
+        joint = self.body.joints[index]
+        for sub_index in joint.immed_children:
+            self.body.limbs[sub_index].offset = offset
+            self.offset_all_children(sub_index, offset)
+
+
     def fragment(self):
-        if self.fragment_input():
-            self.new_fragmentation = True
-            for limb in self.body.limbs:
-                if limb is not None:
-                    off = np.random.random(3) * .5
-                    limb.offset = off
+        fragmenter = self.fragment_input()
+        if type(fragmenter) is str:
+            if fragmenter in self.joint_map:
+                index = self.joint_map[fragmenter]
+                self.body.limbs[index].offset = np.random.random(3) * .5
+
+        elif type(fragmenter) is list:
+            if type(fragmenter[0]) is str:
+                fragmenter = fragmenter[0]
+                if fragmenter in self.joint_map:
+                    index = self.joint_map[fragmenter]
+                    offset = np.random.random(3) * .5
+                    self.body.limbs[index].offset = offset
+                    self.offset_all_children(index, offset)
+
         else:
-            for limb in self.body.limbs:
-                if limb is not None:
-                    off = np.zeros(3)
-                    limb.offset = off
+            if self.fragment_input():
+                self.new_fragmentation = True
+                for limb in self.body.limbs:
+                    if limb is not None:
+                        off = np.random.random(3) * .5
+                        limb.offset = off
+            else:
+                for limb in self.body.limbs:
+                    if limb is not None:
+                        off = np.zeros(3)
+                        limb.offset = off
 
     def joint_callback(self, index):
         pass
