@@ -1011,7 +1011,7 @@ class NumpyProximityTriggerNode(NumpyNodeWithAxisNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.input = self.add_input('input', triggers_execution=True)
-        self.arm_input = self.add_input('arm', widget_type='checkbox', default_value=False)
+        self.arm_input = self.add_input('arm', widget_type='checkbox', default_value=False, callback=self.arm)
         self.reset_count_input = self.add_input('reset_count', widget_type='button', callback=self.reset_counter)
         self.set_target = self.add_input('set target', widget_type='button', callback=self.set_the_target)
         self.threshold = self.add_property('threshold', widget_type='drag_float', min=0.001, default_value=.5)
@@ -1021,8 +1021,12 @@ class NumpyProximityTriggerNode(NumpyNodeWithAxisNode):
         self.add_dim_option()
         self.output = self.add_output('state')
         self.count_out = self.add_output('count')
+        self.prox_out = self.add_output('proximity')
 
     def reset_counter(self):
+        self.counter = 0
+
+    def arm(self):
         self.counter = 0
 
     def set_the_target(self):
@@ -1038,6 +1042,7 @@ class NumpyProximityTriggerNode(NumpyNodeWithAxisNode):
                 diff = input_value - self.target
                 if self.adjust_dim_option(input_value):
                     distance = np.linalg.norm(diff, axis=self.axis)
+                    self.prox_out.send(distance)
                     if distance < self.threshold() and not self.active:
                         self.active = True
                         self.counter += 1
