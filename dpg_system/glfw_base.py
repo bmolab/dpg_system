@@ -15,7 +15,7 @@ class MyGLContext:
     def poll_glfw_events():
         glfw.poll_events()
 
-    def __init__(self, name='untitled', width=640, height=480):
+    def __init__(self, name='untitled', width=640, height=480, samples=1):
         if not self.inited:
             # print('about to init glfw')
             if not glfw.init():
@@ -39,6 +39,8 @@ class MyGLContext:
         # print('about to create window')
 
 #        gl.glutInitDisplayMode(glfw.GLUT_RGB | glfw.GLUT_DOUBLE | glfw.GLUT_DEPTH)
+        if samples != 1 and samples < 8:
+            glfw.window_hint(glfw.SAMPLES, samples)
         self.window = glfw.create_window(width, height, name, None, None)
         if self.window:
             # print('window created')
@@ -72,10 +74,10 @@ class MyGLContext:
     def prepare_draw(self):
         if self.window:
             glfw.make_context_current(self.window)
-            gl.glClearColor(0, 0, 0, 1)
+            gl.glClearColor(self.clear_color[0], self.clear_color[1], self.clear_color[2], self.clear_color[3])
             gl.glClear(gl.GL_COLOR_BUFFER_BIT)
             gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
-            gl.glColor4fv(self.clear_color)
+            # gl.glColor4fv(self.clear_color)
 
     #            self.update_fov()
 

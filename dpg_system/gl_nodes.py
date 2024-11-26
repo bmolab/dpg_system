@@ -48,25 +48,36 @@ class GLContextCommandParser(GLCommandParser):
         self.dict['perspective'] = self.set_perspective
         self.dict['size'] = self.set_size
         self.dict['position'] = self.set_position
+        self.dict['clear_color'] = self.set_clear_color
 
-    def set_size(self, context, args):
+    def set_clear_color(self, me, args):
+        alpha = 1.0
+        if args is not None and len(args) > 2:
+            red = any_to_float(args[0])
+            green = any_to_float(args[1])
+            blue = any_to_float(args[2])
+            if len(args) > 3:
+                alpha = any_to_float(args[3])
+            me.context.clear_color = [red, green, blue, alpha]
+
+    def set_size(self, me, args):
         if args is not None and len(args) > 0:
             if len(args) > 1:
                 width = any_to_int(args[0])
                 height = any_to_int(args[1])
-                glfw.set_window_size(context.window, width, height)
+                glfw.set_window_size(me.context.window, width, height)
 
-    def set_position(self, context, args):
+    def set_position(self, me, args):
         if args is not None and len(args) > 0:
             if len(args) > 1:
                 x = any_to_int(args[0])
                 y = any_to_int(args[1])
-                glfw.set_window_pos(context.window, x, y)
+                glfw.set_window_pos(me.context.window, x, y)
 
-    def set_frustum(self, context, args):  # context must be established
+    def set_frustum(self, me, args):  # context must be established
         hold_context = glfw.get_current_context()
         if args is not None and len(args) > 0:
-            glfw.make_context_current(context.window)
+            glfw.make_context_current(me.context.window)
             near = .1
             far = 1000
             focal_length = 2.0
@@ -76,8 +87,8 @@ class GLContextCommandParser(GLCommandParser):
                 near = any_to_float(args[1])
             if len(args) > 2:
                 far = any_to_float(args[2])
-            width = context.width
-            height = context.height
+            width = me.context.width
+            height = me.context.height
             height_over_width = float(height) / float(width)
             f = near / focal_length
             h = height_over_width * f
@@ -88,9 +99,9 @@ class GLContextCommandParser(GLCommandParser):
             gl.glMatrixMode(current_matrix_mode)
         glfw.make_context_current(hold_context)
 
-    def set_ortho(self, context, args):  # context must be established
+    def set_ortho(self, me, args):  # context must be established
         hold_context = glfw.get_current_context()
-        glfw.make_context_current(context.window)
+        glfw.make_context_current(me.context.window)
         if args is not None and len(args) > 3:
             near = .1
             far = 1000
@@ -112,10 +123,10 @@ class GLContextCommandParser(GLCommandParser):
             gl.glMatrixMode(current_matrix_mode)
         glfw.make_context_current(hold_context)
 
-    def set_perspective(self, context, args):  # context must be established
+    def set_perspective(self, me, args):  # context must be established
         hold_context = glfw.get_current_context()
-        glfw.make_context_current(context.window)
-        aspect = context.width / context.height
+        glfw.make_context_current(me.context.window)
+        aspect = me.context.width / me.context.height
         if args is not None and len(args) > 0:
             fov = 50.0
             near = 0.1
@@ -169,6 +180,7 @@ class GLContextNode(Node):
         self.title = 'untitled'
         self.width = 0
         self.height = 0
+        self.samples = 1
         self.ready = False
         self.fov = 60.0
         self.command_parser = GLContextCommandParser()
@@ -204,7 +216,10 @@ class GLContextNode(Node):
                 if self.width == 0:
                     self.width = val
                 else:
-                    self.height = val
+                    if self.height == 0:
+                        self.height = val
+                    else:
+                        self.samples = val
         if self.width == 0:
             self.width = 640
         if self.height == 0:
@@ -252,7 +267,7 @@ class GLContextNode(Node):
         self.ui_output.send(['key', key])
 
     def create_context(self):
-        self.context = MyGLContext(self.title, self.width, self.height)
+        self.context = MyGLContext(self.title, self.width, self.height, self.samples)
         self.context_list.append(self)
         self.context.node = self
         self.ready = True
@@ -272,7 +287,7 @@ class GLContextNode(Node):
             try:
                 if len(self.pending_commands) > 0:
                     for command in self.pending_commands:
-                        self.command_parser.perform(command[0], self.context, command[1:])
+                        self.command_parser.perform(command[0], self, command[1:])
             except:
                 self.pending_commands = []
             self.pending_commands = []
@@ -2288,6 +2303,7 @@ class GLNumpyLines(GLNode):
         self.line_array = None
         self.new_array = False
         self.motion_array = None
+        sample
 
     def custom_create(self, from_file):
         dpg.configure_item(self.color_control.widget.uuid, no_alpha=True)
