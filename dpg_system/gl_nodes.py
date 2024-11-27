@@ -2311,7 +2311,15 @@ class GLNumpyLines(GLNode):
 
     def color_changed(self):
         index = self.color_index()
-        if index >= len(self.colors):
+        color = self.color_control()
+        if index == -1:
+            for i in range(20):
+                self.colors[i][0] = color[0] / 255.0
+                self.colors[i][1] = color[1] / 255.0
+                self.colors[i][2] = color[2] / 255.0
+                self.colors[i][3] = 1.0
+            return
+        if 0 >= index >= len(self.colors):
             index = len(self.colors) - 1
         color = self.color_control()
         self.colors[index][0] = color[0] / 255.0
