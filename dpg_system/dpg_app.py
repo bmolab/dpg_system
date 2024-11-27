@@ -36,6 +36,7 @@ vive_tracker_active = True
 lighting_active = True
 translation_active = True
 layout_active = True
+digico_active = True
 
 # print('Options active:', end=' ')
 # with open('dpg_system_config.json', 'r') as f:
@@ -302,6 +303,15 @@ if layout_active:
     except ModuleNotFoundError:
         print('import layout failed')
         layout_active = False
+
+if digico_active:
+    try:
+        from dpg_system.digico_nodes import *
+        imported.append('digico_nodes.py')
+        print('imported digico')
+    except ModuleNotFoundError:
+        print('import digico failed')
+        digico_active = False
 
 # import additional node files in folder
 
@@ -1018,6 +1028,9 @@ class App:
 
         if layout_active and 'register_layout_nodes' in globals():
             register_layout_nodes()
+
+        if digico_active and 'register_digico_nodes' in globals():
+            register_digico_nodes()
 
     def get_variable_list(self):
         v_list = list(self.variables.keys())
