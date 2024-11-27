@@ -1014,7 +1014,9 @@ class NumpyProximityTriggerNode(NumpyNodeWithAxisNode):
         self.arm_input = self.add_input('arm', widget_type='checkbox', default_value=False, callback=self.arm)
         self.reset_count_input = self.add_input('reset_count', widget_type='button', callback=self.reset_counter)
         self.set_target = self.add_input('set target', widget_type='button', callback=self.set_the_target)
-        self.threshold = self.add_property('threshold', widget_type='drag_float', min=0.001, default_value=.5)
+        self.threshold = self.add_property('threshold', widget_type='drag_float', min=0.001, default_value=.3)
+        self.release_threshold = self.add_property('release_threshold', widget_type='drag_float', min=0.001, default_value=.5)
+
         self.target = None
         self.active = False
         self.counter = 0
@@ -1061,7 +1063,7 @@ class NumpyProximityTriggerNode(NumpyNodeWithAxisNode):
                         self.counter += 1
                         self.count_out.send(self.counter)
                         self.output.send(self.active)
-                    elif distance >= self.threshold() and self.active:
+                    elif distance >= self.release_threshold() and self.active:
                         self.active = False
                         self.output.send(self.active)
 
