@@ -39,6 +39,12 @@ class DigicoFaders(OSCReceiver, OSCSender, Node):
             self.find_target_node(self.name)
             self.find_source_node(self.name)
 
+    def get_addresses(self):
+        addresses = []
+        for index, fader in enumerate(self.faders):
+            addresses.append('/channel/' + str(index) + '/fader')
+        return addresses
+
     def cleanup(self):
         OSCSender.cleanup(self)
         OSCReceiver.cleanup(self)
@@ -51,18 +57,13 @@ class DigicoFaders(OSCReceiver, OSCSender, Node):
         if data is not None:
             if self.target and self.address != '':
                 self.target.send_message(address, data)
+    def receive(self, data, address):
+        data = any_to_list(data)
+        split_address = address.split('/')
+        if len(split_address) == 4:
+            if split_address[1] == 'channel':
+                if split_address[3] == 'fader':
+                    input = any_to_int(split_address[2])
+                    if input < len(self.faders):
+                        self.faders[input].receive_data(data)
 
-    # def receive(self, data):
-    #     t = type(data)
-    #     data = any_to_list(data)
-    #
-    #     if self.label not in ['osc_string', 'osc_message']:
-    #         if type(data[0]) == str:
-    #             if data[0][0] == '/':
-    #                 return
-    #     if self.label == 'osc_string':
-    #         data = any_to_string(data)
-    #         if self.space_replacement():
-    #             data = data.replace('_', ' ')
-    #     self.inputs[0].receive_data(data)
-    #     ValueNode.execute(self)

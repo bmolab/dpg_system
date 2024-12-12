@@ -393,7 +393,7 @@ class OSCSource(OSCBase):
 
     def relay_osc(self, address, args):
         if address in self.receive_nodes:
-            self.receive_nodes[address].receive(args)
+            self.receive_nodes[address].receive(args, address)
             return
         else:
             if '/' in address:
@@ -411,12 +411,20 @@ class OSCSource(OSCBase):
         pass
 
     def register_receive_node(self, receive_node):
-        self.receive_nodes[receive_node.address] = receive_node
+        addresses = receive_node.get_addresses()
+        if type(addresses) == list:
+            for address in addresses:
+                self.receive_nodes[address] = receive_node
+        elif type(addresses) == str:
+            self.receive_nodes[addresses] = receive_node
         receive_node.set_source(self)  # would match OSCTarget
 
     def unregister_receive_node(self, receive_node):
-        if receive_node.address in self.receive_nodes:
-            self.receive_nodes.pop(receive_node.address)
+        addresses = receive_node.get_addresses()
+        if type(addresses) == list:
+            for address in addresses:
+                if address in self.receive_nodes:
+                    self.receive_nodes.pop(address)
 
     def disconnect_from_receive_nodes(self):
         poppers = []
@@ -812,6 +820,10 @@ class OSCReceiver(OSCBase):
             if new_address != self.address:
                 self.osc_manager.receive_node_address_changed(self, new_address, self.source)
 
+    def get_addresses(self):
+        if self.source_address_property is not None:
+            return self.source_address_property()
+
     def set_source(self, source):
         self.source = source
 
@@ -848,7 +860,7 @@ class OSCReceiveNode(OSCReceiver, Node):
         if self.name != '':
             self.find_source_node(self.name)
 
-    def receive(self, data):
+    def receive(self, data, address):
         if self.output:
             self.output.send(list(data))
 
@@ -1112,7 +1124,7 @@ class OSCValueNode(OSCReceiver, OSCSender, ValueNode):
         OSCSender.cleanup(self)
         OSCReceiver.cleanup(self)
 
-    def receive(self, data):
+    def receive(self, data, address):
         t = type(data)
         data = any_to_list(data)
 
@@ -1199,7 +1211,7 @@ class OSCButtonNode(OSCReceiver, OSCSender, ButtonNode):
         OSCSender.cleanup(self)
         OSCReceiver.cleanup(self)
 
-    def receive(self, data):
+    def receive(self, data, address):
         data = any_to_list(data)
         if type(data[0]) == str:
             if data[0][0] == '/':
@@ -1247,7 +1259,7 @@ class OSCToggleNode(OSCReceiver, OSCSender, ToggleNode):
         OSCSender.cleanup(self)
         OSCReceiver.cleanup(self)
 
-    def receive(self, data):
+    def receive(self, data, address):
         data = any_to_list(data)
         if type(data[0]) == str:
             if data[0] == '/':
@@ -1295,7 +1307,7 @@ class OSCMenuNode(OSCReceiver, OSCSender, MenuNode):
         OSCSender.cleanup(self)
         OSCReceiver.cleanup(self)
 
-    def receive(self, data):
+    def receive(self, data, address):
         data = any_to_list(data)
         if type(data[0]) == str:
             if data[0][0] == '/':
@@ -1342,7 +1354,7 @@ class OSCRadioButtonsNode(OSCReceiver, OSCSender, RadioButtonsNode):
         OSCSender.cleanup(self)
         OSCReceiver.cleanup(self)
 
-    def receive(self, data):
+    def receive(self, data, address):
         data = any_to_list(data)
         if type(data[0]) == str:
             if data[0][0] == '/':

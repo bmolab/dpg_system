@@ -37,6 +37,7 @@ class TextLayoutNode(Node):
         self.input = self.add_input('input', triggers_execution=True)
         self.clear_button = self.add_input('clear', widget_type='button', callback=self.clear_layout)
         self.active_line = self.add_input('active_line', widget_type='input_int', default_value=17, callback=self.active_line_changed)
+        self.include_prompt = self.add_input('include prompt', widget_type='checkbox', default_value=True)
         self.image_output = self.add_output('layout')
 
         self.cmap2 = make_heatmap()
@@ -78,10 +79,11 @@ class TextLayoutNode(Node):
                         self.temp = any_to_float(data[1])
                         self.layout.temp = self.temp
                     elif data[0] == 'prompt':
-                        temp_temp = self.temp
-                        self.temp = 0.8
-                        self.add_text([data[1:]])
-                        self.temp = temp_temp
+                        if self.include_prompt():
+                            temp_temp = self.temp
+                            self.temp = 0.8
+                            self.add_text([data[1:]])
+                            self.temp = temp_temp
                     elif data[0] == 'streaming_prompt':
                         if not self.streaming_prompt_active:
                             self.streaming_prompt_active = True

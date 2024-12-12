@@ -2418,17 +2418,23 @@ class CollectionNode(Node):
                     while self.save_pointer in self.collection:
                         self.save_pointer += 1
                     index = self.save_pointer
-                data = data[1:]
                 if len(data) == 1:
-                    t = type(data[0])
-                    if t == list:
-                        self.collection[index] = data[0]
-                    elif t == tuple:
-                        self.collection[index] = list(data[0])
+                    if address in self.collection:
+                        self.output.send(self.collection[address])
+                    else:
+                        self.unmatched_output.send(data)
+                else:
+                    data = data[1:]
+                    if len(data) == 1:
+                        t = type(data[0])
+                        if t == list:
+                            self.collection[index] = data[0]
+                        elif t == tuple:
+                            self.collection[index] = list(data[0])
+                        else:
+                            self.collection[index] = data
                     else:
                         self.collection[index] = data
-                else:
-                    self.collection[index] = data
         elif self.active_input == self.store_input:
             data = self.store_input()
             # handled, do_output = self.check_for_messages(data)
@@ -2737,7 +2743,9 @@ class VariableNode(Node):
     def execute(self):
         if self.input.fresh_input:
             data = self.input()
-            if type(data) == str and data == 'bang':
+            if type(data) == list and len(data) == 1 and type(data[0]) == str and data[0] == 'bang':
+                data = self.variable()
+            elif type(data) == str and data == 'bang':
                 data = self.variable()
             else:
                 self.set_variable_value(data)
@@ -2926,9 +2934,9 @@ class WordReplaceNode(Node):
         if len(args) > 1:
             find = any_to_string(args[0])
             replace = any_to_string(args[1])
-        self.input = self.add_input('string in', triggers_execution=True)
-        self.find_input = self.add_input('find', widget_type='text_input', default_value=find)
-        self.replace_input = self.add_input('replace', widget_type='text_input', default_value=replace)
+        self.input = self.add_string_input('string in', triggers_execution=True)
+        self.find_input = self.add_string_input('find', widget_type='text_input', default_value=find)
+        self.replace_input = self.add_string_input('replace', widget_type='text_input', default_value=replace)
         self.output = self.add_output('string out')
 
     def execute(self):

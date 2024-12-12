@@ -101,7 +101,7 @@ class LLMLayout:
         # self.face.append(create_cairo_font_face_for_file("/usr/share/fonts/type1/gsfonts/c059013l.pfb", 0))  # New Century Schoolbook
 ### for MacOS: 
         else:
-            self.face.append(create_cairo_font_face_for_file("AppleSDGothicNeoH00-18.otf",
+            self.face.append(create_cairo_font_face_for_file("Inconsolata-g.otf",
                                                                  0))  # New Century Schoolbook
         # self.face.append(create_cairo_font_face_for_file("/Library/Fonts/RODE Noto Sans CJK SC R.otf", 0))  # utility
 
@@ -608,7 +608,7 @@ class CairoTextLayout:
         ### for MacOS:
         else:
             self.face.append(
-                    create_cairo_font_face_for_file("AppleSDGothicNeoUL00-14.otf",
+                    create_cairo_font_face_for_file("Inconsolata-g.otf",
                                                     0))  # utility
          # self.face.append(create_cairo_font_face_for_file("/Library/Fonts/RODE Noto Sans CJK SC R.otf", 0))  # utility
 

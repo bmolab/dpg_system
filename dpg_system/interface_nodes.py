@@ -1015,7 +1015,11 @@ class ValueNode(Node):
             t = type(in_data)
             if t == str:
                 if self.label != 'string':
-                    in_data, _, _ = string_to_hybrid_list(in_data)
+                    in_data, _, types = string_to_hybrid_list(in_data)
+                    # if len(in_data) == 1:
+                    #     in_data = in_data[0]
+                    #     t = type(in_data)
+                    # else:
                     t = list
                 else:
                     display_data = in_data

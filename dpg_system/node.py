@@ -201,12 +201,19 @@ class NodeListOutput(NodeOutput):
     def send(self, data=None):
         if data is not None:
             list_data = any_to_list(data)
-            super().send(list_data)
+            if len(list_data) == 1 and type(data) is str:
+                super().send(data)
+            else:
+                super().send(list_data)
         else:
             super().send()
+
     def set_value(self, data):
         list_data = any_to_list(data)
-        super().set_value(list_data)
+        if len(list_data) == 1 and type(data) is str:
+            super().set_value(data)
+        else:
+            super().set_value(list_data)
 
 class NodeStringOutput(NodeOutput):
     def __init__(self, label: str = "output", node=None, pos=None):
@@ -1021,6 +1028,8 @@ class NodeInput:
     def receive_data(self, data):
         if not self.node.check_for_messages(data):
             self.node.active_input = self
+            if type(data) == list and len(data) == 1 and type(data[0]) == str and data[0] == 'bang':
+                data = data[0]
             if type(data) == str and data == 'bang':
                 if self.bang_repeats_previous:
                     if self.widget:
@@ -2510,7 +2519,7 @@ class PlaceholderNode(Node):
                         new_node_args = ['float', new_node_args[0]]
                         found = True
                     elif t == str:
-                        new_node_args = ['message', new_node_args[0]]
+                        new_node_args = ['string', new_node_args[0]]
                         found = True
                     elif t == bool:
                         new_node_args = ['toggle', new_node_args[0]]
