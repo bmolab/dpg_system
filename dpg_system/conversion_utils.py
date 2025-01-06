@@ -441,6 +441,13 @@ def string_to_list(input_string):
         # else:
             substrings = input_string.split(' ')
             return substrings
+        if input_string[1] == '\'':
+            try:
+                substrings = re.findall(r'\'([^\']+)\'', input_string)
+                return substrings
+            except Exception as e:
+                pass
+
         arr_str = input_string.replace(" ]", "]").replace("][", "],[").replace(", ", ",").replace("  ", " ").replace(" ", ",").replace("\n", "").replace(",,", ",")
         try:
             substrings = ast.literal_eval(arr_str)
