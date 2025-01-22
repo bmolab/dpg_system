@@ -170,6 +170,9 @@ class CommentNode(Node):
         self.setup_theme()
         dpg.bind_item_theme(self.uuid, CommentNode.comment_theme)
 
+    def set_custom_visibility(self):
+        dpg.configure_item(self.uuid, label=self.comment_text)
+        dpg.bind_item_theme(self.uuid, CommentNode.comment_theme)
 
 class TickNode(Node):
     @staticmethod
