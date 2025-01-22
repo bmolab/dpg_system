@@ -2502,20 +2502,26 @@ class TextFileNode(Node):
         self.read_pointer = -1
 
         self.file_name = self.arg_as_string(default_value='')
-        self.text_input = self.add_string_input('text in', triggers_execution=True)
-        self.text_input.set_strip_returns(False)
+        self.dump_button = self.add_input('send', widget_type='button', triggers_execution=True)
+
+        self.text_editor = self.add_string_input('##text in', widget_type='text_editor', widget_width=500)
+
+        # self.text_input = self.add_string_input('text in', triggers_execution=True)
+        self.text_editor.set_strip_returns(False)
         self.append_text_input = self.add_string_input('append text in', triggers_execution=True)
         self.append_text_input.set_strip_returns(False)
-        self.dump_button = self.add_input('send', widget_type='button', triggers_execution=True)
+
         self.clear_button = self.add_input('clear', widget_type='button', callback=self.clear_text)
-        self.text_editor = self.add_property('###text', widget_type='text_editor', width=500)
         self.load_button = self.add_input('load', widget_type='button', callback=self.load_message)
         self.save_button = self.add_input('save', widget_type='button', callback=self.save_message)
-
-        self.file_name_property = self.add_property('name', widget_type='text_input', width=500, default_value=self.file_name)
         self.output = self.add_output("out")
+
+        self.file_name_property = self.add_option('name', widget_type='text_input', width=500, default_value=self.file_name)
         self.editor_width = self.add_option('editor width', widget_type='drag_int', default_value=500, callback=self.adjust_editor)
         self.editor_height = self.add_option('editor height', widget_type='drag_int', default_value=200, callback=self.adjust_editor)
+
+    def text_changed(self):
+        self.text_editor.set(self.text_input())
 
     def clear_text(self):
         self.text_contents = ''
@@ -2586,9 +2592,9 @@ class TextFileNode(Node):
             self.text_contents += data
             self.text_editor.set(self.text_contents)
         else:
-            data = any_to_string(self.text_input(), strip_returns=False)
+            data = any_to_string(self.text_editor(), strip_returns=False)
             self.text_contents = data
-            self.text_editor.set(self.text_contents)
+
 
 
 

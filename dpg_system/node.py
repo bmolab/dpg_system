@@ -1156,8 +1156,12 @@ class NodeStringInput(NodeInput):
         self.strip_returns = value
 
     def receive_data(self, data):
-        if type(data) is str and data == 'bang':
-            data = self._data
+        if type(data) == str and data == 'bang':
+            if self.bang_repeats_previous:
+                if self.widget:
+                    data = self.get_widget_value()
+                else:
+                    data = self._data
         string_data = any_to_string(data, strip_returns=self.strip_returns)
         super().receive_data(string_data)
 
