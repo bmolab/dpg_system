@@ -149,7 +149,10 @@ class MoCapTakeNode(MoCapNode):
     def load_from_load_path(self):
         path = self.load_path()
         if path != '':
-            self.load_take_from_npz(path)
+            try:
+                self.load_take_from_npz(path)
+            except Exception as e:
+                print('no take file found:', path)
 
     def load_take_from_npz(self, path):
         take_file = np.load(path)
