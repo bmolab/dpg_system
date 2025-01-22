@@ -960,7 +960,11 @@ class MotionShadowNode(MoCapNode):
         super().__init__(label, data, args)
 
         self.__mutex = threading.Lock()
-        self.client = shadow.Client("", 32076)
+        self.client = None
+        try:
+            self.client = shadow.Client("", 32076)
+        except Exception as e:
+            self.client = None
         self.origin = [0.0, 0.0, 0.0] * 4
         self.positions = np.ndarray((4, 37, 3))
         self.quaternions = np.ndarray((4, 37, 4))
@@ -978,8 +982,9 @@ class MotionShadowNode(MoCapNode):
             "<c/>" \
             "</configurable>"
 
-        if self.client.writeData(xml_definition):
-            print("Sent active channel definition to Configurable service")
+        if self.client:
+            if self.client.writeData(xml_definition):
+                print("Sent active channel definition to Configurable service")
 
         self.body_quat_1 = self.add_output('body 1 quaternions')
         self.body_pos_1 = self.add_output('body 1 positions')
@@ -1003,42 +1008,43 @@ class MotionShadowNode(MoCapNode):
             self.add_frame_task()
 
     def receive_data(self):
-        data = self.client.readData()
-        if data is not None:
-            if data.startswith(b'<?xml'):
-                xml_node_list = data
-                name_map = self.parse_name_map(xml_node_list)
+        if self.client:
+            data = self.client.readData()
+            if data is not None:
+                if data.startswith(b'<?xml'):
+                    xml_node_list = data
+                    name_map = self.parse_name_map(xml_node_list)
 
-                for it in name_map:
-                    thisName = name_map[it]
-                    for idx, name_index in enumerate(joint_index_to_name):
-                        shadow_name = joint_to_shadow_limb[joint_index_to_name[name_index]]
-                        if thisName[0] == shadow_name:
-                            self.jointMap[it] = [idx + 1, thisName[1]]
-                            break
-                self.joints_mapped = True
-                return
+                    for it in name_map:
+                        thisName = name_map[it]
+                        for idx, name_index in enumerate(joint_index_to_name):
+                            shadow_name = joint_to_shadow_limb[joint_index_to_name[name_index]]
+                            if thisName[0] == shadow_name:
+                                self.jointMap[it] = [idx + 1, thisName[1]]
+                                break
+                    self.joints_mapped = True
+                    return
 
-            configData = shadow.Format.Configurable(data)
-            if configData is not None:
-                lock = ScopedLock(self.__mutex)
-                for key in configData:
-                    master_key = self.jointMap[key][0] - 1          # keys start at 1
-                    body_index = self.jointMap[key][1]
+                configData = shadow.Format.Configurable(data)
+                if configData is not None:
+                    lock = ScopedLock(self.__mutex)
+                    for key in configData:
+                        master_key = self.jointMap[key][0] - 1          # keys start at 1
+                        body_index = self.jointMap[key][1]
 
-                    joint = joint_index_to_name[master_key]
+                        joint = joint_index_to_name[master_key]
 
-                    joint_data = configData[key]
+                        joint_data = configData[key]
 
-                    # configData[key] is [q0, q1, q2, q3, p0, p1, p2]
-                    if joint == 'Hips' and self.origin is None:
-                        self.origin[body_index] = [joint_data.value(5) / 100, joint_data.value(6) / 100, joint_data.value(7) / 100]
-                    self.positions[body_index, master_key] = [joint_data.value(5) / 100, joint_data.value(6) / 100, joint_data.value(7) / 100]
-                    self.quaternions[body_index, master_key] = [joint_data.value(0), joint_data.value(1), joint_data.value(2), joint_data.value(3)]
-                self.new_data = True
-                lock = None
-                if self.direct_out():
-                    self.frame_task()
+                        # configData[key] is [q0, q1, q2, q3, p0, p1, p2]
+                        if joint == 'Hips' and self.origin is None:
+                            self.origin[body_index] = [joint_data.value(5) / 100, joint_data.value(6) / 100, joint_data.value(7) / 100]
+                        self.positions[body_index, master_key] = [joint_data.value(5) / 100, joint_data.value(6) / 100, joint_data.value(7) / 100]
+                        self.quaternions[body_index, master_key] = [joint_data.value(0), joint_data.value(1), joint_data.value(2), joint_data.value(3)]
+                    self.new_data = True
+                    lock = None
+                    if self.direct_out():
+                        self.frame_task()
 
     def frame_task(self):
         if not self.new_data:
