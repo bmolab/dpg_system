@@ -81,6 +81,7 @@ def register_basic_nodes():
     Node.app.register_node('text_file', TextFileNode.factory)
     Node.app.register_node('text_editor', TextFileNode.factory)
     Node.app.register_node('clamp', ClampNode.factory)
+    Node.app.register_node('save', SaveNode.factory)
 
 
 # DeferNode -- delays received input until next frame
@@ -173,6 +174,21 @@ class CommentNode(Node):
     def set_custom_visibility(self):
         dpg.configure_item(self.uuid, label=self.comment_text)
         dpg.bind_item_theme(self.uuid, CommentNode.comment_theme)
+
+
+class SaveNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = SaveNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.add_input('save', widget_type='button', callback=self.save_call)
+
+    def save_call(self):
+        Node.app.save_nodes()
+
 
 class TickNode(Node):
     @staticmethod

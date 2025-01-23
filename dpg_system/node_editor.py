@@ -978,6 +978,7 @@ class NodeEditor:
         self.app.set_current_tab_title(self.patch_name)
         self.modified = False
 
+
     def uncontainerize(self, file_container, offset=None, create_origin=False):
         if offset is None:
             offset = [0, 0]

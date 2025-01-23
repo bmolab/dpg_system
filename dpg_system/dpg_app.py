@@ -461,10 +461,11 @@ def save_file_callback(sender, app_data):
     if app_data is not None and 'file_path_name' in app_data:
         save_path = app_data['file_path_name']
         if save_path != '':
-            Node.app.save_patch(save_path)
-            if Node.app.saving_to_lib:
-                Node.app.register_patcher(Node.app.patches_name)
-                Node.app.saving_to_lib = False
+            Node.app.save_internal(save_path)
+            # Node.app.save_patch(save_path)
+            # if Node.app.saving_to_lib:
+            #     Node.app.register_patcher(Node.app.patches_name)
+            #     Node.app.saving_to_lib = False
     else:
         print('no file chosen')
     if sender is not None:
@@ -771,7 +772,7 @@ class App:
                 self.patches_path = save_path
                 self.add_to_recent(self.patches_name, self.patches_path)
             else:
-                if os.path.exists(save_path):
+                if save_path is not None and save_path != '':
                     with open(save_path, 'w') as f:
                         self.patches_path = save_path
 
@@ -1795,6 +1796,12 @@ class App:
     def save_as_nodes(self):
         self.save('')
 
+    def save_internal(self, path):
+        self.save_patch(path)
+        if self.saving_to_lib:
+            self.register_patcher(Node.app.patches_name)
+            self.saving_to_lib = False
+
     def save_to_library(self):
         if not os.path.exists('dpg_system/patcher_library'):
             os.makedirs('dpg_system/patcher_library')
@@ -1805,10 +1812,9 @@ class App:
 
 
     def save_nodes(self):
-        # needs to save sub-patches
-        if self.get_current_editor() is not None:
+         if self.get_current_editor() is not None:
             if exists(self.get_current_editor().file_path):
-                self.get_current_editor().save(self.get_current_editor().file_path)
+                self.save_internal(self.get_current_editor().file_path)
             else:
                 self.save_as_nodes()
 
