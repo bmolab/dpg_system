@@ -1,15 +1,19 @@
 # Adapted code from in MoConVQ/Script/track_something.py from the MoConVQ paper https://moconvq.github.io/
  
 import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../MoConVQ/MoConVQCore'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../MoConVQ/ModifyODESrc'))
 from dpg_system.body_base import *
-from MoConVQ.MoConVQCore.Env.vclode_track_env import VCLODETrackEnv
-from MoConVQ.MoConVQCore.Model.MoConVQ import MoConVQ
-from MoConVQ.MoConVQCore.Utils.motion_dataset import MotionDataSet
+from MoConVQCore.Env.vclode_track_env import VCLODETrackEnv
+from MoConVQCore.Model.MoConVQ import MoConVQ
+from MoConVQCore.Utils.motion_dataset import MotionDataSet
+
 
 import argparse
-from MoConVQ.MoConVQCore.Utils.misc import *
-from MoConVQ.MoConVQCore.Utils import pytorch_utils as ptu
-from MoConVQ.MoConVQCore.Utils.motion_dataset import MotionDataSet, DPGMotionDataset
+from MoConVQCore.Utils.misc import *
+from MoConVQCore.Utils import pytorch_utils as ptu
+from MoConVQCore.Utils.motion_dataset import MotionDataSet, DPGMotionDataset
 import psutil
 import scipy
 
@@ -17,7 +21,7 @@ def register_moconvq_nodes():
     Node.app.register_node("moconvq_take", MoConVQSMPLTakeNode.factory)
     Node.app.register_node("moconvq_pose_to_joints", MoConVQPoseToJointsNode.factory)
     Node.app.register_node("moconvq_env", MoConVQEnvNode.factory)
-    Node.app.register_node("moconvq_storage", MoConVQEnvNode.factory)
+    Node.app.register_node("moconvq_storage", MoConVQStorageNode.factory)
 
 class MoConVQNode(Node):
     def __init__(self, label: str, data, args):
@@ -57,9 +61,8 @@ class MoConVQNode(Node):
             VCLODETrackEnv.seed(seed)
             MoConVQ.set_seed(seed)
             return args
-
         parser = argparse.ArgumentParser()
-        parser.add_argument('--config_file', default='./MoConVQ/Data/Parameters/bigdata.yml', help= 'a yaml file contains the training information')
+        parser.add_argument('--config_file', default='../MoConVQ/Data/Parameters/bigdata.yml', help= 'a yaml file contains the training information')
         parser.add_argument('--seed', type = int, default=0, help='seed for root process')
         parser.add_argument('--experiment_name', type = str, default="debug", help="")
         parser.add_argument('--load', default=False, action='store_true')
@@ -92,11 +95,11 @@ class MoConVQNode(Node):
         #build each content
         env = VCLODETrackEnv(**model_args)
         agent = MoConVQ(323, 12, 57, 120,env, training=False, **model_args)
-        agent.simple_load(r'./MoConVQ/moconvq_base.data', strict=True)
+        agent.simple_load(r'../MoConVQ/moconvq_base.data', strict=True)
         agent.eval()
         agent.posterior.limit = False
 
-        from MoConVQ.ModifyODESrc import VclSimuBackend
+        from ModifyODESrc import VclSimuBackend
         CharacterToBVH = VclSimuBackend.ODESim.CharacterTOBVH
         saver = CharacterToBVH(agent.env.sim_character, 120)
         saver.bvh_hierarchy_no_root()
@@ -253,7 +256,7 @@ class MoConVQSMPLTakeNode(MoConVQNode):
     def load_and_predict_smpl(self, in_path):
         env, agent, saver, args = MoConVQNode.create_env_and_agent()
         motion_data = MotionDataSet(20)
-        motion_data.add_bvh_with_character(in_path,  env.sim_character, flip=args['flip_bvh'], smpl_path="../MoConVQ/smpl/smplh/neutral/model.npz")
+        motion_data.add_bvh_with_character(in_path,  env.sim_character, flip=args['flip_bvh'], smpl_path="./data/smplh/neutral/model.npz")
         observation, info = agent.env.reset(0)
         return self.make_prediction(env, agent, observation, info, motion_data.observation, saver)
 
@@ -361,6 +364,7 @@ class MoConVQEnvNode(MoConVQNode):
         self.info = info
         self.pos_buf = []
         self.rot_buf = []
+        return obs, info
 
 class MoConVQStorageNode(MoConVQNode):
     @staticmethod
