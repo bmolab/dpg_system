@@ -216,6 +216,8 @@ if smpl_active:
     try:
         from dpg_system.SMPL_nodes import *
         imported.append('SMPL_nodes.py')
+        from dpg_system.moconvq_nodes import *
+        imported.append('MOCONVQ_nodes.py')
     except ModuleNotFoundError:
         smpl_active = False
 
@@ -985,6 +987,9 @@ class App:
         if 'register_smpl_nodes' in globals():
             register_smpl_nodes()
 
+        if 'register_moconvq_nodes' in globals():
+            register_moconvq_nodes()
+            
         if spacy_active and 'register_spacy_nodes' in globals():
             register_spacy_nodes()
 
