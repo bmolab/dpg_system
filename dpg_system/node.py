@@ -2334,48 +2334,91 @@ class PlaceholderNode(Node):
         dpg.configure_item(self.static_name.widget.uuid, show=False)
         dpg.configure_item(self.node_list_box.widget.uuid, show=False)
 
+    def calc_fuzz(self, test, node_name):
+        ratio = fuzz.partial_ratio(node_name.lower(), test.lower())
+        # partial match should be less important if size diff is big
+        full_ratio = fuzz.ratio(node_name.lower(), test.lower())
+
+        if ratio == 100:
+            test_len = len(test)
+            node_len = len(node_name)
+            if test_len > node_len:
+                if node_name[:node_len] != test[:node_len]:
+                    ratio = (full_ratio * 2 + ratio) / 3
+            else:
+                if node_name[:test_len] != test[:test_len]:
+                    ratio = (full_ratio * 2 + ratio) / 3
+        len_ratio = len(test) / len(node_name)
+
+        if len_ratio < 1:
+            len_ratio = pow(len_ratio, 4)
+        len_ratio = len_ratio * .5 + 0.5  # 0.25 - 0.75
+        final_ratio = (ratio * (1 - len_ratio) + full_ratio * len_ratio)
+        return final_ratio
+
     def fuzzy_score(self, test):
         scores = {}
         for index, node_name in enumerate(self.node_list):
-            ratio = fuzz.partial_ratio(node_name.lower(), test.lower())
-            # partial match should be less important if size diff is big
-            full_ratio = fuzz.ratio(node_name.lower(), test.lower())
-            len_ratio = len(test) / len(node_name)
-            if len_ratio > 1:
-                len_ratio = 1 / len_ratio
-            len_ratio = len_ratio * .5 + 0.5  # 0.25 - 0.75
-            ratio = (ratio * (1 - len_ratio) + full_ratio * len_ratio)
-            scores[node_name] = ratio
+            final_ratio = self.calc_fuzz(test, node_name)
+            # ratio = fuzz.partial_ratio(node_name.lower(), test.lower())
+            # # partial match should be less important if size diff is big
+            # full_ratio = fuzz.ratio(node_name.lower(), test.lower())
+            #
+            # if ratio == 100:
+            #     test_len = len(test)
+            #     node_len = len(node_name)
+            #     if test_len > node_len:
+            #         if node_name[:node_len] != test[:node_len]:
+            #             ratio = (full_ratio * 2+ ratio) / 3
+            #     else:
+            #         if node_name[:test_len] != test[:test_len]:
+            #             ratio = (full_ratio * 2 + ratio) / 3
+            # len_ratio = len(test) / len(node_name)
+            # # if len_ratio > 1.0:
+            # #     len_ratio = pow(len_ratio, 4)
+            # # if len_ratio > 1:
+            # #     len_ratio = 1 / len_ratio
+            # #     len_ratio = pow(len_ratio, 2)
+            # # else:
+            # if len_ratio < 1:
+            #     len_ratio = pow(len_ratio, 4)
+            # len_ratio = len_ratio * .5 + 0.5  # 0.25 - 0.75
+            # final_ratio = (ratio * (1 - len_ratio) + full_ratio * len_ratio)
+            # print(node_name, ratio, full_ratio, final_ratio)
+            scores[node_name] = final_ratio
 
         for index, variable_name in enumerate(self.variable_list):
-            ratio = fuzz.partial_ratio(variable_name.lower(), test.lower())
-            full_ratio = fuzz.ratio(variable_name.lower(), test.lower())
-            len_ratio = len(test) / len(node_name)
-            if len_ratio > 1:
-                len_ratio = 1 / len_ratio
-            len_ratio = len_ratio * .5 + 0.5  # 0.25 - 0.75
-            ratio = (ratio * (1 - len_ratio) + full_ratio * len_ratio)
-            scores[variable_name] = ratio
+            final_ratio = self.calc_fuzz(test, variable_name)
+            # ratio = fuzz.partial_ratio(variable_name.lower(), test.lower())
+            # full_ratio = fuzz.ratio(variable_name.lower(), test.lower())
+            # len_ratio = len(test) / len(node_name)
+            # if len_ratio > 1:
+            #     len_ratio = 1 / len_ratio
+            # len_ratio = len_ratio * .5 + 0.5  # 0.25 - 0.75
+            # ratio = (ratio * (1 - len_ratio) + full_ratio * len_ratio)
+            scores[variable_name] = final_ratio
 
         for index, patcher_name in enumerate(self.patcher_list):
-            ratio = fuzz.partial_ratio(patcher_name.lower(), test.lower())
-            full_ratio = fuzz.ratio(patcher_name.lower(), test.lower())
-            len_ratio = len(test) / len(node_name)
-            if len_ratio > 1:
-                len_ratio = 1 / len_ratio
-            len_ratio = len_ratio * .5 + 0.5  # 0.25 - 0.75
-            ratio = (ratio * (1 - len_ratio) + full_ratio * len_ratio)
-            scores[patcher_name] = ratio
+            final_ratio = self.calc_fuzz(test, patcher_name)
+            # ratio = fuzz.partial_ratio(patcher_name.lower(), test.lower())
+            # full_ratio = fuzz.ratio(patcher_name.lower(), test.lower())
+            # len_ratio = len(test) / len(node_name)
+            # if len_ratio > 1:
+            #     len_ratio = 1 / len_ratio
+            # len_ratio = len_ratio * .5 + 0.5  # 0.25 - 0.75
+            # ratio = (ratio * (1 - len_ratio) + full_ratio * len_ratio)
+            scores[patcher_name] = final_ratio
 
         for index, action_name in enumerate(self.action_list):
-            ratio = fuzz.partial_ratio(action_name.lower(), test.lower())
-            full_ratio = fuzz.ratio(action_name.lower(), test.lower())
-            len_ratio = len(test) / len(node_name)
-            if len_ratio > 1:
-                len_ratio = 1 / len_ratio
-            len_ratio = len_ratio * .5 + 0.5  # 0.25 - 0.75
-            ratio = (ratio * (1 - len_ratio) + full_ratio * len_ratio)
-            scores[action_name] = ratio
+            final_ratio = self.calc_fuzz(test, action_name)
+            # ratio = fuzz.partial_ratio(action_name.lower(), test.lower())
+            # full_ratio = fuzz.ratio(action_name.lower(), test.lower())
+            # len_ratio = len(test) / len(node_name)
+            # if len_ratio > 1:
+            #     len_ratio = 1 / len_ratio
+            # len_ratio = len_ratio * .5 + 0.5  # 0.25 - 0.75
+            # ratio = (ratio * (1 - len_ratio) + full_ratio * len_ratio)
+            scores[action_name] = final_ratio
 
         sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
         self.filtered_list = []
