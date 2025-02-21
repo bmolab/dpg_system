@@ -2,7 +2,11 @@ import numpy as np
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
 import mido
+import platform
 
+if platform.system() == "Darwin":
+    mido.set_backend('mido.backends.rtmidi')
+    print('Darwin')
 
 def register_midi_nodes():
     Node.app.register_node('midi_in', MidiInNode.factory)
@@ -168,7 +172,7 @@ class MidiInNode(MidiIn, Node):
 
         name = strip_Linux_midi_port_name(self.in_port.port.name)
 
-        self.in_port_name_property = self.add_input('port', widget_type='combo', default_value=name, callback=self.port_changed)
+        self.in_port_name_property = self.add_input('port', widget_type='combo', widget_width=200, default_value=name, callback=self.port_changed)
         self.in_port_name_property.widget.combo_items = self.input_list
 
         self.output = self.add_output('midi out')
@@ -209,7 +213,7 @@ class MidiMessageInNode(MidiIn, Node):
                                                 max=16,
                                                 callback=self.params_changed)
         name = strip_Linux_midi_port_name(self.in_port.port.name)
-        self.in_port_name_property = self.add_input('port', widget_type='combo', default_value=name,
+        self.in_port_name_property = self.add_input('port', widget_type='combo', widget_width=200, default_value=name,
                                                     callback=self.port_changed)
         self.in_port_name_property.widget.combo_items = self.input_list
 
@@ -505,8 +509,8 @@ class MidiOutNode(MidiOut, Node):
         Node.__init__(self, label, data, args)
 
         self.midi_to_send = self.add_input('midi to send', triggers_execution=True)
-        name = strip_Linux_midi_port_name(self.midi_to_send.port_name)
-        self.out_port_name_property = self.add_input('port', widget_type='combo', default_value=name, callback=self.port_changed)
+        name = strip_Linux_midi_port_name(self.out_port.port_name)
+        self.out_port_name_property = self.add_input('port', widget_type='combo', widget_width=200, default_value=name, callback=self.port_changed)
         self.out_port_name_property.widget.combo_items = self.output_list
 
     def execute(self):
@@ -553,8 +557,8 @@ class MidiControlOutNode(MidiOut, Node):
         self.midi_to_send = self.add_input('midi to send', triggers_execution=True)
         self.control_number = self.add_input('controller #', widget_type='input_int', default_value=controller, min=0, max=127)
         self.channel = self.add_option('channel', widget_type='input_int', default_value=channel, min=1, max=16)
-        name = strip_Linux_midi_port_name(self.midi_to_send.port_name)
-        self.out_port_name_property = self.add_option('port', widget_type='combo', default_value=name, callback=self.port_changed)
+        name = strip_Linux_midi_port_name(self.out_port.port_name)
+        self.out_port_name_property = self.add_input('port', widget_type='combo', widget_width=200, default_value=name, callback=self.port_changed)
         self.out_port_name_property.widget.combo_items = self.output_list
 
     def execute(self):
@@ -595,8 +599,8 @@ class MidiPitchBendOutNode(MidiOut, Node):
 
         self.midi_to_send = self.add_input('pitchbend to send', triggers_execution=True)
         self.channel = self.add_option('channel', widget_type='input_int', default_value=channel, min=1, max=16)
-        name = strip_Linux_midi_port_name(self.midi_to_send.port_name)
-        self.out_port_name_property = self.add_option('port', widget_type='combo', default_value=name, callback=self.port_changed)
+        name = strip_Linux_midi_port_name(self.out_port.port_name)
+        self.out_port_name_property = self.add_input('port', widget_type='combo', widget_width=200, default_value=name, callback=self.port_changed)
         self.out_port_name_property.widget.combo_items = self.output_list
 
     def execute(self):
@@ -634,8 +638,8 @@ class MidiProgramOutNode(MidiOut, Node):
 
         self.midi_to_send = self.add_input('program to send', triggers_execution=True)
         self.channel = self.add_option('channel', widget_type='input_int', default_value=channel, min=1, max=16)
-        name = strip_Linux_midi_port_name(self.midi_to_send.port_name)
-        self.out_port_name_property = self.add_option('port', widget_type='combo', default_value=name, callback=self.port_changed)
+        name = strip_Linux_midi_port_name(self.out_port.port_name)
+        self.out_port_name_property = self.add_input('port', widget_type='combo', widget_width=200, default_value=name, callback=self.port_changed)
         self.out_port_name_property.widget.combo_items = self.output_list
 
     def execute(self):
@@ -676,9 +680,8 @@ class MidiAftertouchOutNode(MidiOut, Node):
 
         self.midi_to_send = self.add_input('aftertouch to send', triggers_execution=True)
         self.channel = self.add_option('channel', widget_type='input_int', default_value=channel, min=1, max=16)
-        name = strip_Linux_midi_port_name(self.midi_to_send.port_name)
-        self.out_port_name_property = self.add_option('port', widget_type='combo',
-                                                      default_value=name, callback=self.port_changed)
+        name = strip_Linux_midi_port_name(self.out_port.port_name)
+        self.out_port_name_property = self.add_input('port', widget_type='combo', widget_width=200, default_value=name, callback=self.port_changed)
         self.out_port_name_property.widget.combo_items = self.output_list
 
     def execute(self):
@@ -726,8 +729,8 @@ class MidiNoteOutNode(MidiOut, Node):
         self.midi_to_send = self.add_input('midi to send', triggers_execution=True)
         self.velocity = self.add_input('velocity', widget_type='drag_int', default_value=velocity, min=0, max=127)
         self.channel = self.add_option('channel', widget_type='input_int', default_value=channel, min=1, max=16)
-        name = strip_Linux_midi_port_name(self.midi_to_send.port_name)
-        self.out_port_name_property = self.add_option('port', widget_type='combo', default_value=name, callback=self.port_changed)
+        name = strip_Linux_midi_port_name(self.out_port.port_name)
+        self.out_port_name_property = self.add_input('port', widget_type='combo', widget_width=200, default_value=name, callback=self.port_changed)
         self.out_port_name_property.widget.combo_items = self.output_list
 
     def execute(self):
@@ -801,8 +804,8 @@ class MidiPolyPressureOutNode(MidiOut, Node):
         self.midi_to_send = self.add_input('midi to send', triggers_execution=True)
         self.pressure = self.add_input('pressure', widget_type='drag_int', default_value=pressure, min=0, max=127)
         self.channel = self.add_option('channel', widget_type='input_int', default_value=channel, min=1, max=16)
-        name = strip_Linux_midi_port_name(self.midi_to_send.port_name)
-        self.out_port_name_property = self.add_option('port', widget_type='combo', default_value=name, callback=self.port_changed)
+        name = strip_Linux_midi_port_name(self.out_port.port_name)
+        self.out_port_name_property = self.add_input('port', widget_type='combo', widget_width=200, default_value=name, callback=self.port_changed)
         self.out_port_name_property.widget.combo_items = self.output_list
 
     def execute(self):
@@ -873,12 +876,12 @@ class MidiDeviceNode(MidiIn, MidiOut, Node):
         port_name = ''
         if self.in_port:
             port_name = strip_Linux_midi_port_name(self.in_port.port_name)
-        self.in_port_name_property = self.add_option('in port', widget_type='combo', width=150, default_value=port_name, callback=self.port_changed)
+        self.in_port_name_property = self.add_input('in port', widget_type='combo', widget_width=200, default_value=port_name, callback=self.port_changed)
         self.in_port_name_property.widget.combo_items = self.input_list
         port_name = ''
         if self.out_port:
             port_name = strip_Linux_midi_port_name(self.out_port.port_name)
-        self.out_port_name_property = self.add_option('out port', widget_type='combo', width=150, default_value=port_name, callback=self.port_changed)
+        self.out_port_name_property = self.add_input('out port', widget_type='combo', widget_width=200, default_value=port_name, callback=self.port_changed)
         self.out_port_name_property.widget.combo_items = self.output_list
 
     def create_properties_inputs_and_outputs(self):

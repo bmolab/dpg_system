@@ -422,9 +422,6 @@ class MoCapGLBody(MoCapNode):
     def capture_pose(self):
         self.body.capture_current_pose()
 
-    # def joint_callback(self):
-    #     self.gl_chain_output.send('draw')
-    #
     def process_commands(self, command):
         if type(command[0]) == str:
             print(command)
@@ -512,6 +509,7 @@ class MoCapGLBody(MoCapNode):
                     self.body.draw_absolute_quats(self.show_joint_spheres(), self.skeleton_only())
                 else:
                     self.body.draw(self.show_joint_spheres(), self.skeleton_only())
+                self.gl_chain_output.send('draw')
 
 
 class SimpleMoCapGLBody(MoCapNode):

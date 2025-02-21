@@ -29,7 +29,8 @@ def register_gl_nodes():
     Node.app.register_node('gl_button_grid', GLButtonGridNode.factory)
 
     Node.app.register_node('gl_line_array', GLNumpyLines.factory)
-
+    Node.app.register_node('gl_color', GLColorNode.factory)
+    Node.app.register_node('gl_enable', GLEnableNode.factory)
 
 class GLCommandParser:
     def __init__(self):
@@ -589,12 +590,15 @@ class GLBillboard(GLNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+
+    def initialize(self, args):
         self.width = self.add_input('width', widget_type='drag_float', default_value=1.6)
         self.height = self.add_input('height', widget_type='drag_float', default_value=0.9)
         self.texture = self.add_input('texture')
         self.texture_shape = None
         self.numpy_texture = None
         self.texture_data_pending = None
+        self.gl_output = self.add_output('gl chain out')
 
     def execute(self):
         if self.texture.fresh_input:
@@ -692,12 +696,15 @@ class GLBillboard(GLNode):
 
 class GLQuadricNode(GLNode):
     def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
         self.quadric = gluNewQuadric()
         self.shading_option = None
         self.command_parser = GLQuadricCommandParser(self)
         self.pending_commands = []
         self.alignment_matrix = None
-        super().__init__(label, data, args)
+        super().initialize(args)
 
     def process_pending_commands(self):
         if len(self.pending_commands) > 0:
@@ -1012,6 +1019,157 @@ class GLTransformNode(GLNode):
                 gl.glRotatef(self.values[1], 0.0, 1.0, 0.0)
         elif self.label == 'gl_scale':
             gl.glScalef(self.values[0], self.values[1], self.values[2])
+
+
+class GLColorNode(GLNode):
+    @staticmethod
+    def factory(node_name, data, args=None):
+        node = GLColorNode(node_name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        self.hold_color = (GLfloat * 4)()
+        self.color = (GLfloat * 4)()
+        self.gl_input = self.add_input('gl chain in', triggers_execution=True)
+        self.red_input = self.add_input('red', widget_type='slider_float', min=0.0, max=1.0, default_value=0.0)
+        self.green_input = self.add_input('green', widget_type='slider_float', min=0.0, max=1.0, default_value=0.0)
+        self.blue_input = self.add_input('blue', widget_type='slider_float', min=0.0, max=1.0, default_value=0.0)
+        self.alpha_input = self.add_input('alpha', widget_type='slider_float', min=0.0, max=1.0, default_value=0.0)
+        self.gl_output = self.add_output('gl chain out')
+
+    def remember_state(self):
+        gl.glGetFloatv(GL_CURRENT_COLOR, self.hold_color)
+
+    def restore_state(self):
+        gl.glColor4fv(self.hold_color)
+
+
+    def draw(self):
+        self.color[0] = self.red_input()
+        self.color[1] = self.green_input()
+        self.color[2] = self.blue_input()
+        self.color[3] = self.alpha_input()
+        gl.glColor4fv(self.color)
+
+class GLEnableNode(GLNode):
+    state_dict = {}
+    @staticmethod
+    def factory(node_name, data, args=None):
+        node = GLEnableNode(node_name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        self.state_code = -1
+        self.hold_state = False
+        if len(GLEnableNode.state_dict) == 0:
+            self.create_state_dict()
+        state_arg = ''
+
+        if len(args) > 0:
+            state_arg = args[0]
+            if state_arg in self.state_dict:
+                self.state_code = GLEnableNode.state_dict[state_arg]
+        self.gl_input = self.add_input('gl chain in', triggers_execution=True)
+        self.state_input = self.add_input(state_arg, widget_type='checkbox', default_value=False)
+        self.gl_output = self.add_output('gl chain out')
+
+    def remember_state(self):
+        if self.state_code != -1:
+            self.hold_state = gl.glIsEnabled(self.state_code)
+
+    def restore_state(self):
+        if self.state_code != -1:
+            if self.hold_state:
+                gl.glEnable(self.state_code)
+            else:
+                gl.glDisable(self.state_code)
+
+    def draw(self):
+        if self.state_code != -1:
+            if self.state_input():
+                gl.glEnable(self.state_code)
+            else:
+                gl.glDisable(self.state_code)
+
+    def create_state_dict(self):
+        if len(GLEnableNode.state_dict) == 0:
+            self.state_dict['GL_LIGHTING'] = gl.GL_LIGHTING
+            self.state_dict['GL_TEXTURE_1D'] = gl.GL_TEXTURE_1D
+            self.state_dict['GL_TEXTURE_2D'] = gl.GL_TEXTURE_2D
+            self.state_dict['GL_TEXTURE_3D'] = gl.GL_TEXTURE_3D
+            self.state_dict['GL_LINE_STIPPLE'] = gl.GL_LINE_STIPPLE
+            self.state_dict['GL_POLYGON_STIPPLE'] = gl.GL_POLYGON_STIPPLE
+            self.state_dict['GL_CULL_FACE'] = gl.GL_CULL_FACE
+            self.state_dict['GL_ALPHA_TEST'] = gl.GL_ALPHA_TEST
+            self.state_dict['GL_BLEND'] = gl.GL_BLEND
+            self.state_dict['GL_INDEX_LOGIC_OP'] = gl.GL_INDEX_LOGIC_OP
+            self.state_dict['GL_COLOR_LOGIC_OP'] = gl.GL_COLOR_LOGIC_OP
+            self.state_dict['GL_DITHER'] = gl.GL_DITHER
+            self.state_dict['GL_STENCIL_TEST'] = gl.GL_STENCIL_TEST
+            self.state_dict['GL_DEPTH_TEST'] = gl.GL_DEPTH_TEST
+            self.state_dict['GL_CLIP_PLANE0'] = gl.GL_CLIP_PLANE0
+            self.state_dict['GL_CLIP_PLANE1'] = gl.GL_CLIP_PLANE1
+            self.state_dict['GL_CLIP_PLANE2'] = gl.GL_CLIP_PLANE2
+            self.state_dict['GL_CLIP_PLANE3'] = gl.GL_CLIP_PLANE3
+            self.state_dict['GL_CLIP_PLANE4'] = gl.GL_CLIP_PLANE4
+            self.state_dict['GL_CLIP_PLANE5'] = gl.GL_CLIP_PLANE5
+            self.state_dict['GL_LIGHT0'] = gl.GL_LIGHT0
+            self.state_dict['GL_LIGHT1'] = gl.GL_LIGHT1
+            self.state_dict['GL_LIGHT2'] = gl.GL_LIGHT2
+            self.state_dict['GL_LIGHT3'] = gl.GL_LIGHT3
+            self.state_dict['GL_LIGHT4'] = gl.GL_LIGHT4
+            self.state_dict['GL_LIGHT5'] = gl.GL_LIGHT5
+            self.state_dict['GL_LIGHT6'] = gl.GL_LIGHT6
+            self.state_dict['GL_LIGHT7'] = gl.GL_LIGHT7
+            self.state_dict['GL_TEXTURE_GEN_S'] = gl.GL_TEXTURE_GEN_S
+            self.state_dict['GL_TEXTURE_GEN_T'] = gl.GL_TEXTURE_GEN_T
+            self.state_dict['GL_TEXTURE_GEN_Q'] = gl.GL_TEXTURE_GEN_Q
+            self.state_dict['GL_TEXTURE_GEN_R'] = gl.GL_TEXTURE_GEN_R
+            self.state_dict['GL_MAP1_VERTEX_3'] = gl.GL_MAP1_VERTEX_3
+            self.state_dict['GL_MAP1_VERTEX_4'] = gl.GL_MAP1_VERTEX_4
+            self.state_dict['GL_MAP1_COLOR_4'] = gl.GL_MAP1_COLOR_4
+            self.state_dict['GL_MAP1_INDEX'] = gl.GL_MAP1_INDEX
+            self.state_dict['GL_MAP1_NORMAL'] = gl.GL_MAP1_NORMAL
+            self.state_dict['GL_MAP1_TEXTURE_COORD_1'] = gl.GL_MAP1_TEXTURE_COORD_1
+            self.state_dict['GL_MAP1_TEXTURE_COORD_2'] = gl.GL_MAP1_TEXTURE_COORD_2
+            self.state_dict['GL_MAP1_TEXTURE_COORD_3'] = gl.GL_MAP1_TEXTURE_COORD_3
+            self.state_dict['GL_MAP1_TEXTURE_COORD_4'] = gl.GL_MAP1_TEXTURE_COORD_4
+            self.state_dict['GL_MAP2_VERTEX_3'] = gl.GL_MAP2_VERTEX_3
+            self.state_dict['GL_MAP2_VERTEX_4'] = gl.GL_MAP2_VERTEX_4
+            self.state_dict['GL_MAP2_COLOR_4'] = gl.GL_MAP2_COLOR_4
+            self.state_dict['GL_MAP2_INDEX'] = gl.GL_MAP2_INDEX
+            self.state_dict['GL_MAP2_NORMAL'] = gl.GL_MAP2_NORMAL
+            self.state_dict['GL_POINT_SMOOTH'] = gl.GL_POINT_SMOOTH
+            self.state_dict['GL_LINE_SMOOTH'] = gl.GL_LINE_SMOOTH
+            self.state_dict['GL_POLYGON_SMOOTH'] = gl.GL_POLYGON_SMOOTH
+            self.state_dict['GL_SCISSOR_TEST'] = gl.GL_SCISSOR_TEST
+            self.state_dict['GL_COLOR_MATERIAL'] = gl.GL_COLOR_MATERIAL
+            self.state_dict['GL_NORMALIZE'] = gl.GL_NORMALIZE
+            self.state_dict['GL_AUTO_NORMAL'] = gl.GL_AUTO_NORMAL
+            self.state_dict['GL_VERTEX_ARRAY'] = gl.GL_VERTEX_ARRAY
+            self.state_dict['GL_NORMAL_ARRAY'] = gl.GL_NORMAL_ARRAY
+            self.state_dict['GL_COLOR_ARRAY'] = gl.GL_COLOR_ARRAY
+            self.state_dict['GL_INDEX_ARRAY'] = gl.GL_INDEX_ARRAY
+            self.state_dict['GL_TEXTURE_COORD_ARRAY'] = gl.GL_TEXTURE_COORD_ARRAY
+            self.state_dict['GL_EDGE_FLAG_ARRAY'] = gl.GL_EDGE_FLAG_ARRAY
+            self.state_dict['GL_POLYGON_OFFSET_POINT'] = gl.GL_POLYGON_OFFSET_POINT
+            self.state_dict['GL_POLYGON_OFFSET_LINE'] = gl.GL_POLYGON_OFFSET_LINE
+            self.state_dict['GL_POLYGON_OFFSET_FILL'] = gl.GL_POLYGON_OFFSET_FILL
+            self.state_dict['GL_COLOR_TABLE'] = gl.GL_COLOR_TABLE
+            self.state_dict['GL_POST_CONVOLUTION_COLOR_TABLE'] = gl.GL_POST_CONVOLUTION_COLOR_TABLE
+            self.state_dict['GL_POST_COLOR_MATRIX_COLOR_TABLE'] = gl.GL_POST_COLOR_MATRIX_COLOR_TABLE
+            self.state_dict['GL_CONVOLUTION_1D'] = gl.GL_CONVOLUTION_1D
+            self.state_dict['GL_CONVOLUTION_2D'] = gl.GL_CONVOLUTION_2D
+            self.state_dict['GL_SEPARABLE_2D'] = gl.GL_SEPARABLE_2D
+            self.state_dict['GL_HISTOGRAM'] = gl.GL_HISTOGRAM
+            self.state_dict['GL_MINMAX'] = gl.GL_MINMAX
+            self.state_dict['GL_RESCALE_NORMAL'] = gl.GL_RESCALE_NORMAL
 
 
 class GLMaterial:
@@ -2203,6 +2361,8 @@ class GLButtonGridNode(GLNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+
+    def initialize(self, args):
         self.display_list = -1
         self.initialized = False
         self.new_selection = True
@@ -2220,6 +2380,7 @@ class GLButtonGridNode(GLNode):
                                                callback=self.display_changed)
         self.scale_input = self.add_input('scale', widget_type='drag_float', default_value=.1,
                                           callback=self.display_changed)
+        self.gl_output = self.add_output('gl chain out')
 
 
     def display_changed(self):
@@ -2285,6 +2446,8 @@ class GLNumpyLines(GLNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+
+    def initialize(self, args):
         self.array_input = self.add_input('array', triggers_execution=True)
         self.alpha_fade = self.add_bool_input('alpha_fade', widget_type='checkbox', default_value=True)
         self.motion_accent = self.add_input('accent_motion', widget_type='checkbox', default_value=False)
@@ -2292,6 +2455,8 @@ class GLNumpyLines(GLNode):
         self.accent_scale = self.add_input('accent_scale', widget_type='drag_int', default_value=50)
         self.line_width = self.add_input('line_width', widget_type='drag_int', default_value=1)
         self.selected_joints = self.add_input('selected_joints', widget_type='text_input', default_value='')
+        self.gl_output = self.add_output('gl chain out')
+
         self.colors = []
         self.previous_array = None
         color = [1.0, 1.0, 1.0, 1.0]
@@ -2303,7 +2468,8 @@ class GLNumpyLines(GLNode):
         self.line_array = None
         self.new_array = False
         self.motion_array = None
-        sample
+
+
 
     def custom_create(self, from_file):
         dpg.configure_item(self.color_control.widget.uuid, no_alpha=True)

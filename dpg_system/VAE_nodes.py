@@ -847,7 +847,7 @@ class VPoser(nn.Module):
         '''
         with torch.no_grad():
             q_z = self.encode(pose_body)
-            q_z_sample = q_z.mean # q_z.rsample()
+            q_z_sample = q_z.mean  # q_z.rsample()  #  #
             decode_results = self.decode(q_z_sample)
             decode_results.update({'poZ_body_mean': q_z.mean, 'poZ_body_std': q_z.scale, 'q_z': q_z, 'q_z_sample': q_z_sample})
         return decode_results
