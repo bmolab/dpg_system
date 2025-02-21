@@ -12,15 +12,15 @@ import threading
 from queue import Queue
 import time
 from google.cloud import translate_v2 as translate
-from google.cloud import storage
+# from google.cloud import storage
 import os.path
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 import google.auth
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
+# from googleapiclient.discovery import build
+# from googleapiclient.errors import HttpError
 
 def register_google_translate_nodes():
     Node.app.register_node('translate', GoogleTranslateNode.factory)
@@ -417,7 +417,10 @@ class GoogleTranslateAPINode(Node):
         dst = self.dest_language_input()
         self.source_language = languages[src]
         self.target_language = languages[dst]
-        result = self.translate_client.translate(text, target_language=self.target_language, source_language=self.source_language)
+        if self.source_language == 'auto':
+            result = self.translate_client.translate(text, target_language=self.target_language)
+        else:
+            result = self.translate_client.translate(text, target_language=self.target_language, source_language=self.source_language)
         return result["translatedText"]
 
     def service_queue(self):
