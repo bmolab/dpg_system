@@ -150,9 +150,11 @@ class MidiIn:
                     length = len(partial_name)
                     if input[:length] == partial_name:
                         self.in_port_name = input
-                        self.in_port = MidiInPort(self.in_port_name)
+                        if self.in_port_name in MidiInPort.ports:
+                            self.in_port = MidiInPort.ports[self.in_port_name]
+                        else:
+                            self.in_port = MidiInPort(self.in_port_name)
                         if self.in_port_name not in MidiInPort.ports:
-                            MidiInPort.ports[self.in_port_name] = self.in_port
                             print('created in port', self.in_port_name, 'ports:', MidiInPort.ports.keys())
                         return self.in_port_name
 
@@ -522,7 +524,10 @@ class MidiOut:
                     length = len(partial_name)
                     if output[:length] == partial_name:
                         self.out_port_name = output
-                        self.out_port = MidiOutPort(self.out_port_name)
+                        if self.out_port_name in MidiOutPort.ports:
+                            self.out_port = MidiOutPort.ports[self.out_port_name]
+                        else:
+                            self.out_port = MidiOutPort(self.out_port_name)
                         if self.out_port_name not in MidiOutPort.ports:
                             MidiOutPort.ports[self.out_port_name] = self.out_port
                             print('created out port', self.out_port_name, 'ports:', MidiOutPort.ports.keys())
