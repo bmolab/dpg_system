@@ -37,6 +37,7 @@ lighting_active = True
 translation_active = True
 layout_active = True
 digico_active = True
+display_info_active = True
 
 # print('Options active:', end=' ')
 # with open('dpg_system_config.json', 'r') as f:
@@ -312,6 +313,16 @@ if digico_active:
     except ModuleNotFoundError:
         print('import digico failed')
         digico_active = False
+
+if display_info_active:
+    try:
+        from dpg_system.monitor_nodes import *
+        imported.append('monitor_nodes.py')
+        print('imported monitor nodes')
+    except ModuleNotFoundError:
+        print('import monitor nodes failed')
+        digico_active = False
+
 
 # import additional node files in folder
 
@@ -1032,6 +1043,9 @@ class App:
 
         if digico_active and 'register_digico_nodes' in globals():
             register_digico_nodes()
+
+        if display_info_active and 'register_display_nodes' in globals():
+            register_display_nodes()
 
     def get_variable_list(self):
         v_list = list(self.variables.keys())
