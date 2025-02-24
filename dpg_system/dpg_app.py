@@ -16,7 +16,7 @@ import traceback
 osc_active = True
 opengl_active = True
 opencv_active = True
-elevenlabs_active = False
+elevenlabs_active = True
 movesense_active = True
 mocap_active = True
 spacy_active = True
