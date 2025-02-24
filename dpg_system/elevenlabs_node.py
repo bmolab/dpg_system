@@ -8,7 +8,7 @@ import numpy as np
 import json
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
-from elevenlabs import client, stream, generate, Voice, VoiceSettings
+from elevenlabs import client, stream, Voice, VoiceSettings
 from elevenlabs.client import ElevenLabs
 from queue import Queue
 import threading
@@ -144,6 +144,7 @@ class ElevenLabsNode(Node):
         self.model_choice = self.add_input('model', widget_type='combo', widget_width=250, default_value="Eleven Turbo v2")
         if self.client is not None:
             self.model_choice.widget.combo_items = list(self.model_dict.keys())
+        self.speed = self.add_input('speed', widget_type='drag_float', max=1.2, min=0.7, default_value=1.0)
         self.stability = self.add_input('stability', widget_type='drag_float', default_value=.02, callback=self.voice_changed)
         self.similarity_boost = self.add_input('similarity_boost', widget_type='drag_float', default_value=1.0, callback=self.voice_changed)
         self.style = self.add_input('style exaggeration', widget_type='drag_float', default_value=0.5, callback=self.voice_changed)
@@ -154,6 +155,7 @@ class ElevenLabsNode(Node):
         self.active_output = self.add_output('speaking')
         self.voice_record = None
         self.previously_active = False
+        self.voice_settings = VoiceSettings()
         ElevenLabsNode.instances.append(self)
         self.phrase_queue = Queue(16)
         self.thread = threading.Thread(target=service_eleven_labs)
@@ -192,8 +194,19 @@ class ElevenLabsNode(Node):
             text = self.phrase_queue.get()
             model = self.model_dict[self.model_choice()]
             latency = int(self.latency())
-            self.audio_stream = generate(api_key=api_key, text=text, voice=self.voice_record, model=model, stream=True, latency=latency)
-            audio = stream(self.audio_stream)
+            settings = VoiceSettings(stability=self.stability(), similarity_boost=self.similarity_boost(), style=self.style(), speed=self.speed(), latency=self.latency())
+
+            # self.audio_stream = self.client.text_to_speech.convert_as_stream(
+            #     text=text,
+            #     voice_id=self.voice_id,
+            #     model_id=self.model_choice(),
+            #     optimize_streaming_latency=latency
+            # )
+            self.audio_stream = self.client.generate(text=text, voice=self.voice_record, model=model, stream=True, optimize_streaming_latency=latency, voice_settings=settings)
+            try:
+                audio = stream(self.audio_stream)
+            except Exception as e:
+                print(e)
             self.active = False
 
     def frame_task(self):
@@ -201,4 +214,5 @@ class ElevenLabsNode(Node):
             self.active_output.send(self.active)
             self.previously_active = self.active
 
+# def text_stream():
 
