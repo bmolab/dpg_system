@@ -22,6 +22,7 @@ def register_moconvq_nodes():
     Node.app.register_node("moconvq_pose_to_joints", MoConVQPoseToJointsNode.factory)
     Node.app.register_node("moconvq_env", MoConVQEnvNode.factory)
     Node.app.register_node("moconvq_storage", MoConVQStorageNode.factory)
+    Node.app.register_node("moconvq_torque_to_joints", MoConVQTorqueToJointsNode.factory)
 
 class MoConVQNode(Node):
     def __init__(self, label: str, data, args):
@@ -30,8 +31,11 @@ class MoConVQNode(Node):
                           'rKnee', 'lKnee', 'rAnkle', 'lAnkle', 'rToeJoint', 'rToeJoint_end', 
                           'lToeJoint', 'lToeJoint_end', 'torso_head', 'torso_head_end', 'rTorso_Clavicle',
                           'lTorso_Clavicle', 'rShoulder', 'lShoulder', 'rElbow', 'lElbow', 'rWrist',
-                          'rWrist_end', 'lWrist', 'lWrist_end']
-      
+                          'rWrist_end', 'lWrist', 'lWrist_end'] # class MotionData _skeleton_joints attribute
+      self.torque_joints = ['pelvis_lowerback', 'lowerback_torso', 'rHip', 'lHip',
+                            'rKnee', 'lKnee', 'rAnkle', 'lAnkle', 'rToeJoint',
+                            'lToeJoint', 'torso_head', 'rTorso_Clavicle', 'lTorso_Clavicle',
+                            'rShoulder', 'lShoulder', 'rElbow', 'lElbow', 'rWrist', 'lWrist'] # agent.env.sim_character.joints
       self.physic_props = ['avel', 'vel']
 
     @staticmethod
@@ -95,14 +99,14 @@ class MoConVQNode(Node):
 
         #build each content
         env = VCLODETrackEnv(**model_args)
-        agent = MoConVQ(323, 12, 57, 120,env, training=False, **model_args)
+        agent = MoConVQ(323, 12, 57, 120, env, training=False, **model_args)
         agent.simple_load(r'../MoConVQ/moconvq_base.data', strict=True)
         agent.eval()
         agent.posterior.limit = False
 
         from ModifyODESrc import VclSimuBackend
         CharacterToBVH = VclSimuBackend.ODESim.CharacterTOBVH
-        saver = CharacterToBVH(agent.env.sim_character, 120)
+        saver = CharacterToBVH(agent.env.sim_character, 120) # BVH is 120 fps (Sim is 20fps)
         saver.bvh_hierarchy_no_root()
         return env, agent, saver, args
     
@@ -122,12 +126,8 @@ class MoConVQNode(Node):
         seq_latent = info['latent_dynamic']
         physics = {
           'avel':[],
-          'vel': []
-          # 'inertia':[],
-          # 'com':[],
-          # 'facing_com':[],
-          # 'velo_com':[],
-          # 'momentum': []
+          'vel': [],
+          'g_torque':[]
         }
         for i in range(seq_latent.shape[1]):
             obs = observation['observation']
@@ -147,7 +147,9 @@ class MoConVQNode(Node):
                 info_ = next(step_generator)
             except StopIteration as e:
                 info_ = e.value
-            new_observation, rwd, done, info = info_
+            new_observation, rwd, done, info, global_torques = info_
+            for torque in global_torques:
+                physics['g_torque'].append(torque)
             observation = new_observation
         # if args['output_file'] == '':
         #     import time
@@ -194,6 +196,7 @@ class MoConVQSMPLTakeNode(MoConVQNode):
         self.root_position_out = self.add_output('root_position')
         self.avel_out = self.add_output('avel')
         self.vel_out = self.add_output('vel')
+        self.g_torque_out = self.add_output('g_torque')
         load_path = ''
         self.load_path = self.add_option('path', widget_type='text_input', default_value=load_path, callback=self.load_smpl_callback)
         # self.message_handlers['load'] = self.load_take_message
@@ -243,6 +246,7 @@ class MoConVQSMPLTakeNode(MoConVQNode):
         self.root_position_out.send(self.root_positions[frame])
         self.avel_out.send(self.physics_data['avel'][frame])
         self.vel_out.send(self.physics_data['vel'][frame])
+        self.g_torque_out.send(self.physics_data['g_torque'][frame])
 
     def execute(self):
         if self.input.fresh_input:
@@ -325,12 +329,37 @@ class MoConVQPoseToJointsNode(MoConVQNode):
                 self.send_all()
 
 
-# Inputs
-# - joint_data (N, 25 num joints, 4) quarternions where scalar is last
-# - root_position (N, 3) of root position in x y z coordinates
-# Outputs
-# - joint_data (N, 25 num joints, 4) quarternions where scalar is last
-# - root_position (N, 3) of root position in x y z coordinates
+class MoConVQTorqueToJointsNode(MoConVQNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = MoConVQTorqueToJointsNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('torques in', triggers_execution=True)
+        self.joint_outputs = []
+        self.joint_offsets = []
+        for index, key in enumerate(self.torque_joints):
+            self.joint_offsets.append(index)
+
+        for index, key in enumerate(self.torque_joints):
+            stripped_key = key.replace('_', ' ')
+            output = self.add_output(stripped_key)
+            self.joint_outputs.append(output)
+
+    def execute(self):
+        if self.input.fresh_input:
+            incoming = self.input()
+            t = type(incoming)
+            if t == np.ndarray:
+                for i, index in enumerate(self.joint_offsets):
+                    if index < incoming.shape[0]:
+                        joint_value = incoming[index]
+                        self.joint_outputs[i].set_value(joint_value)
+                self.send_all()
+
+
 # Usage
 # - For streaming and acting in real time
 class MoConVQEnvNode(MoConVQNode):
@@ -350,13 +379,11 @@ class MoConVQEnvNode(MoConVQNode):
         self.reset = self.add_input('reset_env', widget_type='button', callback=self.reset_env)
         self.pos_buf = []
         self.rot_buf = []
-        self.physics = {}
         self.joint_data_out = self.add_output('joint_data')
         self.root_position_out = self.add_output('root_position')
         self.avel_out = self.add_output('avel')
         self.vel_out = self.add_output('vel')
-        for prop in self.physics_props:
-            self.physics[prop] = []
+        self.g_torque_out = self.add_output('g_torque')
 
     def execute(self):
         if self.pos_in.fresh_input or self.rot_in.fresh_input:
@@ -368,7 +395,7 @@ class MoConVQEnvNode(MoConVQNode):
             else:
                 rot_in = self.rot_in()      
                 self.rot_buf.append(rot_in)
-            if len(self.pos_buf) == len(self.rot_buf): # ensure we have (pos, rot) with same number of frames
+            if len(self.pos_buf) == len(self.rot_buf) and len(self.pos_buf) >= 24: # ensure we have (pos, rot) with same number of frames and at least 24 frames
                 self.motion_data.add_motion_with_character(np.stack(self.pos_buf), np.stack(self.rot_buf))
                 pos, quats, obs, physics = self.make_prediction(self.env, self.agent, self.observation, self.info, self.motion_data.observation[self.motion_ob_index:], self.saver)
                 self.observation = obs
@@ -376,9 +403,10 @@ class MoConVQEnvNode(MoConVQNode):
                 for i in range(len(pos)):
                     self.joint_data_out.send(quats[i])
                     self.root_position_out.send(pos[i])
-                    for prop in self.physic_props:
-                        self.physics[prop].append(physics[prop])
-                    
+                    self.avel_out.send(physics['avel'][i])
+                    self.vel_out.send(physics['vel'][i])
+                    self.g_torque_out.send(physics['g_torque'][i])
+                                    
                 self.pos_buf = []
                 self.rot_buf = []
   
@@ -404,18 +432,29 @@ class MoConVQStorageNode(MoConVQNode):
         self.current_frame = 0
         self.joint_data = []
         self.root_positions = []
+        self.physics = {
+            'avel':[],
+            'vel':[],
+            'g_torque':[]
+        }
         self.rot_in = self.add_input('joint_data', triggers_execution=True)
         self.pos_in = self.add_input('root_position', triggers_execution=True)
+        self.avel_in = self.add_input('avel', triggers_execution=True)
+        self.vel_in = self.add_input('vel', triggers_execution=True)
+        self.g_torque_in = self.add_input('g_torque', triggers_execution=True)
         self.on_off = self.add_input('on/off', widget_type='checkbox', callback=self.start_stop_streaming)
         self.speed = self.add_input('speed', widget_type='drag_float', default_value=speed)
         self.input = self.add_input('frame', widget_type='drag_int', triggers_execution=True, callback=self.frame_widget_changed)
-        self.clear = self.add_input('clear', widget_type='button', callback=self.clear)
+        self.clear = self.add_input('clear', widget_type='button', callback=self.clear_data)
         self.joint_data_out = self.add_output('joint_data')
         self.root_position_out = self.add_output('root_position')
-      
+        self.avel_out = self.add_output('avel')
+        self.vel_out = self.add_output('vel')
+        self.g_torque_out = self.add_output('g_torque')
+
     def start_stop_streaming(self):
         if self.on_off():
-            if not self.streaming and self.load_path() != '':
+            if not self.streaming:
                 self.add_frame_task()
                 self.streaming = True
         else:
@@ -432,6 +471,10 @@ class MoConVQStorageNode(MoConVQNode):
         if self.joint_data is not None and frame < self.frames:
             self.joint_data_out.send(self.joint_data[frame])
             self.root_position_out.send(self.root_positions[frame])
+            self.avel_out.send(self.physics['avel'][frame])
+            self.vel_out.send(self.physics['vel'][frame])
+            self.g_torque_out.send(self.physics['g_torque'][frame])
+            
 
     def frame_widget_changed(self):
         data = self.input()
@@ -440,12 +483,39 @@ class MoConVQStorageNode(MoConVQNode):
             frame = int(self.current_frame)
             self.joint_data_out.send(self.joint_data[frame])
             self.root_position_out.send(self.root_positions[frame])
+            self.avel_out.send(self.physics['avel'][frame])
+            self.vel_out.send(self.physics['vel'][frame])
+            self.g_torque_out.send(self.physics['g_torque'][frame])
 
     def execute(self):
-        if self.pos_in.fresh_input or self.rot_in.fresh_input:
-            if self.pos_in.fresh_input:
-                pos_in = self.pos_in() 
-                self.root_positions.append(pos_in)
-            else:
-                rot_in = self.rot_in()      
-                self.joint_data.append(rot_in)
+        if self.pos_in.fresh_input:
+            pos_in = self.pos_in() 
+            self.root_positions.append(pos_in)
+        if self.rot_in.fresh_input:
+            rot_in = self.rot_in()      
+            self.joint_data.append(rot_in)
+        if self.avel_in.fresh_input:
+            avel_in = self.avel_in() 
+            self.physics['avel'].append(avel_in)
+        if self.vel_in.fresh_input:
+            vel_in = self.vel_in() 
+            self.physics['vel'].append(vel_in)
+        if self.g_torque_in.fresh_input:
+            g_torque_in = self.g_torque_in() 
+            self.physics['g_torque'].append(g_torque_in)
+
+        self.frames = min(len(self.root_positions), len(self.joint_data), len(self.physics['avel']), len(self.physics['vel']), len(self.physics['g_torque']))
+    
+    def clear_data(self):
+        self.joint_data = []
+        self.root_positions = []
+        self.physics = {
+            'avel':[],
+            'vel':[],
+            'g_torque':[]
+        }
+        self.on_off.set(False)
+        self.input.set(0)
+        self.start_stop_streaming()
+        self.frames = 0
+        self.current_frame = 0
