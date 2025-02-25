@@ -337,7 +337,7 @@ class SignalNode(Node):
         self.range_property = self.add_option('range', widget_type='drag_float', default_value=self.range, callback=self.change_range)
         self.range_property.widget.speed = 0.01
         self.bipolar_property = self.add_option('bipolar', widget_type='checkbox', default_value=self.bipolar, callback=self.change_bipolar)
-        self.size_property = self.add_option('vector size', widget_type='drag_int', default_value=self.vector_size, callback=self.change_size)
+        self.size_property = self.add_option('vector size', widget_type='drag_int', min=1, default_value=self.vector_size, callback=self.change_size)
         self.output = self.add_output('')
         self.add_frame_task()
 

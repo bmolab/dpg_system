@@ -2288,7 +2288,7 @@ class AppendNode(Node):
                 out_list = [data]
                 out_list.append(self.appender())
             else:
-                out_list = data + ' ' + self.appender
+                out_list = data + ' ' + self.appender()
         elif t in [int, float, bool, np.int64, np.double, np.bool_]:
             out_list = [data]
             out_list.append(self.appender())
@@ -2345,7 +2345,7 @@ class CollectionNode(Node):
 
         self.input = self.add_input('retrieve by key', triggers_execution=True)
         self.store_input = self.add_input('store', triggers_execution=True)
-        self.collection_name_property = self.add_property('name', widget_type='text_input', default_value=self.collection_name)
+        self.collection_name_input = self.add_input('name', widget_type='text_input', default_value=self.collection_name, callback=self.load_coll_by_name)
         self.output = self.add_output("out")
         self.unmatched_output = self.add_output('unmatched')
 
@@ -2353,6 +2353,12 @@ class CollectionNode(Node):
         self.message_handlers['dump'] = self.dump
         self.message_handlers['save'] = self.save_message
         self.message_handlers['load'] = self.load_message
+
+    def load_coll_by_name(self):
+        try:
+            self.load_data(self.collection_name_input())
+        except Exception as e:
+            print(e)
 
     def dump(self, message='', data=[]):
         for key in self.collection:
