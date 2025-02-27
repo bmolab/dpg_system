@@ -16,6 +16,13 @@ class DisplayData:
         self.primary = False
 
 
+if platform.system() == 'Darwin':
+    print('Darwin')
+    import Quartz.CoreGraphics
+
+    # ids = Quartz.CGDisplayCopyAllDisplayIDs()
+    # print(ids)
+
 if platform.system() == "Linux":
     def get_displays():
         result = subprocess.run(['xrandr', '--listactivemonitors'], stdout=subprocess.PIPE, text=True)

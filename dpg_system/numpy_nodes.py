@@ -53,6 +53,8 @@ def register_numpy_nodes():
     Node.app.register_node('np.add_alpha', NumpyAddAlphaNode.factory)
     Node.app.register_node('np.rolling_buffer', NumpyRollingBufferNode.factory)
     Node.app.register_node('np.[]', NumpySubtensorNode.factory)
+    Node.app.register_node('np.edit', NumpyEditNode.factory)
+
 
 
 class NumpyGeneratorNode(Node):
@@ -1277,3 +1279,151 @@ class NumpySubtensorNode(Node):
                     sub_tensor = input_array[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3],
                              dim_list_now[4]:dim_list_now[5], dim_list_now[6]:dim_list_now[7]]
                 self.output.send(sub_tensor)
+
+
+class NumpyEditNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyEditNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.dim_list = None
+        self.value = 0
+        index_string = ''
+        for i in range(len(args)):
+            index_string += args[i]
+        if index_string == '':
+            index_string = ':'
+
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.indices_input = self.add_input('indices', widget_type='text_input', widget_width=200, default_value=index_string,
+                                                  callback=self.edit_section_changed)
+        self.edit_values_input = self.add_input('values', widget_type='text_input', widget_width=200, default_value=0.0,
+                                                  callback=self.edit_value_changed)
+        self.output = self.add_output('output')
+
+    def edit_section_changed(self):
+        dim_text = any_to_string(self.indices_input())
+
+        dim_split = dim_text.split(',')
+        dimmers = []
+
+        for i in range(len(dim_split)):
+            dimmer = dim_split[i]
+            dimmer = dimmer.split(':')
+            dim_nums = []
+            if len(dimmer) == 1:
+                dim_num = re.findall(r'[-+]?\d+', dimmer[0])
+                if len(dim_num) > 0:
+                    dim_num = string_to_int(dim_num[0])
+                    dim_nums.append([dim_num])
+                    dim_nums.append([dim_num + 1])
+            else:
+                for j in range(len(dimmer)):
+                    dim_num = re.findall(r'[-+]?\d+', dimmer[j])
+                    if len(dim_num) == 0:
+                        if j == 0:
+                            dim_nums.append([0])
+                        else:
+                            dim_nums.append([1000000])
+                    else:
+                        dim_num = string_to_int(dim_num[0])
+                        dim_nums.append([dim_num])
+            dimmers.append(dim_nums)
+
+        self.dim_list = dimmers
+        self.execute()
+
+    def edit_value_changed(self):
+        self.value = self.edit_values_input()
+
+    def execute(self):
+        input_array = any_to_array(self.input())
+        if input_array is not None:
+            if self.dim_list is None:
+                self.edit_section_changed()
+            if len(self.dim_list) == 0:
+                self.output.send(input_array)
+            else:
+                dim_list_now = []
+                if len(self.dim_list) <= len(input_array.shape):
+                    for i in range(len(self.dim_list)):
+                        dim_dim = self.dim_list[i]
+                        dim_list_now.append(dim_dim[0][0])
+                        if dim_dim[1][0] == 1000000:
+                            dim_list_now.append(input_array.shape[i])
+                        else:
+                            dim_list_now.append(dim_dim[1][0])
+                    if len(dim_list_now) < len(input_array.shape) * 2:
+                        base = len(dim_list_now) // 2
+                        diff = (len(input_array.shape) * 2 - len(dim_list_now)) // 2
+                        for i in range(diff):
+                            dim_list_now.append(0)
+                            dim_list_now.append(input_array.shape[base + i])
+
+
+                    edited_array = input_array.copy()
+                    value_array = None
+                    if type(self.value) is str:
+                        self.value = string_to_array(self.value)
+                    if type(self.value) is float:
+                        if len(dim_list_now) == 2:
+                            edited_array[dim_list_now[0]:dim_list_now[1]] = self.value
+                        elif len(dim_list_now) == 4:
+                            edited_array[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3]] = self.value
+                        elif len(dim_list_now) == 6:
+                            edited_array[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3], dim_list_now[4]:dim_list_now[5]] = self.value
+                        elif len(dim_list_now) == 8:
+                            edited_array[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3], dim_list_now[4]:dim_list_now[5], dim_list_now[6]:dim_list_now[7]] = self.value
+                    elif type(self.value) is list:
+                        value_array = any_to_array(self.value)
+                    elif type(self.value) is np.ndarray:
+                        value_array = self.value
+                    if value_array is not None:
+                        if len(dim_list_now) == 2:
+                            target_size = dim_list_now[1] - dim_list_now[0]
+                            source_size = value_array.shape[0]
+                            if target_size == source_size:
+                                edited_array[dim_list_now[0]:dim_list_now[1]] = value_array
+                            elif source_size == 1:
+                                edited_array[dim_list_now[0]:dim_list_now[1]] = value_array[0]
+                            elif target_size < source_size:
+                                edited_array[dim_list_now[0]:dim_list_now[1]] = value_array[:target_size]
+                            else:
+                                edited_array[dim_list_now[0]:dim_list_now[0] + source_size] = value_array
+                        elif len(dim_list_now) == 4:
+                            target_shape = [dim_list_now[1] - dim_list_now[0], dim_list_now[3] - dim_list_now[2]]
+                            source_shape = list(value_array.shape)
+                            if target_shape == source_shape:
+                                edited_array[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3]] = value_array
+                            elif len(source_shape) < len(target_shape):
+                                test_shape = target_shape[-len(source_shape):]
+                                if test_shape == source_shape:
+                                    edited_array[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3]] = value_array
+                            else:
+                                print('bad_size in np.edit')
+                        elif len(dim_list_now) == 6:
+                            target_shape = [dim_list_now[1] - dim_list_now[0], dim_list_now[3] - dim_list_now[2], dim_list_now[5] - dim_list_now[4]]
+                            source_shape = value_array.shape
+                            if target_shape == source_shape:
+                                edited_array[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3], dim_list_now[4]:dim_list_now[5]] = value_array
+                            elif len(source_shape) < len(target_shape):
+                                test_shape = target_shape[-len(source_shape):]
+                                if test_shape == source_shape:
+                                    edited_array[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3], dim_list_now[4]:dim_list_now[5]] = value_array
+                            else:
+                                print('bad_size in np.edit')
+                        elif len(dim_list_now) == 8:
+                            target_shape = [dim_list_now[1] - dim_list_now[0], dim_list_now[3] - dim_list_now[2], dim_list_now[5] - dim_list_now[4], dim_list_now[7] - dim_list_now[6]]
+                            source_shape = value_array.shape
+                            if target_shape == source_shape:
+                                edited_array[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3], dim_list_now[4]:dim_list_now[5], dim_list_now[6]:dim_list_now[7]] = value_array
+                            elif len(source_shape) < len(target_shape):
+                                test_shape = target_shape[-len(source_shape):]
+                                if test_shape == source_shape:
+                                    edited_array[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3], dim_list_now[4]:dim_list_now[5], dim_list_now[6]:dim_list_now[7]] = value_array
+                            else:
+                                print('bad_size in np.edit')
+                    self.output.send(edited_array)
