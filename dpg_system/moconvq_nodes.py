@@ -36,7 +36,6 @@ class MoConVQNode(Node):
                             'rKnee', 'lKnee', 'rAnkle', 'lAnkle', 'rToeJoint',
                             'lToeJoint', 'torso_head', 'rTorso_Clavicle', 'lTorso_Clavicle',
                             'rShoulder', 'lShoulder', 'rElbow', 'lElbow', 'rWrist', 'lWrist'] # agent.env.sim_character.joints
-      self.physic_props = ['avel', 'vel']
 
     @staticmethod
     def create_env_and_agent():
@@ -148,9 +147,20 @@ class MoConVQNode(Node):
             except StopIteration as e:
                 info_ = e.value
             new_observation, rwd, done, info, global_torques = info_
-            for torque in global_torques:
-                physics['g_torque'].append(torque)
+
+            # global_torques is (6, num_joints without root, 3)
+            for torque in global_torques: 
+                g_torque = torque.copy()
+                # env.sim_character.joint_info.torque_limit torque limits
+                # apply negative joints to parents to get net torque
+                for i in range(len(g_torque)): 
+                    parent_id = int(env.sim_character.joint_info.parent_body_index[i] - 1) # parent_body_index includes root as 0 index, therefore must shift 1 to the left
+                    if parent_id >= 0:
+                        g_torque[parent_id] = g_torque[parent_id] - torque[i]
+
+                physics['g_torque'].append(g_torque)
             observation = new_observation
+
         # if args['output_file'] == '':
         #     import time
         #     motion_name = os.path.join('out', f'track_{time.time()}.bvh')
@@ -162,15 +172,6 @@ class MoConVQNode(Node):
         motion = saver.ret_merge_buf() # savers saves to buffer. do this to get the merged buffer without destroying buffer
         return motion.joint_rotation, motion.joint_translation[:, 0, :], observation, physics
 
-# Inputs
-# - load amass file
-# - on/off for streaming
-# - frame for frame number
-# Outputs
-# - joint_data (N, 25 num joints, 4) quarternions where scalar is last
-# - root_position (N, 3) of root position in x y z coordinates
-# Usage
-# - for reading amass files
 class MoConVQSMPLTakeNode(MoConVQNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -225,14 +226,17 @@ class MoConVQSMPLTakeNode(MoConVQNode):
         self.load_smpl(in_path)
 
     def load_smpl(self, in_path):
-        if os.path.isfile(in_path):
+        self.on_off.set(False)
+        self.start_stop_streaming()
+        if os.path.isfile(in_path):            
             self.joint_data, self.root_positions, _, self.physics_data = self.load_and_predict_smpl(in_path)
             if self.joint_data is not None:
                 self.file_name.set(in_path.split('/')[-1])
                 self.load_path.set(in_path)
                 self.frames = self.joint_data.shape[0]
                 self.current_frame = 0
-                self.start_stop_streaming()
+                self.input.set(0)
+
 
     def frame_widget_changed(self):
         data = self.input()
@@ -281,12 +285,6 @@ class MoConVQSMPLTakeNode(MoConVQNode):
         observation, info = agent.env.reset(0)
         return self.make_prediction(env, agent, observation, info, motion_data.observation, saver)
 
-# Inputs
-# - Pose (N, 25 num joints, 4) quarternions where scalar is last
-# Outputs
-# - splitted "MoConVQ joints" where each joint is (N, 4) quarternions where scalar is last
-# Usage
-# - for splitting joint data into channels
 class MoConVQPoseToJointsNode(MoConVQNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -360,8 +358,6 @@ class MoConVQTorqueToJointsNode(MoConVQNode):
                 self.send_all()
 
 
-# Usage
-# - For streaming and acting in real time
 class MoConVQEnvNode(MoConVQNode):
     @staticmethod
     def factory(name, data, args=None):

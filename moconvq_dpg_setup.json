@@ -1,0 +1,402 @@
+{
+    "height": 800,
+    "width": 1280,
+    "position": [
+        124,
+        461
+    ],
+    "id": 160,
+    "name": "moconvq_dpg_setup",
+    "path": "/home/jimwei6/dpg_system/moconvq_dpg_setup.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 191,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 32,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "name": "pose",
+            "id": 335,
+            "position_x": 688,
+            "position_y": 183,
+            "width": 148,
+            "height": 412,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "2": {
+            "name": "moconvq_pose_to_joints",
+            "id": 459,
+            "position_x": 402,
+            "position_y": 78,
+            "width": 162,
+            "height": 545,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "output_as",
+                    "value": "quaternions",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "degrees",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "3": {
+            "name": "gl_body",
+            "id": 706,
+            "position_x": 964,
+            "position_y": 408,
+            "width": 211,
+            "height": 146,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "capture pose",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "absolute quats",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "calc_diff_quats",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "skeleton_only",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "show joint motion",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "joint data type",
+                    "value": "diff_axis-angle",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "joint motion scale",
+                    "value": 5.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "joint motion smoothing",
+                    "value": 0.800000011920929,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "joint motion alpha",
+                    "value": 0.5,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "colour id",
+                    "value": 0,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "name": "gl_translate",
+            "id": 828,
+            "position_x": 973,
+            "position_y": 150,
+            "width": 99,
+            "height": 127,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "z",
+                    "value": -2.7899999618530273,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "reset",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "5": {
+            "init": "r gl_scene",
+            "name": "r",
+            "id": 883,
+            "position_x": 801,
+            "position_y": 95,
+            "width": 64,
+            "height": 32,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "name",
+                    "value": "gl_scene",
+                    "value_type": "string"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 335,
+            "source_node_name": "pose",
+            "source_output_index": 0,
+            "source_output_name": "pose out",
+            "dest_node": 706,
+            "dest_node_name": "gl_body",
+            "dest_input_index": 0,
+            "dest_input_name": "pose in"
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "moconvq_pose_to_joints",
+            "source_output_index": 0,
+            "source_output_name": "RootJoint",
+            "dest_node": 335,
+            "dest_node_name": "pose",
+            "dest_input_index": 5,
+            "dest_input_name": "pelvis anchor"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "moconvq_pose_to_joints",
+            "source_output_index": 1,
+            "source_output_name": "pelvis lowerback",
+            "dest_node": 335,
+            "dest_node_name": "pose",
+            "dest_input_index": 4,
+            "dest_input_name": "spine pelvis"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "moconvq_pose_to_joints",
+            "source_output_index": 2,
+            "source_output_name": "lowerback torso",
+            "dest_node": 335,
+            "dest_node_name": "pose",
+            "dest_input_index": 3,
+            "dest_input_name": "lower vertebrae"
+        },
+        "4": {
+            "source_node": 459,
+            "source_node_name": "moconvq_pose_to_joints",
+            "source_output_index": 3,
+            "source_output_name": "rHip",
+            "dest_node": 335,
+            "dest_node_name": "pose",
+            "dest_input_index": 9,
+            "dest_input_name": "right hip"
+        },
+        "5": {
+            "source_node": 459,
+            "source_node_name": "moconvq_pose_to_joints",
+            "source_output_index": 4,
+            "source_output_name": "lHip",
+            "dest_node": 335,
+            "dest_node_name": "pose",
+            "dest_input_index": 6,
+            "dest_input_name": "left hip"
+        },
+        "6": {
+            "source_node": 459,
+            "source_node_name": "moconvq_pose_to_joints",
+            "source_output_index": 5,
+            "source_output_name": "rKnee",
+            "dest_node": 335,
+            "dest_node_name": "pose",
+            "dest_input_index": 10,
+            "dest_input_name": "right knee"
+        },
+        "7": {
+            "source_node": 459,
+            "source_node_name": "moconvq_pose_to_joints",
+            "source_output_index": 6,
+            "source_output_name": "lKnee",
+            "dest_node": 335,
+            "dest_node_name": "pose",
+            "dest_input_index": 7,
+            "dest_input_name": "left knee"
+        },
+        "8": {
+            "source_node": 459,
+            "source_node_name": "moconvq_pose_to_joints",
+            "source_output_index": 7,
+            "source_output_name": "rAnkle",
+            "dest_node": 335,
+            "dest_node_name": "pose",
+            "dest_input_index": 11,
+            "dest_input_name": "right ankle"
+        },
+        "9": {
+            "source_node": 459,
+            "source_node_name": "moconvq_pose_to_joints",
+            "source_output_index": 8,
+            "source_output_name": "lAnkle",
+            "dest_node": 335,
+            "dest_node_name": "pose",
+            "dest_input_index": 8,
+            "dest_input_name": "left ankle"
+        },
+        "10": {
+            "source_node": 459,
+            "source_node_name": "moconvq_pose_to_joints",
+            "source_output_index": 13,
+            "source_output_name": "torso head",
+            "dest_node": 335,
+            "dest_node_name": "pose",
+            "dest_input_index": 1,
+            "dest_input_name": "upper vertebrae"
+        },
+        "11": {
+            "source_node": 459,
+            "source_node_name": "moconvq_pose_to_joints",
+            "source_output_index": 14,
+            "source_output_name": "torso head end",
+            "dest_node": 335,
+            "dest_node_name": "pose",
+            "dest_input_index": 0,
+            "dest_input_name": "base of skull"
+        },
+        "12": {
+            "source_node": 459,
+            "source_node_name": "moconvq_pose_to_joints",
+            "source_output_index": 15,
+            "source_output_name": "rTorso Clavicle",
+            "dest_node": 335,
+            "dest_node_name": "pose",
+            "dest_input_index": 16,
+            "dest_input_name": "right shoulder blade"
+        },
+        "13": {
+            "source_node": 459,
+            "source_node_name": "moconvq_pose_to_joints",
+            "source_output_index": 16,
+            "source_output_name": "lTorso Clavicle",
+            "dest_node": 335,
+            "dest_node_name": "pose",
+            "dest_input_index": 12,
+            "dest_input_name": "left shoulder blade"
+        },
+        "14": {
+            "source_node": 459,
+            "source_node_name": "moconvq_pose_to_joints",
+            "source_output_index": 17,
+            "source_output_name": "rShoulder",
+            "dest_node": 335,
+            "dest_node_name": "pose",
+            "dest_input_index": 17,
+            "dest_input_name": "right shoulder"
+        },
+        "15": {
+            "source_node": 459,
+            "source_node_name": "moconvq_pose_to_joints",
+            "source_output_index": 18,
+            "source_output_name": "lShoulder",
+            "dest_node": 335,
+            "dest_node_name": "pose",
+            "dest_input_index": 13,
+            "dest_input_name": "left shoulder"
+        },
+        "16": {
+            "source_node": 459,
+            "source_node_name": "moconvq_pose_to_joints",
+            "source_output_index": 19,
+            "source_output_name": "rElbow",
+            "dest_node": 335,
+            "dest_node_name": "pose",
+            "dest_input_index": 18,
+            "dest_input_name": "right elbow"
+        },
+        "17": {
+            "source_node": 459,
+            "source_node_name": "moconvq_pose_to_joints",
+            "source_output_index": 20,
+            "source_output_name": "lElbow",
+            "dest_node": 335,
+            "dest_node_name": "pose",
+            "dest_input_index": 14,
+            "dest_input_name": "left elbow"
+        },
+        "18": {
+            "source_node": 459,
+            "source_node_name": "moconvq_pose_to_joints",
+            "source_output_index": 21,
+            "source_output_name": "rWrist",
+            "dest_node": 335,
+            "dest_node_name": "pose",
+            "dest_input_index": 19,
+            "dest_input_name": "right wrist"
+        },
+        "19": {
+            "source_node": 459,
+            "source_node_name": "moconvq_pose_to_joints",
+            "source_output_index": 23,
+            "source_output_name": "lWrist",
+            "dest_node": 335,
+            "dest_node_name": "pose",
+            "dest_input_index": 15,
+            "dest_input_name": "left wrist"
+        },
+        "20": {
+            "source_node": 828,
+            "source_node_name": "gl_translate",
+            "source_output_index": 0,
+            "source_output_name": "gl chain out",
+            "dest_node": 706,
+            "dest_node_name": "gl_body",
+            "dest_input_index": 1,
+            "dest_input_name": "gl chain"
+        },
+        "21": {
+            "source_node": 883,
+            "source_node_name": "r",
+            "source_output_index": 0,
+            "source_output_name": "gl_scene",
+            "dest_node": 828,
+            "dest_node_name": "gl_translate",
+            "dest_input_index": 0,
+            "dest_input_name": "gl chain in"
+        }
+    }
+}
