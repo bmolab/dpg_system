@@ -442,6 +442,15 @@ class MoCapGLBody(MoCapNode):
                             spec.append(0)
                     limb_vertices.append(spec)
                 self.set_limb_vertices(joint_name, limb_vertices)
+            elif command[0] == 'limb_size':
+                if len(command) > 1:
+                    joint_name = command[1]
+                    if joint_name in joint_name_to_index:
+                        joint_index = joint_name_to_index[joint_name]
+                        if len(command) > 2:
+                            dims = command[2:]
+                            if len(dims) == 1:
+                                self.body.joints[joint_index].length = dims[0]
 
     def set_limb_vertices(self, name, vertices):
         self.body.set_limb_vertices(name, vertices)

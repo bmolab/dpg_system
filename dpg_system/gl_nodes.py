@@ -592,13 +592,14 @@ class GLBillboard(GLNode):
         super().__init__(label, data, args)
 
     def initialize(self, args):
+        super().initialize(args)
         self.width = self.add_input('width', widget_type='drag_float', default_value=1.6)
         self.height = self.add_input('height', widget_type='drag_float', default_value=0.9)
         self.texture = self.add_input('texture')
         self.texture_shape = None
         self.numpy_texture = None
         self.texture_data_pending = None
-        self.gl_output = self.add_output('gl chain out')
+        # self.gl_output = self.add_output('gl chain out')
 
     def execute(self):
         if self.texture.fresh_input:
@@ -699,18 +700,23 @@ class GLQuadricNode(GLNode):
         super().__init__(label, data, args)
 
     def initialize(self, args):
-        self.quadric = gluNewQuadric()
+        try:
+            self.quadric = gluNewQuadric()
+        except Exception as e:
+            print('self.quadric failed')
+            print(e)
         self.shading_option = None
-        self.command_parser = GLQuadricCommandParser(self)
         self.pending_commands = []
+        self.command_parser = GLQuadricCommandParser(self)
         self.alignment_matrix = None
         super().initialize(args)
 
     def process_pending_commands(self):
-        if len(self.pending_commands) > 0:
-            for command in self.pending_commands:
-                self.command_parser.perform(command[0], self, command[1:])
-        self.pending_commands = []
+        if self.pending_commands is not None:
+            if len(self.pending_commands) > 0:
+                for command in self.pending_commands:
+                    self.command_parser.perform(command[0], self, command[1:])
+            self.pending_commands = []
 
     def shading_changed(self):
         shading = self.shading_option()
@@ -759,13 +765,14 @@ class GLSphereNode(GLQuadricNode):
         super().__init__(label, data, args)
 
     def initialize(self, args):
+        super().initialize(args)
         size = self.arg_as_float(default_value=0.5)
         slices = self.arg_as_int(index=1, default_value=32)
         stacks = self.arg_as_int(index =2, default_value=32)
 
-        self.gl_input = self.add_input('gl chain in', triggers_execution=True)
+        # self.gl_input = self.add_input('gl chain in', triggers_execution=True)
         self.size = self.add_input('size', widget_type='drag_float', default_value=size)
-        self.gl_output = self.add_output('gl chain out')
+        # self.gl_output = self.add_output('gl chain out')
 
         self.slices = self.add_option('slices', widget_type='drag_int', default_value=slices)
         self.stacks = self.add_option('stacks', widget_type='drag_int', default_value=stacks)
@@ -788,14 +795,16 @@ class GLDiskNode(GLQuadricNode):
         super().__init__(label, data, args)
 
     def initialize(self, args):
+        super().initialize(args)
+
         inner_radius = self.arg_as_float(default_value=0.0)
         outer_radius = self.arg_as_float(index=1, default_value=0.5)
         slices = self.arg_as_int(index=2, default_value=32)
         rings = self.arg_as_int(index=3, default_value=1)
 
-        self.gl_input = self.add_input('gl chain in', triggers_execution=True)
+        # self.gl_input = self.add_input('gl chain in', triggers_execution=True)
         self.outer_radius = self.add_property('outer radius', widget_type='drag_float', default_value=outer_radius)
-        self.gl_output = self.add_output('gl chain out')
+        # self.gl_output = self.add_output('gl chain out')
 
         self.inner_radius = self.add_option('inner radius', widget_type='drag_float', default_value=inner_radius)
         self.slices = self.add_option('slices', widget_type='drag_int', default_value=slices)
@@ -819,6 +828,8 @@ class GLPartialDiskNode(GLQuadricNode):
         super().__init__(label, data, args)
 
     def initialize(self, args):
+        super().initialize(args)
+
         inner_radius = self.arg_as_float(default_value=0.0)
         outer_radius = self.arg_as_float(index=1, default_value=0.5)
         slices = self.arg_as_int(index=2, default_value=32)
@@ -826,9 +837,9 @@ class GLPartialDiskNode(GLQuadricNode):
         start_angle = self.arg_as_float(index=4, default_value=0.0)
         sweep_angle = self.arg_as_float(index=5, default_value=90)
 
-        self.gl_input = self.add_input('gl chain in', triggers_execution=True)
+        # self.gl_input = self.add_input('gl chain in', triggers_execution=True)
         self.outer_radius = self.add_property('outer radius', widget_type='drag_float', default_value=outer_radius)
-        self.gl_output = self.add_output('gl chain out')
+        # self.gl_output = self.add_output('gl chain out')
 
         self.inner_radius = self.add_option('inner radius', widget_type='drag_float', default_value=inner_radius)
         self.slices = self.add_option('slices', widget_type='drag_int', default_value=slices)
@@ -856,14 +867,16 @@ class GLCylinderNode(GLQuadricNode):
         super().__init__(label, data, args)
 
     def initialize(self, args):
+        super().initialize(args)
+
         base_radius = self.arg_as_float(default_value=0.5)
         top_radius = self.arg_as_float(index=1, default_value=0.5)
         height = self.arg_as_float(index=2, default_value=0.5)
         slices = self.arg_as_int(index=3, default_value=40)
         stacks = self.arg_as_int(index=4, default_value=1)
 
-        self.gl_input = self.add_input('gl chain in', triggers_execution=True)
-        self.gl_output = self.add_output('gl chain out')
+        # self.gl_input = self.add_input('gl chain in', triggers_execution=True)
+        # self.gl_output = self.add_output('gl chain out')
 
         self.base_radius = self.add_option('base radius', widget_type='drag_float', default_value=base_radius)
         self.top_radius = self.add_option('top radius', widget_type='drag_float', default_value=top_radius)
@@ -893,10 +906,11 @@ class GLQuaternionRotateNode(GLNode):
         super().__init__(label, data, args)
 
     def initialize(self, args):
+        super().initialize(args)
         self.show_axis = False
-        self.gl_input = self.add_input('gl chain in', triggers_execution=True)
+        # self.gl_input = self.add_input('gl chain in', triggers_execution=True)
         self.quat_input = self.add_input('quaternion')
-        self.gl_output = self.add_output('gl chain out')
+        # self.gl_output = self.add_output('gl chain out')
         self.show_axis_option = self.add_option('show axis', widget_type='checkbox', default_value=self.show_axis)
 
     def remember_state(self):
@@ -969,12 +983,13 @@ class GLTransformNode(GLNode):
         super().__init__(label, data, args)
 
     def initialize(self, args):
+        super().initialize(args)
         self.values = [0.0, 0.0, 0.0]
         self.values[0] = self.arg_as_float(default_value=0.0)
         self.values[1] = self.arg_as_float(index=1, default_value=0.0)
         self.values[2] = self.arg_as_float(index=2, default_value=0.0)
 
-        self.gl_input = self.add_input('gl chain in', triggers_execution=True)
+        # self.gl_input = self.add_input('gl chain in', triggers_execution=True)
         self.x = self.add_input('x', widget_type='drag_float', default_value=self.values[0])
         self.y = self.add_input('y', widget_type='drag_float', default_value=self.values[1])
         self.z = self.add_input('z', widget_type='drag_float', default_value=self.values[2])
@@ -983,7 +998,7 @@ class GLTransformNode(GLNode):
             self.y.widget.speed = 1
             self.z.widget.speed = 1
         self.reset_button = self.add_property('reset', widget_type='button', callback=self.reset)
-        self.gl_output = self.add_output('gl chain out')
+        # self.gl_output = self.add_output('gl chain out')
 
     def reset(self):
         if self.label in ['gl_translate', 'gl_rotate']:
@@ -1031,14 +1046,15 @@ class GLColorNode(GLNode):
         super().__init__(label, data, args)
 
     def initialize(self, args):
+        super().initialize(args)
         self.hold_color = (GLfloat * 4)()
         self.color = (GLfloat * 4)()
-        self.gl_input = self.add_input('gl chain in', triggers_execution=True)
+        # self.gl_input = self.add_input('gl chain in', triggers_execution=True)
         self.red_input = self.add_input('red', widget_type='slider_float', min=0.0, max=1.0, default_value=0.0)
         self.green_input = self.add_input('green', widget_type='slider_float', min=0.0, max=1.0, default_value=0.0)
         self.blue_input = self.add_input('blue', widget_type='slider_float', min=0.0, max=1.0, default_value=0.0)
         self.alpha_input = self.add_input('alpha', widget_type='slider_float', min=0.0, max=1.0, default_value=0.0)
-        self.gl_output = self.add_output('gl chain out')
+        # self.gl_output = self.add_output('gl chain out')
 
     def remember_state(self):
         gl.glGetFloatv(GL_CURRENT_COLOR, self.hold_color)
@@ -1065,6 +1081,7 @@ class GLEnableNode(GLNode):
         super().__init__(label, data, args)
 
     def initialize(self, args):
+        super().initialize(args)
         self.state_code = -1
         self.hold_state = False
         if len(GLEnableNode.state_dict) == 0:
@@ -1075,9 +1092,9 @@ class GLEnableNode(GLNode):
             state_arg = args[0]
             if state_arg in self.state_dict:
                 self.state_code = GLEnableNode.state_dict[state_arg]
-        self.gl_input = self.add_input('gl chain in', triggers_execution=True)
+        # self.gl_input = self.add_input('gl chain in', triggers_execution=True)
         self.state_input = self.add_input(state_arg, widget_type='checkbox', default_value=False)
-        self.gl_output = self.add_output('gl chain out')
+        # self.gl_output = self.add_output('gl chain out')
 
     def remember_state(self):
         if self.state_code != -1:
@@ -1208,6 +1225,7 @@ class GLMaterialNode(GLNode):
             self.material.emission = container['emission']
 
     def initialize(self, args):
+        super().initialize(args)
         self.material = GLMaterial()
         self.material.ambient = [0.2, 0.2, 0.2, 1.0]
         self.material.diffuse = [0.8, 0.8, 0.8, 1.0]
@@ -1219,7 +1237,7 @@ class GLMaterialNode(GLNode):
 
         self.create_material_presets()
 
-        self.gl_input = self.add_input('gl chain in', triggers_execution=True)
+        # self.gl_input = self.add_input('gl chain in', triggers_execution=True)
         self.ambient_input = self.add_input('ambient')
         self.diffuse_input = self.add_input('diffuse')
         self.specular_input = self.add_input('specular')
@@ -1230,7 +1248,7 @@ class GLMaterialNode(GLNode):
         self.preset_menu = self.add_property('presets', widget_type='combo', callback=self.preset_selected)
         presets = list(self.presets.keys())
         self.preset_menu.widget.combo_items = presets
-        self.gl_output = self.add_output('gl chain out')
+        # self.gl_output = self.add_output('gl chain out')
 
     def set_alpha(self):
         alpha = self.alpha_input()
@@ -1592,6 +1610,7 @@ class GLAlignNode(GLNode):
         self.up = np.array([0.0, 1.0, 0.0])
 
     def initialize(self, args):
+        super().initialize(args)
         if args is not None:
             float_count = 0
             for i in range(len(args)):
@@ -1600,11 +1619,11 @@ class GLAlignNode(GLNode):
                     self.axis[float_count] = val
                 float_count += 1
 
-        self.gl_input = self.add_input('gl chain in', triggers_execution=True)
+        # self.gl_input = self.add_input('gl chain in', triggers_execution=True)
         self.x = self.add_input('x', widget_type='drag_float', default_value=self.axis[0], callback=self.axis_changed)
         self.y = self.add_input('y', widget_type='drag_float', default_value=self.axis[1], callback=self.axis_changed)
         self.z = self.add_input('z', widget_type='drag_float', default_value=self.axis[2], callback=self.axis_changed)
-        self.gl_output = self.add_output('gl chain out')
+        # self.gl_output = self.add_output('gl chain out')
         self.align()
         self.ready = True
 
@@ -2310,12 +2329,13 @@ class GLXYZDiskNode(GLQuadricNode):
         super().__init__(label, data, args)
 
     def initialize(self, args):
+        super().initialize(args)
         # self.scale = self.arg_as_float(default_value=1.0)
 
-        self.gl_input = self.add_input('gl chain in', triggers_execution=True)
+        # self.gl_input = self.add_input('gl chain in', triggers_execution=True)
         self.scale = self.add_input('gl chain in', widget_type='drag_float', default_value=1.0)
         self.quat = self.add_input('quaternion in', callback=self.set_quaternion)
-        self.gl_output = self.add_output('gl chain out')
+        # self.gl_output = self.add_output('gl chain out')
 
         self.inner_radius = 0.0
         self.slices = 32
@@ -2363,6 +2383,7 @@ class GLButtonGridNode(GLNode):
         super().__init__(label, data, args)
 
     def initialize(self, args):
+        super().initialize(args)
         self.display_list = -1
         self.initialized = False
         self.new_selection = True
@@ -2380,7 +2401,7 @@ class GLButtonGridNode(GLNode):
                                                callback=self.display_changed)
         self.scale_input = self.add_input('scale', widget_type='drag_float', default_value=.1,
                                           callback=self.display_changed)
-        self.gl_output = self.add_output('gl chain out')
+        # self.gl_output = self.add_output('gl chain out')
 
 
     def display_changed(self):
@@ -2448,6 +2469,7 @@ class GLNumpyLines(GLNode):
         super().__init__(label, data, args)
 
     def initialize(self, args):
+        super().initialize(args)
         self.array_input = self.add_input('array', triggers_execution=True)
         self.alpha_fade = self.add_bool_input('alpha_fade', widget_type='checkbox', default_value=True)
         self.motion_accent = self.add_input('accent_motion', widget_type='checkbox', default_value=False)
@@ -2455,7 +2477,7 @@ class GLNumpyLines(GLNode):
         self.accent_scale = self.add_input('accent_scale', widget_type='drag_int', default_value=50)
         self.line_width = self.add_input('line_width', widget_type='drag_int', default_value=1)
         self.selected_joints = self.add_input('selected_joints', widget_type='text_input', default_value='')
-        self.gl_output = self.add_output('gl chain out')
+        # self.gl_output = self.add_output('gl chain out')
 
         self.colors = []
         self.previous_array = None

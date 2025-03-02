@@ -14,7 +14,75 @@ from queue import Queue
 import threading
 import traceback
 import time
+import shutil
+import subprocess
+from typing import Iterator, Union
 api_key = 'be1eae804441ec11f0fe872f82ad44f3'
+
+
+def is_installed(lib_name: str) -> bool:
+    lib = shutil.which(lib_name)
+    if lib is None:
+        return False
+    return True
+
+
+class Streamer:
+    def __init__(self):
+        self.force_stop = False
+
+    def do_stop(self):
+        self.force_stop = True
+
+    def stream(self, audio_stream: Iterator[bytes]) -> bytes:
+        if not is_installed("mpv"):
+            message = (
+                "mpv not found, necessary to stream audio. "
+                "On mac you can install it with 'brew install mpv'. "
+                "On linux and windows you can install it from https://mpv.io/"
+            )
+            raise ValueError(message)
+
+        mpv_command = ["mpv", "--no-cache", "--no-terminal", "--", "fd://0"]
+        mpv_process = subprocess.Popen(
+            mpv_command,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+
+        audio = b""
+
+        for chunk in audio_stream:
+            if self.force_stop:
+                print('STOPPING')
+                audio = b""
+                break
+            if chunk is not None:
+                if self.force_stop:
+                    print('STOPPING')
+                    audio = b""
+                    break
+                mpv_process.stdin.write(chunk)  # type: ignore
+                mpv_process.stdin.flush()  # type: ignore
+                audio += chunk
+                if self.force_stop:
+                    print('STOPPING')
+                    audio = b""
+                    break
+        print('EXITING')
+        if mpv_process.stdin:
+            mpv_process.stdin.close()
+        if self.force_stop:
+             pid = mpv_process.pid
+             mpv_process.terminate()
+             print('TERMINATED')
+             self.force_stop = False
+        else:
+            mpv_process.wait()
+        print('DONE')
+        self.force_stop = False
+        return audio
 
 
 def register_elevenlab_nodes():
@@ -107,6 +175,7 @@ class ElevenLabsNode(Node):
             self.models = self.client.models.get_all()
             self.voice_name = 'David'
             self.active = False
+            self.streamer = Streamer()
             self.audio_stream = None
             if len(args) > 0:
                 voice_name = any_to_string(args[0])
@@ -181,6 +250,7 @@ class ElevenLabsNode(Node):
                 self.phrase_queue.put(self.text_to_speak)
 
     def stop_streaming(self):
+        self.streamer.do_stop()
         while not self.phrase_queue.empty():
             try:
                 self.phrase_queue.get(block=False)
@@ -204,7 +274,8 @@ class ElevenLabsNode(Node):
             # )
             self.audio_stream = self.client.generate(text=text, voice=self.voice_record, model=model, stream=True, optimize_streaming_latency=latency, voice_settings=settings)
             try:
-                audio = stream(self.audio_stream)
+                audio = self.streamer.stream(self.audio_stream)
+                # audio = stream(self.audio_stream)
             except Exception as e:
                 print(e)
             self.active = False
@@ -215,4 +286,3 @@ class ElevenLabsNode(Node):
             self.previously_active = self.active
 
 # def text_stream():
-

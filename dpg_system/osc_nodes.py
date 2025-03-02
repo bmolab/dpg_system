@@ -223,7 +223,6 @@ class OSCTarget(OSCBase):
     def custom_create(self, from_file):
         self.create_client()
         self.osc_manager.register_target(self)
-
     def create_client(self):
         try:
             self.client = SimpleUDPClient(self.ip, self.target_port)
