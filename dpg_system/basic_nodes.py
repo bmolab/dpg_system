@@ -3184,6 +3184,7 @@ class GatherSentences(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.received_sentence = ''
+        self.received_tokens = []
         self.input = self.add_input('string in', triggers_execution=True)
         self.end_input = self.add_input('force string end', triggers_execution=True)
         self.enforce_spaces = self.add_property('enforce spaces', widget_type='checkbox')
@@ -3192,44 +3193,72 @@ class GatherSentences(Node):
         self.skip_framed_by = self.add_property('skip framed by', widget_type='text_input')
         self.sentence_output = self.add_output('sentences out')
 
+    def convert_list_of_tokens_to_string(self):
+        if len(self.received_tokens) > 0:
+            self.received_sentence = ''.join(self.received_tokens)
+        else:
+            self.received_sentence = ''
+
     def execute(self):
         self.skipper = self.skip_framed_by()
 
         if self.active_input == self.input:
             data = any_to_string(self.input())
             if len(data) > 0:
+                if data == '<backspace>':
+                    if len(self.received_tokens) > 0:
+                        self.received_tokens = self.received_tokens[:-1]
+                        return
                 if self.auto_sentence_end():
                     if data[-1] == '\n' and len(data) > 1:
                         if data[-2] == '\n':
-                            self.received_sentence += data
-                            # self.received_sentence = self.received_sentence.replace('\n', ' ')
-
+                            self.received_tokens.append(data)
                             self.send_sentence()
                             return
                     if data[-1] == '-' and len(data) > 1:
                         if data[-2] == '-':
-                            self.received_sentence += data
-                            # self.received_sentence = self.received_sentence.replace('\n', ' ')
+                            self.received_tokens.append(data)
                             self.send_sentence()
                             return
                     if data[-1] in ['.', '?', '!', ';', ':']:
-                        self.received_sentence += data
-                        # self.received_sentence = self.received_sentence.replace('\n', ' ')
+                        self.received_tokens.append(data)
                         self.send_sentence()
                         return
+                    if data[-1] == ')' and len(self.received_tokens) > 0:
+                        if self.received_tokens[0] == '' and len(self.received_tokens) > 1:
+                            if self.received_tokens[1][-1] == '(':
+                                self.received_tokens.append(data)
+                                self.send_sentence()
+                                return
+                            elif self.received_tokens[1][0] == '(':
+                                self.received_tokens.append(data)
+                                self.send_sentence()
+                                return
+                        elif self.received_tokens[0][-1] == '(':
+                            self.received_tokens.append(data)
+                            self.send_sentence()
+                            return
+                        elif self.received_tokens[0][0] == '(':
+                            self.received_tokens.append(data)
+                            self.send_sentence()
+                            return
                 elif self.end_on_return():
                     if data[0] == '\n':
                         self.send_sentence()
 
             if self.enforce_spaces() and len(self.received_sentence) > 0 and len(data) > 0:
-                if self.received_sentence[-1] != ' ' and data[0] != ' ':
+                if self.received_tokens[-1][-1] != ' ' and data[0] != ' ':
+                    self.received_tokens.append(' ')
                     self.received_sentence += ' '
-            self.received_sentence += data
+            if len(data) > 0:
+                self.received_tokens.append(data)
         else:
             self.send_sentence()
 
     def send_sentence(self):
         skipping = False
+        self.convert_list_of_tokens_to_string()
+        self.received_tokens = []
         self.skipper = self.skip_framed_by()
         if len(self.skipper) == 1:
             stripped_sentence = ''
