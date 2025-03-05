@@ -51,7 +51,7 @@ if platform.system() == "Linux":
                 d.connection = display_connection
                 display_res = display_data_stripped[2]
                 res = display_res.split('+')
-                x_offset = any_to_int(res[1])
+                x_offset = any_to_int(res[1]) # fix
                 y_offset = any_to_int(res[2])
                 d.offsets = [x_offset, y_offset]
                 res_break = res[0].split('x')
