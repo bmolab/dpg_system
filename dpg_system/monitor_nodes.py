@@ -51,12 +51,12 @@ if platform.system() == "Linux":
                 d.connection = display_connection
                 display_res = display_data_stripped[2]
                 res = display_res.split('+')
-                x_offset = res[1]
-                y_offset = res[2]
+                x_offset = any_to_int(res[1])
+                y_offset = any_to_int(res[2])
                 d.offsets = [x_offset, y_offset]
                 res_break = res[0].split('x')
-                res_x = res_break[0].split('/')[0]
-                res_y = res_break[1].split('/')[0]
+                res_x = any_to_int(res_break[0].split('/')[0])
+                res_y = any_to_int(res_break[1].split('/')[0])
                 d.resolution = [res_x, res_y]
                 displays.append(d)
         return displays

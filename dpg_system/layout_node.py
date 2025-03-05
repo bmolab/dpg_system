@@ -39,7 +39,7 @@ class TextLayoutNode(Node):
         self.active_line = self.add_input('active_line', widget_type='input_int', default_value=17, callback=self.active_line_changed)
         self.include_prompt = self.add_input('include prompt', widget_type='checkbox', default_value=True)
         self.image_output = self.add_output('layout')
-
+        self.previous_layout_length = 0
         self.cmap2 = make_heatmap()
         self.cmap3 = make_coldmap()
         self.layout = LLMLayout([0, 0, 1920, 1080])
@@ -71,9 +71,11 @@ class TextLayoutNode(Node):
                         date = time.strftime("%d-%m-%Y-%H_%M_%S")
                         self.layout.save_layout_as_text(dir + os.sep + 'llama_output_' + date + '.txt')
                     if data[0] == 'add':
+                        self.previous_layout_length = len(self.layout.layout)
                         self.add_text([data[1:]])
                     elif data[0] == 'step_back':
-                        self.step_back()
+                        count = any_to_int(data[1])
+                        self.step_back(count, redraw=False)
                         self.streaming_prompt_active = False
                     elif data[0] == 'temperature':
                         self.temp = any_to_float(data[1])
@@ -87,9 +89,12 @@ class TextLayoutNode(Node):
                     elif data[0] == 'streaming_prompt':
                         if not self.streaming_prompt_active:
                             self.streaming_prompt_active = True
-                            self.streaming_prompt_pos = len(self.layout.layout)
-                        else:
-                            delete_element_count = len(self.layout.layout) - self.streaming_prompt_pos
+                            if self.layout.show_list:
+                                self.streaming_prompt_pos = self.previous_layout_length
+                            else:
+                                self.streaming_prompt_pos = len(self.layout.layout)
+                        delete_element_count = len(self.layout.layout) - self.streaming_prompt_pos
+                        if delete_element_count > 0:
                             self.layout.step_back(delete_element_count)
                         if len(data) > 1:
                             pairs = data[1]
@@ -97,14 +102,10 @@ class TextLayoutNode(Node):
                     elif data[0] == 'accept_streamed_prompt':
                         if self.streaming_prompt_active:
                             self.streaming_prompt_active = False
-                            # delete_element_count = len(self.layout.layout) - self.streaming_prompt_pos
-                            # self.layout.step_back(delete_element_count)
-                            # if len(data) > 1:
-                            #     pairs = data[1]
-                            #     self.add_text(pairs)
                     elif data[0] == 'backspace_streaming_prompt':
                         if self.streaming_prompt_active and len(self.layout.layout) > self.streaming_prompt_pos:
-                            self.layout.step_back(1)
+                            if len(self.layout.layout[-1][1]) > 0:
+                                self.layout.layout[-1][1] = self.layout.layout[-1][1][:-1]
                             self.display_layout()
                     elif data[0] == 'choice_list':
                         self.add_text_with_choices(data[1], data[2])
@@ -197,10 +198,11 @@ class TextLayoutNode(Node):
 
             self.display_layout()
 
-    def step_back(self):
-        if len(self.layout.layout) > 2:
-            self.layout.step_back(step_size=2)
-            self.display_layout()
+    def step_back(self, count=2, redraw=True):
+        if len(self.layout.layout) > count:
+            self.layout.step_back(step_size=count)
+            if redraw:
+                self.display_layout()
 
     def display_layout(self):
         self.layout.draw_layout()
