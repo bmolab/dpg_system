@@ -2,6 +2,7 @@ from pylab import *
 import numpy as np
 
 from pyquaternion import Quaternion
+import quaternion
 import json
 import json
 import numpy as np
@@ -275,7 +276,7 @@ class BodyDataBase:
 
         self.joint_matrices = None
         self.joint_quats = None
-        self.quaternions_np = np.zeros((20, 4, 1), dtype=float)
+        self.quaternions_np = np.zeros((1, 20, 4), dtype=float)
 
         self.base_material = [0.5, 0.5, 0.5, 1.0]
         self.multi_body_translation = [0.0, 0.0, 0.0]
@@ -283,6 +284,7 @@ class BodyDataBase:
         self.color = []
         self.create_colours()
 
+        self.calc_diff = False
         self.limb_vertices = []
         self.create_limbs()
 
@@ -403,6 +405,7 @@ class BodyDataBase:
 
     def draw_to(self, joint_index, prev_limb_index=-1, orientation=False, show_disks=False):
         transform = self.default_gl_transform
+        linear_index = -1
         if joint_index != t_NoJoint:
             linear_index = self.joint_mapper[joint_index]
             if linear_index != -1:
@@ -417,7 +420,7 @@ class BodyDataBase:
 
         if joint_data.do_draw:
             if orientation:
-                if show_disks:
+                if show_disks and linear_index != -1:
                     self.show_orientation(joint_index, prev_limb_index)
             glPushMatrix()
             glMultMatrixf(m)
@@ -431,7 +434,7 @@ class BodyDataBase:
         glTranslatef(joint_data.bone_dim[0], joint_data.bone_dim[1], joint_data.bone_dim[2])
         if orientation:
             if not show_disks:
-                self.node.joint_callback(joint_index)
+                self.node.joint_callback(linear_index)
         glMultMatrixf(transform)
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, self.base_material)
 
@@ -710,7 +713,9 @@ class BodyDataBase:
 
         if next_limb_index == -1:
             next_limb_index = joint_index
-        self.draw_quaternion_distance_sphere(next_limb_index, joint_data)
+        linear_index = self.joint_mapper[next_limb_index]
+        if linear_index != -1:
+            self.draw_quaternion_distance_sphere(linear_index, joint_data)
         glPopMatrix()
 
     def draw_quaternion_distance_sphere(self, limb_index, joint_data):
@@ -721,6 +726,10 @@ class BodyData(BodyDataBase):
     def __init__(self):
         super().__init__()
         self.origin = None
+        self.diff_quats = None
+        self.axes = None
+        self.magnitudes = None
+        self.normalized_axes = None
         self.positions = []
         self.quaternions = []
         self.quaternionDistance = []
@@ -747,6 +756,8 @@ class BodyData(BodyDataBase):
         self.joint_disk_material.specular = [0.256777, 0.137622, 0.086014, self.joint_disk_alpha]
         self.joint_disk_material.shininess = 12.8
 
+        self.smoothed_quaternions_a = np.zeros((1, 20, 4), dtype=float)
+        self.smoothed_quaternions_b = np.zeros((1, 20, 4), dtype=float)
         self.current_body = 0
         self.capture_next_pose = False
         self.has_captured_pose = False
@@ -782,13 +793,10 @@ class BodyData(BodyDataBase):
             self.base_material[1] = 0.5
             self.base_material[2] = 0.5
 
-    # def update_quats(self, quats):
-    #     self.quaternions_np = np.expand_dims(quats, axis=0)
-    #     self.joint_matrices = quaternions_to_R3_rotation(self.quaternions_np)
-    #     self.joint_quats = self.quaternions_np.copy()
-        # if self.calc_diff:
-        #     for joint_index in range(20):
-        #         self.calc_diff_quaternion(joint_index)
+    def update_quats(self, quats):
+        super().update_quats(quats)
+        if self.calc_diff:
+            self.calc_diff_quaternions()
 
     def update(self, joint_index, quat, position=None, label=0, paused=False):
         if position is not None:
@@ -799,46 +807,69 @@ class BodyData(BodyDataBase):
         if not paused:
             self.previousQuats[joint_index] = self.diffQuaternionA[joint_index].copy()
         self.quaternions[joint_index] = [quat[0], quat[1], quat[2], quat[3]]
-        if not paused:
-            self.calc_diff_quaternion(joint_index)
+        # if not paused:
+        #     self.calc_diff_quaternion(joint_index)
 
         q1 = Quaternion(self.previousQuats[joint_index])
         q2 = Quaternion(self.diffQuaternionA[joint_index])
 
         # quaternion smooothing -> slerp on quat and prev or slerp on distance
         # use difference of gaussians trick to get smooth sense of jerk and flex
-        if paused == False:
+        if not paused:
             self.quaternionDistance[joint_index] = Quaternion.sym_distance(q1.unit, q2.unit)
             self.calc_diff_quaternion(joint_index)
+
         self.quaternionDiff[joint_index] = q2 - q1
         self.rotationAxis[joint_index] = list(self.quaternionDiff[joint_index].unit.axis)
         self.set_label(label - 1)
 
+    def quaternion_distances(self, q1, q2):
+        q1_ = q1 / np.expand_dims(np.linalg.norm(q1, axis=-1), -1)
+        q2_ = q2 / np.expand_dims(np.linalg.norm(q2, axis=-1), -1)
+        diff = np.sum(np.multiply(q1_[:, :], q2_[:, :]), axis=2)
+        diff = np.clip(diff, a_min=-1, a_max=1)
+        distances = np.acos(2 * diff[:, :] * diff[:, :] - 1)
+        return distances
+        #con
+        # for i in range(q1.shape[1]):
+        #     q_first = Quaternion(q1[0, i])
+        #     q_second = Quaternion(q2[0, i])
+        #     diff = Quaternion.distance(q_first, q_first)
+
+
     def calc_diff_quaternions(self):
-        self.smoothed_quaternions_a = self.smoothed_quaternions_a * self.diffQuatSmoothingA + self.joint_quats * (1.0 - self.diffQuatSmoothingA)
-        self.smoothed_quaternions_b = self.smoothed_quaternions_b * self.diffQuatSmoothingB + self.joint_quats * (1.0 - self.diffQuatSmoothingB)
-        self.diff_quats = self.smoothed_quaternions_a - self.smoothed_quaternions_b
-        self.diffQuatAbsSum = np.abs(self.diff_quats).sum(axis=1)
+        self.smoothed_quaternions_a = self.smoothed_quaternions_a * self.diffQuatSmoothingA + self.quaternions_np * (1.0 - self.diffQuatSmoothingA)
+        self.smoothed_quaternions_b = self.smoothed_quaternions_b * self.diffQuatSmoothingB + self.quaternions_np * (1.0 - self.diffQuatSmoothingB)
+        # we want axis, magnitude from diff_quat
 
-    def calc_diff_quaternion(self, jointIndex):
-        w = self.quaternions[jointIndex][0]  # - self.previousQuats[jointIndex][0]
-        x = self.quaternions[jointIndex][1]  # - self.previousQuats[jointIndex][1]
-        y = self.quaternions[jointIndex][2]  # - self.previousQuats[jointIndex][2]
-        z = self.quaternions[jointIndex][3]  # - self.previousQuats[jointIndex][3]
-        self.diffQuaternionA[jointIndex][0] = self.diffQuaternionA[jointIndex][0] * self.diffQuatSmoothingA + w * (1.0 - self.diffQuatSmoothingA)
-        self.diffQuaternionA[jointIndex][1] = self.diffQuaternionA[jointIndex][1] * self.diffQuatSmoothingA + x * (1.0 - self.diffQuatSmoothingA)
-        self.diffQuaternionA[jointIndex][2] = self.diffQuaternionA[jointIndex][2] * self.diffQuatSmoothingA + y * (1.0 - self.diffQuatSmoothingA)
-        self.diffQuaternionA[jointIndex][3] = self.diffQuaternionA[jointIndex][3] * self.diffQuatSmoothingA + z * (1.0 - self.diffQuatSmoothingA)
-        self.diffQuaternionB[jointIndex][0] = self.diffQuaternionB[jointIndex][0] * self.diffQuatSmoothingB + w * (1.0 - self.diffQuatSmoothingB)
-        self.diffQuaternionB[jointIndex][1] = self.diffQuaternionB[jointIndex][1] * self.diffQuatSmoothingB + x * (1.0 - self.diffQuatSmoothingB)
-        self.diffQuaternionB[jointIndex][2] = self.diffQuaternionB[jointIndex][2] * self.diffQuatSmoothingB + y * (1.0 - self.diffQuatSmoothingB)
-        self.diffQuaternionB[jointIndex][3] = self.diffQuaternionB[jointIndex][3] * self.diffQuatSmoothingB + z * (1.0 - self.diffQuatSmoothingB)
-        self.diffDiff[jointIndex][0] = self.diffQuaternionA[jointIndex][0] - self.diffQuaternionB[jointIndex][0]
-        self.diffDiff[jointIndex][1] = self.diffQuaternionA[jointIndex][1] - self.diffQuaternionB[jointIndex][1]
-        self.diffDiff[jointIndex][2] = self.diffQuaternionA[jointIndex][2] - self.diffQuaternionB[jointIndex][2]
-        self.diffDiff[jointIndex][3] = self.diffQuaternionA[jointIndex][3] - self.diffQuaternionB[jointIndex][3]
+        a = quaternion.as_quat_array(self.smoothed_quaternions_a)
+        b = quaternion.as_quat_array(self.smoothed_quaternions_b)
+        self.diff_quats = a - b
+        self.axes = quaternion.as_rotation_vector(self.diff_quats)
+        self.magnitudes = self.quaternion_distances(self.smoothed_quaternions_a, self.smoothed_quaternions_b)
+        self.normalized_axes = self.axes / np.expand_dims(self.magnitudes, axis=-1)
+        # self.diff_quats = self.smoothed_quaternions_a - self.smoothed_quaternions_b
+        # self.diffQuatAbsSum = np.abs(self.diff_quats).sum(axis=1)
 
-        self.diffQuaternionAbsSum[jointIndex] = abs(self.diffDiff[jointIndex][0]) + abs(self.diffDiff[jointIndex][1]) + abs(self.diffDiff[jointIndex][2]) + abs(self.diffDiff[jointIndex][3])
+    # def calc_diff_quaternion(self, jointIndex):
+    #     w = self.quaternions[jointIndex][0]  # - self.previousQuats[jointIndex][0]
+    #     x = self.quaternions[jointIndex][1]  # - self.previousQuats[jointIndex][1]
+    #     y = self.quaternions[jointIndex][2]  # - self.previousQuats[jointIndex][2]
+    #     z = self.quaternions[jointIndex][3]  # - self.previousQuats[jointIndex][3]
+    #     self.diffQuaternionA[jointIndex][0] = self.diffQuaternionA[jointIndex][0] * self.diffQuatSmoothingA + w * (1.0 - self.diffQuatSmoothingA)
+    #     self.diffQuaternionA[jointIndex][1] = self.diffQuaternionA[jointIndex][1] * self.diffQuatSmoothingA + x * (1.0 - self.diffQuatSmoothingA)
+    #     self.diffQuaternionA[jointIndex][2] = self.diffQuaternionA[jointIndex][2] * self.diffQuatSmoothingA + y * (1.0 - self.diffQuatSmoothingA)
+    #     self.diffQuaternionA[jointIndex][3] = self.diffQuaternionA[jointIndex][3] * self.diffQuatSmoothingA + z * (1.0 - self.diffQuatSmoothingA)
+    #     self.diffQuaternionB[jointIndex][0] = self.diffQuaternionB[jointIndex][0] * self.diffQuatSmoothingB + w * (1.0 - self.diffQuatSmoothingB)
+    #     self.diffQuaternionB[jointIndex][1] = self.diffQuaternionB[jointIndex][1] * self.diffQuatSmoothingB + x * (1.0 - self.diffQuatSmoothingB)
+    #     self.diffQuaternionB[jointIndex][2] = self.diffQuaternionB[jointIndex][2] * self.diffQuatSmoothingB + y * (1.0 - self.diffQuatSmoothingB)
+    #     self.diffQuaternionB[jointIndex][3] = self.diffQuaternionB[jointIndex][3] * self.diffQuatSmoothingB + z * (1.0 - self.diffQuatSmoothingB)
+    #     self.diffDiff[jointIndex][0] = self.diffQuaternionA[jointIndex][0] - self.diffQuaternionB[jointIndex][0]
+    #     self.diffDiff[jointIndex][1] = self.diffQuaternionA[jointIndex][1] - self.diffQuaternionB[jointIndex][1]
+    #     self.diffDiff[jointIndex][2] = self.diffQuaternionA[jointIndex][2] - self.diffQuaternionB[jointIndex][2]
+    #     self.diffDiff[jointIndex][3] = self.diffQuaternionA[jointIndex][3] - self.diffQuaternionB[jointIndex][3]
+    #
+    #     self.diffQuaternionAbsSum[jointIndex] = abs(self.diffDiff[jointIndex][0]) + abs(self.diffDiff[jointIndex][1]) + abs(self.diffDiff[jointIndex][2]) + abs(self.diffDiff[jointIndex][3])
 
     # def actual_joint_to_shadow_joint(self, actual_joint):
     #     data = actual_joints[actual_joint]
@@ -928,11 +959,11 @@ class BodyData(BodyDataBase):
         glMultMatrixf(self.alignment_matrix)
 
     def draw_quaternion_distance_sphere(self, limb_index, joint_data):
-        if limb_index != -1:
+        if limb_index != -1 and self.diff_quats is not None:
             up_vector = np.array([0.0, 0.0, 1.0])
-            d = self.quaternionDistance[limb_index] * self.joint_motion_scale   #self.quaternion_distance_display_scale
-            if d > 0.001:
-                axis = self.rotationAxis[limb_index]
+            d = self.magnitudes[self.current_body, limb_index] * self.joint_motion_scale   #self.quaternion_distance_display_scale
+            if d > 0.00001:
+                axis = self.normalized_axes[self.current_body, limb_index]
     #            weight = joint_data.mass[0] * abs(axis[0]) + joint_data.mass[2] * abs(axis[2]) + joint_data.mass[1] * abs(
     #                axis[1])
                 self.joint_disk_material.diffuse[3] = self.joint_disk_alpha

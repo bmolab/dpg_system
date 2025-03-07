@@ -52,7 +52,7 @@ dependencies:
   - pixman
   - pyglfw
   - pyopengl
-  - python
+  - python==3.10
   - python_abi
   - readline
   - setuptools
@@ -76,7 +76,7 @@ dependencies:
     - contourpy
     - cycler
     - cymem
-    - dearpygui==1.9.1
+    - dearpygui
     - ffmpeg-python
     - filelock
     - fonttools
@@ -98,7 +98,7 @@ dependencies:
     - murmurhash
     - networkx
     - numba
-    - numpy==1.26.4
+    - numpy
     - numpy-quaternion
     - opencv-python
     - packaging
@@ -141,5 +141,5 @@ dependencies:
     - psutil
     - scikit-learn
     - word2number
-    - pycairo==1.11.0
+    - pycairo
 prefix: dpg_system
