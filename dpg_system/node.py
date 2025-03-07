@@ -571,7 +571,7 @@ class PropertyWidget:
                 if self.max is not None:
                     max = self.max
                 else:
-                    max = sys.maxsize
+                    max = 2**31 - 1
                     self.max = max
 
                 dpg.add_input_int(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node, default_value=self.default_value, step=self.step, min_value=min, max_value=max)
