@@ -30,9 +30,17 @@ def is_installed(lib_name: str) -> bool:
 class Streamer:
     def __init__(self):
         self.force_stop = False
+        self.process = None
 
     def do_stop(self):
         self.force_stop = True
+
+    def hard_stop(self):
+        if self.process is not None:
+            try:
+                self.process.terminate()
+            except Exception as e:
+                print('ddd', e)
 
     def stream(self, audio_stream: Iterator[bytes]) -> bytes:
         if not is_installed("mpv"):
@@ -51,25 +59,26 @@ class Streamer:
             stderr=subprocess.DEVNULL,
         )
 
+        self.process = mpv_process
+
         audio = b""
 
         for chunk in audio_stream:
             if self.force_stop:
-                print('STOPPING')
                 audio = b""
                 break
             if chunk is not None:
                 if self.force_stop:
-                    print('STOPPING')
                     audio = b""
                     break
                 mpv_process.stdin.write(chunk)  # type: ignore
                 mpv_process.stdin.flush()  # type: ignore
+
                 audio += chunk
                 if self.force_stop:
-                    print('STOPPING')
                     audio = b""
                     break
+
         print('EXITING')
         if mpv_process.stdin:
             mpv_process.stdin.close()
@@ -220,6 +229,7 @@ class ElevenLabsNode(Node):
         self.latency = self.add_input('latency', widget_type='combo', default_value='0')
         self.latency.widget.combo_items = ['0', '1', '2', '3', '4', '5']
         self.stop_streaming_input = self.add_input('stop', widget_type='button', callback=self.stop_streaming)
+        self.hard_stop_input = self.add_input('hard stop', widget_type='button', callback=self.hard_stop_streaming)
         self.accept_input = self.add_input('accept input', widget_type='checkbox')
         self.active_output = self.add_output('speaking')
         self.voice_record = None
@@ -248,6 +258,15 @@ class ElevenLabsNode(Node):
             if len(self.text_to_speak) > 0:
                 self.add_frame_task()
                 self.phrase_queue.put(self.text_to_speak)
+
+    def hard_stop_streaming(self):
+        self.streamer.hard_stop()
+        while not self.phrase_queue.empty():
+            try:
+                self.phrase_queue.get(block=False)
+            except Exception as e:
+                continue
+            self.phrase_queue.task_done()
 
     def stop_streaming(self):
         self.streamer.do_stop()
