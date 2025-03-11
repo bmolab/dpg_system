@@ -8,7 +8,7 @@ from dpg_system.body_base import *
 from MoConVQCore.Env.vclode_track_env import VCLODETrackEnv
 from MoConVQCore.Model.MoConVQ import MoConVQ
 from MoConVQCore.Utils.motion_dataset import MotionDataSet
-
+from dpg_system.SMPL_nodes import SMPLShadowTranslator 
 
 import argparse
 from MoConVQCore.Utils.misc import *
@@ -23,6 +23,7 @@ def register_moconvq_nodes():
     Node.app.register_node("moconvq_env", MoConVQEnvNode.factory)
     Node.app.register_node("moconvq_storage", MoConVQStorageNode.factory)
     Node.app.register_node("moconvq_torque_to_joints", MoConVQTorqueToJointsNode.factory)
+    Node.app.register_node("pose_to_pose_translator", PoseToPoseTranslator.factory)
 
 class MoConVQNode(Node):
     def __init__(self, label: str, data, args):
@@ -515,3 +516,221 @@ class MoConVQStorageNode(MoConVQNode):
         self.start_stop_streaming()
         self.frames = 0
         self.current_frame = 0
+
+
+class MoConVQTranslator():
+    moconvq_joints = {
+        'RootJoint': 0,
+        'pelvis_lowerback': 1,
+        'lowerback_torso': 2,
+        'rHip': 3,
+        'lHip': 4,
+        'rKnee': 5,
+        'lKnee': 6,
+        'rAnkle': 7,
+        'lAnkle': 8,
+        'rToeJoint': 9,
+        'rToeJoint_end': 10,
+        'lToeJoint': 11,
+        'lToeJoint_end': 12,
+        'torso_head': 13,
+        'torso_head_end': 14,
+        'rTorso_Clavicle': 15,
+        'lTorso_Clavicle': 16,
+        'rShoulder': 17,
+        'lShoulder': 18,
+        'rElbow': 19,
+        'lElbow': 20,
+        'rWrist': 21,
+        'rWrist_end': 22,
+        'lWrist': 23,
+        'lWrist_end': 24
+    }
+
+    moconvq_to_smpl_joint_map = {
+        'RootJoint': 'pelvis',
+        'pelvis_lowerback': 'spine1',
+        'lowerback_torso': 'spine3',
+        'rHip': 'right_hip',
+        'lHip': 'left_hip',
+        'rKnee': 'right_knee',
+        'lKnee': 'left_knee',
+        'rAnkle': 'right_ankle',
+        'lAnkle': 'left_ankle',
+        'rToeJoint': 'right_foot',
+        # 'rToeJoint_end': 10,
+        'lToeJoint': 'left_foot',
+        # 'lToeJoint_end': 12,
+        'torso_head': 'neck',
+        'torso_head_end': 'head',
+        'rTorso_Clavicle': 'right_collar',
+        'lTorso_Clavicle': 'left_collar',
+        'rShoulder': 'right_shoulder',
+        'lShoulder': 'left_shoulder',
+        'rElbow': 'right_elbow',
+        'lElbow': 'left_elbow',
+        'rWrist': 'right_wrist',
+        # 'rWrist_end': 22,
+        'lWrist': 'left_wrist',
+        # 'lWrist_end': 24
+    }
+
+    moconvq_to_active_joint_map = {
+        'RootJoint': 'pelvis_anchor',
+        'pelvis_lowerback': 'spine_pelvis',
+        'lowerback_torso': 'lower_vertebrae',
+        'rHip': 'right_hip',
+        'lHip': 'left_hip',
+        'rKnee': 'right_knee',
+        'lKnee': 'left_knee',
+        'rAnkle': 'right_ankle',
+        'lAnkle': 'left_ankle',
+        # 'rToeJoint': 9,
+        # 'rToeJoint_end': 10,
+        # 'lToeJoint': 11,
+        # 'lToeJoint_end': 12,
+        'torso_head': 'upper_vertebrae',
+        'torso_head_end': 'base_of_skull',
+        'rTorso_Clavicle': 'right_shoulder_blade',
+        'lTorso_Clavicle': 'left_shoulder_blade',
+        'rShoulder': 'right_shoulder',
+        'lShoulder': 'left_shoulder',
+        'rElbow': 'right_wrist',
+        'lElbow': 'left_elbow',
+        'rWrist': 'right_wrist',
+        # 'rWrist_end': 22,
+        'lWrist': 'left_wrist',
+        # 'lWrist_end': 24
+    }
+
+    def __init__(self, label, data, args):
+        pass
+
+
+class PoseToPoseTranslator(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = PoseToPoseTranslator(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        Node.__init__(self, label, data, args)
+        self.input = self.add_input('input pose', triggers_execution=True)
+        self.output = self.add_output('output pose')
+
+        self.input_type = self.add_property('input_type', widget_type='combo', default_value='smpl', callback=self.input_type_changed)
+        self.input_as = self.add_property('input_as', widget_type='combo', default_value='rotvec')
+        self.input_scalar_first = self.add_input('input scalar first', widget_type='checkbox', default_value=False)
+        self.input_degrees = self.add_input('input degrees', widget_type='checkbox')
+
+        self.output_type = self.add_property('output_type', widget_type='combo', default_value='glbody', callback=self.output_type_changed)
+        self.output_as = self.add_property('output_as', widget_type='combo', default_value='quaternions')
+        self.output_degrees = self.add_input('output degrees', widget_type='checkbox')
+        self.output_scalar_first = self.add_input('output scalar first', widget_type='checkbox', default_value=True)
+        
+        self.input_type.widget.combo_items = ['smpl', 'moconvq', 'glbody']
+        self.input_as.widget.combo_items = ['quaternions', 'XYZ', 'ZYX', 'rotvec']
+        self.output_type.widget.combo_items = ['smpl', 'moconvq', 'glbody']
+        self.output_as.widget.combo_items = ['quaternions', 'XYZ', 'ZYX', 'rotvec'] 
+
+        self.joint_order_map = {
+            "smpl": SMPLShadowTranslator.smpl_joints,
+            'moconvq': MoConVQTranslator.moconvq_joints,
+            'glbody': SMPLShadowTranslator.active_joints
+        }
+        self.io_map = {
+            "smpl_glbody": SMPLShadowTranslator.smpl_to_active_joint_map,
+            "smpl_moconvq": MoConVQTranslator.moconvq_to_smpl_joint_map,
+            "moconvq_glbody": MoConVQTranslator.moconvq_to_active_joint_map
+        }
+
+        self.type_params = {
+            "moconvq": {
+                "scalar_first": False,
+                "type": "quaternions",
+                "degrees": False
+            },
+            "smpl": {
+                "scalar_first": False,
+                "type": "rotvec",
+                "degrees": False
+            },
+            "glbody": {
+                "scalar_first": True,
+                "type": "quaternions",
+                "degrees": False
+            }
+        }
+
+    def input_type_changed(self):
+        input_type = self.input_type()
+        self.input_scalar_first.set(self.type_params[input_type]['scalar_first'])
+        self.input_degrees.set(self.type_params[input_type]['degrees'])
+        self.input_as.set(self.type_params[input_type]['type'])
+
+    def output_type_changed(self):
+        output_type = self.output_type()
+        self.output_scalar_first.set(self.type_params[output_type]['scalar_first'])
+        self.output_degrees.set(self.type_params[output_type]['degrees'])
+        self.output_as.set(self.type_params[output_type]['type'])
+
+    def reverse_dict(self, d):
+        return {v: k for k, v in d.items()}
+    
+    def convert(self, joint_data, input_as, output_as):
+        if input_as == "quaternions":  
+            rot = scipy.spatial.transform.Rotation.from_quat(joint_data, scalar_first=self.input_scalar_first())
+        elif input_as == "rotvec":
+            rot = scipy.spatial.transform.Rotation.from_rotvec(joint_data, degrees=self.input_degrees())
+        else:
+            rot = scipy.spatial.transform.Rotation.from_euler(input_as, joint_data, degrees=self.input_degrees())
+
+        if output_as == "quaternions":
+            out = rot.as_quat(scalar_first=self.output_scalar_first())
+        elif output_as == "rotvec":
+            out = rot.as_rotvec(joint_data, degrees=self.output_degrees())
+        else:
+            out = rot.as_euler(output_as, degrees=self.output_degrees())
+        return out
+
+    def execute_equal_type(self, data, input_as, output_as):
+        self.output.send([self.convert(j, input_as, output_as) for j in data])
+
+    def execute_diff_type(self, data, input_as, output_as, io_map, in_order_map, out_order_map):
+        output_shape = (len(out_order_map), 4) if output_as == "quaternions" else (len(out_order_map), 3)
+        active_pose = np.zeros(output_shape)
+        if output_as == "quaternions":
+            if self.output_scalar_first():
+                active_pose[:, 0] = 1.0
+            else:
+                active_pose[:, 3] = 1.0
+
+        for k, v in out_order_map.items():
+            if k not in io_map: # skip (sets as 0)
+                continue
+            input_key = io_map[k] # look for joint name corresponding to output joint name
+            input_index = in_order_map[input_key] # get index of the joint in the input
+            active_pose[v] = self.convert(data[input_index], input_as, output_as)
+        self.output.send(active_pose)
+
+    def execute(self):
+        try:
+            pose_in = self.input()
+            input_type = self.input_type()
+            output_type = self.output_type()
+            input_as = self.input_as()
+            output_as = self.output_as()
+
+            if input_type == output_type: # simply converting
+                self.execute_equal_type(pose_in, input_as, output_as)
+            else:
+                if f"{output_type}_{input_type}" in self.io_map:
+                    io_map = self.io_map[f"{output_type}_{input_type}"] 
+                else: # reverse direction
+                    io_map = self.reverse_dict(self.io_map[f"{input_type}_{output_type}"])
+                in_order_map = self.joint_order_map[input_type]
+                out_order_map = self.joint_order_map[output_type]
+                self.execute_diff_type(pose_in, input_as, output_as, io_map, in_order_map, out_order_map)
+        except:
+            print("Ran into errors, make sure configs are correct.")
+            
