@@ -393,7 +393,7 @@ class MoConVQEnvNode(MoConVQNode):
                 self.rot_buf.append(rot_in)
             if len(self.pos_buf) == len(self.rot_buf) and len(self.pos_buf) >= 24: # ensure we have (pos, rot) with same number of frames and at least 24 frames
                 self.motion_data.add_motion_with_character(np.stack(self.pos_buf), np.stack(self.rot_buf))
-                pos, quats, obs, physics = self.make_prediction(self.env, self.agent, self.observation, self.info, self.motion_data.observation[self.motion_ob_index:], self.saver)
+                quats, pos, obs, physics = self.make_prediction(self.env, self.agent, self.observation, self.info, self.motion_data.observation[self.motion_ob_index:], self.saver)
                 self.observation = obs
                 self.motion_ob_index = len(self.motion_data.observation)
                 for i in range(len(pos)):
