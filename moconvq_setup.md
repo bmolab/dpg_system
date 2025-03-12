@@ -40,3 +40,7 @@ This has to deal with the gcc and g++ versions for ubuntu. 20.04's default gcc v
 Parent Folder/ <br>
 &emsp; dpg_system/ <br>
 &emsp; MoConVQ/
+
+# Known Issues
+
+Moconvq env node is not complete and not set for live streaming yet. It has issues with imitation unlike moconvq take (needs further investigation). For converting pose, since the live pose (gl_body) conversion to smpl/moconvq pose will be lossy - gl_body has less joints than these representations - it currently just sets the relative joint rotations of these "lost" joints to 0.
