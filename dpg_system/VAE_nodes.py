@@ -12,6 +12,7 @@ import glob
 import os
 import os.path as osp
 from omegaconf import OmegaConf
+import platform
 
 def register_vae_nodes():
     Node.app.register_node("vae", VAENode.factory)
@@ -595,9 +596,13 @@ def exprdir2model(expr_dir, model_cfg_override: dict = None):
     assert len(available_ckpts) > 0, ValueError('No checkpoint found at {}'.format(model_snapshots_dir))
     trained_weights_fname = available_ckpts[-1]
 
-    model_cfg_fname = glob.glob(osp.join('/', '/'.join(trained_weights_fname.split('/')[:-2]), '*.yaml'))
+    slash = '/'
+    if platform.system() == 'Windows':
+        slash = '\\'
+
+    model_cfg_fname = glob.glob(osp.join(slash, slash.join(trained_weights_fname.split(slash)[:-2]), '*.yaml'))
     if len(model_cfg_fname) == 0:
-        model_cfg_fname = glob.glob(osp.join('/'.join(trained_weights_fname.split('/')[:-2]), '*.yaml'))
+        model_cfg_fname = glob.glob(osp.join(slash.join(trained_weights_fname.split(slash)[:-2]), '*.yaml'))
 
     model_cfg_fname = model_cfg_fname[0]
     model_cfg = OmegaConf.load(model_cfg_fname)
