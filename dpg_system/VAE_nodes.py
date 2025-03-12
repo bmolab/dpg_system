@@ -677,7 +677,7 @@ class VPoserNode(Node):
         self.device = 'cpu'
         if torch.cuda.is_available():
             self.device = 'cuda'
-        elif torch.has_mps:
+        elif torch.backends.mps.is_built():
             self.device = 'mps'
         self.input_in = self.add_input('input in', triggers_execution=True)
         # self.forward_in = self.add_input('forward in', triggers_execution=True)
@@ -793,7 +793,7 @@ class VPoser(nn.Module):
         self.device = torch.device('cpu')
         if torch.cuda.is_available():
             self.device = torch.device('cuda')
-        elif torch.has_mps:
+        elif torch.backends.mps.is_built():
             self.device = torch.device('mps')
         self.num_joints = 21
         n_features = self.num_joints * 3
