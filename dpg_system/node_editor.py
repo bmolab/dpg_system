@@ -455,20 +455,15 @@ class NodeEditor:
         self.active_pins = []
 
     def node_cleanup(self, node_uuid):
-        # print('deleting', node_uuid)
-        for node in self._nodes:
-            if node.uuid == node_uuid:
-                # for element in node.ordered_elements:
-                #     print(element.uuid)
-                # for property in node._property_attributes:
-                #     print(property.label, property.uuid)
-                # for option in node._option_attributes:
-                #     print(option.label, option.uuid)
-                # for output in node._output_attributes:
-                #     print(output.label, output.uuid)
+        node = dpg.get_item_user_data(node_uuid)
+        if node is not None:
+            if node != self.origin:
                 self.remove_node(node)
-                break
-        # we need to have a registry to node_uuid to Node
+        # for node in self._nodes:
+        #     if node.uuid == node_uuid:
+        #         if node != self.origin:
+        #             self.remove_node(node)
+        #         break
 
     def remove_node(self, node):
         for n in self._nodes:
@@ -523,16 +518,37 @@ class NodeEditor:
     def cut_selection(self):
         clip = self.copy_selection()
         node_uuids = dpg.get_selected_nodes(self.uuid)
+
+        self.delete_selected_items()
+        # for node_uuid in node_uuids:
+        #     self.node_cleanup(node_uuid)
+        #
+        # link_uuids = dpg.get_selected_links(self.uuid)
+        # for link_uuid in link_uuids:
+        #     if dpg.does_item_exist(link_uuid):
+        #         dat = dpg.get_item_user_data(link_uuid)
+        #         out = dat[0]
+        #         child = dat[1]
+        #         if len(node_uuids) == 0 or out.node.uuid in node_uuids or child.node.uuid in node_uuids:
+        #         #  remove only if link connects to selected node or no selected node
+        #             out.remove_link(link_uuid, child)
+        return clip
+
+    def delete_selected_items(self):
+        node_uuids = dpg.get_selected_nodes(self.uuid)
         for node_uuid in node_uuids:
-            # somehow we have to connect to the actual Node object
             self.node_cleanup(node_uuid)
+
         link_uuids = dpg.get_selected_links(self.uuid)
         for link_uuid in link_uuids:
-            dat = dpg.get_item_user_data(link_uuid)
-            out = dat[0]
-            child = dat[1]
-            out.remove_link(link_uuid, child)
-        return clip
+            if dpg.does_item_exist(link_uuid):
+                dat = dpg.get_item_user_data(link_uuid)
+                out = dat[0]
+                child = dat[1]
+                if len(node_uuids) == 0 or out.node.uuid in node_uuids or child.node.uuid in node_uuids:
+                #  remove only if link connects to selected node or no selected node
+                    out.remove_link(link_uuid, child)
+
 
     def reset_origin(self):
         area = self.calc_node_area()

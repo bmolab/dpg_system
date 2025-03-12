@@ -36,6 +36,7 @@ class NodeOutput:
         self.output_type = None
         # self.loaded_uuid = -1
         # self.loaded_children = []
+        self.name_archive = []
 
     def get_label(self):
         return self._label
@@ -916,6 +917,7 @@ class NodeInput:
         self.action = None
         self.accepted_types = None
         self.type_mask = 0
+        self.name_archive = []
 
     def get_label(self):
         return self._label

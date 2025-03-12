@@ -1196,20 +1196,25 @@ class App:
         if self.active_widget == -1:
             editor = self.get_current_editor()
             if editor is not None and not editor.presenting:
-                node_uuids = dpg.get_selected_nodes(editor.uuid)
-                link_uuids = dpg.get_selected_links(editor.uuid)
+                editor.delete_selected_items()
+                # node_uuids = dpg.get_selected_nodes(editor.uuid)
+                #
+                # for node_uuid in node_uuids:
+                #     node = dpg.get_item_user_data(node_uuid)
+                #     if node is not None:
+                #         if node != editor.origin:
+                #             editor.remove_node(node)
+                #
+                # link_uuids = dpg.get_selected_links(editor.uuid)
+                # for link_uuid in link_uuids:
+                #     if dpg.does_item_exist(link_uuid):
+                #         dat = dpg.get_item_user_data(link_uuid)
+                #         out = dat[0]
+                #         child = dat[1]
+                #         if len(node_uuids) == 0 or out.node.uuid in node_uuids or child.node.uuid in node_uuids:
+                #             #  remove only if link connects to selected node or no selected node
+                #             out.remove_link(link_uuid, child)
 
-                for node_uuid in node_uuids:
-                    node = dpg.get_item_user_data(node_uuid)
-                    if node is not None:
-                        if node != editor.origin:
-                            editor.remove_node(node)
-                for link_uuid in link_uuids:
-                    if dpg.does_item_exist(link_uuid):
-                        dat = dpg.get_item_user_data(link_uuid)
-                        out = dat[0]
-                        child = dat[1]
-                        out.remove_link(link_uuid, child)
 
 
     def return_handler(self):
@@ -1587,6 +1592,14 @@ class App:
                                 found_output = True
                                 break
                         if not found_output:
+                            #  check archive of names
+                            for index, output in enumerate(source_node.inputs):
+                                if source_output_name in output.name_archive:
+                                    source_output_index = index
+                                    source_output = output
+                                    found_output = True
+                                    break
+                        if not found_output:
                             if len(source_node.outputs) == 1:
                                 source_output_index = 0
                                 source_output = source_node.outputs[0]
@@ -1606,6 +1619,13 @@ class App:
                                     dest_input = input
                                     found_input = True
                                     break
+                            if not found_input:
+                                for index, input in enumerate(dest_node.inputs):
+                                    if dest_input_name in input.name_archive:
+                                        dest_input_index = index
+                                        dest_input = input
+                                        found_input = True
+                                        break
                             if not found_input:
                                 if len(dest_node.inputs) == 1:
                                     dest_input_index = 0
