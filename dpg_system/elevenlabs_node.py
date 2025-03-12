@@ -19,6 +19,9 @@ import subprocess
 from typing import Iterator, Union
 api_key = 'be1eae804441ec11f0fe872f82ad44f3'
 
+def register_elevenlab_nodes():
+    Node.app.register_node("eleven_labs", ElevenLabsNode.factory)
+
 
 def is_installed(lib_name: str) -> bool:
     lib = shutil.which(lib_name)
@@ -93,9 +96,16 @@ class Streamer:
         self.force_stop = False
         return audio
 
+def service_eleven_labs():
+    while True:
+        for instance in ElevenLabsNode.instances:
+            try:
+                instance.service_queue()
+            except Exception as e:
+                print('service_eleven_labs:')
+                traceback.print_exception(e)
 
-def register_elevenlab_nodes():
-    Node.app.register_node("eleven_labs", ElevenLabsNode.factory)
+        time.sleep(0.1)
 
 class ElevenLabsNode(Node):
     instances = []
