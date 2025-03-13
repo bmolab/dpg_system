@@ -2,12 +2,12 @@
     "height": 800,
     "width": 1280,
     "position": [
-        277,
-        475
+        258,
+        511
     ],
     "id": 160,
-    "name": "moconvq_dpg_setup",
-    "path": "/home/jimwei6/dpg_system/moconvq_dpg_setup.json",
+    "name": "moconvq_dpg_sphere_setup",
+    "path": "/home/jimwei6/dpg_system/moconvq_dpg_sphere_setup.json",
     "nodes": {
         "0": {
             "name": "",
@@ -29,7 +29,7 @@
         },
         "1": {
             "name": "moconvq_take",
-            "id": 310,
+            "id": 243,
             "position_x": 164,
             "position_y": 172,
             "width": 148,
@@ -40,7 +40,7 @@
             "properties": {
                 "0": {
                     "name": "on/off",
-                    "value": true,
+                    "value": false,
                     "value_type": "bool"
                 },
                 "1": {
@@ -50,7 +50,7 @@
                 },
                 "2": {
                     "name": "frame",
-                    "value": 59,
+                    "value": 28,
                     "value_type": "int"
                 },
                 "3": {
@@ -67,7 +67,7 @@
         },
         "2": {
             "name": "gl_body",
-            "id": 398,
+            "id": 318,
             "position_x": 763,
             "position_y": 412,
             "width": 211,
@@ -130,7 +130,7 @@
         },
         "3": {
             "name": "gl_translate",
-            "id": 492,
+            "id": 401,
             "position_x": 862,
             "position_y": 184,
             "width": 99,
@@ -164,7 +164,7 @@
         "4": {
             "init": "r gl_scene",
             "name": "r",
-            "id": 626,
+            "id": 443,
             "position_x": 728,
             "position_y": 98,
             "width": 64,
@@ -182,7 +182,7 @@
         },
         "5": {
             "name": "pose_to_pose_rot_translator",
-            "id": 654,
+            "id": 456,
             "position_x": 467,
             "position_y": 189,
             "width": 197,
@@ -232,45 +232,138 @@
                     "value_type": "string"
                 }
             }
+        },
+        "6": {
+            "name": "moconvq_gl_node",
+            "id": 525,
+            "position_x": 403,
+            "position_y": 443,
+            "width": 183,
+            "height": 222,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "clip size",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "max clip size",
+                    "value": 40.880001068115234,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "min clip size",
+                    "value": -40.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "min-max norm",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "norm max",
+                    "value": 50.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "norm min",
+                    "value": -50.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "norm scale",
+                    "value": 0.12999999523162842,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "slices",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "8": {
+                    "name": "stacks",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "9": {
+                    "name": "shading",
+                    "value": "smooth",
+                    "value_type": "string"
+                }
+            }
         }
     },
     "links": {
         "0": {
-            "source_node": 310,
+            "source_node": 243,
             "source_node_name": "moconvq_take",
             "source_output_index": 0,
             "source_output_name": "joint_data",
-            "dest_node": 654,
+            "dest_node": 456,
             "dest_node_name": "pose_to_pose_rot_translator",
             "dest_input_index": 0,
             "dest_input_name": "input pose"
         },
         "1": {
-            "source_node": 492,
+            "source_node": 243,
+            "source_node_name": "moconvq_take",
+            "source_output_index": 4,
+            "source_output_name": "g_torque",
+            "dest_node": 525,
+            "dest_node_name": "moconvq_gl_node",
+            "dest_input_index": 1,
+            "dest_input_name": "joints data"
+        },
+        "2": {
+            "source_node": 318,
+            "source_node_name": "gl_body",
+            "source_output_index": 1,
+            "source_output_name": "current_joint_name",
+            "dest_node": 525,
+            "dest_node_name": "moconvq_gl_node",
+            "dest_input_index": 2,
+            "dest_input_name": "joint index"
+        },
+        "3": {
+            "source_node": 318,
+            "source_node_name": "gl_body",
+            "source_output_index": 3,
+            "source_output_name": "current_joint_gl_chain",
+            "dest_node": 525,
+            "dest_node_name": "moconvq_gl_node",
+            "dest_input_index": 0,
+            "dest_input_name": "gl chain in"
+        },
+        "4": {
+            "source_node": 401,
             "source_node_name": "gl_translate",
             "source_output_index": 0,
             "source_output_name": "gl chain out",
-            "dest_node": 398,
+            "dest_node": 318,
             "dest_node_name": "gl_body",
             "dest_input_index": 1,
             "dest_input_name": "gl chain"
         },
-        "2": {
-            "source_node": 626,
+        "5": {
+            "source_node": 443,
             "source_node_name": "r",
             "source_output_index": 0,
             "source_output_name": "gl_scene",
-            "dest_node": 492,
+            "dest_node": 401,
             "dest_node_name": "gl_translate",
             "dest_input_index": 0,
             "dest_input_name": "gl chain in"
         },
-        "3": {
-            "source_node": 654,
+        "6": {
+            "source_node": 456,
             "source_node_name": "pose_to_pose_rot_translator",
             "source_output_index": 0,
             "source_output_name": "output pose",
-            "dest_node": 398,
+            "dest_node": 318,
             "dest_node_name": "gl_body",
             "dest_input_index": 0,
             "dest_input_name": "pose in"

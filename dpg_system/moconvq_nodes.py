@@ -8,7 +8,9 @@ from dpg_system.body_base import *
 from MoConVQCore.Env.vclode_track_env import VCLODETrackEnv
 from MoConVQCore.Model.MoConVQ import MoConVQ
 from MoConVQCore.Utils.motion_dataset import MotionDataSet
-from dpg_system.SMPL_nodes import SMPLShadowTranslator 
+from dpg_system.gl_nodes import GLQuadricNode
+from dpg_system.body_defs import joint_index_to_name as shadow_joint_index_to_name
+from dpg_system.pose_translation_defs import PoseTranslator
 
 import argparse
 from MoConVQCore.Utils.misc import *
@@ -22,8 +24,9 @@ def register_moconvq_nodes():
     Node.app.register_node("moconvq_pose_to_joints", MoConVQPoseToJointsNode.factory)
     Node.app.register_node("moconvq_env", MoConVQEnvNode.factory)
     Node.app.register_node("moconvq_storage", MoConVQStorageNode.factory)
-    Node.app.register_node("moconvq_torque_to_joints", MoConVQTorqueToJointsNode.factory)
-    Node.app.register_node("pose_to_pose_translator", PoseToPoseTranslator.factory)
+    Node.app.register_node("pose_to_pose_rot_translator", PoseToPoseRotTranslator.factory)
+    Node.app.register_node("pose_to_pose_data_reorder", PoseToPoseDataReorder.factory)
+    Node.app.register_node("moconvq_gl_node", MoConVQGLNode.factory)
 
 class MoConVQNode(Node):
     def __init__(self, label: str, data, args):
@@ -110,6 +113,17 @@ class MoConVQNode(Node):
         saver.bvh_hierarchy_no_root()
         return env, agent, saver, args
     
+    def pad_non_end_joint_arr(self, data, includes_root=False):
+        out = np.zeros((len(self.joint_names), *data.shape[1:]))
+        data_ind = 0
+        start = 0 if includes_root else 1
+        for i in range(start, len(self.joint_names)):
+            if "end" not in self.joint_names[i]:
+                out[i] = data[data_ind]
+                data_ind += 1
+        return out
+
+
     def make_prediction(self, env, agent, env_observation, info, motion_observation, saver):
         period = 1000000
         info = agent.encode_seq_all(motion_observation, motion_observation,)
@@ -141,25 +155,26 @@ class MoConVQNode(Node):
                 if i == 0:
                     step_generator = agent.env.step_core(action, using_yield = True)
                 info = next(step_generator)
-                physics['avel'].append(env.sim_character.body_info.get_body_ang_velo())
-                physics['vel'].append(env.sim_character.body_info.get_body_velo())
+                physics['avel'].append(self.pad_non_end_joint_arr(env.sim_character.body_info.get_body_ang_velo()))
+                physics['vel'].append(self.pad_non_end_joint_arr(env.sim_character.body_info.get_body_velo()))
             try:
                 info_ = next(step_generator)
             except StopIteration as e:
                 info_ = e.value
             new_observation, rwd, done, info, global_torques = info_
 
-            # global_torques is (6, num_joints without root, 3)
+            # global_torques is (6, num torque joints, 3)
             for torque in global_torques: 
                 g_torque = torque.copy()
                 # env.sim_character.joint_info.torque_limit torque limits
                 # apply negative joints to parents to get net torque
                 for i in range(len(g_torque)): 
-                    parent_id = int(env.sim_character.joint_info.parent_body_index[i] - 1) # parent_body_index includes root as 0 index, therefore must shift 1 to the left
-                    if parent_id >= 0:
+                    parent_id = int(env.sim_character.joint_info.parent_body_index[i] - 1) # 0 value of parent_body_index means root however root is not included in torques so subtract 1
+                    if parent_id >= 0: # if parent is not the root then subtract torque
                         g_torque[parent_id] = g_torque[parent_id] - torque[i]
 
-                physics['g_torque'].append(g_torque)
+                # convert to standardize output
+                physics['g_torque'].append(self.pad_non_end_joint_arr(g_torque))
             observation = new_observation
 
         # if args['output_file'] == '':
@@ -295,54 +310,8 @@ class MoConVQPoseToJointsNode(MoConVQNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.input = self.add_input('pose in', triggers_execution=True)
-        self.output_as = self.add_property('output_as', widget_type='combo', default_value='quaternions')
-        self.output_as.widget.combo_items = ['quaternions', 'euler angles', 'roll_pitch_yaw']
-        self.use_degrees = self.add_property('degrees', widget_type='checkbox', default_value=False)
         self.joint_outputs = []
-        self.joint_offsets = []
         for index, key in enumerate(self.joint_names):
-            if index < 22:
-                self.joint_offsets.append(index)
-
-        for index, key in enumerate(self.joint_names):
-            stripped_key = key.replace('_', ' ')
-            output = self.add_output(stripped_key)
-            self.joint_outputs.append(output)
-
-    def execute(self):
-        if self.input.fresh_input:
-            incoming = self.input()
-            output_quaternions = (self.output_as() == 'quaternions')
-            output_rpy = (self.output_as() == 'roll_pitch_yaw')
-            t = type(incoming)
-            if t == np.ndarray:
-                for i, index in enumerate(self.joint_offsets):
-                    if index < incoming.shape[0]:
-                        joint_value = incoming[index] # moconvq sents quarts with scalar last
-                        if output_quaternions:
-                            joint_value = np.roll(joint_value, 1)
-                        elif output_rpy:
-                            rot = scipy.spatial.transform.Rotation.from_quat(joint_value)
-                            joint_value = rot.as_euler('XYZ', degrees=self.use_degrees())
-                        self.joint_outputs[i].set_value(joint_value)
-                self.send_all()
-
-
-class MoConVQTorqueToJointsNode(MoConVQNode):
-    @staticmethod
-    def factory(name, data, args=None):
-        node = MoConVQTorqueToJointsNode(name, data, args)
-        return node
-
-    def __init__(self, label: str, data, args):
-        super().__init__(label, data, args)
-        self.input = self.add_input('torques in', triggers_execution=True)
-        self.joint_outputs = []
-        self.joint_offsets = []
-        for index, key in enumerate(self.torque_joints):
-            self.joint_offsets.append(index)
-
-        for index, key in enumerate(self.torque_joints):
             stripped_key = key.replace('_', ' ')
             output = self.add_output(stripped_key)
             self.joint_outputs.append(output)
@@ -352,9 +321,9 @@ class MoConVQTorqueToJointsNode(MoConVQNode):
             incoming = self.input()
             t = type(incoming)
             if t == np.ndarray:
-                for i, index in enumerate(self.joint_offsets):
-                    if index < incoming.shape[0]:
-                        joint_value = incoming[index]
+                for i in range(len(self.joint_outputs)):
+                    if i < incoming.shape[0]:
+                        joint_value = incoming[i]
                         self.joint_outputs[i].set_value(joint_value)
                 self.send_all()
 
@@ -518,99 +487,52 @@ class MoConVQStorageNode(MoConVQNode):
         self.current_frame = 0
 
 
-class MoConVQTranslator():
-    moconvq_joints = {
-        'RootJoint': 0,
-        'pelvis_lowerback': 1,
-        'lowerback_torso': 2,
-        'rHip': 3,
-        'lHip': 4,
-        'rKnee': 5,
-        'lKnee': 6,
-        'rAnkle': 7,
-        'lAnkle': 8,
-        'rToeJoint': 9,
-        'rToeJoint_end': 10,
-        'lToeJoint': 11,
-        'lToeJoint_end': 12,
-        'torso_head': 13,
-        'torso_head_end': 14,
-        'rTorso_Clavicle': 15,
-        'lTorso_Clavicle': 16,
-        'rShoulder': 17,
-        'lShoulder': 18,
-        'rElbow': 19,
-        'lElbow': 20,
-        'rWrist': 21,
-        'rWrist_end': 22,
-        'lWrist': 23,
-        'lWrist_end': 24
-    }
-
-    moconvq_to_smpl_joint_map = {
-        'RootJoint': 'pelvis',
-        'pelvis_lowerback': 'spine1',
-        'lowerback_torso': 'spine3',
-        'rHip': 'right_hip',
-        'lHip': 'left_hip',
-        'rKnee': 'right_knee',
-        'lKnee': 'left_knee',
-        'rAnkle': 'right_ankle',
-        'lAnkle': 'left_ankle',
-        'rToeJoint': 'right_foot',
-        # 'rToeJoint_end': 10,
-        'lToeJoint': 'left_foot',
-        # 'lToeJoint_end': 12,
-        'torso_head': 'neck',
-        'torso_head_end': 'head',
-        'rTorso_Clavicle': 'right_collar',
-        'lTorso_Clavicle': 'left_collar',
-        'rShoulder': 'right_shoulder',
-        'lShoulder': 'left_shoulder',
-        'rElbow': 'right_elbow',
-        'lElbow': 'left_elbow',
-        'rWrist': 'right_wrist',
-        # 'rWrist_end': 22,
-        'lWrist': 'left_wrist',
-        # 'lWrist_end': 24
-    }
-
-    moconvq_to_active_joint_map = {
-        'RootJoint': 'pelvis_anchor',
-        'pelvis_lowerback': 'spine_pelvis',
-        'lowerback_torso': 'lower_vertebrae',
-        'rHip': 'right_hip',
-        'lHip': 'left_hip',
-        'rKnee': 'right_knee',
-        'lKnee': 'left_knee',
-        'rAnkle': 'right_ankle',
-        'lAnkle': 'left_ankle',
-        # 'rToeJoint': 9,
-        # 'rToeJoint_end': 10,
-        # 'lToeJoint': 11,
-        # 'lToeJoint_end': 12,
-        'torso_head': 'upper_vertebrae',
-        'torso_head_end': 'base_of_skull',
-        'rTorso_Clavicle': 'right_shoulder_blade',
-        'lTorso_Clavicle': 'left_shoulder_blade',
-        'rShoulder': 'right_shoulder',
-        'lShoulder': 'left_shoulder',
-        'rElbow': 'right_wrist',
-        'lElbow': 'left_elbow',
-        'rWrist': 'right_wrist',
-        # 'rWrist_end': 22,
-        'lWrist': 'left_wrist',
-        # 'lWrist_end': 24
-    }
-
-    def __init__(self, label, data, args):
-        pass
-
-
-class PoseToPoseTranslator(Node):
+class PoseToPoseDataReorder(Node):
     @staticmethod
     def factory(name, data, args=None):
-        node = PoseToPoseTranslator(name, data, args)
+        node = PoseToPoseDataReorder(name, data, args)
+        return node
+    
+    def __init__(self, label: str, data, args):
+        Node.__init__(self, label, data, args)
+        self.input = self.add_input('input data', triggers_execution=True)
+        self.output = self.add_output('output data')
+        self.input_type = self.add_property('reorder', widget_type='combo', default_value='smpl')
+        self.output_type = self.add_property('output_type', widget_type='combo', default_value='active')
+        self.input_type.widget.combo_items = ['smpl', 'moconvq', 'active', 'shadow']
+        self.output_type.widget.combo_items = ['smpl', 'moconvq', 'active', 'shadow']
+
+    def send_reordered_data(self, data, io_map, in_order_map, out_order_map):
+        out_shape = (len(out_order_map), *data.shape[1:])
+        data_out = np.zeros(out_shape)
+        
+        for joint_name, joint_index in out_order_map.items():
+            if joint_name not in io_map: # skip (sets as 0)
+                continue
+            input_key = io_map[joint_name] # look for joint name corresponding to output joint name
+            input_index = in_order_map[input_key] # get index of the joint in the input
+            data_out[joint_index] = data[input_index]
+        self.output.send(data_out)
+
+    def execute(self):
+        try:
+            data_in = self.input()
+            input_type = self.input_type()
+            output_type = self.output_type()
+            if input_type == output_type: # simply converting
+                self.output.send(data_in)
+            else:
+                io_map = PoseTranslator.get_mapping(output_type, input_type)
+                in_order_map = PoseTranslator.get_joint_index_map(input_type)
+                out_order_map = PoseTranslator.get_joint_index_map(output_type)
+                self.send_reordered_data(data_in, io_map, in_order_map, out_order_map)
+        except Exception as e:
+            print(f"Ran into errors when performing data reordering: {e}")
+
+class PoseToPoseRotTranslator(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = PoseToPoseRotTranslator(name, data, args)
         return node
 
     def __init__(self, label: str, data, args):
@@ -623,26 +545,15 @@ class PoseToPoseTranslator(Node):
         self.input_scalar_first = self.add_input('input scalar first', widget_type='checkbox', default_value=False)
         self.input_degrees = self.add_input('input degrees', widget_type='checkbox')
 
-        self.output_type = self.add_property('output_type', widget_type='combo', default_value='glbody', callback=self.output_type_changed)
+        self.output_type = self.add_property('output_type', widget_type='combo', default_value='active', callback=self.output_type_changed)
         self.output_as = self.add_property('output_as', widget_type='combo', default_value='quaternions')
         self.output_degrees = self.add_input('output degrees', widget_type='checkbox')
         self.output_scalar_first = self.add_input('output scalar first', widget_type='checkbox', default_value=True)
         
-        self.input_type.widget.combo_items = ['smpl', 'moconvq', 'glbody']
+        self.input_type.widget.combo_items = ['smpl', 'moconvq', 'active']
         self.input_as.widget.combo_items = ['quaternions', 'XYZ', 'ZYX', 'rotvec']
-        self.output_type.widget.combo_items = ['smpl', 'moconvq', 'glbody']
+        self.output_type.widget.combo_items = ['smpl', 'moconvq', 'active']
         self.output_as.widget.combo_items = ['quaternions', 'XYZ', 'ZYX', 'rotvec'] 
-
-        self.joint_order_map = {
-            "smpl": SMPLShadowTranslator.smpl_joints,
-            'moconvq': MoConVQTranslator.moconvq_joints,
-            'glbody': SMPLShadowTranslator.active_joints
-        }
-        self.io_map = {
-            "smpl_glbody": SMPLShadowTranslator.smpl_to_active_joint_map,
-            "smpl_moconvq": MoConVQTranslator.moconvq_to_smpl_joint_map,
-            "moconvq_glbody": MoConVQTranslator.moconvq_to_active_joint_map
-        }
 
         self.type_params = {
             "moconvq": {
@@ -655,7 +566,7 @@ class PoseToPoseTranslator(Node):
                 "type": "rotvec",
                 "degrees": False
             },
-            "glbody": {
+            "active": {
                 "scalar_first": True,
                 "type": "quaternions",
                 "degrees": False
@@ -673,9 +584,6 @@ class PoseToPoseTranslator(Node):
         self.output_scalar_first.set(self.type_params[output_type]['scalar_first'])
         self.output_degrees.set(self.type_params[output_type]['degrees'])
         self.output_as.set(self.type_params[output_type]['type'])
-
-    def reverse_dict(self, d):
-        return {v: k for k, v in d.items()}
     
     def convert(self, joint_data, input_as, output_as):
         if input_as == "quaternions":  
@@ -705,12 +613,12 @@ class PoseToPoseTranslator(Node):
             else:
                 active_pose[:, 3] = 1.0
 
-        for k, v in out_order_map.items():
-            if k not in io_map: # skip (sets as 0)
+        for joint_name, joint_index in out_order_map.items():
+            if joint_name not in io_map: # skip (sets as 0)
                 continue
-            input_key = io_map[k] # look for joint name corresponding to output joint name
+            input_key = io_map[joint_name] # look for joint name corresponding to output joint name
             input_index = in_order_map[input_key] # get index of the joint in the input
-            active_pose[v] = self.convert(data[input_index], input_as, output_as)
+            active_pose[joint_index] = self.convert(data[input_index], input_as, output_as)
         self.output.send(active_pose)
 
     def execute(self):
@@ -724,13 +632,85 @@ class PoseToPoseTranslator(Node):
             if input_type == output_type: # simply converting
                 self.execute_equal_type(pose_in, input_as, output_as)
             else:
-                if f"{output_type}_{input_type}" in self.io_map:
-                    io_map = self.io_map[f"{output_type}_{input_type}"] 
-                else: # reverse direction
-                    io_map = self.reverse_dict(self.io_map[f"{input_type}_{output_type}"])
-                in_order_map = self.joint_order_map[input_type]
-                out_order_map = self.joint_order_map[output_type]
+                io_map = PoseTranslator.get_mapping(output_type, input_type)
+                in_order_map = PoseTranslator.get_joint_index_map(input_type)
+                out_order_map = PoseTranslator.get_joint_index_map(output_type)
                 self.execute_diff_type(pose_in, input_as, output_as, io_map, in_order_map, out_order_map)
-        except:
-            print("Ran into errors, make sure configs are correct.")
+        except Exception as e:
+            print(f"Ran into errors when performing pose rotation translation: {e}")
+
+ 
             
+class MoConVQGLNode(GLQuadricNode):
+    @staticmethod
+    def factory(node_name, data, args=None):
+        node = MoConVQGLNode(node_name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        max_size = self.arg_as_float(default_value=10.0)
+        min_size = self.arg_as_float(default_value=-10.0)
+        scale = self.arg_as_float(default_value=0.2)
+        slices = self.arg_as_int(index=1, default_value=32)
+        stacks = self.arg_as_int(index=2, default_value=32)
+
+        self.gl_input = self.add_input('gl chain in', triggers_execution=True)
+        self.joint_input = self.add_input('joints data')
+        self.joint_index = self.add_input('joint index')
+
+        self.clip = self.add_input('clip size', widget_type='checkbox', default_value=True)
+        self.clip_max = self.add_input('max clip size', widget_type='drag_float', default_value=max_size)
+        self.clip_min = self.add_input('min clip size', widget_type='drag_float', default_value=min_size)
+        
+        self.norm = self.add_input('min-max norm', widget_type='checkbox', default_value=True)
+        self.norm_max = self.add_input('norm max', widget_type='drag_float', default_value=max_size)
+        self.norm_min = self.add_input('norm min', widget_type='drag_float', default_value=min_size)
+        self.norm_scale = self.add_input('norm scale', widget_type='drag_float', default_value=scale)
+        
+        self.gl_output = self.add_output('gl chain out')
+        self.slices = self.add_option('slices', widget_type='drag_int', default_value=slices)
+        self.stacks = self.add_option('stacks', widget_type='drag_int', default_value=stacks)
+        self.add_shading_option()
+        self.shadow_moconv_map = PoseTranslator.get_mapping("shadow", "moconvq")
+        self.shadow_index_to_joint_map = PoseTranslator.get_joint_index_map("shadow", index_as_key=True)
+        self.moconvq_joint_to_index_map = PoseTranslator.get_joint_index_map("moconvq")
+
+    def draw(self):
+        if self.joint_input() is None or not isinstance(self.joint_input(), (np.ndarray, list, tuple)):
+            return
+        super().draw()
+
+    def vector_to_sphere_size(self, vector):
+        if not isinstance(vector, np.ndarray):
+            vector = np.array(vector)
+        size = np.linalg.norm(vector)
+        clipped = False
+        if self.clip():
+            clipped_size = max(min(size, self.clip_max()), self.clip_min())
+            clipped = size == clipped_size
+            size = clipped_size
+        if self.norm():
+            size = (size - self.norm_min())  / (self.norm_max() - self.norm_min()) if self.norm_min() != self.norm_max() else 0
+            size = size * self.norm_scale()
+        return size, clipped
+            
+    def quadric_draw(self):
+        data = self.joint_input()
+        joint_index = self.joint_index()
+        shadow_joint_name = self.shadow_index_to_joint_map[joint_index] # Convert to shadow joint name from index
+        if shadow_joint_name in self.shadow_moconv_map:
+            moconvq_joint_name = self.shadow_moconv_map[shadow_joint_name] # Convert to mocoonvq joint name and then index
+            moconvq_joint_index = self.moconvq_joint_to_index_map[moconvq_joint_name]
+            size, clipped = self.vector_to_sphere_size(data[moconvq_joint_index])
+            print(size)
+            glDisable(GL_LIGHTING)
+            if clipped:
+                glColor4f(1.0, 0.0, 0.0, 0.5) # set red
+            else:
+                glColor4f(0.0, 1.0, 0.0, 0.5) # set red
+            gluSphere(self.quadric, size, self.slices(), self.stacks())
+            glColor4f(1.0, 1.0, 1.0, 1.0) # set back to white
+            glDisable(GL_LIGHTING)
