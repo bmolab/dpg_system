@@ -1350,6 +1350,8 @@ class PrintNode(Node):
         elif t == np.ndarray:
             np.set_printoptions(precision=self.precision())
             print(data)
+        elif t == dict:
+            print(data)
         elif self.app.torch_available and t == torch.Tensor:
             torch.set_printoptions(precision=self.precision())
             print(data, end=self.end())

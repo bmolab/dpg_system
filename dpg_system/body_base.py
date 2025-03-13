@@ -399,8 +399,8 @@ class BodyDataBase:
             if linear_index != -1:
                 if self.joint_matrices is not None:
                     transform = self.joint_matrices[self.current_body, linear_index]
-
-            glTranslatef(self.joints[jointIndex].bone_dim[0], self.joints[jointIndex].bone_dim[1], self.joints[jointIndex].bone_dim[2])
+            self.joints[jointIndex].translate_along_bone()
+            # glTranslatef(self.joints[jointIndex].bone_translation[0], self.joints[jointIndex].bone_translation[1], self.joints[jointIndex].bone_translation[2])
             glMultMatrixf(transform)
 
     def draw_to(self, joint_index, prev_limb_index=-1, orientation=False, show_disks=False):
@@ -415,8 +415,6 @@ class BodyDataBase:
         joint_data = self.joints[joint_index]
 
         m = joint_data.matrix
-        length = joint_data.length
-        widths = joint_data.thickness
 
         if joint_data.do_draw:
             if orientation:
@@ -427,33 +425,36 @@ class BodyDataBase:
             glLineWidth(2.0)
 
             if not orientation:
-                self.draw_block(joint_index, (widths[0], length, widths[1]))
+                # self.draw_block(joint_index, (widths[0], length, widths[1]))
+                self.draw_block(joint_index, joint_data)
 
             glPopMatrix()
 
-        glTranslatef(joint_data.bone_dim[0], joint_data.bone_dim[1], joint_data.bone_dim[2])
+        joint_data.translate_along_bone()
+
+        # glTranslatef(joint_data.bone_translation[0], joint_data.bone_translation[1], joint_data.bone_translation[2])
         if orientation:
             if not show_disks:
                 self.node.joint_callback(linear_index)
         glMultMatrixf(transform)
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, self.base_material)
 
-    def draw_block(self, joint_index, dim):  # draw_block could include colours for each end of the block to reflect
+    def draw_block(self, joint_index, joint_data):  # draw_block could include colours for each end of the block to reflect
 
         if self.skeleton:
-            dim_z = dim[1]
+            dim_z = joint_data.base_length
             glBegin(GL_LINES)
             glVertex3f(0, 0, 0)
             glVertex3f(0, 0, dim_z)
             glEnd()
-
-        else:
+        else: #. only called if self.limbs[joint_index] is None!!!!!!
             if self.limbs[joint_index] is None:
                 self.limbs[joint_index] = LimbGeometry()
-
-                dim_x = dim[0] / 2
-                dim_z = dim[1] - .02
-                dim_y = dim[2] / 2
+                self.limbs[joint_index].new_shape = True
+            if self.limbs[joint_index].new_shape:
+                dim_x = joint_data.thickness[0] / 2
+                dim_z = joint_data.get_limb_length() - .02
+                dim_y = joint_data.thickness[1] / 2
 
                 if self.limb_vertices[joint_index] is not None:
                     points = []
@@ -618,10 +619,25 @@ class BodyDataBase:
                 y = tuple(i / 100.0 for i in trans_float)
                 joint_name = shadow_limb_to_joint[node.attrib['id']]
                 joint_index = joint_name_to_index[joint_name]
-                self.joints[joint_index].set_bone_dim(y)
+                self.joints[joint_index].set_bone_translation(y)
+        # limb_sizes = {}
         for joint in self.joints:
             joint.set_matrix()
             joint.set_mass()
+
+            # limb_sizes[joint_linear_index_to_name] = [joint.thickness[0], joint.get_limb_length(), joint.thickness[1]]
+
+
+    def set_limb_dims(self, joint_index, dims):
+        if 0 <= joint_index < len(self.joints):
+            if len(dims) == 3:
+                self.joints[joint_index].set_limb_length(dims[1])
+                self.joints[joint_index].set_thickness([dims[0], dims[2]])
+            elif len(dims) == 1:
+                self.joints[joint_index].set_limb_length(dims[0])
+            elif len(dims) == 2:
+                self.joints[joint_index].set_thickness([dims[0], dims[1]])
+            self.limbs[joint_index].new_shape = True
 
     def create_colours(self):
         self.color.append([0.5, 0.0, 0.0, 1.0])
@@ -1240,7 +1256,7 @@ class AlternateBodyData(BodyDataBase):
                 joint_name = shadow_limb_to_joint[node.attrib['id']]
                 joint_index = joint_name_to_index[joint_name]
                 self.humanoid_bone_dims[joint_index] = np.array(y)
-                self.joints[joint_index].set_bone_dim(y)
+                self.joints[joint_index].set_bone_translation(y)
         self.connect_limbs()
         for joint in self.joints:
             joint.set_matrix()
@@ -1327,7 +1343,7 @@ class AlternateBodyData(BodyDataBase):
             joint.set_thickness([.05, .05])
 
             joint.immed_children = []
-            joint.set_bone_dim((0.3, 0.0, 0.0))
+            joint.set_bone_translation((0.3, 0.0, 0.0))
             joint.set_limb_vector((0.0, 0.0, 1.0))
             joint.set_matrix()
             joint.set_mass()
@@ -1361,7 +1377,7 @@ class AlternateBodyData(BodyDataBase):
         self.create_limbs(1.0, 1.0, 1.0)
         for joint in self.joints:
             joint.immed_children = []
-            joint.set_bone_dim((0.15, 0.00, 0.0))
+            joint.set_bone_translation((0.15, 0.00, 0.0))
             joint.set_limb_vector((0.00001, .00001, 1.0))
             if joint.joint_index == t_SpinePelvis:
                 joint.set_thickness([.075, .075])
@@ -1440,7 +1456,7 @@ class AlternateBodyData(BodyDataBase):
         for index, joint in enumerate(self.joints):
             joint.set_thickness([.05, .05])
             joint.immed_children = []
-            joint.set_bone_dim(self.humanoid_bone_dims[index])
+            joint.set_bone_translation(self.humanoid_bone_dims[index])
             joint.ref_vector = np.array([0.0, 0.0, 1.0])
             if index in [t_Body, t_PelvisAnchor, t_Reference, t_Tracker0, t_Tracker1, t_Tracker2,
                                     t_Tracker3]:
@@ -1493,7 +1509,7 @@ class AlternateBodyData(BodyDataBase):
         for joint in self.joints:
             joint.set_thickness([.05, .05])
             joint.immed_children = []
-            joint.set_bone_dim((0.3, 0.0, 0.0))
+            joint.set_bone_translation((0.3, 0.0, 0.0))
             joint.set_limb_vector((0.0, 0.0, 1.0))
             joint.set_matrix()
             joint.set_mass()
@@ -1534,29 +1550,29 @@ class AlternateBodyData(BodyDataBase):
                                     t_Tracker3]:
                 joint.ref_vector = np.array([1.0, 0.0, 0.0])
             elif index == t_LeftShoulderBladeBase:
-                joint.set_bone_dim((0.075, 0.0, 0.0))  # bone_dim is key!!!!
+                joint.set_bone_translation((0.075, 0.0, 0.0))  # bone_dim is key!!!!
                 joint.ref_vector = np.array([0.0, 0.0, 1.0])
                 joint.set_thickness([.1, .03])
             elif index == t_RightShoulderBladeBase:
-                joint.set_bone_dim((-0.075, 0.0, 0.0))
+                joint.set_bone_translation((-0.075, 0.0, 0.0))
                 joint.ref_vector = np.array([0.0, 0.0, 1.0])
                 joint.set_thickness([.1, .03])
             elif index in [t_SpinePelvis, t_LowerVertebrae]:
-                joint.set_bone_dim((0.0, 0.0, -0.2))
+                joint.set_bone_translation((0.0, 0.0, -0.2))
                 joint.ref_vector = np.array([0.000001, 0.0, 1.0])
             elif index in [t_MidVertebrae, t_UpperVertebrae]:
-                joint.set_bone_dim((0.0, 0.0, 0.2))
+                joint.set_bone_translation((0.0, 0.0, 0.2))
                 joint.ref_vector = np.array([0.000001, 0.0, 1.0])
             elif index in [t_RightHip, t_RightKnee, t_RightAnkle]:
-                joint.set_bone_dim((-0.075, 0.0, 0.0))
+                joint.set_bone_translation((-0.075, 0.0, 0.0))
                 joint.ref_vector = np.array([0.000001, 0.000001, 1.0])
                 joint.set_thickness([.1, .03])
             elif index in [t_RightWrist, t_RightElbow, t_RightShoulder]:
-                joint.set_bone_dim((-0.075, 0.0, 0.0))
+                joint.set_bone_translation((-0.075, 0.0, 0.0))
                 joint.ref_vector = np.array([0.0, 0.0, 1.0])
                 joint.set_thickness([.1, .03])
             else:
-                joint.set_bone_dim((0.075, 0.0, 0.0))
+                joint.set_bone_translation((0.075, 0.0, 0.0))
                 joint.ref_vector = np.array([0.0, 0.0, 1.0])
                 joint.set_thickness([.1, .03])
 
@@ -1598,7 +1614,7 @@ class AlternateBodyData(BodyDataBase):
             joint.set_thickness([.05, .05])
 
             joint.immed_children = []
-            joint.set_bone_dim((0.3, 0.0, 0.0))
+            joint.set_bone_translation((0.3, 0.0, 0.0))
             joint.set_limb_vector((0.0, 0.0, 1.0))
             joint.set_matrix()
             joint.set_mass()
@@ -1606,44 +1622,44 @@ class AlternateBodyData(BodyDataBase):
         for index, limb in enumerate(self.limbs):
             self.limbs[index] = None
 
-        self.joints[t_RightShoulderBladeBase].set_bone_dim((0.1, 0.1, 0.0))
+        self.joints[t_RightShoulderBladeBase].set_bone_translation((0.1, 0.1, 0.0))
         self.joints[t_RightShoulderBladeBase].set_matrix()
-        self.joints[t_RightShoulder].set_bone_dim((0.2, 0.08, 0.0))
+        self.joints[t_RightShoulder].set_bone_translation((0.2, 0.08, 0.0))
         self.joints[t_RightShoulder].set_matrix()
-        self.joints[t_RightElbow].set_bone_dim((0.2, 0.0, 0.0))
+        self.joints[t_RightElbow].set_bone_translation((0.2, 0.0, 0.0))
         self.joints[t_RightElbow].set_matrix()
-        self.joints[t_RightWrist].set_bone_dim((0.2, -0.08, 0.0))
+        self.joints[t_RightWrist].set_bone_translation((0.2, -0.08, 0.0))
         self.joints[t_RightWrist].set_matrix()
-        self.joints[t_RightKnuckle].set_bone_dim((0.1, -0.1, 0.0))
+        self.joints[t_RightKnuckle].set_bone_translation((0.1, -0.1, 0.0))
         self.joints[t_RightKnuckle].set_matrix()
 
-        self.joints[t_LeftShoulderBladeBase].set_bone_dim((0.1, -0.1, 0.0))
+        self.joints[t_LeftShoulderBladeBase].set_bone_translation((0.1, -0.1, 0.0))
         self.joints[t_LeftShoulderBladeBase].set_matrix()
-        self.joints[t_LeftShoulder].set_bone_dim((0.2, -0.08, 0.0))
+        self.joints[t_LeftShoulder].set_bone_translation((0.2, -0.08, 0.0))
         self.joints[t_LeftShoulder].set_matrix()
-        self.joints[t_LeftElbow].set_bone_dim((0.2, 0.0, 0.0))
+        self.joints[t_LeftElbow].set_bone_translation((0.2, 0.0, 0.0))
         self.joints[t_LeftElbow].set_matrix()
-        self.joints[t_LeftWrist].set_bone_dim((0.2, 0.08, 0.0))
+        self.joints[t_LeftWrist].set_bone_translation((0.2, 0.08, 0.0))
         self.joints[t_LeftWrist].set_matrix()
-        self.joints[t_LeftKnuckle].set_bone_dim((0.1, 0.1, 0.0))
+        self.joints[t_LeftKnuckle].set_bone_translation((0.1, 0.1, 0.0))
         self.joints[t_LeftKnuckle].set_matrix()
 
-        self.joints[t_RightHip].set_bone_dim((0.1, 0.0, 0.1))
+        self.joints[t_RightHip].set_bone_translation((0.1, 0.0, 0.1))
         self.joints[t_RightHip].set_matrix()
-        self.joints[t_RightKnee].set_bone_dim((0.2, 0.0, 0.08))
+        self.joints[t_RightKnee].set_bone_translation((0.2, 0.0, 0.08))
         self.joints[t_RightKnee].set_matrix()
-        self.joints[t_RightAnkle].set_bone_dim((0.2, 0.0, 0.0))
+        self.joints[t_RightAnkle].set_bone_translation((0.2, 0.0, 0.0))
         self.joints[t_RightAnkle].set_matrix()
-        self.joints[t_RightBallOfFoot].set_bone_dim((0.2, 0.0, -0.08))
+        self.joints[t_RightBallOfFoot].set_bone_translation((0.2, 0.0, -0.08))
         self.joints[t_RightBallOfFoot].set_matrix()
 
-        self.joints[t_LeftHip].set_bone_dim((0.1, 0.0, -0.1))
+        self.joints[t_LeftHip].set_bone_translation((0.1, 0.0, -0.1))
         self.joints[t_LeftHip].set_matrix()
-        self.joints[t_LeftKnee].set_bone_dim((0.2, 0.0, -0.08))
+        self.joints[t_LeftKnee].set_bone_translation((0.2, 0.0, -0.08))
         self.joints[t_LeftKnee].set_matrix()
-        self.joints[t_LeftAnkle].set_bone_dim((0.2, 0.0, 0.00))
+        self.joints[t_LeftAnkle].set_bone_translation((0.2, 0.0, 0.00))
         self.joints[t_LeftAnkle].set_matrix()
-        self.joints[t_LeftBallOfFoot].set_bone_dim((0.2, 0.0, 0.08))
+        self.joints[t_LeftBallOfFoot].set_bone_translation((0.2, 0.0, 0.08))
         self.joints[t_LeftBallOfFoot].set_matrix()
 
         self.joints[t_PelvisAnchor].immed_children = [t_LeftShoulderBladeBase, t_RightShoulderBladeBase, t_LeftHip, t_RightHip]
@@ -1673,7 +1689,7 @@ class AlternateBodyData(BodyDataBase):
             joint.set_thickness([.025, .025])
 
             joint.immed_children = []
-            joint.set_bone_dim((0.3, 0.0, 0.0))
+            joint.set_bone_translation((0.3, 0.0, 0.0))
             joint.set_limb_vector((0.0, 0.0, 1.0))
             joint.set_matrix()
             joint.set_mass()
@@ -1681,44 +1697,44 @@ class AlternateBodyData(BodyDataBase):
         for index, limb in enumerate(self.limbs):
             self.limbs[index] = None
 
-        self.joints[t_RightShoulderBladeBase].set_bone_dim((0.04, 0.04, 0.0))
+        self.joints[t_RightShoulderBladeBase].set_bone_translation((0.04, 0.04, 0.0))
         self.joints[t_RightShoulderBladeBase].set_matrix()
-        self.joints[t_RightShoulder].set_bone_dim((0.4, 0.4, 0.0))
+        self.joints[t_RightShoulder].set_bone_translation((0.4, 0.4, 0.0))
         self.joints[t_RightShoulder].set_matrix()
-        self.joints[t_RightElbow].set_bone_dim((0.2, -0.4, 0.0))
+        self.joints[t_RightElbow].set_bone_translation((0.2, -0.4, 0.0))
         self.joints[t_RightElbow].set_matrix()
-        self.joints[t_RightWrist].set_bone_dim((-0.4, 0.0, 0.0))
+        self.joints[t_RightWrist].set_bone_translation((-0.4, 0.0, 0.0))
         self.joints[t_RightWrist].set_matrix()
-        self.joints[t_RightKnuckle].set_bone_dim((-0.2, 0.0, 0.0))
+        self.joints[t_RightKnuckle].set_bone_translation((-0.2, 0.0, 0.0))
         self.joints[t_RightKnuckle].set_matrix()
 
-        self.joints[t_LeftShoulderBladeBase].set_bone_dim((-0.04, 0.04, 0.0))
+        self.joints[t_LeftShoulderBladeBase].set_bone_translation((-0.04, 0.04, 0.0))
         self.joints[t_LeftShoulderBladeBase].set_matrix()
-        self.joints[t_LeftShoulder].set_bone_dim((-0.4, 0.4, 0.0))
+        self.joints[t_LeftShoulder].set_bone_translation((-0.4, 0.4, 0.0))
         self.joints[t_LeftShoulder].set_matrix()
-        self.joints[t_LeftElbow].set_bone_dim((-0.2, -0.4, 0.0))
+        self.joints[t_LeftElbow].set_bone_translation((-0.2, -0.4, 0.0))
         self.joints[t_LeftElbow].set_matrix()
-        self.joints[t_LeftWrist].set_bone_dim((0.4, 0.0, 0.0))
+        self.joints[t_LeftWrist].set_bone_translation((0.4, 0.0, 0.0))
         self.joints[t_LeftWrist].set_matrix()
-        self.joints[t_LeftKnuckle].set_bone_dim((0.2, 0.0, 0.0))
+        self.joints[t_LeftKnuckle].set_bone_translation((0.2, 0.0, 0.0))
         self.joints[t_LeftKnuckle].set_matrix()
 
-        self.joints[t_RightHip].set_bone_dim((0.04, -0.04, 0.0))
+        self.joints[t_RightHip].set_bone_translation((0.04, -0.04, 0.0))
         self.joints[t_RightHip].set_matrix()
-        self.joints[t_RightKnee].set_bone_dim((0.4, -0.1, 0.0))
+        self.joints[t_RightKnee].set_bone_translation((0.4, -0.1, 0.0))
         self.joints[t_RightKnee].set_matrix()
-        self.joints[t_RightAnkle].set_bone_dim((-0.2, -0.24, 0.0))
+        self.joints[t_RightAnkle].set_bone_translation((-0.2, -0.24, 0.0))
         self.joints[t_RightAnkle].set_matrix()
-        self.joints[t_RightBallOfFoot].set_bone_dim((-0.24, 0.38, 0.0))
+        self.joints[t_RightBallOfFoot].set_bone_translation((-0.24, 0.38, 0.0))
         self.joints[t_RightBallOfFoot].set_matrix()
 
-        self.joints[t_LeftHip].set_bone_dim((-0.04, -0.04, 0.0))
+        self.joints[t_LeftHip].set_bone_translation((-0.04, -0.04, 0.0))
         self.joints[t_LeftHip].set_matrix()
-        self.joints[t_LeftKnee].set_bone_dim((-0.4, -0.1, 0.0))
+        self.joints[t_LeftKnee].set_bone_translation((-0.4, -0.1, 0.0))
         self.joints[t_LeftKnee].set_matrix()
-        self.joints[t_LeftAnkle].set_bone_dim((0.2, -0.24, 0.0))
+        self.joints[t_LeftAnkle].set_bone_translation((0.2, -0.24, 0.0))
         self.joints[t_LeftAnkle].set_matrix()
-        self.joints[t_LeftBallOfFoot].set_bone_dim((0.24, 0.38, 0.0))
+        self.joints[t_LeftBallOfFoot].set_bone_translation((0.24, 0.38, 0.0))
         self.joints[t_LeftBallOfFoot].set_matrix()
 
         self.joints[t_PelvisAnchor].immed_children = [t_LeftShoulderBladeBase, t_RightShoulderBladeBase, t_RightHip, t_LeftHip]

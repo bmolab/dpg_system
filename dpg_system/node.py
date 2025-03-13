@@ -650,17 +650,20 @@ class PropertyWidget:
     def value_changed(self, uuid=-1, force=False):
         if not dpg.is_mouse_button_down(0) and not force:
             return
+        hold_active_input = self.node.active_input
         self.value = dpg.get_value(self.uuid)
         if self.variable:
             self.variable.set_value(self.value)
         if self.action is not None:
             self.action()
         if self.callback is not None:
+            self.node.active_input = self.input
             self.callback()
+            self.node.active_input = hold_active_input
         if self.triggers_execution and not self.node.in_loading_process:
             self.node.active_input = self.input
             self.node.execute()
-            self.node.active_input = None
+            self.node.active_input = hold_active_input
 
     def set_label(self, name):
         self._label = name
@@ -1849,6 +1852,7 @@ class Node:
                                     value = property_container['value']
                                     if input.widget.widget != 'button':
                                         input.widget.set(value)
+                                        self.active_input = input
                                         input.widget.value_changed(force=True)
                                 found = True
                                 break

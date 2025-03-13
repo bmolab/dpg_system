@@ -5,10 +5,9 @@ from pyquaternion import Quaternion
 import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import XML
 import scipy
+import copy
 
-print('about to import shadow')
 import dpg_system.MotionSDK as shadow
-print('imported shadow')
 
 def register_mocap_nodes():
     Node.app.register_node('gl_body', MoCapGLBody.factory)
@@ -25,6 +24,7 @@ def register_mocap_nodes():
     Node.app.register_node('global_to_local_body', GlobalToLocalBodyNode.factory)
     Node.app.register_node('target_pose', TargetPoseNode.factory)
     Node.app.register_node('calibrate_pose', PoseCalibrateNode.factory)
+    Node.app.register_node('limb_size', LimbSizingNode.factory)
 
 class MoCapNode(Node):
     joint_map = {
@@ -413,6 +413,7 @@ class MoCapGLBody(MoCapNode):
         self.diff_quat_smoothing = self.add_option('joint motion smoothing', widget_type='drag_float', default_value=0.8, max=1.0, min=0.0)
         self.joint_disk_alpha = self.add_option('joint motion alpha', widget_type='drag_float', default_value=0.5, max=1.0, min=0.0)
         self.body_color_id = self.add_option('colour id', widget_type='input_int', default_value=0)
+        self.limb_sizes_out = self.add_output('limb_sizes')
         self.body = BodyData()
         self.body.node = self
 
@@ -424,12 +425,11 @@ class MoCapGLBody(MoCapNode):
 
     def process_commands(self, command):
         if type(command[0]) == str:
-            print(command)
             if command[0] in BodyDataBase.smpl_limb_to_joint_dict:
                 target_joint = BodyDataBase.smpl_limb_to_joint_dict[command[0]]
                 if target_joint in joint_name_to_index:
                     target_joint_index = joint_name_to_index[target_joint]
-                    self.body.joints[target_joint_index].bone_dim = command[1:]
+                    self.body.joints[target_joint_index].bone_translation = command[1:]
                     self.body.joints[target_joint_index].set_matrix()
                 # self.body.joints[target_joint_index].set_mass()
             elif command[0] == 'limb_vertices':
@@ -449,11 +449,23 @@ class MoCapGLBody(MoCapNode):
                         joint_index = joint_name_to_index[joint_name]
                         if len(command) > 2:
                             dims = command[2:]
-                            if len(dims) == 1:
-                                self.body.joints[joint_index].length = dims[0]
+                            for i in range(len(dims)):
+                                dims[i] = any_to_float(dims[i])
+                            self.body.set_limb_dims(joint_index, dims)
+            elif command[0] == 'dump_limb_sizes':
+                self.dump_limb_sizes()
 
     def set_limb_vertices(self, name, vertices):
         self.body.set_limb_vertices(name, vertices)
+
+    def custom_create(self, from_file):
+        self.dump_limb_sizes()
+
+    def dump_limb_sizes(self):
+        limb_sizes = {}
+        for joint in self.body.joints:
+            limb_sizes[joint.name] = [joint.thickness[0], float(joint.get_limb_length()), joint.thickness[1]]
+        self.limb_sizes_out.send(limb_sizes)
 
     def joint_callback(self, joint_index):
         glPushMatrix()
@@ -502,7 +514,9 @@ class MoCapGLBody(MoCapNode):
                 #         joint_id = self.joint_map[joint_name]
                 #         self.body.update(joint_index=joint_id, quat=incoming[index], label=self.body_color_id())
 
-            elif t == list:
+            elif t in [list, str]:
+                if t == str:
+                    incoming = [incoming]
                 self.process_commands(incoming)
 
         elif self.gl_chain_input.fresh_input:
@@ -547,14 +561,13 @@ class SimpleMoCapGLBody(MoCapNode):
     #
     def process_commands(self, command):
         if type(command[0]) == str:
-            print(command)
             if command[0] in BodyDataBase.smpl_limb_to_joint_dict:
                 target_joint = BodyDataBase.smpl_limb_to_joint_dict[command[0]]
                 if target_joint in joint_name_to_index:
                     target_joint_index = joint_name_to_index[target_joint]
                     if len(command) >= 2:
                         # self.body.limbs[target_joint_index].dims[2] = any_to_float(command[1])
-                        self.body.joints[target_joint_index].length = any_to_float(command[3])
+                        self.body.joints[target_joint_index].set_limb_length(any_to_float(command[3]))
                     if len(command) == 3:
                         self.body.limbs[target_joint_index].dims[1] = any_to_float(command[2])
                         self.body.limbs[target_joint_index].dims[0] = any_to_float(command[2])
@@ -1217,31 +1230,24 @@ class AlternateMoCapGLBody(MoCapNode):
 
     def joint_callback(self, index):
         pass
-    #
+
     def process_commands(self, command):
         if type(command[0]) == str:
-            print(command)
             if command[0] in BodyDataBase.smpl_limb_to_joint_dict:
                 target_joint = BodyDataBase.smpl_limb_to_joint_dict[command[0]]
                 if target_joint in joint_name_to_index:
                     target_joint_index = joint_name_to_index[target_joint]
                     if len(command) >= 2:
-                        # self.body.limbs[target_joint_index].dims[2] = any_to_float(command[1])
-                        self.body.joints[target_joint_index].length = any_to_float(command[3])
+                        self.body.joints[target_joint_index].base_length = any_to_float(command[3])
                     if len(command) == 3:
                         self.body.limbs[target_joint_index].dims[1] = any_to_float(command[2])
                         self.body.limbs[target_joint_index].dims[0] = any_to_float(command[2])
-                        #self.body.joints[target_joint_index].thickness = (any_to_float(command[2]), any_to_float(command[2]))
 
                     if len(command) == 4:
                         self.body.limbs[target_joint_index].dims[0] = any_to_float(command[3])
-                        # self.body.joints[target_joint_index].thickness = (any_to_float(command[2]), any_to_float(command[2]))
 
                     self.body.joints[target_joint_index].set_matrix()
                     self.body.limbs[target_joint_index] = None
-                    # self.body.limbs[target_joint_index].new_shape = True
-                # self.body.joints[target_joint_index].set_mass()
-
 
     def execute(self):
         if self.input.fresh_input:
@@ -1278,6 +1284,154 @@ class AlternateMoCapGLBody(MoCapNode):
                 self.body.draw(False, self.skeleton_only())
 
 
+class LimbSizingNode(MoCapNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = LimbSizingNode(name, data, args)
+        return node
 
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
 
+        self.size_dict = {}
+        self.input_dict = {}
+        self.in_receive_size = False
+        self.size_dict_input = self.add_input('limb_sizes_dict', callback=self.receive_dict)
+        self.symmetric_input = self.add_input('symmetric', widget_type='checkbox', default_value=True)
 
+        self.label_map = {
+            'head': 'TopOfHead',
+            'neck': 'BaseOfSkull',
+            'spine4': 'UpperVertebrae',
+            'spine3': 'MidVertebrae',
+            'spine2': 'LowerVertebrae',
+            'spine1': 'SpinePelvis',
+            'left_hip': 'LeftHip',
+            'left_upper_leg': 'LeftKnee',
+            'left_lower_leg': 'LeftAnkle',
+            'left_foot': 'LeftBallOfFoot',
+            'left_toes': 'LeftToeTip',
+            'left_shoulder_blade': 'LeftShoulderBladeBase',
+            'left_shoulder': 'LeftShoulder',
+            'left_upper_arm': 'LeftElbow',
+            'left_lower_arm': 'LeftWrist',
+            'left_hand': 'LeftKnuckle',
+            'left_fingers': 'LeftFingerTip',
+
+            'right_hip': 'RightHip',
+            'right_upper_leg': 'RightKnee',
+            'right_lower_leg': 'RightAnkle',
+            'right_foot': 'RightBallOfFoot',
+            'right_toes': 'RightToeTip',
+            'right_shoulder_blade': 'RightShoulderBladeBase',
+            'right_shoulder': 'RightShoulder',
+            'right_upper_arm': 'RightElbow',
+            'right_lower_arm': 'RightWrist',
+            'right_hand': 'RightKnuckle',
+            'right_fingers': 'RightFingerTip'
+        }
+        for label in self.label_map:
+            code = self.label_map[label]
+            self.input_dict[code] = self.add_input(label, widget_type='drag_float', callback=self.sizer)
+        # self.input_dict['TopOfHead'] = self.add_input('head', widget_type='drag_float', callback=self.head_size)
+        # self.input_dict['BaseOfSkull'] = self.add_input('neck', widget_type='drag_float', callback=self.neck_size)
+        # self.input_dict['UpperVertebrae'] = self.add_input('spine4', widget_type='drag_float', callback=self.spine4_size)
+        # self.input_dict['MidVertebrae'] = self.add_input('spine3', widget_type='drag_float', callback=self.spine3_size)
+        # self.input_dict['LowerVertebrae'] = self.add_input('spine2', widget_type='drag_float', callback=self.spine2_size)
+        # self.input_dict['SpinePelvis'] = self.add_input('spine1', widget_type='drag_float',
+        #                                                    callback=self.spine1_size)
+        # self.input_dict['LeftHip'] = self.add_input('left_hip', widget_type='drag_float', callback=self.left_hip_size)
+        # self.input_dict['LeftKnee'] = self.add_input('left_upper_leg', widget_type='drag_float', callback=self.left_upper_leg_size)
+        # self.input_dict['LeftAnkle'] = self.add_input('left_lower_leg', widget_type='drag_float',
+        #                                              callback=self.left_lower_leg_size)
+        # self.input_dict['LeftBallOfFoot'] = self.add_input('left_foot', widget_type='drag_float',
+        #                                              callback=self.left_foot_size)
+        # self.input_dict['LeftToeTip'] = self.add_input('left_toes', widget_type='drag_float',
+        #                                              callback=self.left_toe_size)
+        # self.input_dict['LeftShoulderBladeBase'] = self.add_input('left_shoulder_blade', widget_type='drag_float', callback=self.left_shoulder_blade_size)
+        # self.input_dict['LeftShoulder'] = self.add_input('left_shoulder', widget_type='drag_float', callback=self.left_shoulder_size)
+        # self.input_dict['LeftElbow'] = self.add_input('left_upper_arm', widget_type='drag_float', callback=self.left_upper_arm_size)
+        # self.input_dict['LeftWrist'] = self.add_input('left_lower_arm', widget_type='drag_float', callback=self.left_lower_arm_size)
+        # self.input_dict['LeftKnuckle'] = self.add_input('left_hand', widget_type='drag_float', callback=self.left_hand_size)
+        # self.input_dict['LeftFingerTip'] = self.add_input('left_fingers', widget_type='drag_float', callback=self.left_finger_size)
+        #
+        # self.input_dict['RightHip'] = self.add_input('right_hip', widget_type='drag_float', callback=self.right_hip_size)
+        # self.input_dict['RightKnee'] = self.add_input('right_upper_leg', widget_type='drag_float',
+        #                                              callback=self.right_upper_leg_size)
+        # self.input_dict['RightAnkle'] = self.add_input('right_lower_leg', widget_type='drag_float',
+        #                                               callback=self.right_lower_leg_size)
+        # self.input_dict['RightBallOfFoot'] = self.add_input('right_foot', widget_type='drag_float',
+        #                                                    callback=self.right_foot_size)
+        # self.input_dict['RightToeTip'] = self.add_input('right_toes', widget_type='drag_float',
+        #                                                callback=self.right_toe_size)
+        # self.input_dict['RightShoulderBladeBase'] = self.add_input('right_shoulder_blade', widget_type='drag_float',
+        #                                                           callback=self.right_shoulder_blade_size)
+        # self.input_dict['RightShoulder'] = self.add_input('right_shoulder', widget_type='drag_float',
+        #                                                  callback=self.right_shoulder_size)
+        # self.input_dict['RightElbow'] = self.add_input('right_upper_arm', widget_type='drag_float',
+        #                                               callback=self.right_upper_arm_size)
+        # self.input_dict['RightWrist'] = self.add_input('right_lower_arm', widget_type='drag_float',
+        #                                               callback=self.right_lower_arm_size)
+        # self.input_dict['RightKnuckle'] = self.add_input('right_hand', widget_type='drag_float',
+        #                                                 callback=self.right_hand_size)
+        # self.input_dict['RightFingerTip'] = self.add_input('right_fingers', widget_type='drag_float',
+        #                                                   callback=self.right_finger_size)
+
+        self.reset_input = self.add_input('reset', widget_type='button', callback=self.reset)
+        self.out = self.add_output('out to gl_body')
+
+    def sizer(self):
+        input_name = self.active_input._label
+        self.receive_size(self.label_map[input_name])
+
+    def receive_size(self, name):
+        if name in self.input_dict and name in self.size_dict:
+            data = self.input_dict[name]()
+            t = type(data)
+            if t is list:
+                length = data[1]
+                self.input_dict[name].set(length)
+            else:
+                length = any_to_float(data)
+
+            current = self.size_dict[name]
+            if t is list:
+                if len(data) >= 3:
+                    current[0] = data[0]
+                    current[1] = data[1]
+                    current[2] = data[2]
+            else:
+                current[1] = length
+            self.size_dict[name] = current
+            mess = ['limb_size', name, current[0], current[1], current[2]]
+            self.out.send(mess)
+            if self.symmetric_input() and not self.in_receive_size:
+                self.in_receive_size = True
+                if name[:4] == 'Left':
+                    alt_name = 'Right' + name[4:]
+                    if alt_name in self.input_dict:
+                        self.input_dict[alt_name].set(data)
+                        self.input_dict[alt_name].widget.value_changed(force=True)
+                elif name[:5] == 'Right':
+                    alt_name = 'Left' + name[5:]
+                    if alt_name in self.input_dict:
+                        self.input_dict[alt_name].set(data)
+                        self.input_dict[alt_name].widget.value_changed(force=True)
+                self.in_receive_size = False
+
+    def receive_dict(self):
+        d = self.size_dict_input()
+        self.size_dict = copy.deepcopy(d)
+        self.default_size_dict = copy.deepcopy(d)
+        for limb_name in self.size_dict:
+            if limb_name in self.input_dict:
+                current = self.size_dict[limb_name]
+                self.input_dict[limb_name].set(current[1])
+
+    def reset(self):
+        self.size_dict = copy.deepcopy(self.default_size_dict)
+        for limb_name in self.size_dict:
+            if limb_name in self.input_dict:
+                current = self.size_dict[limb_name]
+                self.input_dict[limb_name].set(current[1])
+                self.receive_size(limb_name)

@@ -7,6 +7,7 @@ import string
 import sys
 import os
 import torch
+import copy
 
 from dpg_system.node import Node
 import threading
@@ -1862,10 +1863,10 @@ class TypeNode(Node):
         self.type_property = self.add_property(self.label, widget_type='text_input', width=width)
 
     def execute(self):
-        input = self.input()
+        input_ = self.input()
         if self.label == 'type':
             # print('type', type(input))
-            t = type(input)
+            t = type(input_)
             if t == float:
                 self.type_property.set('float')
             elif t == int:
@@ -1876,11 +1877,11 @@ class TypeNode(Node):
                 else:
                     self.type_property.set('string')
             elif t == list:
-                self.type_property.set('list[' + str(len(input)) + ']')
+                self.type_property.set('list[' + str(len(input_)) + ']')
             elif t == bool:
                 self.type_property.set('bool')
             elif t == np.ndarray:
-                shape = input.shape
+                shape = input_.shape
                 if len(shape) == 1:
                     self.type_property.set('array[' + str(shape[0]) + ']')
                 elif len(shape) == 2:
@@ -1889,8 +1890,10 @@ class TypeNode(Node):
                     self.type_property.set('array[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + ']')
                 elif len(shape) == 4:
                     self.type_property.set('array[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + ', ' + str(shape[3]) + ']')
+            elif t == dict:
+                self.type_property.set('dict')
             elif self.app.torch_available and t == torch.Tensor:
-                shape = input.shape
+                shape = input_.shape
                 if len(shape) == 0:
                     self.type_property.set('tensor[]')
                 elif len(shape) == 1:
@@ -1914,7 +1917,7 @@ class TypeNode(Node):
             elif t == np.bool_:
                 self.type_property.set('numpy.bool_')
         else:
-            t = type(input)
+            t = type(input_)
             if t == float:
                 self.type_property.set('float')
             elif t == int:
@@ -1925,23 +1928,23 @@ class TypeNode(Node):
                 else:
                     self.type_property.set('string')
             elif t == list:
-                self.type_property.set('list[' + str(len(input)) + ']')
+                self.type_property.set('list[' + str(len(input_)) + ']')
             elif t == bool:
                 self.type_property.set('bool')
             elif t == np.ndarray:
                 comp = 'unknown'
-                shape = input.shape
-                if input.dtype == float:
+                shape = input_.shape
+                if input_.dtype == float:
                     comp = 'float'
-                elif input.dtype == np.double:
+                elif input_.dtype == np.double:
                     comp = 'double'
                 elif input.dtype == np.float32:
                     comp = 'float32'
-                elif input.dtype == np.int64:
+                elif input_.dtype == np.int64:
                     comp = 'int64'
-                elif input.dtype == np.bool_:
+                elif input_.dtype == np.bool_:
                     comp = 'bool'
-                elif input.dtype == np.uint8:
+                elif input_.dtype == np.uint8:
                     comp = 'uint8'
 
                 if len(shape) == 1:
@@ -1954,38 +1957,40 @@ class TypeNode(Node):
                     self.type_property.set(
                         'array[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + ', ' + str(
                             shape[3]) + '] ' + comp)
+            elif t == dict:
+                self.type_property.set('dict[' + str(len(input_)) + ']')
             elif self.app.torch_available and t == torch.Tensor:
-                shape = input.shape
-                if input.dtype == torch.float:
+                shape = input_.shape
+                if input_.dtype == torch.float:
                     comp = 'float'
-                elif input.dtype == torch.double:
+                elif input_.dtype == torch.double:
                     comp = 'double'
-                elif input.dtype == torch.float32:
+                elif input_.dtype == torch.float32:
                     comp = 'float32'
-                elif input.dtype == torch.int64:
+                elif input_.dtype == torch.int64:
                     comp = 'int64'
-                elif input.dtype == torch.bool:
+                elif input_.dtype == torch.bool:
                     comp = 'bool'
-                elif input.dtype == torch.uint8:
+                elif input_.dtype == torch.uint8:
                     comp = 'uint8'
-                elif input.dtype == torch.float16:
+                elif input_.dtype == torch.float16:
                     comp = 'float16'
-                elif input.dtype == torch.bfloat16:
+                elif input_.dtype == torch.bfloat16:
                     comp = 'bfloat16'
-                elif input.dtype == torch.complex128:
+                elif input_.dtype == torch.complex128:
                     comp = 'complex128'
-                elif input.dtype == torch.complex64:
+                elif input_.dtype == torch.complex64:
                     comp = 'complex64'
-                elif input.dtype == torch.complex32:
+                elif input_.dtype == torch.complex32:
                     comp = 'complex32'
 
                 device = 'cpu'
-                if input.is_cuda:
+                if input_.is_cuda:
                     device = 'cuda'
-                elif input.is_mps:
+                elif input_.is_mps:
                     device = 'mps'
 
-                if input.requires_grad:
+                if input_.requires_grad:
                     grad = 'requires_grad'
                 else:
                     grad = ''
@@ -2466,7 +2471,9 @@ class CollectionNode(Node):
             # if not handled:
             t = type(data)
 
-            if t == list:
+            if t is dict:
+                self.collection = copy.deepcopy(data)
+            elif t == list:
                 index = data[0]
                 if type(index) not in [str, int]:
                     index = any_to_string(data[0])

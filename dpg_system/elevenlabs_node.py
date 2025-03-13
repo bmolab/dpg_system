@@ -82,17 +82,13 @@ class Streamer:
                     audio = b""
                     break
 
-        print('EXITING')
         if mpv_process.stdin:
             mpv_process.stdin.close()
         if self.force_stop:
-             pid = mpv_process.pid
              mpv_process.terminate()
-             print('TERMINATED')
              self.force_stop = False
         else:
             mpv_process.wait()
-        print('DONE')
         self.force_stop = False
         return audio
 
@@ -106,6 +102,7 @@ def service_eleven_labs():
                 traceback.print_exception(e)
 
         time.sleep(0.1)
+
 
 class ElevenLabsNode(Node):
     instances = []
@@ -171,7 +168,7 @@ class ElevenLabsNode(Node):
         self.latency.widget.combo_items = ['0', '1', '2', '3', '4', '5']
         self.stop_streaming_input = self.add_input('stop', widget_type='button', callback=self.stop_streaming)
         self.hard_stop_input = self.add_input('hard stop', widget_type='button', callback=self.hard_stop_streaming)
-        self.accept_input = self.add_input('accept input', widget_type='checkbox')
+        self.accept_input = self.add_input('accept input', widget_type='checkbox', default_value=True)
         self.active_output = self.add_output('speaking')
         self.voice_record = None
         self.previously_active = False
@@ -226,16 +223,9 @@ class ElevenLabsNode(Node):
             latency = int(self.latency())
             settings = VoiceSettings(stability=self.stability(), similarity_boost=self.similarity_boost(), style=self.style(), speed=self.speed(), latency=self.latency())
 
-            # self.audio_stream = self.client.text_to_speech.convert_as_stream(
-            #     text=text,
-            #     voice_id=self.voice_id,
-            #     model_id=self.model_choice(),
-            #     optimize_streaming_latency=latency
-            # )
             self.audio_stream = self.client.generate(text=text, voice=self.voice_record, model=model, stream=True, optimize_streaming_latency=latency, voice_settings=settings)
             try:
                 audio = self.streamer.stream(self.audio_stream)
-                # audio = stream(self.audio_stream)
             except Exception as e:
                 print(e)
             self.active = False
@@ -244,5 +234,3 @@ class ElevenLabsNode(Node):
         if self.active != self.previously_active:
             self.active_output.send(self.active)
             self.previously_active = self.active
-
-# def text_stream():
