@@ -464,7 +464,7 @@ class MoCapGLBody(MoCapNode):
     def dump_limb_sizes(self):
         limb_sizes = {}
         for joint in self.body.joints:
-            limb_sizes[joint.name] = [joint.thickness[0], float(joint.get_limb_length()), joint.thickness[1]]
+            limb_sizes[joint.name] = joint.dims
         self.limb_sizes_out.send(limb_sizes)
 
     def joint_callback(self, joint_index):
@@ -577,7 +577,7 @@ class SimpleMoCapGLBody(MoCapNode):
                         self.body.limbs[target_joint_index].dims[0] = any_to_float(command[3])
                         # self.body.joints[target_joint_index].thickness = (any_to_float(command[2]), any_to_float(command[2]))
 
-                    self.body.joints[target_joint_index].set_matrix()
+                    # self.body.joints[target_joint_index].set_matrix()
                     self.body.limbs[target_joint_index] = None
                     # self.body.limbs[target_joint_index].new_shape = True
                 # self.body.joints[target_joint_index].set_mass()
@@ -1237,7 +1237,7 @@ class AlternateMoCapGLBody(MoCapNode):
                 target_joint = BodyDataBase.smpl_limb_to_joint_dict[command[0]]
                 if target_joint in joint_name_to_index:
                     target_joint_index = joint_name_to_index[target_joint]
-                    if len(command) >= 2:
+                    if len(command) >= 2: #lllll error!!!!
                         self.body.joints[target_joint_index].base_length = any_to_float(command[3])
                     if len(command) == 3:
                         self.body.limbs[target_joint_index].dims[1] = any_to_float(command[2])
@@ -1389,7 +1389,7 @@ class LimbSizingNode(MoCapNode):
             data = self.input_dict[name]()
             t = type(data)
             if t is list:
-                length = data[1]
+                length = data[0]
                 self.input_dict[name].set(length)
             else:
                 length = any_to_float(data)
@@ -1401,7 +1401,7 @@ class LimbSizingNode(MoCapNode):
                     current[1] = data[1]
                     current[2] = data[2]
             else:
-                current[1] = length
+                current[0] = length
             self.size_dict[name] = current
             mess = ['limb_size', name, current[0], current[1], current[2]]
             self.out.send(mess)
@@ -1426,12 +1426,14 @@ class LimbSizingNode(MoCapNode):
         for limb_name in self.size_dict:
             if limb_name in self.input_dict:
                 current = self.size_dict[limb_name]
-                self.input_dict[limb_name].set(current[1])
+                self.input_dict[limb_name].set(current[0])
 
     def reset(self):
         self.size_dict = copy.deepcopy(self.default_size_dict)
+        self.in_receive_size = True
         for limb_name in self.size_dict:
             if limb_name in self.input_dict:
                 current = self.size_dict[limb_name]
-                self.input_dict[limb_name].set(current[1])
+                self.input_dict[limb_name].set(current[0])
                 self.receive_size(limb_name)
+        self.in_receive_size = False

@@ -440,9 +440,8 @@ class BodyDataBase:
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, self.base_material)
 
     def draw_block(self, joint_index, joint_data):  # draw_block could include colours for each end of the block to reflect
-
         if self.skeleton:
-            dim_z = joint_data.base_length
+            dim_z = joint_data.dims[0]
             glBegin(GL_LINES)
             glVertex3f(0, 0, 0)
             glVertex3f(0, 0, dim_z)
@@ -452,9 +451,9 @@ class BodyDataBase:
                 self.limbs[joint_index] = LimbGeometry()
                 self.limbs[joint_index].new_shape = True
             if self.limbs[joint_index].new_shape:
-                dim_x = joint_data.thickness[0] / 2
-                dim_z = joint_data.get_limb_length() - .02
-                dim_y = joint_data.thickness[1] / 2
+                dim_z = joint_data.dims[0] - .02
+                dim_x = joint_data.dims[1] / 2
+                dim_y = joint_data.dims[2] / 2
 
                 if self.limb_vertices[joint_index] is not None:
                     points = []
@@ -625,14 +624,11 @@ class BodyDataBase:
             joint.set_matrix()
             joint.set_mass()
 
-            # limb_sizes[joint_linear_index_to_name] = [joint.thickness[0], joint.get_limb_length(), joint.thickness[1]]
-
-
     def set_limb_dims(self, joint_index, dims):
         if 0 <= joint_index < len(self.joints):
             if len(dims) == 3:
-                self.joints[joint_index].set_limb_length(dims[1])
-                self.joints[joint_index].set_thickness([dims[0], dims[2]])
+                self.joints[joint_index].set_limb_length(dims[0])
+                self.joints[joint_index].set_thickness([dims[1], dims[2]])
             elif len(dims) == 1:
                 self.joints[joint_index].set_limb_length(dims[0])
             elif len(dims) == 2:
@@ -1056,7 +1052,6 @@ class LimbGeometry:
             self.normals[9] = self.calc_normal(self.points[2], self.points[4], self.points[6])
 
     def draw(self):  #  limb structure could include colors and if so, do not use call_list... do vertex colors and manipulate GL_COLOR_MATERIAL
-
         if self.new_shape:
             self.new_shape = False
             if self.list_index != -1:
@@ -1341,7 +1336,6 @@ class AlternateBodyData(BodyDataBase):
         self.create_limbs(1.0, 1.0, 1.0)
         for joint in self.joints:
             joint.set_thickness([.05, .05])
-
             joint.immed_children = []
             joint.set_bone_translation((0.3, 0.0, 0.0))
             joint.set_limb_vector((0.0, 0.0, 1.0))

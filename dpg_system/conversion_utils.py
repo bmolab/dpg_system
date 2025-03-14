@@ -895,11 +895,12 @@ def string_to_num2(s):
 
 
 def is_number(s):
-    if type(s) == list:
+    t = type(s)
+    if t == list:
         if len(s) == 1:
-            if type(s[0]) in [float, int, complex]:
+            if type(s[0]) in [float, int, complex, np.int32, np.int64, np.uint32, np.uint64, np.float16, np.float32, np.float64]:
                 return True
-    if type(s) == str:
+    if t == str:
         if len(s) > 0:
             if s[0] == '-':
                 b = s[1:]
@@ -908,7 +909,7 @@ def is_number(s):
                 return s.replace('.', '', 1).isdigit()
         else:
             return False
-    elif type(s) in [float, int, complex, np.int64, np.float32]:
+    elif t in [float, int, complex, np.int32, np.int64, np.uint32, np.uint64, np.float16, np.float32, np.float64]:
         return True
     else:
         return False

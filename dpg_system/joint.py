@@ -21,8 +21,8 @@ class BaseJoint:
         self.immed_children = []
         self.ref_vector = np.array([0.0, 0.0, 1.0])
         self.matrix = None
-        # self.dims = [1.0, 0.1, 0.1]
-        self.thickness = (.1, .1)
+        self.base_dims = [1.0, 0.1, 0.1]
+        self.dims = [1.0, 0.1, 0.1]
         self.base_length = 1.0
         self.length_scaler = 1.0
 
@@ -37,10 +37,12 @@ class BaseJoint:
         self.set_draw()
 
     def set_limb_length(self, new_length):
-        self.length_scaler = new_length / self.base_length
+        self.dims[0] = new_length
+        self.length_scaler = self.dims[0] / self.base_dims[0]
+        # self.length_scaler = new_length / self.base_length
 
     def get_limb_length(self):
-        return self.base_length * self.length_scaler
+        return self.dims[0]
 
     def set_vector_index(self):
         for idx, actual_joint in enumerate(actual_joints):
@@ -50,9 +52,11 @@ class BaseJoint:
 
     def set_thickness(self, dims=None):
         if dims is None:
-            self.thickness = (.05, .05)
+            self.dims[1:] = [.05, .05]
+            # self.thickness = (.05, .05)
         else:
-            self.thickness = (dims[0], dims[1])
+            self.dims[1:] = dims[:2]
+            # self.thickness = (dims[0], dims[1])
 
     def set_bone_translation(self, dims):
         self.bone_translation = np.array(dims)
@@ -192,12 +196,12 @@ class BaseJoint:
 
     def set_mass(self):
         if self.matrix is not None:
-            self.mass = [self.thickness[0], self.get_limb_length(), self.thickness[1]]
+            self.mass = self.dims.copy()
             for child_index in self.children:
                 child = self.body.joints[child_index]
-                self.mass[0] += child.thickness[0]
-                self.mass[1] += child.get_limb_length()
-                self.mass[2] += child.thickness[1]
+                self.mass[0] += self.dims[0]
+                self.mass[1] += self.dims[1]
+                self.mass[2] += self.dims[2]
 
     def translate_along_bone(self):
         glTranslatef(self.bone_translation[0] * self.length_scaler, self.bone_translation[1] * self.length_scaler, self.bone_translation[2] * self.length_scaler)
@@ -207,8 +211,10 @@ class BaseJoint:
             base_vector = self.ref_vector  # like an up vector
             limb_vector = self.bone_translation.copy()  # vector defining limb extension from parent joint at T-Pose
 
-            scale = np.linalg.norm(limb_vector)  # limb length
-            self.base_length = scale
+            scale = float(np.linalg.norm(limb_vector) ) # limb length
+            self.base_dims[0] = scale
+            self.dims[0] = scale * self.length_scaler
+            print(self.name, self.dims, self.base_dims)
 
             limb_vector /= scale
             w = np.cross(limb_vector, base_vector)
@@ -252,44 +258,64 @@ class Joint(BaseJoint):
     def set_thickness(self, dims=None):
         if dims is None:
             if self.joint_index == t_MidVertebrae:
-                self.thickness = (.25, .12)
+                # self.thickness = (.25, .12)
+                self.dims[1:] = [.25, .12]
             elif self.joint_index == t_BaseOfSkull:
-                self.thickness = (.07, .07)
+                # self.thickness = (.07, .07)
+                self.dims[1:] = [.07, .07]
             elif self.joint_index == t_TopOfHead:
-                self.thickness = (.1, .12)
+                # self.thickness = (.1, .12)
+                self.dims[1:] = [.1, .12]
             elif self.joint_index in [t_LeftShoulder, t_RightShoulder]:
-                self.thickness = (.08, .06)
+                # self.thickness = (.08, .06)
+                self.dims[1:] = [.08, .06]
             elif self.joint_index in [t_LeftKnuckle, t_RightKnuckle]:
-                self.thickness = (.07, .025)
+                # self.thickness = (.07, .025)
+                self.dims[1:] = [.07, .025]
             elif self.joint_index in [t_LeftFingerTip, t_RightFingerTip]:
-                self.thickness = (.07, .02)
+                # self.thickness = (.07, .02)
+                self.dims[1:] = [.07, .02]
             elif self.joint_index in [t_LeftAnkle, t_RightAnkle]:
-                self.thickness = (.06, .08)
+                # self.thickness = (.06, .08)
+                self.dims[1:] = [.06, .08]
             elif self.joint_index in [t_LeftElbow, t_RightElbow]:
-                self.thickness = (.08, .05)
+                # self.thickness = (.08, .05)
+                self.dims[1:] = [.08, .05]
             elif self.joint_index in [t_LeftWrist, t_RightWrist]:
-                self.thickness = (.06, .04)
+                # self.thickness = (.06, .04)
+                self.dims[1:] = [.06, .04]
             elif self.joint_index in [t_LeftHeel, t_RightHeel]:
-                self.thickness = (.06, .06)
+                # self.thickness = (.06, .06)
+                self.dims[1:] = [.06, .06]
             elif self.joint_index in [t_LeftKnee, t_RightKnee]:
-                self.thickness = (.08, .1)
+                # self.thickness = (.08, .1)
+                self.dims[1:] = [.08, .1]
             elif self.joint_index in [t_LeftShoulderBladeBase, t_RightShoulderBladeBase]:
-                self.thickness = (.15, .10)
+                # self.thickness = (.15, .10)
+                self.dims[1:] = [.15, .10]
             elif self.joint_index in [t_LeftHip, t_RightHip]:
-                self.thickness = (.05, .05)
+                # self.thickness = (.05, .05)
+                self.dims[1:] = [.05, .05]
             elif self.joint_index in [t_LeftBallOfFoot, t_RightBallOfFoot]:
-                self.thickness = (.07, .03)
+                # self.thickness = (.07, .03)
+                self.dims[1:] = [.07, .03]
             elif self.joint_index in [t_LeftToeTip, t_RightToeTip]:
-                self.thickness = (.07, .02)
+                # self.thickness = (.07, .02)
+                self.dims[1:] = [.07, .02]
             elif self.joint_index == t_UpperVertebrae:
-                self.thickness = (.07, .07)
+                # self.thickness = (.07, .07)
+                self.dims[1:] = [.07, .07]
                 # self.thickness = (.28, .15)
             elif self.joint_index == t_SpinePelvis:
-                self.thickness = (.21, .11)
+                # self.thickness = (.21, .11)
+                self.dims[1:] = [.21, .11]
             elif self.joint_index == t_LowerVertebrae:
-                self.thickness = (.2, .11)
+                # self.thickness = (.2, .11)
+                self.dims[1:] = [.2, .11]
+            self.base_dims[1:] = self.dims[1:]
         else:
-            self.thickness = (dims[0], dims[1])
+            # self.thickness = (dims[0], dims[1])
+            self.dims[1:] = [dims[0], dims[1]]
 
     def set_limb_vector(self, limb_vector=None):
         if limb_vector is None:
