@@ -385,7 +385,6 @@ class MoCapBody(MoCapNode):
 
 
 class MoCapGLBody(MoCapNode):
-
     @staticmethod
     def factory(name, data, args=None):
         node = MoCapGLBody(name, data, args)
@@ -399,6 +398,8 @@ class MoCapGLBody(MoCapNode):
         self.gl_chain_input = self.add_input('gl chain', triggers_execution=True)
         self.gl_chain_output = self.add_output('gl_chain')
         self.capture_pose_input = self.add_input('capture pose', widget_type='button', callback=self.capture_pose)
+        self.joint_data_input = self.add_input('joint data')
+
         self.current_joint_output = self.add_output('current_joint_name')
         self.current_joint_rotation_axis_output = self.add_output('current_joint_quaternion_axis')
         self.current_joint_gl_output = self.add_output('current_joint_gl_chain')
@@ -407,6 +408,8 @@ class MoCapGLBody(MoCapNode):
         self.calc_diff_quats = self.add_option('calc_diff_quats', widget_type='checkbox', default_value=False, callback=self.set_calc_diff)
         self.skeleton_only = self.add_option('skeleton_only', widget_type='checkbox', default_value=False)
         self.show_joint_spheres = self.add_option('show joint motion', widget_type='checkbox', default_value=self.show_joint_activity)
+        self.joint_indicator = self.add_option('joint indicator', widget_type='combo', default_value='sphere')
+        self.joint_indicator.widget.combo_items = ['sphere', 'disk']
         self.joint_data_selection = self.add_option('joint data type', widget_type='combo', default_value='diff_axis-angle')
         self.joint_data_selection.widget.combo_items = ['diff_quaternion', 'diff_axis-angle']
         self.joint_motion_scale = self.add_option('joint motion scale', widget_type='drag_float', default_value=5)
@@ -416,6 +419,7 @@ class MoCapGLBody(MoCapNode):
         self.limb_sizes_out = self.add_output('limb_sizes')
         self.body = BodyData()
         self.body.node = self
+        self.external_joint_data = None
 
     def set_calc_diff(self):
         self.body.calc_diff = self.calc_diff_quats()
@@ -469,10 +473,21 @@ class MoCapGLBody(MoCapNode):
 
     def joint_callback(self, joint_index):
         glPushMatrix()
+
         mode = self.joint_data_selection()
         # joint_name = joint_index_to_name[joint_index]
         self.current_joint_output.send(joint_index)
-        if mode == 'diff_axis-angle':
+        if self.external_joint_data is not None:
+            if type(self.external_joint_data) is np.ndarray:
+                if self.external_joint_data.shape[0] == 20:
+                    self.current_joint_rotation_axis_output.send(self.external_joint_data[joint_index])
+            elif type(self.external_joint_data) is torch.Tensor:
+                if self.external_joint_data.shape[0] == 20:
+                    self.current_joint_rotation_axis_output.send(self.external_joint_data[joint_index])
+            elif type(self.external_joint_data) is list:
+                if len(self.external_joint_data) == 20:
+                    self.current_joint_rotation_axis_output.send(self.external_joint_data[joint_index])
+        elif mode == 'diff_axis-angle':
             rotation = np.array(self.body.rotationAxis[joint_index])
             rotation = rotation / (np.linalg.norm(rotation) + 1e-6) * self.body.quaternionDistance[joint_index] * self.joint_motion_scale()
             # self.current_joint_quaternion_output.send(self.body.quaternionDistance[joint_index])
@@ -493,6 +508,19 @@ class MoCapGLBody(MoCapNode):
 
     def execute(self):
         if self.input.fresh_input:
+            if self.joint_data_input.fresh_input:
+                data = self.joint_data_input()
+                if type(data) is torch.Tensor:
+                    self.external_joint_data = data.clone()
+                elif type(data) is np.ndarray:
+                    self.external_joint_data = data.copy()
+                elif type(data) is list:
+                    self.external_joint_data = data.copy()
+                else:
+                    self.external_joint_data = None
+            else:
+                self.external_joint_data = None
+
             incoming = self.input()
             t = type(incoming)
             if t == torch.Tensor:
@@ -523,6 +551,7 @@ class MoCapGLBody(MoCapNode):
             incoming = self.gl_chain_input()
             t = type(incoming)
             if t == str and incoming == 'draw':
+                self.body.joint_display = self.joint_indicator()
                 scale = self.joint_motion_scale()
                 smoothing = self.diff_quat_smoothing()
                 self.body.joint_motion_scale = scale
@@ -533,6 +562,7 @@ class MoCapGLBody(MoCapNode):
                 else:
                     self.body.draw(self.show_joint_spheres(), self.skeleton_only())
                 self.gl_chain_output.send('draw')
+                self.external_joint_data = None
 
 
 class SimpleMoCapGLBody(MoCapNode):
@@ -1333,50 +1363,6 @@ class LimbSizingNode(MoCapNode):
         for label in self.label_map:
             code = self.label_map[label]
             self.input_dict[code] = self.add_input(label, widget_type='drag_float', callback=self.sizer)
-        # self.input_dict['TopOfHead'] = self.add_input('head', widget_type='drag_float', callback=self.head_size)
-        # self.input_dict['BaseOfSkull'] = self.add_input('neck', widget_type='drag_float', callback=self.neck_size)
-        # self.input_dict['UpperVertebrae'] = self.add_input('spine4', widget_type='drag_float', callback=self.spine4_size)
-        # self.input_dict['MidVertebrae'] = self.add_input('spine3', widget_type='drag_float', callback=self.spine3_size)
-        # self.input_dict['LowerVertebrae'] = self.add_input('spine2', widget_type='drag_float', callback=self.spine2_size)
-        # self.input_dict['SpinePelvis'] = self.add_input('spine1', widget_type='drag_float',
-        #                                                    callback=self.spine1_size)
-        # self.input_dict['LeftHip'] = self.add_input('left_hip', widget_type='drag_float', callback=self.left_hip_size)
-        # self.input_dict['LeftKnee'] = self.add_input('left_upper_leg', widget_type='drag_float', callback=self.left_upper_leg_size)
-        # self.input_dict['LeftAnkle'] = self.add_input('left_lower_leg', widget_type='drag_float',
-        #                                              callback=self.left_lower_leg_size)
-        # self.input_dict['LeftBallOfFoot'] = self.add_input('left_foot', widget_type='drag_float',
-        #                                              callback=self.left_foot_size)
-        # self.input_dict['LeftToeTip'] = self.add_input('left_toes', widget_type='drag_float',
-        #                                              callback=self.left_toe_size)
-        # self.input_dict['LeftShoulderBladeBase'] = self.add_input('left_shoulder_blade', widget_type='drag_float', callback=self.left_shoulder_blade_size)
-        # self.input_dict['LeftShoulder'] = self.add_input('left_shoulder', widget_type='drag_float', callback=self.left_shoulder_size)
-        # self.input_dict['LeftElbow'] = self.add_input('left_upper_arm', widget_type='drag_float', callback=self.left_upper_arm_size)
-        # self.input_dict['LeftWrist'] = self.add_input('left_lower_arm', widget_type='drag_float', callback=self.left_lower_arm_size)
-        # self.input_dict['LeftKnuckle'] = self.add_input('left_hand', widget_type='drag_float', callback=self.left_hand_size)
-        # self.input_dict['LeftFingerTip'] = self.add_input('left_fingers', widget_type='drag_float', callback=self.left_finger_size)
-        #
-        # self.input_dict['RightHip'] = self.add_input('right_hip', widget_type='drag_float', callback=self.right_hip_size)
-        # self.input_dict['RightKnee'] = self.add_input('right_upper_leg', widget_type='drag_float',
-        #                                              callback=self.right_upper_leg_size)
-        # self.input_dict['RightAnkle'] = self.add_input('right_lower_leg', widget_type='drag_float',
-        #                                               callback=self.right_lower_leg_size)
-        # self.input_dict['RightBallOfFoot'] = self.add_input('right_foot', widget_type='drag_float',
-        #                                                    callback=self.right_foot_size)
-        # self.input_dict['RightToeTip'] = self.add_input('right_toes', widget_type='drag_float',
-        #                                                callback=self.right_toe_size)
-        # self.input_dict['RightShoulderBladeBase'] = self.add_input('right_shoulder_blade', widget_type='drag_float',
-        #                                                           callback=self.right_shoulder_blade_size)
-        # self.input_dict['RightShoulder'] = self.add_input('right_shoulder', widget_type='drag_float',
-        #                                                  callback=self.right_shoulder_size)
-        # self.input_dict['RightElbow'] = self.add_input('right_upper_arm', widget_type='drag_float',
-        #                                               callback=self.right_upper_arm_size)
-        # self.input_dict['RightWrist'] = self.add_input('right_lower_arm', widget_type='drag_float',
-        #                                               callback=self.right_lower_arm_size)
-        # self.input_dict['RightKnuckle'] = self.add_input('right_hand', widget_type='drag_float',
-        #                                                 callback=self.right_hand_size)
-        # self.input_dict['RightFingerTip'] = self.add_input('right_fingers', widget_type='drag_float',
-        #                                                   callback=self.right_finger_size)
-
         self.reset_input = self.add_input('reset', widget_type='button', callback=self.reset)
         self.out = self.add_output('out to gl_body')
 

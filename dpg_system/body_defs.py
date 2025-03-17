@@ -1,41 +1,85 @@
+# t_NoJoint = -1
+# t_Body = 0
+# t_MidVertebrae = 1
+# t_BaseOfSkull = 2
+# t_TopOfHead = 3
+# t_PelvisAnchor = 4              #  can invert quat *not used*
+# t_LeftShoulder = 5
+# t_LeftKnuckle = 6
+# t_LeftFingerTip = 7
+# t_LeftAnkle = 8
+# t_LeftElbow = 9                 # close to inversion 0.95
+# t_LeftWrist = 10                #  can invert quat 1.99
+# t_LeftHeel = 11
+# t_LeftKnee = 12
+# t_LeftShoulderBladeBase = 13
+# t_LeftHip = 14
+# t_LeftBallOfFoot = 15
+# t_LeftToeTip = 16
+# t_UpperVertebrae = 17
+# t_Reference = 18
+# t_RightShoulder = 19
+# t_RightKnuckle = 20
+# t_RightFingerTip = 21
+# t_RightAnkle = 22
+# t_RightElbow = 23               #  can invert quat 1.07
+# t_RightWrist = 24               #  can invert quat  1.99
+# t_RightHeel = 25
+# t_RightKnee = 26                #  .78
+# t_RightShoulderBladeBase = 27
+# t_RightHip = 28
+# t_RightBallOfFoot = 29
+# t_RightToeTip = 30
+# t_SpinePelvis = 31
+# t_LowerVertebrae = 32
+# t_Tracker0 = 33
+# t_Tracker1 = 34
+# t_Tracker2 = 35
+# t_Tracker3 = 36
+
+# new active joint mode constants
+
 t_NoJoint = -1
-t_Body = 0
-t_MidVertebrae = 1
-t_BaseOfSkull = 2
-t_TopOfHead = 3
-t_PelvisAnchor = 4              #  can invert quat *not used*
-t_LeftShoulder = 5
-t_LeftKnuckle = 6
-t_LeftFingerTip = 7
+t_BaseOfSkull = 0
+t_UpperVertebrae = 1
+t_MidVertebrae = 2
+t_LowerVertebrae = 3
+t_SpinePelvis = 4
+t_PelvisAnchor = 5
+t_LeftHip = 6
+t_LeftKnee = 7
 t_LeftAnkle = 8
-t_LeftElbow = 9                 # close to inversion 0.95
-t_LeftWrist = 10                #  can invert quat 1.99
-t_LeftHeel = 11
-t_LeftKnee = 12
-t_LeftShoulderBladeBase = 13
-t_LeftHip = 14
-t_LeftBallOfFoot = 15
-t_LeftToeTip = 16
-t_UpperVertebrae = 17
-t_Reference = 18
-t_RightShoulder = 19
-t_RightKnuckle = 20
-t_RightFingerTip = 21
-t_RightAnkle = 22
-t_RightElbow = 23               #  can invert quat 1.07
-t_RightWrist = 24               #  can invert quat  1.99
-t_RightHeel = 25
-t_RightKnee = 26                #  .78
-t_RightShoulderBladeBase = 27
-t_RightHip = 28
-t_RightBallOfFoot = 29
-t_RightToeTip = 30
-t_SpinePelvis = 31
-t_LowerVertebrae = 32
-t_Tracker0 = 33
-t_Tracker1 = 34
-t_Tracker2 = 35
-t_Tracker3 = 36
+t_RightHip = 9
+t_RightKnee = 10
+t_RightAnkle = 11
+t_LeftShoulderBladeBase = 12
+t_LeftShoulder = 13
+t_LeftElbow = 14
+t_LeftWrist = 15
+t_RightShoulderBladeBase = 16
+t_RightShoulder = 17
+t_RightElbow = 18
+t_RightWrist = 19
+
+# non - joints
+t_TopOfHead = 20
+t_LeftBallOfFoot = 21
+t_LeftToeTip = 22
+t_RightBallOfFoot = 23
+t_RightToeTip = 24
+t_LeftKnuckle = 25
+t_LeftFingerTip = 26
+t_RightKnuckle = 27
+t_RightFingerTip = 28
+
+t_LeftHeel = 29
+t_RightHeel = 30
+
+t_Tracker0 = 31
+t_Tracker1 = 32
+t_Tracker2 = 33
+t_Tracker3 = 34
+
 
 t_inputVectorNone = -1
 t_inputVectorBaseOfSkull = 0
@@ -145,8 +189,28 @@ joint_linear_index_to_name = {
     16: 'RightShoulderBladeBase',
     17: 'RightShoulder',
     18: 'RightElbow',
-    19: 'RightWrist'
+    19: 'RightWrist',
+
+    # not active joints
+    20: 'TopOfHead',
+    21: 'LeftBallOfFoot',
+    22: 'LeftToeTip',
+    23: 'RightBallOfFoot',
+    24: 'RightToeTip',
+    25: 'LeftKnuckle',
+    26: 'LeftFingerTip',
+    27: 'RightKnuckle',
+    28: 'RightFingerTip',
+    29: 'LeftHeel',
+    30: 'RightHeel',
+
+    31: 'Tracker0',
+    32: 'Tracker1',
+    33: 'Tracker2',
+    34: 'Tracker3',
+    -1: 'NoJoint'
 }
+
 
 
 joint_name_to_linear_index = {
@@ -169,7 +233,26 @@ joint_name_to_linear_index = {
     'RightShoulderBladeBase': 16,
     'RightShoulder': 17,
     'RightElbow': 18,
-    'RightWrist': 19
+    'RightWrist': 19,
+
+    # non - joints
+    'TopOfHead': 20,
+    'LeftBallOfFoot': 21,
+    'LeftToeTip': 22,
+    'RightBallOfFoot': 23,
+    'RightToeTip': 24,
+    'LeftKnuckle': 25,
+    'LeftFingerTip': 26,
+    'RightKnuckle': 27,
+    'RightFingerTip': 28,
+    'LeftHeel': 29,
+    'RightHeel': 30,
+
+    'Tracker0': 31,
+    'Tracker1': 32,
+    'Tracker2': 33,
+    'Tracker3': 34,
+    'NoJoint': -1
 }
 
 joint_name_to_index = {

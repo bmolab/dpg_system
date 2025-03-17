@@ -291,6 +291,7 @@ class BodyDataBase:
         self.joints = []
         self.limbs = [None] * 37
         self.joint_mapper = [-1] * 37
+        self.joint_display = 'sphere'
 
         self.create_joints()
 
@@ -418,7 +419,8 @@ class BodyDataBase:
 
         if joint_data.do_draw:
             if orientation:
-                if show_disks and linear_index != -1:
+                # if show_disks and linear_index != -1:
+                if show_disks:
                     self.show_orientation(joint_index, prev_limb_index)
             glPushMatrix()
             glMultMatrixf(m)
@@ -726,13 +728,20 @@ class BodyDataBase:
         if next_limb_index == -1:
             next_limb_index = joint_index
         linear_index = self.joint_mapper[next_limb_index]
+        # print(joint_index_to_name[joint_index], joint_index_to_name[next_limb_index], linear_index)
         if linear_index != -1:
-            self.draw_quaternion_distance_sphere(linear_index, joint_data)
+            # self.draw_quaternion_distance_sphere(linear_index, joint_data)
+            if self.joint_display == 'disk':
+                self.draw_rotation_disk(linear_index, joint_data)
+            else:
+                self.draw_quaternion_distance_sphere(linear_index, joint_data)
         glPopMatrix()
 
     def draw_quaternion_distance_sphere(self, limb_index, joint_data):
         pass
 
+    def draw_rotation_disk(self, limb_index, joint_data):
+        pass
 
 class BodyData(BodyDataBase):
     def __init__(self):
@@ -842,12 +851,6 @@ class BodyData(BodyDataBase):
         diff = np.clip(diff, a_min=-1, a_max=1)
         distances = np.acos(2 * diff[:, :] * diff[:, :] - 1)
         return distances
-        #con
-        # for i in range(q1.shape[1]):
-        #     q_first = Quaternion(q1[0, i])
-        #     q_second = Quaternion(q2[0, i])
-        #     diff = Quaternion.distance(q_first, q_first)
-
 
     def calc_diff_quaternions(self):
         self.smoothed_quaternions_a = self.smoothed_quaternions_a * self.diffQuatSmoothingA + self.quaternions_np * (1.0 - self.diffQuatSmoothingA)
@@ -858,8 +861,9 @@ class BodyData(BodyDataBase):
         b = quaternion.as_quat_array(self.smoothed_quaternions_b)
         self.diff_quats = a - b
         self.axes = quaternion.as_rotation_vector(self.diff_quats)
+        angles = np.linalg.norm(self.axes, axis=2)
         self.magnitudes = self.quaternion_distances(self.smoothed_quaternions_a, self.smoothed_quaternions_b)
-        self.normalized_axes = self.axes / np.expand_dims(self.magnitudes, axis=-1)
+        self.normalized_axes = self.axes / np.expand_dims(angles, axis=-1)
         # self.diff_quats = self.smoothed_quaternions_a - self.smoothed_quaternions_b
         # self.diffQuatAbsSum = np.abs(self.diff_quats).sum(axis=1)
 
@@ -985,10 +989,50 @@ class BodyData(BodyDataBase):
                 # yellow is side to side
                 # use axis
                 # axis_colour = np.array(axis)
-                # axis_colour /= axis_colour.sum()
-                # self.joint_disk_material.diffuse[0] = axis_colour[0]
-                # self.joint_disk_material.diffuse[1] = axis_colour[1]
-                # self.joint_disk_material.diffuse[2] = axis_colour[2]
+                # # axis_colour /= axis_colour.sum()
+                # self.joint_disk_material.diffuse[0] = axis_colour[0] + 1 / 2.0
+                # self.joint_disk_material.diffuse[1] = axis_colour[1] + 1 / 2.0
+                # self.joint_disk_material.diffuse[2] = axis_colour[2] + 1 / 2.0
+                glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, self.joint_disk_material.diffuse)
+
+                # v = np.cross(axis, up_vector)
+                # c = np.dot(axis, up_vector)
+                # k = 1.0 / (1.0 + c)
+                #
+                # alignment_matrix = np.array([v[0] * v[0] * k + c, v[1] * v[1] * k - v[2], v[2] * v[0] * k + v[1], 0.0,
+                #                              v[0] * v[1] * k + v[2], v[1] * v[1] * k + c, v[2] * v[1] * k - v[0], 0.0,
+                #                              v[0] * v[2] * k - v[1], v[1] * v[2] * k + v[0], v[2] * v[2] * k + c, 0.0,
+                #                              0.0, 0.0, 0.0, 1.0])
+                #
+                # alignment_matrix.reshape((4, 4))
+                # restore_matrix = glGetInteger(GL_MATRIX_MODE)
+                # glMatrixMode(GL_MODELVIEW)
+                glPushMatrix()
+                # glMultMatrixf(alignment_matrix)
+                gluSphere(self.joint_sphere, d, 32, 32)
+                # gluDisk(self.joint_sphere, 0.0, d, 32, 1)
+                glPopMatrix()
+                # glMatrixMode(restore_matrix)
+
+    def draw_rotation_disk(self, limb_index, joint_data):
+        if limb_index != -1 and self.diff_quats is not None:
+            up_vector = np.array([0.0, 0.0, 1.0])
+            d = self.magnitudes[self.current_body, limb_index] * self.joint_motion_scale   #self.quaternion_distance_display_scale
+            if d > 0.00001:
+                axis = self.normalized_axes[self.current_body, limb_index]
+    #            weight = joint_data.mass[0] * abs(axis[0]) + joint_data.mass[2] * abs(axis[2]) + joint_data.mass[1] * abs(
+    #                axis[1])
+                self.joint_disk_material.diffuse[3] = self.joint_disk_alpha
+                # set colour by orientation
+                # blue is axial rotation
+                # red is forward / backward
+                # yellow is side to side
+                # use axis
+                # axis_colour = np.array(axis)
+                # # axis_colour /= axis_colour.sum()
+                # self.joint_disk_material.diffuse[0] = axis_colour[0] + 1 / 2.0
+                # self.joint_disk_material.diffuse[1] = axis_colour[1] + 1 / 2.0
+                # self.joint_disk_material.diffuse[2] = axis_colour[2] + 1 / 2.0
                 glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, self.joint_disk_material.diffuse)
 
                 v = np.cross(axis, up_vector)
@@ -1005,10 +1049,10 @@ class BodyData(BodyDataBase):
                 glMatrixMode(GL_MODELVIEW)
                 glPushMatrix()
                 glMultMatrixf(alignment_matrix)
+                # gluSphere(self.joint_sphere, d, 32, 32)
                 gluDisk(self.joint_sphere, 0.0, d, 32, 1)
                 glPopMatrix()
                 glMatrixMode(restore_matrix)
-
 
 class LimbGeometry:
     def __init__(self):
