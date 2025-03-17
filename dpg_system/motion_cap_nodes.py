@@ -412,7 +412,7 @@ class MoCapGLBody(MoCapNode):
         self.joint_indicator.widget.combo_items = ['sphere', 'disk']
         self.joint_data_selection = self.add_option('joint data type', widget_type='combo', default_value='diff_axis-angle')
         self.joint_data_selection.widget.combo_items = ['diff_quaternion', 'diff_axis-angle']
-        self.joint_motion_scale = self.add_option('joint motion scale', widget_type='drag_float', default_value=5)
+        self.joint_motion_scale = self.add_option('joint motion scale', widget_type='drag_float', default_value=1)
         self.diff_quat_smoothing = self.add_option('joint motion smoothing', widget_type='drag_float', default_value=0.8, max=1.0, min=0.0)
         self.joint_disk_alpha = self.add_option('joint motion alpha', widget_type='drag_float', default_value=0.5, max=1.0, min=0.0)
         self.body_color_id = self.add_option('colour id', widget_type='input_int', default_value=0)

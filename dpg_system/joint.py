@@ -14,7 +14,7 @@ class BaseJoint:
         self.name = in_name
         self.shadow_name = joint_to_shadow_limb[in_name]
         self.joint_index = in_index
-        self.input_vector_index = -1
+#        self.input_vector_index = -1
 
         self.do_draw = False
         self.children = []
@@ -29,7 +29,7 @@ class BaseJoint:
         self.mass = [0.0, 0.0, 0.0]
         self.bone_translation = np.array([0.0, 0.0, 1.0])
 
-        self.set_vector_index()
+        # self.set_vector_index()
         self.set_thickness()
         self.set_limb_vector()
         self.set_children()
@@ -44,11 +44,11 @@ class BaseJoint:
     def get_limb_length(self):
         return self.dims[0]
 
-    def set_vector_index(self):
-        for idx, actual_joint in enumerate(actual_joints):
-            if actual_joint == self.name:
-                self.input_vector_index = idx
-                break
+#     def set_vector_index(self):
+#         for idx, actual_joint in enumerate(actual_joints):
+#             if actual_joint == self.name:
+# #                self.input_vector_index = idx
+#                 break
 
     def set_thickness(self, dims=None):
         if dims is None:

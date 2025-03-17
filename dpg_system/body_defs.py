@@ -61,7 +61,9 @@ t_RightShoulder = 17
 t_RightElbow = 18
 t_RightWrist = 19
 
+t_ActiveJointCount = 20
 # non - joints
+
 t_TopOfHead = 20
 t_LeftBallOfFoot = 21
 t_LeftToeTip = 22
@@ -80,51 +82,54 @@ t_Tracker1 = 32
 t_Tracker2 = 33
 t_Tracker3 = 34
 
+t_Body = 35
+t_Reference = 36
 
-t_inputVectorNone = -1
-t_inputVectorBaseOfSkull = 0
-t_inputVectorUpperVertebrae = 1
-t_inputVectorMidVertebrae = 2
-t_inputVectorLowerVertebrae = 3
-t_inputVectorSpinePelvis = 4
-t_inputVectorPelvisAnchor = 5
-t_inputVectorLeftHip = 6
-t_inputVectorLeftKnee = 7
-t_inputVectorLeftAnkle = 8
-t_inputVectorRightHip = 9
-t_inputVectorRightKnee = 10
-t_inputVectorRightAnkle = 11
-t_inputVectorLeftShoulderBlade = 12
-t_inputVectorLeftShoulder = 13
-t_inputVectorLeftElbow = 14
-t_inputVectorLeftWrist = 15
-t_inputVectorRightShoulderBlade = 16
-t_inputVectorRightShoulder = 17
-t_inputVectorRightElbow = 18
-t_inputVectorRightWrist = 19
+#
+# t_inputVectorNone = -1
+# t_inputVectorBaseOfSkull = 0
+# t_inputVectorUpperVertebrae = 1
+# t_inputVectorMidVertebrae = 2
+# t_inputVectorLowerVertebrae = 3
+# t_inputVectorSpinePelvis = 4
+# t_inputVectorPelvisAnchor = 5
+# t_inputVectorLeftHip = 6
+# t_inputVectorLeftKnee = 7
+# t_inputVectorLeftAnkle = 8
+# t_inputVectorRightHip = 9
+# t_inputVectorRightKnee = 10
+# t_inputVectorRightAnkle = 11
+# t_inputVectorLeftShoulderBlade = 12
+# t_inputVectorLeftShoulder = 13
+# t_inputVectorLeftElbow = 14
+# t_inputVectorLeftWrist = 15
+# t_inputVectorRightShoulderBlade = 16
+# t_inputVectorRightShoulder = 17
+# t_inputVectorRightElbow = 18
+# t_inputVectorRightWrist = 19
 
-actual_joints = {
-    'BaseOfSkull': (t_inputVectorBaseOfSkull, t_BaseOfSkull),
-    'UpperVertebrae': (t_inputVectorUpperVertebrae, t_UpperVertebrae),
-    'MidVertebrae': (t_inputVectorMidVertebrae, t_MidVertebrae),
-    'LowerVertebrae': (t_inputVectorLowerVertebrae, t_LowerVertebrae),
-    'SpinePelvis': (t_inputVectorSpinePelvis, t_SpinePelvis),
-    'PelvisAnchor': (t_inputVectorPelvisAnchor, t_PelvisAnchor),
-    'LeftHip': (t_inputVectorLeftHip, t_LeftHip),
-    'LeftKnee': (t_inputVectorLeftKnee, t_LeftKnee),
-    'LeftAnkle': (t_inputVectorLeftAnkle, t_LeftAnkle),
-    'RightHip': (t_inputVectorRightHip, t_RightHip),
-    'RightKnee': (t_inputVectorRightKnee, t_RightKnee),
-    'RightAnkle': (t_inputVectorRightAnkle, t_RightAnkle),
-    'LeftShoulderBlade': (t_inputVectorLeftShoulderBlade, t_LeftShoulderBladeBase),
-    'LeftShoulder': (t_inputVectorLeftShoulder, t_LeftShoulder),
-    'LeftElbow': (t_inputVectorLeftElbow, t_LeftElbow),
-    'LeftWrist': (t_inputVectorLeftWrist, t_LeftWrist),
-    'RightShoulderBlade': (t_inputVectorRightShoulderBlade, t_RightShoulderBladeBase),
-    'RightShoulder': (t_inputVectorRightShoulder, t_RightShoulder),
-    'RightElbow': (t_inputVectorRightElbow, t_RightElbow),
-    'RightWrist': (t_inputVectorRightWrist, t_RightWrist)
-}
+# actual_joints = {
+#     'BaseOfSkull': (t_inputVectorBaseOfSkull, t_BaseOfSkull),
+#     'UpperVertebrae': (t_inputVectorUpperVertebrae, t_UpperVertebrae),
+#     'MidVertebrae': (t_inputVectorMidVertebrae, t_MidVertebrae),
+#     'LowerVertebrae': (t_inputVectorLowerVertebrae, t_LowerVertebrae),
+#     'SpinePelvis': (t_inputVectorSpinePelvis, t_SpinePelvis),
+#     'PelvisAnchor': (t_inputVectorPelvisAnchor, t_PelvisAnchor),
+#     'LeftHip': (t_inputVectorLeftHip, t_LeftHip),
+#     'LeftKnee': (t_inputVectorLeftKnee, t_LeftKnee),
+#     'LeftAnkle': (t_inputVectorLeftAnkle, t_LeftAnkle),
+#     'RightHip': (t_inputVectorRightHip, t_RightHip),
+#     'RightKnee': (t_inputVectorRightKnee, t_RightKnee),
+#     'RightAnkle': (t_inputVectorRightAnkle, t_RightAnkle),
+#     'LeftShoulderBlade': (t_inputVectorLeftShoulderBlade, t_LeftShoulderBladeBase),
+#     'LeftShoulder': (t_inputVectorLeftShoulder, t_LeftShoulder),
+#     'LeftElbow': (t_inputVectorLeftElbow, t_LeftElbow),
+#     'LeftWrist': (t_inputVectorLeftWrist, t_LeftWrist),
+#     'RightShoulderBlade': (t_inputVectorRightShoulderBlade, t_RightShoulderBladeBase),
+#     'RightShoulder': (t_inputVectorRightShoulder, t_RightShoulder),
+#     'RightElbow': (t_inputVectorRightElbow, t_RightElbow),
+#     'RightWrist': (t_inputVectorRightWrist, t_RightWrist)
+# }
 
 joints_to_input_vector = [-1, 2, 0, -1, 5, 13, -1, -1, 8, 14, 15, -1, 7, 12, 6, -1, -1, 1, -1, 17, -1, -1, 11, 18, 19, -1, 10, 16, 9, -1, -1, 4, 3, -1, -1, -1, -1]
 
@@ -208,6 +213,7 @@ joint_linear_index_to_name = {
     32: 'Tracker1',
     33: 'Tracker2',
     34: 'Tracker3',
+
     -1: 'NoJoint'
 }
 

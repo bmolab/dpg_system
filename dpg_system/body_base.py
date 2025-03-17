@@ -32,9 +32,8 @@ def load_take_from_npz(path):
     frames_ = quat_np.shape[0]
     joint_quats_np = np.zeros((frames_, 80))
     for i in range(frames_):
-        for index_, key in enumerate(actual_joints):
-            data = actual_joints[key]
-            joint_quats_np[i, data[0] * 4:data[0] * 4 + 4] = quat_np[i, data[1]]
+        for index in range(t_ActiveJointCount):
+            joint_quats_np[i, index * 4:index * 4 + 4] = quat_np[i, index]
     return take_file['quats'], take_file['positions'], take_file['labels'], joint_quats_np
 
 
@@ -68,6 +67,7 @@ def rotation_matrix_from_axis_and_angle(self, direction, angle):
     sina = math.sin(angle)
     cosa = math.cos(angle)
     direction = self.unit_vector(direction[:3])
+
     # rotation matrix around unit vector
     R = np.diag([cosa, cosa, cosa])
     R += np.outer(direction, direction) * (1.0 - cosa)
@@ -396,8 +396,9 @@ class BodyDataBase:
     def move_to(self, jointIndex):
         if jointIndex != t_NoJoint:
             transform = self.default_gl_transform
-            linear_index = self.joint_mapper[jointIndex]
-            if linear_index != -1:
+            # linear_index = self.joint_mapper[jointIndex]
+            linear_index = jointIndex
+            if -1 < linear_index < t_ActiveJointCount:
                 if self.joint_matrices is not None:
                     transform = self.joint_matrices[self.current_body, linear_index]
             self.joints[jointIndex].translate_along_bone()
@@ -408,8 +409,9 @@ class BodyDataBase:
         transform = self.default_gl_transform
         linear_index = -1
         if joint_index != t_NoJoint:
-            linear_index = self.joint_mapper[joint_index]
-            if linear_index != -1:
+            linear_index = joint_index
+            # linear_index = self.joint_mapper[joint_index]
+            if -1 < linear_index < t_ActiveJointCount:
                 if self.joint_matrices is not None:
                     transform = self.joint_matrices[self.current_body, linear_index]
 
@@ -602,14 +604,11 @@ class BodyDataBase:
             delete(limb)
 
     def create_joints(self):
-        for joint_index in joint_index_to_name:
-            name = joint_index_to_name[joint_index]
-            new_joint = Joint(self, name, joint_index)
-            self.joints.append(new_joint)
-
-        for joint_rel in actual_joints:
-            mapping = actual_joints[joint_rel]
-            self.joint_mapper[mapping[1]] = mapping[0]
+        for joint_index in joint_linear_index_to_name:
+            if joint_index != -1:
+                name = joint_index_to_name[joint_index]
+                new_joint = Joint(self, name, joint_index)
+                self.joints.append(new_joint)
 
         tree = ET.parse('dpg_system/definition.xml')
         root = tree.getroot()
@@ -619,8 +618,10 @@ class BodyDataBase:
                 trans_float = tuple(map(float, trans.split(' ')))
                 y = tuple(i / 100.0 for i in trans_float)
                 joint_name = shadow_limb_to_joint[node.attrib['id']]
-                joint_index = joint_name_to_index[joint_name]
-                self.joints[joint_index].set_bone_translation(y)
+                if joint_name in joint_name_to_linear_index:
+                    joint_index = joint_name_to_linear_index[joint_name]
+                    self.joints[joint_index].set_bone_translation(y)
+
         # limb_sizes = {}
         for joint in self.joints:
             joint.set_matrix()
@@ -725,12 +726,8 @@ class BodyDataBase:
         glPushMatrix()
         joint_data = self.joints[joint_index]
 
-        if next_limb_index == -1:
-            next_limb_index = joint_index
-        linear_index = self.joint_mapper[next_limb_index]
-        # print(joint_index_to_name[joint_index], joint_index_to_name[next_limb_index], linear_index)
-        if linear_index != -1:
-            # self.draw_quaternion_distance_sphere(linear_index, joint_data)
+        linear_index = next_limb_index
+        if -1 < linear_index < t_ActiveJointCount:
             if self.joint_display == 'disk':
                 self.draw_rotation_disk(linear_index, joint_data)
             else:
@@ -769,7 +766,7 @@ class BodyData(BodyDataBase):
         self.label = 0
         self.joint_sphere = gluNewQuadric()
         self.joint_disk = gluNewQuadric()
-        self.joint_motion_scale = 7.0
+        self.joint_motion_scale = 1.0
         self.joint_disk_material = GLMaterial()
         self.joint_disk_alpha = 0.5
         self.joint_disk_material.ambient = [0.19125, 0.0735, 0.0225, self.joint_disk_alpha]
@@ -864,46 +861,6 @@ class BodyData(BodyDataBase):
         angles = np.linalg.norm(self.axes, axis=2)
         self.magnitudes = self.quaternion_distances(self.smoothed_quaternions_a, self.smoothed_quaternions_b)
         self.normalized_axes = self.axes / np.expand_dims(angles, axis=-1)
-        # self.diff_quats = self.smoothed_quaternions_a - self.smoothed_quaternions_b
-        # self.diffQuatAbsSum = np.abs(self.diff_quats).sum(axis=1)
-
-    # def calc_diff_quaternion(self, jointIndex):
-    #     w = self.quaternions[jointIndex][0]  # - self.previousQuats[jointIndex][0]
-    #     x = self.quaternions[jointIndex][1]  # - self.previousQuats[jointIndex][1]
-    #     y = self.quaternions[jointIndex][2]  # - self.previousQuats[jointIndex][2]
-    #     z = self.quaternions[jointIndex][3]  # - self.previousQuats[jointIndex][3]
-    #     self.diffQuaternionA[jointIndex][0] = self.diffQuaternionA[jointIndex][0] * self.diffQuatSmoothingA + w * (1.0 - self.diffQuatSmoothingA)
-    #     self.diffQuaternionA[jointIndex][1] = self.diffQuaternionA[jointIndex][1] * self.diffQuatSmoothingA + x * (1.0 - self.diffQuatSmoothingA)
-    #     self.diffQuaternionA[jointIndex][2] = self.diffQuaternionA[jointIndex][2] * self.diffQuatSmoothingA + y * (1.0 - self.diffQuatSmoothingA)
-    #     self.diffQuaternionA[jointIndex][3] = self.diffQuaternionA[jointIndex][3] * self.diffQuatSmoothingA + z * (1.0 - self.diffQuatSmoothingA)
-    #     self.diffQuaternionB[jointIndex][0] = self.diffQuaternionB[jointIndex][0] * self.diffQuatSmoothingB + w * (1.0 - self.diffQuatSmoothingB)
-    #     self.diffQuaternionB[jointIndex][1] = self.diffQuaternionB[jointIndex][1] * self.diffQuatSmoothingB + x * (1.0 - self.diffQuatSmoothingB)
-    #     self.diffQuaternionB[jointIndex][2] = self.diffQuaternionB[jointIndex][2] * self.diffQuatSmoothingB + y * (1.0 - self.diffQuatSmoothingB)
-    #     self.diffQuaternionB[jointIndex][3] = self.diffQuaternionB[jointIndex][3] * self.diffQuatSmoothingB + z * (1.0 - self.diffQuatSmoothingB)
-    #     self.diffDiff[jointIndex][0] = self.diffQuaternionA[jointIndex][0] - self.diffQuaternionB[jointIndex][0]
-    #     self.diffDiff[jointIndex][1] = self.diffQuaternionA[jointIndex][1] - self.diffQuaternionB[jointIndex][1]
-    #     self.diffDiff[jointIndex][2] = self.diffQuaternionA[jointIndex][2] - self.diffQuaternionB[jointIndex][2]
-    #     self.diffDiff[jointIndex][3] = self.diffQuaternionA[jointIndex][3] - self.diffQuaternionB[jointIndex][3]
-    #
-    #     self.diffQuaternionAbsSum[jointIndex] = abs(self.diffDiff[jointIndex][0]) + abs(self.diffDiff[jointIndex][1]) + abs(self.diffDiff[jointIndex][2]) + abs(self.diffDiff[jointIndex][3])
-
-    # def actual_joint_to_shadow_joint(self, actual_joint):
-    #     data = actual_joints[actual_joint]
-    #     return data[1]
-    #
-    # def shadow_joint_to_actual_joint(self, shadow_joint):
-    #     return joints_to_input_vector[shadow_joint]
-
-    # def convert_shadow_quats_to_input_vector(self):
-    #     for i, key in enumerate(actual_joints):
-    #         data = actual_joints[key]
-    #         self.input_vector[data[0] * 4:data[0] * 4 + 4] = self.quaternions[data[1]]
-    #
-    # def convert_input_vector_to_shadow_quats(self, target):
-    #     for i, key in enumerate(actual_joints):
-    #         data = actual_joints[key]
-    #         self.quaternions[data[1]] = target[data[0]].tolist()
-    #         self.quaternions[t_PelvisAnchor] = [1, 0, 0, 0]
 
     def clear_captured_pose(self):
         self.captured_quaternions = None
@@ -939,25 +896,6 @@ class BodyData(BodyDataBase):
             glClearColor(r, g, b, 1.0)
         else:
             glClearColor(0, 0, 0, 0)
-
-    # def test_show_joint_spheres(self, show_rotation_spheres):
-    #     return show_rotation_spheres
-
-    # def calc_normal(self, v1, v2, v3):
-    #     v_1 = np.array([v1[0], v1[1], v1[2]])
-    #     v_2 = np.array([v2[0], v2[1], v2[2]])
-    #     v_3 = np.array([v3[0], v3[1], v3[2]])
-    #     temp1 = v_2 - v_1
-    #     temp2 = v_3 - v_1
-    #     normal = np.cross(temp1, temp2)
-    #     normal = normal / np.linalg.norm(normal)
-    #     return (normal[0], normal[1], normal[2])
-
-    # def __del__(self):
-    #     if self.__mutex is not None:
-    #         lock = ScopedLock(self.__mutex)
-    #         self.__mutex = None
-
 
     def rotationAlign(self, axis, up_vector):
         v = np.cross(axis, up_vector)
@@ -1281,10 +1219,6 @@ class AlternateBodyData(BodyDataBase):
             new_joint = BaseJoint(self, name, joint_index)
             self.joints.append(new_joint)
 
-        for joint_rel in actual_joints:
-            mapping = actual_joints[joint_rel]
-            self.joint_mapper[mapping[1]] = mapping[0]
-
         tree = ET.parse('dpg_system/definition.xml')
         root = tree.getroot()
         for node in root.iter('node'):
@@ -1296,6 +1230,7 @@ class AlternateBodyData(BodyDataBase):
                 joint_index = joint_name_to_index[joint_name]
                 self.humanoid_bone_dims[joint_index] = np.array(y)
                 self.joints[joint_index].set_bone_translation(y)
+
         self.connect_limbs()
         for joint in self.joints:
             joint.set_matrix()
@@ -1320,10 +1255,6 @@ class AlternateBodyData(BodyDataBase):
         self.limb_vertices = []
         for i in range(37):
             self.limb_vertices.append(standard_box)
-
-        # start = 0.75
-        # mid = 1.0
-        # end = 0.75
 
         self.limb_vertices[t_TopOfHead] = self.define_limb_shape(start, mid, end)
         self.limb_vertices[t_BaseOfSkull] = self.define_limb_shape(start, mid, end)
@@ -1460,7 +1391,6 @@ class AlternateBodyData(BodyDataBase):
             elif joint.joint_index == t_LeftKnuckle:
                 joint.set_thickness([.005, .005])
 
-
             joint.set_matrix()
             joint.set_mass()
 
@@ -1479,7 +1409,6 @@ class AlternateBodyData(BodyDataBase):
         self.joints[t_RightAnkle].immed_children = [t_LeftAnkle]
         self.joints[t_LeftAnkle].immed_children = [t_LeftKnee]
         self.joints[t_LeftKnee].immed_children = [t_LeftHip]
-        # self.joints[t_LeftWrist].immed_children = [t_RightWrist]
         self.joints[t_RightWrist].immed_children = [t_RightElbow]
         self.joints[t_RightElbow].immed_children = [t_RightShoulder]
         self.joints[t_RightShoulder].immed_children = [t_RightShoulderBladeBase]
