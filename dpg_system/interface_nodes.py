@@ -1383,7 +1383,7 @@ class LoadActionNode(Node):
             self.message = 'bang'
             message_string = 'bang'
 
-        self.input = self.add_input('trigger', triggers_execution=True)
+        self.input = self.add_input('trigger', widget_type='button', triggers_execution=True)
         if not load_bang:
             self.load_action = self.add_property(label='##loadActionString', widget_type='text_input', default_value=message_string, callback=self.action_changed)
         self.output = self.add_output("out")

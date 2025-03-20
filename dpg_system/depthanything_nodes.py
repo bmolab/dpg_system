@@ -1,9 +1,9 @@
 from dpg_system.torch_base_nodes import *
 
-print('DE1')
+
 from dpg_system.depth_anything_v2.dpt import DepthAnythingV2
 
-print('DE2')
+
 def register_depth_anything_nodes():
     Node.app.register_node('depth_anything', DepthAnythingNode.factory)
 
@@ -15,7 +15,7 @@ model_configs = {
     }
 
 max_depth = 20
-print('DE3')
+
 class DepthAnythingNode(Node):
     model = None
     tokenizer = None

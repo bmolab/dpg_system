@@ -1576,7 +1576,6 @@ class Node:
         return new_output
 
     def add_tensor_output(self, label: str = "output", pos=None):
-        print('t')
         if torch_available:
             new_output = NodeTensorOutput(label, self, pos)
             self.outputs.append(new_output)

@@ -247,7 +247,7 @@ class TorchIIR2Filter:
             if self.fs and self.error_flag == 0:
                 for i in range(len(band)):
                     band[i] = band[i] / self.fs * 2
-            print(band)
+
             if self.design == 'butter' and self.error_flag == 0:
                 coefficients = torch.from_numpy(signal.butter(self.order, band, self.filter_type, output='sos')).to(device=self.device, dtype=self.dtype)
             elif self.design == 'cheby1' and self.error_flag == 0:

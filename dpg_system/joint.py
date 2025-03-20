@@ -214,7 +214,6 @@ class BaseJoint:
             scale = float(np.linalg.norm(limb_vector) ) # limb length
             self.base_dims[0] = scale
             self.dims[0] = scale * self.length_scaler
-            print(self.name, self.dims, self.base_dims)
 
             limb_vector /= scale
             w = np.cross(limb_vector, base_vector)

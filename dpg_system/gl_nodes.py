@@ -346,6 +346,89 @@ class GLNode(Node):
     def handle_other_messages(self, message):
         pass
 
+class TexturedGLNode(GLNode):
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.texture_shape = None
+        self.numpy_texture = None
+        self.texture_data_pending = None
+
+    def initialize(self, args):
+        super().initialize(args)
+
+    def update_texture(self):
+        if self.texture_data_pending is not None:
+            if self.numpy_texture is None:
+                self.numpy_texture = GLNumpyTexture(self.texture_data_pending)
+            else:
+                self.numpy_texture.update(self.texture_data_pending)
+            self.texture_data_pending = None
+
+    def prepare_texture_for_drawing(self):
+        glEnable(GL_TEXTURE_2D)
+        glBindTexture(GL_TEXTURE_2D, self.numpy_texture.texture)
+
+    def finish_texture_drawing(self):
+        glBindTexture(GL_TEXTURE_2D, 0)
+
+
+    def receive_texture_data(self, data):
+        if type(data) == np.ndarray:
+            self.texture_data_pending = data  # * 255.0
+        elif self.app.torch_available and type(data) == torch.Tensor:
+            texture_data = data
+            if len(texture_data.shape) > 2:
+                if texture_data.shape[-3] <= 5:
+                    if texture_data.shape[-1] > 5:
+                        texture_data = texture_data.permute(-2, -1, -3)
+            self.texture_data_pending = texture_data.cpu().numpy()
+        elif type(data) == float:
+            self.texture_data_pending = np.ones((16, 16, 1), dtype=np.float32) * data
+        elif type(data) == int:
+            self.texture_data_pending = np.ones((16, 16, 1), dtype=np.uint8) * data
+        elif type(data) == list:
+            component_count = len(data)
+            t = type(data[0])
+            if component_count == 3:
+                if t == float:
+                    self.texture_data_pending = np.ones((16, 16, 3), dtype=np.float32)
+                    multiplier = np.array(data)
+                    multiplier = np.expand_dims(multiplier, axis=0)
+                    multiplier = np.expand_dims(multiplier, axis=0)
+                    self.texture_data_pending = self.texture_data_pending * multiplier
+                elif t == int:
+                    self.texture_data_pending = np.ones((16, 16, 3), dtype=np.uint8)
+                    multiplier = np.array(data)
+                    multiplier = np.expand_dims(multiplier, axis=0)
+                    multiplier = np.expand_dims(multiplier, axis=0)
+                    self.texture_data_pending = self.texture_data_pending * multiplier
+            elif component_count == 4:
+                if t == float:
+                    self.texture_data_pending = np.ones((16, 16, 4), dtype=np.float32)
+                    multiplier = np.array(data)
+                    multiplier = np.expand_dims(multiplier, axis=0)
+                    multiplier = np.expand_dims(multiplier, axis=0)
+                    self.texture_data_pending = self.texture_data_pending * multiplier
+                elif t == int:
+                    self.texture_data_pending = np.ones((16, 16, 4), dtype=np.uint8)
+                    multiplier = np.array(data)
+                    multiplier = np.expand_dims(multiplier, axis=0)
+                    multiplier = np.expand_dims(multiplier, axis=0)
+                    self.texture_data_pending = self.texture_data_pending * multiplier
+            elif component_count == 1:
+                if t == float:
+                    self.texture_data_pending = np.ones((16, 16, 1), dtype=np.float32)
+                    multiplier = np.array(data)
+                    multiplier = np.expand_dims(multiplier, axis=0)
+                    multiplier = np.expand_dims(multiplier, axis=0)
+                    self.texture_data_pending = self.texture_data_pending * multiplier
+                elif t == int:
+                    self.texture_data_pending = np.ones((16, 16, 1), dtype=np.uint8)
+                    multiplier = np.array(data)
+                    multiplier = np.expand_dims(multiplier, axis=0)
+                    multiplier = np.expand_dims(multiplier, axis=0)
+                    self.texture_data_pending = self.texture_data_pending * multiplier
+
 
 class GLQuadricCommandParser(GLCommandParser):
     def __init__(self, quadric_node):
@@ -496,7 +579,7 @@ class GLNumpyTexture:
         self.height = 256
         self.channels = 3
         self.type = GL_UNSIGNED_BYTE
-
+        self.contiguous_texture = None
         self.allocate(texture_array)
 
     def allocate(self, texture_array):
@@ -524,22 +607,22 @@ class GLNumpyTexture:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
         glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL)
-        contiguous_texture = np.ascontiguousarray(texture_array)
+        self.contiguous_texture = np.ascontiguousarray(texture_array)
         if self.type == GL_FLOAT:
             if self.channels == 3:
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, self.width, self.height, 0, GL_RGB, GL_FLOAT, contiguous_texture)
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, self.width, self.height, 0, GL_RGB, GL_FLOAT, self.contiguous_texture)
             elif self.channels == 4:
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, self.width, self.height, 0, GL_RGBA, GL_FLOAT, contiguous_texture)
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, self.width, self.height, 0, GL_RGBA, GL_FLOAT, self.contiguous_texture)
             elif self.channels == 1:
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, self.width, self.height, 0, GL_LUMINANCE, GL_FLOAT, contiguous_texture)
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, self.width, self.height, 0, GL_LUMINANCE, GL_FLOAT, self.contiguous_texture)
         elif self.type == GL_UNSIGNED_BYTE:
             if self.channels == 3:
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, self.width, self.height, 0, GL_RGB, GL_UNSIGNED_BYTE, contiguous_texture)
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, self.width, self.height, 0, GL_RGB, GL_UNSIGNED_BYTE, self.contiguous_texture)
             elif self.channels == 4:
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, self.width, self.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, contiguous_texture)
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, self.width, self.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, self.contiguous_texture)
             elif self.channels == 1:
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, self.width, self.height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
-                             contiguous_texture)
+                             self.contiguous_texture)
         glBindTexture(GL_TEXTURE_2D, 0)
 
     def update(self, texture_array):
@@ -563,26 +646,27 @@ class GLNumpyTexture:
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
 
             glBindTexture(GL_TEXTURE_2D, self.texture)
-            contiguous_texture = np.ascontiguousarray(texture_array)
+            self.contiguous_texture = np.ascontiguousarray(texture_array)
             if self.type == GL_FLOAT:
                 if self.channels == 3:
-                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_RGB, GL_FLOAT, contiguous_texture)
+                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_RGB, GL_FLOAT, self.contiguous_texture)
                 elif self.channels == 4:
-                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_RGBA, GL_FLOAT, contiguous_texture)
+                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_RGBA, GL_FLOAT, self.contiguous_texture)
                 elif self.channels == 1:
-                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_LUMINANCE, GL_FLOAT, contiguous_texture)
+                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_LUMINANCE, GL_FLOAT, self.contiguous_texture)
 
             elif self.type == GL_UNSIGNED_BYTE:
                 if self.channels == 3:
-                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_RGB, GL_UNSIGNED_BYTE, contiguous_texture)
+                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_RGB, GL_UNSIGNED_BYTE, self.contiguous_texture)
                 elif self.channels == 4:
-                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_RGBA, GL_UNSIGNED_BYTE, contiguous_texture)
+                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_RGBA, GL_UNSIGNED_BYTE, self.contiguous_texture)
                 elif self.channels == 1:
-                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_LUMINANCE, GL_UNSIGNED_BYTE, contiguous_texture)
+                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_LUMINANCE, GL_UNSIGNED_BYTE, self.contiguous_texture)
             glBindTexture(GL_TEXTURE_2D, 0)
 
 
-class GLBillboard(GLNode):
+
+class GLBillboard(TexturedGLNode):
     @staticmethod
     def factory(node_name, data, args=None):
         node = GLBillboard(node_name, data, args)
@@ -596,85 +680,30 @@ class GLBillboard(GLNode):
         self.width = self.add_input('width', widget_type='drag_float', default_value=1.6)
         self.height = self.add_input('height', widget_type='drag_float', default_value=0.9)
         self.texture = self.add_input('texture')
-        self.texture_shape = None
-        self.numpy_texture = None
-        self.texture_data_pending = None
         # self.gl_output = self.add_output('gl chain out')
 
     def execute(self):
         if self.texture.fresh_input:
             data = self.texture()
-            if type(data) == np.ndarray:
-                self.texture_data_pending = data #  * 255.0
-            elif self.app.torch_available and type(data) == torch.Tensor:
-                texture_data = data
-                if len(texture_data.shape) > 2:
-                    if texture_data.shape[-3] <= 5:
-                        if texture_data.shape[-1] > 5:
-                            texture_data = texture_data.permute(-2, -1, -3)
-                self.texture_data_pending = texture_data.cpu().numpy()
-            elif type(data) == float:
-                self.texture_data_pending = np.ones((16, 16, 1), dtype=np.float32) * data
-            elif type(data) == int:
-                self.texture_data_pending = np.ones((16, 16, 1), dtype=np.uint8) * data
-            elif type(data) == list:
-                component_count = len(data)
-                t = type(data[0])
-                if component_count == 3:
-                    if t == float:
-                        self.texture_data_pending = np.ones((16, 16, 3), dtype=np.float32)
-                        multiplier = np.array(data)
-                        multiplier = np.expand_dims(multiplier, axis=0)
-                        multiplier = np.expand_dims(multiplier, axis=0)
-                        self.texture_data_pending = self.texture_data_pending * multiplier
-                    elif t == int:
-                        self.texture_data_pending = np.ones((16, 16, 3), dtype=np.uint8)
-                        multiplier = np.array(data)
-                        multiplier = np.expand_dims(multiplier, axis=0)
-                        multiplier = np.expand_dims(multiplier, axis=0)
-                        self.texture_data_pending = self.texture_data_pending * multiplier
-                elif component_count == 4:
-                    if t == float:
-                        self.texture_data_pending = np.ones((16, 16, 4), dtype=np.float32)
-                        multiplier = np.array(data)
-                        multiplier = np.expand_dims(multiplier, axis=0)
-                        multiplier = np.expand_dims(multiplier, axis=0)
-                        self.texture_data_pending = self.texture_data_pending * multiplier
-                    elif t == int:
-                        self.texture_data_pending = np.ones((16, 16, 4), dtype=np.uint8)
-                        multiplier = np.array(data)
-                        multiplier = np.expand_dims(multiplier, axis=0)
-                        multiplier = np.expand_dims(multiplier, axis=0)
-                        self.texture_data_pending = self.texture_data_pending * multiplier
-                elif component_count == 1:
-                    if t == float:
-                        self.texture_data_pending = np.ones((16, 16, 1), dtype=np.float32)
-                        multiplier = np.array(data)
-                        multiplier = np.expand_dims(multiplier, axis=0)
-                        multiplier = np.expand_dims(multiplier, axis=0)
-                        self.texture_data_pending = self.texture_data_pending * multiplier
-                    elif t == int:
-                        self.texture_data_pending = np.ones((16, 16, 1), dtype=np.uint8)
-                        multiplier = np.array(data)
-                        multiplier = np.expand_dims(multiplier, axis=0)
-                        multiplier = np.expand_dims(multiplier, axis=0)
-                        self.texture_data_pending = self.texture_data_pending * multiplier
+            self.receive_texture_data(data)
         super().execute()
 
     def draw(self):
-        if self.texture_data_pending is not None:
-            if self.numpy_texture is None:
-                self.numpy_texture = GLNumpyTexture(self.texture_data_pending)
-            else:
-                self.numpy_texture.update(self.texture_data_pending)
-            self.texture_data_pending = None
+        self.update_texture()
+        # if self.texture_data_pending is not None:
+        #     if self.numpy_texture is None:
+        #         self.numpy_texture = GLNumpyTexture(self.texture_data_pending)
+        #     else:
+        #         self.numpy_texture.update(self.texture_data_pending)
+        #     self.texture_data_pending = None
         half_width = self.width() / 2
         half_height = self.height() / 2
         # color = self.color_input.get_widget_value()
 
         if self.numpy_texture is not None and self.numpy_texture.texture != -1:
-            glEnable(GL_TEXTURE_2D)
-            glBindTexture(GL_TEXTURE_2D, self.numpy_texture.texture)
+            self.prepare_texture_for_drawing()
+            # glEnable(GL_TEXTURE_2D)
+            # glBindTexture(GL_TEXTURE_2D, self.numpy_texture.texture)
             gl.glBegin(gl.GL_TRIANGLE_STRIP)
             glTexCoord2f(0, 0)
             gl.glVertex2f(-half_width, half_height)
@@ -685,7 +714,8 @@ class GLBillboard(GLNode):
             glTexCoord2f(1, 1)
             gl.glVertex2f(half_width, -half_height)
             gl.glEnd()
-            glBindTexture(GL_TEXTURE_2D, 0)
+            self.finish_texture_drawing()
+            # glBindTexture(GL_TEXTURE_2D, 0)
         else:
             gl.glBegin(gl.GL_TRIANGLE_STRIP)
             gl.glVertex2f(-half_width, -half_height)
@@ -695,13 +725,14 @@ class GLBillboard(GLNode):
             gl.glEnd()
 
 
-class GLQuadricNode(GLNode):
+class GLQuadricNode(TexturedGLNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
     def initialize(self, args):
         try:
             self.quadric = gluNewQuadric()
+
         except Exception as e:
             print('self.quadric failed')
             print(e)
@@ -709,6 +740,7 @@ class GLQuadricNode(GLNode):
         self.pending_commands = []
         self.command_parser = GLQuadricCommandParser(self)
         self.alignment_matrix = None
+        self.texture = self.add_input('texture')
         super().initialize(args)
 
     def process_pending_commands(self):
@@ -744,15 +776,28 @@ class GLQuadricNode(GLNode):
 
     def draw(self):
         self.process_pending_commands()
+        if self.numpy_texture is not None:
+            glu.gluQuadricTexture(self.quadric, True)
+        self.update_texture()
         restore_matrix = glGetInteger(GL_MATRIX_MODE)
         if self.alignment_matrix is not None:
             glMatrixMode(GL_MODELVIEW)
             glPushMatrix()
             glMultMatrixf(self.alignment_matrix)
+        if self.numpy_texture is not None and self.numpy_texture.texture != -1:
+            self.prepare_texture_for_drawing()
         self.quadric_draw()
+        if self.numpy_texture is not None and self.numpy_texture.texture != -1:
+            self.finish_texture_drawing()
         if self.alignment_matrix is not None:
             glPopMatrix()
             glMatrixMode(restore_matrix)
+
+    def execute(self):
+        if self.texture.fresh_input:
+            data = self.texture()
+            self.receive_texture_data(data)
+        super().execute()
 
 
 class GLSphereNode(GLQuadricNode):

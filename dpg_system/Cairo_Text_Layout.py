@@ -11,7 +11,7 @@ import collections
 from numba import jit
 import platform
 # import nltk
-print('?')
+
 free_run = True
 generator = None
 stop_on_punctuation = False

@@ -1938,7 +1938,7 @@ class TypeNode(Node):
                     comp = 'float'
                 elif input_.dtype == np.double:
                     comp = 'double'
-                elif input.dtype == np.float32:
+                elif input_.dtype == np.float32:
                     comp = 'float32'
                 elif input_.dtype == np.int64:
                     comp = 'int64'

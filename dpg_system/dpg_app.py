@@ -11,6 +11,8 @@ import os
 import platform as platform_
 import traceback
 
+import threading
+import _thread
 # make new tab pop up when new file is opened
 
 osc_active = True
@@ -526,6 +528,7 @@ class App:
         self.register_nodes()
         self.new_patcher_index = 1
         self.patchers = []
+        self.do_exit = False
 
         self.node_editors = []
         self.current_node_editor = 0
@@ -916,6 +919,8 @@ class App:
                 dpg.add_separator()
                 dpg.add_menu_item(label="Save Setup", callback=self.save_patches)
                 dpg.add_menu_item(label="Save Setup As", callback=self.save_patches)
+                dpg.add_separator()
+                dpg.add_menu_item(label="Quit (Q)", callback=self.quit)
             with dpg.menu(label='Edit'):
                 dpg.add_menu_item(label="Cut (X)", callback=self.cut_selected)
                 dpg.add_menu_item(label="Copy (C)", callback=self.copy_selected)
@@ -955,6 +960,9 @@ class App:
     def print_osc_state(self):
         if self.osc_manager:
             self.osc_manager.print_state()
+
+    def quit(self):
+        self.do_exit = True
 
     def register_nodes(self):
         if 'register_base_nodes' in globals():
@@ -1295,6 +1303,11 @@ class App:
         if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
             if self.get_current_editor() is not None:
                 self.show_minimap()
+
+    def Q_handler(self):
+        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
+            print('quitting')
+            self.quit()
 
     def C_handler(self):
         if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
@@ -2050,6 +2063,7 @@ class App:
                             dpg.add_key_press_handler(dpg.mvKey_B, callback=self.button_handler)
                             dpg.add_key_press_handler(dpg.mvKey_M, callback=self.message_handler)
                             dpg.add_key_press_handler(dpg.mvKey_L, callback=self.list_handler)
+                            dpg.add_key_press_handler(dpg.mvKey_Q, callback=self.Q_handler)
 
                             dpg.add_key_press_handler(dpg.mvKey_E, callback=self.E_handler)
                             dpg.add_key_press_handler(dpg.mvKey_D, callback=self.D_handler)
@@ -2130,6 +2144,9 @@ class App:
                                 GLContextNode.maintenance_loop()
                             self.restore_gl_context(hold_context)
                             # glfw.make_context_current(hold_context)
+
+                if self.do_exit:
+                    _thread.interrupt_main()
                 # else:
                 #     print('p', end='')
             except Exception as exc_:

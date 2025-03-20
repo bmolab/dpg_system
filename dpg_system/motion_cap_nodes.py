@@ -480,13 +480,28 @@ class MoCapGLBody(MoCapNode):
         if self.external_joint_data is not None:
             if type(self.external_joint_data) is np.ndarray:
                 if self.external_joint_data.shape[0] == 20:
-                    self.current_joint_rotation_axis_output.send(self.external_joint_data[joint_index])
+                    if joint_index < t_ActiveJointCount:
+                        self.current_joint_rotation_axis_output.send(self.external_joint_data[joint_index])
+                elif self.external_joint_data.shape[0] == 1:
+                    if self.external_joint_data.shape[1] == 20:
+                        if joint_index < t_ActiveJointCount:
+                            self.current_joint_rotation_axis_output.send(self.external_joint_data[0][joint_index])
             elif type(self.external_joint_data) is torch.Tensor:
                 if self.external_joint_data.shape[0] == 20:
-                    self.current_joint_rotation_axis_output.send(self.external_joint_data[joint_index])
+                    if joint_index < t_ActiveJointCount:
+                        self.current_joint_rotation_axis_output.send(self.external_joint_data[joint_index])
+                elif self.external_joint_data.shape[0] == 1:
+                    if self.external_joint_data.shape[1] == 20:
+                        if joint_index < t_ActiveJointCount:
+                            self.current_joint_rotation_axis_output.send(self.external_joint_data[0][joint_index])
             elif type(self.external_joint_data) is list:
                 if len(self.external_joint_data) == 20:
-                    self.current_joint_rotation_axis_output.send(self.external_joint_data[joint_index])
+                    if joint_index < t_ActiveJointCount:
+                        self.current_joint_rotation_axis_output.send(self.external_joint_data[joint_index])
+                elif len(self.external_joint_data) == 1:
+                    if len(self.external_joint_data[0]) == 20:
+                        if joint_index < t_ActiveJointCount:
+                            self.current_joint_rotation_axis_output.send(self.external_joint_data[0][joint_index])
         elif mode == 'diff_axis-angle':
             rotation = np.array(self.body.rotationAxis[joint_index])
             rotation = rotation / (np.linalg.norm(rotation) + 1e-6) * self.body.quaternionDistance[joint_index] * self.joint_motion_scale()
@@ -503,7 +518,8 @@ class MoCapGLBody(MoCapNode):
                 self.current_joint_rotation_axis_output.send(self.body.quaternionDiff[joint_index])
             else:
                 self.current_joint_rotation_axis_output.send(self.body.quaternionDiff[joint_index].elements)
-        self.current_joint_gl_output.send('draw')
+        if joint_index < t_ActiveJointCount:
+            self.current_joint_gl_output.send('draw')
         glPopMatrix()
 
     def execute(self):
@@ -584,7 +600,6 @@ class SimpleMoCapGLBody(MoCapNode):
         self.multi_body_translation_z = self.add_option('multi offset z', widget_type='drag_float', default_value=0.0)
         self.body = SimpleBodyData()
         self.body.node = self
-
 
     def joint_callback(self, index):
         pass

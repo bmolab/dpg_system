@@ -14,5 +14,9 @@ def run_dpg():
 
 
 dpg_thread = threading.Thread(target=run_dpg)
-dpg_thread.run()
+
+try:
+    dpg_thread.run()
+except KeyboardInterrupt:
+    print('exiting')
 
