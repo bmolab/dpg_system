@@ -1338,6 +1338,7 @@ class NumpyEditNode(Node):
 
     def edit_value_changed(self):
         self.value = self.edit_values_input()
+        self.execute()
 
     def execute(self):
         input_array = any_to_array(self.input())
@@ -1378,7 +1379,7 @@ class NumpyEditNode(Node):
                         elif len(dim_list_now) == 8:
                             edited_array[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3], dim_list_now[4]:dim_list_now[5], dim_list_now[6]:dim_list_now[7]] = self.value
                     elif type(self.value) is list:
-                        value_array = any_to_array(self.value)
+                        value_array = any_to_array(self.value).copy()
                     elif type(self.value) is np.ndarray:
                         value_array = self.value
                     if value_array is not None:
@@ -1406,7 +1407,7 @@ class NumpyEditNode(Node):
                                 print('bad_size in np.edit')
                         elif len(dim_list_now) == 6:
                             target_shape = [dim_list_now[1] - dim_list_now[0], dim_list_now[3] - dim_list_now[2], dim_list_now[5] - dim_list_now[4]]
-                            source_shape = value_array.shape
+                            source_shape = list(value_array.shape)
                             if target_shape == source_shape:
                                 edited_array[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3], dim_list_now[4]:dim_list_now[5]] = value_array
                             elif len(source_shape) < len(target_shape):
@@ -1417,7 +1418,7 @@ class NumpyEditNode(Node):
                                 print('bad_size in np.edit')
                         elif len(dim_list_now) == 8:
                             target_shape = [dim_list_now[1] - dim_list_now[0], dim_list_now[3] - dim_list_now[2], dim_list_now[5] - dim_list_now[4], dim_list_now[7] - dim_list_now[6]]
-                            source_shape = value_array.shape
+                            source_shape = list(value_array.shape)
                             if target_shape == source_shape:
                                 edited_array[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3], dim_list_now[4]:dim_list_now[5], dim_list_now[6]:dim_list_now[7]] = value_array
                             elif len(source_shape) < len(target_shape):
