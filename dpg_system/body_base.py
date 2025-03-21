@@ -846,7 +846,7 @@ class BodyData(BodyDataBase):
         q2_ = q2 / np.expand_dims(np.linalg.norm(q2, axis=-1), -1)
         diff = np.sum(np.multiply(q1_[:, :], q2_[:, :]), axis=2)
         diff = np.clip(diff, a_min=-1, a_max=1)
-        distances = np.acos(2 * diff[:, :] * diff[:, :] - 1)
+        distances = np.arccos(2 * diff[:, :] * diff[:, :] - 1)
         return distances
 
     def calc_diff_quaternions(self):

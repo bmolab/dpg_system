@@ -1043,18 +1043,22 @@ class App:
                 editor.enter_presentation_state()
                 dpg.set_item_label(self.presentation_edit_menu_item, 'Enter Edit Mode (E)')
 
+    def control_or_command_down(self):
+        return dpg.is_key_down(dpg.mvKey_LControl) or dpg.is_key_down(dpg.mvKey_RControl) or dpg.is_key_down(
+        dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin)
+
     def X_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
+        if self.control_or_command_down():
             if self.get_current_editor() is not None:
                 if not self.get_current_editor().presenting:
                     self.clipboard = self.get_current_editor().cut_selection()
 
     def S_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
+        if self.control_or_command_down():
             self.save_nodes()
 
     def O_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
+        if self.control_or_command_down():
             self.load_nodes()
         else:
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
@@ -1062,40 +1066,40 @@ class App:
 
     def K_handler(self):
         if self.get_current_editor() is not None and not self.get_current_editor().presenting:
-            if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
+            if self.control_or_command_down():
                 self.connect_selected()
 
     def Y_handler(self):
         if self.get_current_editor() is not None and not self.get_current_editor().presenting:
-            if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
+            if self.control_or_command_down():
                 self.align_distribute_selected()
 
     def N_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
+        if self.control_or_command_down():
             self.add_node_editor()
         else:
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 self.new_handler()
 
     def W_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
+        if self.control_or_command_down():
             self.close_current_node_editor()
 
     def V_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
+        if self.control_or_command_down():
             self.paste_selected()
         else:
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 self.vector_handler()
 
     def D_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
+        if self.control_or_command_down():
             if self.active_widget == -1:
                 if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                     self.get_current_editor().duplicate_selection()
 
     def E_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
+        if self.control_or_command_down():
             if self.get_current_editor() is not None:
                 self.toggle_presentation()
 
@@ -1119,7 +1123,7 @@ class App:
                 self.get_current_editor().copy_selection()
 
     def mouse_down_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
+        if self.control_or_command_down():
             self.toggle_presentation()
         else:
             self.dragging_created_nodes = False

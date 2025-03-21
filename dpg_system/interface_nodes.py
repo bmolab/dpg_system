@@ -2295,7 +2295,7 @@ class KeyNode(Node):
         self.shifted_keys["/"] = '?'
 
     def key_up(self, key_ascii):
-        if key_ascii in [dpg.mvKey_Shift, dpg.mvKey_LShift, dpg.mvKey_RShift]:
+        if key_ascii in [dpg.mvKey_LShift, dpg.mvKey_RShift]:
             if self.shift_key_pressed:
                 self.shift_key_pressed = False
                 self.shift_key_changed = True
@@ -2303,11 +2303,11 @@ class KeyNode(Node):
             if self.meta_key_pressed:
                 self.meta_key_pressed = False
                 self.meta_key_changed = True
-        elif key_ascii in [dpg.mvKey_LControl, dpg.mvKey_RControl, dpg.mvKey_Control]:
+        elif key_ascii in [dpg.mvKey_LControl, dpg.mvKey_RControl]:
             if self.control_key_pressed:
                 self.control_key_pressed = False
                 self.control_key_changed = True
-        elif key_ascii == dpg.mvKey_Alt:
+        elif key_ascii in [dpg.mvKey_LAlt, dpg.mvKey_RAlt]:
             if self.alt_key_pressed:
                 self.alt_key_pressed = False
                 self.alt_key_changed = True
@@ -2326,7 +2326,7 @@ class KeyNode(Node):
             self.meta_key_output.send(self.meta_key_pressed)
 
     def key_down(self, key_ascii):
-        if key_ascii in [dpg.mvKey_Shift, dpg.mvKey_LShift, dpg.mvKey_RShift]:
+        if key_ascii in [dpg.mvKey_LShift, dpg.mvKey_RShift]:
             if not self.shift_key_pressed:
                 self.shift_key_pressed = True
                 self.shift_key_changed = True
@@ -2334,11 +2334,11 @@ class KeyNode(Node):
             if not self.meta_key_pressed:
                 self.meta_key_pressed = True
                 self.meta_key_changed = True
-        elif key_ascii in [dpg.mvKey_LControl, dpg.mvKey_RControl, dpg.mvKey_Control]:
+        elif key_ascii in [dpg.mvKey_LControl, dpg.mvKey_RControl]:
             if not self.control_key_pressed:
                 self.control_key_pressed = True
                 self.control_key_changed = True
-        elif key_ascii == dpg.mvKey_Alt:
+        elif key_ascii in [dpg.mvKey_LAlt, dpg.mvKey_RAlt]:
             if not self.alt_key_pressed:
                 self.alt_key_pressed = True
                 self.alt_key_changed = True
