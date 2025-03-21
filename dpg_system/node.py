@@ -1585,7 +1585,8 @@ class Node:
             if property_.widget.widget not in ['checkbox', 'button', 'spacer', 'label']:
                 dpg.bind_item_handler_registry(property_.widget.uuid, "widget handler")
         for option in self.options:
-            dpg.bind_item_handler_registry(option.widget.uuid, "widget handler")
+            if option.widget.widget not in ['checkbox', 'button', 'spacer', 'label']:
+                dpg.bind_item_handler_registry(option.widget.uuid, "widget handler")
 
     def value_changed(self, widget_uuid, force=False):
         pass
