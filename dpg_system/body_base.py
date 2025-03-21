@@ -288,8 +288,8 @@ class BodyDataBase:
         self.create_limbs()
 
         self.joints = []
-        self.limbs = [None] * 37
-        self.joint_mapper = [-1] * 37
+        self.limbs = [None] * 36
+        # self.joint_mapper = [-1] * 37
         self.joint_display = 'sphere'
 
         self.create_joints()
@@ -605,7 +605,7 @@ class BodyDataBase:
     def create_joints(self):
         for joint_index in joint_linear_index_to_name:
             if joint_index != -1:
-                name = joint_index_to_name[joint_index]
+                name = joint_linear_index_to_name[joint_index]
                 new_joint = Joint(self, name, joint_index)
                 self.joints.append(new_joint)
 

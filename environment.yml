@@ -100,6 +100,7 @@ dependencies:
     - numba
     - numpy
     - numpy-quaternion
+    - omegaconf
     - opencv-python
     - packaging
     - pathy

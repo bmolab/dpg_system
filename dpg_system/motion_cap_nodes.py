@@ -431,8 +431,8 @@ class MoCapGLBody(MoCapNode):
         if type(command[0]) == str:
             if command[0] in BodyDataBase.smpl_limb_to_joint_dict:
                 target_joint = BodyDataBase.smpl_limb_to_joint_dict[command[0]]
-                if target_joint in joint_name_to_index:
-                    target_joint_index = joint_name_to_index[target_joint]
+                if target_joint in joint_name_to_linear_index:
+                    target_joint_index = joint_name_to_linear_index[target_joint]
                     self.body.joints[target_joint_index].bone_translation = command[1:]
                     self.body.joints[target_joint_index].set_matrix()
                 # self.body.joints[target_joint_index].set_mass()
@@ -449,8 +449,8 @@ class MoCapGLBody(MoCapNode):
             elif command[0] == 'limb_size':
                 if len(command) > 1:
                     joint_name = command[1]
-                    if joint_name in joint_name_to_index:
-                        joint_index = joint_name_to_index[joint_name]
+                    if joint_name in joint_name_to_linear_index:
+                        joint_index = joint_name_to_linear_index[joint_name]
                         if len(command) > 2:
                             dims = command[2:]
                             for i in range(len(dims)):
@@ -608,8 +608,8 @@ class SimpleMoCapGLBody(MoCapNode):
         if type(command[0]) == str:
             if command[0] in BodyDataBase.smpl_limb_to_joint_dict:
                 target_joint = BodyDataBase.smpl_limb_to_joint_dict[command[0]]
-                if target_joint in joint_name_to_index:
-                    target_joint_index = joint_name_to_index[target_joint]
+                if target_joint in joint_name_to_linear_index:
+                    target_joint_index = joint_name_to_linear_index[target_joint]
                     if len(command) >= 2:
                         # self.body.limbs[target_joint_index].dims[2] = any_to_float(command[1])
                         self.body.joints[target_joint_index].set_limb_length(any_to_float(command[3]))
@@ -1280,8 +1280,8 @@ class AlternateMoCapGLBody(MoCapNode):
         if type(command[0]) == str:
             if command[0] in BodyDataBase.smpl_limb_to_joint_dict:
                 target_joint = BodyDataBase.smpl_limb_to_joint_dict[command[0]]
-                if target_joint in joint_name_to_index:
-                    target_joint_index = joint_name_to_index[target_joint]
+                if target_joint in joint_name_to_linear_index:
+                    target_joint_index = joint_name_to_linear_index[target_joint]
                     if len(command) >= 2: #lllll error!!!!
                         self.body.joints[target_joint_index].base_length = any_to_float(command[3])
                     if len(command) == 3:
