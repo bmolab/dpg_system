@@ -9,7 +9,6 @@ def register_wavelet_nodes():
     Node.app.register_node('t.cwt', TorchCWTNode.factory)
     pass
 
-
 class TorchCWTNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):

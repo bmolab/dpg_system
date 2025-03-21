@@ -9,12 +9,6 @@ from fuzzywuzzy import fuzz
 import sys
 
 
-def register_base_nodes():
-    Node.app.register_node('patcher', PatcherNode.factory)
-    Node.app.register_node('p', PatcherNode.factory)
-    Node.app.register_node('in', PatcherInputNode.factory)
-    Node.app.register_node('out', PatcherOutputNode.factory)
-
 
 class NodeOutput:
     _pin_active_theme = None
@@ -1931,6 +1925,13 @@ class Node:
                         property.widget.callback()
 
 
+def register_base_nodes():
+    Node.app.register_node('patcher', PatcherNode.factory)
+    Node.app.register_node('p', PatcherNode.factory)
+    Node.app.register_node('in', PatcherInputNode.factory)
+    Node.app.register_node('out', PatcherOutputNode.factory)
+
+
 class PatcherInputNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -2469,6 +2470,7 @@ class PlaceholderNode(Node):
     def on_edit(self, widget):
         if widget == self.static_name:
             return
+
         if widget == self.name_property.widget and len(self.node_list) > 0:
             self.list_box_arrowed = False
             self.filtered_list = []

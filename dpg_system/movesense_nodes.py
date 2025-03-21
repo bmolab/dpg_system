@@ -19,6 +19,7 @@ from functools import reduce
 def register_movesense_nodes():
     Node.app.register_node('movesense', MoveSenseNode.factory)
 
+
 WRITE_CHARACTERISTIC_UUID = (
     "34800001-7185-4d5d-b431-630e7050e8f0"
 )

@@ -6,7 +6,6 @@ def register_torch_loss_nodes():
     Node.app.register_node('t.mse_loss', TorchMSELossNode.factory)
     Node.app.register_node('t.l1_loss', TorchL1LossNode.factory)
     Node.app.register_node('t.cross_entropy_loss', TorchCrossEntropyLossNode.factory)
-    pass
 
 
 class TorchMSELossNode(TorchNode):

@@ -21,7 +21,6 @@ def register_vae_nodes():
     # Node.app.register_node("smpl_pose_to_joints", SMPLPoseToJointsNode.factory)
     # Node.app.register_node("smpl_body", SMPLBodyNode.factory)
 
-
 class VAENode(Node):
     @staticmethod
     def factory(name, data, args=None):

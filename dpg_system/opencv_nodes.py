@@ -15,6 +15,7 @@ def register_opencv_nodes():
     Node.app.register_node('cv_capture', CVVideoCaptureNode.factory)
     Node.app.register_node('cv_camera', CVVideoCaptureNode.factory)
 
+
 class CVImageNode(Node):
     @staticmethod
     def factory(name, data, args=None):

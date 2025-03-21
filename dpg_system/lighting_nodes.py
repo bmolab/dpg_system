@@ -7,7 +7,6 @@ from dpg_system.osc_nodes import *
 def register_lighting_nodes():
     Node.app.register_node('color_source', ColorSourceNode.factory)
 
-
 class ColorSourceNode(OSCSender, Node):
     @staticmethod
     def factory(name, data, args=None):

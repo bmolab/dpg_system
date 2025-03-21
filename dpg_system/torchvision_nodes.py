@@ -11,7 +11,6 @@ def register_torchvision_nodes():
     Node.app.register_node('tv.adjust_brightness', TorchvisionAdjustOneParamNode.factory)
 
 
-
 class TorchvisionGrayscaleNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):

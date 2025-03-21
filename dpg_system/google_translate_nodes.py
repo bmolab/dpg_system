@@ -26,6 +26,8 @@ def register_google_translate_nodes():
     Node.app.register_node('translate', GoogleTranslateNode.factory)
     Node.app.register_node('translate_api', GoogleTranslateAPINode.factory)
 
+
+
 class EasyGoogleTranslate:
 
     '''

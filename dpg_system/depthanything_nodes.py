@@ -4,8 +4,9 @@ from dpg_system.torch_base_nodes import *
 from dpg_system.depth_anything_v2.dpt import DepthAnythingV2
 
 
-def register_depth_anything_nodes():
+def register_depthanything_nodes():
     Node.app.register_node('depth_anything', DepthAnythingNode.factory)
+
 
 model_configs = {
         'vits': {'encoder': 'vits', 'features': 64, 'out_channels': [48, 96, 192, 384]},

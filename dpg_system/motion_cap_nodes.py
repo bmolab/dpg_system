@@ -9,7 +9,7 @@ import copy
 
 import dpg_system.MotionSDK as shadow
 
-def register_mocap_nodes():
+def register_motion_cap_nodes():
     Node.app.register_node('gl_body', MoCapGLBody.factory)
     Node.app.register_node('gl_simple_body', SimpleMoCapGLBody.factory)
     Node.app.register_node('gl_alt_body', AlternateMoCapGLBody.factory)
@@ -903,7 +903,7 @@ class GlobalToLocalBodyNode(MoCapNode):
         # left_collar
         offset = self.active_joint_map['left_shoulder_blade']
         previous_offset = self.active_joint_map['mid_vertebrae']
-        left_shoulder_blade_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(v(active_joints_data[offset]), active_joints_data[previous_offset]))
+        left_shoulder_blade_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
         self.pose_data[offset] = left_shoulder_blade_rel_quat
 
         # left_shoulder

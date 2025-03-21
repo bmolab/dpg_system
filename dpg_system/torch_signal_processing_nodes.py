@@ -18,7 +18,6 @@ def register_torch_signal_processing_nodes():
     Node.app.register_node('t.fft', TorchFFTNode.factory)
     Node.app.register_node('t.ifft', TorchFFTNode.factory)
 
-
 class TorchWindowNode_(TorchDeviceDtypeNode):
     op_dict = {
         't.window.blackman': torch.signal.windows.blackman,

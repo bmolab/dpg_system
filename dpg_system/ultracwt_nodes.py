@@ -20,7 +20,6 @@ def register_ultracwt_nodes():
     Node.app.register_node('ultracwt', NumpyUltraCWTNode.factory)
     Node.app.register_node('t.ultracwt', TorchUltraCWTNode.factory)
 
-
 class NumpyUltraCWTNode(Node):
     @staticmethod
     def factory(name, data, args=None):

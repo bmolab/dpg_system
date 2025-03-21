@@ -18,6 +18,7 @@ def register_spacy_nodes():
     Node.app.register_node('spacy_confusion', SpacyConfusionMatrixNode.factory)
 
 
+
 class PhraseMatch():
     def __init__(self, token=None, phrase=None, score=0.0, bare=False):
         self.token = token

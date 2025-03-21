@@ -13,7 +13,6 @@ from tempfile import NamedTemporaryFile
 from dpg_system.body_defs import *
 from dpg_system.joint import *
 from dpg_system.node import *
-from dpg_system.gl_nodes import GLMaterial
 from dpg_system.conversion_utils import *
 
 scale = 1.0
@@ -742,6 +741,7 @@ class BodyDataBase:
 
 class BodyData(BodyDataBase):
     def __init__(self):
+        from dpg_system.gl_nodes import GLMaterial
         super().__init__()
         self.origin = None
         self.diff_quats = None

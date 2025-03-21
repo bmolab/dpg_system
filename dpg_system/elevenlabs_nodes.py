@@ -19,7 +19,7 @@ import subprocess
 from typing import Iterator, Union
 api_key = 'be1eae804441ec11f0fe872f82ad44f3'
 
-def register_elevenlab_nodes():
+def register_elevenlabs_nodes():
     Node.app.register_node("eleven_labs", ElevenLabsNode.factory)
 
 
@@ -170,8 +170,11 @@ class ElevenLabsNode(Node):
         self.hard_stop_input = self.add_input('hard stop', widget_type='button', callback=self.hard_stop_streaming)
         self.accept_input = self.add_input('accept input', widget_type='checkbox', default_value=True)
         self.active_output = self.add_output('speaking')
+        self.backlog_out = self.add_output('backlog')
+
         self.voice_record = None
         self.previously_active = False
+        self.backlog = False
         self.voice_settings = VoiceSettings()
         ElevenLabsNode.instances.append(self)
         self.phrase_queue = Queue(16)
@@ -196,6 +199,13 @@ class ElevenLabsNode(Node):
             if len(self.text_to_speak) > 0:
                 self.add_frame_task()
                 self.phrase_queue.put(self.text_to_speak)
+                if self.phrase_queue.qsize() > 1:
+                    self.backlog = True
+                    self.backlog_out.send(self.backlog)
+                else:
+                    self.backlog = False
+                    self.backlog_out.send(self.backlog)
+
 
     def hard_stop_streaming(self):
         self.streamer.hard_stop()
@@ -219,6 +229,9 @@ class ElevenLabsNode(Node):
         if not self.active and not self.phrase_queue.empty() and self.client is not None:
             self.active = True
             text = self.phrase_queue.get()
+            if self.phrase_queue.qsize() == 0:
+                self.backlog = False
+                self.backlog_out.send(False)
             model = self.model_dict[self.model_choice()]
             latency = int(self.latency())
             settings = VoiceSettings(stability=self.stability(), similarity_boost=self.similarity_boost(), style=self.style(), speed=self.speed(), latency=self.latency())

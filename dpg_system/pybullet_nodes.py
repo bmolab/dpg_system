@@ -10,6 +10,7 @@ import pybullet_data
 def register_pybullet_nodes():
     Node.app.register_node('pybullet_body', PyBulletBodyNode.factory)
 
+
 # class PyBulletNode(Node):
 #     pybullet = None
 #

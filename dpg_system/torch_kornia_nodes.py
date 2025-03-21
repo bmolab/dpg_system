@@ -10,6 +10,7 @@ def register_kornia_nodes():
     Node.app.register_node('k.gaussian_blur', KorniaGaussianBlurNode.factory)
     Node.app.register_node('k.dog_response_single', KorniaDOGResponseSingleNode.factory)
 
+
 class KorniaGrayscaleNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -149,8 +150,8 @@ class KorniaDOGResponseSingleNode(TorchNode):
         self.sigma_2 = 1.6
 
         if len(args) > 1:
-            self.sigma_1 = any_to_float(arg[0])
-            self.sigma_2 = any_to_float(arg[1])
+            self.sigma_1 = any_to_float(args[0])
+            self.sigma_2 = any_to_float(args[1])
 
         self.input = self.add_input('tensor in', triggers_execution=True)
         self.sigma_1_property = self.add_property('sigma_1', widget_type='drag_float', default_value=self.sigma_1, min=.01, callback=self.params_changed)

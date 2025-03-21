@@ -890,7 +890,6 @@ class PackNode(Node):
                         in_names.append(self.types[arg].__name__)
                     else:
                         if is_number(arg):
-                            print('num')
                             self.in_types.append(any_to_numerical(arg))
                             in_names.append(any_to_numerical(arg))
                         else:
@@ -920,7 +919,6 @@ class PackNode(Node):
                     self.add_tensor_input(in_names[i], triggers_execution=triggers)
             else:
                 if type(self.in_types[i]) is str:
-                    print(self.in_types[i], 'string')
                     inp = self.add_string_input(in_names[i], triggers_execution=triggers, default_value=self.in_types[i])
                 elif type(self.in_types[i]) in [int, np.int64]:
                     inp = self.add_int_input(in_names[i], triggers_execution=triggers,
@@ -936,10 +934,6 @@ class PackNode(Node):
         self.output_preference_option = self.add_option('output pref', widget_type='combo', default_value='list')
         self.output_preference_option.widget.combo_items = ['list', 'array', 'tensor']
 
-    # def custom_create(self, from_file):
-    #     for i in range(self.num_ins):
-    #         self.inputs[i].receive_data(0)
-
     def execute(self):
         trigger = False
         if self.label == 'pak':
@@ -952,7 +946,6 @@ class PackNode(Node):
                 out_list = []
                 for i in range(self.num_ins):
                     value = self.inputs[i].get_data()
-                    print(i, value)
                     t = type(value)
                     if t in [list, tuple]:
                         out_list += [value]
@@ -1865,7 +1858,6 @@ class TypeNode(Node):
     def execute(self):
         input_ = self.input()
         if self.label == 'type':
-            # print('type', type(input))
             t = type(input_)
             if t == float:
                 self.type_property.set('float')
@@ -2931,8 +2923,6 @@ class FuzzyMatchNode(Node):
                         self.output.send(data)
                 else:
                     self.output.send(data)
-                elapsed = time.time() - start
-                # print(elapsed)
 
     def fuzzy_score(self, test):
         scores = {}
@@ -2947,7 +2937,6 @@ class FuzzyMatchNode(Node):
             scores[node_name] = ratio
 
         sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-        # print(sorted_scores)
         self.filtered_list = []
         self.best_score = 20
         for index, item in enumerate(sorted_scores):
@@ -3227,10 +3216,15 @@ class GatherSentences(Node):
                             self.received_tokens.append(data)
                             self.send_sentence()
                             return
-                    if data[-1] in ['.', '?', '!', ';', ':']:
+                    elipsis = False
+                    if data[-1] == '.' and len(data) > 2:
+                        if data[-2] == '.' and data[-3] == '.':
+                            elipsis = True
+                    if not elipsis and data[-1] in ['.', '?', '!', ';', ':']:
                         self.received_tokens.append(data)
                         self.send_sentence()
                         return
+
                     if data[-1] == ')' and len(self.received_tokens) > 0:
                         if self.received_tokens[0] == '' and len(self.received_tokens) > 1:
                             if self.received_tokens[1][-1] == '(':

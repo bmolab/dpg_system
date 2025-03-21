@@ -1,7 +1,7 @@
 # import dearpygui.dearpygui as dpg
 import time
 import numpy as np
-
+from importlib import import_module
 from dpg_system.node import Node, NodeInput, NodeOutput, Variable, PlaceholderNode
 from dpg_system.node_editor import *
 from dpg_system.node import *
@@ -15,345 +15,94 @@ import threading
 import _thread
 # make new tab pop up when new file is opened
 
-osc_active = True
-opengl_active = True
-opencv_active = True
-elevenlabs_active = True
-movesense_active = True
-mocap_active = True
-spacy_active = True
-clip_active = True
-numpy_active = True
-pytorch_active = True
-smpl_active = True
-prompt_active = True
-sockets_active = True
-easy_mode = False
-ultracwt_active = True
-pybullet_active = False
-midi_active = True
-depth_anything_active = True
-vae_active = True
-vive_tracker_active = True
-lighting_active = True
-translation_active = True
-layout_active = True
-digico_active = True
-display_info_active = True
+import dpg_system.basic_nodes as basic_nodes
+import dpg_system.math_nodes as math_nodes
+import dpg_system.signal_nodes as signal_nodes
+import dpg_system.interface_nodes as interface_nodes
+import dpg_system.quaternion_nodes as quaternion_nodes
+import dpg_system.numpy_nodes as numpy_nodes
+import dpg_system.matrix_nodes as matrix_nodes
+import dpg_system.osc_nodes as osc_nodes
 
-# print('Options active:', end=' ')
-# with open('dpg_system_config.json', 'r') as f:
-#     config = json.load(f)
-#     if 'easy' in config:
-#         easy_mode = config['easy']
-#     if 'OSC' in config:
-#         osc_active = config['OSC']
-#         if osc_active:
-#             print('OSC', end=' ')
-#     if 'OpenGL' in config:
-#         opengl_active = config['OpenGL']
-#         if opengl_active:
-#             print('OpenGL', end=' ')
-#     if 'OpenCV' in config:
-#         opencv_active = config['OpenCV']
-#         if opencv_active:
-#             print('OpenCV', end=' ')
-#     if 'ElevenLabs' in config:
-#         elevenlabs_active = config['ElevenLabs']
-#         if elevenlabs_active:
-#             print('ElevenLabs', end=' ')
-#     if 'MoveSense' in config:
-#         movesense_active = config['MoveSense']
-#         if movesense_active:
-#             print('MoveSense', end=' ')
-#     if 'MoCap' in config:
-#         mocap_active = config['MoCap']
-#         if mocap_active:
-#             print('MoCap', end=' ')
-#     if 'SpaCy' in config:
-#         spacy_active = config['SpaCy']
-#         if spacy_active:
-#             print('SpaCy', end=' ')
-#     if 'CLIP' in config:
-#         clip_active = config['CLIP']
-#         if clip_active:
-#             print('CLIP', end=' ')
-#     if 'Numpy' in config:
-#         numpy_active = config['Numpy']
-#         if numpy_active:
-#             print('Numpy', end=' ')
-#     if 'Pytorch' in config:
-#         pytorch_active = config['Pytorch']
-#         if pytorch_active:
-#             print('Pytorch', end=' ')
-#     if 'SMPL' in config:
-#         smpl_active = config['SMPL']
-#         if smpl_active:
-#             print('SMPL', end=' ')
-#     if 'prompt' in config:
-#         prompt_active = config['prompt']
-#         if prompt_active:
-#             print('prompt', end=' ')
-#     if 'pybullet' in config:
-#         pybullet_active = config['pybullet']
-#         if pybullet_active:
-#             print('pybullet', end=' ')
-#     if 'sockets' in config:
-#         sockets_active = config['sockets']
-#         if sockets_active:
-#             print('sockets', end=' ')
-#     if 'ultracwt' in config:
-#         ultracwt_active = config['ultracwt']
-#         if ultracwt_active:
-#             print('ultracwt', end=' ')
 
-print('')
+to_import = [
+    'basic_nodes',
+    'math_nodes',
+    'signal_nodes',
+    'interface_nodes',
+    'quaternion_nodes',
+    'numpy_nodes',
+    'matrix_nodes',
+    'osc_nodes'
+]
+
+optional_import = [
+    'gl_nodes',
+    'opencv_nodes',
+    'elevenlabs_nodes',
+    'movesense_nodes',
+    'motion_cap_nodes',
+    'spacy_nodes',
+    'clip_nodes',
+    'torch_nodes',
+    'pybullet_modes',
+    'smpl_nodes',
+    'prompt_nodes',
+    'socket_nodes',
+    'ultracwt_nodes',
+    'midi_nodes',
+    'depthanything_nodes',
+    'vae_nodes',
+    'vive_tracker_nodes',
+    'lighting_nodes',
+    'google_translate_nodes',
+    'layout_nodes',
+    'digico_nodes',
+    'monitor_nodes'
+]
+
+print('Options active:', end=' ')
 
 imported = []
+to_be_imported = []
 
-try:
-    from dpg_system.basic_nodes import *
-    imported.append('basic_nodes.py')
-except ModuleNotFoundError:
-    pass
-
-try:
-    from dpg_system.math_nodes import *
-    imported.append('math_nodes.py')
-except ModuleNotFoundError:
-    pass
-
-try:
-    from dpg_system.signal_nodes import *
-    imported.append('signal_nodes.py')
-except ModuleNotFoundError:
-    pass
-
-try:
-    from dpg_system.interface_nodes import *
-    imported.append('interface_nodes.py')
-except ModuleNotFoundError:
-    pass
-
-try:
-    from dpg_system.quaternion_nodes import *
-    imported.append('quaternion_nodes.py')
-except ModuleNotFoundError:
-    pass
-
-if osc_active:
+def import_core(file_name):
     try:
-        from dpg_system.osc_nodes import *
-        imported.append('osc_nodes.py')
+        name = 'dpg_system.' + file_name
+        print(file_name, end=' ')
+        # import_module(name)
+        to_be_imported.append(file_name)
+        imported.append(file_name)
     except ModuleNotFoundError:
-        osc_active = False
+        print('No module named ' + file_name)
 
-if spacy_active:
+def import_test(file_name):
+    if file_name in config:
+        if config[file_name]:
+            import_core(file_name)
+
+with open('dpg_system_config.json', 'r') as f:
+    config = json.load(f)
+    if 'easy' in config:
+        easy_mode = config['easy']
+    for basic_import in to_import:
+        import_core(basic_import)
+    for try_import in optional_import:
+        import_test(try_import)
+
+if 'gl_nodes' in to_be_imported:
+    opengl_active = True
+    import glfw
+else:
+    opengl_active = False
+
+for import_name in to_be_imported:
     try:
-        from dpg_system.spacy_nodes import *
-        imported.append('spacy_nodes.py')
+        globals()[import_name] = import_module('dpg_system.' + import_name)
+        print('Imported ' + import_name)
+        imported.append(import_name)
     except ModuleNotFoundError:
-        spacy_active = False
-
-if mocap_active:
-    try:
-        from dpg_system.motion_cap_nodes import *
-        imported.append('motion_cap_nodes.py')
-    except ModuleNotFoundError:
-        mocap_active = False
-
-if numpy_active:
-    try:
-        from dpg_system.matrix_nodes import *
-        imported.append('matrix_nodes.py')
-        from dpg_system.numpy_nodes import *
-        imported.append('numpy_nodes.py')
-    except ModuleNotFoundError:
-        numpy_active = False
-
-if opengl_active:
-    try:
-        from dpg_system.gl_nodes import *
-        imported.append('gl_nodes.py')
-    except ModuleNotFoundError:
-        opengl_active = False
-
-if opencv_active:
-    try:
-        from dpg_system.opencv_nodes import *
-        imported.append('opencv_nodes.py')
-    except ModuleNotFoundError:
-        opencv_active = False
-
-if clip_active:
-    try:
-        from dpg_system.clip_nodes import *
-        imported.append('clip_nodes.py')
-    except ModuleNotFoundError:
-        clip_active = False
-
-if pytorch_active:
-    print('torch active')
-    try:
-        from dpg_system.torch_nodes import *
-        imported.append('torch_nodes.py')
-    except ModuleNotFoundError:
-        print('failed')
-        pytorch_active = False
-
-if elevenlabs_active:
-    try:
-        from dpg_system.elevenlabs_node import *
-        imported.append('elevenlabs_node.py')
-    except ModuleNotFoundError:
-        elevenlabs_active = False
-
-if movesense_active:
-    try:
-        from dpg_system.movesense_nodes import *
-        imported.append('movesense_nodes.py')
-    except ModuleNotFoundError:
-        movesense_active = False
-
-if smpl_active:
-    try:
-        from dpg_system.SMPL_nodes import *
-        imported.append('SMPL_nodes.py')
-    except ModuleNotFoundError:
-        smpl_active = False
-
-if prompt_active:
-    try:
-        from dpg_system.prompt_nodes import *
-        imported.append('prompt_nodes.py')
-    except ModuleNotFoundError:
-        prompt_active = False
-
-if pybullet_active:
-    try:
-        from dpg_system.pybullet_nodes import *
-        imported.append('pybullet_nodes.py')
-    except ModuleNotFoundError:
-        pybullet_active = False
-
-if sockets_active:
-    try:
-        from dpg_system.socket_nodes import *
-        imported.append('socket_nodes.py')
-    except ModuleNotFoundError:
-        sockets_active = False
-
-if ultracwt_active:
-    try:
-        from dpg_system.ultracwt_nodes import *
-        imported.append('ultracwt_nodes.py')
-    except ModuleNotFoundError:
-        ultracwt_active = False
-
-if midi_active:
-    try:
-        from dpg_system.midi_nodes import *
-        imported.append('midi_nodes.py')
-        print('imported midi')
-    except ModuleNotFoundError:
-        midi_active = False
-
-if depth_anything_active:
-    try:
-        from dpg_system.depthanything_nodes import *
-        imported.append('depthanything_nodes.py')
-        print('imported depthanything')
-    except ModuleNotFoundError:
-        depth_anything_active = False
-
-if vae_active:
-    try:
-        from dpg_system.VAE_nodes import *
-        imported.append('VAE_nodes.py')
-        print('imported vae')
-    except ModuleNotFoundError:
-        vae_active = False
-
-if vive_tracker_active:
-    try:
-        from dpg_system.vive_tracker_node import *
-        imported.append('vive_tracker_node.py')
-        print('imported vive_tracker')
-    except ModuleNotFoundError:
-        vive_tracker_active = False
-
-if lighting_active:
-    try:
-        from dpg_system.lighting_console_nodes import *
-        imported.append('lighting_console_nodes.py')
-        print('imported lighting')
-    except ModuleNotFoundError:
-        lighting_active = False
-
-if translation_active:
-    try:
-        from dpg_system.google_translate_node import *
-        imported.append('google_translate_node.py')
-        print('imported google translate')
-    except ModuleNotFoundError:
-        translation_active = False
-
-if layout_active:
-    try:
-        from dpg_system.layout_node import *
-        imported.append('layout_node.py')
-        print('imported layout')
-    except ModuleNotFoundError:
-        print('import layout failed')
-        layout_active = False
-
-if digico_active:
-    try:
-        from dpg_system.digico_nodes import *
-        imported.append('digico_nodes.py')
-        print('imported digico')
-    except ModuleNotFoundError:
-        print('import digico failed')
-        digico_active = False
-
-if display_info_active:
-    try:
-        from dpg_system.monitor_nodes import *
-        imported.append('monitor_nodes.py')
-        print('imported monitor nodes')
-    except ModuleNotFoundError:
-        print('import monitor nodes failed')
-        digico_active = False
-
-
-# import additional node files in folder
-
-# for entry in os.scandir('dpg_system'):
-#     if entry.is_file():
-#         if entry.name[-8:] == 'nodes.py':
-#             if entry.name not in imported:
-#                 name = entry.name[:-3]
-#                 string = f'from dpg_system.{name} import *'
-#                 exec(string)
-
-if os.path.exists('dpg_system/plugins'):
-    for entry in os.scandir('dpg_system/plugins'):
-        if entry.is_file():
-            if entry.name[-8:] == 'nodes.py':
-                if entry.name not in imported:
-                    name = entry.name[:-3]
-                    string = f'from dpg_system.plugins.{name} import *'
-                    exec(string)
-        else:
-            for subentry in os.scandir('dpg_system/plugins/' + entry.name):
-                if subentry.is_file():
-                    if subentry.name[-8:] == 'nodes.py':
-                        if subentry.name not in imported:
-                            name = subentry.name[:-3]
-                            string = f'from dpg_system.plugins.{entry.name}.{subentry} import *'
-                            exec(string)
-
-
+        print('No module named ' + import_name)
 
 
 def widget_active(source, data, user_data):
@@ -539,8 +288,7 @@ class App:
         self.loaded_patcher_nodes = []
         self.recent_files = {}
         self.recent_menus = []
-        if osc_active:
-            self.osc_manager = OSCManager(label='osc_manager', data=0, args=None)
+        self.osc_manager = osc_nodes.OSCManager(label='osc_manager', data=0, args=None)
 
         self.recent_menu = None
         self.presentation_edit_menu_item = -1
@@ -965,95 +713,13 @@ class App:
         self.do_exit = True
 
     def register_nodes(self):
-        if 'register_base_nodes' in globals():
-            register_base_nodes()
+        register_base_nodes()
 
-        if 'register_basic_nodes' in globals():
-            register_basic_nodes()
-
-        if osc_active and 'register_osc_nodes' in globals():
-            register_osc_nodes()
-
-        if opengl_active and 'register_gl_nodes' in globals():
-            register_gl_nodes()
-
-        if opencv_active and 'register_opencv_nodes' in globals():
-            register_opencv_nodes()
-
-        if elevenlabs_active and 'register_elevenlab_nodes' in globals():
-            register_elevenlab_nodes()
-
-        if movesense_active and 'register_movesense_nodes' in globals():
-            register_movesense_nodes()
-
-        if 'register_interface_nodes' in globals():
-            register_interface_nodes()
-
-        if 'register_math_nodes' in globals():
-            register_math_nodes()
-
-        if mocap_active and 'register_mocap_nodes' in globals():
-            register_mocap_nodes()
-
-        if 'register_quaternion_nodes' in globals():
-            register_quaternion_nodes()
-
-        if 'register_signal_nodes' in globals():
-            register_signal_nodes()
-
-        if 'register_smpl_nodes' in globals():
-            register_smpl_nodes()
-
-        if spacy_active and 'register_spacy_nodes' in globals():
-            register_spacy_nodes()
-
-        if clip_active and 'register_clip_nodes' in globals():
-            register_clip_nodes()
-
-        if numpy_active and 'register_numpy_nodes' in globals():
-            register_matrix_nodes()
-            register_numpy_nodes()
-
-        if pytorch_active and 'register_torch_nodes' in globals():
-            register_torch_nodes()
-
-        if prompt_active and 'register_prompt_nodes' in globals():
-            register_prompt_nodes()
-
-        if pybullet_active and 'register_pybullet_nodes' in globals():
-            register_pybullet_nodes()
-
-        if sockets_active and 'register_socket_nodes' in globals():
-            register_socket_nodes()
-
-        if ultracwt_active and 'register_ultracwt_nodes' in globals():
-            register_ultracwt_nodes()
-
-        if midi_active and 'register_midi_nodes' in globals():
-            register_midi_nodes()
-
-        if depth_anything_active and 'register_depth_anything_nodes' in globals():
-            register_depth_anything_nodes()
-
-        if vae_active and 'register_vae_nodes' in globals():
-            register_vae_nodes()
-
-        if vive_tracker_active and 'register_vive_tracker_nodes' in globals():
-            register_vive_tracker_nodes()
-        if lighting_active and 'register_lighting_nodes' in globals():
-            register_lighting_nodes()
-
-        if translation_active and 'register_google_translate_nodes' in globals():
-            register_google_translate_nodes()
-
-        if layout_active and 'register_layout_nodes' in globals():
-            register_layout_nodes()
-
-        if digico_active and 'register_digico_nodes' in globals():
-            register_digico_nodes()
-
-        if display_info_active and 'register_display_nodes' in globals():
-            register_display_nodes()
+        for source_file in imported:
+            register_call_name = 'register_' + source_file
+            if source_file in globals():
+                register_function = getattr(globals()[source_file], register_call_name)
+                register_function()
 
     def get_variable_list(self):
         v_list = list(self.variables.keys())
@@ -1241,7 +907,7 @@ class App:
     def int_handler(self):
         if self.active_widget == -1:
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
-                node = ValueNode.factory("int", None)
+                node = interface_nodes.ValueNode.factory("int", None)
                 self.place_node(node)
                 node.name_id = dpg.generate_uuid()
                 self.set_widget_focus(node.uuid)
@@ -1249,14 +915,14 @@ class App:
     def float_handler(self):
         if self.active_widget == -1:
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
-                node = ValueNode.factory("float", None)
+                node = interface_nodes.ValueNode.factory("float", None)
                 self.place_node(node)
                 self.set_widget_focus(node.uuid)
 
     def vector_handler(self):
         if self.active_widget == -1:
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
-                node = VectorNode.factory("vector", None, args=['4'])
+                node = interface_nodes.VectorNode.factory("vector", None, args=['4'])
                 self.place_node(node)
                 self.set_widget_focus(node.uuid)
 
@@ -1268,26 +934,26 @@ class App:
     def toggle_handler(self):
         if self.active_widget == -1:
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
-                node = ToggleNode.factory("toggle", None)
+                node = interface_nodes.ToggleNode.factory("toggle", None)
                 self.place_node(node)
 
     def button_handler(self):
         if self.active_widget == -1:
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
-                node = ButtonNode.factory("b", None)
+                node = interface_nodes.ButtonNode.factory("b", None)
                 self.place_node(node)
 
     def message_handler(self):
         if self.active_widget == -1:
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
-                node = ValueNode.factory("message", None)
+                node = interface_nodes.ValueNode.factory("message", None)
                 self.place_node(node)
                 self.set_widget_focus(node.input.widget.uuid)
 
     def list_handler(self):
         if self.active_widget == -1:
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
-                node = ValueNode.factory("list", None)
+                node = interface_nodes.ValueNode.factory("list", None)
                 self.place_node(node)
                 self.set_widget_focus(node.input.widget.uuid)
 
@@ -2106,9 +1772,9 @@ class App:
         elapsed = 0
         do_gl = False
         do_osc_async = False
-        if 'GLContextNode' in globals():
+        if 'gl_nodes' in globals():
             do_gl = True
-        if 'OSCAsyncIOSource' in globals():
+        if 'osc_nodes' in globals():
             do_osc_async = True
 
         while dpg.is_dearpygui_running():
@@ -2132,7 +1798,7 @@ class App:
                     self.frame_clock_conduit.transmit('bang')
                     self.frame_time_variable.set(elapsed)
                     if do_osc_async:
-                        OSCThreadingSource.osc_manager.relay_pending_messages()
+                        osc_nodes.OSCThreadingSource.osc_manager.relay_pending_messages()
                     dpg.render_dearpygui_frame()
                     then = time.time()
                     elapsed = then - now
@@ -2141,7 +1807,7 @@ class App:
                     if not self.gl_on_separate_thread:
                         if opengl_active:
                             if do_gl:
-                                GLContextNode.maintenance_loop()
+                                gl_nodes.GLContextNode.maintenance_loop()
                             self.restore_gl_context(hold_context)
                             # glfw.make_context_current(hold_context)
 

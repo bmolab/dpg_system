@@ -32,6 +32,7 @@ def register_gl_nodes():
     Node.app.register_node('gl_color', GLColorNode.factory)
     Node.app.register_node('gl_enable', GLEnableNode.factory)
 
+
 class GLCommandParser:
     def __init__(self):
         self.dict = {}
@@ -227,6 +228,7 @@ class GLContextNode(Node):
             self.height = 480
 
         self.pending_contexts.append(self)
+        print('appended to pending contexts')
         self.context = None
         self.command_input = self.add_input('commands', triggers_execution=True)
         self.output = self.add_output('gl_chain')

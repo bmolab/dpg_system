@@ -16,16 +16,14 @@ class MyGLContext:
         glfw.poll_events()
 
     def __init__(self, name='untitled', width=640, height=480, samples=1):
+
         if not self.inited:
-            # print('about to init glfw')
             if not glfw.init():
                 print("library is not initialized")
                 return
             # MyGLContext.gl_thread = threading.Thread(target=run_gl_thread)
             self.inited = True
 #        Create a windowed mode window and its OpenGL context
-#         print(glfw.get_version())
-        # print('glfw inited')
         self.rotation_angle = 0
         self.d_x = 0
         self.height = height

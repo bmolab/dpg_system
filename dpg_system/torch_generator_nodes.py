@@ -40,7 +40,6 @@ def register_torch_generator_nodes():
     Node.app.register_node('t.ones_like', TorchGeneratorLikeNode.factory)
     Node.app.register_node('t.zeros_like', TorchGeneratorLikeNode.factory)
 
-
 class TorchGeneratorNode(TorchDeviceDtypeNode):
     @staticmethod
     def factory(name, data, args=None):

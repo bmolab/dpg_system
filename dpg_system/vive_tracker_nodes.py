@@ -8,7 +8,6 @@ def register_vive_tracker_nodes():
     Node.app.register_node('vive_tracker', ViveTrackerNode.factory)
     Node.app.register_node('continuous_rotation', ContinuousRotationNode.factory)
 
-
 class ViveTrackerNode(Node):
     open_vr = None
 

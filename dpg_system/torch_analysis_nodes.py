@@ -14,7 +14,6 @@ def register_torch_analyze_nodes():
     Node.app.register_node('t.non_zero', TorchArgWhereNode.factory)
     Node.app.register_node('t.argsort', TorchArgSortNode.factory)
 
-
 class TorchCountNonZeroNode(TorchWithDimNode):
     @staticmethod
     def factory(name, data, args=None):

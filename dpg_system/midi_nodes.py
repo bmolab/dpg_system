@@ -6,7 +6,6 @@ import platform
 
 if platform.system() == "Darwin":
     mido.set_backend('mido.backends.rtmidi')
-    print('Darwin')
 
 def register_midi_nodes():
     Node.app.register_node('midi_in', MidiInNode.factory)

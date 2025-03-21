@@ -20,7 +20,6 @@ def register_torchaudio_nodes():
     Node.app.register_node('t.audio.overdrive', TorchAudioOverdriveNode.factory)
     # Node.app.register_node('ta.vad', TorchAudioVADNode.factory) - does not seem to do anything
 
-
 class AudioSource:
     audio = None
 

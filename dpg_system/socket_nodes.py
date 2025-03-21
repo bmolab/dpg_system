@@ -1048,6 +1048,7 @@ class ProcessGroupNode(Node):
     def factory(name, data, args=None):
         node = ProcessGroupNode(name, data, args)
         return node
+
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.ip = '127.0.0.1'

@@ -5,13 +5,13 @@
         100,
         100
     ],
-    "id": 159,
+    "id": 163,
     "name": "mocap_take_example",
-    "path": "/Users/drokeby/PycharmProjects/dpg_system/examples/mocap_take_example.json",
+    "path": "/Users/drokeby/dpg_system/examples/mocap_take_example.json",
     "nodes": {
         "0": {
             "name": "",
-            "id": 184,
+            "id": 194,
             "position_x": 0,
             "position_y": 0,
             "width": 9,
@@ -29,29 +29,29 @@
         },
         "1": {
             "name": "take",
-            "id": 233,
+            "id": 246,
             "position_x": 119,
             "position_y": 135,
             "width": 123,
-            "height": 156,
+            "height": 192,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
+                    "name": "on/off",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
                     "name": "speed",
                     "value": 1.0,
                     "value_type": "float"
                 },
-                "1": {
-                    "name": "frame",
-                    "value": 1199,
-                    "value_type": "int"
-                },
                 "2": {
-                    "name": "on/off",
-                    "value": true,
-                    "value_type": "bool"
+                    "name": "frame",
+                    "value": 783,
+                    "value_type": "int"
                 },
                 "3": {
                     "name": "load",
@@ -59,9 +59,9 @@
                     "value_type": "NoneType"
                 },
                 "4": {
-                    "name": "",
-                    "value": "take.npz",
-                    "value_type": "string"
+                    "name": "dump",
+                    "value": null,
+                    "value_type": "NoneType"
                 },
                 "5": {
                     "name": "path",
@@ -72,44 +72,79 @@
         },
         "2": {
             "name": "gl_body",
-            "id": 286,
-            "position_x": 433,
-            "position_y": 291,
-            "width": 58,
-            "height": 66,
+            "id": 322,
+            "position_x": 482,
+            "position_y": 264,
+            "width": 228,
+            "height": 354,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
+                    "name": "capture pose",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "absolute quats",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "calc_diff_quats",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "skeleton_only",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "4": {
                     "name": "show joint motion",
                     "value": true,
                     "value_type": "bool"
                 },
-                "1": {
+                "5": {
+                    "name": "joint indicator",
+                    "value": "sphere",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "joint data type",
+                    "value": "diff_axis-angle",
+                    "value_type": "string"
+                },
+                "7": {
                     "name": "joint motion scale",
-                    "value": 20.0,
+                    "value": 1.0,
                     "value_type": "float"
                 },
-                "2": {
+                "8": {
                     "name": "joint motion smoothing",
                     "value": 0.800000011920929,
                     "value_type": "float"
                 },
-                "3": {
+                "9": {
                     "name": "joint motion alpha",
                     "value": 1.0,
                     "value_type": "float"
+                },
+                "10": {
+                    "name": "colour id",
+                    "value": 0,
+                    "value_type": "int"
                 }
             }
         },
         "3": {
             "name": "gl_context",
-            "id": 318,
+            "id": 421,
             "position_x": 190,
             "position_y": 370,
             "width": 70,
-            "height": 48,
+            "height": 66,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -123,7 +158,7 @@
         },
         "4": {
             "name": "int",
-            "id": 336,
+            "id": 447,
             "position_x": 61,
             "position_y": 27,
             "width": 130,
@@ -161,7 +196,7 @@
         },
         "5": {
             "name": "gl_translate",
-            "id": 368,
+            "id": 482,
             "position_x": 286,
             "position_y": 369,
             "width": 99,
@@ -193,261 +228,67 @@
             }
         },
         "6": {
-            "name": "smooth",
-            "id": 485,
-            "position_x": 276,
-            "position_y": 255,
-            "width": 129,
-            "height": 66,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "degree",
-                    "value": 0.699999988079071,
-                    "value_type": "float"
-                }
-            }
-        },
-        "7": {
-            "name": "body_to_joints",
-            "id": 506,
-            "position_x": 523,
-            "position_y": 15,
-            "width": 131,
-            "height": 408,
+            "name": "active_joints",
+            "id": 524,
+            "position_x": 282,
+            "position_y": 234,
+            "width": 144,
+            "height": 48,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
-        },
-        "8": {
-            "init": "vector 4",
-            "name": "vector",
-            "id": 678,
-            "position_x": 858,
-            "position_y": 38,
-            "width": 88,
-            "height": 120,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "##0",
-                    "value": 0.7980355620384216,
-                    "value_type": "float"
-                },
-                "1": {
-                    "name": "##1",
-                    "value": 0.09665293991565704,
-                    "value_type": "float"
-                },
-                "2": {
-                    "name": "##2",
-                    "value": -0.5772053599357605,
-                    "value_type": "float"
-                },
-                "3": {
-                    "name": "##3",
-                    "value": 0.14363664388656616,
-                    "value_type": "float"
-                },
-                "4": {
-                    "name": "##4",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "5": {
-                    "name": "##5",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "6": {
-                    "name": "##6",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "7": {
-                    "name": "##7",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "8": {
-                    "name": "##8",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "9": {
-                    "name": "##9",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "10": {
-                    "name": "##10",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "11": {
-                    "name": "##11",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "12": {
-                    "name": "##12",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "13": {
-                    "name": "##13",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "14": {
-                    "name": "##14",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "15": {
-                    "name": "##15",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "16": {
-                    "name": "##16",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "17": {
-                    "name": "##17",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "18": {
-                    "name": "##18",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "19": {
-                    "name": "##19",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "20": {
-                    "name": "##20",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "21": {
-                    "name": "##21",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "22": {
-                    "name": "##22",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "23": {
-                    "name": "##23",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "24": {
-                    "name": "##24",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "25": {
-                    "name": "##25",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "26": {
-                    "name": "##26",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "27": {
-                    "name": "##27",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "28": {
-                    "name": "##28",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "29": {
-                    "name": "##29",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "30": {
-                    "name": "##30",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "31": {
-                    "name": "##31",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "32": {
-                    "name": "component count",
-                    "value": 4,
-                    "value_type": "int"
-                },
-                "33": {
-                    "name": "number format",
-                    "value": "%.3f",
-                    "value_type": "string"
-                }
-            }
         }
     },
     "links": {
         "0": {
-            "source_node": 233,
+            "source_node": 246,
+            "source_node_name": "take",
             "source_output_index": 0,
-            "dest_node": 485,
-            "dest_input_index": 0
+            "source_output_name": "quaternions",
+            "dest_node": 524,
+            "dest_node_name": "active_joints",
+            "dest_input_index": 0,
+            "dest_input_name": "full pose quats in"
         },
         "1": {
-            "source_node": 233,
+            "source_node": 421,
+            "source_node_name": "gl_context",
             "source_output_index": 0,
-            "dest_node": 506,
-            "dest_input_index": 0
+            "source_output_name": "gl_chain",
+            "dest_node": 482,
+            "dest_node_name": "gl_translate",
+            "dest_input_index": 0,
+            "dest_input_name": "gl chain in"
         },
         "2": {
-            "source_node": 318,
+            "source_node": 447,
+            "source_node_name": "int",
             "source_output_index": 0,
-            "dest_node": 368,
-            "dest_input_index": 0
+            "source_output_name": "int out",
+            "dest_node": 246,
+            "dest_node_name": "take",
+            "dest_input_index": 1,
+            "dest_input_name": "speed"
         },
         "3": {
-            "source_node": 336,
+            "source_node": 482,
+            "source_node_name": "gl_translate",
             "source_output_index": 0,
-            "dest_node": 233,
-            "dest_input_index": 1
+            "source_output_name": "gl chain out",
+            "dest_node": 322,
+            "dest_node_name": "gl_body",
+            "dest_input_index": 1,
+            "dest_input_name": "gl chain"
         },
         "4": {
-            "source_node": 368,
+            "source_node": 524,
+            "source_node_name": "active_joints",
             "source_output_index": 0,
-            "dest_node": 286,
-            "dest_input_index": 1
-        },
-        "5": {
-            "source_node": 485,
-            "source_output_index": 0,
-            "dest_node": 286,
-            "dest_input_index": 0
-        },
-        "6": {
-            "source_node": 506,
-            "source_output_index": 5,
-            "dest_node": 678,
-            "dest_input_index": 0
+            "source_output_name": "active joint quats out",
+            "dest_node": 322,
+            "dest_node_name": "gl_body",
+            "dest_input_index": 0,
+            "dest_input_name": "pose in"
         }
     }
 }

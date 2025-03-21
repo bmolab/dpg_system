@@ -4,8 +4,9 @@ from dpg_system.node import Node
 from dpg_system.conversion_utils import *
 import platform
 
-def register_display_nodes():
+def register_monitor_nodes():
     Node.app.register_node('display_info', DisplayInfoNode.factory)
+
 
 class DisplayData:
     def __init__(self):
