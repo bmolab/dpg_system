@@ -1391,6 +1391,7 @@ class NumpyEditNode(Node):
                     source_size = value_array.shape[0]
                     if source_size == 1 and len(value_array.shape) > 1:
                         source_size = value_array.shape[1]
+                        value_array = value_array[0]
                     if target_size == source_size:
                         self.edited_array[dim_list_now[0]:dim_list_now[1]] = value_array
                     elif source_size == 1:

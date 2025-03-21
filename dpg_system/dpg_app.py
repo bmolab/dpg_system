@@ -10,10 +10,8 @@ import json
 import os
 import platform as platform_
 import traceback
-
 import threading
 import _thread
-# make new tab pop up when new file is opened
 
 import dpg_system.basic_nodes as basic_nodes
 import dpg_system.math_nodes as math_nodes
@@ -69,8 +67,6 @@ to_be_imported = []
 def import_core(file_name):
     try:
         name = 'dpg_system.' + file_name
-        print(file_name, end=' ')
-        # import_module(name)
         to_be_imported.append(file_name)
         imported.append(file_name)
     except ModuleNotFoundError:
@@ -104,15 +100,12 @@ for import_name in to_be_imported:
     except ModuleNotFoundError:
         print('No module named ' + import_name)
 
-
 def widget_active(source, data, user_data):
     pass
-
 
 def widget_hovered(source, data, user_data):
     if dpg.does_item_exist(data):
         Node.app.hovered_item = dpg.get_item_user_data(data)
-
 
 def widget_activated(source, data, user_data):
     if dpg.does_item_exist(data):
@@ -125,7 +118,6 @@ def widget_activated(source, data, user_data):
         # print("activated", Node.app.active_widget)
     else:
         Node.app.active_widget = -1
-
 
 def widget_deactive(source, data, user_data):
     if dpg.does_item_exist(data):
@@ -152,7 +144,6 @@ def widget_deactive(source, data, user_data):
     Node.app.active_widget = -1
     Node.app.focussed_widget = -1
 
-
 def widget_edited(source, data, user_data):
     node = None
     if user_data is not None:
@@ -172,7 +163,6 @@ def widget_edited(source, data, user_data):
                     # print("edited", data)
                     node.on_edit(item)
 
-
 def widget_deactive_after_edit(source, data, user_data):
     if user_data is not None:
         user_data.execute()
@@ -185,15 +175,12 @@ def widget_deactive_after_edit(source, data, user_data):
     Node.app.active_widget = -1
     Node.app.focussed_widget = -1
 
-
 def widget_focus(source, data, user_data):
     Node.app.focussed_widget = data
-
 
 def widget_clicked(source, data, user_data):
     # print('widget clicked', data)
     pass
-
 
 load_path = None
 save_path = None
