@@ -8,8 +8,6 @@ from typing import List, Any, Callable, Union, Tuple
 from fuzzywuzzy import fuzz
 import sys
 
-
-
 class NodeOutput:
     _pin_active_theme = None
     _pin_active_and_connected_theme = None
@@ -905,6 +903,7 @@ class NodeInput:
 
         self.widget = None
         self.widget_has_trigger = trigger_button
+        self.trigger_widget = None
         if widget_type:
             self.widget = PropertyWidget(label, uuid=widget_uuid, node=node, widget_type=widget_type, width=widget_width, triggers_execution=triggers_execution, trigger_button=trigger_button, default_value=default_value, min=min, max=max)
             self.widget.input = self
@@ -961,7 +960,15 @@ class NodeInput:
 
         with self.node_attribute:
             if self.widget is None:
-                self.label_uuid = dpg.add_text(self._label)
+                with dpg.group(horizontal=self.widget_has_trigger):
+                    if self.widget_has_trigger:
+                        self.trigger_widget = dpg.add_button(label='', width=14, callback=self.trigger)
+                        with dpg.theme() as item_theme:
+                            with dpg.theme_component(dpg.mvAll):
+                                dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
+                        dpg.bind_item_theme(self.trigger_widget, item_theme)
+                    self.label_uuid = dpg.add_text(self._label)
+
             else:
                 if self.callback:
                     self.widget.callback = self.callback

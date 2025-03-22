@@ -1483,7 +1483,7 @@ class App:
                 return
         self.active_widget = 1
         self.fresh_patcher = fresh_patcher
-        with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800, callback=load_patches_callback, cancel_callback=cancel_callback, tag="file_dialog_id"):
+        with dpg.file_dialog(modal=True, default_path='patches', directory_selector=False, show=True, height=400, width=800, callback=load_patches_callback, cancel_callback=cancel_callback, tag="file_dialog_id"):
             dpg.add_file_extension(".json")
 
 
@@ -1495,7 +1495,7 @@ class App:
             dpg.add_file_extension(".json")
 
     def save_as_nodes(self):
-        self.save('patches/')
+        self.save('patches')
 
     def save_internal(self, path):
         self.save_patch(path)
@@ -1569,7 +1569,7 @@ class App:
             for i in open(filename, "rt"):
                 self.get_current_editor().save(filename)
 
-    def save(self, path='', default_directory='/patches'):
+    def save(self, path='', default_directory='patches'):
         self.active_widget = 1
         with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, callback=save_file_callback, cancel_callback=cancel_callback, default_path=default_directory, tag="file_dialog_id"):
             dpg.add_file_extension(".json")

@@ -481,7 +481,7 @@ class DateTimeNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.input = self.add_input('get time', widget_type='button', triggers_execution=True)
+        self.input = self.add_input('get time', trigger_button=True, triggers_execution=True)
         self.hours_output = self.add_output('hours')
         self.minutes_output = self.add_output('minutes')
         self.seconds_output = self.add_output('seconds')
@@ -629,7 +629,7 @@ class CounterNode(Node):
         self.max_count = self.arg_as_int(default_value=255, index=0)
         self.step = self.arg_as_int(default_value=1, index=1)
 
-        self.input = self.add_input("input", triggers_execution=True)
+        self.input = self.add_input("input", triggers_execution=True, trigger_button=True)
         self.input.bang_repeats_previous = False
         self.max_input = self.add_int_input('count', widget_type='drag_int', default_value=self.max_count, callback=self.update_max_count_from_widget)
         self.step_input = self.add_int_input('step', widget_type='drag_int', default_value=self.step, callback=self.update_step_from_widget)
@@ -1511,7 +1511,6 @@ class DecodeToNode(Node):
                 self.combined_output.send(self.triggers[in_data])
 
 
-
 class CombineNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -1810,17 +1809,6 @@ class CombineFIFONode(Node):
             self.string_output.send(output_string)
             self.lock.release()
 
-'''type : TypeNode
-    description:
-        reports type of received input
-
-    inputs:
-        in: <anything>
-
-    properties:
-        type : <str> : shows type of the input
-            float, int, bang, string, list[length], bool, array[shape], tensor[shape], numpy.double, numpy.float32, numpy.int64, numpy.bool_
-'''
 
 '''info : TypeNode
     description:
@@ -1837,7 +1825,6 @@ class CombineFIFONode(Node):
             array: array[shape] dtype
             tensor: tensor[shape] dtype device requires_grad
 '''
-
 
 class TypeNode(Node):
     @staticmethod
@@ -2122,38 +2109,6 @@ class StringNode(Node):
 
     def execute(self):
         self.output.send(self.input())
-
-
-'''list : ListNode
-    description:
-        convert input into a list
-
-    inputs:
-        in: anything (triggers)
-
-    outputs:
-        string out:
-            any input is converted into a list and output
-            for scalar inputs, a single element list is output
-'''
-
-
-# class ListNode(Node):
-#     @staticmethod
-#     def factory(name, data, args=None):
-#         node = ListNode(name, data, args)
-#         return node
-#
-#     def __init__(self, label: str, data, args):
-#         super().__init__(label, data, args)
-#
-#         self.input = self.add_input("in", triggers_execution=True)
-#         self.output = self.add_output('list out')
-#
-#     def execute(self):
-#         in_data = self.input()
-#         out_list = any_to_list(in_data)
-#         self.output.send(out_list)
 
 
 '''prepend : PrependNode
@@ -3290,7 +3245,7 @@ class StringBuilder(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.received_sentence = ''
-        self.trigger_input = self.add_input('issue text', triggers_execution=True)
+        self.trigger_input = self.add_input('issue text', triggers_execution=True, trigger_button=True)
         self.input = self.add_input('string in', triggers_execution=True)
         self.sentence_output = self.add_output('text out')
 
