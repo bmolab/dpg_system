@@ -1,7 +1,9 @@
 import re
 
+name = 'untitled_nodes.py'
+
 # test with basic nodes
-with open('wavelet_nodes.py', 'r') as file:
+with open(name, 'r') as file:
     script_content = file.read()
 
 class_pattern = r"class\s+(\w+)\([^)]*\):\s*.*?(?=\s*class\s+(\w+)\([^)]*\)|\Z)"
@@ -16,7 +18,7 @@ option_pattern = r"self\.add_option\('([^']*)'"
 output_pattern = r"self\.add_output\('([^']*)'"
 
 
-output_filename = 'wavelet_nodes_info.txt'
+output_filename = name.split('.')[0] + '_info.text'
 
 with open(output_filename, 'w') as output_file:
     for match in node_matches:

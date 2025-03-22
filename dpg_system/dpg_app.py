@@ -59,8 +59,6 @@ optional_import = [
     'monitor_nodes'
 ]
 
-print('Options active:', end=' ')
-
 imported = []
 to_be_imported = []
 
@@ -330,7 +328,6 @@ class App:
 
     def load_recent_patchers_list(self):
         self.get_local_project_name()
-        print(self.project_name)
         if os.path.exists(self.project_name + '_recent_patchers.json'):
             with open(self.project_name + '_recent_patchers.json', 'r') as f:
                 self.recent_files = json.load(f)
@@ -1498,7 +1495,7 @@ class App:
             dpg.add_file_extension(".json")
 
     def save_as_nodes(self):
-        self.save('')
+        self.save('patches/')
 
     def save_internal(self, path):
         self.save_patch(path)
@@ -1572,7 +1569,7 @@ class App:
             for i in open(filename, "rt"):
                 self.get_current_editor().save(filename)
 
-    def save(self, path='', default_directory=''):
+    def save(self, path='', default_directory='/patches'):
         self.active_widget = 1
         with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, callback=save_file_callback, cancel_callback=cancel_callback, default_path=default_directory, tag="file_dialog_id"):
             dpg.add_file_extension(".json")
@@ -1804,8 +1801,7 @@ class App:
 
                 if self.do_exit:
                     _thread.interrupt_main()
-                # else:
-                #     print('p', end='')
+
             except Exception as exc_:
                 print('run_loop exception:')
                 traceback.print_exception(exc_)

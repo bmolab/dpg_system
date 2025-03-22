@@ -481,7 +481,7 @@ class DateTimeNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.input = self.add_input('get time', triggers_execution=True)
+        self.input = self.add_input('get time', widget_type='button', triggers_execution=True)
         self.hours_output = self.add_output('hours')
         self.minutes_output = self.add_output('minutes')
         self.seconds_output = self.add_output('seconds')
@@ -2027,7 +2027,9 @@ class LengthNode(Node):
         if self.input.fresh_input:
             data = self.input()
             t = type(data)
-            if t in [list, tuple]:
+            if t is str:
+                self.output.send(len(data))
+            elif t in [list, tuple]:
                 self.output.send(len(data))
             elif t == np.ndarray:
                 self.output.send(data.size)
