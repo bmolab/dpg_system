@@ -897,7 +897,7 @@ class ValueNode(Node):
             self.height_option = self.add_option('height', widget_type='drag_int', default_value=200,
                                                 callback=self.options_changed)
 
-        if widget_type in ['drag_float', 'slider_float', 'drag_int', 'knob_int', 'input_int']:
+        if widget_type in ['drag_float', 'slider_float', 'drag_int', 'slider_int', 'knob_int', 'knob_float', 'input_int', 'input_float']:
             self.format_property = self.add_option('format', widget_type='text_input', default_value=self.format, callback=self.options_changed)
         if widget_type != 'knob':
             self.large_text_option = self.add_option('large_font', widget_type='checkbox', default_value=False, callback=self.large_font_changed)
