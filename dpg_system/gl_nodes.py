@@ -31,6 +31,7 @@ def register_gl_nodes():
     Node.app.register_node('gl_line_array', GLNumpyLines.factory)
     Node.app.register_node('gl_color', GLColorNode.factory)
     Node.app.register_node('gl_enable', GLEnableNode.factory)
+    Node.app.register_node('gl_axis_angle_rotate', GLAxisAngleRotateNode.factory)
 
 
 class GLCommandParser:
@@ -821,8 +822,8 @@ class GLSphereNode(GLQuadricNode):
         self.size = self.add_input('size', widget_type='drag_float', default_value=size)
         # self.gl_output = self.add_output('gl chain out')
 
-        self.slices = self.add_option('slices', widget_type='drag_int', default_value=slices)
-        self.stacks = self.add_option('stacks', widget_type='drag_int', default_value=stacks)
+        self.slices = self.add_input('slices', widget_type='drag_int', default_value=slices)
+        self.stacks = self.add_input('stacks', widget_type='drag_int', default_value=stacks)
         self.add_shading_option()
 
     def set_size(self, scaler):
@@ -850,12 +851,12 @@ class GLDiskNode(GLQuadricNode):
         rings = self.arg_as_int(index=3, default_value=1)
 
         # self.gl_input = self.add_input('gl chain in', triggers_execution=True)
-        self.outer_radius = self.add_property('outer radius', widget_type='drag_float', default_value=outer_radius)
+        self.outer_radius = self.add_input('outer radius', widget_type='drag_float', default_value=outer_radius)
         # self.gl_output = self.add_output('gl chain out')
 
-        self.inner_radius = self.add_option('inner radius', widget_type='drag_float', default_value=inner_radius)
-        self.slices = self.add_option('slices', widget_type='drag_int', default_value=slices)
-        self.rings = self.add_option('rings', widget_type='drag_int', default_value=rings)
+        self.inner_radius = self.add_input('inner radius', widget_type='drag_float', default_value=inner_radius)
+        self.slices = self.add_input('slices', widget_type='drag_int', default_value=slices)
+        self.rings = self.add_input('rings', widget_type='drag_int', default_value=rings)
         self.add_shading_option()
 
     def set_size(self, scaler):
@@ -885,15 +886,15 @@ class GLPartialDiskNode(GLQuadricNode):
         sweep_angle = self.arg_as_float(index=5, default_value=90)
 
         # self.gl_input = self.add_input('gl chain in', triggers_execution=True)
-        self.outer_radius = self.add_property('outer radius', widget_type='drag_float', default_value=outer_radius)
+        self.outer_radius = self.add_input('outer radius', widget_type='drag_float', default_value=outer_radius)
         # self.gl_output = self.add_output('gl chain out')
 
-        self.inner_radius = self.add_option('inner radius', widget_type='drag_float', default_value=inner_radius)
-        self.slices = self.add_option('slices', widget_type='drag_int', default_value=slices)
-        self.rings = self.add_option('rings', widget_type='drag_int', default_value=rings)
-        self.start_angle = self.add_option('start angle', widget_type='drag_float', default_value=start_angle)
+        self.inner_radius = self.add_input('inner radius', widget_type='drag_float', default_value=inner_radius)
+        self.slices = self.add_input('slices', widget_type='drag_int', default_value=slices)
+        self.rings = self.add_input('rings', widget_type='drag_int', default_value=rings)
+        self.start_angle = self.add_input('start angle', widget_type='drag_float', default_value=start_angle)
         self.start_angle.widget.speed = 1
-        self.sweep_angle = self.add_option('sweep angle', widget_type='drag_float', default_value=sweep_angle)
+        self.sweep_angle = self.add_input('sweep angle', widget_type='drag_float', default_value=sweep_angle)
         self.sweep_angle.widget.speed = 1
         self.add_shading_option()
 
@@ -925,11 +926,11 @@ class GLCylinderNode(GLQuadricNode):
         # self.gl_input = self.add_input('gl chain in', triggers_execution=True)
         # self.gl_output = self.add_output('gl chain out')
 
-        self.base_radius = self.add_option('base radius', widget_type='drag_float', default_value=base_radius)
-        self.top_radius = self.add_option('top radius', widget_type='drag_float', default_value=top_radius)
-        self.height = self.add_option('height', widget_type='drag_float', default_value=height)
-        self.slices = self.add_option('slices', widget_type='drag_int', default_value=slices)
-        self.stacks = self.add_option('stacks', widget_type='drag_int', default_value=stacks)
+        self.base_radius = self.add_input('base radius', widget_type='drag_float', default_value=base_radius)
+        self.top_radius = self.add_input('top radius', widget_type='drag_float', default_value=top_radius)
+        self.height = self.add_input('height', widget_type='drag_float', default_value=height)
+        self.slices = self.add_input('slices', widget_type='drag_int', default_value=slices)
+        self.stacks = self.add_input('stacks', widget_type='drag_int', default_value=stacks)
         self.add_shading_option()
 
     def set_size(self, scaler):
@@ -1018,6 +1019,64 @@ class GLQuaternionRotateNode(GLNode):
             transform = quaternion_to_R3_rotation(rotation_q)
             transform = self.transform_to_opengl(transform)
             glMultMatrixf(transform)
+
+
+class GLAxisAngleRotateNode(GLNode):
+    @staticmethod
+    def factory(node_name, data, args=None):
+        node = GLAxisAngleRotateNode(node_name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        super().initialize(args)
+        self.show_axis = False
+        self.restore_matrix = None
+        self.rotvec_input = self.add_input('rotation vector')
+
+    def remember_state(self):
+        self.restore_matrix = glGetInteger(GL_MATRIX_MODE)
+        gl.glPushMatrix()
+
+    def restore_state(self):
+        gl.glPopMatrix()
+        glMatrixMode(self.restore_matrix)
+
+    def transform_to_opengl(self, transform):
+        if transform is not None and len(transform) == 16:
+            # Transpose matrix for OpenGL column-major order.
+            for i in range(0, 4):
+                for j in range((i + 1), 4):
+                    temp = transform[4 * i + j]
+                    transform[4 * i + j] = transform[4 * j + i]
+                    transform[4 * j + i] = temp
+        return transform
+
+    def draw(self):
+        input_ = self.rotvec_input()
+        t = type(input_)
+        if t == list:
+            input_ = np.array(input_)
+            t = np.ndarray
+        if t == np.ndarray:
+            axis = input_[:3]
+            up_vector = np.array([0.0, 0.0, 1.0])
+
+            v = np.cross(axis, up_vector)
+            c = np.dot(axis, up_vector)
+            k = 1.0 / (1.0 + c)
+            alignment_matrix = np.array([v[0] * v[0] * k + c, v[1] * v[1] * k - v[2], v[2] * v[0] * k + v[1], 0.0,
+                                         v[0] * v[1] * k + v[2], v[1] * v[1] * k + c, v[2] * v[1] * k - v[0], 0.0,
+                                         v[0] * v[2] * k - v[1], v[1] * v[2] * k + v[0], v[2] * v[2] * k + c, 0.0,
+                                         0.0, 0.0, 0.0, 1.0])
+
+            alignment_matrix.reshape((4, 4))
+
+            glMatrixMode(GL_MODELVIEW)
+            glMultMatrixf(alignment_matrix)
+
 
 
 class GLTransformNode(GLNode):

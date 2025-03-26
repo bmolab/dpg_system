@@ -693,6 +693,7 @@ class RangerNode(Node):
         self.inMax = 1.0
         self.outMin = 0.0
         self.outMax = 1.0
+        self.clamp = True
         self.calibrating_min = math.inf
         self.calibrating_max = -math.inf
         self.calibrating = False
@@ -711,6 +712,8 @@ class RangerNode(Node):
         self.in_max_input = self.add_input('input_max', widget_type='drag_float', default_value=self.inMax)
         self.out_min_input = self.add_input('output_min', widget_type='drag_float', default_value=self.outMin)
         self.out_max_input = self.add_input('output_max', widget_type='drag_float', default_value=self.outMax)
+        self.clamp_input = self.add_input('clamp', widget_type='checkbox', default_value=True)
+
         self.calibrate_input = self.add_input('calibrate', widget_type='checkbox', default_value=self.calibrating)
         self.output = self.add_output('rescaled')
 
@@ -749,6 +752,11 @@ class RangerNode(Node):
                     range = 1e-5
                 out = (in_value - self.inMin) / range
                 out = (self.outMax - self.outMin) * out + self.outMin
+                if self.clamp_input():
+                    if out > self.outMax:
+                        out = self.outMax
+                    elif out < self.outMin:
+                        out = self.outMin
                 self.output.send(out)
             elif t == list:
                 inData = list_to_array(inData, validate=True)
@@ -768,6 +776,8 @@ class RangerNode(Node):
                     range = 1e-5
                 out = (in_value - self.inMin) / range
                 out = (self.outMax - self.outMin) * out + self.outMin
+                if self.clamp_input():
+                    out = out.clip(self.outMin, self.outMax)
                 self.output.send(out)
             if self.app.torch_available and t == torch.Tensor:
                 if self.calibrating:
@@ -782,6 +792,8 @@ class RangerNode(Node):
                     range = 1e-5
                 out = (in_value - self.inMin) / range
                 out = (self.outMax - self.outMin) * out + self.outMin
+                if self.clamp_input():
+                    out = out.clamp(self.outMin, self.outMax)
                 self.output.send(out)
 
 

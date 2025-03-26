@@ -401,7 +401,7 @@ class MoCapGLBody(MoCapNode):
         self.joint_data_input = self.add_input('joint data')
 
         self.current_joint_output = self.add_output('current_joint_name')
-        self.current_joint_rotation_axis_output = self.add_output('current_joint_quaternion_axis')
+        self.current_joint_data_output = self.add_output('current_joint_data')
         self.current_joint_gl_output = self.add_output('current_joint_gl_chain')
 
         self.absolute_quats_input = self.add_option('absolute quats', widget_type='checkbox')
@@ -472,6 +472,11 @@ class MoCapGLBody(MoCapNode):
         self.limb_sizes_out.send(limb_sizes)
 
     def joint_callback(self, joint_index):
+        if joint_index >= t_ActiveJointCount:
+            return
+        if joint_index < 0:
+            return
+
         glPushMatrix()
 
         mode = self.joint_data_selection()
@@ -481,32 +486,42 @@ class MoCapGLBody(MoCapNode):
             if type(self.external_joint_data) is np.ndarray:
                 if self.external_joint_data.shape[0] == 20:
                     if joint_index < t_ActiveJointCount:
-                        self.current_joint_rotation_axis_output.send(self.external_joint_data[joint_index])
+                        self.current_joint_data_output.send(self.external_joint_data[joint_index])
                 elif self.external_joint_data.shape[0] == 1:
                     if self.external_joint_data.shape[1] == 20:
                         if joint_index < t_ActiveJointCount:
-                            self.current_joint_rotation_axis_output.send(self.external_joint_data[0][joint_index])
+                            self.current_joint_data_output.send(self.external_joint_data[0][joint_index])
             elif type(self.external_joint_data) is torch.Tensor:
                 if self.external_joint_data.shape[0] == 20:
                     if joint_index < t_ActiveJointCount:
-                        self.current_joint_rotation_axis_output.send(self.external_joint_data[joint_index])
+                        self.current_joint_data_output.send(self.external_joint_data[joint_index])
                 elif self.external_joint_data.shape[0] == 1:
                     if self.external_joint_data.shape[1] == 20:
                         if joint_index < t_ActiveJointCount:
-                            self.current_joint_rotation_axis_output.send(self.external_joint_data[0][joint_index])
+                            self.current_joint_data_output.send(self.external_joint_data[0][joint_index])
             elif type(self.external_joint_data) is list:
                 if len(self.external_joint_data) == 20:
                     if joint_index < t_ActiveJointCount:
-                        self.current_joint_rotation_axis_output.send(self.external_joint_data[joint_index])
+                        self.current_joint_data_output.send(self.external_joint_data[joint_index])
                 elif len(self.external_joint_data) == 1:
                     if len(self.external_joint_data[0]) == 20:
                         if joint_index < t_ActiveJointCount:
-                            self.current_joint_rotation_axis_output.send(self.external_joint_data[0][joint_index])
+                            self.current_joint_data_output.send(self.external_joint_data[0][joint_index])
         elif mode == 'diff_axis-angle':
-            rotation = np.array(self.body.rotationAxis[joint_index])
-            rotation = rotation / (np.linalg.norm(rotation) + 1e-6) * self.body.quaternionDistance[joint_index] * self.joint_motion_scale()
-            # self.current_joint_quaternion_output.send(self.body.quaternionDistance[joint_index])
-            self.current_joint_rotation_axis_output.send(rotation)
+            if joint_index in [t_LeftShoulderBladeBase, t_LeftShoulder, t_LeftElbow, t_LeftWrist, t_RightShoulderBladeBase, t_LeftKnuckle, t_RightShoulder, t_RightElbow, t_RightWrist, t_RightKnuckle]:
+                glRotate(90, 0.0, 1.0, 0.0)
+            else:
+                glRotate(90, 1.0, 0.0, 0.0)
+            glRotate(90, 0.0, 1.0, 0.0)
+            if self.body.normalized_axes is not None:
+                current_axis = self.body.normalized_axes[0, joint_index]
+                if self.body.magnitudes is not None:
+                    current_magnitude = self.body.magnitudes[0, joint_index]
+                    output_value = np.ndarray(shape=(4))
+                    output_value[:3] = current_axis
+                    output_value[3] = current_magnitude
+                    # self.current_joint_quaternion_output.send(self.body.quaternionDistance[joint_index])
+                    self.current_joint_data_output.send(output_value)
         elif mode == 'diff_quaternion':
             if joint_index in [t_LeftShoulderBladeBase, t_LeftShoulder, t_LeftElbow, t_LeftWrist, t_RightShoulderBladeBase, t_LeftKnuckle, t_RightShoulder, t_RightElbow, t_RightWrist, t_RightKnuckle]:
                 glRotate(90, 0.0, 1.0, 0.0)
@@ -514,12 +529,9 @@ class MoCapGLBody(MoCapNode):
                 glRotate(90, 1.0, 0.0, 0.0)
             glRotate(90, 0.0, 1.0, 0.0)
 
-            if type(self.body.quaternionDiff[joint_index]) == list:
-                self.current_joint_rotation_axis_output.send(self.body.quaternionDiff[joint_index])
-            else:
-                self.current_joint_rotation_axis_output.send(self.body.quaternionDiff[joint_index].elements)
-        if joint_index < t_ActiveJointCount:
-            self.current_joint_gl_output.send('draw')
+            value = self.body.magnitudes[0, joint_index]
+            self.current_joint_data_output.send(value)
+        self.current_joint_gl_output.send('draw')
         glPopMatrix()
 
     def execute(self):

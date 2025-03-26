@@ -431,14 +431,15 @@ class BodyDataBase:
                 # self.draw_block(joint_index, (widths[0], length, widths[1]))
                 self.draw_block(joint_index, joint_data)
 
+            if orientation:
+                if not show_disks:
+                    self.node.joint_callback(prev_limb_index)
             glPopMatrix()
 
         joint_data.translate_along_bone()
 
         # glTranslatef(joint_data.bone_translation[0], joint_data.bone_translation[1], joint_data.bone_translation[2])
-        if orientation:
-            if not show_disks:
-                self.node.joint_callback(linear_index)
+
         glMultMatrixf(transform)
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, self.base_material)
 
@@ -721,11 +722,11 @@ class BodyDataBase:
                     transform[4 * j + i] = temp
         return transform
 
-    def show_orientation(self, joint_index, next_limb_index):
+    def show_orientation(self, joint_index, previous_limb_index):
         glPushMatrix()
         joint_data = self.joints[joint_index]
 
-        linear_index = next_limb_index
+        linear_index = previous_limb_index
         if -1 < linear_index < t_ActiveJointCount:
             if self.joint_display == 'disk':
                 self.draw_rotation_disk(linear_index, joint_data)
@@ -748,6 +749,7 @@ class BodyData(BodyDataBase):
         self.axes = None
         self.magnitudes = None
         self.normalized_axes = None
+        self.diff_angles = None
         self.positions = []
         self.quaternions = []
         self.quaternionDistance = []
@@ -861,6 +863,7 @@ class BodyData(BodyDataBase):
         angles = np.linalg.norm(self.axes, axis=2)
         self.magnitudes = self.quaternion_distances(self.smoothed_quaternions_a, self.smoothed_quaternions_b)
         self.normalized_axes = self.axes / np.expand_dims(angles, axis=-1)
+        self.diff_angles = angles
 
     def clear_captured_pose(self):
         self.captured_quaternions = None
@@ -917,7 +920,7 @@ class BodyData(BodyDataBase):
             up_vector = np.array([0.0, 0.0, 1.0])
             d = self.magnitudes[self.current_body, limb_index] * self.joint_motion_scale   #self.quaternion_distance_display_scale
             if d > 0.00001:
-                axis = self.normalized_axes[self.current_body, limb_index]
+    #            axis = self.normalized_axes[self.current_body, limb_index]
     #            weight = joint_data.mass[0] * abs(axis[0]) + joint_data.mass[2] * abs(axis[2]) + joint_data.mass[1] * abs(
     #                axis[1])
                 self.joint_disk_material.diffuse[3] = self.joint_disk_alpha
