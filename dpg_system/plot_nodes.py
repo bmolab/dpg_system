@@ -416,20 +416,29 @@ class PlotNode(BasePlotNode):
                         elif len(data.shape) == 0:
                             self.y_data.update(np.expand_dims(data, axis=0))
                     elif self.update_style == 'input is multi-channel sample':
-                        rows = data.size
+                        if len(data.shape) == 2 and data.shape[1] > 1 and data.shape[0] > 1:
+                            rows = data.shape[0]
+                            self.pending_breadth = rows
+                            self.pending_sample_count = data.shape[1]
+                        else:
+                            rows = data.size
                         if rows != self.rows:
                             self.rows = rows
                             self.pending_breadth = self.rows
+
                         if len(self.plot_data_tag) < self.rows:
                             for i in range(len(self.plot_data_tag), rows):
                                 self.plot_data_tag.append(dpg.generate_uuid())
-                        if self.rows != self.y_data.breadth:
+                        if self.rows != self.y_data.breadth or self.sample_count != self.pending_sample_count:
                             self.lock.release()
                             return
 
                         self.y_data.set_update_style(self.update_style)
+                        if len(data.shape) == 2 and data.shape[1] > 1 and data.shape[0] > 1:
+                            ii = data.reshape((rows, self.sample_count))
+                        else:
+                            ii = data.reshape((rows, 1))
 
-                        ii = data.reshape((rows, 1))
                         self.y_data.update(ii)
                     elif self.update_style == 'buffer holds one sample of input' and len(data.shape) > 0:
                         if len(data.shape) == 1:

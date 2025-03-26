@@ -278,7 +278,10 @@ class RollingBuffer:
                         if len(incoming.shape) == 1:
                             self.buffer[self.write_pos, :] = self.buffer[self.write_pos + self.sample_count, :] = incoming[:]
                         else:
-                            self.buffer[self.write_pos, :] = self.buffer[self.write_pos + self.sample_count, :] = incoming[0, :]
+                            if incoming.shape[0] == self.sample_count:
+                                self.buffer[:self.sample_count, :] = self.buffer[self.sample_count:, :] = incoming[:, :]
+                            else:
+                                self.buffer[self.write_pos, :] = self.buffer[self.write_pos + self.sample_count, :] = incoming[0, :]
 
                         self.write_pos += 1
                         if self.write_pos >= self.sample_count:
@@ -290,11 +293,17 @@ class RollingBuffer:
                     if self.lock.acquire(blocking=False):
                         if len(incoming.shape) == 1:
                             self.buffer[:, self.write_pos] = self.buffer[:, self.write_pos + self.sample_count] = incoming[:]
+                            self.write_pos += 1
+                            if self.write_pos >= self.sample_count:
+                                self.write_pos = 0
                         else:
-                            self.buffer[:, self.write_pos] = self.buffer[:, self.write_pos + self.sample_count] = incoming[:, 0]
-                        self.write_pos += 1
-                        if self.write_pos >= self.sample_count:
-                            self.write_pos = 0
+                            if incoming.shape[1] == self.sample_count:
+                                self.buffer[:, :self.sample_count] = self.buffer[:, self.sample_count:] = incoming[:, :]
+                            else:
+                                self.buffer[:, self.write_pos] = self.buffer[:, self.write_pos + self.sample_count] = incoming[:, 0]
+                                self.write_pos += 1
+                                if self.write_pos >= self.sample_count:
+                                    self.write_pos = 0
                         self.lock.release()
 
             return True
