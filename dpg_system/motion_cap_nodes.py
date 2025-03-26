@@ -413,7 +413,10 @@ class MoCapGLBody(MoCapNode):
         self.joint_data_selection = self.add_option('joint data type', widget_type='combo', default_value='diff_axis-angle')
         self.joint_data_selection.widget.combo_items = ['diff_quaternion', 'diff_axis-angle']
         self.joint_motion_scale = self.add_option('joint motion scale', widget_type='drag_float', default_value=1)
-        self.diff_quat_smoothing = self.add_option('joint motion smoothing', widget_type='drag_float', default_value=0.8, max=1.0, min=0.0)
+        self.diff_quat_smoothing_A = self.add_option('joint motion smoothing a', widget_type='drag_float', default_value=0.8, max=1.0, min=0.0)
+        self.diff_quat_smoothing_B = self.add_option('joint motion smoothing b', widget_type='drag_float',
+                                                   default_value=0.9, max=1.0, min=0.0)
+
         self.joint_disk_alpha = self.add_option('joint motion alpha', widget_type='drag_float', default_value=0.5, max=1.0, min=0.0)
         self.body_color_id = self.add_option('colour id', widget_type='input_int', default_value=0)
         self.limb_sizes_out = self.add_output('limb_sizes')
@@ -471,66 +474,66 @@ class MoCapGLBody(MoCapNode):
             limb_sizes[joint.name] = joint.dims
         self.limb_sizes_out.send(limb_sizes)
 
-    def joint_callback(self, joint_index):
-        if joint_index >= t_ActiveJointCount:
+    def joint_callback(self, joint_index, previous_limb_index):
+        if previous_limb_index >= t_ActiveJointCount:
             return
-        if joint_index < 0:
+        if previous_limb_index < 0:
             return
 
         glPushMatrix()
 
         mode = self.joint_data_selection()
         # joint_name = joint_index_to_name[joint_index]
-        self.current_joint_output.send(joint_index)
+        self.current_joint_output.send(previous_limb_index)
         if self.external_joint_data is not None:
             if type(self.external_joint_data) is np.ndarray:
                 if self.external_joint_data.shape[0] == 20:
-                    if joint_index < t_ActiveJointCount:
-                        self.current_joint_data_output.send(self.external_joint_data[joint_index])
+                    if previous_limb_index < t_ActiveJointCount:
+                        self.current_joint_data_output.send(self.external_joint_data[previous_limb_index])
                 elif self.external_joint_data.shape[0] == 1:
                     if self.external_joint_data.shape[1] == 20:
-                        if joint_index < t_ActiveJointCount:
-                            self.current_joint_data_output.send(self.external_joint_data[0][joint_index])
+                        if previous_limb_index < t_ActiveJointCount:
+                            self.current_joint_data_output.send(self.external_joint_data[0][previous_limb_index])
             elif type(self.external_joint_data) is torch.Tensor:
                 if self.external_joint_data.shape[0] == 20:
-                    if joint_index < t_ActiveJointCount:
-                        self.current_joint_data_output.send(self.external_joint_data[joint_index])
+                    if previous_limb_index < t_ActiveJointCount:
+                        self.current_joint_data_output.send(self.external_joint_data[previous_limb_index])
                 elif self.external_joint_data.shape[0] == 1:
                     if self.external_joint_data.shape[1] == 20:
-                        if joint_index < t_ActiveJointCount:
-                            self.current_joint_data_output.send(self.external_joint_data[0][joint_index])
+                        if previous_limb_index < t_ActiveJointCount:
+                            self.current_joint_data_output.send(self.external_joint_data[0][previous_limb_index])
             elif type(self.external_joint_data) is list:
                 if len(self.external_joint_data) == 20:
-                    if joint_index < t_ActiveJointCount:
-                        self.current_joint_data_output.send(self.external_joint_data[joint_index])
+                    if previous_limb_index < t_ActiveJointCount:
+                        self.current_joint_data_output.send(self.external_joint_data[previous_limb_index])
                 elif len(self.external_joint_data) == 1:
                     if len(self.external_joint_data[0]) == 20:
-                        if joint_index < t_ActiveJointCount:
-                            self.current_joint_data_output.send(self.external_joint_data[0][joint_index])
+                        if previous_limb_index < t_ActiveJointCount:
+                            self.current_joint_data_output.send(self.external_joint_data[0][previous_limb_index])
         elif mode == 'diff_axis-angle':
-            if joint_index in [t_LeftShoulderBladeBase, t_LeftShoulder, t_LeftElbow, t_LeftWrist, t_RightShoulderBladeBase, t_LeftKnuckle, t_RightShoulder, t_RightElbow, t_RightWrist, t_RightKnuckle]:
-                glRotate(90, 0.0, 1.0, 0.0)
-            else:
-                glRotate(90, 1.0, 0.0, 0.0)
-            glRotate(90, 0.0, 1.0, 0.0)
+            # if previous_limb_index in [t_LeftShoulderBladeBase, t_LeftShoulder, t_LeftElbow, t_LeftWrist, t_RightShoulderBladeBase, t_LeftKnuckle, t_RightShoulder, t_RightElbow, t_RightWrist, t_RightKnuckle]:
+            #     glRotate(90, 0.0, 1.0, 0.0)
+            # else:
+            #     glRotate(90, 1.0, 0.0, 0.0)
+            # glRotate(90, 0.0, 1.0, 0.0)
             if self.body.normalized_axes is not None:
-                current_axis = self.body.normalized_axes[0, joint_index]
+                current_axis = self.body.normalized_axes[0, previous_limb_index]
                 if self.body.magnitudes is not None:
-                    current_magnitude = self.body.magnitudes[0, joint_index]
+                    current_magnitude = self.body.magnitudes[0, previous_limb_index]
                     output_value = np.ndarray(shape=(4))
                     output_value[:3] = current_axis
                     output_value[3] = current_magnitude
                     # self.current_joint_quaternion_output.send(self.body.quaternionDistance[joint_index])
                     self.current_joint_data_output.send(output_value)
         elif mode == 'diff_quaternion':
-            if joint_index in [t_LeftShoulderBladeBase, t_LeftShoulder, t_LeftElbow, t_LeftWrist, t_RightShoulderBladeBase, t_LeftKnuckle, t_RightShoulder, t_RightElbow, t_RightWrist, t_RightKnuckle]:
-                glRotate(90, 0.0, 1.0, 0.0)
-            else:
-                glRotate(90, 1.0, 0.0, 0.0)
-            glRotate(90, 0.0, 1.0, 0.0)
-
-            value = self.body.magnitudes[0, joint_index]
-            self.current_joint_data_output.send(value)
+            # if previous_limb_index in [t_LeftShoulderBladeBase, t_LeftShoulder, t_LeftElbow, t_LeftWrist, t_RightShoulderBladeBase, t_LeftKnuckle, t_RightShoulder, t_RightElbow, t_RightWrist, t_RightKnuckle]:
+            #     glRotate(90, 0.0, 1.0, 0.0)
+            # else:
+            #     glRotate(90, 1.0, 0.0, 0.0)
+            # glRotate(90, 0.0, 1.0, 0.0)
+            if self.body.magnitudes is not None:
+                value = self.body.magnitudes[0, previous_limb_index]
+                self.current_joint_data_output.send(value)
         self.current_joint_gl_output.send('draw')
         glPopMatrix()
 
@@ -581,9 +584,12 @@ class MoCapGLBody(MoCapNode):
             if t == str and incoming == 'draw':
                 self.body.joint_display = self.joint_indicator()
                 scale = self.joint_motion_scale()
-                smoothing = self.diff_quat_smoothing()
+                smoothing_a = self.diff_quat_smoothing_A()
+                smoothing_b = self.diff_quat_smoothing_B()
+
                 self.body.joint_motion_scale = scale
-                self.body.diffQuatSmoothingA = smoothing
+                self.body.diffQuatSmoothingA = smoothing_a
+                self.body.diffQuatSmoothingB = smoothing_b
                 self.body.joint_disk_alpha = self.joint_disk_alpha()
                 if self.absolute_quats_input():
                     self.body.draw_absolute_quats(self.show_joint_spheres(), self.skeleton_only())

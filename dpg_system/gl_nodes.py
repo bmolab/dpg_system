@@ -1073,7 +1073,6 @@ class GLAxisAngleRotateNode(GLNode):
                                          0.0, 0.0, 0.0, 1.0])
 
             alignment_matrix.reshape((4, 4))
-
             glMatrixMode(GL_MODELVIEW)
             glMultMatrixf(alignment_matrix)
 
