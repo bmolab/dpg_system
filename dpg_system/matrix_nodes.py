@@ -153,10 +153,16 @@ class RollingBuffer:
 
     def set_update_style(self, update_style):
         if update_style == 'buffer holds one sample of input':
+            if self.update_style == t_BufferFill:
+                return
             self.update_style = t_BufferFill
         elif update_style == 'input is stream of samples':
+            if self.update_style == t_BufferCircularHorizontal:
+                return
             self.update_style = t_BufferCircularHorizontal
         elif update_style == 'input is multi-channel sample':
+            if self.update_style == t_BufferCircularVertical:
+                return
             self.update_style = t_BufferCircularVertical
         self.allocate((self.sample_count, self.breadth), self.roll_along_x)
 
@@ -278,7 +284,6 @@ class RollingBuffer:
                         if self.write_pos >= self.sample_count:
                             self.write_pos = 0
                         self.lock.release()
-
                 else:
                     if len(self.buffer.shape) == 1 or self.buffer.shape[0] != incoming.shape[0]:
                         self.allocate((self.sample_count, incoming.shape[0]), self.roll_along_x)

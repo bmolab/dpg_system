@@ -28,6 +28,7 @@ to_import = [
     'math_nodes',
     'signal_nodes',
     'interface_nodes',
+    'plot_nodes',
     'quaternion_nodes',
     'numpy_nodes',
     'matrix_nodes',
