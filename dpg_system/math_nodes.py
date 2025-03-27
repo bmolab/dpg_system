@@ -45,6 +45,8 @@ def register_math_nodes():
     Node.app.register_node('decreasing', ComparisonAndPassNode.factory)
     Node.app.register_node('perm', ArithmeticNode.factory)
     Node.app.register_node('combination', ArithmeticNode.factory)
+    Node.app.register_node('continuous_rotation', ContinuousRotationNode.factory)
+
 
 
 class ArithmeticNode(Node):
@@ -724,3 +726,31 @@ class OpSingleTrigNode(Node):
             else:
                 return math.atan(a)
 
+class ContinuousRotationNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ContinuousRotationNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('rotation in', triggers_execution=True)
+        self.output = self.add_output('out')
+        self.previous = None
+
+    def execute(self):
+        rotation = self.input()
+        rot = any_to_array(rotation)
+        if self.previous is not None:
+            for index in range(len(rot)):
+                if rot[index] < self.previous[index]:
+                    over_rot = (self.previous[index] - rot[index] + 179) // 360 * 360
+                    print('over', over_rot)
+                    rot[index] += over_rot
+                elif rot[index] > self.previous[index]:
+                    under_rot = (rot[index] - self.previous[index] + 179) // 360 * 360
+                    print('under', under_rot)
+                    rot[index] -= under_rot
+        self.previous = rot.copy()
+        self.output.send(rot)

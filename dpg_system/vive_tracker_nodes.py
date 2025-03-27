@@ -6,7 +6,7 @@ import numpy as np
 
 def register_vive_tracker_nodes():
     Node.app.register_node('vive_tracker', ViveTrackerNode.factory)
-    Node.app.register_node('continuous_rotation', ContinuousRotationNode.factory)
+    # Node.app.register_node('continuous_rotation', ContinuousRotationNode.factory)
 
 class ViveTrackerNode(Node):
     open_vr = None
@@ -75,34 +75,7 @@ class ViveTrackerNode(Node):
 
 
 
-class ContinuousRotationNode(Node):
-    @staticmethod
-    def factory(name, data, args=None):
-        node = ContinuousRotationNode(name, data, args)
-        return node
 
-    def __init__(self, label: str, data, args):
-        super().__init__(label, data, args)
-
-        self.input = self.add_input('rotation in', triggers_execution=True)
-        self.output = self.add_output('out')
-        self.previous = None
-
-    def execute(self):
-        rotation = self.input()
-        rot = any_to_array(rotation)
-        if self.previous is not None:
-            for index in range(len(rot)):
-                if rot[index] < self.previous[index]:
-                    over_rot = (self.previous[index] - rot[index] + 179) // 360 * 360
-                    print('over', over_rot)
-                    rot[index] += over_rot
-                elif rot[index] > self.previous[index]:
-                    under_rot = (rot[index] - self.previous[index] + 179) // 360 * 360
-                    print('under', under_rot)
-                    rot[index] -= under_rot
-        self.previous = rot.copy()
-        self.output.send(rot)
 
 
 
