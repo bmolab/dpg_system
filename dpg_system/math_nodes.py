@@ -736,21 +736,27 @@ class ContinuousRotationNode(Node):
         super().__init__(label, data, args)
 
         self.input = self.add_input('rotation in', triggers_execution=True)
+        self.clear_input = self.add_input('clear input', callback=self.clear)
         self.output = self.add_output('out')
         self.previous = None
+        self.do_clear = False
+
+    def clear(self):
+        self.do_clear = True
 
     def execute(self):
         rotation = self.input()
         rot = any_to_array(rotation)
+        if self.do_clear:
+            self.previous = rot.copy()
+            self.do_clear = False
         if self.previous is not None:
             for index in range(len(rot)):
                 if rot[index] < self.previous[index]:
                     over_rot = (self.previous[index] - rot[index] + 179) // 360 * 360
-                    print('over', over_rot)
                     rot[index] += over_rot
                 elif rot[index] > self.previous[index]:
                     under_rot = (rot[index] - self.previous[index] + 179) // 360 * 360
-                    print('under', under_rot)
                     rot[index] -= under_rot
         self.previous = rot.copy()
         self.output.send(rot)
