@@ -1,3 +1,5 @@
+import torch
+
 from dpg_system.torch_base_nodes import *
 
 def register_torch_manipulation_nodes():
@@ -34,6 +36,8 @@ def register_torch_manipulation_nodes():
     Node.app.register_node('t.diag', TorchDiagNode.factory)
     Node.app.register_node('t.tril', TorchTriangleNode.factory)
     Node.app.register_node('t.triu', TorchTriangleNode.factory)
+    Node.app.register_node('t.scatter', TorchScatterNode.factory)
+    Node.app.register_node('t.scatter_hold', TorchScatterHoldNode.factory)
 
 
 class TorchSqueezeNode(TorchWithDimNode):
@@ -753,6 +757,90 @@ class TorchTakeAlongDimNode(TorchWithDimNode):
             else:
                 if self.app.verbose:
                     print(self.label, ' invalid input tensor')
+
+
+class TorchScatterNode(TorchWithDimNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchScatterNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.dim_specified = True
+        self.input = self.add_input('tensor to scatter into', triggers_execution=True)
+        self.index_input = self.add_input('indices in')
+        self.source_input = self.add_input('source in')
+
+        self.add_dim_input()
+        self.output = self.add_output('output')
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            data = self.index_input()
+            if data is not None:
+                index_tensor = self.data_to_tensor(data, device=input_tensor.device, requires_grad=input_tensor.requires_grad, dtype=torch.long)
+                if index_tensor is not None:
+                    if -1 - len(input_tensor.shape) < self.dim <= len(input_tensor.shape):
+                        data_2 = self.source_input()
+                        source_tensor = self.data_to_tensor(data_2, device=input_tensor.device, requires_grad=input_tensor.requires_grad)
+                        if source_tensor is not None:
+                            try:
+                                taken = torch.scatter(input_tensor, self.dim, index_tensor, source_tensor)
+                                self.output.send(taken)
+                            except Exception as e:
+                                traceback.print_exception(e)
+                                print(self.label, 'failed')
+                        else:
+                            if self.app.verbose:
+                                print(self.label, ' no index tensor')
+                else:
+                    if self.app.verbose:
+                        print(self.label, ' no index tensor')
+            else:
+                if self.app.verbose:
+                    print(self.label, ' invalid input tensor')
+
+
+class TorchScatterHoldNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchScatterHoldNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        length = 16
+        if len(args) > 0:
+            length = any_to_int(args[0])
+        self.dim_specified = True
+        self.input = self.add_input('list of index value pairs', triggers_execution=True)
+        self.length_input = self.add_input('length of target tensor', widget_type='drag_int', default_value=length, min=0, callback=self.resize)
+        self.clear_in = self.add_input('clear', widget_type='button', callback=self.clear)
+        self.output = self.add_output('output')
+        self.accum = torch.zeros(length)
+
+    def clear(self):
+        self.accum[:] = 0
+
+    def resize(self):
+        self.accum = torch.zeros(self.length_input())
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is not None:
+            pairs_tensor = input_tensor.view(-1, 2).transpose(0, 1)
+            indices = pairs_tensor[0].type(torch.int64)
+            indices = indices.clamp(0, self.length_input() - 1)
+            values = pairs_tensor[1]
+            try:
+                self.accum.scatter_(0, indices, values)
+                self.output.send(self.accum)
+            except Exception as e:
+                print(e)
+
 
 
 class TorchIndexSelectNode(TorchWithDimNode):

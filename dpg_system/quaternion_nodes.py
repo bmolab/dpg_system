@@ -41,8 +41,9 @@ class QuaternionToEulerNode(Node):
         if self.input.fresh_input:
             data = any_to_array(self.input())
             if data.shape[-1] % 4 == 0:
-                q = quaternion.as_quat_array(data)
-                euler = quaternion.as_euler_angles(q)
+                rot = scipy.spatial.transform.Rotation.from_quat(data, scalar_first=True)
+                euler = rot.as_euler('xyz')
+
                 if self.degrees():
                     euler *= self.degree_factor
                 euler += offset
@@ -138,9 +139,8 @@ class EulerToQuaternionNode(Node):
 
     def my_quaternion_from_euler(self, eulers):
         rot = scipy.spatial.transform.Rotation.from_euler(self.order(), eulers, degrees=self.degrees())
-        q = rot.as_quat()
-        qq = q[:, [3, 0, 1, 2]]
-        return qq
+        q = rot.as_quat(scalar_first=True)
+        return q
 
 
 class QuaternionToRotationMatrixNode(Node):
