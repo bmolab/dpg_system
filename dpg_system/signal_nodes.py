@@ -951,9 +951,15 @@ class FilterNode(Node):
         input_value = self.input.get_data()
         if type(self.accum) != type(input_value):
             self.accum = any_to_match(self.accum, input_value)
+        t = type(input_value)
+        if t is np.ndarray:
+            if self.accum.size != input_value.size:
+                self.accum = np.zeros_like(input_value)
         elif self.app.torch_available and type(input_value) == torch.Tensor:
             if input_value.device != self.accum.device:
                 self.accum = any_to_match(self.accum, input_value)
+            if self.accum.size() != input_value.size():
+                self.accum = torch.zeros_like(input_value)
 
         self.accum = self.accum * self.degree + input_value * (1.0 - self.degree)
         self.output.send(self.accum)

@@ -17,7 +17,8 @@ class TorchNode(Node):
                 return input_tensor
             if type(input_tensor) != torch.Tensor:
                 input_tensor = any_to_tensor(input_tensor, validate=True)
-            return input_tensor
+            if input_tensor is not None and input_tensor.numel() > 0:
+                return input_tensor
         return None
 
     def data_to_tensor(self, input_tensor, match_tensor=None, device='cpu', dtype=torch.float32, requires_grad=False):

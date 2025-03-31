@@ -612,10 +612,10 @@ class HeatMapNode(BasePlotNode):
             if t == np.ndarray:
                 if data.dtype in [float, np.float32, np.double, int, np.int64, np.uint8, np.bool_]:
                     dims = len(data.shape)
-                    sample_count = 1
-                    rows = data.shape[0]
+                    rows = 1
+                    sample_count = data.shape[0]
                     if dims > 1:
-                        sample_count = data.shape[1]
+                        rows = data.shape[1]
                     if rows != self.rows or self.sample_count != sample_count:
                         self.pending_rows = rows
                         self.pending_sample_count = sample_count

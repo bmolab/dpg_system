@@ -885,9 +885,12 @@ class App:
         mouse_pos = dpg.get_mouse_pos(local=False)
         editor = self.get_current_editor()
         if editor is not None:
-            editor_mouse_pos = editor.global_pos_to_editor_pos(mouse_pos)
-            node.create(editor.uuid, pos=editor_mouse_pos)
-            editor.add_node(node)
+            try:
+                editor_mouse_pos = editor.global_pos_to_editor_pos(mouse_pos)
+                node.create(editor.uuid, pos=editor_mouse_pos)
+                editor.add_node(node)
+            except Exception as e:
+                print('place_node', e)
 
     def int_handler(self):
         if self.active_widget == -1:

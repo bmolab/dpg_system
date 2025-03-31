@@ -103,6 +103,32 @@ def any_to_numerical_list(data):
         return data.tolist()
     return []
 
+def any_to_float_list(data):
+    t = type(data)
+    if t in [list, tuple]:
+        data = list(data)
+        data, homo, types = list_to_hybrid_list(data)
+
+        if str not in types:
+            if int in types:
+                for i in range(len(data)):
+                    data[i] = float(data[i])
+            return data
+    elif t == str:
+        return string_to_list(data)
+    elif t in [float, int, bool]:
+        return [data]
+    elif t == np.ndarray:
+        return data.tolist()
+    elif t == np.int64:
+        return [int(data)]
+    elif t in [np.double, np.float32]:
+        return [float(data)]
+    elif t == np.bool_:
+        return [bool(data)]
+    elif torch_available and t == torch.Tensor:
+        return data.tolist()
+    return []
 
 def any_to_int(data, validate=False):
     t = type(data)
@@ -606,6 +632,8 @@ def list_to_array(input, validate=False):
 
 
 def list_to_tensor(input, validate=False):
+    if len(input) == 0:
+        return None
     if torch_available:
         hybrid_list, homogenous, types = list_to_hybrid_list(input)
         # print(hybrid_list)

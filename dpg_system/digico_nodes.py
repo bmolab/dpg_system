@@ -57,13 +57,15 @@ class DigicoFaders(OSCReceiver, OSCSender, Node):
         if data is not None:
             if self.target and self.address != '':
                 self.target.send_message(address, data)
-    def receive(self, data, address):
+
+    def receive(self, data, address=None):
         data = any_to_list(data)
-        split_address = address.split('/')
-        if len(split_address) == 4:
-            if split_address[1] == 'channel':
-                if split_address[3] == 'fader':
-                    input = any_to_int(split_address[2])
-                    if input < len(self.faders):
-                        self.faders[input].receive_data(data)
+        if address is not None:
+            split_address = address.split('/')
+            if len(split_address) == 4:
+                if split_address[1] == 'channel':
+                    if split_address[3] == 'fader':
+                        input = any_to_int(split_address[2])
+                        if input < len(self.faders):
+                            self.faders[input].receive_data(data)
 

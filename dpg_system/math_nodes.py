@@ -353,16 +353,16 @@ class ComparisonAndPassNode(Node):
         self.input = self.add_input('in', triggers_execution=True)
 
         if self.simple:
-            self.comparison_property = self.add_option('', widget_type='combo', default_value=self.operation, callback=self.comparison_changed)
+            self.comparison_property = self.add_option('###comparison_property', widget_type='combo', default_value=self.operation, callback=self.comparison_changed)
             self.comparison_property.widget.combo_items = list(self.operations)
-            self.operand_property = self.add_option('', widget_type='drag_float', default_value=self.operand,
+            self.operand_property = self.add_option('###operand_property', widget_type='drag_float', default_value=self.operand,
                                                 callback=self.operand_changed)
             self.self_compare_property = self.add_option('self_compare', widget_type='checkbox', default_value=self_compare)
             self.force_int_property = self.add_option('force_int', widget_type='checkbox', default_value=force_int)
         else:
-            self.comparison_property = self.add_property('', widget_type='combo', default_value=self.operation, callback=self.comparison_changed)
+            self.comparison_property = self.add_property('###comparison_property', widget_type='combo', default_value=self.operation, callback=self.comparison_changed)
             self.comparison_property.widget.combo_items = list(self.operations)
-            self.operand_property = self.add_input('', widget_type='drag_float', default_value=self.operand,
+            self.operand_property = self.add_input('###operand_property', widget_type='drag_float', default_value=self.operand,
                                                 callback=self.operand_changed)
             self.self_compare_property = self.add_property('self_compare', widget_type='checkbox')
             self.force_int_property = self.add_property('force_int', widget_type='checkbox')
@@ -370,7 +370,11 @@ class ComparisonAndPassNode(Node):
         self.output = self.add_output('result')
 
     def comparison_changed(self):
-        self.operation = self.comparison_property()
+        comp = self.comparison_property()
+        if comp in self.operations:
+            self.operation = self.comparison_property()
+        else:
+            print('comparison_and_pass node bad operation change')
 
     def operand_changed(self):
         self.operand = self.operand_property()

@@ -101,11 +101,14 @@ class NodeOutput:
             self.set_value(data)
         if self.output_always or self.new_output:
             if self.node.visibility == 'show_all':
-                if len(self._children) > 0:
-                    dpg.bind_item_theme(self.uuid, self._pin_active_and_connected_theme)
-                else:
-                    dpg.bind_item_theme(self.uuid, self._pin_active_theme)
-                Node.app.get_current_editor().add_active_pin(self.uuid)
+                try:
+                    if len(self._children) > 0:
+                        dpg.bind_item_theme(self.uuid, self._pin_active_and_connected_theme)
+                    else:
+                        dpg.bind_item_theme(self.uuid, self._pin_active_theme)
+                    Node.app.get_current_editor().add_active_pin(self.uuid)
+                except Exception as e:
+                    pass
             for child in self._children:
                 child.node.active_input = child
                 child.trigger()
@@ -1045,8 +1048,11 @@ class NodeInput:
             self._data = data
             self.fresh_input = True
             if self.node.visibility == 'show_all':
-                dpg.bind_item_theme(self.uuid, self._pin_active_theme)
-                Node.app.get_current_editor().add_active_pin(self.uuid)
+                try:
+                    dpg.bind_item_theme(self.uuid, self._pin_active_theme)
+                    Node.app.get_current_editor().add_active_pin(self.uuid)
+                except Exception as e:
+                    pass
             if self.accepted_types:
                 if self.type_mask == 0:
                     self.type_mask = create_type_mask_from_list(self.accepted_types)

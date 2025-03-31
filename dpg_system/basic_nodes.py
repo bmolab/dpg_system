@@ -781,9 +781,17 @@ class UnpackNode(Node):
                 self.out_types = []
                 self.out_functions = []
                 self.num_outs = self.arg_as_int(default_value=1)
-                for i in range(self.num_outs):
-                    self.out_types.append(None)
-                    out_names.append('out ' + str(i + 1))
+
+                if len(args) > 1:
+                    if args[1] in self.types:
+                        for i in range(self.num_outs):
+                            self.out_types.append(self.types[args[1]])
+                            out_names.append(self.types[args[1]].__name__ + ' ' + str(i + 1))
+                else:
+                    for i in range(self.num_outs):
+                        self.out_types.append(None)
+                        out_names.append('out ' + str(i + 1))
+
             else:
                 self.num_outs = len(args)
                 for arg in args:

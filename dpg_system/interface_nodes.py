@@ -1187,7 +1187,7 @@ class VectorNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.max_component_count = 32
+        self.max_component_count = 64
         if len(args) > 0:
             self.max_component_count = any_to_int(args[0])
         self.format = '%.3f'
@@ -1197,6 +1197,12 @@ class VectorNode(Node):
         self.input = self.add_input('in', triggers_execution=True)
         self.input.bang_repeats_previous = False
         self.zero_input = self.add_input('zero', widget_type='button', callback=self.zero)
+        self.vector_format_input = self.add_input('###vector format', widget_type='combo', default_value='numpy', callback=self.vector_format_changed)
+        if Node.app.torch_available:
+            self.vector_format_input.widget.combo_items = ['numpy', 'torch', 'list']
+        else:
+            self.vector_format_input.widget.combo_items = ['numpy', 'list']
+        self.output_vector = None
         self.component_properties = []
         for i in range(self.max_component_count):
             cp = self.add_input('##' + str(i), widget_type='drag_float', callback=self.component_changed)
@@ -1206,10 +1212,37 @@ class VectorNode(Node):
 
         self.component_count_property = self.add_option('component count', widget_type='drag_int', default_value=self.current_component_count, callback=self.component_count_changed)
         self.format_option = self.add_option(label='number format', widget_type='text_input', default_value=self.format, callback=self.change_format)
+        self.output_vector = np.zeros(self.current_component_count)
+
+        self.first_component_input_index = -1
+
+    def vector_format_changed(self):
+        t = type(self.output_vector)
+        vf = self.vector_format_input()
+
+        if t == np.ndarray:
+            if vf == 'torch':
+                self.output_vector = torch.from_numpy(self.output_vector)
+            elif vf == 'list':
+                self.output_vector = self.output_vector.tolist()
+        elif t == torch.Tensor:
+            if vf == 'numpy':
+                self.output_vector = torch.numpy(self.output_vector)
+            elif vf == 'list':
+                self.output_vector = self.output_vector.tolist()
+        elif t == list:
+            if vf == 'numpy':
+                self.output_vector = np.array(self.output_vector)
+            elif vf == 'torch':
+                self.output_vector = torch.tensor(self.output_vector)
 
     def zero(self):
-        for i in range(self.max_component_count):
-            self.component_properties[i].set(0.0)
+        if self.vector_format_input() == 'numpy':
+            self.output_vector = np.zeros(self.max_component_count)
+        elif self.vector_format_input() == 'torch':
+            self.output_vector = torch.zeros(self.max_component_count)
+        else:
+            self.output_vector = [0.0] * self.max_component_count
         self.execute()
 
     def get_preset_state(self):
@@ -1237,6 +1270,7 @@ class VectorNode(Node):
                 dpg.show_item(self.component_properties[i].uuid)
             else:
                 dpg.hide_item(self.component_properties[i].uuid)
+        self.first_component_input_index = self.component_properties[0].input_index
 
     def component_count_changed(self):
         self.current_component_count = self.component_count_property()
@@ -1267,35 +1301,82 @@ class VectorNode(Node):
                     for i in range(self.current_component_count):
                         output_array[i] = self.component_properties[i]()
                     self.output.set_value(output_array)
-            elif t == list:
-                value = np.array(value)
-                t = np.ndarray
+                else:
+                    if self.vector_format_input() == 'list':
+                        value = string_to_list(value)
+                        t = list
+                    elif self.vector_format_input() == 'numpy':
+                        value = string_to_array(value)
+                        t = np.ndarray
+                    elif self.vector_format_input() == 'torch':
+                        value = string_to_tensor(value)
+                        t = torch.tensor
+            if t == list:
+                value = any_to_numerical_list(value)
+                if self.vector_format_input() == 'list':
+                    self.output_vector = value.copy()
+                elif self.vector_format_input() == 'numpy':
+                    self.output_vector = np.array(value)
+                elif self.vector_format_input() == 'torch':
+                    self.output_vector = torch.tensor(value)
+
             elif t in [float, int, np.double, np.int64]:
-                self.current_component_count = 1
-                value = np.array([value])
-                t = np.ndarray
+                if self.vector_format_input() == 'list':
+                    self.output_vector = [value]
+                elif self.vector_format_input() == 'numpy':
+                    self.output_vector = np.array([value])
+                elif self.vector_format_input() == 'torch':
+                    self.output_vector = torch.tensor([value])
+
+            elif t == np.ndarray:
+                if self.vector_format_input() == 'list':
+                    self.output_vector = value.tolist()
+                elif self.vector_format_input() == 'numpy':
+                    self.output_vector = value.copy()
+                elif self.vector_format_input() == 'torch':
+                    self.output_vector = value.from_numpy()
+
             elif t == torch.Tensor:
-                value = value.detach().cpu().numpy()
-                t = np.ndarray
-            if t == np.ndarray:
-                if self.current_component_count != value.size:
-                    self.component_count_property.set(value.size)
-                self.current_component_count = value.size
-                ar = value.reshape((value.size))
-                if self.current_component_count > self.max_component_count:
-                    self.current_component_count = self.max_component_count
-                for i in range(self.max_component_count):
-                    if i < self.current_component_count:
-                        dpg.show_item(self.component_properties[i].uuid)
-                        self.component_properties[i].set(any_to_float(ar[i]))
-                    else:
-                        dpg.hide_item(self.component_properties[i].uuid)
-                self.output.set_value(value)
+                if self.vector_format_input() == 'list':
+                    self.output_vector = value.tolist()
+                elif self.vector_format_input() == 'numpy':
+                    self.output_vector = value.numpy()
+                elif self.vector_format_input() == 'torch':
+                    self.output_vector = value.clone()
+
+            if type(self.output_vector) == np.ndarray:
+                if self.current_component_count != self.output_vector.size:
+                    self.component_count_property.set(self.output_vector.size)
+            elif type(self.output_vector) == torch.Tensor:
+                if self.current_component_count != self.output_vector.numel():
+                    self.component_count_property.set(self.output_vector.numel())
+            elif type(self.output_vector) == list:
+                if self.current_component_count != len(self.output_vector):
+                    self.component_count_property.set(len(self.output_vector))
+            self.current_component_count = self.component_count_property()
+
+            if self.current_component_count > self.max_component_count:
+                self.current_component_count = self.max_component_count
+            for i in range(self.max_component_count):
+                if i < self.current_component_count:
+                    dpg.show_item(self.component_properties[i].uuid)
+                    self.component_properties[i].set(any_to_float(self.output_vector[i]))
+                else:
+                    dpg.hide_item(self.component_properties[i].uuid)
+                self.output.set_value(self.output_vector)
         else:
-            output_array = np.ndarray((self.current_component_count))
-            for i in range(self.current_component_count):
-                output_array[i] = self.component_properties[i]()
-            self.output.set_value(output_array)
+            if self.active_input is not None:
+                which = self.active_input.input_index - self.first_component_input_index
+                self.output_vector[which] = self.component_properties[which]()
+            # elif self.vector_format_input() == 'torch':
+            #     self.output_vector[which] = self.component_properties[which]()
+            # else:
+            #     self.output_vector[which] = self.component_properties[which]()
+                self.output.set_value(self.output_vector)
+            else:
+                for i in range(self.current_component_count):
+                    self.component_properties[i].set(any_to_float(self.output_vector[i]))
+                self.output.set_value(self.output_vector)
         self.output.send()
 
 

@@ -9,7 +9,7 @@ import asyncio
 from dpg_system.node import Node
 import threading
 from dpg_system.interface_nodes import ValueNode, ButtonNode, ToggleNode, MenuNode, RadioButtonsNode
-
+import time
 # NOTE changing target name changed, changing target port crashed
 
 
@@ -854,14 +854,23 @@ class OSCReceiveNode(OSCReceiver, Node):
         self.source_name_property = self.add_input('source name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
         self.source_address_property = self.add_input('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
         self.output = self.add_output('osc received')
+        self.throttle = self.add_option('throttle (ms)', widget_type='drag_int', default_value=0)
+        self.last = time.time()
 
     def custom_create(self, from_file):
         if self.name != '':
             self.find_source_node(self.name)
 
-    def receive(self, data, address):
+    def receive(self, data, address=None):
+        if self.throttle() > 0:
+            throttle = self.throttle()
+            now = time.time()
+            diff = now - self.last
+            if diff * 1000 < throttle:
+                return
         if self.output:
             self.output.send(list(data))
+        self.last = time.time()
 
     def cleanup(self):
         super().cleanup()
@@ -1123,7 +1132,7 @@ class OSCValueNode(OSCReceiver, OSCSender, ValueNode):
         OSCSender.cleanup(self)
         OSCReceiver.cleanup(self)
 
-    def receive(self, data, address):
+    def receive(self, data, address=None):
         t = type(data)
         data = any_to_list(data)
 
@@ -1210,7 +1219,7 @@ class OSCButtonNode(OSCReceiver, OSCSender, ButtonNode):
         OSCSender.cleanup(self)
         OSCReceiver.cleanup(self)
 
-    def receive(self, data, address):
+    def receive(self, data, address=None):
         data = any_to_list(data)
         if type(data[0]) == str:
             if data[0][0] == '/':
