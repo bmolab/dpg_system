@@ -248,6 +248,7 @@ class App:
         self.verbose = False
         self.verbose_menu_item = -1
         self.minimap_menu_item = -1
+        self.colour_code_pins_menu_item = -1
         self.window_padding = [4, 3]
         self.frame_padding = [4, 0]
         self.cell_padding = [4, 2]
@@ -286,6 +287,7 @@ class App:
         self.created_nodes = {}
         self.drag_starts = {}
 
+        self.color_code_pins = True
         self.global_theme = None
         self.borderless_child_theme = None
         self.active_widget = -1
@@ -488,6 +490,10 @@ class App:
         if self.verbose_menu_item != -1:
             self.verbose = dpg.get_value(self.verbose_menu_item)
 
+    def set_colour_code_pines(self):
+        if self.colour_code_pins_menu_item != -1:
+            self.color_code_pins = dpg.get_value(self.colour_code_pins_menu_item)
+
     def show_log(self):
         if self.show_log_menu_item != -1:
             show = dpg.get_value(self.show_log_menu_item)
@@ -688,6 +694,12 @@ class App:
                 dpg.add_menu_item(label="Show Demo", callback=self.show_demo)
                 dpg.add_separator()
                 self.verbose_menu_item = dpg.add_menu_item(label="verbose logging", check=True, callback=self.set_verbose)
+                dpg.add_separator()
+
+                self.colour_code_pins_menu_item = dpg.add_menu_item(label="Colour Code Pins", check=True,
+                                                                    callback=self.set_colour_code_pines)
+                dpg.add_separator()
+
                 dpg.add_menu_item(label='osc status', callback=self.print_osc_state)
                 self.minimap_menu_item = dpg.add_menu_item(label='minimap', callback=self.show_minimap, check=True)
 

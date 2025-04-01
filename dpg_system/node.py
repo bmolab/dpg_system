@@ -10,11 +10,12 @@ import sys
 
 class NodeOutput:
     _pin_active_theme = None
-    _pin_active_and_connected_theme = None
+    _pin_active_string_theme = None
     _pin_theme_created = False
     _pin_active_array_theme = None
     _pin_active_tensor_theme = None
     _pin_active_list_theme = None
+    _pin_active_bang_theme = None
 
     def __init__(self, label: str = "output", node=None, pos=None):
         if not self._pin_theme_created:
@@ -57,6 +58,12 @@ class NodeOutput:
         with dpg.theme() as self._pin_active_list_theme:
             with dpg.theme_component(0):
                 dpg.add_theme_color(dpg.mvNodeCol_Pin, (255, 0, 255), category=dpg.mvThemeCat_Nodes)
+        with dpg.theme() as self._pin_active_string_theme:
+            with dpg.theme_component(0):
+                dpg.add_theme_color(dpg.mvNodeCol_Pin, (255, 128, 0), category=dpg.mvThemeCat_Nodes)
+        with dpg.theme() as self._pin_active_bang_theme:
+            with dpg.theme_component(0):
+                dpg.add_theme_color(dpg.mvNodeCol_Pin, (255, 255, 0), category=dpg.mvThemeCat_Nodes)
 
     def set_visibility(self, visibility_state='show_all'):
         if visibility_state == 'show_all':
@@ -101,32 +108,42 @@ class NodeOutput:
                 break
 
     def set_value(self, data):
-        self.new_output = True
-        for child in self._children:
-            child.receive_data(data)
+        if data is not None:
+            self.new_output = True
+            for child in self._children:
+                child.receive_data(data)
+        return data
 
     def send(self, data=None):  # called every time
-        if data is not None:
-            self.set_value(data)
-        if self.output_always or self.new_output:
-            if self.node.visibility == 'show_all':
-                try:
-                    t = type(data)
-                    if t is np.ndarray:
-                        dpg.bind_item_theme(self.uuid, self._pin_active_array_theme)
-                    elif t is torch.Tensor:
-                        dpg.bind_item_theme(self.uuid, self._pin_active_tensor_theme)
-                    elif t is list:
-                        dpg.bind_item_theme(self.uuid, self._pin_active_list_theme)
-                    else:
-                        dpg.bind_item_theme(self.uuid, self._pin_active_and_connected_theme)
-                    Node.app.get_current_editor().add_active_pin(self.uuid)
-                except Exception as e:
-                    pass
-            for child in self._children:
-                child.node.active_input = child
-                child.trigger()
-                child.node.active_input = None
+        if self.set_value(data) is not None:
+            if self.output_always or self.new_output:
+                if self.node.visibility == 'show_all':
+                    try:
+                        if Node.app.color_code_pins:
+                            t = type(data)
+
+                            if t is np.ndarray:
+                                dpg.bind_item_theme(self.uuid, self._pin_active_array_theme)
+                            elif t is torch.Tensor:
+                                dpg.bind_item_theme(self.uuid, self._pin_active_tensor_theme)
+                            elif t is list:
+                                dpg.bind_item_theme(self.uuid, self._pin_active_list_theme)
+                            elif t is str:
+                                if data == 'bang':
+                                    dpg.bind_item_theme(self.uuid, self._pin_active_bang_theme)
+                                else:
+                                    dpg.bind_item_theme(self.uuid, self._pin_active_string_theme)
+                            else:
+                                dpg.bind_item_theme(self.uuid, self._pin_active_theme)
+                        else:
+                            dpg.bind_item_theme(self.uuid, self._pin_active_theme)
+                        Node.app.get_current_editor().add_active_pin(self.uuid)
+                    except Exception as e:
+                        pass
+                for child in self._children:
+                    child.node.active_input = child
+                    child.trigger()
+                    child.node.active_input = None
 
         self.new_output = False
 
@@ -184,6 +201,7 @@ class NodeFloatOutput(NodeOutput):
     def set_value(self, data):
         float_data = any_to_float(data)
         super().set_value(float_data)
+        return float_data
 
 
 class NodeBoolOutput(NodeOutput):
@@ -201,6 +219,7 @@ class NodeBoolOutput(NodeOutput):
     def set_value(self, data):
         bool_data = any_to_bool(data)
         super().set_value(bool_data)
+        return bool_data
 
 
 class NodeListOutput(NodeOutput):
@@ -222,8 +241,10 @@ class NodeListOutput(NodeOutput):
         list_data = any_to_list(data)
         if len(list_data) == 1 and type(data) is str:
             super().set_value(data)
+            return data
         else:
             super().set_value(list_data)
+            return list_data
 
 class NodeStringOutput(NodeOutput):
     def __init__(self, label: str = "output", node=None, pos=None):
@@ -236,9 +257,11 @@ class NodeStringOutput(NodeOutput):
             super().send(string_data)
         else:
             super().send()
+
     def set_value(self, data):
         string_data = any_to_string(data)
         super().set_value(string_data)
+        return string_data
 
 
 class NodeArrayOutput(NodeOutput):
@@ -252,9 +275,11 @@ class NodeArrayOutput(NodeOutput):
             super().send(array_data)
         else:
             super().send()
+
     def set_value(self, data):
         array_value = any_to_array(data)
         super().set_value(array_value)
+        return array_value
 
 
 class NodeTensorOutput(NodeOutput):
@@ -272,6 +297,7 @@ class NodeTensorOutput(NodeOutput):
         if torch_available:
             tensor_value = any_to_tensor(data)
             super().set_value(tensor_value)
+            return tensor_value
 
 
 class NodeDisplay:
@@ -890,11 +916,12 @@ class PropertyWidget:
 
 class NodeInput:
     _pin_active_theme = None
-    _pin_active_and_connected_theme = None
+    _pin_active_string_theme = None
     _pin_theme_created = False
     _pin_active_array_theme = None
     _pin_active_tensor_theme = None
     _pin_active_list_theme = None
+    _pin_active_bang_theme = None
     _pin_theme_created = False
 
     def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
@@ -918,6 +945,8 @@ class NodeInput:
         self.input_index = -1
         self.fresh_input = False
         self.node_attribute = None
+        self.received_bang = False
+        self.received_type = None
 
         self.bang_repeats_previous = True
         if widget_type == 'checkbox':
@@ -985,6 +1014,12 @@ class NodeInput:
         with dpg.theme() as self._pin_active_list_theme:
             with dpg.theme_component(0):
                 dpg.add_theme_color(dpg.mvNodeCol_Pin, (255, 0, 255), category=dpg.mvThemeCat_Nodes)
+        with dpg.theme() as self._pin_active_string_theme:
+            with dpg.theme_component(0):
+                dpg.add_theme_color(dpg.mvNodeCol_Pin, (255, 128, 0), category=dpg.mvThemeCat_Nodes)
+        with dpg.theme() as self._pin_active_bang_theme:
+            with dpg.theme_component(0):
+                dpg.add_theme_color(dpg.mvNodeCol_Pin, (255, 255, 0), category=dpg.mvThemeCat_Nodes)
 
     def create(self, parent):
         self.node_attribute = dpg.node_attribute(parent=parent, attribute_type=dpg.mvNode_Attr_Input, user_data=self, id=self.uuid)
@@ -1062,42 +1097,56 @@ class NodeInput:
         if parent in self._parents:
             self._parents.remove(parent)
 
-    def receive_data(self, data):
-        if not self.node.check_for_messages(data):
-            t = type(data)
-            self.node.active_input = self
-            if type(data) == list and len(data) == 1 and type(data[0]) == str and data[0] == 'bang':
-                data = data[0]
-            if type(data) == str and data == 'bang':
-                if self.bang_repeats_previous:
-                    if self.widget:
-                        data = self.get_widget_value()
-                    else:
-                        data = self._data
-            self._data = data
-            self.fresh_input = True
-            if self.node.visibility == 'show_all':
-                try:
-                    if t is list:
-                        dpg.bind_item_theme(self.uuid, self._pin_active_list_theme)
-                    elif t is np.ndarray:
-                        dpg.bind_item_theme(self.uuid, self._pin_active_array_theme)
-                    elif t is torch.Tensor:
-                        dpg.bind_item_theme(self.uuid, self._pin_active_tensor_theme)
-                    else:
-                        dpg.bind_item_theme(self.uuid, self._pin_active_theme)
-                    Node.app.get_current_editor().add_active_pin(self.uuid)
-                except Exception as e:
-                    pass
-            if self.accepted_types:
-                if self.type_mask == 0:
-                    self.type_mask = create_type_mask_from_list(self.accepted_types)
-                data = conform_to_type_mask(data, self.type_mask)
-            if self.widget:
-                self.widget.set(data)
-            if self.callback:
-                self.callback()
-            self.node.active_input = None
+    def receive_data(self, data, orig_type=None):
+        if data is not None:
+            if orig_type is None:
+                self.received_type = type(data)
+            if not self.node.check_for_messages(data):
+                self.node.active_input = self
+                if type(data) == list and len(data) == 1 and type(data[0]) == str and data[0] == 'bang':
+                    data = data[0]
+                if type(data) == str and data == 'bang':
+                    self.received_bang = True
+                    if self.bang_repeats_previous:
+                        if self.widget:
+                            data = self.get_widget_value()
+                        else:
+                            data = self._data
+
+                self._data = data
+                self.fresh_input = True
+                if self.node.visibility == 'show_all':
+                    try:
+                        if Node.app.color_code_pins:
+                            if self.received_type is list:
+                                dpg.bind_item_theme(self.uuid, self._pin_active_list_theme)
+                            elif self.received_type is np.ndarray:
+                                dpg.bind_item_theme(self.uuid, self._pin_active_array_theme)
+                            elif self.received_type is torch.Tensor:
+                                dpg.bind_item_theme(self.uuid, self._pin_active_tensor_theme)
+                            elif self.received_type is str:
+                                if self.received_bang:
+                                    dpg.bind_item_theme(self.uuid, self._pin_active_bang_theme)
+                                else:
+                                    dpg.bind_item_theme(self.uuid, self._pin_active_string_theme)
+                            else:
+                                dpg.bind_item_theme(self.uuid, self._pin_active_theme)
+                        else:
+                            dpg.bind_item_theme(self.uuid, self._pin_active_theme)
+                        Node.app.get_current_editor().add_active_pin(self.uuid)
+                    except Exception as e:
+                        pass
+                if self.accepted_types:
+                    if self.type_mask == 0:
+                        self.type_mask = create_type_mask_from_list(self.accepted_types)
+                    data = conform_to_type_mask(data, self.type_mask)
+                if self.widget:
+                    self.widget.set(data)
+                if self.callback:
+                    self.callback()
+                self.received_bang = False
+                self.node.active_input = None
+        self.received_bang = False
 
     def conform_to_accepted_types(self, data):
         if self.accepted_types:
@@ -1164,35 +1213,43 @@ class NodeIntInput(NodeInput):
     def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
         super().__init__(label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
 
-    def receive_data(self, data):
-        if type(data) is str and data == 'bang':
+    def receive_data(self, data, orig_type=None):
+        self.received_type = type(data)
+        if self.received_type is str and data == 'bang':
+            self.received_bang = True
             data = self._data
         int_data = any_to_int(data, validate=True)
-        if int_data is not None:
-            super().receive_data(int_data)
+        super().receive_data(int_data, self.received_type)
 
 
 class NodeFloatInput(NodeInput):
     def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
         super().__init__(label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
 
-    def receive_data(self, data):
-        if type(data) is str and data == 'bang':
+    def receive_data(self, data, orig_type=None):
+        self.received_type = type(data)
+        if self.received_type is str and data == 'bang':
+            self.received_bang = True
             data = self._data
+        else:
+            self.received_bang = False
         float_data = any_to_float(data, validate=True)
-        if float_data is not None:
-            super().receive_data(float_data)
+        super().receive_data(float_data, self.received_type)
 
 
 class NodeBoolInput(NodeInput):
     def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
         super().__init__(label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
 
-    def receive_data(self, data):
-        if type(data) is str and data == 'bang':
+    def receive_data(self, data, orig_type=None):
+        self.received_type = type(data)
+        if self.received_type is str and data == 'bang':
+            self.received_bang = True
             data = self._data
+        else:
+            self.received_bang = False
         bool_data = any_to_bool(data)
-        super().receive_data(bool_data)
+        super().receive_data(bool_data, self.received_type)
 
 
 class NodeStringInput(NodeInput):
@@ -1203,51 +1260,65 @@ class NodeStringInput(NodeInput):
     def set_strip_returns(self, value):
         self.strip_returns = value
 
-    def receive_data(self, data):
-        if type(data) == str and data == 'bang':
+    def receive_data(self, data, orig_type=None):
+        self.received_type = type(data)
+        if self.received_type == str and data == 'bang':
+            self.received_bang = True
             if self.bang_repeats_previous:
                 if self.widget:
                     data = self.get_widget_value()
                 else:
                     data = self._data
+        else:
+            self.received_bang = False
         string_data = any_to_string(data, strip_returns=self.strip_returns)
-        super().receive_data(string_data)
+        super().receive_data(string_data, self.received_type)
 
 
 class NodeListInput(NodeInput):
     def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
         super().__init__(label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
 
-    def receive_data(self, data):
-        if type(data) is str and data == 'bang':
+    def receive_data(self, data, orig_type=None):
+        self.received_type = type(data)
+        if self.received_type is str and data == 'bang':
+            self.received_bang = True
             data = self._data
+        else:
+            self.received_bang = False
         list_data = any_to_list(data)
-        super().receive_data(list_data)
+        super().receive_data(list_data, self.received_type)
 
 
 class NodeArrayInput(NodeInput):
     def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
         super().__init__(label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
 
-    def receive_data(self, data):
-        if type(data) is str and data == 'bang':
+    def receive_data(self, data, orig_type=None):
+        self.received_type = type(data)
+        if self.received_type is str and data == 'bang':
+            self.received_bang = True
             data = self._data
+        else:
+            self.received_bang = False
         array_data = any_to_array(data, validate=True)
-        if array_data is not None:
-            super().receive_data(array_data)
+        super().receive_data(array_data, self.received_type)
 
 
 class NodeTensorInput(NodeInput):
     def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
         super().__init__(label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
 
-    def receive_data(self, data):
+    def receive_data(self, data, orig_type=None):
+        self.received_type = type(data)
         if torch_available:
-            if type(data) is str and data == 'bang':
+            if self.received_type is str and data == 'bang':
                 data = self._data
+                self.received_bang = True
+            else:
+                self.received_bang = False
             tensor_data = any_to_tensor(data, validate=True)
-            if tensor_data is not None:
-                super().receive_data(tensor_data)
+            super().receive_data(tensor_data, self.received_type)
 
 
 class NodeNumericalInput(NodeInput):
@@ -1273,8 +1344,8 @@ class NodeNumericalInput(NodeInput):
         else:
             self.numerical_data = data
 
-    def receive_data(self, data):
-        super().receive_data(data)
+    def receive_data(self, data, orig_type=None):
+        super().receive_data(data, orig_type)
         self.to_numerical(data)
 
     def __call__(self):
