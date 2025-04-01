@@ -12,6 +12,9 @@ class NodeOutput:
     _pin_active_theme = None
     _pin_active_and_connected_theme = None
     _pin_theme_created = False
+    _pin_active_array_theme = None
+    _pin_active_tensor_theme = None
+    _pin_active_list_theme = None
 
     def __init__(self, label: str = "output", node=None, pos=None):
         if not self._pin_theme_created:
@@ -44,10 +47,16 @@ class NodeOutput:
         #   could add other colours?
         with dpg.theme() as self._pin_active_theme:
             with dpg.theme_component(0):
-                dpg.add_theme_color(dpg.mvNodeCol_Pin, (51, 170, 255), category=dpg.mvThemeCat_Nodes)
-        with dpg.theme() as self._pin_active_and_connected_theme:
-            with dpg.theme_component(0):
                 dpg.add_theme_color(dpg.mvNodeCol_Pin, (153, 212, 255), category=dpg.mvThemeCat_Nodes)
+        with dpg.theme() as self._pin_active_array_theme:
+            with dpg.theme_component(0):
+                dpg.add_theme_color(dpg.mvNodeCol_Pin, (0, 255, 0), category=dpg.mvThemeCat_Nodes)
+        with dpg.theme() as self._pin_active_tensor_theme:
+            with dpg.theme_component(0):
+                dpg.add_theme_color(dpg.mvNodeCol_Pin, (255, 0, 0), category=dpg.mvThemeCat_Nodes)
+        with dpg.theme() as self._pin_active_list_theme:
+            with dpg.theme_component(0):
+                dpg.add_theme_color(dpg.mvNodeCol_Pin, (255, 0, 255), category=dpg.mvThemeCat_Nodes)
 
     def set_visibility(self, visibility_state='show_all'):
         if visibility_state == 'show_all':
@@ -102,10 +111,15 @@ class NodeOutput:
         if self.output_always or self.new_output:
             if self.node.visibility == 'show_all':
                 try:
-                    if len(self._children) > 0:
-                        dpg.bind_item_theme(self.uuid, self._pin_active_and_connected_theme)
+                    t = type(data)
+                    if t is np.ndarray:
+                        dpg.bind_item_theme(self.uuid, self._pin_active_array_theme)
+                    elif t is torch.Tensor:
+                        dpg.bind_item_theme(self.uuid, self._pin_active_tensor_theme)
+                    elif t is list:
+                        dpg.bind_item_theme(self.uuid, self._pin_active_list_theme)
                     else:
-                        dpg.bind_item_theme(self.uuid, self._pin_active_theme)
+                        dpg.bind_item_theme(self.uuid, self._pin_active_and_connected_theme)
                     Node.app.get_current_editor().add_active_pin(self.uuid)
                 except Exception as e:
                     pass
@@ -876,6 +890,11 @@ class PropertyWidget:
 
 class NodeInput:
     _pin_active_theme = None
+    _pin_active_and_connected_theme = None
+    _pin_theme_created = False
+    _pin_active_array_theme = None
+    _pin_active_tensor_theme = None
+    _pin_active_list_theme = None
     _pin_theme_created = False
 
     def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
@@ -957,6 +976,15 @@ class NodeInput:
         with dpg.theme() as self._pin_active_theme:
             with dpg.theme_component(0):
                 dpg.add_theme_color(dpg.mvNodeCol_Pin, (153, 212, 255), category=dpg.mvThemeCat_Nodes)
+        with dpg.theme() as self._pin_active_array_theme:
+            with dpg.theme_component(0):
+                dpg.add_theme_color(dpg.mvNodeCol_Pin, (0, 255, 0), category=dpg.mvThemeCat_Nodes)
+        with dpg.theme() as self._pin_active_tensor_theme:
+            with dpg.theme_component(0):
+                dpg.add_theme_color(dpg.mvNodeCol_Pin, (255, 0, 0), category=dpg.mvThemeCat_Nodes)
+        with dpg.theme() as self._pin_active_list_theme:
+            with dpg.theme_component(0):
+                dpg.add_theme_color(dpg.mvNodeCol_Pin, (255, 0, 255), category=dpg.mvThemeCat_Nodes)
 
     def create(self, parent):
         self.node_attribute = dpg.node_attribute(parent=parent, attribute_type=dpg.mvNode_Attr_Input, user_data=self, id=self.uuid)
@@ -1036,6 +1064,7 @@ class NodeInput:
 
     def receive_data(self, data):
         if not self.node.check_for_messages(data):
+            t = type(data)
             self.node.active_input = self
             if type(data) == list and len(data) == 1 and type(data[0]) == str and data[0] == 'bang':
                 data = data[0]
@@ -1049,7 +1078,14 @@ class NodeInput:
             self.fresh_input = True
             if self.node.visibility == 'show_all':
                 try:
-                    dpg.bind_item_theme(self.uuid, self._pin_active_theme)
+                    if t is list:
+                        dpg.bind_item_theme(self.uuid, self._pin_active_list_theme)
+                    elif t is np.ndarray:
+                        dpg.bind_item_theme(self.uuid, self._pin_active_array_theme)
+                    elif t is torch.Tensor:
+                        dpg.bind_item_theme(self.uuid, self._pin_active_tensor_theme)
+                    else:
+                        dpg.bind_item_theme(self.uuid, self._pin_active_theme)
                     Node.app.get_current_editor().add_active_pin(self.uuid)
                 except Exception as e:
                     pass

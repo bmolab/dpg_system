@@ -881,14 +881,16 @@ class OSCSender(OSCBase):
         super().__init__(label, data, args)
 
         self.target = None
-        self.address = '/empty'
+        self.address = ''
         self.name = ''
 
         if args is not None:
             if len(args) > 0:
-                self.name = args[0]
+                if not is_number(args[0]):
+                    self.name = args[0]
             if len(args) > 1:
-                self.address = args[1]
+                if not is_number(args[1]):
+                    self.address = args[1]
 
         self.target_name_property = None
         self.target_address_property = None

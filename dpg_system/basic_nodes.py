@@ -2582,8 +2582,6 @@ class TextFileNode(Node):
             self.text_contents = data
 
 
-
-
 class RepeatNode(Node):
     @staticmethod
     def factory(name, data, args=None):

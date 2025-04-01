@@ -28,7 +28,7 @@ def register_interface_nodes():
     # Node.app.register_node("heat_map", PlotNode.factory)
     # Node.app.register_node("heat_scroll", PlotNode.factory)
     # Node.app.register_node("profile", PlotNode.factory)
-    Node.app.register_node("Value Tool", ValueNode.factory)
+    # Node.app.register_node("Value Tool", ValueNode.factory)
     Node.app.register_node('print', PrintNode.factory)
     Node.app.register_node('load_action', LoadActionNode.factory)
     Node.app.register_node('load_bang', LoadActionNode.factory)

@@ -25,10 +25,15 @@ class ColorSourceNode(OSCSender, Node):
         self.blue = 0
         self.lime = 0
         self.indigo = 0
-        self.address = '/eos/user/0/chan/'
+
+        if self.name == '':
+            self.name = 'eos'
+        if self.address == '':
+            self.address = '/eos/user/99/chan'
 
         if len(args) > 0:
-            self.channel = any_to_int(args[0])
+            if is_number(args[0]):
+                self.channel = any_to_int(args[0])
 
         self.intensity_input = self.add_input('intensity', widget_type='slider_int', widget_width=120, min=0, max=100, default_value=self.intensity, callback=self.intensity_changed)
         self.red_input = self.add_input('red', widget_type='slider_int', widget_width=120, min=0, max=100,
@@ -45,9 +50,13 @@ class ColorSourceNode(OSCSender, Node):
 
         self.target_name_property = self.add_input('target name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
         self.target_address_property = self.add_input('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
-        self.target_channel_property = self.add_input('target channel', widget_type='input_int')
+        self.target_channel_property = self.add_input('target channel', widget_type='input_int', default_value=self.channel, min=1)
 
         self.add_frame_task()
+
+    def custom_create(self, from_file):
+        if self.name != '':
+            self.find_target_node(self.name)
 
     def intensity_changed(self):
         self.intensity = self.intensity_input()
@@ -74,10 +83,10 @@ class ColorSourceNode(OSCSender, Node):
         self.changed = True
         self.lime_changed = True
 
-    def indigo_changed(self):
-        self.indigo = self.indigo_input()
-        self.changed = True
-        self.indigo_changed = True
+    # def indigo_changed(self):
+    #     self.indigo = self.indigo_input()
+    #     self.changed = True
+    #     self.indigo_changed = True
 
     def frame_task(self):
         if self.target and self.address != '':
@@ -105,9 +114,9 @@ class ColorSourceNode(OSCSender, Node):
                     self.lime_changed = False
                     self.target.send_message(address + 'lime', self.lime)
 
-                if self.indigo_changed:
-                    self.indigo_changed = False
-                    self.target.send_message(address + 'indigo', self.indigo)
+                # if self.indigo_changed:
+                #     self.indigo_changed = False
+                #     self.target.send_message(address + 'indigo', self.indigo)
 
 
 

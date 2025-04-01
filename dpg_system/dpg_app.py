@@ -57,7 +57,8 @@ optional_import = [
     'google_translate_nodes',
     'layout_nodes',
     'digico_nodes',
-    'monitor_nodes'
+    'monitor_nodes',
+    'eos_nodes'
 ]
 
 imported = []
