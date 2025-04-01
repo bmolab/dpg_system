@@ -33,6 +33,8 @@ class NodeOutput:
         # self.loaded_uuid = -1
         # self.loaded_children = []
         self.name_archive = []
+        self.sent_type = None
+        self.sent_bang = False
 
     def get_label(self):
         return self._label
@@ -112,40 +114,49 @@ class NodeOutput:
             self.new_output = True
             for child in self._children:
                 child.receive_data(data)
+            self.sent_type = type(data)
+            if self.sent_type == str and data == 'bang':
+                self.sent_bang = True
+            else:
+                self.sent_bang = False
+
         return data
 
     def send(self, data=None):  # called every time
         if self.set_value(data) is not None:
-            if self.output_always or self.new_output:
-                if self.node.visibility == 'show_all':
-                    try:
-                        if Node.app.color_code_pins:
-                            t = type(data)
+            self.send_internal()
+        self.new_output = False
 
-                            if t is np.ndarray:
-                                dpg.bind_item_theme(self.uuid, self._pin_active_array_theme)
-                            elif t is torch.Tensor:
-                                dpg.bind_item_theme(self.uuid, self._pin_active_tensor_theme)
-                            elif t is list:
-                                dpg.bind_item_theme(self.uuid, self._pin_active_list_theme)
-                            elif t is str:
-                                if data == 'bang':
-                                    dpg.bind_item_theme(self.uuid, self._pin_active_bang_theme)
-                                else:
-                                    dpg.bind_item_theme(self.uuid, self._pin_active_string_theme)
+    def send_internal(self):
+        if self.output_always or self.new_output:
+            if self.node.visibility == 'show_all':
+                try:
+                    if Node.app.color_code_pins:
+                        t = self.sent_type
+
+                        if t is np.ndarray:
+                            dpg.bind_item_theme(self.uuid, self._pin_active_array_theme)
+                        elif t is torch.Tensor:
+                            dpg.bind_item_theme(self.uuid, self._pin_active_tensor_theme)
+                        elif t is list:
+                            dpg.bind_item_theme(self.uuid, self._pin_active_list_theme)
+                        elif t is str:
+                            if self.sent_bang:
+                                dpg.bind_item_theme(self.uuid, self._pin_active_bang_theme)
                             else:
-                                dpg.bind_item_theme(self.uuid, self._pin_active_theme)
+                                dpg.bind_item_theme(self.uuid, self._pin_active_string_theme)
                         else:
                             dpg.bind_item_theme(self.uuid, self._pin_active_theme)
-                        Node.app.get_current_editor().add_active_pin(self.uuid)
-                    except Exception as e:
-                        pass
-                for child in self._children:
-                    child.node.active_input = child
-                    child.trigger()
-                    child.node.active_input = None
+                    else:
+                        dpg.bind_item_theme(self.uuid, self._pin_active_theme)
+                    Node.app.get_current_editor().add_active_pin(self.uuid)
+                except Exception as e:
+                    pass
+            for child in self._children:
+                child.node.active_input = child
+                child.trigger()
+                child.node.active_input = None
 
-        self.new_output = False
 
     def create(self, parent):
         if self.pos is not None:
@@ -1541,7 +1552,7 @@ class Node:
 
     def send_all(self):
         for output in self.outputs:
-            output.send()  # should not always trigger!!! make flag to indicate trigger always or trigger on change...
+            output.send_internal()  # should not always trigger!!! make flag to indicate trigger always or trigger on change...
 
     def add_label(self, label: str = ""):
         new_property = NodeProperty(label, widget_type='label')
