@@ -2,6 +2,8 @@
 import time
 import numpy as np
 from importlib import import_module
+
+import dpg_system.dpg_app
 from dpg_system.node import Node, NodeInput, NodeOutput, Variable, PlaceholderNode
 from dpg_system.node_editor import *
 from dpg_system.node import *
@@ -370,8 +372,8 @@ class App:
         self.patchers.append(name)
 
     def register_patchers(self):
-        if os.path.exists('dpg_system/patcher_library'):
-            for entry in os.scandir('dpg_system/patcher_library'):
+        if os.path.exists('dpg_system/patch_library'):
+            for entry in os.scandir('dpg_system/patch_library'):
                 if entry.is_file():
                     if entry.name[-5:] == '.json':
                         self.register_patcher(entry.name[:-5])
@@ -657,8 +659,8 @@ class App:
                 dpg.add_separator()
                 dpg.add_menu_item(label="Save to Library", callback=self.save_to_library)
                 dpg.add_separator()
-                dpg.add_menu_item(label="Save Setup", callback=self.save_patches)
-                dpg.add_menu_item(label="Save Setup As", callback=self.save_patches)
+                dpg.add_menu_item(label="Save All Patches", callback=self.save_patches)
+                dpg.add_menu_item(label="Save All Patches As", callback=self.save_patches)
                 dpg.add_separator()
                 dpg.add_menu_item(label="Quit (Q)", callback=self.quit)
             with dpg.menu(label='Edit'):
@@ -1160,8 +1162,9 @@ class App:
                     dpg.set_item_pos(node.uuid, dest)
 
     def set_widget_focus(self, widget_uuid):
-        dpg.focus_item(widget_uuid)
-        self.focussed_widget = widget_uuid
+        if dpg.does_item_exist(widget_uuid):
+            dpg.focus_item(widget_uuid)
+            self.focussed_widget = widget_uuid
 
     # def mouse_drag_handler(self):
     #     print('dragged', self.active_widget)
@@ -1521,11 +1524,11 @@ class App:
             self.saving_to_lib = False
 
     def save_to_library(self):
-        if not os.path.exists('dpg_system/patcher_library'):
-            os.makedirs('dpg_system/patcher_library')
-        if os.path.exists('dpg_system/patcher_library'):
+        if not os.path.exists('dpg_system/patch_library'):
+            os.makedirs('dpg_system/patch_library')
+        if os.path.exists('dpg_system/patch_library'):
             self.saving_to_lib = True
-            self.save('', default_directory='dpg_system/patcher_library')
+            self.save('', default_directory='dpg_system/patch_library')
             self.patchers.append(self.patches_name)
 
 

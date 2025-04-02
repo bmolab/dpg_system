@@ -223,6 +223,7 @@ class OSCTarget(OSCBase):
     def custom_create(self, from_file):
         self.create_client()
         self.osc_manager.register_target(self)
+
     def create_client(self):
         try:
             self.client = SimpleUDPClient(self.ip, self.target_port)
@@ -232,7 +233,7 @@ class OSCTarget(OSCBase):
             traceback.print_exception(e)
 
     def destroy_client(self):
-        # self.osc_manager.remove_target(self)
+        self.osc_manager.remove_target(self)
         self.client = None
 
     # this is really just to allow us who might call us so that we can tell them we are gone.
