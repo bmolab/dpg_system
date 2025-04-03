@@ -968,17 +968,17 @@ class App:
                     node_object.toggle_show_hide_options()
 
     def M_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
+        if dpg.is_key_down(dpg.mvKey_LControl) or dpg.is_key_down(dpg.mvKey_RControl) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
             if self.get_current_editor() is not None:
                 self.show_minimap()
 
     def Q_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
+        if dpg.is_key_down(dpg.mvKey_LControl) or dpg.is_key_down(dpg.mvKey_RControl) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
             print('quitting')
             self.quit()
 
     def C_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
+        if dpg.is_key_down(dpg.mvKey_LControl) or dpg.is_key_down(dpg.mvKey_RControl) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
             if self.get_current_editor() is not None:
                 self.clipboard = self.get_current_editor().copy_selection()
         else:
@@ -986,28 +986,27 @@ class App:
                 self.comment_handler()
 
     def plus_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
+        if self.control_or_command_down():
             self.space_out_selected()
 
     def minus_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
+        if self.control_or_command_down():
             self.tighten_selected()
 
     def space_handler(self):
         pass
 
     def P_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
+        if self.control_or_command_down():
             if self.get_current_editor() is not None:
                 self.clipboard = self.get_current_editor().patchify_selection()
 
     def R_handler(self):
-        if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
+        if self.control_or_command_down():
             if self.get_current_editor() is not None:
                 self.get_current_editor().reset_origin()
 
     def hide_selected(self):
-        # if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
         if self.get_current_editor() is not None:
             selected_nodes_uuids = dpg.get_selected_nodes(self.get_current_editor().uuid)
             for selected_nodes_uuid in selected_nodes_uuids:
@@ -1030,7 +1029,6 @@ class App:
                 node.toggle_show_hide_options()
 
     def show_widget_only_for_selected(self):
-        # if dpg.is_key_down(dpg.mvKey_Control) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
         if self.get_current_editor() is not None:
             selected_nodes_uuids = dpg.get_selected_nodes(self.get_current_editor().uuid)
             for selected_nodes_uuid in selected_nodes_uuids:
