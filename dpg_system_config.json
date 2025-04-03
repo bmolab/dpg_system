@@ -21,6 +21,5 @@
   "digico_nodes": true,
   "google_translate_nodes": true,
   "layout_nodes": true,
-  "lighting_nodes": true,
   "eos_nodes": true
 }

@@ -24,6 +24,15 @@ def register_interface_nodes():
     Node.app.register_node("string", ValueNode.factory)
     Node.app.register_node("list", ValueNode.factory)
     Node.app.register_node("knob", ValueNode.factory)
+
+    Node.app.register_node('param', ParamValueNode.factory)
+    Node.app.register_node('param_slider', ParamValueNode.factory)
+    Node.app.register_node('param_float', ParamValueNode.factory)
+    Node.app.register_node('param_int', ParamValueNode.factory)
+    Node.app.register_node('param_message', ParamValueNode.factory)
+    Node.app.register_node('param_string', ParamValueNode.factory)
+    Node.app.register_node('param_knob', ParamValueNode.factory)
+
     # Node.app.register_node("plot", PlotNode.factory)
     # Node.app.register_node("heat_map", PlotNode.factory)
     # Node.app.register_node("heat_scroll", PlotNode.factory)
@@ -731,6 +740,8 @@ class ValueNode(Node):
         super().__init__(label, data, args)
         if label[:4] == 'osc_':
             ordered_args = self.ordered_args[2:]
+        elif label[:3] == 'param_':
+            ordered_args = self.ordered_args[1:]
         else:
             ordered_args = self.ordered_args
         widget_type = 'drag_float'
@@ -754,7 +765,7 @@ class ValueNode(Node):
 
         self.output = None
 
-        if label in ['float', 'osc_float']:
+        if label in ['float', 'osc_float', 'param_float']:
             widget_type = 'drag_float'
             for i in range(len(ordered_args)):
                 val, t = decode_arg(ordered_args, i)
@@ -767,7 +778,7 @@ class ValueNode(Node):
                                             widget_uuid=self.value, widget_width=widget_width, trigger_button=True)
             self.output = self.add_float_output('float out')
 
-        elif label in ['int', 'osc_int']:
+        elif label in ['int', 'osc_int', 'param_int']:
             widget_type = 'drag_int'
             for i in range(len(ordered_args)):
                 val, t = decode_arg(ordered_args, i)
@@ -781,7 +792,7 @@ class ValueNode(Node):
                                             widget_uuid=self.value, widget_width=widget_width, trigger_button=True)
                 self.output = self.add_int_output('int out')
 
-        elif label in ['slider', 'osc_slider']:
+        elif label in ['slider', 'osc_slider', 'param_slider']:
             widget_type = 'slider_float'
             if ordered_args is not None:
                 for i in range(len(ordered_args)):
@@ -809,7 +820,7 @@ class ValueNode(Node):
                                                   max=self.max)
                 self.output = self.add_int_output('int out')
 
-        elif label in ['knob', 'osc_knob']:
+        elif label in ['knob', 'osc_knob', 'param_knob']:
             widget_type = 'knob_float'
             value_type = float
             if ordered_args is not None:
@@ -840,21 +851,21 @@ class ValueNode(Node):
                                                   max=self.max)
                 self.output = self.add_int_output('int out')
 
-        elif label in ['string', 'osc_string']:
+        elif label in ['string', 'osc_string', 'param_string']:
             widget_type = 'text_input'
             self.input = self.add_string_input('', triggers_execution=True, widget_type=widget_type,
                                         widget_uuid=self.value, widget_width=widget_width,
                                         trigger_button=True)
             self.output = self.add_string_output('string out')
 
-        elif label in ['message', 'osc_message', 'list', 'osc_list']:
+        elif label in ['message', 'osc_message', 'list', 'osc_list', 'param_message', 'param_list']:
             widget_type = 'text_input'
             self.input = self.add_input('', triggers_execution=True, widget_type=widget_type,
                                               widget_uuid=self.value, widget_width=widget_width,
                                               trigger_button=True)
             self.output = self.add_list_output('list out')
 
-        elif label in ['text']:
+        elif label in ['text', 'param_text']:
             widget_type = 'text_editor'
             self.input = self.add_string_input('', triggers_execution=True, widget_type=widget_type,
                                         widget_uuid=self.value, widget_width=400,
@@ -1158,7 +1169,7 @@ class ValueNode(Node):
             if self.input.widget.widget == 'slider_float':
                 if self.power() != 1.0:
                     output_data = pow(output_data, self.power())
-            self.outputs[0].send(output_data)
+            self.do_send(output_data)
 
     def update(self, propagate=True):
         value = dpg.get_value(self.value)
@@ -1175,6 +1186,9 @@ class ValueNode(Node):
         if self.input.widget.widget == 'slider_float':
             if self.power() != 1.0:
                 value = pow(value, self.power())
+        self.do_send(value)
+
+    def do_send(self, value):
         self.outputs[0].send(value)
 
 
@@ -1895,3 +1909,32 @@ class KeyNode(Node):
         #     v = KeyNode.map[k][0]
         #     KeyNode.reverse_map[v] = k
         #
+
+class ParamValueNode(ValueNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ParamValueNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        ValueNode.__init__(self, label, data, args)
+
+        param_name = ''
+        if len(args) > 0:
+            param_name = args[0]
+            args_ = args[1:]
+
+        super().__init__(label, data, args_)
+        self.unparsed_args = args
+        self.param_output = self.add_output(param_name)
+        self.param_name = self.add_option('parameter name', widget_type='text_input', default_value=param_name, callback=self.param_name_changed)
+
+    def param_name_changed(self):
+        self.param_name.set_label(self.param_name())
+
+    def custom_create(self, from_file):
+        dpg.hide_item(self.output.uuid)
+
+    def do_send(self, value):
+        output_list = [self.param_name(), value]
+        self.param_output.send(output_list)

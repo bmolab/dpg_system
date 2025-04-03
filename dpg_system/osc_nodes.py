@@ -1129,7 +1129,7 @@ class OSCValueNode(OSCReceiver, OSCSender, ValueNode):
         if self.name != '':
             self.find_target_node(self.name)
             self.find_source_node(self.name)
-        self.output.set_label( any_to_string(self.target_name_property()) + ':' + any_to_string(self.target_address_property()))
+        self.output.set_label(any_to_string(self.target_name_property()) + ':' + any_to_string(self.target_address_property()))
 
     def cleanup(self):
         OSCSender.cleanup(self)

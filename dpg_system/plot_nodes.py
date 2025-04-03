@@ -501,6 +501,17 @@ class HeatMapNode(BasePlotNode):
             dpg.add_plot_axis(dpg.mvXAxis, label="", tag=self.x_axis, no_tick_labels=True)
             dpg.add_plot_axis(dpg.mvYAxis, label="", tag=self.y_axis, no_tick_labels=True)
 
+    def frame_task(self):
+        if self.pending_sample_count != self.sample_count or (self.pending_rows is not None and self.pending_rows != self.rows):
+            if self.sample_count_option is not None:
+                self.sample_count_option.set(self.pending_sample_count)
+            else:
+                self.sample_count = self.pending_sample_count
+            self.change_sample_count()
+            self.input.fresh_input = True
+            self.execute()
+            self.remove_frame_tasks()
+
     def custom_create(self, from_file):
         self.reallocate_buffer()
 
@@ -585,6 +596,7 @@ class HeatMapNode(BasePlotNode):
                     self.pending_rows = rows
                     self.pending_sample_count = sample_count
                     self.lock.release()
+                    self.add_frame_task()
                     return
                 self.y_data.update(ii)
 
@@ -599,6 +611,7 @@ class HeatMapNode(BasePlotNode):
                         self.pending_rows = rows
                         self.pending_sample_count = sample_count
                         self.lock.release()
+                        self.add_frame_task()
                         return
                     self.y_data.update(ii)
                 else:
@@ -620,6 +633,7 @@ class HeatMapNode(BasePlotNode):
                         self.pending_rows = rows
                         self.pending_sample_count = sample_count
                         self.lock.release()
+                        self.add_frame_task()
                         return
                     if self.range != 1.0 or self.offset != 0:
                         ii = (data + self.offset) / self.range

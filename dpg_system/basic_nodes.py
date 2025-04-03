@@ -3346,3 +3346,13 @@ class PresentationModeNode(Node):
             self.app.get_current_editor().enter_presentation_state()
         else:
             self.app.get_current_editor().enter_edit_state()
+
+
+class TestNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TestNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)

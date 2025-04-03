@@ -55,7 +55,6 @@ optional_import = [
     'depthanything_nodes',
     'vae_nodes',
     'vive_tracker_nodes',
-    'lighting_nodes',
     'google_translate_nodes',
     'layout_nodes',
     'digico_nodes',
