@@ -1,3 +1,9 @@
+# note sometimes it is necessary to reinstall cairo
+# conda install -c conda-forge pycairo
+# after conda uninstall pycairo first
+
+
+
 import cairo
 import math
 import numpy as np
