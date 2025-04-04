@@ -660,7 +660,7 @@ class HeatMapNode(BasePlotNode):
                         self.format_option.set('')
                         self.format = ''
                         self.change_format()
-            elif self.width / self.sample_count < 40:
+            elif self.width / self.rows < 40:
                 forced_format = True
                 if len(self.format) > 0:
                     self.hold_format = self.format
