@@ -1572,7 +1572,7 @@ class KeyNode(Node):
     node_list = []
     inited = False
     map = {}
-    # reverse_map = {}
+    reverse_map = {}
 
     @staticmethod
     def factory(name, data, args=None):
@@ -1642,20 +1642,24 @@ class KeyNode(Node):
         self.shifted_keys['.'] = '>'
         self.shifted_keys["/"] = '?'
 
-    def key_up(self, key_ascii):
-        if key_ascii in [dpg.mvKey_LShift, dpg.mvKey_RShift]:
+    def key_up(self, key_code):
+        key_name = ''
+
+        if key_code in self.reverse_map:
+            key_name = self.reverse_map[key_code]
+        if key_name in ['right_shift', 'left_shift']:
             if self.shift_key_pressed:
                 self.shift_key_pressed = False
                 self.shift_key_changed = True
-        elif key_ascii in [dpg.mvKey_LWin, dpg.mvKey_RWin]:
+        elif key_name in ['right_meta', 'left_meta']:
             if self.meta_key_pressed:
                 self.meta_key_pressed = False
                 self.meta_key_changed = True
-        elif key_ascii in [dpg.mvKey_LControl, dpg.mvKey_RControl]:
+        elif key_name in ['right_control', 'left_control']:
             if self.control_key_pressed:
                 self.control_key_pressed = False
                 self.control_key_changed = True
-        elif key_ascii in [dpg.mvKey_LAlt, dpg.mvKey_RAlt]:
+        elif key_name in ['right_alt', 'left_alt']:
             if self.alt_key_pressed:
                 self.alt_key_pressed = False
                 self.alt_key_changed = True
@@ -1673,60 +1677,69 @@ class KeyNode(Node):
             self.meta_key_changed = False
             self.meta_key_output.send(self.meta_key_pressed)
 
-    def key_down(self, key_ascii):
-        if key_ascii in [dpg.mvKey_LShift, dpg.mvKey_RShift]:
+    def key_down(self, key_code):
+        key_name = ''
+        key_ascii = -1
+        if key_code in self.reverse_map:
+            key_name = self.reverse_map[key_code]
+        if len(key_name) == 1:
+            key_ascii = ord(key_name)
+        if key_name in ['right_shift', 'left_shift']:
             if not self.shift_key_pressed:
                 self.shift_key_pressed = True
                 self.shift_key_changed = True
-        elif key_ascii in [dpg.mvKey_LWin, dpg.mvKey_RWin]:
+        elif key_name in ['right_meta', 'left_meta']:
             if not self.meta_key_pressed:
                 self.meta_key_pressed = True
                 self.meta_key_changed = True
-        elif key_ascii in [dpg.mvKey_LControl, dpg.mvKey_RControl]:
+        elif key_name in ['right_control', 'left_control']:
             if not self.control_key_pressed:
                 self.control_key_pressed = True
                 self.control_key_changed = True
-        elif key_ascii in [dpg.mvKey_LAlt, dpg.mvKey_RAlt]:
+        elif key_name in ['right_alt', 'left_alt']:
             if not self.alt_key_pressed:
                 self.alt_key_pressed = True
                 self.alt_key_changed = True
 
-        character = chr(key_ascii)
-        if self.shift_key_pressed:
-            if key_ascii in self.reverse_shifted_key_list:
-                character = self.reverse_shifted_key_list[key_ascii]
-            if ord('A') <= key_ascii <= ord('Z'):
-                character = character.upper()
+        if key_ascii != -1:
+            character = chr(key_ascii)
+            if self.shift_key_pressed:
+                if key_ascii in self.reverse_shifted_key_list:
+                    character = self.reverse_shifted_key_list[key_ascii]
+                if ord('A') <= key_ascii <= ord('Z'):
+                    character = character.upper()
+                else:
+                    if character in self.shifted_keys:
+                        character = self.shifted_keys[character]
             else:
-                if character in self.shifted_keys:
-                    character = self.shifted_keys[character]
-        else:
-            if key_ascii in self.reverse_key_list:
-                character = self.reverse_key_list[key_ascii]
-            if ord('A') <= key_ascii <= ord('Z'):
-                character = character.lower()
+                if key_ascii in self.reverse_key_list:
+                    character = self.reverse_key_list[key_ascii]
+                if ord('A') <= key_ascii <= ord('Z'):
+                    character = character.lower()
 
-        if len(self.key_list) > 0:
-            if character in self.key_list:
-                if character in self.output_dict:
-                    self.output_dict[character].send('bang')
-        else:
+            if len(self.key_list) > 0:
+                if character in self.key_list:
+                    if character in self.output_dict:
+                        self.output_dict[character].send('bang')
+        if len(self.key_list) == 0:
             if self.output is not None:
-                self.code_output.send(key_ascii)
-                if key_ascii < 256 and character.isprintable():
-                    self.output.send(character)
-                if self.shift_key_changed:
-                    self.shift_key_changed = False
-                    self.shift_key_output.send(self.shift_key_pressed)
-                if self.alt_key_changed:
-                    self.alt_key_changed = False
-                    self.alt_key_output.send(self.alt_key_pressed)
-                if self.control_key_changed:
-                    self.control_key_changed = False
-                    self.control_key_output.send(self.control_key_pressed)
-                if self.meta_key_changed:
-                    self.meta_key_changed = False
-                    self.meta_key_output.send(self.meta_key_pressed)
+                if key_ascii != -1:
+                    self.code_output.send(key_ascii)
+                    if key_ascii < 256 and character.isprintable():
+                        self.output.send(character)
+
+        if self.shift_key_changed:
+            self.shift_key_changed = False
+            self.shift_key_output.send(self.shift_key_pressed)
+        if self.alt_key_changed:
+            self.alt_key_changed = False
+            self.alt_key_output.send(self.alt_key_pressed)
+        if self.control_key_changed:
+            self.control_key_changed = False
+            self.control_key_output.send(self.control_key_pressed)
+        if self.meta_key_changed:
+            self.meta_key_changed = False
+            self.meta_key_output.send(self.meta_key_pressed)
 
     def list_keys(self):
         keys = list(KeyNode.map.keys())
@@ -1781,12 +1794,11 @@ class KeyNode(Node):
         KeyNode.map['numpad_+'] = [dpg.mvKey_Add, False]
         KeyNode.map['numpad_-'] = [dpg.mvKey_Subtract, False]
         KeyNode.map['numpad_.'] = [dpg.mvKey_Decimal, False]
-        KeyNode.map['capital'] = [dpg.mvKey_Capital, False]
 
         KeyNode.map['`'] = [dpg.mvKey_Tilde, False]
         KeyNode.map['~'] = [dpg.mvKey_Tilde, True]
-        KeyNode.map['\\'] = [dpg.mvKey_Separator, False]
-        KeyNode.map['|'] = [dpg.mvKey_Separator, True]
+        KeyNode.map['\\'] = [dpg.mvKey_Backslash, False]
+        KeyNode.map['|'] = [dpg.mvKey_Backslash, True]
         KeyNode.map['clear'] = [dpg.mvKey_Clear, False]
         KeyNode.map[':'] = [dpg.mvKey_Colon, False]
         KeyNode.map[';'] = [dpg.mvKey_Colon, True]
@@ -1828,10 +1840,10 @@ class KeyNode(Node):
         KeyNode.map['+'] = [dpg.mvKey_Plus, True]
         KeyNode.map['='] = [dpg.mvKey_Plus, False]
         KeyNode.map['print'] = [dpg.mvKey_Print, False]
-        KeyNode.map['print_screen'] = [dpg.mvKey_PrintScreen, False]
         KeyNode.map["'"] = [dpg.mvKey_Quote, False]
         KeyNode.map['"'] = [dpg.mvKey_Quote, True]
-        KeyNode.map['alt'] = [dpg.mvKey_Alt, False]
+        KeyNode.map['left_alt'] = [dpg.mvKey_LAlt, False]
+        KeyNode.map['right_alt'] = [dpg.mvKey_RAlt, False]
         KeyNode.map['right_control'] = [dpg.mvKey_RControl, False]
         KeyNode.map['return'] = [dpg.mvKey_Return, False]
         KeyNode.map['right'] = [dpg.mvKey_Right, False]
@@ -1905,10 +1917,10 @@ class KeyNode(Node):
         KeyNode.map['volume_down'] = [dpg.mvKey_Volume_Down, False]
         KeyNode.map['volume_mute'] = [dpg.mvKey_Volume_Mute, False]
 
-        # for k in KeyNode.map:
-        #     v = KeyNode.map[k][0]
-        #     KeyNode.reverse_map[v] = k
-        #
+        for k in KeyNode.map:
+            v = KeyNode.map[k][0]
+            KeyNode.reverse_map[v] = k
+
 
 class ParamValueNode(ValueNode):
     @staticmethod

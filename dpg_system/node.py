@@ -718,6 +718,7 @@ class PropertyWidget:
         dpg.set_item_label(self.uuid, name)
 
     def clickable_changed(self):
+        print('clickable_changed')
         self.value = dpg.get_value(self.uuid)
         if self.variable:
             self.variable.set_value(self.value)
@@ -777,6 +778,7 @@ class PropertyWidget:
             self.callback()
 
     def get_text_width(self, pad=12, minimum_width=100):
+        print('get_text_width')
         ttt = any_to_string(self.value)
         font_id = dpg.get_item_font(self.uuid)
         size = dpg.get_text_size(ttt, font=font_id)
@@ -806,6 +808,7 @@ class PropertyWidget:
 
     def adjust_to_text_width(self, max=0):
         width = self.get_text_width()
+        print('adjust_to_text_width', width)
         if width is not None:
             dpg.configure_item(self.uuid, width=width)
         return width
@@ -2470,7 +2473,7 @@ class PlaceholderNode(Node):
         self.current_name = ''
 
     def custom_create(self, from_file):
-        dpg.configure_item(self.args_property.widget.uuid, show=False, on_enter=True)
+        dpg.configure_item(self.args_property.widget.uuid, show=False, on_enter=False)
         dpg.configure_item(self.static_name.widget.uuid, show=False)
         dpg.configure_item(self.node_list_box.widget.uuid, show=False)
 
@@ -2553,7 +2556,7 @@ class PlaceholderNode(Node):
             dpg.configure_item(self.static_name.widget.uuid, show=True)
             dpg.configure_item(self.args_property.widget.uuid, show=True, on_enter=True)
             self.static_name.set(selection)
-            dpg.focus_item(self.args_property.widget.uuid)
+            # dpg.focus_item(self.args_property.widget.uuid)
 
     def on_edit(self, widget):
         if widget == self.static_name:

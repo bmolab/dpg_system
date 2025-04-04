@@ -848,7 +848,6 @@ class App:
                                     external_targets.append([child, out_, uuid, index])
         return external_sources, external_targets
 
-
     def centre_of_selection(self):
         editor = self.get_current_editor()
         if editor is not None:
@@ -870,25 +869,6 @@ class App:
             editor = self.get_current_editor()
             if editor is not None and not editor.presenting:
                 editor.delete_selected_items()
-                # node_uuids = dpg.get_selected_nodes(editor.uuid)
-                #
-                # for node_uuid in node_uuids:
-                #     node = dpg.get_item_user_data(node_uuid)
-                #     if node is not None:
-                #         if node != editor.origin:
-                #             editor.remove_node(node)
-                #
-                # link_uuids = dpg.get_selected_links(editor.uuid)
-                # for link_uuid in link_uuids:
-                #     if dpg.does_item_exist(link_uuid):
-                #         dat = dpg.get_item_user_data(link_uuid)
-                #         out = dat[0]
-                #         child = dat[1]
-                #         if len(node_uuids) == 0 or out.node.uuid in node_uuids or child.node.uuid in node_uuids:
-                #             #  remove only if link connects to selected node or no selected node
-                #             out.remove_link(link_uuid, child)
-
-
 
     def return_handler(self):
         # print('return')
@@ -968,17 +948,17 @@ class App:
                     node_object.toggle_show_hide_options()
 
     def M_handler(self):
-        if dpg.is_key_down(dpg.mvKey_LControl) or dpg.is_key_down(dpg.mvKey_RControl) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
+        if self.control_or_command_down():
             if self.get_current_editor() is not None:
                 self.show_minimap()
 
     def Q_handler(self):
-        if dpg.is_key_down(dpg.mvKey_LControl) or dpg.is_key_down(dpg.mvKey_RControl) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
+        if self.control_or_command_down():
             print('quitting')
             self.quit()
 
     def C_handler(self):
-        if dpg.is_key_down(dpg.mvKey_LControl) or dpg.is_key_down(dpg.mvKey_RControl) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin):
+        if self.control_or_command_down():
             if self.get_current_editor() is not None:
                 self.clipboard = self.get_current_editor().copy_selection()
         else:
@@ -1057,8 +1037,8 @@ class App:
                 dpg.set_item_label(self.presentation_edit_menu_item, 'Enter Edit Mode (E)')
 
     def control_or_command_down(self):
-        return dpg.is_key_down(dpg.mvKey_LControl) or dpg.is_key_down(dpg.mvKey_RControl) or dpg.is_key_down(
-        dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin)
+        return dpg.is_key_down(dpg.mvKey_LControl) or dpg.is_key_down(dpg.mvKey_RControl) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin)
+        # return dpg.is_key_down(dpg.mvKey_ModCtrl) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin)
 
     def X_handler(self):
         if self.control_or_command_down():
@@ -1233,6 +1213,7 @@ class App:
                     self.set_widget_focus(node.name_property.widget.uuid)
                     dpg.set_value(node.name_property.widget.uuid, name)
                     node.node_list = [name]
+                    print('about to prompt for args')
                     node.prompt_for_args()
                 else:
                     self.set_widget_focus(node.name_property.widget.uuid)
@@ -1724,8 +1705,8 @@ class App:
                         self.node_editors[0].create(self.center_panel)
                         with dpg.handler_registry():
                             # dpg.add_mouse_drag_handler(callback=self.mouse_drag_handler)
-                            dpg.add_key_press_handler(-1, callback=self.key_handler)
-                            dpg.add_key_release_handler(-1, callback=self.key_release_handler)
+                            dpg.add_key_press_handler(callback=self.key_handler)
+                            dpg.add_key_release_handler(callback=self.key_release_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Up, callback=self.up_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Down, callback=self.down_handler)
                             dpg.add_key_press_handler(dpg.mvKey_I, callback=self.int_handler)
