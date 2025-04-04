@@ -778,7 +778,6 @@ class PropertyWidget:
             self.callback()
 
     def get_text_width(self, pad=12, minimum_width=100):
-        print('get_text_width')
         ttt = any_to_string(self.value)
         font_id = dpg.get_item_font(self.uuid)
         size = dpg.get_text_size(ttt, font=font_id)

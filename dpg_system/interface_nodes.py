@@ -1,6 +1,6 @@
 import dearpygui.dearpygui as dpg
 import time
-
+import platform
 import numpy as np
 import torch
 
@@ -1642,6 +1642,29 @@ class KeyNode(Node):
         self.shifted_keys['.'] = '>'
         self.shifted_keys["/"] = '?'
 
+        self.unshifted_keys = {}
+        self.unshifted_keys['!'] = '1'
+        self.unshifted_keys['@'] = '2'
+        self.unshifted_keys['#'] = '3'
+        self.unshifted_keys['$'] = '4'
+        self.unshifted_keys['%'] = '5'
+        self.unshifted_keys['^'] = '6'
+        self.unshifted_keys['&'] = '7'
+        self.unshifted_keys['*'] = '8'
+        self.unshifted_keys['('] = '9'
+        self.unshifted_keys[')'] = '0'
+        self.unshifted_keys['~'] = '`'
+        self.unshifted_keys['_'] = '-'
+        self.unshifted_keys['+'] = '='
+        self.unshifted_keys['{'] = '['
+        self.unshifted_keys['}'] = ']'
+        self.unshifted_keys['|'] = '\\'
+        self.unshifted_keys[':'] = ';'
+        self.unshifted_keys['"'] = "'"
+        self.unshifted_keys['<'] = ','
+        self.unshifted_keys['>'] = '.'
+        self.unshifted_keys['?'] = '/'
+
     def key_up(self, key_code):
         key_name = ''
 
@@ -1716,6 +1739,8 @@ class KeyNode(Node):
                     character = self.reverse_key_list[key_ascii]
                 if ord('A') <= key_ascii <= ord('Z'):
                     character = character.lower()
+                if character in self.unshifted_keys:
+                    character = self.unshifted_keys[character]
 
             if len(self.key_list) > 0:
                 if character in self.key_list:
@@ -1842,8 +1867,9 @@ class KeyNode(Node):
         KeyNode.map['print'] = [dpg.mvKey_Print, False]
         KeyNode.map["'"] = [dpg.mvKey_Quote, False]
         KeyNode.map['"'] = [dpg.mvKey_Quote, True]
-        KeyNode.map['left_alt'] = [dpg.mvKey_LAlt, False]
-        KeyNode.map['right_alt'] = [dpg.mvKey_RAlt, False]
+        if platform.system() != 'Darwin':
+            KeyNode.map['left_alt'] = [dpg.mvKey_LAlt, False]
+            KeyNode.map['right_alt'] = [dpg.mvKey_RAlt, False]
         KeyNode.map['right_control'] = [dpg.mvKey_RControl, False]
         KeyNode.map['return'] = [dpg.mvKey_Return, False]
         KeyNode.map['right'] = [dpg.mvKey_Right, False]
