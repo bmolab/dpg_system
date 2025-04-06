@@ -643,7 +643,7 @@ class PropertyWidget:
             elif self.widget == 'combo':
                 dpg.add_combo(self.combo_items, label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node, default_value=self.default_value)
             elif self.widget == 'color_picker':
-                dpg.add_color_picker(label='color', width=self.widget_width, display_type=dpg.mvColorEdit_uint8, tag=self.uuid, picker_mode=dpg.mvColorPicker_wheel, no_side_preview=False, no_alpha=False, alpha_bar=True, alpha_preview=dpg.mvColorEdit_AlphaPreviewHalf, user_data=self.node, no_inputs=True, default_value=self.default_value)
+                dpg.add_color_picker(label='color', width=self.widget_width, display_type=dpg.mvColorEdit_float, tag=self.uuid, picker_mode=dpg.mvColorPicker_wheel, no_side_preview=False, no_alpha=False, alpha_bar=True, alpha_preview=dpg.mvColorEdit_AlphaPreviewHalf, user_data=self.node, no_inputs=True, default_value=self.default_value)
             elif self.widget == 'list_box':
                 dpg.add_listbox(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node, num_items=8)
             elif self.widget == 'spacer':
@@ -718,7 +718,6 @@ class PropertyWidget:
         dpg.set_item_label(self.uuid, name)
 
     def clickable_changed(self):
-        print('clickable_changed')
         self.value = dpg.get_value(self.uuid)
         if self.variable:
             self.variable.set_value(self.value)

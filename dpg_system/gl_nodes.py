@@ -33,6 +33,8 @@ def register_gl_nodes():
     Node.app.register_node('gl_enable', GLEnableNode.factory)
     Node.app.register_node('gl_axis_angle_rotate', GLAxisAngleRotateNode.factory)
 
+    Node.app.register_node('gl_light', GLLightNode.factory)
+
 
 class GLCommandParser:
     def __init__(self):
@@ -452,6 +454,7 @@ class GLQuadricCommandParser(GLCommandParser):
             elif mode == 'point':
                 gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_POINT)
 
+
     def set_orient_scale(self, node, args):
         orient = list_to_array(args)
         scale = np.linalg.norm(orient) + 1e-6
@@ -740,11 +743,13 @@ class GLQuadricNode(TexturedGLNode):
             print('self.quadric failed')
             print(e)
         self.shading_option = None
+        self.style_option = None
+        self.polygon_mode = gl.GL_FILL
         self.pending_commands = []
         self.command_parser = GLQuadricCommandParser(self)
         self.alignment_matrix = None
-        self.texture = self.add_input('texture')
         super().initialize(args)
+        self.texture = self.add_input('texture')
 
     def process_pending_commands(self):
         if self.pending_commands is not None:
@@ -763,12 +768,26 @@ class GLQuadricNode(TexturedGLNode):
             self.shading = glu.GLU_NONE
         glu.gluQuadricNormals(self.quadric, self.shading)
 
+    def style_changed(self):
+        style = self.style_option()
+        self.polygon_mode = gl.GL_FILL
+        if style == 'fill':
+            self.polygon_mode = gl.GL_FILL
+        elif style == 'line':
+            self.polygon_mode = gl.GL_LINE
+        elif style == 'point':
+            self.polygon_mode = gl.GL_POINT
+
     def set_size(self, scaler):
         pass
 
     def add_shading_option(self):
         self.shading_option = self.add_option('shading', widget_type='combo', default_value='smooth', callback=self.shading_changed)
         self.shading_option.widget.combo_items = ['none', 'flat', 'smooth']
+
+    def add_style_option(self):
+        self.style_option = self.add_option('style', widget_type='combo', default_value='fill', callback=self.style_changed)
+        self.style_option.widget.combo_items = ['fill', 'line', 'point']
 
     def handle_other_messages(self, message):
         if type(message) == list:
@@ -818,19 +837,19 @@ class GLSphereNode(GLQuadricNode):
         slices = self.arg_as_int(index=1, default_value=32)
         stacks = self.arg_as_int(index =2, default_value=32)
 
-        # self.gl_input = self.add_input('gl chain in', triggers_execution=True)
         self.size = self.add_input('size', widget_type='drag_float', default_value=size)
-        # self.gl_output = self.add_output('gl chain out')
-
         self.slices = self.add_input('slices', widget_type='drag_int', default_value=slices)
         self.stacks = self.add_input('stacks', widget_type='drag_int', default_value=stacks)
         self.add_shading_option()
+        self.add_style_option()
 
     def set_size(self, scaler):
         self.size.set(scaler)
 
     def quadric_draw(self):
+        gl.glPolygonMode(gl.GL_FRONT_AND_BACK, self.polygon_mode)
         gluSphere(self.quadric, self.size(), self.slices(), self.stacks())
+        gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_FILL)
 
 
 class GLDiskNode(GLQuadricNode):
@@ -858,13 +877,15 @@ class GLDiskNode(GLQuadricNode):
         self.slices = self.add_input('slices', widget_type='drag_int', default_value=slices)
         self.rings = self.add_input('rings', widget_type='drag_int', default_value=rings)
         self.add_shading_option()
+        self.add_style_option()
 
     def set_size(self, scaler):
         self.outer_radius.set(scaler)
 
     def quadric_draw(self):
+        gl.glPolygonMode(gl.GL_FRONT_AND_BACK, self.polygon_mode)
         gluDisk(self.quadric, self.inner_radius(), self.outer_radius(), self.slices(), self.rings())
-
+        gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_FILL)
 
 class GLPartialDiskNode(GLQuadricNode):
     @staticmethod
@@ -897,13 +918,15 @@ class GLPartialDiskNode(GLQuadricNode):
         self.sweep_angle = self.add_input('sweep angle', widget_type='drag_float', default_value=sweep_angle)
         self.sweep_angle.widget.speed = 1
         self.add_shading_option()
+        self.add_style_option()
 
     def set_size(self, scaler):
         self.outer_radius.set(scaler)
 
     def quadric_draw(self):
+        gl.glPolygonMode(gl.GL_FRONT_AND_BACK, self.polygon_mode)
         gluPartialDisk(self.quadric, self.inner_radius(), self.outer_radius(), self.slices(), self.rings(), self.start_angle(), self.sweep_angle())
-
+        gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_FILL)
 
 class GLCylinderNode(GLQuadricNode):
     @staticmethod
@@ -932,6 +955,7 @@ class GLCylinderNode(GLQuadricNode):
         self.slices = self.add_input('slices', widget_type='drag_int', default_value=slices)
         self.stacks = self.add_input('stacks', widget_type='drag_int', default_value=stacks)
         self.add_shading_option()
+        self.add_style_option()
 
     def set_size(self, scaler):
         self.base_radius.set(scaler)
@@ -939,8 +963,9 @@ class GLCylinderNode(GLQuadricNode):
         self.height.set(scaler)
 
     def quadric_draw(self):
+        gl.glPolygonMode(gl.GL_FRONT_AND_BACK, self.polygon_mode)
         gluCylinder(self.quadric, self.base_radius(), self.top_radius(), self.height(), self.slices(), self.stacks())
-
+        gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_FILL)
 
 class GLQuaternionRotateNode(GLNode):
     @staticmethod
@@ -2447,6 +2472,7 @@ class GLXYZDiskNode(GLQuadricNode):
         self.rings = 1
         self.degree_factor = 180.0 / math.pi
         self.add_shading_option()
+        self.add_style_option()
         self.size_x = 0.0
         self.size_y = 0.0
         self.size_z = 0.0
@@ -2692,5 +2718,250 @@ class GLNumpyLines(GLNode):
                         gl.glColor4f(color[0], color[1], color[2], alpha)
                         gl.glVertex(self.line_array[j, i])
                     gl.glEnd()
+
+class GLLight:
+    def __init__(self):
+        self.ambient = [0.2, 0.2, 0.2, 1.0]
+        self.diffuse = [0.8, 0.8, 0.8, 1.0]
+        self.specular = [0.0, 0.0, 0.0, 1.0]
+        self.position = [0.0, 0.0, 0.0, 0.0]
+        self.positional = False
+        self.spot_direction = [0.0, 0.0, -1.0]
+        self.spot_exponent = 0.0
+        self.spot_cutoff = 180.0
+        self.enabled = False
+        self.light_model_active = False
+        self.global_ambient_active = False
+        self.local_viewer = False
+        self.two_sided = False
+        self.global_ambient = [0.2, 0.2, 0.2, 1.0]
+        self.constant_attenuation = 1.0
+        self.linear_attenuation = 0.0
+        self.quadratic_attenuation = 0.0
+
+    def reset(self):
+        self.ambient = [0.2, 0.2, 0.2, 1.0]
+        self.diffuse = [0.8, 0.8, 0.8, 1.0]
+        self.specular = [0.0, 0.0, 0.0, 1.0]
+        self.position = [0.0, 0.0, 0.0, 0.0]
+        self.positional = False
+        self.spot_direction = [0.0, 0.0, -1.0]
+        self.spot_exponent = 0.0
+        self.spot_cutoff = 180.0
+        self.enabled = False
+        self.light_model_active = False
+        self.global_ambient_active = False
+        self.local_viewer = False
+        self.two_sided = False
+        self.global_ambient = [0.2, 0.2, 0.2, 1.0]
+        self.constant_attenuation = 1.0
+        self.linear_attenuation = 0.0
+        self.quadratic_attenuation = 0.0
+
+
+class GLLightNode(GLNode):
+    @staticmethod
+    def factory(node_name, data, args=None):
+        node = GLLightNode(node_name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        self.enabled_input = None
+        self.ambient_input = None
+        self.diffuse_input = None
+        self.specular_input = None
+        self.position_input = None
+        self.positional_input = None
+        self.spot_direction_input = None
+        self.spot_exponent_input = None
+        self.spot_cutoff_input = None
+        self.light_model_active_input = None
+        self.light_model_ambient_active_input = None
+        self.local_viewer_input = None
+        self.two_sided_input = None
+        self.global_ambient_input = None
+        self.constant_attenuation_input = None
+        self.linear_attenuation_input = None
+        self.quadratic_attenuation_input = None
+
+        super().__init__(label, data, args)
+        self.light_id = GL_LIGHT0
+        if len(args) > 1:
+            id = int(args[1])
+            self.set_id(id)
+
+
+
+    def initialize(self, args):
+        super().initialize(args)
+        self.light = GLLight()
+
+        self.enabled_input = self.add_input('enabled', widget_type='checkbox', default_value=self.light.enabled, callback=self.enable_changed)
+        self.id_input = self.add_input('id', widget_type='input_int', default_value=0, callback=self.id_changed)
+        self.ambient_input = self.add_input('ambient', callback=self.ambient_changed)
+        self.diffuse_input = self.add_input('diffuse', callback=self.diffuse_changed)
+        self.specular_input = self.add_input('specular', callback=self.specular_changed)
+        self.position_input = self.add_input('position', callback=self.position_changed)
+        self.positional_input = self.add_input('positional', callback=self.positional_changed)
+        self.spot_direction_input = self.add_input('spot_direction', callback=self.spot_direction_changed)
+        self.spot_cutoff_input = self.add_input('spot_cutoff', widget_type='drag_float', default_value=self.light.spot_cutoff, callback=self.spot_cutoff_changed, min=1, max=180)
+        self.spot_exponent_input = self.add_input('spot_exponent', widget_type='drag_float', default_value=self.light.spot_exponent, callback=self.spot_exponent_changed, min=0)
+        self.light_model_active_input = self.add_input('light_model_active', widget_type='checkbox', default_value=self.light.light_model_active, callback=self.light_model_active_changed)
+        self.light_model_ambient_active_input = self.add_input('global ambient enabled', widget_type='checkbox', default_value=self.light.global_ambient_active, callback=self.global_ambient_active_changed)
+        self.local_viewer_input = self.add_input('local_viewer', widget_type='checkbox', default_value=self.light.local_viewer, callback=self.local_viewer_changed)
+        self.two_sided_input = self.add_input('two_sided', widget_type='checkbox', default_value=self.light.two_sided, callback=self.two_sided_changed)
+        self.global_ambient_input = self.add_input('global_ambient', callback=self.global_ambient_changed)
+        self.constant_attenuation_input = self.add_input('constant_attenuation', widget_type='drag_float', default_value=self.light.constant_attenuation, callback=self.constant_attenuation_changed)
+        self.linear_attenuation_input = self.add_input('linear_attenuation', widget_type='drag_float', default_value=self.light.linear_attenuation, callback=self.linear_attenuation_changed)
+        self.quadratic_attenuation_input = self.add_input('quadratic_attenuation', widget_type='drag_float', default_value=self.light.quadratic_attenuation, callback=self.quadratic_attenuation_changed)
+
+    def enable_changed(self):
+        self.light.enabled = self.enabled_input()
+
+    def positional_changed(self):
+        self.light.positional = self.positional_input()
+
+    def id_changed(self):
+        id = self.id_input()
+        self.set_id(id)
+
+    def set_id(self, number):
+        if number == 0:
+            self.light_id = gl.GL_LIGHT0
+        elif number == 1:
+            self.light_id = gl.GL_LIGHT1
+        elif number == 2:
+            self.light_id = gl.GL_LIGHT2
+        elif number == 3:
+            self.light_id = gl.GL_LIGHT3
+        elif number == 4:
+            self.light_id = gl.GL_LIGHT4
+        elif number == 5:
+            self.light_id = gl.GL_LIGHT5
+        elif number == 6:
+            self.light_id = gl.GL_LIGHT6
+        elif number == 7:
+            self.light_id = gl.GL_LIGHT7
+
+    def spot_cutoff_changed(self):
+        self.light.spot_cutoff = self.spot_cutoff_input()
+
+    def spot_exponent_changed(self):
+        self.light.spot_exponent = self.spot_exponent_input()
+
+    def light_model_active_changed(self):
+        self.light.light_model_active = self.light_model_active_input()
+
+    def global_ambient_active_changed(self):
+        self.light.global_ambient_active = self.light_model_active_input()
+
+    def local_viewer_changed(self):
+        self.light.local_viewer = self.local_viewer_input()
+
+    def two_sided_changed(self):
+        self.light.two_sided = self.two_sided_input()
+
+    def constant_attenuation_changed(self):
+        self.light.constant_attenuation = self.constant_attenuation_input()
+
+    def linear_attenuation_changed(self):
+        self.light.linear_attenuation = self.linear_attenuation_input()
+
+    def quadratic_attenuation_changed(self):
+        self.light.quadratic_attenuation = self.quadratic_attenuation_input()
+
+    def ambient_changed(self):
+        ambient = any_to_array(self.ambient_input())
+        if ambient.shape[0] == 3:
+            self.light.ambient = np.concatenate((ambient, np.ones(1)), axis=0)
+        if ambient.shape[0] == 4:
+            self.light.ambient = ambient
+
+    def diffuse_changed(self):
+        diffuse = any_to_array(self.diffuse_input())
+        if diffuse.shape[0] == 3:
+            self.light.diffuse = np.concatenate((diffuse, np.ones(1)), axis=0)
+        if diffuse.shape[0] == 4:
+            self.light.diffuse = diffuse
+
+    def specular_changed(self):
+        specular = any_to_array(self.specular_input())
+        if specular.shape[0] == 3:
+            self.light.specular = np.concatenate((specular, np.ones(1)), axis=0)
+        if specular.shape[0] == 4:
+            self.light.specular = specular
+
+    def position_changed(self):
+        position = any_to_array(self.position_input())
+        if position.shape[0] == 3:
+            self.light.position[:3] = position
+        elif position.shape[0] == 4:
+            self.light.position = position
+
+    def spot_direction_changed(self):
+        spot_direction = any_to_array(self.spot_direction_input())
+        if spot_direction.shape[0] == 3:
+            self.light.spot_direction = spot_direction
+
+    def global_ambient_changed(self):
+        global_ambient = any_to_array(self.global_ambient_input())
+        if global_ambient.shape[0] == 3:
+            self.light.global_ambient = np.concatenate((global_ambient, np.ones(1)), axis=0)
+        if global_ambient.shape[0] == 4:
+            self.light.global_ambient = global_ambient
+
+    def save_custom(self, container):
+        container['ambient'] = list(self.light.ambient)
+        container['diffuse'] = list(self.light.diffuse)
+        container['specular'] = list(self.light.specular)
+        container['position'] = list(self.light.position)
+        container['spot_direction'] = list(self.light.spot_direction)
+        container['global_ambient'] = list(self.light.global_ambient)
+
+    def load_custom(self, container):
+        if 'ambient' in container:
+            self.light.ambient = container['ambient']
+        if 'diffuse' in container:
+            self.light.diffuse = container['diffuse']
+        if 'specular' in container:
+            self.light.specular = container['specular']
+        if 'position' in container:
+            self.light.position = container['position']
+        if 'spot_direction' in container:
+            self.light.spot_direction = container['spot_direction']
+        if 'global_ambient' in container:
+            self.light.global_ambient = container['global_ambient']
+
+    def draw(self):
+        if self.light.light_model_active:
+            if self.light.global_ambient_active:
+                gl.glLightModelfv(gl.GL_LIGHT_MODEL_AMBIENT, self.light.global_ambient)
+            if self.light.local_viewer:
+                gl.glLightModeli(gl.GL_LIGHT_MODEL_LOCAL_VIEWER, self.light.local_viewer)
+            if self.light.two_sided:
+                gl.glLightModeli(gl.GL_LIGHT_MODEL_TWO_SIDE, self.light.two_sided)
+
+        if self.light.enabled:
+            gl.glEnable(self.light_id)
+            gl.glLightfv(self.light_id, gl.GL_AMBIENT, self.light.ambient)
+            gl.glLightfv(self.light_id, gl.GL_DIFFUSE, self.light.diffuse)
+            gl.glLightfv(self.light_id, gl.GL_SPECULAR, self.light.specular)
+            if self.light.positional:
+                pos = self.light.position.copy()
+                pos[3] = 1.0
+                gl.glLightfv(self.light_id, gl.GL_POSITION, pos)
+            else:
+                gl.glLightfv(self.light_id, gl.GL_POSITION, self.light.position)
+            gl.glLightfv(self.light_id, gl.GL_SPOT_DIRECTION, self.light.spot_direction)
+            if self.light.spot_cutoff > 90:
+                gl.glLightf(self.light_id, gl.GL_SPOT_CUTOFF, 180.0)
+            else:
+                gl.glLightf(self.light_id, gl.GL_SPOT_CUTOFF, self.light.spot_cutoff)
+            gl.glLightf(self.light_id, gl.GL_SPOT_EXPONENT, self.light.spot_exponent)
+            gl.glLightf(self.light_id, gl.GL_CONSTANT_ATTENUATION, self.light.constant_attenuation)
+            gl.glLightf(self.light_id, gl.GL_LINEAR_ATTENUATION, self.light.linear_attenuation)
+            gl.glLightf(self.light_id, gl.GL_QUADRATIC_ATTENUATION, self.light.quadratic_attenuation)
+        else:
+            gl.glDisable(self.light_id)
 
 

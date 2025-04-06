@@ -1564,7 +1564,13 @@ class ColorPickerNode(Node):
             self.execute()
 
     def execute(self):
-        data = list(self.input())
+        if self.input.fresh_input:
+            values = any_to_array(self.input())
+            values *= 256.0
+            self.input.widget.set(values)
+        else:
+            values = any_to_array(self.input())
+        data = values / 256
         self.output.send(data)
 
 
