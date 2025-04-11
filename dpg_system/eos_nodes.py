@@ -5,8 +5,27 @@ import threading
 from dpg_system.osc_nodes import *
 
 def register_eos_nodes():
+    Node.app.register_node('eos_console', EOSConsoleNode.factory)
     Node.app.register_node('color_source', ColorSourceNode.factory)
     Node.app.register_node('eos_send', OSCSendEOSNode.factory)
+
+class EOSConsoleNode(OSCDeviceNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = EOSConsoleNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        OSCDeviceNode.__init__(self, label, data, args)
+        self.target_ip_property.set_default_value('10.1.3.11')
+        self.target_port_property.set_default_value('1101')
+        self.source_port_property.set_default_value('1102')
+        self.name_property.set_default_value('eos')
+
+    def custom_create(self, from_file):
+        self.target_changed()
+        self.source_changed()
+
 
 class ColorSourceNode(OSCSender, Node):
     @staticmethod

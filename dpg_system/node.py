@@ -1970,15 +1970,18 @@ class Node:
             for index, property_index in enumerate(properties_container):
                 property_container = properties_container[property_index]
                 if 'name' in property_container:
-                    property_label = property_container['name']
+                    property_label = property_container['name'].strip('#')
                     found = False
+
                     for input in self.inputs:
                         if input.widget is not None:
                             a_label = dpg.get_item_label(input.widget.uuid)
                             if a_label == property_label:
                                 if 'value' in property_container:
+                                    print('found', property_label)
                                     value = property_container['value']
                                     if input.widget.widget != 'button':
+                                        print('about to set')
                                         input.widget.set(value)
                                         self.active_input = input
                                         input.widget.value_changed(force=True)

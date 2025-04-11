@@ -1514,7 +1514,7 @@ class ColorPickerNode(Node):
         self.alpha = True
         self.has_inputs = False
 
-        self.input = self.add_input('', triggers_execution=True, widget_type='color_picker', widget_width=128, callback=self.color_changed)
+        self.input = self.add_input('##color', triggers_execution=True, widget_type='color_picker', widget_width=128, callback=self.color_changed)
         self.output = self.add_output('')
         self.hue_wheel_option = self.add_option('hue_wheel', widget_type='checkbox', default_value=self.wheel, callback=self.hue_wheel_changed)
         self.alpha_option = self.add_option('alpha', widget_type='checkbox', default_value=self.alpha, callback=self.alpha_changed)
@@ -1565,6 +1565,7 @@ class ColorPickerNode(Node):
 
     def execute(self):
         if self.input.fresh_input:
+            data = self.input()
             values = any_to_array(self.input())
             values *= 256.0
             self.input.widget.set(values)
@@ -1572,6 +1573,9 @@ class ColorPickerNode(Node):
             values = any_to_array(self.input())
         data = values / 256
         self.output.send(data)
+
+    def post_creation_callback(self):
+        print(self.input())
 
 
 class KeyNode(Node):

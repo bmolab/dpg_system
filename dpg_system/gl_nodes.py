@@ -34,6 +34,7 @@ def register_gl_nodes():
     Node.app.register_node('gl_axis_angle_rotate', GLAxisAngleRotateNode.factory)
 
     Node.app.register_node('gl_light', GLLightNode.factory)
+    Node.app.register_node('gl_nested_spheres', GLNestedSphereNode.factory)
 
 
 class GLCommandParser:
@@ -1217,14 +1218,21 @@ class GLEnableNode(GLNode):
         if len(GLEnableNode.state_dict) == 0:
             self.create_state_dict()
         state_arg = ''
+        state_code = gl.GL_LIGHTING
 
         if len(args) > 0:
             state_arg = args[0]
             if state_arg in self.state_dict:
                 self.state_code = GLEnableNode.state_dict[state_arg]
-        # self.gl_input = self.add_input('gl chain in', triggers_execution=True)
-        self.state_input = self.add_input(state_arg, widget_type='checkbox', default_value=False)
-        # self.gl_output = self.add_output('gl chain out')
+        self.state_input = self.add_input('enabled', widget_type='checkbox', default_value=False)
+        self.flag_input = self.add_input('flag', widget_type='combo', default_value='GL_LIGHTING', widget_width=120, callback=self.flag_changed)
+        keys = list(self.state_dict.keys())
+        self.flag_input.widget.combo_items = keys
+
+    def flag_changed(self):
+        flag = self.flag_input()
+        if flag in self.state_dict:
+            self.state_code = self.state_dict[flag]
 
     def remember_state(self):
         if self.state_code != -1:
@@ -2790,8 +2798,6 @@ class GLLightNode(GLNode):
             id = int(args[1])
             self.set_id(id)
 
-
-
     def initialize(self, args):
         super().initialize(args)
         self.light = GLLight()
@@ -2965,3 +2971,165 @@ class GLLightNode(GLNode):
             gl.glDisable(self.light_id)
 
 
+class GLNestedSphereNode(TexturedGLNode):
+    @staticmethod
+    def factory(node_name, data, args=None):
+        node = GLNestedSphereNode(node_name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        self.count = 6
+        self.quadrics = []
+        if len(args) > 0:
+            self.count = int(args[0])
+        try:
+            for i in range(self.count):
+                self.quadrics.append(gluNewQuadric())
+        except Exception as e:
+            print('self.nested_sphere failed')
+            print(e)
+
+        scale = self.arg_as_float(index=1, default_value=1.0)
+        slices = self.arg_as_int(index=2, default_value=32)
+        stacks = self.arg_as_int(index=3, default_value=32)
+
+        self.scale = self.add_input('scale', widget_type='drag_float', default_value=scale)
+        self.slices = self.add_input('slices', widget_type='drag_int', default_value=slices)
+        self.stacks = self.add_input('stacks', widget_type='drag_int', default_value=stacks)
+
+        self.sizes_input = self.add_input('sizes', default_value=None)
+        self.sizes = np.zeros(self.count)
+        self.sizes_input.set(self.sizes)
+        self.color_inputs = []
+        for i in range(self.count):
+            self.color_inputs.append(self.add_input('color ' + str(i), callback=self.colors_changed))
+        self.colors = np.ndarray((self.count, 4))
+        self.colors[0] = np.array([0.25, 0., 1.0, 0.25])
+        self.colors[1] = np.array([0., 0.5, 1.0, 0.25])
+        self.colors[2] = np.array([0., 1.0, 0.25, 0.25])
+        self.colors[3] = np.array([0.75, 1.0, 0., 0.25])
+        self.colors[4] = np.array([1.0, 0.5, 0., 0.25])
+        self.colors[5] = np.array([1.0, 0., 0.25, 0.25])
+
+        self.materials = []
+        for i in range(self.count):
+            self.materials.append(GLMaterial())
+
+        self.add_shading_option()
+        self.add_style_option()
+        self.polygon_mode = gl.GL_FILL
+        self.pending_commands = []
+        self.command_parser = GLQuadricCommandParser(self)
+        self.alignment_matrix = None
+        self.hold_material = GLMaterial()
+        super().initialize(args)
+        self.texture = self.add_input('texture')
+
+    def colors_changed(self):
+        for i in range(self.count):
+            val = any_to_array(self.color_inputs[i]())
+            if len(val.shape) == 1:
+                if val.shape[0] == 4:
+                    self.colors[i] = val.copy()
+                    self.materials[i].diffuse = val.copy()
+                    self.materials[i].specular = np.zeros(4)
+                    self.materials[i].ambient = np.zeros(4)
+
+    def process_pending_commands(self):
+        if self.pending_commands is not None:
+            if len(self.pending_commands) > 0:
+                for command in self.pending_commands:
+                    self.command_parser.perform(command[0], self, command[1:])
+            self.pending_commands = []
+
+    def shading_changed(self):
+        shading = self.shading_option()
+        if shading == 'flat':
+            self.shading = glu.GLU_FLAT
+        elif shading == 'smooth':
+            self.shading = glu.GLU_SMOOTH
+        else:
+            self.shading = glu.GLU_NONE
+        for quadric in self.quadrics:
+            glu.gluQuadricNormals(quadric, self.shading)
+
+    def style_changed(self):
+        style = self.style_option()
+        self.polygon_mode = gl.GL_FILL
+        if style == 'fill':
+            self.polygon_mode = gl.GL_FILL
+        elif style == 'line':
+            self.polygon_mode = gl.GL_LINE
+        elif style == 'point':
+            self.polygon_mode = gl.GL_POINT
+
+    def add_shading_option(self):
+        self.shading_option = self.add_option('shading', widget_type='combo', default_value='smooth', callback=self.shading_changed)
+        self.shading_option.widget.combo_items = ['none', 'flat', 'smooth']
+
+    def add_style_option(self):
+        self.style_option = self.add_option('style', widget_type='combo', default_value='fill', callback=self.style_changed)
+        self.style_option.widget.combo_items = ['fill', 'line', 'point']
+
+    def handle_other_messages(self, message):
+        if type(message) == list:
+            self.pending_commands.append(message)
+
+    def draw(self):
+        self.process_pending_commands()
+        # if self.numpy_texture is not None:
+        #     glu.gluQuadricTexture(self.quadric, True)
+        # self.update_texture()
+        # restore_matrix = glGetInteger(GL_MATRIX_MODE)
+        # if self.alignment_matrix is not None:
+        #     glMatrixMode(GL_MODELVIEW)
+        #     glPushMatrix()
+        #     glMultMatrixf(self.alignment_matrix)
+        # if self.numpy_texture is not None and self.numpy_texture.texture != -1:
+        #     self.prepare_texture_for_drawing()
+        self.quadric_draw()
+        # if self.numpy_texture is not None and self.numpy_texture.texture != -1:
+        #     self.finish_texture_drawing()
+        # if self.alignment_matrix is not None:
+        #     glPopMatrix()
+        #     glMatrixMode(restore_matrix)
+
+    def execute(self):
+        if self.texture.fresh_input:
+            data = self.texture()
+            self.receive_texture_data(data)
+        super().execute()
+
+    def set_scale(self, scaler):
+        self.scale.set(scaler)
+
+    def quadric_draw(self):
+        # we have to sort in order of size... smallest first
+        self.sizes = any_to_array(self.sizes_input())
+        sorted_indices = np.argsort(self.sizes)
+        gl.glPolygonMode(gl.GL_FRONT_AND_BACK, self.polygon_mode)
+        for i in range(self.count):
+            ii = sorted_indices[i]
+            gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_AMBIENT, self.materials[ii].ambient)
+            gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_DIFFUSE, self.materials[ii].diffuse)
+            gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_SPECULAR, self.materials[ii].specular)
+            # set colour
+            gluSphere(self.quadrics[ii], self.scale() * self.sizes[ii] , self.slices(), self.stacks())
+        gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_FILL)
+
+    def remember_state(self):
+        self.hold_material.ambient = gl.glGetMaterialfv(gl.GL_FRONT, gl.GL_AMBIENT)
+        self.hold_material.diffuse = gl.glGetMaterialfv(gl.GL_FRONT, gl.GL_DIFFUSE)
+        self.hold_material.specular = gl.glGetMaterialfv(gl.GL_FRONT, gl.GL_SPECULAR)
+        self.hold_material.emission = gl.glGetMaterialfv(gl.GL_FRONT, gl.GL_EMISSION)
+        self.hold_material.shininess = gl.glGetMaterialfv(gl.GL_FRONT, gl.GL_SHININESS)
+
+    def restore_state(self):
+        gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_AMBIENT, self.hold_material.ambient)
+        gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_DIFFUSE, self.hold_material.diffuse)
+        gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_SPECULAR, self.hold_material.specular)
+        gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_EMISSION, self.hold_material.emission)
+        gl.glMaterialf(gl.GL_FRONT_AND_BACK, gl.GL_SHININESS, self.hold_material.shininess)

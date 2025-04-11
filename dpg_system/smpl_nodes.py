@@ -65,6 +65,7 @@ class SMPLNode(Node):
         try:
             data = np.load(in_path)
             print(list(data.keys()))
+            print(data['trans'].shape)
             return data['poses'], data['trans']
         except Exception as e:
             return None, None

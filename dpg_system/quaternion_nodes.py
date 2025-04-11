@@ -6,6 +6,7 @@ from dpg_system.conversion_utils import *
 import quaternion
 import scipy
 
+import torch.nn.functional as F
 
 def register_quaternion_nodes():
     Node.app.register_node('quaternion_to_euler', QuaternionToEulerNode.factory)
@@ -15,6 +16,9 @@ def register_quaternion_nodes():
     Node.app.register_node('quaternion_to_matrix', QuaternionToRotationMatrixNode.factory)
     Node.app.register_node('quaternion_distance', QuaternionDistanceNode.factory)
     Node.app.register_node('rotvec_to_quaternion', RotVecToQuaternionNode.factory)
+    Node.app.register_node('matrix_to_6d', RotationMatrixTo6DNode.factory)
+    Node.app.register_node('quaternion_to_6d', QuaternionTo6DNode.factory)
+    Node.app.register_node('6d_to_matrix', SixDToRotationMatrixNode.factory)
 
 
 class QuaternionToEulerNode(Node):
@@ -240,8 +244,166 @@ class QuaternionDistanceNode(Node):
                 if self.app.verbose:
                     print('quaternion_distance received improperly formatted input')
 
+def torch_matrix_to_rotation_6d(matrix: torch.Tensor) -> torch.Tensor:
+    """
+    Converts rotation matrices to 6D rotation representation by Zhou et al. [1]
+    by dropping the last row. Note that 6D representation is not unique.
+    Args:
+        matrix: batch of rotation matrices of size (*, 3, 3)
+
+    Returns:
+        6D rotation representation, of size (*, 6)
+
+    [1] Zhou, Y., Barnes, C., Lu, J., Yang, J., & Li, H.
+    On the Continuity of Rotation Representations in Neural Networks.
+    IEEE Conference on Computer Vision and Pattern Recognition, 2019.
+    Retrieved from http://arxiv.org/abs/1812.07035
+    """
+    if len(matrix.shape) == 2:
+        matrix = matrix.unsqueeze(0)
+    batch_dim = matrix.size()[:-2]
+    return matrix[..., :2, :].clone().reshape(batch_dim + (6,))
+
+def numpy_matrix_to_rotation_6d(matrix: torch.Tensor) -> torch.Tensor:
+    """
+    Converts rotation matrices to 6D rotation representation by Zhou et al. [1]
+    by dropping the last row. Note that 6D representation is not unique.
+    Args:
+        matrix: batch of rotation matrices of size (*, 3, 3)
+
+    Returns:
+        6D rotation representation, of size (*, 6)
+
+    [1] Zhou, Y., Barnes, C., Lu, J., Yang, J., & Li, H.
+    On the Continuity of Rotation Representations in Neural Networks.
+    IEEE Conference on Computer Vision and Pattern Recognition, 2019.
+    Retrieved from http://arxiv.org/abs/1812.07035
+    """
+    if len(matrix.shape) == 2:
+        matrix = np.expand_dims(matrix, 0)
+    batch_dim = matrix.shape[:-2]
+    return matrix[..., :2, :].copy().reshape(batch_dim + (6,))
 
 
+class RotationMatrixTo6DNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = RotationMatrixTo6DNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('rotation matrix', triggers_execution=True)
+        self.output = self.add_output('6D rotation')
+
+    def execute(self):
+        if self.input.fresh_input:
+            data = self.input()
+            if type(data) not in [np.ndarray, torch.Tensor]:
+                data = any_to_array(data)
+            if type(data) is np.ndarray:
+                rot6d = numpy_matrix_to_rotation_6d(data)
+                self.output.send(rot6d)
+            elif type(data) is torch.Tensor:
+                rot6d = torch_matrix_to_rotation_6d(data)
+                self.output.send(rot6d)
 
 
+class QuaternionTo6DNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = QuaternionTo6DNode(name, data, args)
+        return node
 
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('quaternion', triggers_execution=True)
+        self.output = self.add_output('rotation matrix')
+
+    def execute(self):
+        if self.input.fresh_input:
+            data = self.input()
+            data = any_to_array(data)
+            if data.shape[-1] % 4 == 0:
+                q = quaternion.as_quat_array(data)
+                rotation_matrix = quaternion.as_rotation_matrix(q)
+                rot6d = numpy_matrix_to_rotation_6d(rotation_matrix)
+                self.output.send(rot6d)
+            else:
+                if self.app.verbose:
+                    print('quaternion_to_matrix received improperly formatted input')
+
+
+def torch_rotation_6d_to_matrix(d6: torch.Tensor) -> torch.Tensor:
+    """
+    Converts 6D rotation representation by Zhou et al. [1] to rotation matrix
+    using Gram--Schmidt orthogonalization per Section B of [1].
+    Args:
+        d6: 6D rotation representation, of size (*, 6)
+
+    Returns:
+        batch of rotation matrices of size (*, 3, 3)
+
+    [1] Zhou, Y., Barnes, C., Lu, J., Yang, J., & Li, H.
+    On the Continuity of Rotation Representations in Neural Networks.
+    IEEE Conference on Computer Vision and Pattern Recognition, 2019.
+    Retrieved from http://arxiv.org/abs/1812.07035
+    """
+    if len(d6.shape) == 2:
+        d6 = d6.unsqueeze(0)
+    a1, a2 = d6[..., :3], d6[..., 3:]
+    b1 = F.normalize(a1, dim=-1)
+    b2 = a2 - (b1 * a2).sum(-1, keepdim=True) * b1
+    b2 = F.normalize(b2, dim=-1)
+    b3 = torch.cross(b1, b2, dim=-1)
+    return torch.stack((b1, b2, b3), dim=-2)
+
+
+class SixDToRotationMatrixNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = SixDToRotationMatrixNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('6d rotation', triggers_execution=True)
+        self.output = self.add_output('rotation matrix')
+
+    def execute(self):
+        if self.input.fresh_input:
+            data = any_to_tensor(self.input())
+            # if type(data) not in [np.ndarray, torch.Tensor]:
+            #     data = any_to_array(data)
+            # if type(data) is np.ndarray:
+            #     rot6d = numpy_matrix_to_rotation_6d(data)
+            #     self.output.send(rot6d)
+            # elif type(data) is torch.Tensor:
+            mat = torch_rotation_6d_to_matrix(data)
+            self.output.send(mat)
+
+# def numpy_rotation_6d_to_matrix(d6: torch.Tensor) -> torch.Tensor:
+#     """
+#     Converts 6D rotation representation by Zhou et al. [1] to rotation matrix
+#     using Gram--Schmidt orthogonalization per Section B of [1].
+#     Args:
+#         d6: 6D rotation representation, of size (*, 6)
+#
+#     Returns:
+#         batch of rotation matrices of size (*, 3, 3)
+#
+#     [1] Zhou, Y., Barnes, C., Lu, J., Yang, J., & Li, H.
+#     On the Continuity of Rotation Representations in Neural Networks.
+#     IEEE Conference on Computer Vision and Pattern Recognition, 2019.
+#     Retrieved from http://arxiv.org/abs/1812.07035
+#     """
+#
+#     a1, a2 = d6[..., :3], d6[..., 3:]
+#     b1 = F.normalize(a1, dim=-1)
+#     b2 = a2 - (b1 * a2).sum(-1, keepdim=True) * b1
+#     b2 = F.normalize(b2, dim=-1)
+#     b3 = torch.cross(b1, b2, dim=-1)
+#     return torch.stack((b1, b2, b3), dim=-2)
