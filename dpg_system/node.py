@@ -121,7 +121,9 @@ class NodeOutput:
         return data
 
     def send(self, data=None):  # called every time
-        if self.set_value(data) is not None:
+        if data is None:
+            self.send_internal()
+        elif self.set_value(data) is not None:
             self.send_internal()
         self.new_output = False
 

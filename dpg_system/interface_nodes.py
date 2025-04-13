@@ -1252,11 +1252,11 @@ class VectorNode(Node):
 
     def zero(self):
         if self.vector_format_input() == 'numpy':
-            self.output_vector = np.zeros(self.max_component_count)
+            self.output_vector = np.zeros(self.current_component_count)
         elif self.vector_format_input() == 'torch':
-            self.output_vector = torch.zeros(self.max_component_count)
+            self.output_vector = torch.zeros(self.current_component_count)
         else:
-            self.output_vector = [0.0] * self.max_component_count
+            self.output_vector = [0.0] * self.current_component_count
         self.execute()
 
     def get_preset_state(self):
@@ -1379,15 +1379,18 @@ class VectorNode(Node):
                     dpg.hide_item(self.component_properties[i].uuid)
                 self.output.set_value(self.output_vector)
         else:
+            did_set = False
             if self.active_input is not None:
                 which = self.active_input.input_index - self.first_component_input_index
-                self.output_vector[which] = self.component_properties[which]()
+                if which >= 0:
+                    self.output_vector[which] = self.component_properties[which]()
+                    did_set = True
             # elif self.vector_format_input() == 'torch':
             #     self.output_vector[which] = self.component_properties[which]()
             # else:
             #     self.output_vector[which] = self.component_properties[which]()
                 self.output.set_value(self.output_vector)
-            else:
+            if not did_set:
                 for i in range(self.current_component_count):
                     self.component_properties[i].set(any_to_float(self.output_vector[i]))
                 self.output.set_value(self.output_vector)

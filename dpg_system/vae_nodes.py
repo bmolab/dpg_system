@@ -1,6 +1,7 @@
 
 import dearpygui.dearpygui as dpg
 from kornia.utils import map_location_to_cpu
+from torch.onnx.symbolic_opset11 import unsqueeze
 
 from dpg_system.conversion_utils import *
 from dpg_system.node import Node
@@ -14,9 +15,11 @@ import os.path as osp
 from omegaconf import OmegaConf
 import platform
 
+
 def register_vae_nodes():
     Node.app.register_node("vae", VAENode.factory)
     Node.app.register_node('vposer', VPoserNode.factory)
+    Node.app.register_node('vposer6D', VPoser6DNode.factory)
 
     # Node.app.register_node("smpl_pose_to_joints", SMPLPoseToJointsNode.factory)
     # Node.app.register_node("smpl_body", SMPLBodyNode.factory)
@@ -867,6 +870,364 @@ class VPoser(nn.Module):
             Zgen = torch.tensor(np.random.normal(0., 1., size=(num_poses, self.latentD)), dtype=dtype, device=device)
 
         return self.decode(Zgen)
+
+def custom_sinc(x):
+    return torch.where(x == 0, torch.tensor(1.0, device=x.device), torch.sin(x) / x)
+
+def angle_axis_to_rotation_matrix(angle_axis):
+    """Convert 3d vector of axis-angle rotation to 4x4 rotation matrix
+
+    Args:
+        angle_axis (Tensor): tensor of 3d vector of axis-angle rotations.
+
+    Returns:
+        Tensor: tensor of 4x4 rotation matrices.
+
+    Shape:
+        - Input: :math:`(N, 3)`
+        - Output: :math:`(N, 4, 4)`
+
+    Example:
+        >>> input = torch.rand(1, 3)  # Nx3
+        >>> output = tgm.angle_axis_to_rotation_matrix(input)  # Nx4x4
+    """
+    def _compute_rotation_matrix(angle_axis, theta2, eps=1e-6):
+        # We want to be careful to only evaluate the square root if the
+        # norm of the angle_axis vector is greater than zero. Otherwise
+        # we get a division by zero.
+        k_one = 1.0
+        theta = torch.sqrt(theta2)
+        wxyz = angle_axis / (theta + eps)
+        wx, wy, wz = torch.chunk(wxyz, 3, dim=1)
+        cos_theta = torch.cos(theta)
+        sin_theta = torch.sin(theta)
+
+        r00 = cos_theta + wx * wx * (k_one - cos_theta)
+        r10 = wz * sin_theta + wx * wy * (k_one - cos_theta)
+        r20 = -wy * sin_theta + wx * wz * (k_one - cos_theta)
+        r01 = wx * wy * (k_one - cos_theta) - wz * sin_theta
+        r11 = cos_theta + wy * wy * (k_one - cos_theta)
+        r21 = wx * sin_theta + wy * wz * (k_one - cos_theta)
+        r02 = wy * sin_theta + wx * wz * (k_one - cos_theta)
+        r12 = -wx * sin_theta + wy * wz * (k_one - cos_theta)
+        r22 = cos_theta + wz * wz * (k_one - cos_theta)
+        rotation_matrix = torch.cat(
+            [r00, r01, r02, r10, r11, r12, r20, r21, r22], dim=1)
+        return rotation_matrix.view(-1, 3, 3)
+
+    def _compute_rotation_matrix_taylor(angle_axis):
+        rx, ry, rz = torch.chunk(angle_axis, 3, dim=1)
+        k_one = torch.ones_like(rx)
+        rotation_matrix = torch.cat(
+            [k_one, -rz, ry, rz, k_one, -rx, -ry, rx, k_one], dim=1)
+        return rotation_matrix.view(-1, 3, 3)
+
+    # stolen from ceres/rotation.h
+
+    _angle_axis = torch.unsqueeze(angle_axis, dim=1)
+    theta2 = torch.matmul(_angle_axis, _angle_axis.transpose(1, 2))
+    theta2 = torch.squeeze(theta2, dim=1)
+
+    # compute rotation matrices
+    rotation_matrix_normal = _compute_rotation_matrix(angle_axis, theta2)
+    rotation_matrix_taylor = _compute_rotation_matrix_taylor(angle_axis)
+
+    # create mask to handle both cases
+    eps = 1e-6
+    mask = (theta2 > eps).view(-1, 1, 1).to(theta2.device)
+    mask_pos = (mask).type_as(theta2)
+    mask_neg = (mask == False).type_as(theta2)  # noqa
+
+    # create output pose matrix
+    batch_size = angle_axis.shape[0]
+    rotation_matrix = torch.eye(4).to(angle_axis.device).type_as(angle_axis)
+    rotation_matrix = rotation_matrix.view(1, 4, 4).repeat(batch_size, 1, 1)
+    # fill output matrix with masked values
+    rotation_matrix[..., :3, :3] = \
+        mask_pos * rotation_matrix_normal + mask_neg * rotation_matrix_taylor
+    return rotation_matrix  # Nx4x4
+
+def aa2matrot(pose):
+    '''
+    :param Nx3
+    :return: pose_matrot: Nx3x3
+    '''
+    bs = pose.size(0)
+    num_joints = pose.size(1) // 3
+    pose_body_matrot = angle_axis_to_rotation_matrix(pose)[:, :3, :3].contiguous()  # .view(bs, num_joints*9)
+    return pose_body_matrot
+
+
+def axis_angle_to_matrix(axis_angle: torch.Tensor) -> torch.Tensor:
+    """
+    Convert rotations given as axis/angle to rotation matrices.
+
+    Args:
+        axis_angle: Rotations given as a vector in axis angle form,
+            as a tensor of shape (..., 3), where the magnitude is
+            the angle turned anticlockwise in radians around the
+            vector's direction.
+        fast: Whether to use the new faster implementation (based on the
+            Rodrigues formula) instead of the original implementation (which
+            first converted to a quaternion and then back to a rotation matrix).
+
+    Returns:
+        Rotation matrices as tensor of shape (..., 3, 3).
+    """
+    reshaped = axis_angle.reshape(-1, 3)
+    shape = reshaped.shape
+    device, dtype = reshaped.device, reshaped.dtype
+
+    angles = torch.norm(reshaped, p=2, dim=-1, keepdim=True).unsqueeze(-1)
+
+    rx, ry, rz = reshaped[..., 0], reshaped[..., 1], reshaped[..., 2]
+    zeros = torch.zeros(shape[:-1], dtype=dtype, device=device)
+    cross_product_matrix = torch.stack(
+        [zeros, -rz, ry, rz, zeros, -rx, -ry, rx, zeros], dim=-1
+    ).view(shape + (3,))
+    cross_product_matrix_sqrd = cross_product_matrix @ cross_product_matrix
+
+    identity = torch.eye(3, dtype=dtype, device=device)
+    angles_sqrd = angles * angles
+    angles_sqrd = torch.where(angles_sqrd == 0, 1, angles_sqrd)
+    return (
+        identity.expand(cross_product_matrix.shape)
+        + custom_sinc(angles / torch.pi) * cross_product_matrix
+        + ((1 - torch.cos(angles)) / angles_sqrd) * cross_product_matrix_sqrd
+    )
+
+def axis_angle_to_6d(axis_angle: torch.Tensor) -> torch.Tensor:
+    reshaped = axis_angle.reshape(-1, 3)
+    #matrix = aa2matrot(reshaped)
+    matrix = axis_angle_to_matrix(axis_angle)
+    if len(matrix.shape) == 2:
+        matrix = matrix.unsqueeze(0)
+    batch_dim = matrix.size()[:-2]
+    return matrix[..., :2, :].clone().reshape(batch_dim + (6,))
+
+
+
+class VPoser6D(nn.Module):
+    def __init__(self, model_ps):
+        super(VPoser6D, self).__init__()
+        num_neurons, self.latentD = model_ps.model_params.num_neurons, model_ps.model_params.latentD
+        self.device = torch.device('cpu')
+        if torch.cuda.is_available():
+            self.device = torch.device('cuda')
+        elif torch.backends.mps.is_built():
+            self.device = torch.device('mps')
+        self.num_joints = 21
+        n_features = self.num_joints * 6
+        self.calc_mean = True
+
+        self.encoder_net = nn.Sequential(
+            BatchFlatten(),
+            nn.BatchNorm1d(n_features),
+            nn.Linear(n_features, num_neurons),
+            nn.LeakyReLU(),
+            nn.BatchNorm1d(num_neurons),
+            nn.Dropout(0.1),
+            nn.Linear(num_neurons, num_neurons),
+            nn.Linear(num_neurons, num_neurons),
+            NormalDistDecoder(num_neurons, self.latentD)
+        ).to(device=self.device)
+
+        self.decoder_net = nn.Sequential(
+            nn.Linear(self.latentD, num_neurons),
+            nn.LeakyReLU(),
+            nn.Dropout(0.1),
+            nn.Linear(num_neurons, num_neurons),
+            nn.LeakyReLU(),
+            nn.Linear(num_neurons, self.num_joints * 6),
+            ContinousRotReprDecoder(),
+        ).to(device=self.device)
+
+    def encode(self, pose_body):
+        '''
+        :param Pin: Nx(numjoints*3)
+        :param rep_type: 'matrot'/'aa' for matrix rotations or axis-angle
+        :return:
+        '''
+        pose_6d = axis_angle_to_6d(pose_body)
+        pose_6d = pose_6d.reshape(-1, 21, 6)
+        return {
+            'latents': self.encoder_net(pose_6d),
+            'orig_pose_body_6d': pose_6d
+        }
+
+    def decode(self, Zin):
+        bs = Zin.shape[0]
+
+        prec = self.decoder_net(Zin)
+
+        return {
+            'pose_body': matrot2aa(prec.view(-1, 3, 3)).view(bs, -1, 3),
+            'pose_body_matrot': prec.view(bs, -1, 9)
+        }
+
+    def forward(self, pose_body):
+        '''
+        :param Pin: aa: Nx1xnum_jointsx3 / matrot: Nx1xnum_jointsx9
+        :param input_type: matrot / aa for matrix rotations or axis angles
+        :param output_type: matrot / aa
+        :return:
+        '''
+        with torch.no_grad():
+            encode_results = self.encode(pose_body)
+            q_z = encode_results['latents']
+            if self.calc_mean:
+                q_z_sample = q_z.mean  # q_z.rsample()  #  #
+            else:
+                q_z_sample = q_z.rsample()
+            decode_results = self.decode(q_z_sample)
+            decode_results.update({'poZ_body_mean': q_z.mean, 'poZ_body_std': q_z.scale, 'q_z': q_z, 'q_z_sample': q_z_sample})
+        return decode_results
+
+    def sample_poses(self, num_poses, seed=None):
+        np.random.seed(seed)
+
+        some_weight = [a for a in self.parameters()][0]
+        dtype = some_weight.dtype
+        device = some_weight.device
+        self.eval()
+        with torch.no_grad():
+            Zgen = torch.tensor(np.random.normal(0., 1., size=(num_poses, self.latentD)), dtype=dtype, device=device)
+
+        return self.decode(Zgen)
+
+class VPoser6DNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = VPoser6DNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.num_neurons = 512
+        self.latent_dim = 32
+        self.input_dim = 63
+
+        if len(args) > 1:
+            self.num_neurons = any_to_int(args[0])
+            self.latent_dim = any_to_int(args[1])
+
+        self.device = 'cpu'
+        if torch.cuda.is_available():
+            self.device = 'cuda'
+        elif torch.backends.mps.is_built():
+            self.device = 'mps'
+        self.input_in = self.add_input('input in', triggers_execution=True)
+        # self.forward_in = self.add_input('forward in', triggers_execution=True)
+        self.latent_in = self.add_input('latent in', triggers_execution=True)
+
+        self.sample_or_mean_in = self.add_input('mean of dist', widget_type='checkbox')
+        self.pass_root = self.add_input('pass root orientation', widget_type='checkbox')
+
+        self.model_path_in = self.add_input('model path', callback=self.load_model)
+        self.latents_out = self.add_output('latents out')
+        self.decoded_out = self.add_output('decoded out')
+        self.default_root = torch.tensor([[0.0, 0.0, 0.0]], device=self.device)
+        self.dataloader = None
+        self.optimizer = None
+        config = vposer_config(self.num_neurons, self.latent_dim)
+        self.model = VPoser6D(config)
+
+    def load_model(self):
+        path = any_to_string(self.model_path_in())
+        if os.path.exists(path):
+            self.model = load_model(path, model_code=VPoser6D, remove_words_in_model_weights='vp_model.', disable_grad=True)[0]
+            # self.model.load_state_dict(torch.load(path, map_location='cpu'))
+            self.model = self.model.to(self.device)
+
+    def execute(self):
+        self.model.calc_mean = self.sample_or_mean_in()
+        if self.active_input == self.latent_in:
+            self.decode_input()
+        elif self.active_input == self.input_in:
+            self.forward()
+
+    def forward(self):
+        self.model.eval()
+
+        with torch.no_grad():
+            data = self.input_in()
+            t = type(data)
+            root_data = None
+            if t == torch.Tensor:
+                data = data.to(device=self.device, dtype=torch.float32)
+            elif t == np.ndarray:
+                data = torch.from_numpy(data).to(device=self.device, dtype=torch.float32)
+            else:
+                data = any_to_tensor(data, self.device, torch.float32)
+
+            if data.shape[0] == 22:
+                root_data = data[0].clone().unsqueeze(0)
+                data = data[1:]
+            try:
+                data = data.view(-1, self.input_dim)
+                results = self.model(data)
+                decoded = results['pose_body'][0]
+                if root_data is not None and self.pass_root():
+                    decoded = torch.cat([root_data, decoded], dim=0)
+                else:
+                    decoded = torch.cat([self.default_root, decoded], dim=0)
+                self.latents_out.send(results['q_z_sample'])
+                self.decoded_out.send(decoded)
+            except Exception as e:
+                print(e)
+
+    def decode_input(self):
+        self.model.eval()
+
+        with torch.no_grad():
+            data = self.latent_in()
+            t = type(data)
+            if t == torch.Tensor:
+                data = data.to(device=self.device, dtype=torch.float32)
+
+            elif t == np.ndarray:
+                data = torch.from_numpy(data).to(device=self.device, dtype=torch.float32)
+            else:
+                data = any_to_tensor(data, self.device, torch.float32)
+
+            try:
+                data = data.view(-1, self.latent_dim)
+                output = self.model.decode(data)
+                decoded = output['pose_body'][0]
+                decoded = torch.cat([self.default_root, decoded], dim=0)
+                self.latents_out.send(data)
+                self.decoded_out.send(decoded)
+            except Exception as e:
+                print(e)
+            # data should be in shape(<batch>, <input_dim>)
+
+    def process(self):
+        self.model.eval()
+
+        with torch.no_grad():
+            data = self.input_in()
+            t = type(data)
+            if t == torch.Tensor:
+                data = data.to(device=self.device, dtype=torch.float32)
+            elif t == np.ndarray:
+                data = torch.from_numpy(data).to(device=self.device, dtype=torch.float32)
+            else:
+                data = any_to_tensor(data, self.device, torch.float32)
+
+            try:
+                data = data.view(-1, 1, 21, 3)
+                decoded_results = self.model.forward(data)
+                pose = decoded_results['pose_body']
+                sampled_latent = decoded_results['q_z_sample']
+                # sampled_latent = latent_distribution.loc[0]
+                # # sampled_latent = self.model.reparameterize(latent_distribution)
+                # reconstruction = self.model.decode(sampled_latent)
+                # self.distribution_out.send(latent_distribution.loc[0])
+                self.latents_out.send(sampled_latent)
+                self.decoded_out.send(pose)
+            except Exception as e:
+                print(e)
+
 
 
 #
