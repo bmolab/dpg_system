@@ -1,3 +1,9 @@
+# Relevant Documentation
+
+- MoConVQ:
+https://github.com/bmolab/MoConVQ/blob/dpg_system_integration/BMO_README.md
+- PHC: https://github.com/bmolab/PHC/blob/dpg-system-integration/BMO_README.md
+
 # Setup of MoconVq Integration
 
 1. Run dpg_system install.sh (essentially set up all the dependencies with python 3.10)
@@ -43,7 +49,7 @@ Parent Folder/ <br>
 
 # Files
 
-Main content for moconvq with dpg system are all in dpg_system/moconvq_nodes.py. dpg_system/pose_translation_defs.py defines values for pose translations.
+Main content for moconvq with dpg system are all in dpg_system/moconvq_nodes.py. dpg_system/pose_translation_defs.py defines values for pose translations. moconvq_shadow_node.py is a runnable file for visualizing shadow of moconvq on linux devices.
 
 # Nodes
 
