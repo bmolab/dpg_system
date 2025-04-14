@@ -1577,8 +1577,8 @@ class ColorPickerNode(Node):
         data = values / 256
         self.output.send(data)
 
-    def post_creation_callback(self):
-        print(self.input())
+    # def post_creation_callback(self):
+    #     print(self.input())
 
 
 class KeyNode(Node):

@@ -35,6 +35,8 @@ def register_gl_nodes():
 
     Node.app.register_node('gl_light', GLLightNode.factory)
     Node.app.register_node('gl_nested_spheres', GLNestedSphereNode.factory)
+    Node.app.register_node('gl_orientation_disks', GLMultiOrientationDiskNode.factory)
+    Node.app.register_node('gl_line', GLLineNode.factory)
 
 
 class GLCommandParser:
@@ -464,26 +466,10 @@ class GLQuadricCommandParser(GLCommandParser):
         if scale > 0.001:
             # note that up vector is not same for all joints... see refVector
             up_vector = np.array([0.0, 0.0, 1.0])
-            v = np.cross(axis, up_vector)
-            c = np.dot(axis, up_vector)
-            k = 1.0 / (1.0 + c)
-
-            node.alignment_matrix = np.array([v[0] * v[0] * k + c, v[1] * v[1] * k - v[2], v[2] * v[0] * k + v[1], 0.0,
-                                         v[0] * v[1] * k + v[2], v[1] * v[1] * k + c, v[2] * v[1] * k - v[0], 0.0,
-                                         v[0] * v[2] * k - v[1], v[1] * v[2] * k + v[0], v[2] * v[2] * k + c, 0.0,
-                                         0.0, 0.0, 0.0, 1.0])
-
-            node.alignment_matrix.reshape((4, 4))
+            node.alignment_matrix = rotation_matrix_from_vectors(up_vector, axis)
             node.set_size(scale)
         else:
             node.set_size(0.0)
-            # restore_matrix = glGetInteger(GL_MATRIX_MODE)
-            # glMatrixMode(GL_MODELVIEW)
-            # glPushMatrix()
-            # glMultMatrixf(alignment_matrix)
-            # gluDisk(self.joint_sphere, 0.0, scale, 32, 1)
-            # glPopMatrix()
-            # glMatrixMode(restore_matrix)
 
 
 # class GLNumpyVertices:
@@ -1022,17 +1008,8 @@ class GLQuaternionRotateNode(GLNode):
                     gl.glVertex3f(axis[0] * d, axis[1] * d, axis[2] * d)
                     gl.glEnd()
 
-                    v = np.cross(axis, up_vector)
-                    c = np.dot(axis, up_vector)
-                    k = 1.0 / (1.0 + c)
+                    alignment_matrix = rotation_matrix_from_vectors(up_vector, axis)
 
-                    alignment_matrix = np.array(
-                        [v[0] * v[0] * k + c, v[1] * v[1] * k - v[2], v[2] * v[0] * k + v[1], 0.0,
-                         v[0] * v[1] * k + v[2], v[1] * v[1] * k + c, v[2] * v[1] * k - v[0], 0.0,
-                         v[0] * v[2] * k - v[1], v[1] * v[2] * k + v[0], v[2] * v[2] * k + c, 0.0,
-                         0.0, 0.0, 0.0, 1.0])
-
-                    alignment_matrix.reshape((4, 4))
                     restore_matrix = glGetInteger(GL_MATRIX_MODE)
                     glMatrixMode(GL_MODELVIEW)
                     glPushMatrix()
@@ -1090,18 +1067,10 @@ class GLAxisAngleRotateNode(GLNode):
             axis = input_[:3]
             up_vector = np.array([0.0, 0.0, 1.0])
 
-            v = np.cross(axis, up_vector)
-            c = np.dot(axis, up_vector)
-            k = 1.0 / (1.0 + c)
-            alignment_matrix = np.array([v[0] * v[0] * k + c, v[1] * v[1] * k - v[2], v[2] * v[0] * k + v[1], 0.0,
-                                         v[0] * v[1] * k + v[2], v[1] * v[1] * k + c, v[2] * v[1] * k - v[0], 0.0,
-                                         v[0] * v[2] * k - v[1], v[1] * v[2] * k + v[0], v[2] * v[2] * k + c, 0.0,
-                                         0.0, 0.0, 0.0, 1.0])
+            alignment_matrix = rotation_matrix_from_vectors(up_vector, axis)
 
-            alignment_matrix.reshape((4, 4))
             glMatrixMode(GL_MODELVIEW)
             glMultMatrixf(alignment_matrix)
-
 
 
 class GLTransformNode(GLNode):
@@ -2598,6 +2567,37 @@ class GLButtonGridNode(GLNode):
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
 
 
+class GLLineNode(GLNode):
+    @staticmethod
+    def factory(node_name, data, args=None):
+        node = GLLineNode(node_name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+
+    def initialize(self, args):
+        super().initialize(args)
+        self.start = np.array([0.0, 0.0, 1.0])
+        self.end = np.array([0.0, 0.0, -1.0])
+        self.start_vertex_input = self.add_input('start_vertex')
+        self.start_vertex_input.set(self.start)
+        self.end_vertex_input = self.add_input('end_vertex')
+        self.end_vertex_input.set(self.end)
+
+    def draw(self):
+        start = any_to_array(self.start_vertex_input())
+        end = any_to_array(self.end_vertex_input())
+        if len(start.shape) == 1 and len(end.shape) == 1:
+            if start.shape[0] == 3 and end.shape[0] == 3:
+                glBegin(GL_LINES)
+                glVertex3fv(start)
+                glVertex3fv(end)
+                glEnd()
+
+
+
 class GLNumpyLines(GLNode):
     @staticmethod
     def factory(node_name, data, args=None):
@@ -3133,3 +3133,193 @@ class GLNestedSphereNode(TexturedGLNode):
         gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_SPECULAR, self.hold_material.specular)
         gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_EMISSION, self.hold_material.emission)
         gl.glMaterialf(gl.GL_FRONT_AND_BACK, gl.GL_SHININESS, self.hold_material.shininess)
+
+
+class GLMultiOrientationDiskNode(TexturedGLNode):
+    @staticmethod
+    def factory(node_name, data, args=None):
+        node = GLMultiOrientationDiskNode(node_name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        self.count = 6
+        self.quadrics = []
+        if len(args) > 0:
+            self.count = int(args[0])
+        try:
+            for i in range(self.count):
+                self.quadrics.append(gluNewQuadric())
+        except Exception as e:
+            print('self.multi_disk failed')
+            print(e)
+
+        scale = self.arg_as_float(index=1, default_value=0.5)
+        slices = self.arg_as_int(index=2, default_value=32)
+        rings = self.arg_as_int(index=3, default_value=1)
+
+        self.scale = self.add_input('scale', widget_type='drag_float', default_value=scale)
+        self.slices = self.add_input('slices', widget_type='drag_int', default_value=slices)
+        self.rings = self.add_input('rings', widget_type='drag_int', default_value=rings)
+        self.ring_fraction = self.add_input('ring_fraction', widget_type='drag_float', default_value=.2)
+        self.axis_angle_input = self.add_input('axis-angle', default_value=None)
+        self.axis_angles = np.zeros([self.count, 4])
+        self.axis_angle_input.set(self.axis_angles)
+
+        self.color_inputs = []
+
+        for i in range(self.count):
+            self.color_inputs.append(self.add_input('color ' + str(i), callback=self.colors_changed))
+        self.colors = np.ndarray((self.count, 4))
+        self.colors[0] = np.array([0.25, 0., 1.0, 0.25])
+        self.colors[1] = np.array([0., 0.5, 1.0, 0.25])
+        self.colors[2] = np.array([0., 1.0, 0.25, 0.25])
+        self.colors[3] = np.array([0.75, 1.0, 0., 0.25])
+        self.colors[4] = np.array([1.0, 0.5, 0., 0.25])
+        self.colors[5] = np.array([1.0, 0., 0.25, 0.25])
+
+        self.materials = []
+        for i in range(self.count):
+            self.materials.append(GLMaterial())
+
+        self.add_shading_option()
+        self.add_style_option()
+        self.polygon_mode = gl.GL_FILL
+        self.pending_commands = []
+        self.command_parser = GLQuadricCommandParser(self)
+        self.alignment_matrix = None
+        self.hold_material = GLMaterial()
+        super().initialize(args)
+        self.texture = self.add_input('texture')
+
+    def colors_changed(self):
+        for i in range(self.count):
+            val = any_to_array(self.color_inputs[i]())
+            if len(val.shape) == 1:
+                if val.shape[0] == 4:
+                    self.colors[i] = val.copy()
+                    self.materials[i].emission = val.copy()
+                    self.materials[i].diffuse = np.array([0.0, 0.0, 0.0, val[3]])
+                    self.materials[i].specular = np.array([0.0, 0.0, 0.0, val[3]])
+                    self.materials[i].ambient = np.array([0.0, 0.0, 0.0, val[3]])
+
+    def process_pending_commands(self):
+        if self.pending_commands is not None:
+            if len(self.pending_commands) > 0:
+                for command in self.pending_commands:
+                    self.command_parser.perform(command[0], self, command[1:])
+            self.pending_commands = []
+
+    def shading_changed(self):
+        shading = self.shading_option()
+        if shading == 'flat':
+            self.shading = glu.GLU_FLAT
+        elif shading == 'smooth':
+            self.shading = glu.GLU_SMOOTH
+        else:
+            self.shading = glu.GLU_NONE
+        for quadric in self.quadrics:
+            glu.gluQuadricNormals(quadric, self.shading)
+
+    def style_changed(self):
+        style = self.style_option()
+        self.polygon_mode = gl.GL_FILL
+        if style == 'fill':
+            self.polygon_mode = gl.GL_FILL
+        elif style == 'line':
+            self.polygon_mode = gl.GL_LINE
+        elif style == 'point':
+            self.polygon_mode = gl.GL_POINT
+
+    def add_shading_option(self):
+        self.shading_option = self.add_option('shading', widget_type='combo', default_value='smooth', callback=self.shading_changed)
+        self.shading_option.widget.combo_items = ['none', 'flat', 'smooth']
+
+    def add_style_option(self):
+        self.style_option = self.add_option('style', widget_type='combo', default_value='fill', callback=self.style_changed)
+        self.style_option.widget.combo_items = ['fill', 'line', 'point']
+
+    def handle_other_messages(self, message):
+        if type(message) == list:
+            self.pending_commands.append(message)
+
+    def draw(self):
+        self.process_pending_commands()
+        self.quadric_draw()
+
+    def execute(self):
+        if self.texture.fresh_input:
+            data = self.texture()
+            self.receive_texture_data(data)
+        super().execute()
+
+    def set_scale(self, scaler):
+        self.scale.set(scaler)
+
+    def quadric_draw(self):
+        # we have to sort in order of size... smallest first
+        self.axis_angles = any_to_array(self.axis_angle_input())
+
+        gl.glPolygonMode(gl.GL_FRONT_AND_BACK, self.polygon_mode)
+        up_vector = np.array([0.0, 0.0, 1.0])
+
+        for i in range(self.count):
+            gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_AMBIENT, self.materials[i].ambient)
+            gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_DIFFUSE, self.materials[i].diffuse)
+            gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_SPECULAR, self.materials[i].specular)
+            gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_EMISSION, self.materials[i].emission)
+
+            axis = self.axis_angles[i]
+            fraction = 1.0 - self.ring_fraction()
+            if axis.shape[0] == 3:
+                angle = np.linalg.norm(axis)
+                axis = axis / angle
+                alignment_matrix = rotation_matrix_from_vectors(up_vector, axis)
+                restore_matrix = glGetInteger(GL_MATRIX_MODE)
+                glMatrixMode(GL_MODELVIEW)
+                glPushMatrix()
+                glMultMatrixf(alignment_matrix)
+                size = angle * self.scale()
+                gluDisk(self.quadrics[i], size * fraction, size, self.slices(), self.rings())
+                glPopMatrix()
+                glMatrixMode(restore_matrix)
+            elif axis.shape[0] == 4:
+                alignment_matrix = rotation_matrix_from_vectors(up_vector, axis[:3])
+                restore_matrix = glGetInteger(GL_MATRIX_MODE)
+                glMatrixMode(GL_MODELVIEW)
+                glPushMatrix()
+                glMultMatrixf(alignment_matrix)
+                size = axis[3] * self.scale()
+                gluDisk(self.quadrics[i], size * fraction, size, self.slices(), self.rings())
+                glPopMatrix()
+                glMatrixMode(restore_matrix)
+        gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_FILL)
+
+    def remember_state(self):
+        self.hold_material.ambient = gl.glGetMaterialfv(gl.GL_FRONT, gl.GL_AMBIENT)
+        self.hold_material.diffuse = gl.glGetMaterialfv(gl.GL_FRONT, gl.GL_DIFFUSE)
+        self.hold_material.specular = gl.glGetMaterialfv(gl.GL_FRONT, gl.GL_SPECULAR)
+        self.hold_material.emission = gl.glGetMaterialfv(gl.GL_FRONT, gl.GL_EMISSION)
+        self.hold_material.shininess = gl.glGetMaterialfv(gl.GL_FRONT, gl.GL_SHININESS)
+
+    def restore_state(self):
+        gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_AMBIENT, self.hold_material.ambient)
+        gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_DIFFUSE, self.hold_material.diffuse)
+        gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_SPECULAR, self.hold_material.specular)
+        gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_EMISSION, self.hold_material.emission)
+        gl.glMaterialf(gl.GL_FRONT_AND_BACK, gl.GL_SHININESS, self.hold_material.shininess)
+
+    def save_custom(self, container):
+        for i in range(self.count):
+            name = 'color_' + str(i)
+            container[name] = list(self.colors[i])
+
+    def load_custom(self, container):
+        for i in range(self.count):
+            name = 'color_' + str(i)
+            if name in container:
+                self.colors[i] = any_to_array(container[name])
+                self.color_inputs[i].set(self.colors[i])
+        self.colors_changed()

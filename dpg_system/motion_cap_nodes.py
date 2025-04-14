@@ -137,7 +137,7 @@ class MoCapTakeNode(MoCapNode):
 
     def frame_task(self):
         self.current_frame += self.speed()
-        if self.current_frame > self.frames:
+        if self.current_frame >= self.frames:
             self.current_frame = 0
         self.input.set(self.current_frame)
         frame = int(self.current_frame)
@@ -511,11 +511,6 @@ class MoCapGLBody(MoCapNode):
                         if previous_limb_index < t_ActiveJointCount:
                             self.current_joint_data_output.send(self.external_joint_data[0][previous_limb_index])
         elif mode == 'diff_axis-angle':
-            # if previous_limb_index in [t_LeftShoulderBladeBase, t_LeftShoulder, t_LeftElbow, t_LeftWrist, t_RightShoulderBladeBase, t_LeftKnuckle, t_RightShoulder, t_RightElbow, t_RightWrist, t_RightKnuckle]:
-            #     glRotate(90, 0.0, 1.0, 0.0)
-            # else:
-            #     glRotate(90, 1.0, 0.0, 0.0)
-            # glRotate(90, 0.0, 1.0, 0.0)
             if self.body.normalized_axes is not None:
                 current_axis = self.body.normalized_axes[0, previous_limb_index]
                 if self.body.magnitudes is not None:
@@ -523,14 +518,8 @@ class MoCapGLBody(MoCapNode):
                     output_value = np.ndarray(shape=(4))
                     output_value[:3] = current_axis
                     output_value[3] = current_magnitude
-                    # self.current_joint_quaternion_output.send(self.body.quaternionDistance[joint_index])
                     self.current_joint_data_output.send(output_value)
         elif mode == 'diff_quaternion':
-            # if previous_limb_index in [t_LeftShoulderBladeBase, t_LeftShoulder, t_LeftElbow, t_LeftWrist, t_RightShoulderBladeBase, t_LeftKnuckle, t_RightShoulder, t_RightElbow, t_RightWrist, t_RightKnuckle]:
-            #     glRotate(90, 0.0, 1.0, 0.0)
-            # else:
-            #     glRotate(90, 1.0, 0.0, 0.0)
-            # glRotate(90, 0.0, 1.0, 0.0)
             if self.body.magnitudes is not None:
                 value = self.body.magnitudes[0, previous_limb_index]
                 self.current_joint_data_output.send(value)

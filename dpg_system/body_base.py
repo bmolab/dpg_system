@@ -82,6 +82,32 @@ def rotation_matrix_from_axis_and_angle(self, direction, angle):
     M[:3, :3] = R
     return M
 
+
+def axis_angle_to_rotation_matrix(axis, angle):
+    """
+    Convert an axis-angle representation to a rotation matrix.
+
+    Parameters:
+    axis (array-like): A 3-element array representing the rotation axis.
+    angle (float): The rotation angle in radians.
+
+    Returns:
+    numpy.ndarray: A 3x3 rotation matrix.
+    """
+    axis = np.asarray(axis)
+    axis = axis / np.linalg.norm(axis)
+    a = np.cos(angle / 2.0)
+    b, c, d = -axis * np.sin(angle / 2.0)
+    aa, bb, cc, dd = a * a, b * b, c * c, d * d
+    bc, ad, ac, ab, bd, cd = b * c, a * d, a * c, a * b, b * d, c * d
+
+    return np.array([
+        [aa + bb - cc - dd, 2 * (bc + ad), 2 * (bd - ac)],
+        [2 * (bc - ad), aa + cc - bb - dd, 2 * (cd + ab)],
+        [2 * (bd + ac), 2 * (cd - ab), aa + dd - bb - cc]
+    ])
+
+
 def quaternion_to_matrix(q):
     x = q[0]
     y = q[1]
@@ -205,6 +231,29 @@ def quaternion_to_R3_rotation(q):
 
     return result
 
+def rotation_matrix_from_vectors(vec1, vec2):
+    """ Find the rotation matrix that aligns vec1 to vec2
+    :param vec1: A 3d "source" vector
+    :param vec2: A 3d "destination" vector
+    :return mat: A transform matrix (4x4) which when applied to vec1, aligns it with vec2.
+    """
+    a, b = (vec1 / (np.linalg.norm(vec1) + .00001)).reshape(3), (vec2 / (np.linalg.norm(vec2) + 0.00001)).reshape(3)
+    v = np.cross(a, b)
+    if any(v): #if not all zeros then
+        c = np.dot(a, b)
+        s = np.linalg.norm(v)
+        kmat = np.array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
+        mat3x3 = np.eye(3) + kmat + kmat.dot(kmat) * ((1 - c) / (s ** 2))
+        rotation_matrix_4x4 = np.eye(4)
+        rotation_matrix_4x4[:3, :3] = mat3x3
+        rotation_matrix_4x4 = rotation_matrix_4x4.T
+        rotation_matrix_flat = rotation_matrix_4x4.flatten()
+        return rotation_matrix_flat
+
+    else:
+        rotation_matrix_4x4 = np.eye(4) #cross of all zeros only occurs on identical directions
+        rotation_matrix_flat = rotation_matrix_4x4.flatten()
+        return rotation_matrix_flat
 
 class ScopedLock:
     def __init__(self, mutex):
@@ -932,21 +981,14 @@ class BodyData(BodyDataBase):
                 self.joint_disk_material.diffuse[3] = self.joint_disk_alpha
                 glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, self.joint_disk_material.diffuse)
 
-                v = np.cross(axis, up_vector)
-                c = np.dot(axis, up_vector)
-                k = 1.0 / (1.0 + c)
+                alignment_matrix = rotation_matrix_from_vectors(up_vector, axis)
 
-                alignment_matrix = np.array([v[0] * v[0] * k + c, v[1] * v[1] * k - v[2], v[2] * v[0] * k + v[1], 0.0,
-                                             v[0] * v[1] * k + v[2], v[1] * v[1] * k + c, v[2] * v[1] * k - v[0], 0.0,
-                                             v[0] * v[2] * k - v[1], v[1] * v[2] * k + v[0], v[2] * v[2] * k + c, 0.0,
-                                             0.0, 0.0, 0.0, 1.0])
-
-                alignment_matrix.reshape((4, 4))
                 restore_matrix = glGetInteger(GL_MATRIX_MODE)
                 glMatrixMode(GL_MODELVIEW)
                 glPushMatrix()
                 glMultMatrixf(alignment_matrix)
                 gluDisk(self.joint_sphere, 0.0, d, 32, 1)
+
                 glPopMatrix()
                 glMatrixMode(restore_matrix)
 
