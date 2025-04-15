@@ -234,7 +234,6 @@ class GLContextNode(Node):
             self.height = 480
 
         self.pending_contexts.append(self)
-        print('appended to pending contexts')
         self.context = None
         self.command_input = self.add_input('commands', triggers_execution=True)
         self.output = self.add_output('gl_chain')
@@ -1873,7 +1872,6 @@ class GLTextNode(GLNode):
             self.new_text = True
 
     def update_font(self):
-        print('update font')
         hold_context = glfw.get_current_context()
         glfw.make_context_current(self.context)
 

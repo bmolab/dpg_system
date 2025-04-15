@@ -43,7 +43,7 @@ class Streamer:
             try:
                 self.process.terminate()
             except Exception as e:
-                print('ddd', e)
+                print('ElevenLabs Streamer error', e)
 
     def stream(self, audio_stream: Iterator[bytes]) -> bytes:
         if not is_installed("mpv"):
@@ -98,7 +98,7 @@ def service_eleven_labs():
             try:
                 instance.service_queue()
             except Exception as e:
-                print('service_eleven_labs:')
+                print('service_eleven_labs:', e)
                 traceback.print_exception(e)
 
         time.sleep(0.1)

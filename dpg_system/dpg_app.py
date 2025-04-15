@@ -154,14 +154,12 @@ def widget_edited(source, data, user_data):
     else:
         if dpg.does_item_exist(data):
             item = dpg.get_item_user_data(data)
-            # print('edited', data, item)
             if item is not None:
                 if isinstance(item, Node):
                     node = item
                 else:
                     node = item.node
                 if node is not None:
-                    # print("edited", data)
                     node.on_edit(item)
 
 def widget_deactive_after_edit(source, data, user_data):
@@ -871,7 +869,6 @@ class App:
                 editor.delete_selected_items()
 
     def return_handler(self):
-        # print('return')
         self.return_pressed = True
         pass
 
@@ -954,7 +951,6 @@ class App:
 
     def Q_handler(self):
         if self.control_or_command_down():
-            print('quitting')
             self.quit()
 
     def C_handler(self):
@@ -1213,7 +1209,6 @@ class App:
                     self.set_widget_focus(node.name_property.widget.uuid)
                     dpg.set_value(node.name_property.widget.uuid, name)
                     node.node_list = [name]
-                    print('about to prompt for args')
                     node.prompt_for_args()
                 else:
                     self.set_widget_focus(node.name_property.widget.uuid)
@@ -1368,7 +1363,6 @@ class App:
                                     main_editor = self.current_node_editor
 
                 else:  # single patch
-                    # print('patch assign', patch_assign)
                     if self.fresh_patcher:
                         if len(patch_assign) > 0:
                             editor_index, editor = patch_assign[0]

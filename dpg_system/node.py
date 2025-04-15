@@ -4,7 +4,7 @@ import math
 import numpy as np
 from dpg_system.conversion_utils import *
 import json
-from typing import List, Any, Callable, Union, Tuple
+from typing import List, Any, Callable, Union, Tuple, Optional, Dict, Set, Type, TypeVar, cast
 from fuzzywuzzy import fuzz
 import sys
 
@@ -34,17 +34,17 @@ class NodeOutput:
         self.sent_type = None
         self.sent_bang = False
 
-    def get_label(self):
+    def get_label(self) -> str:
         return self._label
 
-    def set_label(self, name):
+    def set_label(self, name: str) -> None:
         self._label = name
         if self.label_uuid is None:
             self.label_uuid = dpg.add_text(self._label)
         else:
             dpg.set_value(self.label_uuid, self._label)
 
-    def create_pin_themes(self):
+    def create_pin_themes(self) -> None:
         #   could add other colours?
         with dpg.theme() as self._pin_active_theme:
             with dpg.theme_component(0):
@@ -65,7 +65,7 @@ class NodeOutput:
             with dpg.theme_component(0):
                 dpg.add_theme_color(dpg.mvNodeCol_Pin, (255, 255, 0), category=dpg.mvThemeCat_Nodes)
 
-    def set_visibility(self, visibility_state='show_all'):
+    def set_visibility(self, visibility_state: str = 'show_all') -> None:
         if visibility_state == 'show_all':
             dpg.bind_item_theme(self.uuid, theme=Node.app.global_theme)
         elif visibility_state == 'widgets_only':
@@ -73,7 +73,7 @@ class NodeOutput:
         else:
             dpg.bind_item_theme(self.uuid, theme=Node.app.invisible_theme)
 
-    def add_child(self, child, parent):
+    def add_child(self, child: 'NodeInput', parent: int) -> None:
         link_uuid = dpg.add_node_link(self.uuid, child.uuid, parent=parent)
         # print('added link', link_uuid, self.uuid, child.uuid, self.node.label)
         child.set_parent(self)
@@ -81,7 +81,7 @@ class NodeOutput:
         self.links.append(link_uuid)
         dpg.set_item_user_data(link_uuid, [self, child])
 
-    def remove_links(self):
+    def remove_links(self) -> None:
         for child in self._children:
             child.remove_parent(self)
         for link in self.links:
@@ -90,7 +90,7 @@ class NodeOutput:
         self.links = []
         self._children = []
 
-    def remove_link(self, link, child):
+    def remove_link(self, link: int, child: 'NodeInput') -> None:
         # print('remove_link')
         if link in self.links:
             if dpg.does_item_exist(link):
@@ -100,14 +100,13 @@ class NodeOutput:
         child.remove_parent(self)
         dpg.delete_item(link)
 
-    def remove_child(self, child):
+    def remove_child(self, child: 'NodeInput') -> None:
         for kid in self._children:
             if kid == child:
-                # print('outlet remove child', kid.uuid, kid._label)
                 self._children.remove(kid)
                 break
 
-    def set_value(self, data):
+    def set_value(self, data: Any) -> Any:
         if data is not None:
             self.new_output = True
             for child in self._children:
@@ -120,14 +119,14 @@ class NodeOutput:
 
         return data
 
-    def send(self, data=None):  # called every time
+    def send(self, data: Optional[Any] = None) -> None:  # called every time
         if data is None:
             self.send_internal()
         elif self.set_value(data) is not None:
             self.send_internal()
         self.new_output = False
 
-    def send_internal(self):
+    def send_internal(self) -> None:
         if self.output_always or self.new_output:
             if self.node.visibility == 'show_all':
                 try:
@@ -158,7 +157,7 @@ class NodeOutput:
                 child.node.active_input = None
 
 
-    def create(self, parent):
+    def create(self, parent: int) -> None:
         if self.pos is not None:
             with dpg.node_attribute(parent=parent, attribute_type=dpg.mvNode_Attr_Output,
                                     user_data=self, pos=self.pos) as self.uuid:
@@ -168,10 +167,10 @@ class NodeOutput:
                                     user_data=self) as self.uuid:
                 self.label_uuid = dpg.add_text(self._label)
 
-    def get_children(self):
+    def get_children(self) -> List['NodeInput']:
         return self._children
 
-    def save(self, output_container):
+    def save(self, output_container: Dict[str, Any]) -> None:
         output_container['name'] = self._label
         output_container['id'] = self.uuid
         children = {}
@@ -185,14 +184,14 @@ class NodeIntOutput(NodeOutput):
         super().__init__(label, node, pos)
         self.output_type = int
 
-    def send(self, data=None):
+    def send(self, data: Optional[Any] = None) -> None:
         if data is not None:
             int_data = any_to_int(data)
             super().send(int_data)
         else:
             super().send()
 
-    def set_value(self, data):
+    def set_value(self, data: Any) -> int:
         int_data = any_to_int(data)
         super().set_value(int_data)
         return int_data
@@ -203,14 +202,14 @@ class NodeFloatOutput(NodeOutput):
         super().__init__(label, node, pos)
         self.output_type = float
 
-    def send(self, data=None):
+    def send(self, data: Optional[Any] = None) -> None:
         if data is not None:
             float_data = any_to_float(data)
             super().send(float_data)
         else:
             super().send()
 
-    def set_value(self, data):
+    def set_value(self, data: Any) -> float:
         float_data = any_to_float(data)
         super().set_value(float_data)
         return float_data
@@ -221,14 +220,14 @@ class NodeBoolOutput(NodeOutput):
         super().__init__(label, node, pos)
         self.output_type = bool
 
-    def send(self, data=None):
+    def send(self, data: Optional[Any] = None) -> None:
         if data is not None:
             bool_data = any_to_bool(data)
             super().send(bool_data)
         else:
             super().send()
 
-    def set_value(self, data):
+    def set_value(self, data: Any) -> bool:
         bool_data = any_to_bool(data)
         super().set_value(bool_data)
         return bool_data
@@ -239,7 +238,7 @@ class NodeListOutput(NodeOutput):
         super().__init__(label, node, pos)
         self.output_type = list
 
-    def send(self, data=None):
+    def send(self, data: Optional[Any] = None) -> None:
         if data is not None:
             list_data = any_to_list(data)
             if len(list_data) == 1 and type(data) is str:
@@ -249,7 +248,7 @@ class NodeListOutput(NodeOutput):
         else:
             super().send()
 
-    def set_value(self, data):
+    def set_value(self, data: Any) -> Union[str, List[Any]]:
         list_data = any_to_list(data)
         if len(list_data) == 1 and type(data) is str:
             super().set_value(data)
@@ -263,14 +262,14 @@ class NodeStringOutput(NodeOutput):
         super().__init__(label, node, pos)
         self.output_type = str
 
-    def send(self, data=None):
+    def send(self, data: Optional[Any] = None) -> None:
         if data is not None:
             string_data = any_to_string(data)
             super().send(string_data)
         else:
             super().send()
 
-    def set_value(self, data):
+    def set_value(self, data: Any) -> str:
         string_data = any_to_string(data)
         super().set_value(string_data)
         return string_data
@@ -281,14 +280,14 @@ class NodeArrayOutput(NodeOutput):
         super().__init__(label, node, pos)
         self.output_type = np.ndarray
 
-    def send(self, data=None):
+    def send(self, data: Optional[Any] = None) -> None:
         if data is not None:
             array_data = any_to_array(data)
             super().send(array_data)
         else:
             super().send()
 
-    def set_value(self, data):
+    def set_value(self, data: Any) -> np.ndarray:
         array_value = any_to_array(data)
         super().set_value(array_value)
         return array_value
@@ -299,13 +298,13 @@ class NodeTensorOutput(NodeOutput):
         super().__init__(label, node, pos)
         self.output_type = torch.Tensor
 
-    def send(self, data=None):
+    def send(self, data: Optional[Any] = None) -> None:
         if data is not None and torch_available:
             tensor_data = any_to_tensor(data)
             super().send(tensor_data)
         else:
             super().send()
-    def set_value(self, data):
+    def set_value(self, data: Any) -> Optional[torch.Tensor]:
         if torch_available:
             tensor_value = any_to_tensor(data)
             super().set_value(tensor_value)
@@ -320,7 +319,7 @@ class NodeDisplay:
         self.node = node
         self.submit_callback = None
 
-    def create(self, parent):
+    def create(self, parent: int) -> None:
         self.node_attribute = dpg.node_attribute(parent=parent, attribute_type=dpg.mvNode_Attr_Static, user_data=self, id=self.uuid)
         with self.node_attribute:
             if self.submit_callback is not None:
@@ -329,7 +328,7 @@ class NodeDisplay:
                 dpg.set_item_callback(self.widget.uuid, self.callback)
                 dpg.set_item_user_data(self.widget.uuid, self.user_data)
 
-    def set_visibility(self, visibility_state='show_all'):
+    def set_visibility(self, visibility_state: str = 'show_all') -> None:
         if visibility_state == 'show_all':
             dpg.bind_item_theme(self.uuid, theme=Node.app.global_theme)
         elif visibility_state == 'widgets_only':
@@ -337,23 +336,23 @@ class NodeDisplay:
         else:
             dpg.bind_item_theme(self.uuid, theme=Node.app.invisible_theme)
 
-    def load(self, property_container):
+    def load(self, property_container: Dict[str, Any]) -> None:
         pass
 
-    def save(self, property_container):
+    def save(self, property_container: Dict[str, Any]) -> None:
         pass
 
-    def add_callback(self, callback, user_data=None):
+    def add_callback(self, callback: Callable, user_data: Optional[Any] = None) -> None:
         if user_data is None:
             self.user_data = self
         else:
             self.user_data = user_data
         self.callback = callback
 
-    def get_widget_value(self):
+    def get_widget_value(self) -> Any:
         return 0
 
-    def set(self, data):
+    def set(self, data: Any) -> None:
         pass
 
 
@@ -485,7 +484,7 @@ class PropertyWidget:
         self.action = None
         self.node = node
 
-    def set_visibility(self, visibility_state='show_all'):
+    def set_visibility(self, visibility_state: str = 'show_all') -> None:
         if visibility_state == 'show_all':
             dpg.bind_item_theme(self.uuid, theme=Node.app.global_theme)
             if self.widget != 'label':
@@ -520,7 +519,7 @@ class PropertyWidget:
                 dpg.bind_item_theme(self.trigger_widget, theme=Node.app.invisible_theme)
                 dpg.disable_item(self.trigger_widget)
 
-    def create(self):
+    def create(self) -> None:
         if self.widget in ['drag_float', 'slider_float', 'input_float', 'knob_float']:
             if self.default_value is None:
                 self.default_value = 0.0
@@ -666,12 +665,12 @@ class PropertyWidget:
                 dpg.bind_item_theme(self.trigger_widget, item_theme)
         return
 
-    def trigger_value(self):
+    def trigger_value(self) -> None:
         self.node.active_input = self.input
         self.node.execute()
         self.node.active_input = None
 
-    def set_default_value(self, data):
+    def set_default_value(self, data: Any) -> None:
         if self.widget in ['drag_float', 'slider_float', 'knob_float', 'input_float']:
             self.default_value = any_to_float(data)
         elif self.widget in ['drag_int', 'slider_int', 'knob_int', 'input_int']:
@@ -683,21 +682,21 @@ class PropertyWidget:
         elif self.widget == 'color_picker':
             self.default_value = tuple(any_to_list(data))
 
-    def set_limits(self, min_, max_):
+    def set_limits(self, min_: Union[int, float], max_: Union[int, float]) -> None:
         self.min = min_
         self.max = max_
         dpg.configure_item(self.uuid, min_value=self.min, max_value=self.max)
 
-    def set_format(self, format):
+    def set_format(self, format: str) -> None:
         dpg.configure_item(self.uuid, format=format)
 
-    def attach_to_variable(self, variable):
+    def attach_to_variable(self, variable: 'Variable') -> None:
         self.variable = variable
 
-    def attach_to_action(self, action):
+    def attach_to_action(self, action: 'Action') -> None:
         self.action = action
 
-    def value_changed(self, uuid=-1, force=False):
+    def value_changed(self, uuid: int = -1, force: bool = False) -> None:
         if not dpg.is_mouse_button_down(0) and not force:
             return
         hold_active_input = self.node.active_input
@@ -715,11 +714,11 @@ class PropertyWidget:
             self.node.execute()
             self.node.active_input = hold_active_input
 
-    def set_label(self, name):
+    def set_label(self, name: str) -> None:
         self._label = name
         dpg.set_item_label(self.uuid, name)
 
-    def clickable_changed(self):
+    def clickable_changed(self) -> None:
         self.value = dpg.get_value(self.uuid)
         if self.variable:
             self.variable.set_value(self.value)
@@ -732,7 +731,7 @@ class PropertyWidget:
             self.node.execute()
             self.node.active_input = None
 
-    def increment(self):
+    def increment(self) -> None:
         if self.widget == 'checkbox':
             val = dpg.get_value(self.uuid)
             val = not val
@@ -755,7 +754,7 @@ class PropertyWidget:
         if self.callback is not None:
             self.callback()
 
-    def decrement(self):
+    def decrement(self) -> None:
         if self.widget == 'checkbox':
             val = dpg.get_value(self.uuid)
             val = not val
@@ -778,7 +777,7 @@ class PropertyWidget:
         if self.callback is not None:
             self.callback()
 
-    def get_text_width(self, pad=12, minimum_width=100):
+    def get_text_width(self, pad: int = 12, minimum_width: int = 100) -> float:
         ttt = any_to_string(self.value)
         font_id = dpg.get_item_font(self.uuid)
         size = dpg.get_text_size(ttt, font=font_id)
@@ -792,7 +791,7 @@ class PropertyWidget:
             width = minimum_width / font_scale
         return width * font_scale
 
-    def get_label_width(self, pad=12, minimum_width=100):
+    def get_label_width(self, pad: int = 12, minimum_width: int = 100) -> float:
         label = dpg.get_item_label(self.uuid)
         font_id = dpg.get_item_font(self.uuid)
         size = dpg.get_text_size(label, font=font_id)
@@ -806,14 +805,14 @@ class PropertyWidget:
             width = minimum_width / font_scale
         return width * font_scale
 
-    def adjust_to_text_width(self, max=0):
+    def adjust_to_text_width(self, max: int = 0) -> float:
         width = self.get_text_width()
-        print('adjust_to_text_width', width)
+#        print('adjust_to_text_width', width)
         if width is not None:
             dpg.configure_item(self.uuid, width=width)
         return width
 
-    def set(self, data, propagate=True):
+    def set(self, data: Any, propagate: bool = True) -> None:
         if self.widget == 'checkbox':
             if data == 'bang':
                 val = not self.value
@@ -893,12 +892,12 @@ class PropertyWidget:
         if self.action and propagate:
             self.action()
 
-    def load(self, widget_container):
+    def load(self, widget_container: Dict[str, Any]) -> None:
         if 'value' in widget_container:
             val = widget_container['value']
             self.set(val)
 
-    def save(self, widget_container):
+    def save(self, widget_container: Dict[str, Any]) -> None:
         widget_container['name'] = self._label
         value = dpg.get_value(self.uuid)
         widget_container['value'] = value
@@ -908,25 +907,25 @@ class PropertyWidget:
         else:
             widget_container['value_type'] = value_type
 
-    def get_as_float(self, data):
+    def get_as_float(self, data: Any) -> float:
         return any_to_float(data)
 
-    def get_as_bool(self, data):
+    def get_as_bool(self, data: Any) -> bool:
         return any_to_bool(data)
 
-    def get_as_string(self, data):
+    def get_as_string(self, data: Any) -> str:
         return any_to_string(data)
 
-    def get_as_list(self, data):
+    def get_as_list(self, data: Any) -> List[Any]:
         return any_to_list(data)
 
-    def get_as_int(self, data):
+    def get_as_int(self, data: Any) -> int:
         return any_to_int(data)
 
-    def get_as_array(self, data):
+    def get_as_array(self, data: Any) -> np.ndarray:
         return any_to_array(data)
 
-    def set_font(self, font):
+    def set_font(self, font: Any) -> None:
         dpg.bind_item_font(self.uuid, font)
 
 
@@ -982,28 +981,28 @@ class NodeInput:
         self.type_mask = 0
         self.name_archive = []
 
-    def get_label(self):
+    def get_label(self) -> str:
         return self._label
 
-    def set_label(self, name):
+    def set_label(self, name: str) -> None:
         self._label = name
         if self.widget is None:
             dpg.set_value(self.label_uuid, self._label)
         else:
             dpg.set_item_label(self.widget.uuid, self._label)
 
-    def set_input(self, widget_input):
+    def set_input(self, widget_input: 'NodeInput') -> None:
         self.input = widget_input
         if self.widget is not None:
             self.widget.input = self.input
 
-    def show(self):
+    def show(self) -> None:
         dpg.show_item(self.uuid)
 
-    def hide(self):
+    def hide(self) -> None:
         dpg.hide_item(self.uuid)
 
-    def set_visibility(self, visibility_state='show_all'):
+    def set_visibility(self, visibility_state: str = 'show_all') -> None:
         if visibility_state == 'show_all':
             dpg.bind_item_theme(self.uuid, theme=Node.app.global_theme)
         elif visibility_state == 'widgets_only':
@@ -1016,7 +1015,7 @@ class NodeInput:
         if self.widget is not None:
             self.widget.set_visibility(visibility_state)
 
-    def create_pin_themes(self):
+    def create_pin_themes(self) -> None:
         self._pin_inactive_theme = dpg.theme()
         with dpg.theme() as self._pin_active_theme:
             with dpg.theme_component(0):
@@ -1037,7 +1036,7 @@ class NodeInput:
             with dpg.theme_component(0):
                 dpg.add_theme_color(dpg.mvNodeCol_Pin, (255, 255, 0), category=dpg.mvThemeCat_Nodes)
 
-    def create(self, parent):
+    def create(self, parent: int) -> None:
         self.node_attribute = dpg.node_attribute(parent=parent, attribute_type=dpg.mvNode_Attr_Input, user_data=self, id=self.uuid)
 
         with self.node_attribute:
@@ -1057,15 +1056,15 @@ class NodeInput:
                     self.widget.user_data = self.user_data
                 self.widget.create()
 
-    def set_default_value(self, data):
+    def set_default_value(self, data: Any) -> None:
         if self.widget is not None:
             self.widget.set_default_value(data)
 
-    def add_callback(self, callback, user_data=None):
+    def add_callback(self, callback: Callable, user_data: Optional[Any] = None) -> None:
         self.callback = callback
         self.user_data = user_data
 
-    def __call__(self):
+    def __call__(self) -> Any:
         if self.fresh_input:
             self.fresh_input = False
             return self._data
@@ -1074,26 +1073,26 @@ class NodeInput:
             return self.get_widget_value()
         return self._data
 
-    def get_received_data(self):
+    def get_received_data(self) -> Any:
         self.fresh_input = False
         return self._data
 
-    def get_data(self):
+    def get_data(self) -> Any:
         self.fresh_input = False
         if self.widget:
             return self.get_widget_value()
         return self._data
 
-    def attach_to_variable(self, variable):
+    def attach_to_variable(self, variable: 'Variable') -> None:
         self.variable = variable
         self.variable.property = self
         self.widget.attach_to_variable(variable)
 
-    def attach_to_action(self, action):
+    def attach_to_action(self, action: 'Action') -> None:
         self.action = action
         self.widget.attach_to_action(action)
 
-    def delete_parents(self):
+    def delete_parents(self) -> None:
         # print(self._parents)
         for p in self._parents:  # output linking to this
             p.remove_child(self)
@@ -1109,11 +1108,11 @@ class NodeInput:
             # print(self._parents)
         self._parents = []
 
-    def remove_parent(self, parent):
+    def remove_parent(self, parent: 'NodeOutput') -> None:
         if parent in self._parents:
             self._parents.remove(parent)
 
-    def receive_data(self, data, orig_type=None):
+    def receive_data(self, data: Any, orig_type: Optional[Type] = None) -> None:
         if data is not None:
             if orig_type is None:
                 self.received_type = type(data)
@@ -1164,7 +1163,7 @@ class NodeInput:
                 self.node.active_input = None
         self.received_bang = False
 
-    def conform_to_accepted_types(self, data):
+    def conform_to_accepted_types(self, data: Any) -> Any:
         if self.accepted_types:
             t = type(data)
             if t in self.accepted_types:
@@ -1172,34 +1171,34 @@ class NodeInput:
 
         return data
 
-    def trigger(self):
+    def trigger(self) -> None:
         if self.triggers_execution:
             self.node.active_input = self
             self.node.execute()
             self.node.active_input = None
 
-    def set_parent(self, parent: NodeOutput):
+    def set_parent(self, parent: 'NodeOutput') -> None:
         if parent not in self._parents:
             self._parents.append(parent)
 
-    def get_parents(self):
+    def get_parents(self) -> List['NodeOutput']:
         return self._parents
 
-    def save(self, input_container):
+    def save(self, input_container: Dict[str, Any]) -> bool:
         if self.widget:
             self.widget.save(input_container)
             return True
         return False
 
-    def load(self, input_container):
+    def load(self, input_container: Dict[str, Any]) -> None:
         if self.widget:
             self.widget.load(input_container)
 
-    def get_widget_value(self):
+    def get_widget_value(self) -> Any:
         if self.widget:
             return self.widget.value
 
-    def set(self, data, propagate=True):
+    def set(self, data: Any, propagate: bool = True) -> None:
         if type(data) == list:
             if len(data) == 1:
                 data = data[0]
@@ -1215,7 +1214,7 @@ class NodeInput:
         if self.variable and propagate:
             self.variable.set_value(data)
 
-    def set_font(self, font):
+    def set_font(self, font: Any) -> None:
         dpg.bind_item_font(self.uuid, font)
         if self.widget:
             self.widget.set_font(font)
@@ -1229,7 +1228,7 @@ class NodeIntInput(NodeInput):
     def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
         super().__init__(label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
 
-    def receive_data(self, data, orig_type=None):
+    def receive_data(self, data: Any, orig_type: Optional[Type] = None) -> None:
         self.received_type = type(data)
         if self.received_type is str and data == 'bang':
             self.received_bang = True
@@ -1242,7 +1241,7 @@ class NodeFloatInput(NodeInput):
     def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
         super().__init__(label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
 
-    def receive_data(self, data, orig_type=None):
+    def receive_data(self, data: Any, orig_type: Optional[Type] = None) -> None:
         self.received_type = type(data)
         if self.received_type is str and data == 'bang':
             self.received_bang = True
@@ -1257,7 +1256,7 @@ class NodeBoolInput(NodeInput):
     def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
         super().__init__(label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
 
-    def receive_data(self, data, orig_type=None):
+    def receive_data(self, data: Any, orig_type: Optional[Type] = None) -> None:
         self.received_type = type(data)
         if self.received_type is str and data == 'bang':
             self.received_bang = True
@@ -1273,10 +1272,10 @@ class NodeStringInput(NodeInput):
         super().__init__(label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
         self.strip_returns = True
 
-    def set_strip_returns(self, value):
+    def set_strip_returns(self, value: bool) -> None:
         self.strip_returns = value
 
-    def receive_data(self, data, orig_type=None):
+    def receive_data(self, data: Any, orig_type: Optional[Type] = None) -> None:
         self.received_type = type(data)
         if self.received_type == str and data == 'bang':
             self.received_bang = True
@@ -1295,7 +1294,7 @@ class NodeListInput(NodeInput):
     def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
         super().__init__(label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
 
-    def receive_data(self, data, orig_type=None):
+    def receive_data(self, data: Any, orig_type: Optional[Type] = None) -> None:
         self.received_type = type(data)
         if self.received_type is str and data == 'bang':
             self.received_bang = True
@@ -1310,7 +1309,7 @@ class NodeArrayInput(NodeInput):
     def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
         super().__init__(label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
 
-    def receive_data(self, data, orig_type=None):
+    def receive_data(self, data: Any, orig_type: Optional[Type] = None) -> None:
         self.received_type = type(data)
         if self.received_type is str and data == 'bang':
             self.received_bang = True
@@ -1325,7 +1324,7 @@ class NodeTensorInput(NodeInput):
     def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
         super().__init__(label, uuid, node, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
 
-    def receive_data(self, data, orig_type=None):
+    def receive_data(self, data: Any, orig_type: Optional[Type] = None) -> None:
         self.received_type = type(data)
         if torch_available:
             if self.received_type is str and data == 'bang':
@@ -1344,7 +1343,7 @@ class NodeNumericalInput(NodeInput):
         if default_value is not None:
             self.to_numerical(default_value)
 
-    def to_numerical(self, data):
+    def to_numerical(self, data: Any) -> None:
         t = type(data)
         if t == str:
             self.numerical_data = string_to_float_or_int(data)
@@ -1360,11 +1359,11 @@ class NodeNumericalInput(NodeInput):
         else:
             self.numerical_data = data
 
-    def receive_data(self, data, orig_type=None):
+    def receive_data(self, data: Any, orig_type: Optional[Type] = None) -> None:
         super().receive_data(data, orig_type)
         self.to_numerical(data)
 
-    def __call__(self):
+    def __call__(self) -> Any:
         self.fresh_input = False
         if self.widget:
             return self.get_widget_value()
@@ -1372,26 +1371,26 @@ class NodeNumericalInput(NodeInput):
 
 
 class Conduit:
-    def __init__(self, label: str):
+    def __init__(self, label: str) -> None:
         self.label = label
         self.clients = []
 
-    def transmit(self, data, from_client=None):
+    def transmit(self, data: Any, from_client: Optional[Any] = None) -> None:
         for client in self.clients:
             if client != from_client:
                 client.receive(self.label, data)
 
-    def attach_client(self, client):
+    def attach_client(self, client: Any) -> None:
         if client not in self.clients:
             self.clients.append(client)
 
-    def detach_client(self, client):
+    def detach_client(self, client: Any) -> None:
         if client in self.clients:
             self.clients.remove(client)
 
 
 class Variable:
-    def __init__(self, label: str, default_value=0.0, setter=None, getter=None):
+    def __init__(self, label: str, default_value=0.0, setter=None, getter=None) -> None:
         self.label = label
         self.property = None
         self.clients = []
@@ -1399,47 +1398,47 @@ class Variable:
         self.set_callback = setter
         self.get_callback = getter
 
-    def notify_clients_of_value_change(self, from_client=None):
+    def notify_clients_of_value_change(self, from_client: Optional[Any] = None) -> None:
         for client in self.clients:
             if client != from_client:
                 client.variable_update()
 
-    def set(self, data, from_client=None):
+    def set(self, data: Any, from_client: Optional[Any] = None) -> None:
         if self.property and from_client != self.property.node:
             self.property.set(data, propagate=False)
         self.set_value(data)
         self.notify_clients_of_value_change(from_client)
 
-    def __call__(self):
+    def __call__(self) -> Any:
         if self.property:
             self.value = self.property()
         else:
             self.value = self.get_value()
         return self.value
 
-    def get(self):
+    def get(self) -> Any:
         if self.property:
             self.value = self.property()
         else:
             self.value = self.get_value()
         return self.value
 
-    def attach_client(self, client):
+    def attach_client(self, client: Any) -> None:
         if client not in self.clients:
             self.clients.append(client)
 
-    def detach_client(self, client):
+    def detach_client(self, client: Any) -> None:
         if client in self.clients:
             if self.property is not None and self.property.node == client:
                 self.property = None
             self.clients.remove(client)
 
-    def set_value(self, data):  # does not notify_clients_of_value_change
+    def set_value(self, data: Any) -> None:  # does not notify_clients_of_value_change
         self.value = data
         if self.set_callback:
             self.set_callback(data)
 
-    def get_value(self):
+    def get_value(self) -> Any:
         if self.get_callback:
             return self.get_callback()
         return self.value
@@ -1454,7 +1453,7 @@ class Action:
         self.clients = []
         self.action_function = action_function
 
-    def perform(self):
+    def perform(self) -> None:
         if self.action_function is not None:
             self.action_function()
 
@@ -1462,7 +1461,7 @@ class Action:
 class Node:
     app = None
 
-    def __init__(self, label: str, data, args=None):
+    def __init__(self, label: str, data: Any, args: Optional[List[str]] = None) -> None:
         self.label = label
         self.uuid = dpg.generate_uuid()
         self.static_uuid = dpg.generate_uuid()
@@ -1495,10 +1494,10 @@ class Node:
         self.in_loading_process = False
         self.show_options_check = None
 
-    def custom_cleanup(self):
+    def custom_cleanup(self) -> None:
         pass
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         self.remove_frame_tasks()
         self.custom_cleanup()
         for input_ in self.inputs:
@@ -1514,11 +1513,11 @@ class Node:
                 dpg.delete_item(property_.widget.uuid)
             dpg.delete_item(property_.uuid)
 
-    def set_draggable(self, can_drag):
+    def set_draggable(self, can_drag: bool) -> None:
         self.draggable = can_drag
         dpg.configure_item(self.uuid, draggable=self.draggable)
 
-    def set_visibility(self, visibility_state='show_all'):
+    def set_visibility(self, visibility_state: str = 'show_all') -> None:
         self.visibility = visibility_state
         if visibility_state == 'show_all':
             dpg.bind_item_theme(self.uuid, theme=self.app.global_theme)
@@ -1543,35 +1542,39 @@ class Node:
 
         self.set_custom_visibility()
 
-    def set_custom_visibility(self):
+    def set_custom_visibility(self) -> None:
         pass
 
-    def set_font(self, font):
+    def set_font(self, font: Any) -> None:
         dpg.bind_item_font(self.uuid, font)
 
-    def set_title(self, title):
+    def set_title(self, title: str) -> None:
         dpg.configure_item(self.uuid, label=title)
 
-    def post_load_callback(self):
+    def post_load_callback(self) -> None:
         pass
 
-    def send_all(self):
+    def send_all(self) -> None:
         for output in self.outputs:
             output.send_internal()  # should not always trigger!!! make flag to indicate trigger always or trigger on change...
 
-    def add_label(self, label: str = ""):
+    def add_label(self, label: str = "") -> None:
         new_property = NodeProperty(label, widget_type='label')
         # self.properties.append(new_property)
         self.ordered_elements.append(new_property)
         return new_property
 
-    def add_spacer(self):
+    def add_spacer(self) -> None:
         new_property = NodeProperty('', widget_type='spacer')
         # self.properties.append(new_property)
         self.ordered_elements.append(new_property)
         return new_property
 
-    def add_property(self, label: str = "", uuid=None, widget_type=None, width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, callback=None):
+    def add_property(self, label: str = "", uuid: Optional[int] = None,
+                    widget_type: Optional[str] = None, width: int = 80,
+                    triggers_execution: bool = False, trigger_button: bool = False,
+                    default_value: Any = None, min: Optional[float] = None,
+                    max: Optional[float] = None, callback: Optional[Callable] = None) -> 'NodeProperty':
         new_property = NodeProperty(label, uuid, self, widget_type, width, triggers_execution, trigger_button, default_value, min, max)
         self.properties.append(new_property)
         self.ordered_elements.append(new_property)
@@ -1581,7 +1584,11 @@ class Node:
         self.message_handlers[label] = self.property_message
         return new_property
 
-    def add_option(self, label: str = "", uuid=None, widget_type=None, width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, callback=None):
+    def add_option(self, label: str = "", uuid: Optional[int] = None,
+                    widget_type: Optional[str] = None, width: int = 80,
+                    triggers_execution: bool = False, trigger_button: bool = False,
+                    default_value: Any = None, min: Optional[float] = None,
+                    max: Optional[float] = None, callback: Optional[Callable] = None) -> 'NodeProperty':
         if self.show_options_check is None and self.app.easy_mode:
             self.show_options_check = self.add_property('show options', widget_type='checkbox', default_value=False, callback=self.show_hide_options)
 
@@ -1610,7 +1617,12 @@ class Node:
             new_display.add_callback(callback=callback, user_data=self)
         return new_display
 
-    def add_input(self, label: str = "", uuid=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, callback=None):
+    def add_input(self, label: str = "", uuid: Optional[int] = None,
+                 widget_type: Optional[str] = None, widget_uuid: Optional[int] = None,
+                 widget_width: int = 80, triggers_execution: bool = False,
+                 trigger_button: bool = False, default_value: Any = None,
+                 min: Optional[float] = None, max: Optional[float] = None,
+                 callback: Optional[Callable] = None) -> 'NodeInput':
         new_input = NodeInput(label, uuid, self, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
         # if widget_type == 'checkbox':
         #     new_input.bang_repeats_previous = False
@@ -1628,84 +1640,119 @@ class Node:
             self.property_registery[new_input.get_label()] = new_input
             self.message_handlers[new_input.get_label()] = self.property_message
 
-    def add_int_input(self, label: str = "", uuid=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, callback=None):
+    def add_int_input(self, label: str = "", uuid: Optional[int] = None,
+                     widget_type: Optional[str] = None, widget_uuid: Optional[int] = None,
+                     widget_width: int = 80, triggers_execution: bool = False,
+                     trigger_button: bool = False, default_value: Optional[int] = None,
+                     min: Optional[int] = None, max: Optional[int] = None,
+                     callback: Optional[Callable] = None) -> 'NodeIntInput':
         new_input = NodeIntInput(label, uuid, self, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
         self.install_input(new_input, callback=callback)
         return new_input
 
-    def add_float_input(self, label: str = "", uuid=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, callback=None):
+    def add_float_input(self, label: str = "", uuid: Optional[int] = None,
+                       widget_type: Optional[str] = None, widget_uuid: Optional[int] = None,
+                       widget_width: int = 80, triggers_execution: bool = False,
+                       trigger_button: bool = False, default_value: Optional[float] = None,
+                       min: Optional[float] = None, max: Optional[float] = None,
+                       callback: Optional[Callable] = None) -> 'NodeFloatInput':
         new_input = NodeFloatInput(label, uuid, self, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
         self.install_input(new_input, callback=callback)
         return new_input
 
-    def add_bool_input(self, label: str = "", uuid=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, callback=None):
+    def add_bool_input(self, label: str = "", uuid: Optional[int] = None,
+                       widget_type: Optional[str] = None, widget_uuid: Optional[int] = None,
+                       widget_width: int = 80, triggers_execution: bool = False,
+                       trigger_button: bool = False, default_value: Any = None,
+                       min: Optional[float] = None, max: Optional[float] = None,
+                       callback: Optional[Callable] = None) -> 'NodeBoolInput':
         new_input = NodeBoolInput(label, uuid, self, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
         self.install_input(new_input, callback=callback)
         return new_input
 
-    def add_string_input(self, label: str = "", uuid=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, callback=None):
+    def add_string_input(self, label: str = "", uuid: Optional[int] = None,
+                         widget_type: Optional[str] = None, widget_uuid: Optional[int] = None,
+                         widget_width: int = 80, triggers_execution: bool = False,
+                         trigger_button: bool = False, default_value: Any = None,
+                         min: Optional[float] = None, max: Optional[float] = None,
+                         callback: Optional[Callable] = None) -> 'NodeStringInput':
         new_input = NodeStringInput(label, uuid, self, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
         self.install_input(new_input, callback=callback)
         return new_input
 
-    def add_list_input(self, label: str = "", uuid=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, callback=None):
+    def add_list_input(self, label: str = "", uuid: Optional[int] = None,
+                       widget_type: Optional[str] = None, widget_uuid: Optional[int] = None,
+                       widget_width: int = 80, triggers_execution: bool = False,
+                       trigger_button: bool = False, default_value: Any = None,
+                       min: Optional[float] = None, max: Optional[float] = None,
+                       callback: Optional[Callable] = None) -> 'NodeListInput':
         new_input = NodeListInput(label, uuid, self, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
         self.install_input(new_input, callback=callback)
         return new_input
 
-    def add_array_input(self, label: str = "", uuid=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, callback=None):
+    def add_array_input(self, label: str = "", uuid: Optional[int] = None,
+                        widget_type: Optional[str] = None, widget_uuid: Optional[int] = None,
+                        widget_width: int = 80, triggers_execution: bool = False,
+                        trigger_button: bool = False, default_value: Any = None,
+                        min: Optional[float] = None, max: Optional[float] = None,
+                        callback: Optional[Callable] = None) -> 'NodeArrayInput':
         new_input = NodeArrayInput(label, uuid, self, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
         self.install_input(new_input, callback=callback)
         return new_input
 
-    def add_tensor_input(self, label: str = "", uuid=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, callback=None):
+    def add_tensor_input(self, label: str = "", uuid: Optional[int] = None,
+                         widget_type: Optional[str] = None, widget_uuid: Optional[int] = None,
+                         widget_width: int = 80, triggers_execution: bool = False,
+                         trigger_button: bool = False, default_value: Any = None,
+                         min: Optional[float] = None, max: Optional[float] = None,
+                         callback: Optional[Callable] = None) -> 'NodeTensorInput':
         new_input = NodeTensorInput(label, uuid, self, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
         self.install_input(new_input, callback=callback)
         return new_input
 
-    def add_output(self, label: str = "output", pos=None):
+    def add_output(self, label: str = "output", pos: Optional[List[float]] = None) -> 'NodeOutput':
         new_output = NodeOutput(label, self, pos)
         self.outputs.append(new_output)
         self.ordered_elements.append(new_output)
         return new_output
 
-    def add_int_output(self, label: str = "output", pos=None):
+    def add_int_output(self, label: str = "output", pos: Optional[List[float]] = None) -> 'NodeIntOutput':
         new_output = NodeIntOutput(label, self, pos)
         self.outputs.append(new_output)
         self.ordered_elements.append(new_output)
         return new_output
 
-    def add_float_output(self, label: str = "output", pos=None):
+    def add_float_output(self, label: str = "output", pos: Optional[List[float]] = None) -> 'NodeFloatOutput':
         new_output = NodeFloatOutput(label, self, pos)
         self.outputs.append(new_output)
         self.ordered_elements.append(new_output)
         return new_output
 
-    def add_bool_output(self, label: str = "output", pos=None):
+    def add_bool_output(self, label: str = "output", pos: Optional[List[float]] = None) -> 'NodeBoolOutput':
         new_output = NodeBoolOutput(label, self, pos)
         self.outputs.append(new_output)
         self.ordered_elements.append(new_output)
         return new_output
 
-    def add_string_output(self, label: str = "output", pos=None):
+    def add_string_output(self, label: str = "output", pos: Optional[List[float]] = None) -> 'NodeStringOutput':
         new_output = NodeStringOutput(label, self, pos)
         self.outputs.append(new_output)
         self.ordered_elements.append(new_output)
         return new_output
 
-    def add_list_output(self, label: str = "output", pos=None):
+    def add_list_output(self, label: str = "output", pos: Optional[List[float]] = None) -> 'NodeListOutput':
         new_output = NodeListOutput(label, self, pos)
         self.outputs.append(new_output)
         self.ordered_elements.append(new_output)
         return new_output
 
-    def add_array_output(self, label: str = "output", pos=None):
+    def add_array_output(self, label: str = "output", pos: Optional[List[float]] = None) -> 'NodeArrayOutput':
         new_output = NodeArrayOutput(label, self, pos)
         self.outputs.append(new_output)
         self.ordered_elements.append(new_output)
         return new_output
 
-    def add_tensor_output(self, label: str = "output", pos=None):
+    def add_tensor_output(self, label: str = "output", pos: Optional[List[float]] = None) -> 'NodeTensorOutput':
         if torch_available:
             new_output = NodeTensorOutput(label, self, pos)
             self.outputs.append(new_output)
@@ -1727,10 +1774,10 @@ class Node:
     def value_changed(self, widget_uuid, force=False):
         pass
 
-    def variable_update(self):
+    def variable_update(self) -> None:
         self.execute()
 
-    def execute(self):
+    def execute(self) -> None:
         for attribute in self.outputs:
             attribute.set_value(self._data)
         self.send_all()
@@ -1738,7 +1785,7 @@ class Node:
     def custom_create(self, from_file):
         pass
 
-    def trigger(self):
+    def trigger(self) -> None:
         pass
 
     def increment_widget(self, widget):
@@ -1747,16 +1794,16 @@ class Node:
     def decrement_widget(self, widget):
         widget.decrement()
 
-    def add_frame_task(self):
+    def add_frame_task(self) -> None:
         Node.app.add_frame_task(self)
         self.has_frame_task = True
 
-    def remove_frame_tasks(self):
+    def remove_frame_tasks(self) -> None:
         if self.has_frame_task:
             Node.app.remove_frame_task(self)
             self.has_frame_task = False
 
-    def create(self, parent, pos, from_file=False):
+    def create(self, parent: int, pos: List[float], from_file: bool = False) -> None:
         with dpg.node(parent=parent, label=self.label, tag=self.uuid, pos=pos):
             dpg.set_item_pos(self.uuid, pos)
             self.handle_parsed_args()
@@ -1776,7 +1823,7 @@ class Node:
             dpg.hide_item(option_att.widget.uuid)
         self.created = True
 
-    def show_hide_options(self):
+    def show_hide_options(self) -> None:
         if self.show_options_check():
             if not self.options_visible:
                 self.toggle_show_hide_options()
@@ -1784,12 +1831,12 @@ class Node:
             if self.options_visible:
                 self.toggle_show_hide_options()
 
-    def args_as_list(self, supplied_args=None):
+    def args_as_list(self, supplied_args: Optional[List[str]] = None) -> List[str]:
         if supplied_args is not None:
             return supplied_args
         return self.ordered_args
 
-    def arg_as_number(self, default_value=0, index=0):
+    def arg_as_number(self, default_value: Union[int, float] = 0, index: int = 0) -> Union[int, float]:
         value = default_value
         if len(self.ordered_args) > index:
             val, t = decode_arg(self.ordered_args, index)
@@ -1799,31 +1846,31 @@ class Node:
                 value = any_to_int(val)
         return value
 
-    def arg_as_int(self, default_value=0.0, index=0):
+    def arg_as_int(self, default_value: int = 0, index: int = 0) -> int:
         value = default_value
         if len(self.ordered_args) > index:
             value = any_to_int(self.ordered_args[index])
         return value
 
-    def arg_as_float(self, default_value=0.0, index=0):
+    def arg_as_float(self, default_value: float = 0.0, index: int = 0) -> float:
         value = default_value
         if len(self.ordered_args) > index:
             value = any_to_float(self.ordered_args[index])
         return value
 
-    def arg_as_string(self, default_value='', index=0):
+    def arg_as_string(self, default_value: str = '', index: int = 0) -> str:
         value = default_value
         if len(self.ordered_args) > index:
             value = any_to_string(self.ordered_args[index])
         return value
 
-    def arg_as_bool(self, default_value=False, index=0):
+    def arg_as_bool(self, default_value: bool = False, index: int = 0) -> bool:
         value = default_value
         if len(self.ordered_args) > index:
             value = any_to_bool(self.ordered_args[index])
         return value
 
-    def toggle_show_hide_options(self):
+    def toggle_show_hide_options(self) -> None:
         if len(self.options) > 0:
             self.options_visible = not self.options_visible
             if self.options_visible:
@@ -1835,7 +1882,7 @@ class Node:
                     dpg.hide_item(option_att.uuid)
                     dpg.hide_item(option_att.widget.uuid)
 
-    def check_for_messages(self, in_data):
+    def check_for_messages(self, in_data: Union[str, List[Any]]) -> bool:
         handled = False
         if len(self.message_handlers) > 0:
             message = ''
@@ -1860,10 +1907,10 @@ class Node:
                         handled = True
         return handled
 
-    def save_custom(self, container):
+    def save_custom(self, container: Dict[str, Any]):
         pass
 
-    def load_custom(self, container):
+    def load_custom(self, container: Dict[str, Any]):
         pass
 
     def on_edit(self, widget):
@@ -1872,7 +1919,7 @@ class Node:
     def on_deactivate(self, widget):
         pass
 
-    def property_message(self, message='', args=[]):
+    def property_message(self, message: str = '', args: List[Any] = []) -> None:
         property = None
         if message in self.property_registery:
             property = self.property_registery[message]
@@ -1884,14 +1931,14 @@ class Node:
             if property.widget.callback is not None:
                 property.widget.callback()
 
-    def copy_to_clipboard(self):
+    def copy_to_clipboard(self) -> Dict[str, Any]:
         node_container = {}
         self.save(node_container, 0)
         nodes_container = {self.label: node_container}
         clipboard_container = {'nodes': nodes_container}
         return clipboard_container
 
-    def save(self, node_container, index):
+    def save(self, node_container: Dict[str, Any], index: int) -> None:
         if node_container is not None:
             if self.unparsed_args and len(self.unparsed_args) > 0:
                 args_container = {}
@@ -1914,10 +1961,10 @@ class Node:
 
             self.store_properties(node_container)
 
-    def post_creation_callback(self):
+    def post_creation_callback(self) -> None:
         pass
 
-    def load(self, node_container, offset=None):
+    def load(self, node_container: Optional[Dict[str, Any]], offset: Optional[List[float]] = None) -> None:
         self.in_loading_process = True
         if offset is None:
             offset = [0, 0]
@@ -1943,7 +1990,7 @@ class Node:
             self.restore_properties(node_container)
         self.in_loading_process = False
 
-    def store_properties(self, node_container):
+    def store_properties(self, node_container: Dict[str, Any]) -> None:
         properties_container = {}
         property_number = 0
         for index, _input in enumerate(self.inputs):
@@ -1966,7 +2013,7 @@ class Node:
             node_container['properties'] = properties_container
         self.save_custom(node_container)
 
-    def restore_properties(self, node_container):
+    def restore_properties(self, node_container: Dict[str, Any]) -> None:
         if 'properties' in node_container:
             properties_container = node_container['properties']
             for index, property_index in enumerate(properties_container):
@@ -1980,10 +2027,8 @@ class Node:
                             a_label = dpg.get_item_label(input.widget.uuid)
                             if a_label == property_label:
                                 if 'value' in property_container:
-                                    print('found', property_label)
                                     value = property_container['value']
                                     if input.widget.widget != 'button':
-                                        print('about to set')
                                         input.widget.set(value)
                                         self.active_input = input
                                         input.widget.value_changed(force=True)
@@ -2016,10 +2061,10 @@ class Node:
         self.load_custom(node_container)
         self.update_parameters_from_widgets()
 
-    def update_parameters_from_widgets(self):
+    def update_parameters_from_widgets(self) -> None:
         pass
 
-    def set_value(self, uuid, type, input):
+    def set_value(self, uuid: int, type: Any, input: Any) -> None:
         if type in ['drag_float', 'input_float', 'slider_float', 'knob_float']:
             dpg.set_value(uuid, any_to_float(input))
         elif type in ['drag_int', 'input_int', 'slider_int', 'knob_int']:
@@ -2029,7 +2074,7 @@ class Node:
         elif type in ['toggle']:
             dpg.set_value(uuid, any_to_bool(input))
 
-    def parse_args(self):
+    def parse_args(self) -> None:
         self.ordered_args = []
         self.parsed_args = {}
         if self.unparsed_args is not None:
@@ -2050,13 +2095,13 @@ class Node:
                     self.ordered_args.append(arg)
  #       print(self.parsed_args, self.ordered_args)
 
-    def handle_parsed_args(self):
+    def handle_parsed_args(self) -> None:
         for arg_name in self.parsed_args:
             if arg_name in self.property_registery:
                 property = self.property_registery[arg_name]
                 property.set_default_value(self.parsed_args[arg_name])
 
-    def update_parsed_args(self):
+    def update_parsed_args(self) -> None:
         for arg_name in self.parsed_args:
             if arg_name in self.property_registery:
                 property = self.property_registery[arg_name]
@@ -2074,7 +2119,7 @@ def register_base_nodes():
 
 class PatcherInputNode(Node):
     @staticmethod
-    def factory(name, data, args=None):
+    def factory(name: str, data: Any, args: Optional[List[str]] = None) -> 'PatcherInputNode':
         node = PatcherInputNode(name, data, args)
         return node
 
@@ -2112,7 +2157,7 @@ class PatcherInputNode(Node):
                     dpg.set_value(self.app.tab_bar, tab)
                     break
 
-    def connect_to_parent(self, patcher_node):
+    def connect_to_parent(self, patcher_node: 'PatcherNode') -> None:
         # print('in connect to parent', self.input_name)
         self.patcher_node = patcher_node
         self.custom_create(False)  # ??
@@ -2132,7 +2177,7 @@ class PatcherInputNode(Node):
 
 class PatcherOutputNode(Node):
     @staticmethod
-    def factory(name, data, args=None):
+    def factory(name: str, data: Any, args: Optional[List[str]] = None) -> 'PatcherOutputNode':
         node = PatcherOutputNode(name, data, args)
         return node
 
@@ -2178,7 +2223,7 @@ class PatcherOutputNode(Node):
                     dpg.set_value(self.app.tab_bar, tab)
                     break
 
-    def connect_to_parent(self, patcher_node):
+    def connect_to_parent(self, patcher_node: 'PatcherNode') -> None:
         # print('out connect to parent', self.output_name)
         self.patcher_node = patcher_node
         self.custom_create(False)
@@ -2209,11 +2254,11 @@ class PatcherNode(Node):
 
     '''
     @staticmethod
-    def factory(name, data, args=None):
+    def factory(name: str, data: Any, args: Optional[List[str]] = None) -> 'PatcherNode':
         node = PatcherNode('patcher', data, args)
         return node
 
-    def __init__(self, label: str, data, args):
+    def __init__(self, label: str, data: Any, args: Optional[List[str]]) -> None:
         super().__init__(label, data, args)
         self.max_input_count = 20
         self.max_output_count = 20
@@ -2224,7 +2269,7 @@ class PatcherNode(Node):
             s, t = decode_arg(args, 0)
             if t == str:
                 self.patcher_name = s
-                print('patcher name', s)
+                # print('patcher name', s)
         self.home_editor = self.app.get_current_editor()
         self.home_editor_index = self.app.current_node_editor
         # print('init', self.patcher_name, self.home_editor)
@@ -2247,7 +2292,7 @@ class PatcherNode(Node):
             self.patcher_outputs[i] = out_temp
         self.name_option = self.add_option('patcher name', widget_type='text_input', default_value=self.patcher_name, callback=self.name_changed)
 
-    def name_changed(self):
+    def name_changed(self) -> None:
         new_name = self.name_option()
         self.unparsed_args = [new_name]
         self.button.set_label(new_name)
@@ -2258,24 +2303,24 @@ class PatcherNode(Node):
         if self.patch_editor:
             self.patch_editor.set_name(new_name)
 
-    def change_input_name(self, old_name, new_name):
+    def change_input_name(self, old_name: str, new_name: str) -> None:
         for in_ in self.inputs:
             if in_.get_label() is old_name:
                 in_.set_label(new_name)
 
-    def change_output_name(self, old_name, new_name):
+    def change_output_name(self, old_name: str, new_name: str) -> None:
         for out_ in self.outputs:
             if out_.get_label() == old_name:
                 out_.set_label(new_name)
 
-    def receive_(self, input=None):
+    def receive_(self, input: Optional['NodeInput'] = None) -> None:
         if self.active_input is not None:
             index = self.active_input.input_index
             if self.input_outs[index] is not None:
                 data = self.patcher_inputs[index]()
                 self.input_outs[index].send(data)
 
-    def open_patcher(self):
+    def open_patcher(self) -> None:
         for i, editor in enumerate(self.app.node_editors):
             if editor == self.patch_editor:
                 tab = self.app.tabs[i]
@@ -2283,7 +2328,7 @@ class PatcherNode(Node):
                 dpg.set_value(self.app.tab_bar, tab)
                 break
 
-    def add_patcher_output(self, output_name, output):
+    def add_patcher_output(self, output_name: str, output: 'NodeOutput') -> Optional['NodeOutput']:
         for i in range(self.max_output_count):
             if self.output_ins[i] is None:
                 self.output_ins[i] = output
@@ -2294,7 +2339,7 @@ class PatcherNode(Node):
                 return self.patcher_outputs[i]
         return None
 
-    def remove_patcher_output(self, output_name, output):
+    def remove_patcher_output(self, output_name: str, output: 'NodeOutput') -> None:
         for i in range(self.max_output_count):
             if self.output_ins[i] == output:
                 self.output_ins[i] = None
@@ -2304,14 +2349,14 @@ class PatcherNode(Node):
             # must remove connections!
         self.update_outputs()
 
-    def update_outputs(self):
+    def update_outputs(self) -> None:
         for i in range(self.max_output_count):
             if self.show_output[i]:
                 dpg.show_item(self.patcher_outputs[i].uuid)
             else:
                 dpg.hide_item(self.patcher_outputs[i].uuid)
 
-    def add_patcher_input(self, input_name, input):
+    def add_patcher_input(self, input_name: str, input: 'NodeInput') -> Optional['NodeInput']:
         # print('add patcher input', input_name)
         for i in range(self.max_input_count):
             if self.input_outs[i] is None:
@@ -2322,7 +2367,7 @@ class PatcherNode(Node):
                 self.update_inputs()
                 return self.patcher_inputs[i]
 
-    def remove_patcher_input(self, input_name, input):
+    def remove_patcher_input(self, input_name: str, input: 'NodeInput') -> None:
         for i in range(self.max_input_count):
             if self.input_outs[i] == input:
                 self.input_outs[i] = None
@@ -2331,14 +2376,14 @@ class PatcherNode(Node):
                 self.patcher_inputs[i].delete_parents()
         self.update_inputs()
 
-    def update_inputs(self):
+    def update_inputs(self) -> None:
         for i in range(self.max_input_count):
             if self.show_input[i]:
                 dpg.show_item(self.patcher_inputs[i].uuid)
             else:
                 dpg.hide_item(self.patcher_inputs[i].uuid)
 
-    def custom_create(self, from_file):
+    def custom_create(self, from_file: bool) -> None:
         if not from_file:
             # hold_current_patcher = self.app.get_current_editor()
             self.patch_editor = self.app.add_node_editor()
@@ -2367,7 +2412,7 @@ class PatcherNode(Node):
         #     self.app.loaded_patcher_nodes.append(self)
         #     # patch not yet loaded so will be attached when it loads
 
-    def connect(self, patch_editor=None):
+    def connect(self, patch_editor: Optional['NodeEditor'] = None) -> None:
         if patch_editor is not None:
             self.patch_editor = patch_editor
         if self.patch_editor is not None:
@@ -2379,15 +2424,15 @@ class PatcherNode(Node):
             # self.loaded_uuid = -1
             self.patch_editor.reconnect_to_parent(self)
 
-    def custom_cleanup(self):  # should delete associated patcher
+    def custom_cleanup(self) -> None:  # should delete associated patcher
        self.app.remove_node_editor(self.patch_editor)
 
-    def save_custom(self, container):
+    def save_custom(self, container: Dict[str, Any]) -> None:
         container['show inputs'] = self.show_input
         container['show outputs'] = self.show_output
         container['patcher id'] = self.patch_editor.uuid
 
-    def load_custom(self, container):  # called after custom setup...
+    def load_custom(self, container: Dict[str, Any]) -> None:  # called after custom setup...
         # print('load_custom', self.patcher_name)
         if 'show inputs' in container:
             self.show_input = container['show inputs']
@@ -2421,16 +2466,15 @@ class PatcherNode(Node):
 
 class OriginNode(Node):
     @staticmethod
-    def factory(name, data, args=None):
+    def factory(name: str, data: Any, args: Optional[List[str]] = None) -> 'OriginNode':
         node = OriginNode('', data, args)
         return node
 
-    def __init__(self, label: str, data, args):
-#        print('create origin')
+    def __init__(self, label: str, data: Any, args: Optional[List[str]]) -> None:
         super().__init__(label, data, args)
         self.ref_property = self.add_property('', widget_type='button', width=1)
 
-    def custom_create(self, from_file):
+    def custom_create(self, from_file: bool) -> None:
         with dpg.theme() as item_theme:
             with dpg.theme_component(dpg.mvAll):
                 dpg.add_theme_color(dpg.mvNodeCol_NodeBackground, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
@@ -2453,16 +2497,16 @@ class OriginNode(Node):
 
 
 class PlaceholderNode(Node):
-    node_list = []
+    node_list: List[str] = []
 
     @staticmethod
-    def factory(name, data, args=None):
+    def factory(name: str, data: Any, args: Optional[List[str]] = None) -> 'PlaceholderNode':
         node = PlaceholderNode('New Node', data, args)
         return node
 
-    def __init__(self, label: str, data, args):
+    def __init__(self, label: str, data: Any, args: Optional[List[str]]) -> None:
         super().__init__(label, data, args)
-        self.filtered_list = []
+        self.filtered_list: List[str] = []
         self.name_property = self.add_property(label='##node_name', widget_type='text_input', width=180)
         self.static_name = self.add_property(label='##static_name', widget_type='text_input', width=180)
         self.args_property = self.add_property(label='args', widget_type='text_input', width=180)
@@ -2472,17 +2516,16 @@ class PlaceholderNode(Node):
         self.patcher_list = self.app.patchers
         self.action_list = list(self.app.actions.keys())
         self.node_list_box = self.add_property('###options', widget_type='list_box', width=180)
-        self.list_box_arrowed = False
-        self.current_name = ''
+        self.list_box_arrowed: bool = False
+        self.current_name: str = ''
 
-    def custom_create(self, from_file):
+    def custom_create(self, from_file: bool) -> None:
         dpg.configure_item(self.args_property.widget.uuid, show=False, on_enter=False)
         dpg.configure_item(self.static_name.widget.uuid, show=False)
         dpg.configure_item(self.node_list_box.widget.uuid, show=False)
 
-    def calc_fuzz(self, test, node_name):
+    def calc_fuzz(self, test: str, node_name: str) -> float:
         ratio = fuzz.partial_ratio(node_name.lower(), test.lower())
-        # partial match should be less important if size diff is big
         full_ratio = fuzz.ratio(node_name.lower(), test.lower())
 
         if ratio == 100:
@@ -2498,12 +2541,12 @@ class PlaceholderNode(Node):
 
         if len_ratio < 1:
             len_ratio = pow(len_ratio, 4)
-        len_ratio = len_ratio * .5 + 0.5  # 0.25 - 0.75
+        len_ratio = len_ratio * .5 + 0.5
         final_ratio = (ratio * (1 - len_ratio) + full_ratio * len_ratio)
         return final_ratio
 
-    def fuzzy_score(self, test):
-        scores = {}
+    def fuzzy_score(self, test: str) -> None:
+        scores: Dict[str, float] = {}
         for index, node_name in enumerate(self.node_list):
             final_ratio = self.calc_fuzz(test, node_name)
             scores[node_name] = final_ratio
@@ -2528,7 +2571,7 @@ class PlaceholderNode(Node):
             elif item[1] > 20 and len(self.filtered_list) < 10:
                 self.filtered_list.append(item[0])
 
-    def increment_widget(self, widget):
+    def increment_widget(self, widget: PropertyWidget) -> None:
         filter_name = dpg.get_value(self.node_list_box.widget.uuid)
         if filter_name in self.filtered_list:
             index = self.filtered_list.index(filter_name)
@@ -2538,7 +2581,7 @@ class PlaceholderNode(Node):
                 filter_name = self.filtered_list[index]
                 self.node_list_box.set(filter_name)
 
-    def decrement_widget(self, widget):
+    def decrement_widget(self, widget: PropertyWidget) -> None:
         filter_name = dpg.get_value(self.node_list_box.widget.uuid)
         if filter_name in self.filtered_list:
             index = self.filtered_list.index(filter_name)
@@ -2548,7 +2591,7 @@ class PlaceholderNode(Node):
                 filter_name = self.filtered_list[index]
                 self.node_list_box.set(filter_name)
 
-    def prompt_for_args(self):
+    def prompt_for_args(self) -> None:
         filter_name = dpg.get_value(self.name_property.widget.uuid)
         if len(filter_name) > 0:
             selection = filter_name
@@ -2559,9 +2602,8 @@ class PlaceholderNode(Node):
             dpg.configure_item(self.static_name.widget.uuid, show=True)
             dpg.configure_item(self.args_property.widget.uuid, show=True, on_enter=True)
             self.static_name.set(selection)
-            # dpg.focus_item(self.args_property.widget.uuid)
 
-    def on_edit(self, widget):
+    def on_edit(self, widget: PropertyWidget) -> None:
         if widget == self.static_name:
             return
 
@@ -2600,7 +2642,7 @@ class PlaceholderNode(Node):
             dpg.configure_item(self.node_list_box.widget.uuid, items=[], show=False)
             dpg.configure_item(self.name_property.widget.uuid, show=False)
 
-    def on_deactivate(self, widget):
+    def on_deactivate(self, widget: PropertyWidget) -> None:
         if widget in [self.args_property.widget, self.name_property.widget]:
             if dpg.is_item_hovered(self.node_list_box.widget.uuid) or dpg.is_item_clicked(self.node_list_box.widget.uuid):
                 pass
@@ -2609,14 +2651,14 @@ class PlaceholderNode(Node):
         elif widget == self.node_list_box.widget:
             self.execute()
 
-    def execute(self):
+    def execute(self) -> None:
         if dpg.is_item_active(self.name_property.widget.uuid):
             print('execute', self.name_property())
         else:
             selection_name = dpg.get_value(self.node_list_box.widget.uuid)
             new_node_name = dpg.get_value(self.name_property.widget.uuid)
             arg_string = dpg.get_value(self.args_property.widget.uuid)
-            new_node_args = []
+            new_node_args: List[str] = []
             if len(arg_string) > 0:
                 args = arg_string.split(' ')
                 new_node_args = [new_node_name] + args

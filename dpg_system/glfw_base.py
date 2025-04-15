@@ -34,7 +34,6 @@ class MyGLContext:
         self.last_key = -1
         self.last_mods = 0
         self.clear_color = [0.0, 0.0, 0.0, 1.0]
-        # print('about to create window')
 
 #        gl.glutInitDisplayMode(glfw.GLUT_RGB | glfw.GLUT_DOUBLE | glfw.GLUT_DEPTH)
         if samples != 1 and samples < 8:
