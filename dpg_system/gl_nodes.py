@@ -3163,7 +3163,7 @@ class GLMultiOrientationDiskNode(TexturedGLNode):
         self.scale = self.add_input('scale', widget_type='drag_float', default_value=scale)
         self.slices = self.add_input('slices', widget_type='drag_int', default_value=slices)
         self.rings = self.add_input('rings', widget_type='drag_int', default_value=rings)
-        self.ring_fraction = self.add_input('ring_fraction', widget_type='drag_float', default_value=.2)
+        self.ring_width = self.add_input('ring_width', widget_type='drag_float', default_value=.1)
         self.axis_angle_input = self.add_input('axis-angle', default_value=None)
         self.axis_angles = np.zeros([self.count, 4])
         self.axis_angle_input.set(self.axis_angles)
@@ -3272,7 +3272,7 @@ class GLMultiOrientationDiskNode(TexturedGLNode):
             gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_EMISSION, self.materials[i].emission)
 
             axis = self.axis_angles[i]
-            fraction = 1.0 - self.ring_fraction()
+            width = self.ring_width()
             if axis.shape[0] == 3:
                 angle = np.linalg.norm(axis)
                 axis = axis / angle
@@ -3282,7 +3282,10 @@ class GLMultiOrientationDiskNode(TexturedGLNode):
                 glPushMatrix()
                 glMultMatrixf(alignment_matrix)
                 size = angle * self.scale()
-                gluDisk(self.quadrics[i], size * fraction, size, self.slices(), self.rings())
+                if size > width:
+                    gluDisk(self.quadrics[i], size - width, size, self.slices(), self.rings())
+                else:
+                    gluDisk(self.quadrics[i], 0, size, self.slices(), self.rings())
                 glPopMatrix()
                 glMatrixMode(restore_matrix)
             elif axis.shape[0] == 4:
@@ -3292,7 +3295,10 @@ class GLMultiOrientationDiskNode(TexturedGLNode):
                 glPushMatrix()
                 glMultMatrixf(alignment_matrix)
                 size = axis[3] * self.scale()
-                gluDisk(self.quadrics[i], size * fraction, size, self.slices(), self.rings())
+                if size > width:
+                    gluDisk(self.quadrics[i], size - width, size, self.slices(), self.rings())
+                else:
+                    gluDisk(self.quadrics[i], 0, size, self.slices(), self.rings())
                 glPopMatrix()
                 glMatrixMode(restore_matrix)
         gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_FILL)
