@@ -907,7 +907,7 @@ class BodyData(BodyDataBase):
         b = quaternion.as_quat_array(self.smoothed_quaternions_b)
         self.diff_quats = a - b
         self.axes = quaternion.as_rotation_vector(self.diff_quats)
-        angles = np.linalg.norm(self.axes, axis=2)
+        angles = np.linalg.norm(self.axes, axis=2) + 1e-5
         self.magnitudes = self.quaternion_distances(self.smoothed_quaternions_a, self.smoothed_quaternions_b)
         self.normalized_axes = self.axes / np.expand_dims(angles, axis=-1)
         self.diff_angles = angles
