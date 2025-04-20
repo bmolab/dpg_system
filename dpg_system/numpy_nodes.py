@@ -1,3 +1,5 @@
+from pyexpat import features
+
 import dearpygui.dearpygui as dpg
 from dpg_system.node import Node, NodeInput
 from dpg_system.conversion_utils import *
@@ -53,7 +55,7 @@ def register_numpy_nodes():
     Node.app.register_node('np.rolling_buffer', NumpyRollingBufferNode.factory)
     Node.app.register_node('np.[]', NumpySubtensorNode.factory)
     Node.app.register_node('np.edit', NumpyEditNode.factory)
-
+    Node.app.register_node('np.sequence', NumpySequenceNode.factory)
 
 class NumpyGeneratorNode(Node):
     operations = {'np.rand': np.random.Generator.random, 'np.ones': np.ones, 'np.zeros': np.zeros}
@@ -1440,3 +1442,88 @@ class NumpyEditNode(Node):
                     else:
                         print('bad_size in np.edit')
             self.output.send(self.edited_array)
+
+
+class NumpySequenceNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpySequenceNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.sequence = []
+        self.num_frames = 0
+        self.data_input = self.add_input('data to record', triggers_execution=True)
+        self.frame_input = self.add_input('current frame', widget_type='drag_int', default_value=-1, callback=self.output_frame)
+        self.save_button = self.add_property('save', widget_type='button', callback=self.save_sequence)
+
+        self.load_button = self.add_property('load', widget_type='button', callback=self.load_sequence)
+        self.load_path = self.add_option('path', widget_type='text_input', default_value='',
+                                         callback=self.load_from_load_path)
+        self.data_output = self.add_output('data out')
+
+    def execute(self):
+        if self.active_input == self.data_input:
+            self.sequence.append(any_to_array(self.data_input()).copy())
+            self.num_frames = len(self.sequence)
+            self.frame_input.set(self.num_frames - 1)
+
+    def output_frame(self):
+            frame_num = self.frame_input()
+            if -1 < frame_num < self.num_frames:
+                self.data_output.send(self.sequence[frame_num])
+
+    def save_sequence(self):
+        with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
+                             user_data=self, callback=self.save_file_callback, tag="file_dialog_id"):
+            dpg.add_file_extension(".npy")
+
+    def save_file_callback(self, sender, app_data):
+        global save_path
+        if app_data is not None and 'file_path_name' in app_data:
+            save_path = app_data['file_path_name']
+            if save_path != '':
+                self.save_array(save_path)
+        else:
+            print('no file chosen')
+        if sender is not None:
+            dpg.delete_item(sender)
+
+    def save_array(self, path):
+        numpy_array = np.array(self.sequence)
+        np.save(path, numpy_array)
+
+    def load_sequence(self):
+        with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
+                                 user_data=self, callback=self.load_npz_callback, tag="file_dialog_id"):
+            dpg.add_file_extension(".npy")
+
+    def load_from_load_path(self):
+        path = self.load_path()
+        if path != '':
+            try:
+                self.load_array(path)
+            except Exception as e:
+                print('no take file found:', path)
+
+    def load_npz_callback(self, sender, app_data):
+        if 'file_path_name' in app_data:
+            load_path = app_data['file_path_name']
+            if load_path != '':
+                self.load_path.set(load_path)
+                self.load_array(load_path)
+        else:
+            print('no file chosen')
+        dpg.delete_item(sender)
+
+    def load_array(self, path):
+        numpy_array = np.load(path)
+        self.sequence = []
+        for frame_num in range(numpy_array.shape[0]):
+            self.sequence.append(numpy_array[frame_num].copy())
+        self.num_frames = len(self.sequence)
+        self.frame_input.set(-1)
+
+
+

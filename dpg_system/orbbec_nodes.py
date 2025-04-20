@@ -3,6 +3,7 @@ from multiprocessing import Process, shared_memory
 import glfw
 from multiprocessing.connection import Client, Listener
 import subprocess
+import queue
 # import dearpygui.dearpygui as dpg
 # import math
 # import numpy as np
@@ -28,6 +29,7 @@ class SharedMemoryClientNode(Node):
         self.existing_shm = None
         self.shape = [640, 576]
         self.dtype = np.uint16
+        self.message_queue = queue.Queue(16)
         self.setup()
         self.start_server()
 
@@ -61,6 +63,15 @@ class SharedMemoryClientNode(Node):
         self.existing_shm = shared_memory.SharedMemory(name=self.shared_memory_name)
         self.shared_array = np.ndarray(shape=self.shape, dtype=self.dtype, buffer=self.existing_shm.buf)
 
+    def send_parameter_update(self, param_name, value):
+        self.send_conn.send([param_name, value])
+
+    def receive_message(self, message):
+        self.message_queue.put(message)
+
+    def process_message(self, message):
+        pass
+
 
 class FemtoNode(SharedMemoryClientNode):
     @staticmethod
@@ -92,9 +103,11 @@ class FemtoNode(SharedMemoryClientNode):
     def receive_data(self):
         while self.keep_thread_running:
             msg = self.receive_conn.recv()
-            if msg == 'frame':
+            if type(msg) is str and msg == 'frame':
                 self.depth_data = self.shared_array.copy()
                 self.new_data = True
+            else:
+                self.receive_message(msg)
 
     def setup(self):
         self.server_name = 'depth_server.py'
@@ -107,27 +120,38 @@ class FemtoNode(SharedMemoryClientNode):
         wide = self.wide_angle_input()
         if wide != self.wide:
             self.wide = wide
-            self.update_param('wide', self.wide)
+            self.send_parameter_update('wide', self.wide)
 
     def bin_depth_changed(self):
         bin_depth = self.bin_depth_input()
         if bin_depth != self.bin_depth:
             self.bin_depth = bin_depth
-            self.update_param('bin_depth', self.bin_depth)
+            self.send_parameter_update('bin_depth', self.bin_depth)
 
     def frame_rate_changed(self):
         frame_rate = any_to_int(self.frame_rate_input())
         if frame_rate != self.frame_rate:
             self.frame_rate = frame_rate
-            self.update_param('frame_rate', self.frame_rate)
-
-    def update_param(self, name, value):
-        pass
-        # ultimately parameter controls will send messages via connection to server
-        #
+            self.send_parameter_update('frame_rate', self.frame_rate)
 
     def frame_task(self):
         if self.new_data:
             self.depth_out.send(self.depth_data)
+        if not self.message_queue.empty():
+            message = self.message_queue.get()
+            self.process_message(message)
+
+    def process_message(self, message):
+        if type(message) is list:
+            code = message[0]
+            if code == 'depth_width':
+                pass
+            elif code == 'depth_height':
+                pass
+            elif code == 'camera_intrinsics':
+                pass
+
+
+
 
 
