@@ -20,6 +20,7 @@
   "vae_nodes": true,
   "digico_nodes": true,
   "google_translate_nodes": true,
-  "layout_nodes": true,
-  "eos_nodes": true
+  "layout_nodes": false,
+  "eos_nodes": true,
+  "orbbec_nodes": true
 }

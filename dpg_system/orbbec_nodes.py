@@ -32,7 +32,7 @@ class SharedMemoryClientNode(Node):
         self.existing_shm = None
         self.shared_memory = None
         self.shared_memory_name = []
-        self.shape = [640, 576]
+        self.shape = [576, 640]
         self.dtype = np.uint16
         self.server = None
         self.message_queue = queue.Queue(16)
@@ -43,7 +43,7 @@ class SharedMemoryClientNode(Node):
         self.server_name = 'depth_server.py'
         self.comm_ports = [6000, 6001]
         self.shared_memory_name = ['my_shared_memory']
-        self.shape = [640, 576]
+        self.shape = [576, 640]
         self.dtype = np.uint16
 
     def start_server(self):
@@ -120,7 +120,7 @@ class FemtoNode(SharedMemoryClientNode):
             msg = self.receive_conn.recv()
             if type(msg) is str and msg == 'frame':
                 if self.shared_array is not None:
-                    self.depth_data = self.shared_array.copy()
+                    self.depth_data = self.shared_array.astype(dtype=np.float32)
                 if self.shared_point_cloud_array is not None:
                     self.point_cloud = self.shared_point_cloud_array.copy()
                 self.new_data = True
@@ -131,14 +131,14 @@ class FemtoNode(SharedMemoryClientNode):
         self.server_name = 'dpg_system/depth_server.py'
         self.comm_ports = [7000, 7001]
         self.shared_memory_name = ['femto_depth', 'femto_point_cloud']
-        self.shape = [640, 576]
+        self.shape = [576, 640]
         self.dtype = np.uint16
 
     def setup_shared_buffers(self):
         self.existing_shm = shared_memory.SharedMemory(name=self.shared_memory_name[0])
         self.shared_array = np.ndarray(shape=self.shape, dtype=self.dtype, buffer=self.existing_shm.buf)
         self.existing_point_cloud_shm = shared_memory.SharedMemory(name=self.shared_memory_name[1])
-        self.existing_point_cloud_array = np.ndarray(shape=(self.shape[0] * self.shape[1], 3), dtype=np.float32, buffer=self.existing_point_cloud_shm.buf)
+        self.shared_point_cloud_array = np.ndarray(shape=(self.shape[0] * self.shape[1], 3), dtype=np.float32, buffer=self.existing_point_cloud_shm.buf)
 
     def wide_angle_changed(self):
         wide = self.wide_angle_input()

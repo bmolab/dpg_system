@@ -60,7 +60,7 @@ optional_import = [
     'digico_nodes',
     'monitor_nodes',
     'eos_nodes',
-    'orbbed_nodes'
+    'orbbec_nodes'
 ]
 
 imported = []
