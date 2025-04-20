@@ -24,11 +24,17 @@ class SharedMemoryClientNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         # launch server prccess
-        self.server_name = 'depth_server.py'
+        self.server_name = 'dpg_system/depth_server.py'
         self.comm_ports = [6000, 6001]
+        self.send_conn = None
+        self.receive_conn = None
+        self.listener = None
         self.existing_shm = None
+        self.shared_memory = None
+        self.shared_memory_name = []
         self.shape = [640, 576]
         self.dtype = np.uint16
+        self.server = None
         self.message_queue = queue.Queue(16)
         self.setup()
         self.start_server()
@@ -36,7 +42,7 @@ class SharedMemoryClientNode(Node):
     def setup(self):
         self.server_name = 'depth_server.py'
         self.comm_ports = [6000, 6001]
-        self.shared_memory_name = 'my_shared_memory'
+        self.shared_memory_name = ['my_shared_memory']
         self.shape = [640, 576]
         self.dtype = np.uint16
 
@@ -58,9 +64,11 @@ class SharedMemoryClientNode(Node):
         if msg == 'ready':
             print("Connection established")
         self.send_conn.send('ready_ack')
+        self.setup_shared_buffers()
 
         # Connect to the existing shared memory block
-        self.existing_shm = shared_memory.SharedMemory(name=self.shared_memory_name)
+    def setup_shared_buffers(self):
+        self.existing_shm = shared_memory.SharedMemory(name=self.shared_memory_name[0])
         self.shared_array = np.ndarray(shape=self.shape, dtype=self.dtype, buffer=self.existing_shm.buf)
 
     def send_parameter_update(self, param_name, value):
@@ -80,6 +88,8 @@ class FemtoNode(SharedMemoryClientNode):
         return node
 
     def __init__(self, label: str, data, args):
+        self.existing_point_cloud_shm = None
+        self.shared_point_cloud_array = None
         super().__init__(label, data, args)
         self.depth_profile = None
         self.running = False
@@ -92,11 +102,16 @@ class FemtoNode(SharedMemoryClientNode):
         self.wide_angle_input = self.add_input('wide_angle', widget_type='checkbox', default_value=False, callback=self.wide_angle_changed)
         self.frame_rate_input = self.add_input('frame rate', widget_type='combo', default_value='30 fps', callback= self.frame_rate_changed)
         self.depth_out = self.add_output('depth')
+        self.point_cloud_out = self.add_output('point_cloud')
         self.acquire = False
         self.new_data = False
         self.depth_data = None
+        self.point_cloud = None
         self.keep_thread_running = True
         self.read_thread = threading.Thread(target=self.receive_data)
+
+
+
         self.add_frame_task()
         self.read_thread.start()
 
@@ -104,17 +119,26 @@ class FemtoNode(SharedMemoryClientNode):
         while self.keep_thread_running:
             msg = self.receive_conn.recv()
             if type(msg) is str and msg == 'frame':
-                self.depth_data = self.shared_array.copy()
+                if self.shared_array is not None:
+                    self.depth_data = self.shared_array.copy()
+                if self.shared_point_cloud_array is not None:
+                    self.point_cloud = self.shared_point_cloud_array.copy()
                 self.new_data = True
             else:
                 self.receive_message(msg)
 
     def setup(self):
-        self.server_name = 'depth_server.py'
-        self.comm_ports = [6000, 6001]
-        self.shared_memory_name = 'depth_buffer'
+        self.server_name = 'dpg_system/depth_server.py'
+        self.comm_ports = [7000, 7001]
+        self.shared_memory_name = ['femto_depth', 'femto_point_cloud']
         self.shape = [640, 576]
         self.dtype = np.uint16
+
+    def setup_shared_buffers(self):
+        self.existing_shm = shared_memory.SharedMemory(name=self.shared_memory_name[0])
+        self.shared_array = np.ndarray(shape=self.shape, dtype=self.dtype, buffer=self.existing_shm.buf)
+        self.existing_point_cloud_shm = shared_memory.SharedMemory(name=self.shared_memory_name[1])
+        self.existing_point_cloud_array = np.ndarray(shape=(self.shape[0] * self.shape[1], 3), dtype=np.float32, buffer=self.existing_point_cloud_shm.buf)
 
     def wide_angle_changed(self):
         wide = self.wide_angle_input()
@@ -137,6 +161,8 @@ class FemtoNode(SharedMemoryClientNode):
     def frame_task(self):
         if self.new_data:
             self.depth_out.send(self.depth_data)
+            self.point_cloud_out.send(self.point_cloud)
+            self.new_data = False
         if not self.message_queue.empty():
             message = self.message_queue.get()
             self.process_message(message)
