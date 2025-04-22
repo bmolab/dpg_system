@@ -76,7 +76,7 @@ dependencies:
     - contourpy
     - cycler
     - cymem
-    - dearpygui
+    - dearpygui==1.9.1
     - ffmpeg-python
     - filelock
     - fonttools
@@ -142,5 +142,4 @@ dependencies:
     - psutil
     - scikit-learn
     - word2number
-    - pycairo
 prefix: dpg_system
