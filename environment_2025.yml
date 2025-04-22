@@ -1,4 +1,4 @@
-name: dpg_system_2025
+name: dpg_system_2025_3
 channels:
   - defaults
   - conda-forge
@@ -76,7 +76,7 @@ dependencies:
     - contourpy
     - cycler
     - cymem
-    - dearpygui
+    - dearpygui==1.9.1
     - ffmpeg-python
     - filelock
     - fonttools
@@ -141,5 +141,4 @@ dependencies:
     - psutil
     - scikit-learn
     - word2number
-    - pycairo
-prefix: dpg_system_2025
+prefix: dpg_system_2025_3
