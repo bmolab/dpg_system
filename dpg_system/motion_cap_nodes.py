@@ -1045,7 +1045,7 @@ class MotionShadowNode(MoCapNode):
         self.quaternions = np.ndarray((4, 37, 4))
 
         self.joints_mapped = False
-        self.jointMap = [0, 0] * 37
+        self.jointMap = [[0, 0]] * 37 * 4
 
         self.thread = threading.Thread(target=shadow_service_loop)
         self.thread_started = False
@@ -1094,6 +1094,7 @@ class MotionShadowNode(MoCapNode):
                         thisName = name_map[it]
                         for idx, name_index in enumerate(joint_index_to_name):
                             shadow_name = joint_to_shadow_limb[joint_index_to_name[name_index]]
+                            body = thisName[1]
                             if thisName[0] == shadow_name:
                                 self.jointMap[it] = [idx + 1, thisName[1]]
                                 break

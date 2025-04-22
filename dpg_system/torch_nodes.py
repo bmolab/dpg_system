@@ -33,6 +33,7 @@ from dpg_system.torch_butterworth_nodes import *
 from dpg_system.torchvision_nodes import *
 from dpg_system.torch_kornia_nodes import *
 from dpg_system.torch_loss_nodes import *
+from dpg_system.torch_voxel_nodes import *
 
 torchaudio_avail = True
 try:
@@ -67,6 +68,7 @@ def register_torch_nodes():
     register_torchvision_nodes()
     register_kornia_nodes()
     register_torch_loss_nodes()
+    register_torch_voxel_nodes()
     if torchaudio_avail:
         register_torchaudio_nodes()
     register_wavelet_nodes()

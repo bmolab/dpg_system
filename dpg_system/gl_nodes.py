@@ -7,7 +7,8 @@ from dpg_system.open_gl_base import *
 from dpg_system.glfw_base import *
 from dpg_system.colormaps import _viridis_data, _magma_data, _plasma_data, _inferno_data, make_heatmap, make_coldmap
 # can create command parsers for various types of GLObjects?
-
+from ctypes import c_void_p
+from OpenGL.arrays import vbo
 
 def register_gl_nodes():
     Node.app.register_node('gl_context', GLContextNode.factory)
@@ -37,6 +38,7 @@ def register_gl_nodes():
     Node.app.register_node('gl_nested_spheres', GLNestedSphereNode.factory)
     Node.app.register_node('gl_orientation_disks', GLMultiOrientationDiskNode.factory)
     Node.app.register_node('gl_line', GLLineNode.factory)
+    Node.app.register_node('gl_vertex_buffer', GLVertexBufferNode.factory)
 
 
 class GLCommandParser:
@@ -3327,3 +3329,123 @@ class GLMultiOrientationDiskNode(TexturedGLNode):
                 self.colors[i] = any_to_array(container[name])
                 self.color_inputs[i].set(self.colors[i])
         self.colors_changed()
+
+
+class GLVertexBufferNode(GLNode):
+    @staticmethod
+    def factory(node_name, data, args=None):
+        return GLVertexBufferNode(node_name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.vbo_id = None
+        self.vertex_count = 64
+        self.vertex_size = 3
+        self.data_type = gl.GL_FLOAT
+        self.vertex_data = np.random.rand(self.vertex_count, self.vertex_size)
+
+        self.draw_mode = gl.GL_POINTS  # default draw mode
+        self.buffer_usage = gl.GL_STREAM_DRAW  # default usage pattern
+        self.vbo = None
+
+    def initialize(self, args):
+        super().initialize(args)
+        # Create the VBO
+
+        self.mode_dict = {
+            "GL_POINTS": gl.GL_POINTS,
+            "GL_LINES": gl.GL_LINES,
+            "GL_LINE_STRIP": gl.GL_LINE_STRIP,
+            "GL_LINE_LOOP": gl.GL_LINE_LOOP,
+            "GL_TRIANGLES": gl.GL_TRIANGLES,
+            "GL_TRIANGLE_STRIP": gl.GL_TRIANGLE_STRIP,
+            "GL_TRIANGLE_FAN": gl.GL_TRIANGLE_FAN
+        }
+        # Add properties for configuration
+        self.vertex_data_input = self.add_input('vertex_data', callback=self.update_buffer_data)
+        self.draw_mode_input = self.add_input("draw_mode", widget_type="combo", callback=self.draw_mode_changed)
+        self.size_input = self.add_input("size", widget_type='drag_float', default_value=1, min=0.1)
+        self.draw_mode_input.widget.combo_items = list(self.mode_dict.keys())
+
+    def update_buffer_data(self):
+        """
+        Update the VBO with new vertex data
+
+        Parameters:
+            vertex_data: numpy.ndarray - The vertex data to upload to GPU
+        """
+        if self.vertex_data_input.fresh_input:
+            self.vertex_data = any_to_array(self.vertex_data_input()).copy()
+
+        if self.vbo is not None:
+
+            # Ensure data is contiguous and in correct format
+            if not self.vertex_data.flags['C_CONTIGUOUS']:
+                self.vertex_data = np.ascontiguousarray(self.vertex_data, dtype=np.float32)
+
+            self.vertex_count = self.vertex_data.shape[0]
+            # self.vertex_size = self.vertex_data.shape[1] if len(self.vertex_data.shape) > 1 else 1
+            # self.data_type = gl.GL_FLOAT
+
+            # Bind and upload data
+            self.vbo.bind()
+            # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo_id)
+            self.vbo.set_array(self.vertex_data, None)
+            # gl.glBufferData(gl.GL_ARRAY_BUFFER,
+            #                 self.vertex_data.nbytes,
+            #                 self.vertex_data,
+            #                 self.buffer_usage)
+            # buffer = gl.glMapBuffer(gl.GL_ARRAY_BUFFER, GL_WRITE_ONLY)
+            # map_array = (GLfloat * self.vertex_count * self.vertex_size).from_address(buffer)
+            # ctypes.memmove(map_array, self.vertex_data.ctypes.data, self.vertex_data.nbytes)
+            self.vbo.unbind()
+            # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0)
+
+    def draw_mode_changed(self):
+        mode = self.draw_mode_input()
+
+        self.draw_mode = self.mode_dict[mode]
+
+    def remember_state(self):
+        super().remember_state()
+        # No additional state to remember for VBOs
+
+    def restore_state(self):
+        super().restore_state()
+        # No additional state to restore for VBOs
+
+    def draw(self):
+        if self.vbo is None:
+            print('create vbo')
+            self.vbo = vbo.VBO(self.vertex_data)
+            # self.update_buffer_data()
+            print('created vbo')
+            return
+
+        self.vbo.bind()
+        # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo_id)
+
+        # Enable vertex arrays
+        gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
+        gl.glVertexPointerf(self.vbo)
+        gl.glEnable(gl.GL_POINT_SMOOTH)
+        gl.glHint(gl.GL_POINT_SMOOTH_HINT, gl.GL_NICEST)
+        gl.glPointSize(self.size_input())
+
+        # Set up vertex pointer
+        # offset = c_void_p(0)
+        # gl.glVertexPointer(self.vertex_size, self.data_type, 0, None)
+
+        # Draw the vertices
+        gl.glDrawArrays(self.draw_mode, 0, self.vertex_count)
+
+        # Cleanup
+        gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
+        # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0)
+        self.vbo.unbind()
+
+    def custom_cleanup(self):
+        """Clean up the VBO when the node is deleted"""
+        if self.vbo is not None:
+            self.vbo.delete()
+            self.vbo = None

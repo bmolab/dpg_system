@@ -40,7 +40,7 @@ class SharedMemoryClientNode(Node):
         self.start_server()
 
     def setup(self):
-        self.server_name = 'depth_server.py'
+        self.server_name = 'dpg_system/depth_server.py'
         self.comm_ports = [6000, 6001]
         self.shared_memory_name = ['my_shared_memory']
         self.shape = [576, 640]
