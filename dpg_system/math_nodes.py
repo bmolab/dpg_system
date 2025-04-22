@@ -110,6 +110,9 @@ class ArithmeticNode(Node):
         if self.operand_input.fresh_input:
             self.operand = any_to_numerical(self.operand_input())
         input_value = any_to_numerical(self.input())
+        if type(input_value) != type(self.operand):
+            self.operand = any_to_match(self.operand, input_value)
+
         output_value = self.op(input_value, self.operand)
         self.output.send(output_value)
 
