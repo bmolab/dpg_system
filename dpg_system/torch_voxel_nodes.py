@@ -61,19 +61,6 @@ class TorchPointCloudVoxelsNode(TorchNode):
         self.back = 10.0
 
         self.voxel_size = 0.1
-        self.voxel_size_reciprocal = 1.0 / self.voxel_size
-        self.device = torch.device('cpu')
-        self.lower_bounds = torch.Tensor([self.left, self.top, self.front]).to(device=self.device)
-        self.upper_bounds = torch.Tensor([self.right, self.bottom, self.back]).to(device=self.device)
-
-        self.bin_count_x = int((self.right - self.left) / self.voxel_size + 0.5)
-        self.bin_count_y = int((self.bottom - self.top) / self.voxel_size + 0.5)
-        self.bin_count_z = int((self.back - self.front) / self.voxel_size + 0.5)
-        self.bin_count = int(self.bin_count_x * self.bin_count_y * self.bin_count_z)
-        self.x_stride = 1
-        self.y_stride = self.bin_count_x
-        self.z_stride = self.bin_count_x * self.bin_count_y
-        self.strides = torch.tensor([self.x_stride, self.y_stride, self.z_stride]).to(device=self.device)
 
         self.input = self.add_input('point cloud in', triggers_execution=True)
         self.left_input = self.add_input('left (m)', widget_type='drag_float', default_value=self.left, callback=self.adjust_params)
@@ -91,11 +78,27 @@ class TorchPointCloudVoxelsNode(TorchNode):
         self.voxel_output = self.add_output('voxels out')
         self.voxel_cloud_output = self.add_output('voxels cloud out')
 
+        # self.voxel_size_reciprocal = 1.0 / self.voxel_size
+        self.device = torch.device('cpu')
+        # self.lower_bounds = torch.Tensor([self.left, self.top, self.front]).to(device=self.device)
+        # self.upper_bounds = torch.Tensor([self.right, self.bottom, self.back]).to(device=self.device)
+
+        # self.bin_count_x = int((self.right - self.left) / self.voxel_size + 0.5)
+        # self.bin_count_y = int((self.bottom - self.top) / self.voxel_size + 0.5)
+        # self.bin_count_z = int((self.back - self.front) / self.voxel_size + 0.5)
+        # self.bin_count = int(self.bin_count_x * self.bin_count_y * self.bin_count_z)
+        # self.x_stride = 1
+        # self.y_stride = self.bin_count_x
+        # self.z_stride = self.bin_count_x * self.bin_count_y
+        # self.strides = torch.tensor([self.x_stride, self.y_stride, self.z_stride]).to(device=self.device)
+
         self.valid_cache = None
         self.bin_indices_cache = None
-        self.bins = None
+        # self.bins = torch.zeros((self.bin_count, ), device=self.device)
+
         self.vals_cache = None
         self.voxel_centres = None
+        self.make_adjustments()
 
     def adjust_params(self):
         self.left = self.left_input()
@@ -105,6 +108,9 @@ class TorchPointCloudVoxelsNode(TorchNode):
         self.front = self.front_input()
         self.back = self.back_input()
         self.voxel_size = self.voxel_size_input()
+        self.make_adjustments()
+
+    def make_adjustments(self):
         self.voxel_size_reciprocal = 1.0 / self.voxel_size
         self.lower_bounds = torch.Tensor([self.left, self.top, self.front]).to(device=self.device)
         self.upper_bounds = torch.Tensor([self.right, self.bottom, self.back]).to(device=self.device)
@@ -148,6 +154,9 @@ class TorchPointCloudVoxelsNode(TorchNode):
         if not input_tensor.is_contiguous():
             input_tensor = input_tensor.contiguous()
 
+        if self.valid_cache is None or self.valid_cache.shape != input_tensor.shape:
+            self.valid_cache = torch.empty_like(input_tensor, dtype=torch.bool)
+
         if self.device != input_tensor.device:
             self.device = input_tensor.device
             self.upper_bounds = self.upper_bounds.to(self.device)
@@ -155,9 +164,7 @@ class TorchPointCloudVoxelsNode(TorchNode):
             self.bins = self.bins.to(self.device)
             self.strides = self.strides.to(self.device)
             self.voxel_centres = self.voxel_centres.to(device=self.device)
-
-        if self.valid_cache is None or self.valid_cache.shape != input_tensor.shape:
-            self.valid_cache = torch.empty_like(input_tensor, dtype=torch.bool)
+            self.valid_cache = self.valid_cache.to(device=self.device)
 
         torch.logical_and(
             torch.ge(input_tensor, self.lower_bounds, out=self.valid_cache),
