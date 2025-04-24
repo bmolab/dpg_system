@@ -70,12 +70,18 @@ class TorchBandPassFilterBankNode(TorchDeviceDtypeNode):
         self.filter = None
         self.capture = False
         self.create_dtype_device_grad_properties(option=True)
+        self.message_handlers['report_bands'] = self.report_bands
 
     def custom_create(self, from_file):
         self.params_changed()
 
     def capture(self):
         self.capture = True
+
+    def report_bands(self, command, data):
+        for index, band in enumerate(self.bands):
+            band_center = float(band[0] + band[1]) / 2
+            print(index, float(band[0]), float(band_center), float(band[1]))
 
     def calc_bands(self):
         self.bands = []

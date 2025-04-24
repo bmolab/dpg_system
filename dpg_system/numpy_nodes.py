@@ -1475,6 +1475,7 @@ class NumpySequenceNode(Node):
                 self.data_output.send(self.sequence[frame_num])
 
     def save_sequence(self):
+        Node.app.active_widget = 1
         with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
                              user_data=self, callback=self.save_file_callback, tag="file_dialog_id"):
             dpg.add_file_extension(".npy")
@@ -1495,6 +1496,7 @@ class NumpySequenceNode(Node):
         np.save(path, numpy_array)
 
     def load_sequence(self):
+        Node.app.active_widget = 1
         with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
                                  user_data=self, callback=self.load_npz_callback, tag="file_dialog_id"):
             dpg.add_file_extension(".npy")
