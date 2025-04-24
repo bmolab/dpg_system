@@ -8,7 +8,6 @@ import scipy
 import platform
 
 import torch.nn.functional as F
-from kornia.geometry.conversions import quaternion_to_axis_angle
 
 def register_quaternion_nodes():
     Node.app.register_node('quaternion_to_euler', QuaternionToEulerNode.factory)
