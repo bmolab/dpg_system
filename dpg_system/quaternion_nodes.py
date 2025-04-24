@@ -882,6 +882,8 @@ class RotationMatrixDiffNode(Node):
         else:
             # note... because there are two identical rotations expressed by a quaternion and its negation
             # we might need to determine the closer
+            if self.previous.device != data.device:
+                self.previous = self.previous.to(data.device)
             diff = relative_rotation_matrix(data, self.previous)
             self.output.send(diff)
             self.previous = data.clone()
@@ -909,6 +911,8 @@ class QuaternionDiffNode(Node):
         else:
             # note... because there are two identical rotations expressed by a quaternion and its negation
             # we might need to determine the closer
+            if self.previous.device != data.device:
+                self.previous = self.previous.to(data.device)
             scaling = torch.tensor([1, -1, -1, -1], device=data.device)
             inverse = self.previous * scaling
             diff = quaternion_multiply(data, inverse)
