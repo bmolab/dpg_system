@@ -13,17 +13,22 @@ from kornia.geometry.conversions import quaternion_to_axis_angle
 def register_quaternion_nodes():
     Node.app.register_node('quaternion_to_euler', QuaternionToEulerNode.factory)
     Node.app.register_node('quaternion_to_rotvec', QuaternionToRotVecNode.factory)
+    Node.app.register_node('quaternion_to_axis_angle', QuaternionToRotVecNode.factory)
     Node.app.register_node('euler_to_quaternion', EulerToQuaternionNode.factory)
     Node.app.register_node('rotvec_to_quaternion', RotVecToQuaternionNode.factory)
+    Node.app.register_node('axis_angle_to_quaternion', RotVecToQuaternionNode.factory)
     Node.app.register_node('quaternion_to_matrix', QuaternionToRotationMatrixNode.factory)
     Node.app.register_node('quaternion_distance', QuaternionDistanceNode.factory)
-    Node.app.register_node('rotvec_to_quaternion', RotVecToQuaternionNode.factory)
     Node.app.register_node('matrix_to_6d', RotationMatrixTo6DNode.factory)
     Node.app.register_node('quaternion_to_6d', QuaternionTo6DNode.factory)
     Node.app.register_node('6d_to_matrix', SixDToRotationMatrixNode.factory)
     Node.app.register_node('6d_to_rotvec', SixDToAxisAngleNode.factory)
+    Node.app.register_node('6d_to_axis_angle', SixDToAxisAngleNode.factory)
     Node.app.register_node('matrix_to_quaternion', MatrixToQuaternionNode.factory)
     Node.app.register_node('quaternion_diff', QuaternionDiffNode.factory)
+    Node.app.register_node('rotation_matrix_diff', RotationMatrixDiffNode.factory)
+    Node.app.register_node('matrix_to_axis_angle', MatrixToAxisAngleNode.factory)
+    Node.app.register_node('matrix_to_rotvec', MatrixToAxisAngleNode.factory)
 
 
 class QuaternionToEulerNode(Node):
@@ -690,6 +695,89 @@ class SixDToAxisAngleNode(Node):
             self.output.send(aa)
 
 
+def torch_matrix_to_axis_angle(matrix: torch.Tensor) -> torch.Tensor:
+    """
+    Convert rotations given as rotation matrices to axis/angle.
+
+    Args:
+        matrix: Rotation matrices as tensor of shape (..., 3, 3).
+        fast: Whether to use the new faster implementation (based on the
+            Rodrigues formula) instead of the original implementation (which
+            first converted to a quaternion and then back to a rotation matrix).
+
+    Returns:
+        Rotations given as a vector in axis angle form, as a tensor
+            of shape (..., 3), where the magnitude is the angle
+            turned anticlockwise in radians around the vector's
+            direction.
+
+    """
+    added_dim = False
+    if len(matrix.shape) == 2:
+        added_dim = True
+        matrix = matrix.unsqueeze(0)
+
+    if matrix.size(-1) != 3 or matrix.size(-2) != 3:
+        raise ValueError(f"Invalid rotation matrix shape {matrix.shape}.")
+
+    omegas = torch.stack(
+        [
+            matrix[..., 2, 1] - matrix[..., 1, 2],
+            matrix[..., 0, 2] - matrix[..., 2, 0],
+            matrix[..., 1, 0] - matrix[..., 0, 1],
+        ],
+        dim=-1,
+    )
+    norms = torch.norm(omegas, p=2, dim=-1, keepdim=True)
+    traces = torch.diagonal(matrix, dim1=-2, dim2=-1).sum(-1).unsqueeze(-1)
+    angles = torch.atan2(norms, traces - 1)
+
+    zeros = torch.zeros(3, dtype=matrix.dtype, device=matrix.device)
+    omegas = torch.where(torch.isclose(angles, torch.zeros_like(angles)), zeros, omegas)
+
+    near_pi = angles.isclose(angles.new_full((1,), torch.pi)).squeeze(-1)
+
+    axis_angles = torch.empty_like(omegas)
+    axis_angles[~near_pi] = (
+        0.5 * omegas[~near_pi] / torch.sinc(angles[~near_pi] / torch.pi)
+    )
+
+    # this derives from: nnT = (R + 1) / 2
+    n = 0.5 * (
+        matrix[near_pi][..., 0, :]
+        + torch.eye(1, 3, dtype=matrix.dtype, device=matrix.device)
+    )
+    axis_angles[near_pi] = angles[near_pi] * n / torch.norm(n)
+    if added_dim:
+        return axis_angles.squeeze(0)
+
+    return axis_angles
+
+
+class MatrixToAxisAngleNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = MatrixToAxisAngleNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('rotation matrix', triggers_execution=True)
+        self.output = self.add_output('axis angle')
+
+    def execute(self):
+        if self.input.fresh_input:
+            data = self.input()
+            if type(data) is not torch.Tensor:
+                data = any_to_tensor(data)
+            if data.size(-1) != 3 or data.size(-2) != 3:
+                print('bad format for input to matrix_to_axis_angle')
+                return
+            aa = torch_matrix_to_axis_angle(data)
+            self.output.send(aa)
+
+
 class MatrixToQuaternionNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -761,6 +849,43 @@ def quaternion_multiply(a: torch.Tensor, b: torch.Tensor) -> torch.Tensor:
     ab = quaternion_raw_multiply(a, b)
     return standardize_quaternion(ab)
 
+def relative_rotation_matrix(R1, R2):
+    """
+    Compute the relative rotation matrix R_rel = R2 * R1^T
+    where:
+        R1: (..., 3, 3) tensor (initial orientation)
+        R2: (..., 3, 3) tensor (target orientation)
+    Returns:
+        R_rel: (..., 3, 3) tensor representing the rotation from R1 to R2
+    """
+    return torch.matmul(R2, R1.transpose(-2, -1))
+
+class RotationMatrixDiffNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = RotationMatrixDiffNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('rotation matrix', triggers_execution=True)
+        self.previous = None
+        self.output = self.add_output('rotation matrix difference')
+
+    def execute(self):
+        data = self.input()
+        if type(data) is not torch.Tensor:
+            data = any_to_tensor(data)
+        if self.previous is None:
+            self.previous = data.clone()
+        else:
+            # note... because there are two identical rotations expressed by a quaternion and its negation
+            # we might need to determine the closer
+            diff = relative_rotation_matrix(data, self.previous)
+            self.output.send(diff)
+            self.previous = data.clone()
+
 
 class QuaternionDiffNode(Node):
     @staticmethod
@@ -782,6 +907,8 @@ class QuaternionDiffNode(Node):
         if self.previous is None:
             self.previous = data.clone()
         else:
+            # note... because there are two identical rotations expressed by a quaternion and its negation
+            # we might need to determine the closer
             scaling = torch.tensor([1, -1, -1, -1], device=data.device)
             inverse = self.previous * scaling
             diff = quaternion_multiply(data, inverse)
