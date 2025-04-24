@@ -204,6 +204,9 @@ class TorchPointCloudVoxelsNode(TorchNode):
                 self.voxel_output.send(self.bins.view((self.bin_count_z, self.bin_count_y, self.bin_count_x)))
 
             if self.output_voxel_cloud():
+                # sparse_bins = self.bins.to_sparse()
+                # voxel_linear_indices = sparse_bins.indices().flatten()
+                # self.voxel_cloud = self.voxel_centres[voxel_linear_indices]
                 voxel_linear_indices = self.bins.nonzero().flatten()
                 self.voxel_cloud = torch.index_select(self.voxel_centres, 0, voxel_linear_indices)
                 self.voxel_cloud_output.send(self.voxel_cloud)

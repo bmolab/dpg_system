@@ -1348,7 +1348,7 @@ class VectorNode(Node):
                 elif self.vector_format_input() == 'numpy':
                     self.output_vector = value.copy()
                 elif self.vector_format_input() == 'torch':
-                    self.output_vector = value.from_numpy()
+                    self.output_vector = torch.from_numpy(value)
 
             elif t == torch.Tensor:
                 if self.vector_format_input() == 'list':

@@ -3164,6 +3164,7 @@ class GLMultiOrientationDiskNode(TexturedGLNode):
         self.slices = self.add_input('slices', widget_type='drag_int', default_value=slices)
         self.rings = self.add_input('rings', widget_type='drag_int', default_value=rings)
         self.ring_width = self.add_input('ring_width', widget_type='drag_float', default_value=.1)
+        self.width_is_fraction_input = self.add_input('width is fraction', widget_type='checkbox', default_value=False)
         self.axis_angle_input = self.add_input('axis-angle', default_value=None)
         self.axis_angles = np.zeros([self.count, 4])
         self.axis_angle_input.set(self.axis_angles)
@@ -3282,10 +3283,13 @@ class GLMultiOrientationDiskNode(TexturedGLNode):
                 glPushMatrix()
                 glMultMatrixf(alignment_matrix)
                 size = angle * self.scale()
-                if size > width:
-                    gluDisk(self.quadrics[i], size - width, size, self.slices(), self.rings())
+                if self.width_is_fraction_input():
+                    gluDisk(self.quadrics[i], size * (1.0 - width), size, self.slices(), self.rings())
                 else:
-                    gluDisk(self.quadrics[i], 0, size, self.slices(), self.rings())
+                    if size > width:
+                        gluDisk(self.quadrics[i], size - width, size, self.slices(), self.rings())
+                    else:
+                        gluDisk(self.quadrics[i], 0, size, self.slices(), self.rings())
                 glPopMatrix()
                 glMatrixMode(restore_matrix)
             elif axis.shape[0] == 4:
@@ -3430,6 +3434,10 @@ class GLVertexBufferNode(GLNode):
         gl.glVertexPointerf(self.vbo)
         gl.glEnable(gl.GL_POINT_SMOOTH)
         gl.glHint(gl.GL_POINT_SMOOTH_HINT, gl.GL_NICEST)
+        gl.glPointParameterf(gl.GL_POINT_SIZE_MIN, 1)
+        gl.glPointParameterf(gl.GL_POINT_SIZE_MAX, 100)
+        gl.glPointParameterfv(gl.GL_POINT_DISTANCE_ATTENUATION, [0.0, 0.0, 1.0])
+
         gl.glPointSize(self.size_input())
 
         # Set up vertex pointer

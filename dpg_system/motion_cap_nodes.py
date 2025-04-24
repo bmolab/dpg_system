@@ -107,20 +107,96 @@ class MoCapTakeNode(MoCapNode):
         self.position_buffer = None
         self.label_buffer = None
         self.streaming = False
+        self.record_quat_sequence = []
+        self.record_position_sequence = []
+        self.record_frame_count = 0
 
         self.on_off = self.add_input('on/off', widget_type='checkbox', callback=self.start_stop_streaming)
-        self.speed = self.add_input('speed', widget_type='drag_float', default_value=speed)
-        self.input = self.add_input('frame', widget_type='drag_int', triggers_execution=True, callback=self.frame_widget_changed)
         self.load_button = self.add_property('load', widget_type='button', callback=self.load_take)
-        self.dump_button = self.add_property('dump', widget_type='button', callback=self.dump_take)
         self.file_name = self.add_label('')
+        self.frame_input = self.add_input('frame', widget_type='drag_int', triggers_execution=True, callback=self.frame_widget_changed)
+        self.speed = self.add_input('speed', widget_type='drag_float', default_value=speed)
         self.quaternions_out = self.add_output('quaternions')
         self.positions_out = self.add_output('positions')
         self.labels_out = self.add_output('labels')
+        self.dump_button = self.add_property('dump', widget_type='button', callback=self.dump_take)
         self.dump_out = self.add_output('dump')
+        self.add_spacer()
+
+        self.record_button = self.add_property('record', widget_type='button', callback=self.start_recording)
+        self.recording = False
+        self.stop_button = self.add_property('stop', widget_type='button', callback=self.stop_recording)
+        self.quaternions_input = self.add_input('quaternions in', callback=self.quaternions_received)
+        self.record_positions_input = self.add_input('record positions', widget_type='checkbox', default_value=False)
+        self.positions_input = self.add_input('positions in', callback=self.positions_received)
+        self.save_button = self.add_property('save', widget_type='button', callback=self.save_sequence)
+
         load_path = ''
         self.load_path = self.add_option('path', widget_type='text_input', default_value=load_path, callback=self.load_from_load_path)
         self.message_handlers['load'] = self.load_take_message
+        self.new_positions = False
+
+    def start_recording(self):
+        if self.streaming:
+            self.remove_frame_tasks()
+            self.streaming = False
+            self.on_off.set(False)
+        self.record_quat_sequence = []
+        self.record_position_sequence = []
+        self.record_frame_count = 0
+        self.recording = True
+
+    def stop_recording(self):
+        if self.recording:
+            if len(self.record_quat_sequence) > 0:
+                self.quat_buffer = np.array(self.record_quat_sequence)
+                if self.record_positions_input():
+                    self.position_buffer = np.array(self.record_position_sequence)
+                else:
+                    self.position_buffer = None
+                self.label_buffer = None
+                self.frames = self.record_frame_count
+                self.current_frame = 0
+                self.frame_input.set(self.current_frame)
+            self.recording = False
+
+    def save_sequence(self):
+        with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
+                             user_data=self, callback=self.save_file_callback, tag="file_dialog_id"):
+            dpg.add_file_extension('.npz')
+
+    def save_file_callback(self, sender, app_data):
+        if app_data is not None and 'file_path_name' in app_data:
+            save_path = app_data['file_path_name']
+            if save_path != '':
+                if self.quat_buffer is not None:
+                    if self.position_buffer is not None:
+                        np.savez(save_path, quats=self.quat_buffer, positions=self.position_buffer)
+                else:
+                    np.savez(save_path, quaternions=self.quat_buffer)
+                self.load_path.set(save_path)
+                self.file_name.set(save_path)
+                self.frames = self.record_frame_count
+        else:
+            print('no file chosen')
+        if sender is not None:
+            dpg.delete_item(sender)
+
+    def positions_received(self):
+        self.new_positions = True
+
+    def quaternions_received(self):
+        if self.recording:
+            if self.record_positions_input():
+                if self.new_positions:
+                    self.record_position_sequence.append(any_to_array(self.positions_input()))
+                    self.new_positions = False
+                else:
+                    print('take: positions expected but not received')
+                    return
+            self.record_quat_sequence.append(any_to_array(self.quaternions_input()))
+            self.record_frame_count = len(self.record_quat_sequence)
+            self.frame_input.set(self.record_frame_count, propagate=False)
 
     def dump_take(self):
         self.dump_out.send(self.position_buffer)
@@ -139,11 +215,14 @@ class MoCapTakeNode(MoCapNode):
         self.current_frame += self.speed()
         if self.current_frame >= self.frames:
             self.current_frame = 0
-        self.input.set(self.current_frame)
+        self.frame_input.set(self.current_frame)
         frame = int(self.current_frame)
-        self.quaternions_out.set_value(self.quat_buffer[frame])
-        self.positions_out.set_value(self.position_buffer[frame])
-        self.labels_out.set_value(self.label_buffer[frame])
+        if self.quat_buffer is not None:
+            self.quaternions_out.set_value(self.quat_buffer[frame])
+        if self.position_buffer is not None:
+            self.positions_out.set_value(self.position_buffer[frame])
+        if self.label_buffer is not None:
+            self.labels_out.set_value(self.label_buffer[frame])
         self.send_all()
 
     def load_from_load_path(self):
@@ -159,18 +238,28 @@ class MoCapTakeNode(MoCapNode):
         file_name = path.split('/')[-1]
         self.file_name.set(file_name)
         self.load_path.set(path)
-        self.quat_buffer = take_file['quats']
-        for idx, quat in enumerate(self.quat_buffer):
-            if quat[10, 0] < 0:
-                self.quat_buffer[idx, 10] *= -1
+        if 'quats' in take_file:
+            self.quat_buffer = take_file['quats']
+            for idx, quat in enumerate(self.quat_buffer):
+                if quat[10, 0] < 0:
+                    self.quat_buffer[idx, 10] *= -1
+        else:
+            self.quat_buffer = None
+
         self.frames = self.quat_buffer.shape[0]
-        self.position_buffer = take_file['positions']
-        self.label_buffer = take_file['labels']
+        if 'positions' in take_file:
+            self.position_buffer = take_file['positions']
+        else:
+            self.position_buffer = None
+        if 'labels' in take_file:
+            self.label_buffer = take_file['labels']
+        else:
+            self.label_buffer = None
         self.current_frame = 0
         self.start_stop_streaming()
 
     def frame_widget_changed(self):
-        data = self.input()
+        data = self.frame_input()
         if data < self.frames:
             self.current_frame = data
             self.quaternions_out.set_value(self.quat_buffer[self.current_frame])
@@ -179,8 +268,8 @@ class MoCapTakeNode(MoCapNode):
             self.send_all()
 
     def execute(self):
-        if self.input.fresh_input:
-            data = self.input()
+        if self.frame_input.fresh_input:
+            data = self.frame_input()
 
             # handled, do_output = self.check_for_messages(data)
             # if not handled:
@@ -395,11 +484,11 @@ class MoCapGLBody(MoCapNode):
 
         self.show_joint_activity = False
         self.input = self.add_input('pose in', triggers_execution=True)
-        self.gl_chain_input = self.add_input('gl chain', triggers_execution=True)
+        self.gl_chain_input = self.add_input('gl chain', callback=self.draw)
         self.gl_chain_output = self.add_output('gl_chain')
         self.capture_pose_input = self.add_input('capture pose', widget_type='button', callback=self.capture_pose)
-        self.joint_data_input = self.add_input('joint data')
-
+        self.joint_data_input = self.add_input('joint data', callback=self.receive_joint_data)
+        self.clear_joint_data_input = self.add_input('clear joint data', widget_type='button', callback=self.clear_joint_data)
         self.current_joint_output = self.add_output('current_joint_name')
         self.current_joint_data_output = self.add_output('current_joint_data')
         self.current_joint_gl_output = self.add_output('current_joint_gl_chain')
@@ -422,6 +511,9 @@ class MoCapGLBody(MoCapNode):
         self.limb_sizes_out = self.add_output('limb_sizes')
         self.body = BodyData()
         self.body.node = self
+        self.external_joint_data = None
+
+    def clear_joint_data(self):
         self.external_joint_data = None
 
     def set_calc_diff(self):
@@ -526,66 +618,85 @@ class MoCapGLBody(MoCapNode):
         self.current_joint_gl_output.send('draw')
         glPopMatrix()
 
+    def receive_joint_data(self):
+        data = self.joint_data_input()
+        if type(data) is torch.Tensor:
+            self.external_joint_data = data.clone()
+        elif type(data) is np.ndarray:
+            self.external_joint_data = data.copy()
+        elif type(data) is list:
+            self.external_joint_data = data.copy()
+        else:
+            self.external_joint_data = None
+
     def execute(self):
-        if self.input.fresh_input:
-            if self.joint_data_input.fresh_input:
-                data = self.joint_data_input()
-                if type(data) is torch.Tensor:
-                    self.external_joint_data = data.clone()
-                elif type(data) is np.ndarray:
-                    self.external_joint_data = data.copy()
-                elif type(data) is list:
-                    self.external_joint_data = data.copy()
-                else:
-                    self.external_joint_data = None
+        # if self.active_input == self.joint_data_input:
+        #     if self.joint_data_input.fresh_input:
+        #         data = self.joint_data_input()
+        #         if type(data) is torch.Tensor:
+        #             self.external_joint_data = data.clone()
+        #         elif type(data) is np.ndarray:
+        #             self.external_joint_data = data.copy()
+        #         elif type(data) is list:
+        #             self.external_joint_data = data.copy()
+        #         else:
+        #             self.external_joint_data = None
+        #     # else:
+        #     #     self.external_joint_data = None
+
+        incoming = self.input()
+        t = type(incoming)
+        if t == torch.Tensor:
+            incoming = tensor_to_array(incoming)
+            t = np.ndarray
+        if t == np.ndarray:
+            if incoming.shape[0] == 80:
+                self.body.update_quats(np.reshape(incoming, [20, 4]))
+            elif incoming.shape[0] == 20:
+                    if incoming.shape[1] == 4:
+                        self.body.update_quats(incoming)
+            elif incoming.shape[0] == 37:
+                active_joints = incoming[self.active_to_shadow_map]
+                self.body.update_quats(active_joints)
+            elif incoming.shape[0] == 148:
+                incoming = np.reshape(incoming, [37, 4])
+                active_joints = incoming[self.active_to_shadow_map]
+                self.body.update_quats(active_joints)
+
+            # work on this!!!
+            # if incoming.shape[0] == 37:
+            #     for joint_name in self.joint_map:
+            #         joint_id = self.joint_map[joint_name]
+            #         self.body.update(joint_index=joint_id, quat=incoming[joint_id], label=self.body_color_id())
+            # elif incoming.shape[0] == 20:
+            #     for index, joint_name in enumerate(self.joint_map):
+            #         joint_id = self.joint_map[joint_name]
+            #         self.body.update(joint_index=joint_id, quat=incoming[index], label=self.body_color_id())
+
+        elif t in [list, str]:
+            if t == str:
+                incoming = [incoming]
+            self.process_commands(incoming)
+
+    def draw(self):
+        incoming = self.gl_chain_input()
+        t = type(incoming)
+        if t == str and incoming == 'draw':
+            self.body.joint_display = self.joint_indicator()
+            scale = self.joint_motion_scale()
+            smoothing_a = self.diff_quat_smoothing_A()
+            smoothing_b = self.diff_quat_smoothing_B()
+
+            self.body.joint_motion_scale = scale
+            self.body.diffQuatSmoothingA = smoothing_a
+            self.body.diffQuatSmoothingB = smoothing_b
+            self.body.joint_disk_alpha = self.joint_disk_alpha()
+            if self.absolute_quats_input():
+                self.body.draw_absolute_quats(self.show_joint_spheres(), self.skeleton_only())
             else:
-                self.external_joint_data = None
-
-            incoming = self.input()
-            t = type(incoming)
-            if t == torch.Tensor:
-                incoming = tensor_to_array(incoming)
-                t = np.ndarray
-            if t == np.ndarray:
-                if incoming.shape[0] == 80:
-                    self.body.update_quats(np.reshape(incoming, [20, 4]))
-                elif incoming.shape[0] == 20:
-                        if incoming.shape[1] == 4:
-                            self.body.update_quats(incoming)
-                # work on this!!!
-                # if incoming.shape[0] == 37:
-                #     for joint_name in self.joint_map:
-                #         joint_id = self.joint_map[joint_name]
-                #         self.body.update(joint_index=joint_id, quat=incoming[joint_id], label=self.body_color_id())
-                # elif incoming.shape[0] == 20:
-                #     for index, joint_name in enumerate(self.joint_map):
-                #         joint_id = self.joint_map[joint_name]
-                #         self.body.update(joint_index=joint_id, quat=incoming[index], label=self.body_color_id())
-
-            elif t in [list, str]:
-                if t == str:
-                    incoming = [incoming]
-                self.process_commands(incoming)
-
-        elif self.gl_chain_input.fresh_input:
-            incoming = self.gl_chain_input()
-            t = type(incoming)
-            if t == str and incoming == 'draw':
-                self.body.joint_display = self.joint_indicator()
-                scale = self.joint_motion_scale()
-                smoothing_a = self.diff_quat_smoothing_A()
-                smoothing_b = self.diff_quat_smoothing_B()
-
-                self.body.joint_motion_scale = scale
-                self.body.diffQuatSmoothingA = smoothing_a
-                self.body.diffQuatSmoothingB = smoothing_b
-                self.body.joint_disk_alpha = self.joint_disk_alpha()
-                if self.absolute_quats_input():
-                    self.body.draw_absolute_quats(self.show_joint_spheres(), self.skeleton_only())
-                else:
-                    self.body.draw(self.show_joint_spheres(), self.skeleton_only())
-                self.gl_chain_output.send('draw')
-                self.external_joint_data = None
+                self.body.draw(self.show_joint_spheres(), self.skeleton_only())
+            self.gl_chain_output.send('draw')
+            # self.external_joint_data = None
 
 
 class SimpleMoCapGLBody(MoCapNode):
@@ -1127,17 +1238,17 @@ class MotionShadowNode(MoCapNode):
             return
         self.new_data = False
         if self.num_bodies > 0:
-            self.body_quat_1.send(self.quaternions[0])
             self.body_pos_1.send(self.positions[0])
+            self.body_quat_1.send(self.quaternions[0])
         if self.num_bodies > 1:
-            self.body_quat_2.send(self.quaternions[1])
             self.body_pos_2.send(self.positions[1])
+            self.body_quat_2.send(self.quaternions[1])
         if self.num_bodies > 2:
-            self.body_quat_3.send(self.quaternions[2])
             self.body_pos_3.send(self.positions[2])
+            self.body_quat_3.send(self.quaternions[2])
         if self.num_bodies > 3:
-            self.body_quat_4.send(self.quaternions[3])
             self.body_pos_4.send(self.positions[3])
+            self.body_quat_4.send(self.quaternions[3])
 
     def parse_name_map(self, xml_node_list):
         name_map = {}
