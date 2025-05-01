@@ -67,7 +67,11 @@ class NodeOutput:
 
     def set_visibility(self, visibility_state: str = 'show_all') -> None:
         if visibility_state == 'show_all':
-            dpg.bind_item_theme(self.uuid, theme=Node.app.global_theme)
+            if self.node.do_not_delete:
+                print('node output protected')
+                dpg.bind_item_theme(self.uuid, theme=Node.app.do_not_delete_theme)
+            else:
+                dpg.bind_item_theme(self.uuid, theme=Node.app.global_theme)
         elif visibility_state == 'widgets_only':
             dpg.bind_item_theme(self.uuid, theme=Node.app.invisible_theme)
         else:
@@ -330,7 +334,10 @@ class NodeDisplay:
 
     def set_visibility(self, visibility_state: str = 'show_all') -> None:
         if visibility_state == 'show_all':
-            dpg.bind_item_theme(self.uuid, theme=Node.app.global_theme)
+            if self.node.do_not_delete:
+                dpg.bind_item_theme(self.uuid, theme=Node.app.do_not_delete_theme)
+            else:
+                dpg.bind_item_theme(self.uuid, theme=Node.app.global_theme)
         elif visibility_state == 'widgets_only':
             dpg.bind_item_theme(self.uuid, theme=Node.app.widget_only_theme)
         else:
@@ -386,7 +393,10 @@ class NodeProperty:
 
     def set_visibility(self, visibility_state='show_all'):
         if visibility_state == 'show_all':
-            dpg.bind_item_theme(self.uuid, theme=Node.app.global_theme)
+            if self.node.do_not_delete:
+                dpg.bind_item_theme(self.uuid, theme=Node.app.do_not_delete_theme)
+            else:
+                dpg.bind_item_theme(self.uuid, theme=Node.app.global_theme)
         elif visibility_state == 'widgets_only':
             dpg.bind_item_theme(self.uuid, theme=Node.app.widget_only_theme)
         else:
@@ -486,7 +496,10 @@ class PropertyWidget:
 
     def set_visibility(self, visibility_state: str = 'show_all') -> None:
         if visibility_state == 'show_all':
-            dpg.bind_item_theme(self.uuid, theme=Node.app.global_theme)
+            if self.node.do_not_delete:
+                dpg.bind_item_theme(self.uuid, theme=Node.app.do_not_delete_theme)
+            else:
+                dpg.bind_item_theme(self.uuid, theme=Node.app.global_theme)
             if self.widget != 'label':
                 dpg.enable_item(self.uuid)
             if self.trigger_widget is not None:
@@ -807,7 +820,6 @@ class PropertyWidget:
 
     def adjust_to_text_width(self, max: int = 0) -> float:
         width = self.get_text_width()
-#        print('adjust_to_text_width', width)
         if width is not None:
             dpg.configure_item(self.uuid, width=width)
         return width
@@ -952,7 +964,6 @@ class NodeInput:
         self._data = 0
         if default_value is not None:
             self._data = default_value
-            # print('data', self._data)
         self.executor = False
         self.triggers_execution = triggers_execution
         self.node = node
@@ -1004,7 +1015,10 @@ class NodeInput:
 
     def set_visibility(self, visibility_state: str = 'show_all') -> None:
         if visibility_state == 'show_all':
-            dpg.bind_item_theme(self.uuid, theme=Node.app.global_theme)
+            if self.node.do_not_delete:
+                dpg.bind_item_theme(self.uuid, theme=Node.app.do_not_delete_theme)
+            else:
+                dpg.bind_item_theme(self.uuid, theme=Node.app.global_theme)
         elif visibility_state == 'widgets_only':
             if self.widget is None:
                 dpg.bind_item_theme(self.uuid, theme=Node.app.invisible_theme)
@@ -1093,7 +1107,6 @@ class NodeInput:
         self.widget.attach_to_action(action)
 
     def delete_parents(self) -> None:
-        # print(self._parents)
         for p in self._parents:  # output linking to this
             p.remove_child(self)
             for l in p.links:
@@ -1101,11 +1114,8 @@ class NodeInput:
                     d = dpg.get_item_user_data(l)
                     input_ = d[1]
                     if input_.uuid == self.uuid:
-                        # print('deleting link', l)
                         dpg.delete_item(l)
 
-            # find link in p.links whose user_data links it to me
-            # print(self._parents)
         self._parents = []
 
     def remove_parent(self, parent: 'NodeOutput') -> None:
@@ -1209,7 +1219,6 @@ class NodeInput:
                     data = data[0]
         self._data = data
         if self.widget:
-            # print('set widget', data)
             self.widget.set(data, False)
         if self.variable and propagate:
             self.variable.set_value(data)
@@ -1490,12 +1499,28 @@ class Node:
         self.draggable = True
         self.visibility = 'show_all'
         self.presentation_state = 'show_all'
+        self.do_not_delete = False
         self.active_input = None
         self.in_loading_process = False
         self.show_options_check = None
 
     def custom_cleanup(self) -> None:
         pass
+
+    def get_patcher_path(self):
+        path = ''
+        if self.my_editor is not None:
+            patcher = self.my_editor
+            path = '/' + patcher.patch_name
+            while patcher.parent_patcher is not None:
+                parent_patcher = patcher.parent_patcher
+                path = '/' + parent_patcher.patch_name + path
+                patcher = patcher.parent_patcher
+        return path
+
+    def get_patcher_name(self):
+        if self.my_editor is not None:
+            return self.my_editor.patch_name
 
     def cleanup(self) -> None:
         self.remove_frame_tasks()
@@ -1520,12 +1545,17 @@ class Node:
     def set_visibility(self, visibility_state: str = 'show_all') -> None:
         self.visibility = visibility_state
         if visibility_state == 'show_all':
-            dpg.bind_item_theme(self.uuid, theme=self.app.global_theme)
-            dpg.configure_item(self.uuid, draggable=True)
+            if self.do_not_delete:
+                dpg.bind_item_theme(self.uuid, theme=self.app.do_not_delete_theme)
+            elif not self.draggable:
+                dpg.bind_item_theme(self.uuid, theme=self.app.locked_position_theme)
+            else:
+                dpg.bind_item_theme(self.uuid, theme=self.app.global_theme)
+            dpg.configure_item(self.uuid, draggable=self.draggable)
             dpg.configure_item(self.uuid, label=self.label)
         elif visibility_state == 'widgets_only':
             dpg.bind_item_theme(self.uuid, theme=self.app.widget_only_theme)
-            dpg.configure_item(self.uuid, draggable=True)
+            dpg.configure_item(self.uuid, draggable=self.draggable)
             dpg.configure_item(self.uuid, label='')
         else:
             dpg.bind_item_theme(self.uuid, theme=self.app.invisible_theme)
@@ -1957,6 +1987,8 @@ class Node:
             node_container['height'] = size[1]
             node_container['visibility'] = self.visibility
             node_container['draggable'] = self.draggable
+            if self.do_not_delete:
+                node_container['protected'] = True
             node_container['presentation_state'] = self.presentation_state
 
             self.store_properties(node_container)
@@ -1981,6 +2013,8 @@ class Node:
                 pos[0] = node_container['position_x'] + offset[0]
                 pos[1] = node_container['position_y'] + offset[1]
                 dpg.set_item_pos(self.uuid, pos)
+            if 'protected' in node_container:
+                self.do_not_delete = True
             if 'visibility' in node_container:
                 self.set_visibility(node_container['visibility'])
             if 'draggable' in node_container:
@@ -2008,7 +2042,6 @@ class Node:
             _option.save(option_container)
             properties_container[property_number] = option_container
             property_number += 1
-        # print(properties_container)
         if property_number > 0:
             node_container['properties'] = properties_container
         self.save_custom(node_container)
@@ -2081,10 +2114,8 @@ class Node:
             for arg in self.unparsed_args:
                 handled = False
                 if '=' in arg and arg != '=':
- #                   print('found', arg)
                     arg_parts = arg.split('=')
                     if len(arg_parts) == 2:
- #                       print(arg_parts)
                         if arg_parts[0][-1] == ' ':
                             arg_parts[0] = arg_parts[0][:-1]
                         if arg_parts[1][0] == ' ':
@@ -2093,7 +2124,6 @@ class Node:
                         handled = True
                 if not handled:
                     self.ordered_args.append(arg)
- #       print(self.parsed_args, self.ordered_args)
 
     def handle_parsed_args(self) -> None:
         for arg_name in self.parsed_args:
@@ -2125,7 +2155,6 @@ class PatcherInputNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        # print('create in')
         self.input_name = ''
         if len(args) > 0:
             s, t = decode_arg(args, 0)

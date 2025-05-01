@@ -2,7 +2,6 @@
 import time
 import numpy as np
 from importlib import import_module
-
 import dpg_system.dpg_app
 from dpg_system.node import Node, NodeInput, NodeOutput, Variable, PlaceholderNode
 from dpg_system.node_editor import *
@@ -81,8 +80,7 @@ def import_test(file_name):
 
 with open('dpg_system_config.json', 'r') as f:
     config = json.load(f)
-    if 'easy' in config:
-        easy_mode = config['easy']
+
     for basic_import in to_import:
         import_core(basic_import)
     for try_import in optional_import:
@@ -237,7 +235,12 @@ def save_patches_callback(sender, app_data):
 
 class App:
     def __init__(self):
-        self.easy_mode = easy_mode
+        self.config = None
+        self.easy_mode = False
+        with open('dpg_system_config.json', 'r') as f:
+            self.config = json.load(f)
+            if 'easy' in config:
+                self.easy_mode = config['easy']
         self.torch_available = False
         self.viewport = None
         self.main_window_id = -1
@@ -288,8 +291,8 @@ class App:
         self.drag_starts = {}
 
         self.color_code_pins = True
-        self.global_theme = None
-        self.borderless_child_theme = None
+        # self.global_theme = None
+        # self.borderless_child_theme = None
         self.active_widget = -1
         self.focussed_widget = -1
         self.hovered_item = None
@@ -393,9 +396,41 @@ class App:
                 # dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (200, 200, 0, 255), category=dpg.mvThemeCat_Nodes)
                 dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
 
-        with dpg.theme() as self.borderless_child_theme:
-            with dpg.theme_component(dpg.mvChildWindow):
-                dpg.add_theme_color(dpg.mvThemeCol_Border, [0, 0, 0, 0])
+        with dpg.theme() as self.do_not_delete_theme:
+            with dpg.theme_component(dpg.mvAll):
+                dpg.add_theme_style(dpg.mvStyleVar_WindowPadding, self.window_padding[0], self.window_padding[1], category=dpg.mvThemeCat_Core)
+                dpg.add_theme_style(dpg.mvStyleVar_FramePadding, self.frame_padding[0], self.frame_padding[1], category=dpg.mvThemeCat_Core)
+                dpg.add_theme_style(dpg.mvStyleVar_CellPadding, self.cell_padding[0], self.cell_padding[1], category=dpg.mvThemeCat_Core)
+
+                dpg.add_theme_color(dpg.mvNodeCol_TitleBar, (64, 0, 0, 255), category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_TitleBarHovered, (128, 0, 0, 255), category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_TitleBarSelected, (192, 0, 0, 255), category=dpg.mvThemeCat_Nodes)
+
+                dpg.add_theme_style(dpg.mvStyleVar_ItemSpacing, self.item_spacing[0], self.item_spacing[1], category=dpg.mvThemeCat_Core)
+                dpg.add_theme_style(dpg.mvStyleVar_GrabMinSize, 4, 4, category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_SliderGrab, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_SliderGrabActive, (255, 255, 0, 128), category=dpg.mvThemeCat_Core)
+                # dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (200, 200, 0, 255), category=dpg.mvThemeCat_Core)
+                # dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (200, 200, 0, 255), category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
+
+        with dpg.theme() as self.locked_position_theme:
+            with dpg.theme_component(dpg.mvAll):
+                dpg.add_theme_style(dpg.mvStyleVar_WindowPadding, self.window_padding[0], self.window_padding[1], category=dpg.mvThemeCat_Core)
+                dpg.add_theme_style(dpg.mvStyleVar_FramePadding, self.frame_padding[0], self.frame_padding[1], category=dpg.mvThemeCat_Core)
+                dpg.add_theme_style(dpg.mvStyleVar_CellPadding, self.cell_padding[0], self.cell_padding[1], category=dpg.mvThemeCat_Core)
+
+                dpg.add_theme_color(dpg.mvNodeCol_TitleBar, (0, 0, 0, 255), category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_TitleBarHovered, (32, 32, 32, 255), category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_TitleBarSelected, (64, 64, 64, 255), category=dpg.mvThemeCat_Nodes)
+
+                dpg.add_theme_style(dpg.mvStyleVar_ItemSpacing, self.item_spacing[0], self.item_spacing[1], category=dpg.mvThemeCat_Core)
+                dpg.add_theme_style(dpg.mvStyleVar_GrabMinSize, 4, 4, category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_SliderGrab, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_SliderGrabActive, (255, 255, 0, 128), category=dpg.mvThemeCat_Core)
+                # dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (200, 200, 0, 255), category=dpg.mvThemeCat_Core)
+                # dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (200, 200, 0, 255), category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
 
         with dpg.theme() as self.invisible_theme:
             with dpg.theme_component(dpg.mvAll):
@@ -485,6 +520,12 @@ class App:
             return self.node_editors[self.current_node_editor]
         else:
             return None
+
+    def get_current_root_patch(self):
+        editor = self.get_current_editor()
+        while editor.parent_patcher is not None:
+            editor = editor.parent_patcher
+        return editor
 
     def set_verbose(self):
         if self.verbose_menu_item != -1:
@@ -684,9 +725,10 @@ class App:
                 dpg.add_separator()
                 dpg.add_menu_item(label="Toggle Lock Position for Selected", callback=self.lock_position_for_selected)
                 dpg.add_menu_item(label="Show / Hide Options for Selected", callback=self.options_for_selected)
+                dpg.add_menu_item(label='Toggle Do Not Delete for Selected', callback=self.protect_selected)
                 dpg.add_separator()
                 dpg.add_menu_item(label="Set As Presentation", callback=self.set_presentation)
-                self.presentation_edit_menu_item = dpg.add_menu_item(label="Presentation Mode", callback=self.toggle_presentation)
+                self.presentation_edit_menu_item = dpg.add_menu_item(label="Presentation Mode", check=True, callback=self.toggle_presentation)
 
 
             with dpg.menu(label='Options'):
@@ -997,6 +1039,15 @@ class App:
             for selected_nodes_uuid in selected_nodes_uuids:
                 node = dpg.get_item_user_data(selected_nodes_uuid)
                 node.set_draggable(not node.draggable)
+                node.set_visibility(node.visibility)
+
+    def protect_selected(self):
+        if self.get_current_editor() is not None:
+            selected_nodes_uuids = dpg.get_selected_nodes(self.get_current_editor().uuid)
+            for selected_nodes_uuid in selected_nodes_uuids:
+                node = dpg.get_item_user_data(selected_nodes_uuid)
+                node.do_not_delete = not node.do_not_delete
+                node.set_visibility(node.visibility)
 
     def options_for_selected(self):
         if self.get_current_editor() is not None:

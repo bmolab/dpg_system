@@ -10,7 +10,43 @@ from dpg_system.node import Node
 import threading
 from dpg_system.interface_nodes import ValueNode, ButtonNode, ToggleNode, MenuNode, RadioButtonsNode
 import time
+import netifaces
+import socket
 # NOTE changing target name changed, changing target port crashed
+
+# what if each main patcher has a udp port for receiving OSC
+# OSCSource is automatically created and all OSCReceive nodes automatically register with this
+# optional OSCSources can be created
+# OSCTargets are assigned through OSCQuery normally. (and invisibly in the course of creating an OSCSend or OSCUI
+# OSCDevice construct is split into default OSCSource for patch and external device related OSCTargets
+#
+
+# how about create OSCSource in root patcher when an OSCReceive or OSCUI are instantiated with default name of root patcher
+# and then how do we decide port number?
+# as per Aidan, use the last number of the ip address as a base with 100 port addresses
+# i.e. ip 10.1.1.31 would create a bank of ports 3100-3199 (or 3101-3199)
+# then the program can iterate through this bank and find an empty port
+
+# what port for 127.0.0.1 ? - get port from ip address of this computer...
+
+# do we want osc_in and osc_out nodes that explicitly work with osc_query and keep osc_send and osc_receive nodes to be mostly like now?
+
+# if we create an osc_send /eos/user/99/chan/1/param/red, then an OSCQuery is made looking for the registration for
+# eos, verifying that the rest of the url exists, and if so, checking to see if there is already an OSCTarget for eos
+# - if not, create an OSCTargetNode using the OSCQuery ip and port
+
+# if eos is not found in the OSCQuery system, then we assume that the supplied text is a search query
+# we want to supply a list of urls that satisfy the search query as a list (like in placeholder) from which the desired one can be selected
+# creating the target if necessary and building the osc_send node.
+
+# similar to the osc_source question, where do we put the auto-created osc_target?
+# is there any value to having an osc tab that is auto created and those auto-created sources and targets are put there?
+
+# add FLOW tag
+#   'FLOW': 'IN' -> accepts input from sources (usually a primary actuator)
+#   'FLOW': 'OUT' -> sends to external target (usually controlling a remote system)
+#   'FLOW': 'BOTH' -> sends and receives (osc_device) -> a primary actuator (this is the best target to change this value (rather than a proxy)
+#   'FLOW': 'PROXY' -> sends and receives but is not a primary actuator (used to control a remote system)
 
 
 def register_osc_nodes():
@@ -59,6 +95,15 @@ class OSCBase:
         address = '/' + address
         return address
 
+def compose_path(comp_list):
+    full_path = ''
+    for comp in comp_list:
+        if comp is not None and comp != '':
+            if comp[0] != '/':
+                comp = '/' + comp
+            full_path += comp
+    return full_path
+
 
 class OSCManager:
     def __init__(self, label: str, data, args):
@@ -67,12 +112,13 @@ class OSCManager:
         self.sources = {}
         self.send_nodes = []
         self.receive_nodes = []
+        self.registry = OSCQueryRegistry()
 
         OSCBase.osc_manager = self
         self.lock = threading.Lock()
         self.pending_message_queue = queue.Queue()
 
-    def register_target(self, target):
+    def  register_target(self, target):
         if target is not None:
             name = target.name
             if name != '' and name not in self.targets:
@@ -135,6 +181,22 @@ class OSCManager:
             return self.sources[name]
         return None
 
+    def create_source(self, name):
+        if name != '' and name not in self.sources:
+            editor = Node.app.get_current_editor()
+            if editor is not None:
+                source_port = select_root_port_address()
+                print('port', source_port)
+                args = [name, str(source_port)]
+                source_node = Node.app.create_node_by_name('osc_source_async', None, args)
+                if source_node is not None:
+                    dpg.set_item_pos(source_node.uuid, [20.0, 0])
+                    source_node.do_not_delete = True
+                    source_node.presentation_state = 'hidden'
+                    source_node.set_visibility(visibility_state='hidden')
+
+
+
     def get_source_list(self):
         return list(self.sources.keys())
 
@@ -192,12 +254,298 @@ class OSCManager:
         for send_node in self.send_nodes:
             print(send_node.name)
 
+class OSCQueryRegistry:
+    def __init__(self):
+        self.registry = {
+            'DESCRIPTION': 'DPG_OSC_MANAGER',
+            'CONTENTS': {}
+        }
+
+    def get_param_registry_container_for_path(self, patch_path):
+        path_list = self.prepare_path_list(patch_path)
+        reg = self.registry['CONTENTS']
+        if reg is not None:
+            for domain in path_list:
+                if domain in reg:
+                    reg = reg[domain]['CONTENTS']
+                    if reg is None:
+                        print('get_param_registry_container_for_path reg = None')
+                else:
+                    print('domain', domain, 'missing in OSCQueryRegistry')
+                    return None
+        return reg
+
+    def prepare_path_list(self, patch_path):
+        if type(patch_path) == list:
+            patch_path = compose_path(patch_path)
+        patch_path_list = patch_path.split('/')
+        if patch_path_list[0] == '':
+            patch_path_list = patch_path_list[1:]
+        for ind, domain in enumerate(patch_path_list):
+            if ' ' in domain:
+                patch_path_list[ind] = domain.replace(' ', '_')
+        if len(patch_path_list) > 1:
+            if patch_path_list[0] == patch_path_list[1]:
+                patch_path_list = patch_path_list[1:]
+        return patch_path_list
+
+    def remove_path_from_registry(self, patch_path):
+        patch_path = self.prepare_path_list(patch_path)
+
+        reg = self.registry['CONTENTS']
+        if reg is not None:
+            for domain in patch_path:
+                if domain not in reg:
+                    return
+                if domain == patch_path[-1]:
+                    reg.pop(domain)
+                else:
+                    reg = reg[domain]['CONTENTS']
+                    if reg is None:
+                        print('remove_path_from_registry reg is None')
+                        break
+
+    def add_path_to_registry(self, patch_path):
+        patch_path = self.prepare_path_list(patch_path)
+        reg = self.registry['CONTENTS']
+        if reg is not None:
+            for domain in patch_path:
+                print('domain', domain)
+                if domain not in reg:
+                    reg[domain] = {'CONTENTS':{}}
+                    print('added missing domain', domain, reg)
+                reg = reg[domain]['CONTENTS']
+                if reg is None:
+                    print('add_path_to_registry: reg = None')
+                    break
+        return reg
+
+    # def add_target_to_registry(self, patch_name, target_name):
+    #     if patch_name not in self.registry['CONTENTS']:
+    #         self.add_patch_to_registry(patch_name)
+    #     if target_name not in self.registry['CONTENTS'][patch_name]['CONTENTS']:
+    #         self.registry['CONTENTS'][patch_name]['CONTENTS'][target_name] = {'CONTENTS':{}}
+
+    # def remove_target_from_registry(self, patch_name, target_name):
+    #     if patch_name in self.registry['CONTENTS']:
+    #         if target_name in self.registry['CONTENTS'][patch_name]['CONTENTS']:
+    #             self.registry['CONTENTS'][patch_name]['CONTENTS'].pop(target_name)
+    #
+    # def remove_path_from_registry(self, patch_path):
+    #     patch_path = self.prepare_path_list(patch_path)
+    #
+    #     if patch_name in self.registry['CONTENTS']:
+    #         if target_name in self.registry['CONTENTS'][patch_name]['CONTENTS']:
+    #             if param_name in self.registry['CONTENTS'][patch_name]['CONTENTS'][target_name]['CONTENTS']:
+    #                 self.registry['CONTENTS'][patch_name]['CONTENTS'][target_name]['CONTENTS'].pop(param_name)
+
+    # def remove_path_from_registry(self, patch_name, target_name, param_name):
+    #     if patch_name in self.registry['CONTENTS']:
+    #         if target_name in self.registry['CONTENTS'][patch_name]['CONTENTS']:
+    #             if param_name in self.registry['CONTENTS'][patch_name]['CONTENTS'][target_name]['CONTENTS']:
+    #                 self.registry['CONTENTS'][patch_name]['CONTENTS'][target_name]['CONTENTS'].pop(param_name)
+
+    def insert_param_dict_into_registry(self, param_dict):
+        path_list = self.prepare_path_list(param_dict['FULL_PATH'])
+        
+        reg = self.add_path_to_registry(path_list)
+        if reg is not None:
+            keys = list(param_dict.keys())
+            for key in keys:
+                reg[key] = param_dict[key]
+
+    # def ensure_patch_and_target_in_registry(self, patch_name, target_name):
+    #     if patch_name not in self.registry['CONTENTS']:
+    #         self.add_target_to_registry(patch_name)
+    #     if target_name not in self.registry['CONTENTS'][patch_name]['CONTENTS']:
+    #         self.add_target_to_registry(patch_name, target_name)
+
+    def change_path(self, old_path, new_path):
+        old_path = self.prepare_path_list(old_path)
+        new_path = self.prepare_path_list(new_path)
+        reg = self.get_param_registry_container_for_path(old_path)
+        if reg is not None:
+            self.remove_path_from_registry(old_path)
+            reg['FULL_PATH'] = compose_path(new_path)
+            self.insert_param_dict_into_registry(reg)
+        else:
+            print('change_path', old_path, 'not found')
+
+    def set_flow(self, path_list, flow):
+        path_list = self.prepare_path_list(path_list)
+        reg = self.get_param_registry_container_for_path(path_list)
+        if reg is not None:
+            reg['FLOW'] = flow
+
+    def set_description(self, path_list, description):
+        path_list = self.prepare_path_list(path_list)
+        reg = self.get_param_registry_container_for_path(path_list)
+        if reg is not None:
+            reg['DESCRIPTION'] = description
+
+    def set_value(self, path_list, value):
+        path_list = self.prepare_path_list(path_list)
+        reg = self.get_param_registry_container_for_path(path_list)
+        if reg is not None:
+            if type(value) == list:
+                reg['VALUE'] = value
+            else:
+                reg['VALUE'] = any_to_list(value)
+
+    def prepare_basic_param_dict(self, type, path_list, access=3):
+        path = compose_path(path_list)
+        param_dict = {'TYPE': type, 'DESCRIPTION': path_list[-1], 'ACCESS': access, 'FULL_PATH': path, 'FLOW': 'BOTH'}
+        return param_dict
+
+    def add_generic_receiver_to_registry(self, path_list):
+        path_list = self.prepare_path_list(path_list)
+        generic_receiver_dict = self.prepare_basic_param_dict('b', path_list, access=1)
+        generic_receiver_dict['FLOW'] = 'IN'
+        self.insert_param_dict_into_registry(generic_receiver_dict)
+
+    def add_generic_sender_into_registry(self, path_list):
+        path_list = self.prepare_path_list(path_list)
+        generic_sender_dict = self.prepare_basic_param_dict('b', path_list, access=2)
+        generic_sender_dict['FLOW'] = 'OUT'
+        self.insert_param_dict_into_registry(generic_sender_dict)
+
+    def add_float_to_registry(self, path_list, value=0.0, min=0.0, max=1.0):
+        path_list = self.prepare_path_list(path_list)
+        float_param_dict = self.prepare_basic_param_dict('f', path_list)
+        if float_param_dict is None:
+            return
+        float_param_dict['RANGE'] = [{'MIN': min, 'MAX': max}]
+        float_param_dict['VALUE'] = [value]
+        self.insert_param_dict_into_registry(float_param_dict)
+
+    def add_int_to_registry(self, path_list, value=0, min=0, max=100):
+        path_list = self.prepare_path_list(path_list)
+        int_param_dict = self.prepare_basic_param_dict('i', path_list)
+        if int_param_dict is None:
+            return
+        int_param_dict['RANGE'] = [{'MIN': min, 'MAX': max}]
+        int_param_dict['VALUE'] = [value]
+        self.insert_param_dict_into_registry(int_param_dict)
+
+    def add_bool_to_registry(self, path_list, value=False):
+        path_list = self.prepare_path_list(path_list)
+        bool_param_dict = self.prepare_basic_param_dict('F', path_list)
+        if bool_param_dict is None:
+            return
+        bool_param_dict['VALUE'] = [value]
+        self.insert_param_dict_into_registry(bool_param_dict)
+
+    def add_string_to_registry(self, path_list, value=''):
+        path_list = self.prepare_path_list(path_list)
+        string_param_dict = self.prepare_basic_param_dict('s', path_list)
+        if string_param_dict is None:
+            return
+        string_param_dict['VALUE'] = [value]
+        self.insert_param_dict_into_registry(string_param_dict)
+
+    def add_string_menu_to_registry(self, path_list, value='', choices=None):
+        path_list = self.prepare_path_list(path_list)
+        string_menu_param_dict = self.prepare_basic_param_dict('s', path_list)
+        if string_menu_param_dict is None:
+            return
+        string_menu_param_dict['VALUE'] = [value]
+        if choices is not None and len(choices) > 0:
+            string_menu_param_dict['VALS'] = list(choices)
+        self.insert_param_dict_into_registry(string_menu_param_dict)
+
+    def add_button_to_registry(self, path_list):
+        path_list = self.prepare_path_list(path_list)
+        button_param_dict = self.prepare_basic_param_dict('N', path_list, access=0)
+        if button_param_dict is None:
+            return
+        self.insert_param_dict_into_registry(button_param_dict)
+
+    def add_float_array_to_registry(self, path_list, array, min=0.0, max=1.0):
+        path_list = self.prepare_path_list(path_list)
+        array = any_to_list(array)
+        count = len(array)
+        array_param_dict = self.prepare_basic_param_dict('f' * count, path_list)
+        if array_param_dict is None:
+            return
+        array_param_dict['VALUE'] = array
+
+        if type(min) in [float, int]:
+            array_param_dict['RANGE'] = []
+            range_dict = {'MIN': min, 'MAX': max}
+            for i in range(count):
+                array_param_dict['RANGE'].append(range_dict)
+        elif type(min) in [list, np.ndarray, torch.Tensor]:
+            min = any_to_list(min)
+            max = any_to_list(max)
+            if len(min) == count and len(max) == count:
+                for i in range(count):
+                    array_param_dict['RANGE'].append({'MIN': float(min[i]), 'MAX': float(max[i])})
+        self.insert_param_dict_into_registry(array_param_dict)
+
+    def add_int_array_to_registry(self, path_list, array, min=0.0, max=1.0):
+        path_list = self.prepare_path_list(path_list)
+        array = any_to_list(array)
+        count = len(array)
+        array_param_dict = self.prepare_basic_param_dict('i' * count, path_list)
+        if array_param_dict is None:
+            return
+        array_param_dict['VALUE'] = array
+
+        if type(min) in [float, int]:
+            array_param_dict['RANGE'] = []
+            range_dict = {'MIN': int(min), 'MAX': int(max)}
+            for i in range(count):
+                array_param_dict['RANGE'].append(range_dict)
+        elif type(min) in [list, np.ndarray, torch.Tensor]:
+            min = any_to_list(min)
+            max = any_to_list(max)
+            if len(min) == count and len(max) == count:
+                for i in range(count):
+                    array_param_dict['RANGE'].append({'MIN': int(min[i]), 'MAX': int(max[i])})
+        self.insert_param_dict_into_registry(array_param_dict)
+
+    # registry structure
+
+    # {
+    #     'DESCRIPTION': 'DPG_OSC_MANAGER',
+    #     'CONTENTS': {
+    #         '<PATCH_TAB_NAME>': {
+    #             'CONTENTS': {
+    #                 '<PARAM_NAME>': {
+    #                     'TYPE': <type> # f i s F?
+    #                     'DESCRIPTION': '<PARAM_NAME>',
+    #                     'FULL_PATH': '<PATCH_TAB_NAME>/<PARAM_NAME>',
+    #                     'VALUE': [1.0],
+    #                     'RANGE': [
+    #                         {
+    #                             'MAX': 1.0,
+    #                             'MIN': 0.0,
+    #                         }
+    #                     ],
+    #                     'ACCESS': 3
+    # '
+    #
+    #                 },
+    #                 '<PARAM_NAME>': {
+    #             }
+    #
+    #         }
+    #     }
+    #
+    # }
+
 
 class OSCTarget(OSCBase):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.ip = '127.0.0.1'
-        self.name = 'untitled'
+
+        patcher = Node.app.get_current_editor()
+        name = patcher.patch_name
+        name = name.replace(' ', '_')
+        self.name = name
+
+        got_port = False
         self.target_port = 2500
 
         if args is not None:
@@ -205,6 +553,7 @@ class OSCTarget(OSCBase):
                 arg, t = decode_arg(args, i)
                 if t == int:
                     self.target_port = arg
+                    got_port = True
                 elif t == str:
                     is_name = False
                     for c in arg:
@@ -215,6 +564,11 @@ class OSCTarget(OSCBase):
                     if not is_name:
                         self.ip = arg
 
+        if not got_port:
+            print('no port')
+            self.target_port = select_root_dest_port_address(self.ip)
+
+        print(self.name, self.ip, self.target_port)
         self.osc_format = 0
         self.connected = False
         self.client = None
@@ -222,11 +576,11 @@ class OSCTarget(OSCBase):
 
     def custom_create(self, from_file):
         self.create_client()
-        self.osc_manager.register_target(self)
 
     def create_client(self):
         try:
             self.client = SimpleUDPClient(self.ip, self.target_port)
+            self.osc_manager.register_target(self)
         except Exception as e:
             self.client = None
             print('OSCTarget.create_client:')
@@ -261,6 +615,7 @@ class OSCTarget(OSCBase):
             self.target_port = port
             self.ip = ip
             self.create_client()
+
 
         if name != self.name or force:
             self.osc_manager.remove_target(self)
@@ -300,7 +655,7 @@ class OSCTargetNode(OSCTarget, Node):
         name = self.target_name_property()
         port = any_to_int(self.target_port_property())
         ip = self.target_ip_property()
-
+        print(name, ip, port)
         self.handle_target_change(name, port, ip)
         # if port != self.target_port or ip != self.ip:
         #     self.destroy_client()
@@ -333,6 +688,82 @@ class OSCTargetNode(OSCTarget, Node):
                 self.send_message(message, content)
 
 
+def get_root_ip_address():
+    if 'default_ip_base' in Node.app.config:
+        default_ip_base = Node.app.config['default_ip_base']
+        ip_comp = default_ip_base.split('.')
+        for interface in netifaces.interfaces():
+            for link in netifaces.ifaddresses(interface).get(netifaces.AF_INET, ()):
+                address = link['addr']
+                address_comp = address.split('.')
+                if address_comp[0] == ip_comp[0] and address_comp[1] == ip_comp[1] and address_comp[2] == ip_comp[2]:
+                    return address
+
+    return None
+
+def select_root_port_address():
+    ip_address = get_root_ip_address()
+    print('ip_address', ip_address)
+    if ip_address is not None:
+        ip_comp = ip_address.split('.')
+        if len(ip_comp) == 4:
+            port_base = int(ip_comp[3])
+            port_base *= 100
+            proposed_port = find_free_udp_port(port_base, port_base + 99)
+            if proposed_port is not None:
+                return proposed_port
+    else:
+        for interface in netifaces.interfaces():
+            for link in netifaces.ifaddresses(interface).get(netifaces.AF_INET, ()):
+                address = link['addr']
+                if address != '127.0.0.1':
+                    ip_comp = address.split('.')
+                    if len(ip_comp) == 4:
+                        port_base = int(ip_comp[3])
+                        port_base *= 100
+                        proposed_port = find_free_udp_port(port_base, port_base + 99)
+                        if proposed_port is not None:
+                            return proposed_port
+    return 2500
+
+def select_root_dest_port_address(ip_address):
+    if ip_address is not None:
+        if ip_address == '127.0.0.1':
+            print('ip is 127.0.0.1')
+            return select_root_port_address()
+        ip_comp = ip_address.split('.')
+        if len(ip_comp) == 4:
+            port_base = int(ip_comp[3])
+            port_base *= 100
+            if port_base < 1000:
+                port_base += 1000
+            proposed_port = find_free_udp_port(port_base, port_base + 99)
+            if proposed_port is not None:
+                return proposed_port
+    return 2500
+
+def find_free_udp_port(start_port=1024, end_port=65535):
+    """
+    Find the first available UDP port in the given range.
+
+    Args:
+        start_port (int): The port number to start searching from (default: 1024)
+        end_port (int): The port number to end searching at (default: 65535)
+
+    Returns:
+        int: First available port number, or None if no ports are available
+    """
+    for port in range(start_port, end_port + 1):
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.bind(('', port))
+            sock.close()
+            return port
+        except OSError:
+            continue
+    return None
+
+
 class OSCSource(OSCBase):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
@@ -343,7 +774,7 @@ class OSCSource(OSCBase):
         self.receive_nodes = {}
 
         self.name = ''
-        self.source_port = 2500
+        self.source_port = select_root_port_address()
 
         if args is not None:
             for i in range(len(args)):
@@ -359,6 +790,12 @@ class OSCSource(OSCBase):
                             break
                     if not is_name:
                         pass
+
+        if self.name == '':
+            patcher = Node.app.get_current_editor()
+            name = patcher.patch_name
+            name = name.replace(' ', '_')
+            self.name = name
 
         self.osc_manager.register_source(self)
         self.lock = threading.Lock()
@@ -685,8 +1122,41 @@ class OSCDeviceNode(OSCAsyncIOSource, OSCTarget, Node):
         return node
 
     def __init__(self, label: str, data, args):
-        OSCAsyncIOSource.__init__(self, label, data, args)
-        OSCTarget.__init__(self, label, data, args)
+        port_count = 0
+        source_port_index = -1
+        target_port_index = -1
+        if args is not None:
+            for i in range(len(args)):
+                arg, t = decode_arg(args, i)
+                if t == int:
+                    port_count += 1
+                    if port_count == 1:
+                        target_port_index = i
+                    elif port_count == 2:
+                        source_port_index = i
+                elif t == str:
+                    is_name = False
+                    for c in arg:
+                        if c not in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.']:
+                            self.name = arg
+                            is_name = True
+                            break
+                    if not is_name:
+                        pass
+
+        if target_port_index != -1:
+            source_args = args[:target_port_index] + args[target_port_index + 1:]
+        else:
+            source_args = args
+
+        OSCAsyncIOSource.__init__(self, label, data, source_args)
+
+        if source_port_index != -1:
+            target_args = args[:source_port_index] + args[source_port_index + 1:]
+        else:
+            target_args = args
+
+        OSCTarget.__init__(self, label, data, target_args)
 
         self.input = self.add_input('osc to send', triggers_execution=True)
 
@@ -792,16 +1262,23 @@ class OSCReceiver(OSCBase):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
+        # default source name is root_patcher source node
+        # how do we manage am OSCQuery search for address?
+
         self.source = None
         self.address = ''
-        self.name = 'untitled'
         self.source_name_property = None
         self.source_address_property = None
 
         if args is not None:
-            if len(args) > 0:
+            if len(args) == 1: # assuming default source
+                self.name = Node.app.get_current_root_patch().patch_name.replace(' ', '_')
+                if not self.find_source_node(self.name):
+                    editor = Node.app.get_current_editor()
+                    self.osc_manager.create_source(self.name)
+                self.address = args[0]
+            elif len(args) == 2:
                 self.name = args[0]
-            if len(args) > 1:
                 self.address = args[1]
 
     def name_changed(self, force=False):
@@ -858,6 +1335,18 @@ class OSCReceiveNode(OSCReceiver, Node):
         self.throttle = self.add_option('throttle (ms)', widget_type='drag_int', default_value=0)
         self.last = time.time()
 
+    def register(self):
+        patcher_path = self.get_patcher_path()
+        self.osc_manager.registry.add_generic_receiver_into_registery(patcher_path, self.name, self.address)
+
+    def unregister(self):
+        patcher_path = self.get_patcher_path()
+        self.osc_manager.registry.remove_path_from_registry(patcher_path, self.name, self.address)
+
+    def get_registry_container(self):
+        patcher_path = self.get_patcher_path()
+        return self.osc_manager.registry.get_param_registry_container_for_path([patcher_path, self.name, self.address])
+
     def custom_create(self, from_file):
         if self.name != '':
             self.find_source_node(self.name)
@@ -886,13 +1375,18 @@ class OSCSender(OSCBase):
         self.name = ''
 
         if args is not None:
-            if len(args) > 0:
+            if len(args) == 1:
+                targets = list(self.osc_manager.targets.keys())
+                if len(targets) == 1:
+                    self.name = targets[0]
+                self.address = args[0]
+            if len(args) == 2:
                 if not is_number(args[0]):
                     self.name = args[0]
-            if len(args) > 1:
                 if not is_number(args[1]):
                     self.address = args[1]
 
+        self.osc_path = ''
         self.target_name_property = None
         self.target_address_property = None
 
@@ -948,6 +1442,19 @@ class OSCSendNode(OSCSender, Node):
 
         self.target_name_property = self.add_input('target name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
         self.target_address_property = self.add_input('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
+        self.register()
+
+    def register(self):
+        patcher_path = self.get_patcher_path()
+        self.osc_manager.registry.add_generic_sender_into_registery([patcher_path, self.name, self.address])
+
+    def unregister(self):
+        patcher_path = self.get_patcher_path()
+        self.osc_manager.registry.remove_path_from_registry([patcher_path, self.name, self.address])
+
+    def get_registry_container(self):
+        patcher_path = self.get_patcher_path()
+        return self.osc_manager.registry.get_param_registry_container_for_path([patcher_path, self.name, self.address])
 
     def custom_create(self, from_file):
         if self.name != '':
@@ -958,9 +1465,11 @@ class OSCSendNode(OSCSender, Node):
             self.target = self.osc_manager.find_target(name)
             if self.target is not None:
                 self.osc_manager.connect_send_node_to_target(self, self.target)
+                print('found target', self.name, self.address)
                 return True
             else:
                 self.osc_manager.connect_send_node_to_target(self, None)
+                print('did not find target')
         return False
 
     def cleanup(self):
@@ -1098,7 +1607,25 @@ class OSCRouteNode(OSCBase, Node):
         self.miss_out.send(self.input())
 
 
-# osc_toggle option to set on and off message....
+class OSCWidget(OSCReceiver, OSCSender):
+    def __init__(self, label: str, data, args):
+        self.node = None
+        super().__init__(label, data, args)
+
+    def register(self):
+        pass
+
+    def unregister(self):
+        patcher_path = self.node.get_patcher_path()
+        self.osc_manager.registry.remove_path_from_registry([patcher_path, self.name, self.address])
+
+    def get_registry_container(self):
+        patcher_path = self.node.get_patcher_path()
+        return self.osc_manager.registry.get_param_registry_container_for_path([patcher_path, self.name, self.address])
+
+
+
+
 class OSCValueNode(OSCReceiver, OSCSender, ValueNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -1107,33 +1634,81 @@ class OSCValueNode(OSCReceiver, OSCSender, ValueNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+        self.node = self
         self.target_name_property = self.add_option('target name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
         self.target_address_property = self.add_option('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
         self.source_name_property = self.target_name_property
         self.source_address_property = self.target_address_property
         if label == 'osc_string':
             self.space_replacement = self.add_option('replace spaces in osc messages', widget_type='checkbox',
-                                                     default_value=True)
+                                                   default_value=True)
+        self.register()
 
-    def name_changed(self):
+    def register(self):
+        patcher_path = self.get_patcher_path()
+        if self.input.widget.widget in ['drag_float', 'slider_float', 'knob_float', 'input_float']:
+            self.osc_manager.registry.add_float_to_registry([patcher_path, self.name, self.address])
+        elif self.input.widget.widget in ['drag_int', 'slider_int', 'knob_int', 'input_int']:
+            self.osc_manager.registry.add_int_to_registry([patcher_path, self.name, self.address])
+        elif self.input.widget.widget in ['text_input', 'text_editor']:
+            self.osc_manager.registry.add_string_to_registry([patcher_path, self.name, self.address])
+        elif self.input.widget.widget in ['checkbox']:
+            self.osc_manager.registry.add_boolean_to_registry([patcher_path, self.name, self.address])
+
+    # def unregister(self):
+    #     patcher_path = self.get_patcher_path()
+    #     self.osc_manager.registry.remove_path_from_registry([patcher_path, self.name, self.address])
+
+    # def get_registry_container(self):
+    #     patcher_path = self.get_patcher_path()
+    #     return self.osc_manager.registry.get_param_registry_container_for_path([patcher_path, self.name, self.address])
+
+    def name_changed(self, force=False):
+        patcher_path = self.get_patcher_path()
+        old_path = [patcher_path, self.name, self.address]
         OSCReceiver.name_changed(self)
         OSCSender.name_changed(self, force=True)
         self.outputs[0].set_label(any_to_string(self.target_name_property()) + ':' + any_to_string(self.target_address_property()))
+        self.osc_manager.registry.change_path(old_path, [patcher_path, self.name, self.address])
 
     def address_changed(self):
+        patcher_path = self.get_patcher_path()
+        old_path = [patcher_path, self.name, self.address]
         OSCReceiver.address_changed(self)
         OSCSender.address_changed(self)
-        self.outputs[0].set_label( any_to_string(self.target_name_property()) + ':' + any_to_string(self.target_address_property()))
+        self.outputs[0].set_label(any_to_string(self.target_name_property()) + ':' + any_to_string(self.target_address_property()))
+        self.osc_manager.registry.change_path(old_path, [patcher_path, self.name, self.address])
+        reg = self.get_registry_container()
+        if reg is not None:
+            reg['DESCRIPTION'] = self.address
+
 
     def custom_create(self, from_file):
         if self.name != '':
             self.find_target_node(self.name)
             self.find_source_node(self.name)
         self.output.set_label(any_to_string(self.target_name_property()) + ':' + any_to_string(self.target_address_property()))
+        registration = self.get_registry_container()
+        if registration is not None:
+            registration['VALUE'] = [self.input.widget.value]
+            if 'RANGE' in registration:
+                registration['RANGE'] = [{'MIN': self.input.widget.min, 'MAX': self.input.widget.max}]
+
+    def update_registry_range(self):
+        registration = self.get_registry_container()
+        if registration is not None:
+            if 'RANGE' in registration:
+                registration['RANGE'] = [{'MIN': self.input.widget.min, 'MAX': self.input.widget.max}]
+
+    def update_value_in_registry(self):
+        registration = self.get_registry_container()
+        if registration is not None:
+            registration['VALUE'] = self.input()
 
     def cleanup(self):
         OSCSender.cleanup(self)
         OSCReceiver.cleanup(self)
+        self.unregister()
 
     def receive(self, data, address=None):
         t = type(data)
@@ -1186,6 +1761,7 @@ class OSCValueNode(OSCReceiver, OSCSender, ValueNode):
                 data = data.replace(' ', '_')
         if data is not None:
             if self.target and self.address != '':
+                self.update_value_in_registry()
                 self.target.send_message(self.address, data)
 
 
@@ -1202,15 +1778,37 @@ class OSCButtonNode(OSCReceiver, OSCSender, ButtonNode):
         self.source_name_property = self.target_name_property
         self.source_address_property = self.target_address_property
 
-    def name_changed(self):
+    def register(self):
+        patcher_path = self.get_patcher_path()
+        self.osc_manager.registry.add_button_to_registry([patcher_path, self.name, self.address])
+
+    def unregister(self):
+        patcher_path = self.get_patcher_path()
+        self.osc_manager.registry.remove_path_from_registry([patcher_path, self.name, self.address])
+
+    def get_registry_container(self):
+        patcher_path = self.get_patcher_path()
+        return self.osc_manager.registry.get_param_registry_container_for_path([patcher_path, self.name, self.address])
+
+    def name_changed(self, force=False):
+        patcher_path = self.get_patcher_path()
+        old_path = [patcher_path, self.name, self.address]
         OSCReceiver.name_changed(self)
         OSCSender.name_changed(self, force=True)
-        self.output.set_label( any_to_string(self.target_name_property()) + ':' + any_to_string(self.target_address_property()))
+        self.output.set_label(any_to_string(self.target_name_property()) + ':' + any_to_string(self.target_address_property()))
+        self.osc_manager.registry.change_path(old_path, [patcher_path, self.name, self.address])
 
     def address_changed(self):
+        patcher_path = self.get_patcher_path()
+        old_path = [patcher_path, self.name, self.address]
+        old_address = self.address
         OSCReceiver.address_changed(self)
         OSCSender.address_changed(self)
-        self.output.set_label( any_to_string(self.target_name_property()) + ':' + any_to_string(self.target_address_property()))
+        self.output.set_label(any_to_string(self.target_name_property()) + ':' + any_to_string(self.target_address_property()))
+        self.osc_manager.registry.change_path(old_path, [patcher_path, self.name, self.address])
+        reg = self.get_registry_container()
+        if reg is not None:
+            reg['DESCRIPTION'] = self.address
 
     def custom_create(self, from_file):
         if self.name != '':
@@ -1221,6 +1819,7 @@ class OSCButtonNode(OSCReceiver, OSCSender, ButtonNode):
     def cleanup(self):
         OSCSender.cleanup(self)
         OSCReceiver.cleanup(self)
+        self.unregister()
 
     def receive(self, data, address=None):
         data = any_to_list(data)
@@ -1249,26 +1848,68 @@ class OSCToggleNode(OSCReceiver, OSCSender, ToggleNode):
         self.target_address_property = self.add_option('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
         self.source_name_property = self.target_name_property
         self.source_address_property = self.target_address_property
+        self.proxy = self.add_option('proxy', widget_type='checkbox', default_value=True, callback=self.proxy_changed)
+        self.register()
 
-    def name_changed(self):
+    def register(self):
+        patcher_path = self.get_patcher_path()
+        if self.input.widget.widget in ['checkbox']:
+            self.osc_manager.registry.add_bool_to_registry([patcher_path, self.name, self.address])
+            self.osc_manager.registry.set_flow([patcher_path, self.name, self.address], flow='PROXY')
+
+    def unregister(self):
+        patcher_path = self.get_patcher_path()
+        self.osc_manager.registry.remove_path_from_registry([patcher_path, self.name, self.address])
+
+    def get_registry_container(self):
+        patcher_path = self.get_patcher_path()
+        return self.osc_manager.registry.get_param_registry_container_for_path([patcher_path, self.name, self.address])
+
+    def update_value_in_registry(self):
+        registration = self.get_registry_container()
+        if registration is not None:
+            registration['VALUE'] = self.input()
+
+    def proxy_changed(self):
+        patcher_path = self.get_patcher_path()
+        proxy = self.proxy()
+        if proxy:
+            self.osc_manager.registry.set_flow([patcher_path, self.name, self.address], flow='PROXY')
+        else:
+            self.osc_manager.registry.set_flow([patcher_path, self.name, self.address], flow='BOTH')
+
+    def name_changed(self, force=False):
+        patcher_path = self.get_patcher_path()
+        old_path = [patcher_path, self.name, self.address]
         OSCReceiver.name_changed(self)
         OSCSender.name_changed(self, force=True)
         self.output.set_label( any_to_string(self.target_name_property()) + ':' + any_to_string(self.source_address_property()))
+        self.osc_manager.registry.change_path(old_path, [patcher_path, self.name, self.address])
 
     def address_changed(self):
+        patcher_path = self.get_patcher_path()
+        old_path = [patcher_path, self.name, self.address]
         OSCReceiver.address_changed(self)
         OSCSender.address_changed(self)
         self.output.set_label( any_to_string(self.target_name_property()) + ':' + any_to_string(self.source_address_property()))
+        self.osc_manager.registry.change_path(old_path, [patcher_path, self.name, self.address])
+        reg = self.get_registry_container()
+        if reg is not None:
+            reg['DESCRIPTION'] = self.address
 
     def custom_create(self, from_file):
         if self.name != '':
             self.find_target_node(self.name)
             self.find_source_node(self.name)
         self.output.set_label( any_to_string(self.target_name_property()) + ':' + any_to_string(self.target_address_property()))
+        registration = self.get_registry_container()
+        if registration is not None:
+            registration['VALUE'] = [self.input.widget.value]
 
     def cleanup(self):
         OSCSender.cleanup(self)
         OSCReceiver.cleanup(self)
+        self.unregister()
 
     def receive(self, data, address):
         data = any_to_list(data)
@@ -1282,6 +1923,7 @@ class OSCToggleNode(OSCReceiver, OSCSender, ToggleNode):
     def execute(self):
         ToggleNode.execute(self)
         if self.target and self.address != '':
+            self.update_value_in_registry()
             self.target.send_message(self.address, self.value)
 
 
@@ -1297,26 +1939,58 @@ class OSCMenuNode(OSCReceiver, OSCSender, MenuNode):
         self.target_address_property = self.add_option('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
         self.source_name_property = self.target_name_property
         self.source_address_property = self.target_address_property
+        self.register()
 
-    def name_changed(self):
+    # should it expose its possible values in the OSCQueryRegistry?
+    def register(self):
+        patcher_path = self.get_patcher_path()
+        self.osc_manager.registry.add_string_menu_to_registry([patcher_path, self.name, self.address], choices=self.choices)
+
+    def unregister(self):
+        patcher_path = self.get_patcher_path()
+        self.osc_manager.registry.remove_path_from_registry([patcher_path, self.name, self.address])
+
+    def get_registry_container(self):
+        patcher_path = self.get_patcher_path()
+        return self.osc_manager.registry.get_param_registry_container_for_path([patcher_path, self.name, self.address])
+
+    def update_value_in_registry(self):
+        registration = self.get_registry_container()
+        if registration is not None:
+            registration['VALUE'] = self.choice()
+
+    def name_changed(self, force=False):
+        patcher_path = self.get_patcher_path()
+        old_path = [patcher_path, self.name, self.address]
         OSCReceiver.name_changed(self)
         OSCSender.name_changed(self, force=True)
         self.output.set_label( any_to_string(self.target_name_property()) + ':' + any_to_string(self.source_address_property()))
+        self.osc_manager.registry.change_path(old_path, [patcher_path, self.name, self.address])
 
     def address_changed(self):
+        patcher_path = self.get_patcher_path()
+        old_path = [patcher_path, self.name, self.address]
         OSCReceiver.address_changed(self)
         OSCSender.address_changed(self)
         self.output.set_label( any_to_string(self.target_name_property()) + ':' + any_to_string(self.source_address_property()))
+        self.osc_manager.registry.change_path(old_path, [patcher_path, self.name, self.address])
+        reg = self.get_registry_container()
+        if reg is not None:
+            reg['DESCRIPTION'] = self.address
 
     def custom_create(self, from_file):
         if self.name != '':
             self.find_target_node(self.name)
             self.find_source_node(self.name)
         self.output.set_label( any_to_string(self.target_name_property()) + ':' + any_to_string(self.target_address_property()))
+        registration = self.get_registry_container()
+        if registration is not None:
+            registration['VALUE'] = [self.choice.widget.value]
 
     def cleanup(self):
         OSCSender.cleanup(self)
         OSCReceiver.cleanup(self)
+        self.unregister()
 
     def receive(self, data, address):
         data = any_to_list(data)
@@ -1324,11 +1998,12 @@ class OSCMenuNode(OSCReceiver, OSCSender, MenuNode):
             if data[0][0] == '/':
                 return
         self.choice.set(data)
-        self.set_choice_internal(data)
+        self.set_choice_internal()
 
     def execute(self):
         MenuNode.execute(self)
         if self.target and self.address != '':
+            self.update_value_in_registry()
             self.target.send_message(self.address, self.choice())
 
 
@@ -1344,26 +2019,60 @@ class OSCRadioButtonsNode(OSCReceiver, OSCSender, RadioButtonsNode):
         self.target_address_property = self.add_option('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
         self.source_name_property = self.target_name_property
         self.source_address_property = self.target_address_property
+        self.register()
 
-    def name_changed(self):
+    def register(self):
+        patcher_path = self.get_patcher_path()
+        choices = []
+        for button in self.buttons:
+            choices.append(str(button))
+        self.osc_manager.registry.add_string_menu_to_registry([patcher_path, self.name, self.address], choices=choices)
+
+    def unregister(self):
+        patcher_path = self.get_patcher_path()
+        self.osc_manager.registry.remove_path_from_registry([patcher_path, self.name, self.address])
+
+    def get_registry_container(self):
+        patcher_path = self.get_patcher_path()
+        return self.osc_manager.registry.get_param_registry_container_for_path([patcher_path, self.name, self.address])
+
+    def update_value_in_registry(self):
+        registration = self.get_registry_container()
+        if registration is not None:
+            registration['VALUE'] = self.radio_group()
+
+    def name_changed(self, force=False):
+        patcher_path = self.get_patcher_path()
+        old_path = [patcher_path, self.name, self.address]
         OSCReceiver.name_changed(self)
         OSCSender.name_changed(self, force=True)
         self.output.set_label( any_to_string(self.target_name_property()) + ':' + any_to_string(self.source_address_property()))
+        self.osc_manager.registry.change_path(old_path, [patcher_path, self.name, self.address])
 
     def address_changed(self):
+        patcher_path = self.get_patcher_path()
+        old_path = [patcher_path, self.name, self.address]
         OSCReceiver.address_changed(self)
         OSCSender.address_changed(self)
         self.output.set_label( any_to_string(self.target_name_property()) + ':' + any_to_string(self.source_address_property()))
+        self.osc_manager.registry.change_path(old_path, [patcher_path, self.name, self.address])
+        reg = self.get_registry_container()
+        if reg is not None:
+            reg['DESCRIPTION'] = self.address
 
     def custom_create(self, from_file):
         if self.name != '':
             self.find_target_node(self.name)
             self.find_source_node(self.name)
         self.output.set_label( any_to_string(self.target_name_property()) + ':' + any_to_string(self.target_address_property()))
+        registration = self.get_registry_container()
+        if registration is not None:
+            registration['VALUE'] = [self.radio_group.widget.value]
 
     def cleanup(self):
         OSCSender.cleanup(self)
         OSCReceiver.cleanup(self)
+        self.unregister()
 
     def receive(self, data, address):
         data = any_to_list(data)
@@ -1377,6 +2086,7 @@ class OSCRadioButtonsNode(OSCReceiver, OSCSender, RadioButtonsNode):
     def execute(self):
         RadioButtonsNode.execute(self)
         if self.target and self.address != '':
+            self.update_value_in_registry()
             self.target.send_message(self.address, self.radio_group())
 
 

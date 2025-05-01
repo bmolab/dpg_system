@@ -1,4 +1,6 @@
-
+import platform as _platform
+import subprocess
+import os
 import torch
 from dpg_system.body_base import *
 from pyquaternion import Quaternion
@@ -25,6 +27,16 @@ def register_motion_cap_nodes():
     Node.app.register_node('target_pose', TargetPoseNode.factory)
     Node.app.register_node('calibrate_pose', PoseCalibrateNode.factory)
     Node.app.register_node('limb_size', LimbSizingNode.factory)
+
+def find_process_id(process_name):
+    try:
+        result = subprocess.run(['pgrep', process_name], capture_output=True, text=True, check=True)
+        pid = result.stdout.split('\n')
+        return pid
+    except subprocess.CalledProcessError:
+        return None
+    except ValueError:
+         return None
 
 class MoCapNode(Node):
     joint_map = {
@@ -508,6 +520,7 @@ class MoCapGLBody(MoCapNode):
         self.diff_quat_smoothing_B = self.add_option('joint motion smoothing b', widget_type='drag_float',
                                                    default_value=0.9, max=1.0, min=0.0)
 
+        self.orientation_before = self.add_option('orientation before rotation', widget_type='checkbox', default_value=False)
         self.joint_disk_alpha = self.add_option('joint motion alpha', widget_type='drag_float', default_value=0.5, max=1.0, min=0.0)
         self.body_color_id = self.add_option('colour id', widget_type='input_int', default_value=0)
         self.limb_sizes_out = self.add_output('limb_sizes')
@@ -568,54 +581,54 @@ class MoCapGLBody(MoCapNode):
             limb_sizes[joint.name] = joint.dims
         self.limb_sizes_out.send(limb_sizes)
 
-    def joint_callback(self, joint_index, previous_limb_index):
-        if previous_limb_index >= t_ActiveJointCount:
+    def joint_callback(self, joint_index):
+        if joint_index >= t_ActiveJointCount:
             return
-        if previous_limb_index < 0:
+        if joint_index < 0:
             return
 
         glPushMatrix()
 
         mode = self.joint_data_selection()
         # joint_name = joint_index_to_name[joint_index]
-        self.current_joint_output.send(previous_limb_index)
+        self.current_joint_output.send(joint_index)
         if self.external_joint_data is not None:
             if type(self.external_joint_data) is np.ndarray:
                 if self.external_joint_data.shape[0] == 20:
-                    if previous_limb_index < t_ActiveJointCount:
-                        self.current_joint_data_output.send(self.external_joint_data[previous_limb_index])
+                    if joint_index < t_ActiveJointCount:
+                        self.current_joint_data_output.send(self.external_joint_data[joint_index])
                 elif self.external_joint_data.shape[0] == 1:
                     if self.external_joint_data.shape[1] == 20:
-                        if previous_limb_index < t_ActiveJointCount:
-                            self.current_joint_data_output.send(self.external_joint_data[0][previous_limb_index])
+                        if joint_index < t_ActiveJointCount:
+                            self.current_joint_data_output.send(self.external_joint_data[0][joint_index])
             elif type(self.external_joint_data) is torch.Tensor:
                 if self.external_joint_data.shape[0] == 20:
-                    if previous_limb_index < t_ActiveJointCount:
-                        self.current_joint_data_output.send(self.external_joint_data[previous_limb_index])
+                    if joint_index < t_ActiveJointCount:
+                        self.current_joint_data_output.send(self.external_joint_data[joint_index])
                 elif self.external_joint_data.shape[0] == 1:
                     if self.external_joint_data.shape[1] == 20:
-                        if previous_limb_index < t_ActiveJointCount:
-                            self.current_joint_data_output.send(self.external_joint_data[0][previous_limb_index])
+                        if joint_index < t_ActiveJointCount:
+                            self.current_joint_data_output.send(self.external_joint_data[0][joint_index])
             elif type(self.external_joint_data) is list:
                 if len(self.external_joint_data) == 20:
-                    if previous_limb_index < t_ActiveJointCount:
-                        self.current_joint_data_output.send(self.external_joint_data[previous_limb_index])
+                    if joint_index < t_ActiveJointCount:
+                        self.current_joint_data_output.send(self.external_joint_data[joint_index])
                 elif len(self.external_joint_data) == 1:
                     if len(self.external_joint_data[0]) == 20:
-                        if previous_limb_index < t_ActiveJointCount:
-                            self.current_joint_data_output.send(self.external_joint_data[0][previous_limb_index])
+                        if joint_index < t_ActiveJointCount:
+                            self.current_joint_data_output.send(self.external_joint_data[0][joint_index])
         elif mode == 'diff_axis-angle':
             if self.body.normalized_axes is not None:
-                current_axis = self.body.normalized_axes[0, previous_limb_index]
+                current_axis = self.body.normalized_axes[0, joint_index]
                 if self.body.magnitudes is not None:
-                    current_magnitude = self.body.magnitudes[0, previous_limb_index]
+                    current_magnitude = self.body.magnitudes[0, joint_index]
                     output_value = np.ndarray(shape=(4))
                     output_value[:3] = current_axis
                     output_value[3] = current_magnitude
                     self.current_joint_data_output.send(output_value)
         elif mode == 'diff_quaternion':
             if self.body.magnitudes is not None:
-                value = self.body.magnitudes[0, previous_limb_index]
+                value = self.body.magnitudes[0, joint_index]
                 self.current_joint_data_output.send(value)
         self.current_joint_gl_output.send('draw')
         glPopMatrix()
@@ -682,6 +695,7 @@ class MoCapGLBody(MoCapNode):
 
     def draw(self):
         incoming = self.gl_chain_input()
+        self.body.orientation_before = self.orientation_before()
         t = type(incoming)
         if t == str and incoming == 'draw':
             self.body.joint_display = self.joint_indicator()
@@ -1147,12 +1161,15 @@ class MotionShadowNode(MoCapNode):
         self.num_bodies = 0
         super().__init__(label, data, args)
 
+        self.launching_shadow = False
         self.__mutex = threading.Lock()
+        self.check_for_shadow()
         self.client = None
-        try:
-            self.client = shadow.Client("", 32076)
-        except Exception as e:
-            self.client = None
+        if not self.launching_shadow:
+            try:
+                self.client = shadow.Client("", 32076)
+            except Exception as e:
+                self.client = None
         self.origin = [0.0, 0.0, 0.0] * 4
         self.positions = np.ndarray((4, 37, 3))
         self.quaternions = np.ndarray((4, 37, 4))
@@ -1189,6 +1206,21 @@ class MotionShadowNode(MoCapNode):
             self.thread_started = True
         self.add_frame_task()
 
+
+    def check_for_shadow(self):
+        found_shadow = False
+
+        if _platform.system() == 'Windows':
+            pass
+        elif _platform.system() == 'Darwin':
+            if find_process_id('Shadow') is None:
+                print("Shadow not found, launching")
+                subprocess.Popen( ['open', '/Applications/Shadow.app'] )
+                # os.system("open /Applications/Shadow.app")
+                self.launching_shadow = True
+        elif _platform.system() == 'Linux':
+            pass
+
     def direct_out_changed(self):
         if self.direct_out():
             self.remove_frame_tasks()
@@ -1220,22 +1252,45 @@ class MotionShadowNode(MoCapNode):
                     for key in configData:
                         master_key = self.jointMap[key][0] - 1          # keys start at 1
                         body_index = self.jointMap[key][1]
+                        if master_key >= 0:
+                            joint = joint_index_to_name[master_key]
 
-                        joint = joint_index_to_name[master_key]
+                            joint_data = configData[key]
 
-                        joint_data = configData[key]
-
-                        # configData[key] is [q0, q1, q2, q3, p0, p1, p2]
-                        if joint == 'Hips' and self.origin is None:
-                            self.origin[body_index] = [joint_data.value(5) / 100, joint_data.value(6) / 100, joint_data.value(7) / 100]
-                        self.positions[body_index, master_key] = [joint_data.value(5) / 100, joint_data.value(6) / 100, joint_data.value(7) / 100]
-                        self.quaternions[body_index, master_key] = [joint_data.value(0), joint_data.value(1), joint_data.value(2), joint_data.value(3)]
+                            # configData[key] is [q0, q1, q2, q3, p0, p1, p2]
+                            if joint == 'Hips' and self.origin is None:
+                                self.origin[body_index] = [joint_data.value(5) / 100, joint_data.value(6) / 100, joint_data.value(7) / 100]
+                            self.positions[body_index, master_key] = [joint_data.value(5) / 100, joint_data.value(6) / 100, joint_data.value(7) / 100]
+                            self.quaternions[body_index, master_key] = [joint_data.value(0), joint_data.value(1), joint_data.value(2), joint_data.value(3)]
                     self.new_data = True
                     lock = None
                     if self.direct_out():
                         self.frame_task()
 
     def frame_task(self):
+        if self.launching_shadow:
+            if _platform.system() == 'Darwin':
+                if find_process_id('Shadow') is not None:
+                    try:
+                        self.client = shadow.Client("", 32076)
+                        xml_definition = \
+                            "<?xml version=\"1.0\"?>" \
+                            "<configurable inactive=\"1\">" \
+                            "<Lq/>" \
+                            "<c/>" \
+                            "</configurable>"
+
+                        if self.client:
+                            print('shadow connected')
+
+                            self.launching_shadow = False
+
+                            if self.client.writeData(xml_definition):
+                                print("Sent active channel definition to Configurable service")
+                    except Exception as e:
+                        self.client = None
+                else:
+                    return
         if not self.new_data:
             return
         self.new_data = False

@@ -783,14 +783,22 @@ class ValueNode(Node):
             for i in range(len(ordered_args)):
                 val, t = decode_arg(ordered_args, i)
                 if t in [float, int]:
-                    self.start_value = val
+                    self.max = val
                 elif t == str:
                     if val == '+':
                         widget_type = 'input_int'
             if self.max is None:
                 self.input = self.add_int_input('', triggers_execution=True, widget_type=widget_type,
                                             widget_uuid=self.value, widget_width=widget_width, trigger_button=True)
-                self.output = self.add_int_output('int out')
+            else:
+                if self.min is None:
+                    self.input = self.add_int_input('', triggers_execution=True, widget_type=widget_type,
+                                                widget_uuid=self.value, widget_width=widget_width, max=self.max, trigger_button=True)
+                else:
+                    self.input = self.add_int_input('', triggers_execution=True, widget_type=widget_type,
+                                                widget_uuid=self.value, widget_width=widget_width, max=self.max, min=self.min, trigger_button=True)
+
+            self.output = self.add_int_output('int out')
 
         elif label in ['slider', 'osc_slider', 'param_slider']:
             widget_type = 'slider_float'
@@ -800,6 +808,7 @@ class ValueNode(Node):
                     if t == float:
                         widget_type = 'slider_float'
                         self.max = val
+                        print('max is', val)
                     elif t == int:
                         widget_type = 'slider_int'
                         self.max = val

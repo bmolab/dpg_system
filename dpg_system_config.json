@@ -22,5 +22,6 @@
   "google_translate_nodes": true,
   "layout_nodes": false,
   "eos_nodes": true,
-  "orbbec_nodes": true
+  "orbbec_nodes": true,
+  "default_ip_base": "10.1.1.0"
 }

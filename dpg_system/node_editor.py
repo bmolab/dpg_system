@@ -28,10 +28,11 @@ class NodeEditor:
         out.remove_link(app_data, child)
         NodeEditor.app.get_current_editor().modified = True
 
-    def __init__(self, height=0, width=0):
+    def __init__(self, height=0, width=0, top_level_patcher=True):
         self._nodes = []
         self._links = []
         self.subpatches = []
+        self.parent_patcher = None
         self.height = height
         self.width = width
         self.uuid = dpg.generate_uuid()
@@ -43,12 +44,11 @@ class NodeEditor:
         self.node_theme = None
         self.comment_theme = None
         self.setup_theme()
-        self.patch_name = ''
+        self.patch_name = 'patch ' + str(Node.app.new_patcher_index)
         self.file_path = ''
         self.mini_map = False
         self.origin = None
         self.patcher_node = None
-        self.parent_patcher = None
         self.modified = False
         self.duplicated_subpatch_nodes = {}
         self.saving_preset = False
@@ -457,8 +457,7 @@ class NodeEditor:
     def node_cleanup(self, node_uuid):
         node = dpg.get_item_user_data(node_uuid)
         if node is not None:
-            if node != self.origin:
-                self.remove_node(node)
+            self.remove_node(node)
         # for node in self._nodes:
         #     if node.uuid == node_uuid:
         #         if node != self.origin:
@@ -495,6 +494,8 @@ class NodeEditor:
         # add invisible node that is reference for panning
 
         self.origin = OriginNode.factory('origin', None)
+        self.origin.do_not_delete = True
+        self.origin.presentation_state = 'hidden'
         self.origin.create(self.uuid, pos=[0, 0])
         self.add_node(self.origin)
 
@@ -537,7 +538,9 @@ class NodeEditor:
     def delete_selected_items(self):
         node_uuids = dpg.get_selected_nodes(self.uuid)
         for node_uuid in node_uuids:
-            self.node_cleanup(node_uuid)
+            node = dpg.get_item_user_data(node_uuid)
+            if node is not None and node.visibility == 'show_all' and not node.do_not_delete: # do not delete invisible nodes
+                self.node_cleanup(node_uuid)
 
         link_uuids = dpg.get_selected_links(self.uuid)
         for link_uuid in link_uuids:
@@ -931,6 +934,8 @@ class NodeEditor:
         self.app.set_current_tab_title(self.patch_name)
         self.modified = False
 
+    def is_root_patcher(self):
+        return self.parent_patcher is not None
 
     def uncontainerize(self, file_container, offset=None, create_origin=False):
         if offset is None:
@@ -1032,7 +1037,8 @@ class NodeEditor:
         self.patch_name = name
         self.uncontainerize(patch_container)
         if self.patch_name == '':
-            self.patch_name = 'node patch'
+            self.patch_name = 'patch ' + str(Node.app.new_patcher_index)
+            Node.app.new_patcher_index += 1
         self.app.set_current_tab_title(self.patch_name)
         self.modified = False
 
@@ -1059,7 +1065,6 @@ class NodeEditor:
                                 self.patch_name = parts[0]
                     self.app.set_current_tab_title(self.patch_name)
                     self.modified = False
-        #                   dpg.set_viewport_title(self.patch_name)
         except:
             print('exception occurred during load')
             pass
