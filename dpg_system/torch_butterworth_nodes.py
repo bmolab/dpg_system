@@ -9,10 +9,58 @@ from dpg_system.conversion_utils import *
 import numpy as np
 import torch
 from dpg_system.torch_base_nodes import TorchDeviceDtypeNode
-
+# import torch_kf
+# import torch_kf.ckf
 
 def register_torch_butterworth_nodes():
     Node.app.register_node("t.filter_bank", TorchBandPassFilterBankNode.factory)
+
+# class TorchKalmanFilterNode(TorchDeviceDtypeNode):
+#     @staticmethod
+#     def factory(name, data, args=None):
+#         node = TorchKalmanFilterNode(name, data, args)
+#         return node
+#
+#     def __init__(self, label: str, data, args):
+#         super().__init__(label, data, args)
+#
+#         self.setup_dtype_device_grad(args)
+#         self.dtype = torch.float32
+#
+#         self.order = self.arg_as_int(default_value=2)
+#
+#         self.accum = 0.0
+#
+#         self.kf = torch_kf.ckf.constant_kalman_filter(measurement_std, process_std, dim=1, order=order, expected_model=True)
+#
+#         self.input = self.add_input('in', triggers_execution=True)
+#         self.degree_input = self.add_input('degree', widget_type='drag_float', min=0.0, max=1.0, default_value=self.degree, callback=self.change_degree)
+#         self.degree_input.widget.speed = .01
+#         self.output = self.add_output('out')
+#
+#     def change_degree(self, input=None):
+#         self.degree = self.degree_input()
+#         if self.degree < 0:
+#             self.degree = 0
+#         elif self.degree > 1:
+#             self.degree = 1
+#
+#     def execute(self):
+#         input_value = self.input.get_data()
+#         if type(self.accum) != type(input_value):
+#             self.accum = any_to_match(self.accum, input_value)
+#         t = type(input_value)
+#         if t is np.ndarray:
+#             if self.accum.size != input_value.size:
+#                 self.accum = np.zeros_like(input_value)
+#         elif self.app.torch_available and type(input_value) == torch.Tensor:
+#             if input_value.device != self.accum.device:
+#                 self.accum = any_to_match(self.accum, input_value)
+#             if self.accum.size() != input_value.size():
+#                 self.accum = torch.zeros_like(input_value)
+#
+#         self.accum = self.accum * self.degree + input_value * (1.0 - self.degree)
+#         self.output.send(self.accum)
 
 
 class TorchBandPassFilterBankNode(TorchDeviceDtypeNode):

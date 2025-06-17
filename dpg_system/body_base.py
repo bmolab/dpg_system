@@ -319,6 +319,7 @@ class BodyDataBase:
     def __init__(self):
         self.node = None
         self.skeleton = False
+        self.joint_axes = False
         self.num_bodies = 1
         self.current_body = 0
 
@@ -350,7 +351,7 @@ class BodyDataBase:
         self.__mutex = threading.Lock()
 
 
-    def draw(self, show_rotation_spheres=False, skeleton=False):
+    def draw(self, show_rotation_spheres=False, skeleton=False, axes=False):
         hold_shade = glGetInteger(GL_SHADE_MODEL)
         glShadeModel(GL_FLAT)
         glPushMatrix()      # 0
@@ -358,6 +359,7 @@ class BodyDataBase:
         glTranslatef(0.0, -1.0, 0.0)
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, self.base_material)
 
+        self.joint_axes = axes
         self.skeleton = skeleton
         # transform = None
 
@@ -566,12 +568,22 @@ class BodyDataBase:
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, self.base_material)
 
     def draw_block(self, joint_index, joint_data):  # draw_block could include colours for each end of the block to reflect
-        if self.skeleton:
-            dim_z = joint_data.dims[0]
-            glBegin(GL_LINES)
-            glVertex3f(0, 0, 0)
-            glVertex3f(0, 0, dim_z)
-            glEnd()
+        if self.skeleton or self.joint_axes:
+            if self.skeleton:
+                dim_z = joint_data.dims[0]
+                glBegin(GL_LINES)
+                glVertex3f(0, 0, 0)
+                glVertex3f(0, 0, dim_z)
+                glEnd()
+            if self.joint_axes:
+                glBegin(GL_LINES)
+                glVertex3f(0, 0, 0)
+                glVertex3f(0, 0, .1)
+                glVertex3f(0, 0, 0)
+                glVertex3f(0, .1, 0)
+                glVertex3f(0, 0, 0)
+                glVertex3f(.1, 0, 0)
+                glEnd()
         else: #. only called if self.limbs[joint_index] is None!!!!!!
             if self.limbs[joint_index] is None:
                 self.limbs[joint_index] = LimbGeometry()
@@ -866,7 +878,7 @@ class BodyData(BodyDataBase):
         super().__init__()
         self.origin = None
         self.diff_quats = None
-        self.axes = None
+        self.joint_axes = None
         self.magnitudes = None
         self.normalized_axes = None
         self.diff_angles = None

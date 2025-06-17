@@ -233,7 +233,9 @@ class SMPLToActivePoseNode(SMPLShadowTranslator, Node):
         self.input = self.add_input('smpl pose', triggers_execution=True)
         self.output_format_in = self.add_input('output_format', widget_type='combo', default_value='quaternions')
         self.output_format_in.widget.combo_items = ['quaternions', 'rotation_vectors']
+        self.y_is_up = self.add_property('y is up', widget_type='checkbox')
         self.output = self.add_output('active pose')
+        self.y_up = np.array([0.7071067811865475, -0.7071067811865475, 0.0, 0.0])
 
     def execute(self):
         smpl_pose = self.input()
@@ -243,17 +245,28 @@ class SMPLToActivePoseNode(SMPLShadowTranslator, Node):
             active_pose[:, 0] = 1.0
         else:
             active_pose = np.zeros((22, 3))
+
+        # NOTE: smpl seems to assume z is up vector which messes up axes of root rotation
+        # we should force root rotation to rotate -90 around x axis
+
         if len(smpl_pose.shape) > 1:
             if smpl_pose.shape[1] == 3:
                 active_pose = SMPLShadowTranslator.translate_from_smpl_to_active(smpl_pose)
                 if self.output_format_in() == 'quaternions':
                     rot = scipy.spatial.transform.Rotation.from_rotvec(active_pose)
                     active_pose = rot.as_quat(scalar_first=True)
+                if self.y_is_up():
+                    active_pose[5] = active_pose[5] * self.y_up
             elif smpl_pose.shape[1] == 4:
                 active_pose = SMPLShadowTranslator.translate_from_smpl_to_active(smpl_pose)
                 if self.output_format_in() != 'quaternions':
                     rot = scipy.spatial.transform.Rotation.from_quat(active_pose, scalar_first=True)
                     active_pose = rot.as_rotvec()
+                elif self.y_is_up():
+                    active_pose[5] = active_pose[5] * self.y_up
+
+
+
         self.output.send(active_pose)
 
 

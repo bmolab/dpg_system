@@ -56,6 +56,7 @@ def register_numpy_nodes():
     Node.app.register_node('np.[]', NumpySubtensorNode.factory)
     Node.app.register_node('np.edit', NumpyEditNode.factory)
     Node.app.register_node('np.sequence', NumpySequenceNode.factory)
+    Node.app.register_node('np.reshape', NumpyReshapeNode.factory)
 
 class NumpyGeneratorNode(Node):
     operations = {'np.rand': np.random.Generator.random, 'np.ones': np.ones, 'np.zeros': np.zeros}
@@ -911,6 +912,42 @@ class FlattenMatrixNode(Node):
             data = np.ravel(data, order=order)
             self.output.send(data)
 
+class NumpyReshapeNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyReshapeNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.shape = [-1]
+        if len(args) > 0:
+            self.shape = []
+            for arg in args:
+                self.shape.append(any_to_int(arg))
+        shape_string = str(self.shape)
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.shape_input = self.add_input('', widget_type='text_input', widget_width=200, default_value=shape_string,
+                                                  callback=self.shape_changed)
+        self.output = self.add_output('output')
+
+    def shape_changed(self):
+        shape_text = self.shape_input()
+        shape_list = re.findall(r'[-+]?\d+', shape_text)
+        shape = []
+        for dim_text in shape_list:
+            shape.append(any_to_int(dim_text))
+        self.shape = shape
+
+    def execute(self):
+        input_array = any_to_array(self.input())
+        if input_array is not None:
+            try:
+                reshaped_array = np.reshape(input_array, self.shape)
+                self.output.send(reshaped_array)
+            except Exception as e:
+                traceback.print_exception(e)
+                print(self.label, e)
 
 class NumpyUnaryLinearAlgebraNode(Node):
     operations = {

@@ -11,6 +11,7 @@ from dpg_system.conversion_utils import *
 def register_signal_nodes():
     Node.app.register_node("filter", FilterNode.factory)
     Node.app.register_node("adaptive_filter", AdaptiveFilterNode.factory)
+    Node.app.register_node("adaptive_quaternion_filter", AdaptiveQuaternionFilterNode.factory)
     Node.app.register_node("smooth", FilterNode.factory)
     Node.app.register_node("diff_filter_bank", MultiDiffFilterNode.factory)
     Node.app.register_node("diff_filter", MultiDiffFilterNode.factory)
@@ -39,7 +40,8 @@ def register_signal_nodes():
     Node.app.register_node('filter_bank', FilterBankNode.factory)
     Node.app.register_node('spectrum', SpectrumNode.factory)
     Node.app.register_node('ranger', RangerNode.factory)
-
+    Node.app.register_node('kalman_filter', KalmanFilterNode.factory)
+    Node.app.register_node('kinetic_filter', KineticFilterNode.factory)
 
 class DifferentiateNode(Node):
     @staticmethod
@@ -949,9 +951,11 @@ class FilterNode(Node):
 
     def execute(self):
         input_value = self.input.get_data()
-        if type(self.accum) != type(input_value):
-            self.accum = any_to_match(self.accum, input_value)
         t = type(input_value)
+
+        if type(self.accum) != t:
+            self.accum = any_to_match(self.accum, input_value)
+
         if t is np.ndarray:
             if self.accum.size != input_value.size:
                 self.accum = np.zeros_like(input_value)
@@ -984,13 +988,18 @@ class AdaptiveFilterNode(Node):
         self.input = self.add_input('in', triggers_execution=True)
         self.power_input = self.add_input('power', widget_type='drag_float', min=0.0, default_value=self.power, callback=self.change_power)
         self.power_input.widget.speed = .01
-        self.base_degree = self.add_input('responsiveness', widget_type='drag_float', min=0.0, max=1.0, default_value=1.0)
+        self.base_degree = self.add_input('responsiveness', widget_type='drag_float', min=0.0, max=1.0, default_value=0.95)
         self.base_degree.widget.speed = .01
         self.base_degree.widget.speed = .01
         self.range = self.add_input('signal range', widget_type='drag_float', min=0.0001, default_value=1.0)
         self.adaption_smoothing = self.add_input('smooth response', widget_type='drag_float', min=0.0, default_value=0.0)
         self.offset_smoothing = self.add_input('offset response', widget_type='drag_float', min=0.0, default_value=0.9)
+        self.reset_button = self.add_input('reset response', widget_type='button', callback=self.reset)
+        self.current_degree_out = self.add_output('degree out')
         self.output = self.add_output('out')
+
+    def reset(self):
+        self.accum = 0
 
     def change_power(self):
         self.power = self.power_input()
@@ -1003,33 +1012,210 @@ class AdaptiveFilterNode(Node):
 
         if type(self.accum) != t:
             self.accum = any_to_match(self.accum, input_value)
-        elif self.app.torch_available and t == torch.Tensor:
+
+        if t is np.ndarray:
+            if self.accum.size != input_value.size:
+                self.accum = np.zeros_like(input_value)
+        elif self.app.torch_available and type(input_value) == torch.Tensor:
             if input_value.device != self.accum.device:
                 self.accum = any_to_match(self.accum, input_value)
+            if self.accum.size() != input_value.size():
+                self.accum = torch.zeros_like(input_value)
 
-        if self.app.torch_available and t == torch.Tensor:
-            offset = (input_value - self.accum) / self.range()
-            offset = offset.sum().item()
-        elif t == np.ndarray:
-            offset = (input_value - self.accum) / self.range()
-            offset = offset.sum().item()
-        else:
-            offset = (input_value - self.accum) / self.range()
+        offset = abs((input_value - self.accum) / self.range())
+
+        if (self.app.torch_available and t == torch.Tensor) or t == np.ndarray:
+            offset = offset.mean().item()
 
         offset_smooth = self.offset_smoothing()
         self.offset_accum = self.offset_accum * offset_smooth + offset * (1.0 - offset_smooth)
 
-        degree = pow(abs(offset), self.power)
+        degree = pow(abs(self.offset_accum), self.power)
         if degree < 0:
             degree = 0
         elif degree > self.base_degree():
             degree = self.base_degree()
+
         adapt_smooth = self.adaption_smoothing()
         self.degree = self.degree * adapt_smooth + degree * (1.0 - adapt_smooth)
 
-        self.accum = self.accum * (1.0 - self.degree) + input_value * self.degree + self.offset_accum
-
+        self.accum = self.accum * (1.0 - self.degree) + input_value * self.degree
+        self.current_degree_out.send(self.degree)
         self.output.send(self.accum)
+
+
+# N.B. should this filter have a noise band (have exponential behaviour start above the noise band, so that we have more flexibility
+# in both supressing noise and in responding to substantive movement
+
+class AdaptiveQuaternionFilterNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = AdaptiveQuaternionFilterNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.power = self.arg_as_float(default_value=1.0)
+        if self.power < 0.0:
+            self.power = 0.0
+        self.degree = 0.9
+        self.accum = 0.0
+        self.offset_accum = 0.0
+
+        self.input = self.add_input('in', triggers_execution=True)
+        self.power_input = self.add_input('power', widget_type='drag_float', min=0.0, default_value=self.power, callback=self.change_power)
+        self.power_input.widget.speed = .01
+        self.noise_floor_input = self.add_input('noise floor', widget_type='drag_float', min=0.0, default_value=0.0)
+        self.base_degree = self.add_input('responsiveness', widget_type='drag_float', min=0.0, max=1.0, default_value=0.05)
+        self.base_degree.widget.speed = .01
+        self.base_degree.widget.speed = .01
+        self.range = self.add_input('signal range', widget_type='drag_float', min=0.0001, default_value=0.1)
+        self.adaption_smoothing = self.add_input('smooth response', widget_type='drag_float', min=0.0, default_value=0.5)
+        self.offset_smoothing = self.add_input('offset response', widget_type='drag_float', min=0.0, default_value=0.5)
+        self.reset_button = self.add_input('reset response', widget_type='button', callback=self.reset)
+        self.current_degree_out = self.add_output('degree out')
+        self.output = self.add_output('out')
+
+    def reset(self):
+        self.accum = 0
+
+    def change_power(self):
+        self.power = self.power_input()
+        if self.power < 0:
+            self.power = 0
+
+    def execute(self):
+        input_value = self.input.get_data()
+        t = type(input_value)
+        if t not in [torch.Tensor, np.ndarray]:
+            if self.app.torch_available:
+                input_value = any_to_tensor(input_value)
+            else:
+                input_value = any_to_array(input_value)
+            t = type(input_value)
+
+        if type(self.accum) != t:
+            self.accum = any_to_match(self.accum, input_value)
+
+        if t is np.ndarray:
+            if self.accum.size != input_value.size:
+                self.accum = np.zeros_like(input_value)
+        elif self.app.torch_available and type(input_value) == torch.Tensor:
+            if input_value.device != self.accum.device:
+                self.accum = any_to_match(self.accum, input_value)
+            if self.accum.size() != input_value.size():
+                self.accum = torch.zeros_like(input_value)
+
+        offset = abs((input_value - self.accum) / self.range())
+        noise_floor = self.noise_floor_input()
+        if (self.app.torch_available and t == torch.Tensor) or t == np.ndarray:
+            offset = offset.mean(axis=-1)
+
+        offset_smooth = self.offset_smoothing()
+        self.offset_accum = self.offset_accum * offset_smooth + offset * (1.0 - offset_smooth)
+        offset_above_floor = self.offset_accum - noise_floor
+        if t is np.ndarray:
+            offset_above_floor = np.maximum(offset_above_floor, 0.0)
+        else:
+            zeros = torch.zeros(1)
+            offset_above_floor = offset_above_floor.maximum(zeros).unsqueeze(-1)
+
+        degree = 1.0 - pow(abs(self.offset_accum), self.power)
+        if t is np.ndarray:
+            degree = np.clip(degree, 0.0, self.base_degree())
+        else:
+            base_degree = torch.tensor(self.base_degree())
+            zeros = torch.zeros_like(base_degree)
+            degree = degree.clamp(zeros, base_degree).unsqueeze(-1)
+
+        adapt_smooth = self.adaption_smoothing()
+        self.degree = self.degree * adapt_smooth + degree * (1.0 - adapt_smooth)
+
+        self.accum = self.accum * self.degree + input_value * (1.0 - self.degree)
+        if type(self.accum) is torch.tensor:
+            self.accum = self.accum / torch.norm(self.accum)
+        elif type(self.accum) is np.ndarray:
+            self.accum = self.accum / np.linalg.norm(self.accum)
+        self.current_degree_out.send(self.degree)
+        self.output.send(self.accum)
+
+
+
+
+# !!! really bad idea!
+class KineticFilterNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = KineticFilterNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.max_delta_acceleration = 0.001
+        self.acceleration = 0
+        self.velocity = 0
+        self.position = 0
+
+        self.input = self.add_input('in', triggers_execution=True)
+        self.reset = self.add_input('reset', widget_type='button', callback=self.reset)
+        self.max_delta_accel_input = self.add_input('max delta accel', widget_type='drag_float', min=0.0, default_value=self.max_delta_acceleration, callback=self.filter_changed)
+        self.max_delta_accel_input.widget.speed = .001
+        self.max_acceleration_input = self.add_input('max accel', widget_type='drag_float', min=0.0, default_value=.1, callback=self.filter_changed)
+        self.max_velocity_input = self.add_input('max velocity', widget_type='drag_float', min=0.0, default_value=1,
+                                                     callback=self.filter_changed)
+
+        self.accel_output = self.add_output('accel out')
+        self.velocity_output = self.add_output('velocity out')
+        self.position_output = self.add_output('position out')
+
+    def reset(self):
+        self.position = 0
+        self.velocity = 0
+        self.acceleration = 0
+
+    def filter_changed(self):
+        self.max_delta_acceleration = self.max_delta_accel_input()
+        if self.max_delta_acceleration < 0:
+            self.max_delta_acceleration = 0
+        self.max_acceleration = self.max_acceleration_input()
+        if self.max_acceleration < 0:
+            self.max_acceleration = 0
+        self.max_velocity = self.max_velocity_input()
+        if self.max_velocity < 0:
+            self.max_velocity = 0
+
+    def step(self, input_value):
+        position_step = input_value - self.position
+        predicted_step = self.velocity + self.acceleration
+
+        diff = position_step - predicted_step
+
+        if diff > self.max_delta_acceleration:
+            self.acceleration += self.max_delta_acceleration
+        elif diff < -self.max_delta_acceleration:
+            self.acceleration -= self.max_delta_acceleration
+        else:
+            self.acceleration += diff
+
+        if self.acceleration > self.max_acceleration:
+            self.acceleration = self.max_acceleration
+        elif self.acceleration < -self.max_acceleration:
+            self.acceleration = -self.max_acceleration
+        self.velocity += self.acceleration
+        if self.velocity > self.max_velocity:
+            self.velocity = self.max_velocity
+        elif self.velocity < -self.max_velocity:
+            self.velocity = -self.max_velocity
+        self.position += self.velocity
+
+    def execute(self):
+        input_value = self.input.get_data()
+        self.step(input_value)
+        self.accel_output.send(self.acceleration)
+        self.velocity_output.send(self.velocity)
+        self.position_output.send(self.position)
 
 
 class SampleHoldNode(Node):
@@ -1408,23 +1594,23 @@ class IIR2Filter():
             # The for loop creates a chain of second order filters according to the order desired.
             # If a 10th order filter is to be created the loop will iterate 5 times to create a chain of
             # 5 second order filters.
-            
+
             for i in range(len(self.coefficients)):
                 self.fir_coefficients = self.coefficients[i][0:3]
                 self.iir_coefficients = self.coefficients[i][3:6]
 
                 # Calculating the accumulated input consisting of the input and the values coming from
                 # the feedback loops (delay buffers weighed by the IIR coefficients).
-                
+
                 self.acc_input[i] = (self.input + self.buffer1[i] * -self.iir_coefficients[1] + self.buffer2[i] * -self.iir_coefficients[2])
 
                 # Calculating the accumulated output provided by the accumulated input and the values from the delay
                 # buffers weighed by the FIR coefficients.
-                
+
                 self.acc_output[i] = (self.acc_input[i] * self.fir_coefficients[0] + self.buffer1[i] * self.fir_coefficients[1] + self.buffer2[i] * self.fir_coefficients[2])
 
                 # Shifting the values on the delay line: acc_input -> buffer1 -> buffer2
-                
+
                 self.buffer2[i] = self.buffer1[i]
                 self.buffer1[i] = self.acc_input[i]
 
@@ -1462,3 +1648,74 @@ class IIR2Filter():
 
         return self.coefficients
 
+class KalmanFilter(object):
+    def __init__(self, F = None, B = None, H = None, Q = None, R = None, P = None, x0 = None):
+
+        if(F is None or H is None):
+            raise ValueError("Set proper system dynamics.")
+
+        self.n = F.shape[1]
+        self.m = H.shape[1]
+
+        self.F = F  # state matrix
+        self.H = H  # measurement matrix
+        self.B = 0 if B is None else B
+        self.Q = np.eye(self.n) if Q is None else Q  # process noise covariant matrix
+        self.R = np.eye(self.n) if R is None else R  # measurement noise covariant matrix
+        self.P = np.eye(self.n) if P is None else P
+        self.x = np.zeros((self.n, 1)) if x0 is None else x0
+
+    def predict(self, u = 0):
+        self.x = np.dot(self.F, self.x) + np.dot(self.B, u)
+        self.P = np.dot(np.dot(self.F, self.P), self.F.T) + self.Q
+        return self.x
+
+    def update(self, z):
+        y = z - np.dot(self.H, self.x)
+        S = self.R + np.dot(self.H, np.dot(self.P, self.H.T))
+        self.K = np.dot(np.dot(self.P, self.H.T), np.linalg.inv(S))
+        self.x = self.x + np.dot(self.K, y)
+        I = np.eye(self.n)
+        self.P = np.dot(np.dot(I - np.dot(self.K, self.H), self.P),
+        	(I - np.dot(self.K, self.H)).T) + np.dot(np.dot(self.K, self.R), self.K.T)
+
+
+class KalmanFilterNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = KalmanFilterNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        dt = 1.0 / 60
+        F = np.array([[1, dt, 0], [0, 1, dt], [0, 0, 1]])
+        self.H = np.array([1, 0, 0]).reshape(1, 3)
+        Q = np.array([[0.05, 0.05, 0.0], [0.05, 0.05, 0.0], [0.0, 0.0, 0.0]])
+        R = np.array([0.5]).reshape(1, 1)
+
+        self.kalman_filter = KalmanFilter(F=F, H=self.H, Q=Q, R=R)
+
+        self.input = self.add_input('in', triggers_execution=True)
+        self.process_noise = self.add_input('process noise', callback=self.process_noise_changed)
+        self.measurement_noise = self.add_input('measurement noise', callback=self.measurement_noise_changed)
+
+        self.gain_output = self.add_output('kalman gain')
+        self.output = self.add_output('out')
+
+    def process_noise_changed(self):
+        p_n = self.process_noise()
+        self.kalman_filter.Q = any_to_array(p_n)
+
+    def measurement_noise_changed(self):
+        m_n = self.measurement_noise()
+        self.kalman_filter.R = np.array([any_to_float(m_n)]).reshape(1, 1)
+
+    def execute(self):
+        z = self.input.get_data()
+        prediction = np.dot(self.H, self.kalman_filter.predict())[0]
+        self.kalman_filter.update(z)
+        self.gain_output.send(self.kalman_filter.K)
+
+        self.output.send(prediction)

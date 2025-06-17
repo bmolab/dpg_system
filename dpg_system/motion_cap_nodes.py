@@ -167,9 +167,10 @@ class MoCapTakeNode(MoCapNode):
                 else:
                     self.position_buffer = None
                 self.label_buffer = None
-                self.frames = self.record_frame_count
+                self.frames = self.quat_buffer.shape[0]
                 self.current_frame = 0
                 self.frame_input.set(self.current_frame)
+
             self.recording = False
 
     def save_sequence(self):
@@ -216,7 +217,7 @@ class MoCapTakeNode(MoCapNode):
 
     def start_stop_streaming(self):
         if self.on_off():
-            if not self.streaming and self.load_path() != '':
+            if not self.streaming and self.frames > 0:
                 self.add_frame_task()
                 self.streaming = True
         else:
@@ -276,14 +277,15 @@ class MoCapTakeNode(MoCapNode):
         if data < self.frames:
             self.current_frame = data
             self.quaternions_out.set_value(self.quat_buffer[self.current_frame])
-            self.positions_out.set_value(self.position_buffer[self.current_frame])
-            self.labels_out.set_value(self.label_buffer[self.current_frame])
+            if self.position_buffer is not None:
+                self.positions_out.set_value(self.position_buffer[self.current_frame])
+            if self.label_buffer is not None:
+                self.labels_out.set_value(self.label_buffer[self.current_frame])
             self.send_all()
 
     def execute(self):
         if self.frame_input.fresh_input:
             data = self.frame_input()
-
             # handled, do_output = self.check_for_messages(data)
             # if not handled:
             t = type(data)
@@ -510,6 +512,7 @@ class MoCapGLBody(MoCapNode):
         self.absolute_quats_input = self.add_option('absolute quats', widget_type='checkbox')
         self.calc_diff_quats = self.add_option('calc_diff_quats', widget_type='checkbox', default_value=False, callback=self.set_calc_diff)
         self.skeleton_only = self.add_option('skeleton_only', widget_type='checkbox', default_value=False)
+        self.joint_axes = self.add_option('joint_axes', widget_type='checkbox', default_value=False)
         self.show_joint_spheres = self.add_option('show joint motion', widget_type='checkbox', default_value=self.show_joint_activity)
         self.joint_indicator = self.add_option('joint indicator', widget_type='combo', default_value='sphere')
         self.joint_indicator.widget.combo_items = ['sphere', 'disk']
@@ -710,7 +713,7 @@ class MoCapGLBody(MoCapNode):
             if self.absolute_quats_input():
                 self.body.draw_absolute_quats(self.show_joint_spheres(), self.skeleton_only())
             else:
-                self.body.draw(self.show_joint_spheres(), self.skeleton_only())
+                self.body.draw(self.show_joint_spheres(), self.skeleton_only(), self.joint_axes())
             self.gl_chain_output.send('draw')
             # self.external_joint_data = None
 
