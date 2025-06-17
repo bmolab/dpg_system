@@ -332,7 +332,7 @@ class PresetsNode(Node):
     def preset_click(self):
         if PresetsNode.restoring_patch:
             return
-        if dpg.is_key_down(dpg.mvKey_Shift):
+        if dpg.is_key_down(dpg.mvKey_RShift) or dpg.is_key_down(dpg.mvKey_LShift):
             self.save_preset()
         else:
             self.load_preset()
