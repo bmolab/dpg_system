@@ -147,6 +147,7 @@ class MoCapTakeNode(MoCapNode):
         self.load_path = self.add_option('path', widget_type='text_input', default_value=load_path, callback=self.load_from_load_path)
         self.message_handlers['load'] = self.load_take_message
         self.new_positions = False
+        self.load_take_task = -1
 
     def start_recording(self):
         if self.streaming:
@@ -195,6 +196,7 @@ class MoCapTakeNode(MoCapNode):
             print('no file chosen')
         if sender is not None:
             dpg.delete_item(sender)
+        Node.app.active_widget = -1
 
     def positions_received(self):
         self.new_positions = True
@@ -297,29 +299,45 @@ class MoCapTakeNode(MoCapNode):
                     self.labels_out.set_value(self.label_buffer[self.current_frame])
                     self.send_all()
 
-    def load_take_message(self, message='', args=[]):
-        if len(args) > 0:
-            path = any_to_string(args[0])
-            self.load_take_from_npz(path)
-        else:
-            self.load_take(args)
+    def load_take_message(self, message='', args=None):
+        if args is not None:
+            if len(args) > 0:
+                path = any_to_string(args[0])
+                self.load_take_from_npz(path)
+            else:
+                self.load_take(args)
 
     def load_take(self, args=None):
         Node.app.active_widget = 1
         with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
-                             user_data=self, callback=self.load_npz_callback, tag="file_dialog_id"):
+                             user_data=self, callback=self.load_npz_callback, cancel_callback=self.load_take_cancel_callback) as self.load_take_task:
+            print(self.load_take_task)
             dpg.add_file_extension(".npz")
+        print('leaving load_take')
 
     def load_npz_callback(self, sender, app_data):
         # print('self=', self, 'sender=', sender, 'app_data=', app_data)
-        if 'file_path_name' in app_data:
+        print('callback')
+        if app_data is not None and 'file_path_name' in app_data:
             load_path = app_data['file_path_name']
             if load_path != '':
-                self.load_path.set(load_path)
-                self.load_take_from_npz(load_path)
+                try:
+                    self.load_path.set(load_path)
+                    self.load_take_from_npz(load_path)
+                except Exception as e:
+                    print('load_npz_callback: error loading take file:', e, load_path)
         else:
             print('no file chosen')
-        dpg.delete_item(sender)
+        if sender is not None:
+            print('deleting', self.load_take_task)
+            dpg.delete_item(self.load_take_task)
+        Node.app.active_widget = -1
+
+    def load_take_cancel_callback(self, sender, app_data):
+        print('Cancel was clicked.')
+        if sender is not None:
+            print('deleting', self.load_take_task)
+            dpg.delete_item(self.load_take_task)
 
     # def load_take_from_pt_file(self, path):
     #     take_container = torch.jit.load(path)

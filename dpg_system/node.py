@@ -910,7 +910,8 @@ class PropertyWidget:
             self.set(val)
 
     def save(self, widget_container: Dict[str, Any]) -> None:
-        widget_container['name'] = self._label
+        property_label = self._label.strip('#')
+        widget_container['name'] = property_label
         value = dpg.get_value(self.uuid)
         widget_container['value'] = value
         value_type = type(value).__name__
@@ -2053,12 +2054,13 @@ class Node:
                 property_container = properties_container[property_index]
                 if 'name' in property_container:
                     property_label = property_container['name'].strip('#')
+                    org_label = property_container['name']
                     found = False
 
                     for input in self.inputs:
                         if input.widget is not None:
                             a_label = dpg.get_item_label(input.widget.uuid)
-                            if a_label == property_label:
+                            if a_label == property_label or a_label == org_label:
                                 if 'value' in property_container:
                                     value = property_container['value']
                                     if input.widget.widget != 'button':

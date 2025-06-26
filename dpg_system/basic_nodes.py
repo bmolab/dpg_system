@@ -27,6 +27,7 @@ def register_basic_nodes():
     # Node.app.register_node("string", StringNode.factory)
     # Node.app.register_node("list", ListNode.factory)
     Node.app.register_node("counter", CounterNode.factory)
+    Node.app.register_node("range_counter", RangeCounterNode.factory)
     Node.app.register_node('coll', CollectionNode.factory)
     Node.app.register_node('dict', CollectionNode.factory)
     Node.app.register_node("combine", CombineNode.factory)
@@ -83,6 +84,22 @@ def register_basic_nodes():
     Node.app.register_node('text_editor', TextFileNode.factory)
     Node.app.register_node('clamp', ClampNode.factory)
     Node.app.register_node('save', SaveNode.factory)
+    Node.app.register_node('active_widget', ActiveWidgetNode.factory)
+
+
+class ActiveWidgetNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ActiveWidgetNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.active_widget_property = self.add_property('active_widget', widget_type='drag_int')
+        self.add_frame_task()
+
+    def frame_task(self):
+        self.active_widget_property.set(self.app.active_widget)
 
 
 # DeferNode -- delays received input until next frame
@@ -625,7 +642,7 @@ class CounterNode(Node):
         super().__init__(label, data, args)
 
         self.current_value = 0
-
+        self.carry_state = 0
         self.max_count = self.arg_as_int(default_value=255, index=0)
         self.step = self.arg_as_int(default_value=1, index=1)
 
@@ -665,17 +682,93 @@ class CounterNode(Node):
         # if not handled:
         self.current_value += self.step
         if self.current_value < 0:
-            self.carry_output.set_value(-1)
+            self.carry_state = -1
+            self.carry_output.send(self.carry_state)
             self.current_value += self.max_count
             self.current_value &= self.max_count
         elif self.current_value >= self.max_count:
-            self.carry_output.set_value(0)
+            self.carry_state = 1
+            self.carry_output.send(self.carry_state)
             self.current_value %= self.max_count
-        elif self.current_value >= self.max_count - self.step:
-            self.carry_output.set_value(1)
+        elif self.carry_state != 0:
+            self.carry_state = 0
+            self.carry_output.send(0)
 
-        self.output.set_value(self.current_value)
-        self.send_all()
+        self.output.send(self.current_value)
+
+
+class RangeCounterNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = RangeCounterNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.current_value = 0
+        self.carry_state = 0
+
+        self.start_count = self.arg_as_int(default_value=0, index=0)
+
+        self.end_count = self.arg_as_int(default_value=255, index=1)
+        self.step = self.arg_as_int(default_value=1, index=2)
+
+        self.input = self.add_input("input", triggers_execution=True, trigger_button=True)
+        self.input.bang_repeats_previous = False
+        self.start_count_input = self.add_int_input('start', widget_type='drag_int', default_value=self.start_count,
+                                            callback=self.update_start_count_from_widget)
+
+        self.end_count_input = self.add_int_input('end', widget_type='drag_int', default_value=self.end_count, callback=self.update_end_count_from_widget)
+        self.step_input = self.add_int_input('step', widget_type='drag_int', default_value=self.step, callback=self.update_step_from_widget)
+        self.output = self.add_output("count out")
+        self.carry_output = self.add_output("carry out")
+        self.carry_output.output_always = False
+
+        self.message_handlers['reset'] = self.reset_message
+        self.message_handlers['set'] = self.set_message
+        # self.message_handlers['step'] = self.step_message
+
+    # widget callbacks
+    def update_start_count_from_widget(self, input=None):
+        self.start_count = self.start_count_input()
+
+    def update_end_count_from_widget(self, input=None):
+        self.end_count = self.end_count_input()
+
+    def update_step_from_widget(self, input=None):
+        self.step = self.step_input()
+
+    # messages
+    def reset_message(self, message='', message_data=[]):
+        self.current_value = 0
+
+    def set_message(self, message='', message_data=[]):
+        self.current_value = any_to_int(message_data[0])
+
+    # def step_message(self, message='', message_data=[]):
+    #     self.step = any_to_int(message_data[0])
+
+    def execute(self):
+        in_data = self.input()
+        # handled, do_output = self.check_for_messages(in_data)
+        #
+        # if not handled:
+        self.current_value += self.step
+        if self.current_value < self.start_count:
+            gap = self.end_count - self.start_count
+            self.current_value += gap
+            self.carry_state = -1
+            self.carry_output.set_value(self.carry_state)
+        elif self.current_value >= self.end_count:
+            gap = self.end_count - self.start_count
+            self.current_value -= gap
+            self.carry_state = 1
+            self.carry_output.send(self.carry_state)
+        elif self.carry_state != 0:
+            self.carry_state = 0
+            self.carry_output.send(self.carry_state)
+        self.output.send(self.current_value)
 
 
 class GateNode(Node):
@@ -1725,6 +1818,8 @@ class CombineFIFONode(Node):
         def execute(self):
             empty_phrase = False
             self.lock.acquire(blocking=True)
+
+            # note: TODO: if progress chunk is getting too long, split...
             if self.progress_input.fresh_input:
                 progress = any_to_string(self.progress_input())
                 if progress != '' and progress != ' ':
@@ -1740,28 +1835,32 @@ class CombineFIFONode(Node):
                         return
 
             if self.input.fresh_input:
+                # TODO: add way of dumping older phrases if the leading phrases are too long.
+                # TODO: keep track of overall output length. If too large, drop out older phrases until we are at a good length
                 phrase = any_to_string(self.input())
                 self.last_was_progress = False
                 self.advance_age()
 
+                # split super long phrases into sub-phrases
                 length = len(phrase)
                 if length > self.length_threshold_property():
                     sub_phrases = re.split(r'[\!\?\.\:\;\,]', phrase)
                 else:
                     sub_phrases = phrase.split('.')
 
+                # flag situations where a period potentially splitting a phrase is just part of Mr. Dr. Mrs. Ms. St. etc
                 joiners = []
                 for index, sp in enumerate(sub_phrases):
                     if len(sp) == 1 and sp[0] == ' ':
                         sp = ''
                     if len(sp) > 0:
-                        if len(sp) > 1 and sp[-1] == 'r':
+                        if len(sp) > 1 and sp[-1] == 'r':   # Do not split at the period after Dr or Mr
                             if sp[-2] in ['D', 'M']:
                                 joiners.append(index)
-                        elif len(sp) > 2 and sp[-1] == 's':
+                        elif len(sp) > 2 and sp[-1] == 's': # Do not split at the period after Mrs
                             if sp[-2] == 'r' and sp[-3] == 'M':
                                 joiners.append(index)
-                        if len(sp) > 1 and sp[-1] == 't':
+                        if len(sp) > 1 and sp[-1] == 't':   # Do not split at the period after St
                             if sp[-2] == 'S':
                                 joiners.append(index)
 
@@ -1772,11 +1871,11 @@ class CombineFIFONode(Node):
                     if len(p) == 1 and p[0] == ' ':
                         p = ''
                     if len(p) > 0:
-                        if join_next and len(adjusted_phrases) > 0:
+                        if join_next and len(adjusted_phrases) > 0:   # join sub phrases split by periods identified above
                             adjusted_phrases[-1] = adjusted_phrases[-1] + p + '.'
                             join_next = False
                         else:
-                            if p[-1] not in ['.', '?', '!']:
+                            if p[-1] not in ['.', '?', '!']: # make sure there is at least a terminating period at the end of a sub phrase
                                 adjusted_phrases.append(p + '.')
                             else:
                                 adjusted_phrases.append(p)
@@ -1784,6 +1883,7 @@ class CombineFIFONode(Node):
                         if index in joiners:
                             join_next = True
 
+                # add sub-phrases to the fifo and shift pointer
                 for p in adjusted_phrases:
                     self.combine_list[self.pointer] = p
                     self.age[self.pointer] = 1.0
@@ -1795,6 +1895,7 @@ class CombineFIFONode(Node):
             output_string = ''
             pointer = self.pointer
 
+            # if the last thing received was 'progress', we will replace the progress string with the phrase(s)
             if self.last_was_progress or empty_phrase:
                 pointer = (self.pointer - 1) % self.count
 

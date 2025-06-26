@@ -1525,10 +1525,14 @@ class App:
             if self.get_current_editor() is not None:
                 self.get_current_editor().load(path)
                 return
-        self.active_widget = 1
-        self.fresh_patcher = fresh_patcher
-        with dpg.file_dialog(modal=True, default_path='patches', directory_selector=False, show=True, height=400, width=800, callback=load_patches_callback, cancel_callback=cancel_callback, tag="file_dialog_id"):
-            dpg.add_file_extension(".json")
+        try:
+            self.active_widget = 1
+            self.fresh_patcher = fresh_patcher
+            with dpg.file_dialog(modal=True, default_path='patches', directory_selector=False, show=True, height=400, width=800, callback=load_patches_callback, cancel_callback=cancel_callback, tag="file_dialog_id"):
+                dpg.add_file_extension(".json")
+        except Exception as e:
+            print('error loading file')
+        self.active_widget = -1
 
 
     def load_example(self):
