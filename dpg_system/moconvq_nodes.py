@@ -690,7 +690,7 @@ class MoConVQGLNode(GLQuadricNode):
         clipped = False
         if self.clip():
             clipped_size = max(min(size, self.clip_max()), self.clip_min())
-            clipped = size == clipped_size
+            clipped = size > self.clip_max() or size < self.clip_min()
             size = clipped_size
         if self.norm():
             size = (size - self.norm_min())  / (self.norm_max() - self.norm_min()) if self.norm_min() != self.norm_max() else 0
@@ -705,7 +705,6 @@ class MoConVQGLNode(GLQuadricNode):
             moconvq_joint_name = self.shadow_moconv_map[shadow_joint_name] # Convert to mocoonvq joint name and then index
             moconvq_joint_index = self.moconvq_joint_to_index_map[moconvq_joint_name]
             size, clipped = self.vector_to_sphere_size(data[moconvq_joint_index])
-            print(size)
             glDisable(GL_LIGHTING)
             if clipped:
                 glColor4f(1.0, 0.0, 0.0, 0.5) # set red
