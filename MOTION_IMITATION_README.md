@@ -41,6 +41,22 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/miniconda3/lib
 ```
 This has to deal with the gcc and g++ versions for ubuntu. 20.04's default gcc version only include up to GLIBCXX_3.4.39.
 
+# SMPL Data Filess
+Download smpl and smplh files model and put it in the following format in the folder of the current project (dpg_system directory) <br> 
+
+data/ <br>
+&emsp; smpl/ <br>
+&emsp;&emsp;&emsp;     female/ <br>
+&emsp;&emsp;&emsp;&emsp;model.pkl <br>
+&emsp;&emsp;&emsp;male/ <br>
+&emsp;&emsp;&emsp;&emsp;model.kl <br>
+&emsp;&emsp;&emsp;... <br>
+    &emsp;&emsp;smplh/ <br>
+&emsp;&emsp;&emsp;female <br>
+&emsp;&emsp;&emsp;&emsp;model.pkl <br>
+&emsp;&emsp;&emsp; ...
+
+
 # Running Moconvq DPG System
 ```
 conda activate jim-dpg-moconvq
@@ -58,7 +74,7 @@ Parent Folder/ <br>
 # Files
 
 Main content for moconvq with dpg system are all in dpg_system/moconvq_nodes.py. dpg_system/pose_translation_defs.py defines values for pose translations. moconvq_shadow_node.py is a runnable file for visualizing shadow of moconvq on linux devices.
-
+fd
 # Nodes
 
 Nodes that were created for the integration of MoConVQ are as follows:
