@@ -41,6 +41,14 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/miniconda3/lib
 ```
 This has to deal with the gcc and g++ versions for ubuntu. 20.04's default gcc version only include up to GLIBCXX_3.4.39.
 
+# Running Moconvq DPG System
+```
+conda activate jim-dpg-moconvq
+```
+```
+python ./moconvq_shadow_node.py
+```
+
 # File Structure Assumption
 
 Parent Folder/ <br>
