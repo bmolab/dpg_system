@@ -2714,18 +2714,18 @@ class PlaceholderNode(Node):
             new_node_args: List[str] = []
             if len(arg_string) > 0:
                 args = arg_string.split(' ')
-                new_node_args = [new_node_name] + args
+                new_node_args = [selection_name] + args
             else:
-                new_node_args = [new_node_name]
+                new_node_args = [selection_name]
             node_model = None
             found = False
             v = None
             action = False
             if new_node_args[0] in self.node_list:
                 found = True
-            elif selection_name in self.node_list:
-                new_node_args[0] = selection_name
-                found = True
+            # elif selection_name in self.node_list:
+            #     new_node_args[0] = selection_name
+            #     found = True
             if found:
                 if len(new_node_args) > 1:
                     Node.app.create_node_by_name(new_node_args[0], self, new_node_args[1:])
