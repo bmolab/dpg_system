@@ -219,12 +219,12 @@ class MoCapTakeNode(MoCapNode):
         if self.recording:
             if self.record_positions_input():
                 if self.new_positions:
-                    self.record_position_sequence.append(any_to_array(self.positions_input()))
+                    self.record_position_sequence.append(any_to_array(self.positions_input()).copy())
                     self.new_positions = False
                 else:
                     print('take: positions expected but not received')
                     return
-            self.record_quat_sequence.append(any_to_array(self.quaternions_input()))
+            self.record_quat_sequence.append(any_to_array(self.quaternions_input()).copy())
             self.record_frame_count = len(self.record_quat_sequence)
             self.frame_input.set(self.record_frame_count, propagate=False)
 
