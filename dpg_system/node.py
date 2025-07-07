@@ -478,6 +478,7 @@ class PropertyWidget:
         self.max = max
         self.combo_items = []
         self.callback = None
+        self.trigger_callback = None
         self.user_data = self
         self.tag = self.uuid
         self.horizontal = False
@@ -636,7 +637,6 @@ class PropertyWidget:
                 else:
                     max = 2**31 - 1
                     self.max = max
-
                 dpg.add_input_int(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node, default_value=self.default_value, step=self.step, min_value=min, max_value=max)
             elif self.widget == 'checkbox':
                 check = dpg.add_checkbox(label=self._label, tag=self.uuid, default_value=self.default_value, user_data=self)
@@ -671,7 +671,11 @@ class PropertyWidget:
                 dpg.set_item_callback(self.uuid, callback=lambda s, a, u: self.value_changed(a))
 
             if self.widget_has_trigger:
-                self.trigger_widget = dpg.add_button(label='', width=14, callback=self.trigger_value)
+                if self.trigger_callback is not None:
+                    self.trigger_widget = dpg.add_button(label='', width=14, callback=self.trigger_callback)
+                else:
+                    self.trigger_widget = dpg.add_button(label='', width=14, callback=self.trigger_value)
+
                 with dpg.theme() as item_theme:
                     with dpg.theme_component(dpg.mvAll):
                         dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
@@ -986,6 +990,7 @@ class NodeInput:
             self.widget = PropertyWidget(label, uuid=widget_uuid, node=node, widget_type=widget_type, width=widget_width, triggers_execution=triggers_execution, trigger_button=trigger_button, default_value=default_value, min=min, max=max)
             self.widget.input = self
         self.callback = None
+        self.trigger_callback = None
         self.user_data = None
         self.variable = None
         self.action = None
@@ -1058,7 +1063,10 @@ class NodeInput:
             if self.widget is None:
                 with dpg.group(horizontal=self.widget_has_trigger):
                     if self.widget_has_trigger:
-                        self.trigger_widget = dpg.add_button(label='', width=14, callback=self.trigger)
+                        if self.trigger_callback is not None:
+                            self.trigger_widget = dpg.add_button(label='', width=14, callback=self.trigger_callback)
+                        else:
+                            self.trigger_widget = dpg.add_button(label='', width=14, callback=self.trigger)
                         with dpg.theme() as item_theme:
                             with dpg.theme_component(dpg.mvAll):
                                 dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
@@ -1068,8 +1076,12 @@ class NodeInput:
             else:
                 if self.callback:
                     self.widget.callback = self.callback
-                    self.widget.user_data = self.user_data
+                if self.widget_has_trigger and self.trigger_callback is not None:
+                    self.widget.trigger_callback = self.trigger_callback
+                self.widget.user_data = self.user_data
                 self.widget.create()
+
+
 
     def set_default_value(self, data: Any) -> None:
         if self.widget is not None:
@@ -1078,6 +1090,12 @@ class NodeInput:
     def add_callback(self, callback: Callable, user_data: Optional[Any] = None) -> None:
         self.callback = callback
         self.user_data = user_data
+
+    def add_trigger_callback(self, callback: Callable, user_data: Optional[Any] = None) -> None:
+        self.trigger_callback = callback
+        self.user_data = user_data
+        if self.trigger_widget is not None:
+            self.trigger_widget.add_callback(callback, user_data)
 
     def __call__(self) -> Any:
         if self.fresh_input:
@@ -1653,20 +1671,21 @@ class Node:
                  widget_width: int = 80, triggers_execution: bool = False,
                  trigger_button: bool = False, default_value: Any = None,
                  min: Optional[float] = None, max: Optional[float] = None,
-                 callback: Optional[Callable] = None) -> 'NodeInput':
+                 callback: Optional[Callable] = None,
+                 trigger_callback: Optional[Callable] = None) -> 'NodeInput':
         new_input = NodeInput(label, uuid, self, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
-        # if widget_type == 'checkbox':
-        #     new_input.bang_repeats_previous = False
-        self.install_input(new_input, callback=callback)
+        self.install_input(new_input, callback=callback, trigger_callback=trigger_callback)
         return new_input
 
-    def install_input(self, new_input, callback):
+    def install_input(self, new_input, callback, trigger_callback=None):
         self.inputs.append(new_input)
         new_input.input_index = len(self.inputs) - 1
 
         self.ordered_elements.append(new_input)
         if callback is not None:
             new_input.add_callback(callback=callback, user_data=self)
+        if trigger_callback is not None:
+            new_input.add_trigger_callback(callback=trigger_callback, user_data=self)
         if new_input.widget is not None:
             self.property_registery[new_input.get_label()] = new_input
             self.message_handlers[new_input.get_label()] = self.property_message
@@ -1793,14 +1812,17 @@ class Node:
 
     def add_handler_to_widgets(self):
         for input_ in self.inputs:
-            if input_.widget and input_.widget.widget not in['checkbox', 'button', 'combo', 'knob_float', 'knob_int']:
+            if input_.widget and input_.widget.widget not in['checkbox', 'button', 'combo', 'knob_float', 'knob_int', 'label']:
                 dpg.bind_item_handler_registry(input_.widget.uuid, "widget handler")
+
         for property_ in self.properties:
             if property_.widget.widget not in ['checkbox', 'button', 'spacer', 'label']:
                 dpg.bind_item_handler_registry(property_.widget.uuid, "widget handler")
+
         for option in self.options:
             if option.widget.widget not in ['checkbox', 'button', 'spacer', 'label']:
                 dpg.bind_item_handler_registry(option.widget.uuid, "widget handler")
+
 
     def value_changed(self, widget_uuid, force=False):
         pass

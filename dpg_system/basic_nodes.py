@@ -30,6 +30,9 @@ def register_basic_nodes():
     Node.app.register_node("range_counter", RangeCounterNode.factory)
     Node.app.register_node('coll', CollectionNode.factory)
     Node.app.register_node('dict', CollectionNode.factory)
+    Node.app.register_node('construct_dict', ConstructDictNode.factory)
+    Node.app.register_node('gather_to_dict', ConstructDictNode.factory)
+    Node.app.register_node('dict_extract', DictExtractNode.factory)
     Node.app.register_node("combine", CombineNode.factory)
     Node.app.register_node("kombine", CombineNode.factory)
     Node.app.register_node("concat", ConcatenateNode.factory)
@@ -85,6 +88,7 @@ def register_basic_nodes():
     Node.app.register_node('clamp', ClampNode.factory)
     Node.app.register_node('save', SaveNode.factory)
     Node.app.register_node('active_widget', ActiveWidgetNode.factory)
+    Node.app.register_node('pass_with_triggers', TriggerBeforeAndAfterNode.factory)
 
 
 class ActiveWidgetNode(Node):
@@ -100,6 +104,26 @@ class ActiveWidgetNode(Node):
 
     def frame_task(self):
         self.active_widget_property.set(self.app.active_widget)
+
+
+class TriggerBeforeAndAfterNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TriggerBeforeAndAfterNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('input', triggers_execution=True)
+        self.post_trigger_output = self.add_output('post_trigger')
+        self.output = self.add_output('pass input')
+        self.pre_trigger_output = self.add_output('pre_trigger')
+
+    def execute(self):
+        data = self.input()
+        self.pre_trigger_output.send('bang')
+        self.output.send(data)
+        self.post_trigger_output.send('bang')
 
 
 # DeferNode -- delays received input until next frame
@@ -1960,7 +1984,7 @@ class TypeNode(Node):
             elif t == int:
                 self.type_property.set('int')
             elif t == str:
-                if input == 'bang':
+                if input_ == 'bang':
                     self.type_property.set('bang')
                 else:
                     self.type_property.set('string')
@@ -2011,7 +2035,7 @@ class TypeNode(Node):
             elif t == int:
                 self.type_property.set('int')
             elif t == str:
-                if input == 'bang':
+                if input_ == 'bang':
                     self.type_property.set('bang')
                 else:
                     self.type_property.set('string')
@@ -2046,7 +2070,9 @@ class TypeNode(Node):
                         'array[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + ', ' + str(
                             shape[3]) + '] ' + comp)
             elif t == dict:
-                self.type_property.set('dict[' + str(len(input_)) + ']')
+                keys = list(input_.keys())
+                self.type_property.set('dict' + str(keys))
+
             elif self.app.torch_available and t == torch.Tensor:
                 shape = input_.shape
                 if input_.dtype == torch.float:
@@ -2390,6 +2416,62 @@ def load_coll_callback(sender, app_data):
     Node.app.active_widget = -1
 
 
+def cancel_coll_load_callback(sender, app_data):
+    if sender is not None:
+        dpg.delete_item(sender)
+    Node.app.active_widget = -1
+
+class DictExtractNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = DictExtractNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('dict in', triggers_execution=True)
+        self.extract_keys = []
+        for arg in args:
+            if type(arg) is str:
+                self.extract_keys.append(arg)
+        self.output_count = len(self.extract_keys)
+
+        for key in self.extract_keys:
+            self.add_output(key)
+
+    def execute(self):
+        received_dict = self.input()
+        for index, key in enumerate(self.extract_keys):
+            if key in received_dict:
+                self.outputs[index].send(received_dict[key])
+
+
+class ConstructDictNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ConstructDictNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('send dict', widget_type='button', triggers_execution=True)
+        self.data_input = self.add_input('labelled data in', callback=self.received_data)
+        self.dict_output = self.add_output('dict out')
+        self.input_keys = []
+        self.dict = {}
+
+    def received_data(self):
+        incoming = self.data_input()
+        if type(incoming) is list:
+            key = incoming[0]
+            value = incoming[1:]
+            self.dict[key] = value
+
+    def execute(self):
+        self.dict_output.send(self.dict)
+        self.dict = {}
+
+
 class CollectionNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -2430,7 +2512,7 @@ class CollectionNode(Node):
             self.output.send(out_list)
 
     def save_dialog(self):
-        with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, user_data=self, callback=save_coll_callback,
+        with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, user_data=self, callback=save_coll_callback, cancel_callback=cancel_coll_load_callback,
                              tag="coll_dialog_id"):
             dpg.add_file_extension(".json")
 
@@ -2453,7 +2535,7 @@ class CollectionNode(Node):
             self.collection = container['collection']
 
     def load_dialog(self):
-        with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, user_data=self, callback=load_coll_callback,
+        with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, user_data=self, callback=load_coll_callback, cancel_callback=cancel_coll_load_callback,
                              tag="coll_dialog_id"):
             dpg.add_file_extension(".json")
 
@@ -2623,7 +2705,7 @@ class TextFileNode(Node):
             self.load_data(self.file_name_property())
 
     def save_dialog(self):
-        with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, user_data=self, callback=save_text_file_callback,
+        with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, user_data=self, callback=save_text_file_callback, cancel_callback=cancel_textfile_callback,
                              tag="text_dialog_id"):
             dpg.add_file_extension(".txt")
 
@@ -2642,7 +2724,7 @@ class TextFileNode(Node):
             self.save_dialog()
 
     def load_dialog(self):
-        with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, user_data=self, callback=load_text_file_callback,
+        with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, user_data=self, callback=load_text_file_callback, cancel_callback=cancel_textfile_callback,
                              tag="text_dialog_id"):
             dpg.add_file_extension(".txt")
 
@@ -2681,6 +2763,11 @@ class TextFileNode(Node):
         else:
             data = any_to_string(self.text_editor(), strip_returns=False)
             self.text_contents = data
+
+def cancel_textfile_callback(sender, app_data):
+    if sender is not None:
+        dpg.delete_item(sender)
+    Node.app.active_widget = -1
 
 
 class RepeatNode(Node):

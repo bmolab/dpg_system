@@ -16,6 +16,7 @@ def register_motion_cap_nodes():
     Node.app.register_node('gl_simple_body', SimpleMoCapGLBody.factory)
     Node.app.register_node('gl_alt_body', AlternateMoCapGLBody.factory)
     Node.app.register_node('take', MoCapTakeNode.factory)
+    Node.app.register_node('take_dict', OpenTakeNode.factory)
     Node.app.register_node('body_to_joints', MoCapBody.factory)
     Node.app.register_node('shadow_body_to_joints', MoCapBody.factory)
     Node.app.register_node('pose', PoseNode.factory)
@@ -27,6 +28,7 @@ def register_motion_cap_nodes():
     Node.app.register_node('target_pose', TargetPoseNode.factory)
     Node.app.register_node('calibrate_pose', PoseCalibrateNode.factory)
     Node.app.register_node('limb_size', LimbSizingNode.factory)
+    Node.app.register_node('quaternion_diff_and_axis', DiffQuaternionsNode.factory)
 
 def find_process_id(process_name):
     try:
@@ -124,24 +126,24 @@ class MoCapTakeNode(MoCapNode):
         self.record_frame_count = 0
 
         self.on_off = self.add_input('on/off', widget_type='checkbox', callback=self.start_stop_streaming)
-        self.load_button = self.add_property('load', widget_type='button', callback=self.load_take)
+        self.load_button = self.add_input('load', widget_type='button', callback=self.load_take)
         self.file_name = self.add_label('')
         self.frame_input = self.add_input('frame', widget_type='drag_int', triggers_execution=True, callback=self.frame_widget_changed)
         self.speed = self.add_input('speed', widget_type='drag_float', default_value=speed)
         self.quaternions_out = self.add_output('quaternions')
         self.positions_out = self.add_output('positions')
         self.labels_out = self.add_output('labels')
-        self.dump_button = self.add_property('dump', widget_type='button', callback=self.dump_take)
+        self.dump_button = self.add_input('dump', widget_type='button', callback=self.dump_take)
         self.dump_out = self.add_output('dump')
         self.add_spacer()
 
-        self.record_button = self.add_property('record', widget_type='button', callback=self.start_recording)
+        self.record_button = self.add_input('record', widget_type='button', callback=self.start_recording)
         self.recording = False
-        self.stop_button = self.add_property('stop', widget_type='button', callback=self.stop_recording)
+        self.stop_button = self.add_input('stop', widget_type='button', callback=self.stop_recording)
         self.quaternions_input = self.add_input('quaternions in', callback=self.quaternions_received)
         self.record_positions_input = self.add_input('record positions', widget_type='checkbox', default_value=False)
         self.positions_input = self.add_input('positions in', callback=self.positions_received)
-        self.save_button = self.add_property('save', widget_type='button', callback=self.save_sequence)
+        self.save_button = self.add_input('save', widget_type='button', callback=self.save_sequence)
 
         load_path = ''
         self.load_path = self.add_option('path', widget_type='text_input', default_value=load_path, callback=self.load_from_load_path)
@@ -175,23 +177,35 @@ class MoCapTakeNode(MoCapNode):
             self.recording = False
 
     def save_sequence(self):
+        arg = self.save_button()
+        if type(arg) == str:
+            save_path = arg
+            if self.save_take(save_path):
+                return
+
         Node.app.active_widget = 1
         with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
-                             user_data=self, callback=self.save_file_callback, tag="file_dialog_id"):
+                             user_data=self, callback=self.save_file_callback, cancel_callback=take_cancel_callback, tag="file_dialog_id"):
             dpg.add_file_extension('.npz')
+
+    def save_take(self, save_path):
+        if save_path != '':
+            if self.quat_buffer is not None:
+                if self.position_buffer is not None:
+                    np.savez(save_path, quats=self.quat_buffer, positions=self.position_buffer)
+            else:
+                np.savez(save_path, quaternions=self.quat_buffer)
+            self.load_path.set(save_path)
+            self.file_name.set(save_path)
+            self.frames = self.record_frame_count
+            return True
+        return False
 
     def save_file_callback(self, sender, app_data):
         if app_data is not None and 'file_path_name' in app_data:
             save_path = app_data['file_path_name']
-            if save_path != '':
-                if self.quat_buffer is not None:
-                    if self.position_buffer is not None:
-                        np.savez(save_path, quats=self.quat_buffer, positions=self.position_buffer)
-                else:
-                    np.savez(save_path, quaternions=self.quat_buffer)
-                self.load_path.set(save_path)
-                self.file_name.set(save_path)
-                self.frames = self.record_frame_count
+            if self.save_take(save_path):
+                return
         else:
             print('no file chosen')
         if sender is not None:
@@ -308,9 +322,18 @@ class MoCapTakeNode(MoCapNode):
                 self.load_take(args)
 
     def load_take(self, args=None):
+        arg = self.load_button()
+        if type(arg) == str:
+            if os.path.exists(arg):
+                try:
+                    self.load_path.set(arg)
+                    self.load_take_from_npz(arg)
+                except Exception as e:
+                    print('load_npz_callback: error loading take file:', e, arg)
+                return
         Node.app.active_widget = 1
         with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
-                             user_data=self, callback=self.load_npz_callback, cancel_callback=self.load_take_cancel_callback) as self.load_take_task:
+                             user_data=self, callback=self.load_npz_callback, cancel_callback=take_cancel_callback) as self.load_take_task:
             print(self.load_take_task)
             dpg.add_file_extension(".npz")
         print('leaving load_take')
@@ -333,11 +356,10 @@ class MoCapTakeNode(MoCapNode):
             dpg.delete_item(self.load_take_task)
         Node.app.active_widget = -1
 
-    def load_take_cancel_callback(self, sender, app_data):
-        print('Cancel was clicked.')
-        if sender is not None:
-            print('deleting', self.load_take_task)
-            dpg.delete_item(self.load_take_task)
+def take_cancel_callback(sender, app_data):
+    if sender is not None:
+        dpg.delete_item(sender)
+    Node.app.active_widget = -1
 
     # def load_take_from_pt_file(self, path):
     #     take_container = torch.jit.load(path)
@@ -354,6 +376,344 @@ class MoCapTakeNode(MoCapNode):
     #     container.save(path + '_container.pt')
     #
     #     torch.save(d, path + '.pt')
+
+
+class OpenTakeNode(MoCapNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = OpenTakeNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        speed = 1
+        self.buffer = None
+        self.frames = 0
+        self.current_frame = 0
+        self.clip_start = 0
+        self.clip_end = -1
+
+        self.streaming = False
+        self.take_dict = {}
+        self.record_frame_count = 0
+
+        self.take_data_in = self.add_input('take data in', callback=self.take_data_received)
+        self.load_button = self.add_input('load', widget_type='button', callback=self.load_take)
+        self.save_button = self.add_input('save', widget_type='button', callback=self.save_sequence)
+        self.file_name = self.add_label('')
+        load_path = ''
+        self.load_path = self.add_option('path', widget_type='text_input', default_value=load_path,
+                                         callback=self.load_from_load_path)
+        self.add_spacer()
+        self.record_button = self.add_input('record', widget_type='button', callback=self.record_button_clicked)
+        self.play_pause_button = self.add_input('play', widget_type='button', callback=self.play_button_clicked)
+        self.stop_button = self.add_input('stop', widget_type='button', callback=self.stop_button_clicked)
+        self.add_spacer()
+        self.frame_input = self.add_input('frame', widget_type='drag_int', triggers_execution=True, callback=self.frame_widget_changed)
+        self.length_property = self.add_input('length: 0', widget_type='label')
+        self.speed = self.add_input('play speed', widget_type='drag_float', default_value=speed)
+        self.add_spacer()
+
+        self.clip_start_input = self.add_input('clip start frame', widget_type='drag_int', callback=self.clip_changed, trigger_button=True, trigger_callback=self.clip_start_set)
+        self.clip_end_input = self.add_input('clip end frame', widget_type='drag_int', callback=self.clip_changed, trigger_button=True, trigger_callback=self.clip_end_set)
+        self.save_clip_button = self.add_input('save clip', widget_type='button', callback=self.save_clip)
+
+        self.reset_clip_button = self.add_input('reset clip', widget_type='button', callback=self.reset_clip)
+
+        self.add_spacer()
+        self.dump_button = self.add_input('dump', widget_type='button', callback=self.dump_take)
+        self.dump_out = self.add_output('dump')
+        self.take_data_out = self.add_output('take data out')
+
+        self.recording = False
+
+        self.message_handlers['load'] = self.load_take_message
+        self.new_positions = False
+        self.load_take_task = -1
+
+    def reset_clip(self):
+        self.clip_start = 0
+        self.clip_end = self.frames - 1
+        self.clip_start_input.set(self.clip_start)
+        self.clip_end_input.set(self.clip_end)
+
+    def clip_changed(self):
+        self.clip_start = self.clip_start_input()
+        self.clip_end = self.clip_end_input()
+        if self.clip_start < 0:
+            self.clip_start = 0
+        elif self.clip_start >= self.frames:
+            self.clip_start = self.frames - 1
+
+        if self.clip_end < self.clip_start:
+            self.clip_end = self.clip_start
+        elif self.clip_end >= self.frames:
+            self.clip_end = self.frames - 1
+
+        self.clip_start_input.set(self.clip_start)
+        self.clip_end_input.set(self.clip_end)
+
+    def clip_start_set(self):
+        self.clip_start = self.current_frame
+        self.clip_start_input.set(self.clip_start)
+
+    def clip_end_set(self):
+        self.clip_end = self.current_frame
+        self.clip_end_input.set(self.clip_end)
+
+    def stop_button_clicked(self):
+        if self.streaming:
+            self.play_button_clicked()
+            self.current_frame = 0
+        elif self.recording:
+            self.record_button_clicked()
+
+    def play_button_clicked(self):
+        if not self.streaming and self.frames > 0:
+            self.add_frame_task()
+            self.streaming = True
+            self.play_pause_button.set_label('pause')
+        else:
+            if self.streaming:
+                self.remove_frame_tasks()
+                self.streaming = False
+                self.play_pause_button.set_label('play')
+
+    def record_button_clicked(self):
+        if self.streaming:
+            self.remove_frame_tasks()
+            self.streaming = False
+            self.play_pause_button.set_label('play')
+
+        if not self.recording:
+            self.take_dict = {}
+            self.record_frame_count = 0
+            self.recording = True
+            self.record_button.set_label('stop record')
+        else:
+            self.record_button.set_label('record')
+            if len(self.take_dict) > 0:
+                for key, value in self.take_dict.items():
+                    value = np.array(value)
+                    self.take_dict[key] = value
+                key = list(self.take_dict.keys())[0]
+                self.frames = self.take_dict[key].shape[0]
+                self.current_frame = 0
+                self.frame_input.set(self.current_frame)
+                self.clip_start = 0
+                self.clip_end = self.frames - 1
+                self.frame_input.widget.max = self.clip_end
+                self.frame_input.widget.min = self.clip_start
+                self.clip_start_input.set(self.clip_start)
+                self.clip_end_input.set(self.clip_end)
+                self.length_property.set('length: ' + str(self.frames))
+                self.frame_input.widget.max = self.frames - 1
+                self.frame_input.widget.min = 0
+            self.recording = False
+
+    def save_sequence(self):
+        arg = self.save_button()
+        if type(arg) == str:
+            save_path = arg
+            if self.save_take(save_path):
+                return
+
+        Node.app.active_widget = 1
+        with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
+                             user_data=self, callback=self.save_file_callback, cancel_callback=take_cancel_callback, tag="file_dialog_id"):
+            dpg.add_file_extension('.npz')
+
+    def save_take(self, save_path):
+        if save_path != '':
+            np.savez(save_path, **self.take_dict)
+            self.load_path.set(save_path)
+            self.file_name.set(save_path)
+            self.frames = self.record_frame_count
+            return True
+        return False
+
+    def save_file_callback(self, sender, app_data):
+        if app_data is not None and 'file_path_name' in app_data:
+            save_path = app_data['file_path_name']
+            if self.save_take(save_path):
+                return
+        else:
+            print('no file chosen')
+        if sender is not None:
+            dpg.delete_item(sender)
+        Node.app.active_widget = -1
+
+    def save_clip(self):
+        arg = self.save_button()
+        if type(arg) == str:
+            save_path = arg
+            if self.save_clip_only(save_path):
+                return
+
+        Node.app.active_widget = 1
+        with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
+                             user_data=self, callback=self.save_clip_callback, tag="file_dialog_id"):
+            dpg.add_file_extension('.npz')
+
+    def save_clip_only(self, save_path):
+        if save_path != '':
+            clip_dict = {}
+            for key, value in self.take_dict.items():
+                value = np.array(value)
+                clip_value = value[self.clip_start:self.clip_end + 1]
+                clip_dict[key] = clip_value
+            np.savez(save_path, **clip_dict)
+            self.frames = self.record_frame_count
+            return True
+        return False
+
+    def save_clip_callback(self, sender, app_data):
+        if app_data is not None and 'file_path_name' in app_data:
+            save_path = app_data['file_path_name']
+            if self.save_clip_only(save_path):
+                return
+        else:
+            print('no file chosen')
+        if sender is not None:
+            dpg.delete_item(sender)
+        Node.app.active_widget = -1
+
+    def take_data_received(self):
+        if self.recording:
+            incoming_dict = self.take_data_in()
+            max_len = 0
+            if type(incoming_dict) is dict:
+                keys_list = list(incoming_dict.keys())
+                for key in keys_list:
+                    if key in self.take_dict:
+                        self.take_dict[key].append(incoming_dict[key])
+                    else:
+                        self.take_dict[key] = [incoming_dict[key]]
+                    if len(self.take_dict[key]) > max_len:
+                        max_len = len(self.take_dict[key])
+
+            self.record_frame_count = max_len
+            self.frame_input.set(self.record_frame_count, propagate=False)
+
+    def dump_take(self):
+        self.dump_out.send(self.take_dict)
+
+    def frame_task(self):
+        self.current_frame += self.speed()
+        if self.current_frame >= self.clip_end:
+            self.current_frame = self.clip_start
+        self.frame_input.set(self.current_frame)
+        frame = int(self.current_frame)
+
+        frame_dict = {}
+        keys_list = list(self.take_dict.keys())
+        for key in keys_list:
+            frame_dict[key] = self.take_dict[key][frame]
+        self.take_data_out.send(frame_dict)
+
+    def load_from_load_path(self):
+        path = self.load_path()
+        if path != '':
+            try:
+                self.load_take_from_npz(path)
+            except Exception as e:
+                print('no take file found:', path)
+
+    def load_take_from_npz(self, path):
+        if self.streaming:
+            self.stop_button_clicked()
+        take_file = np.load(path)
+        file_name = path.split('/')[-1]
+        self.file_name.set(file_name)
+        self.load_path.set(path)
+        self.take_dict = dict(take_file)
+        keys_list = list(self.take_dict.keys())
+        if len(keys_list) > 0:
+            self.frames = self.take_dict[keys_list[0]].shape[0]
+            self.length_property.set('length: ' + str(self.frames))
+            self.clip_start = 0
+            self.clip_end = self.frames - 1
+            self.frame_input.widget.max = self.clip_end
+            self.frame_input.widget.min = self.clip_start
+            self.clip_start_input.set(self.clip_start)
+            self.clip_end_input.set(self.clip_end)
+            self.current_frame = 0
+            self.frame_input.set(self.current_frame)
+        self.current_frame = 0
+
+    def frame_widget_changed(self):
+        data = self.frame_input()
+        if data < 0:
+            data = 0
+            self.current_frame = data
+            self.frame_input.set(self.current_frame)
+        if data < self.frames:
+            self.current_frame = data
+            frame_dict = {}
+            keys_list = list(self.take_dict.keys())
+            for key in keys_list:
+                frame_dict[key] = self.take_dict[key][self.current_frame]
+            self.take_data_out.send(frame_dict)
+        else:
+            data = self.frames - 1
+            self.current_frame = data
+            self.frame_input.set(self.current_frame)
+
+    def execute(self):
+        if self.frame_input.fresh_input:
+            data = self.frame_input()
+            # handled, do_output = self.check_for_messages(data)
+            # if not handled:
+            t = type(data)
+            if t == int:
+                if data < self.frames:
+                    frame_dict = {}
+                    keys_list = list(frame_dict.keys())
+                    for key in keys_list:
+                        frame_dict[key] = frame_dict[key][self.current_frame]
+                    self.take_data_out.send(frame_dict)
+
+    def load_take_message(self, message='', args=None):
+        if args is not None:
+            if len(args) > 0:
+                path = any_to_string(args[0])
+                self.load_take_from_npz(path)
+            else:
+                self.load_take(args)
+
+    def load_take(self, args=None):
+        arg = self.load_button()
+        if type(arg) == str:
+            if os.path.exists(arg):
+                try:
+                    self.load_path.set(arg)
+                    self.load_take_from_npz(arg)
+                except Exception as e:
+                    print('load_npz_callback: error loading take file:', e, arg)
+                return
+        try:
+            Node.app.active_widget = 1
+            with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800, callback=self.load_npz_callback, cancel_callback=take_cancel_callback, tag='load_take_dict_dialog') as self.load_take_task:
+                dpg.add_file_extension(".npz")
+        except Exception as e:
+            print('load_npz_callback: error loading take file:', e, arg)
+        self.active_widget = -1
+
+    def load_npz_callback(self, sender, app_data):
+        if app_data is not None and 'file_path_name' in app_data:
+            load_path = app_data['file_path_name']
+            if load_path != '':
+                try:
+                    self.load_path.set(load_path)
+                    self.load_take_from_npz(load_path)
+                except Exception as e:
+                    print('load_npz_callback: error loading take file:', e, load_path)
+        else:
+            print('no file chosen')
+        if sender is not None:
+            dpg.delete_item(sender)
+        Node.app.active_widget = -1
+
 
 
 class PoseNode(MoCapNode):
@@ -666,20 +1026,6 @@ class MoCapGLBody(MoCapNode):
             self.external_joint_data = None
 
     def execute(self):
-        # if self.active_input == self.joint_data_input:
-        #     if self.joint_data_input.fresh_input:
-        #         data = self.joint_data_input()
-        #         if type(data) is torch.Tensor:
-        #             self.external_joint_data = data.clone()
-        #         elif type(data) is np.ndarray:
-        #             self.external_joint_data = data.copy()
-        #         elif type(data) is list:
-        #             self.external_joint_data = data.copy()
-        #         else:
-        #             self.external_joint_data = None
-        #     # else:
-        #     #     self.external_joint_data = None
-
         incoming = self.input()
         t = type(incoming)
         if t == torch.Tensor:
@@ -698,17 +1044,6 @@ class MoCapGLBody(MoCapNode):
                 incoming = np.reshape(incoming, [37, 4])
                 active_joints = incoming[self.active_to_shadow_map]
                 self.body.update_quats(active_joints)
-
-            # work on this!!!
-            # if incoming.shape[0] == 37:
-            #     for joint_name in self.joint_map:
-            #         joint_id = self.joint_map[joint_name]
-            #         self.body.update(joint_index=joint_id, quat=incoming[joint_id], label=self.body_color_id())
-            # elif incoming.shape[0] == 20:
-            #     for index, joint_name in enumerate(self.joint_map):
-            #         joint_id = self.joint_map[joint_name]
-            #         self.body.update(joint_index=joint_id, quat=incoming[index], label=self.body_color_id())
-
         elif t in [list, str]:
             if t == str:
                 incoming = [incoming]
@@ -728,12 +1063,67 @@ class MoCapGLBody(MoCapNode):
             self.body.diffQuatSmoothingA = smoothing_a
             self.body.diffQuatSmoothingB = smoothing_b
             self.body.joint_disk_alpha = self.joint_disk_alpha()
-            if self.absolute_quats_input():
-                self.body.draw_absolute_quats(self.show_joint_spheres(), self.skeleton_only())
-            else:
-                self.body.draw(self.show_joint_spheres(), self.skeleton_only(), self.joint_axes())
+            # if self.absolute_quats_input():
+            #     self.body.draw_absolute_quats(self.show_joint_spheres(), self.skeleton_only())
+            # else:
+            self.body.draw(self.show_joint_spheres(), self.skeleton_only(), self.joint_axes())
             self.gl_chain_output.send('draw')
             # self.external_joint_data = None
+
+
+class DiffQuaternionsNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = DiffQuaternionsNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('quaternions in', triggers_execution=True)
+        self.smooth_a_input = self.add_input('smoothing A (0-1)', widget_type='drag_float', default_value=0.8, min=0.0, max=1.0)
+        self.smooth_b_input = self.add_input('smoothing B (0-1)', widget_type='drag_float', default_value=0.9, min=0.0, max=1.0)
+        self.magnitude_out = self.add_output('magnitudes')
+        self.normalized_axes_out = self.add_output('axes')
+        self.axes = None
+        self.normalized_axes = None
+        self.magnitudes = None
+        self.smoothed_quaternions_a = None
+        self.smoothed_quaternions_b = None
+        self.diff_quats = None
+        self.diff_angles = None
+
+    def execute(self):
+        incoming_quats = any_to_array(self.input())
+        incoming_quats = np.expand_dims(incoming_quats, 0)
+        if self.smoothed_quaternions_a is None:
+            self.smoothed_quaternions_a = incoming_quats.copy()
+            self.smoothed_quaternions_b = incoming_quats.copy()
+        self.calc_diff_quaternions(incoming_quats)
+        self.magnitude_out.send(self.magnitudes)
+        self.normalized_axes_out.send(self.normalized_axes)
+
+    def calc_diff_quaternions(self, incoming_quats):
+        self.smoothed_quaternions_a = self.smoothed_quaternions_a * self.smooth_a_input() + incoming_quats * (1.0 - self.smooth_a_input())
+        self.smoothed_quaternions_b = self.smoothed_quaternions_b * self.smooth_b_input() + incoming_quats * (1.0 - self.smooth_b_input())
+        # we want axis, magnitude from diff_quat
+
+        a = quaternion.as_quat_array(self.smoothed_quaternions_a)
+        b = quaternion.as_quat_array(self.smoothed_quaternions_b)
+        self.diff_quats = a - b
+        self.axes = quaternion.as_rotation_vector(self.diff_quats)
+        angles = np.linalg.norm(self.axes, axis=2) + 1e-5
+        self.magnitudes = self.quaternion_distances(self.smoothed_quaternions_a, self.smoothed_quaternions_b).squeeze()
+        self.normalized_axes = (self.axes / np.expand_dims(angles, axis=-1)).squeeze()
+        self.diff_angles = angles
+
+    def quaternion_distances(self, q1, q2):
+        q1_ = q1 / np.expand_dims(np.linalg.norm(q1, axis=-1), -1)
+        q2_ = q2 / np.expand_dims(np.linalg.norm(q2, axis=-1), -1)
+        diff = np.sum(np.multiply(q1_[:, :], q2_[:, :]), axis=2)
+        diff = np.clip(diff, a_min=-1, a_max=1)
+        distances = np.arccos(2 * diff[:, :] * diff[:, :] - 1)
+        return distances
 
 
 class SimpleMoCapGLBody(MoCapNode):
@@ -1162,6 +1552,7 @@ class ActiveJointsNode(MoCapNode):
             if incoming.shape[0] == 37:
                 active_joints = incoming[self.active_to_shadow_map]
                 self.active_joints_out.send(active_joints)
+
 
 
 def shadow_service_loop():

@@ -55,6 +55,8 @@ def any_to_string(data, strip_returns=True):
         out_string = str(data)
         out_string = out_string.replace('\n', '')
         return out_string
+    elif t is dict:
+        return str(data)
     return ''
 
 
