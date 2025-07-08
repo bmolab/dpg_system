@@ -191,7 +191,8 @@ class SMPLShadowTranslator():
     @staticmethod
     def translate_from_smpl_to_active(smpl_pose): #  expects n x 3 in, outputs 20 x 3
         output_size = len(SMPLShadowTranslator.smpl_to_active_joint_map)
-        active_pose = np.zeros((output_size, 3), dtype=np.float32)
+        active_pose = np.zeros((output_size, smpl_pose.shape[-1]), dtype=np.float32)
+
         for smpl_joint in SMPLShadowTranslator.smpl_to_active_joint_map:
             smpl_index = SMPLShadowTranslator.smpl_joints[smpl_joint]
             active_joint = SMPLShadowTranslator.smpl_to_active_joint_map[smpl_joint]
@@ -202,7 +203,17 @@ class SMPLShadowTranslator():
     @staticmethod
     def translate_from_active_to_smpl(active_pose): #  expects 20 x 3 in, outputs 20 x 3
         output_size = len(SMPLShadowTranslator.smpl_from_active_joint_map)
-        smpl_pose = np.zeros((output_size, active_pose.shape[1]), dtype=np.float32)
+        smpl_pose = np.zeros((output_size, active_pose.shape[-1]), dtype=np.float32)
+
+        if active_pose.shape[1] == 3:
+            empty = [0.0, 0.0, 0.0]
+        elif active_pose.shape[1] == 4:
+            empty = [1.0, 0.0, 0.0, 0.0]
+        elif active_pose.shape[1] == 2:
+            empty = [0.0, 0.0]
+        elif active_pose.shape[1] == 2:
+            empty = [0.0]
+
         for smpl_joint in SMPLShadowTranslator.smpl_from_active_joint_map:
             smpl_index = SMPLShadowTranslator.smpl_joints[smpl_joint]
             active_joint = SMPLShadowTranslator.smpl_from_active_joint_map[smpl_joint]
@@ -210,10 +221,7 @@ class SMPLShadowTranslator():
                 active_index = SMPLShadowTranslator.active_joints[active_joint]
                 smpl_pose[smpl_index] = active_pose[active_index]
             else:
-                if active_pose.shape[1] == 3:
-                    smpl_pose[smpl_index] = [0.0, 0.0, 0.0]
-                elif active_pose.shape[1] == 4:
-                    smpl_pose[smpl_index] = [1.0, 0.0, 0.0, 0.0]
+                smpl_pose[smpl_index] = empty
         return smpl_pose
 
     def __init__(self, label, data, args):
@@ -232,10 +240,10 @@ class SMPLToActivePoseNode(SMPLShadowTranslator, Node):
 
         self.input = self.add_input('smpl pose', triggers_execution=True)
         self.output_format_in = self.add_input('output_format', widget_type='combo', default_value='quaternions')
-        self.output_format_in.widget.combo_items = ['quaternions', 'rotation_vectors']
+        self.output_format_in.widget.combo_items = ['quaternions', 'rotation_vectors', 'generic']
         self.y_is_up = self.add_property('y is up', widget_type='checkbox')
         self.output = self.add_output('active pose')
-        self.y_up = np.array([0.7071067811865475, -0.7071067811865475, 0.0, 0.0])
+        self.y_up = np.array([0.7071067811865475, 0.0, -0.7071067811865475, 0.0])
 
     def execute(self):
         smpl_pose = self.input()
@@ -243,8 +251,12 @@ class SMPLToActivePoseNode(SMPLShadowTranslator, Node):
         if self.output_format_in() == 'quaternions':
             active_pose = np.zeros((22, 4))
             active_pose[:, 0] = 1.0
-        else:
+        elif self.output_format_in() == 'rotation_vectors':
             active_pose = np.zeros((22, 3))
+        else:
+            if len(smpl_pose.shape) == 1:
+                smpl_pose = np.expand_dims(smpl_pose, axis=1)
+            active_pose = np.zeros((22, smpl_pose.shape[-1]))
 
         # NOTE: smpl seems to assume z is up vector which messes up axes of root rotation
         # we should force root rotation to rotate -90 around x axis
@@ -255,17 +267,17 @@ class SMPLToActivePoseNode(SMPLShadowTranslator, Node):
                 if self.output_format_in() == 'quaternions':
                     rot = scipy.spatial.transform.Rotation.from_rotvec(active_pose)
                     active_pose = rot.as_quat(scalar_first=True)
-                if self.y_is_up():
-                    active_pose[5] = active_pose[5] * self.y_up
+                    if self.y_is_up():
+                        active_pose[5] = active_pose[5] * self.y_up
             elif smpl_pose.shape[1] == 4:
                 active_pose = SMPLShadowTranslator.translate_from_smpl_to_active(smpl_pose)
-                if self.output_format_in() != 'quaternions':
+                if self.output_format_in() == 'rotation_vectors':
                     rot = scipy.spatial.transform.Rotation.from_quat(active_pose, scalar_first=True)
                     active_pose = rot.as_rotvec()
                 elif self.y_is_up():
                     active_pose[5] = active_pose[5] * self.y_up
-
-
+            else:
+                active_pose = SMPLShadowTranslator.translate_from_smpl_to_active(smpl_pose)
 
         self.output.send(active_pose)
 
@@ -282,7 +294,7 @@ class ActiveToSMPLPoseNode(SMPLShadowTranslator, Node):
 
         self.input = self.add_input('smpl pose', triggers_execution=True)
         self.output_format_in = self.add_input('output_format', widget_type='combo', default_value='rotation_vectors')
-        self.output_format_in.widget.combo_items = ['quaternions', 'rotation_vectors']
+        self.output_format_in.widget.combo_items = ['quaternions', 'rotation_vectors', 'generic']
         self.output = self.add_output('active pose')
 
     def execute(self):
@@ -291,8 +303,13 @@ class ActiveToSMPLPoseNode(SMPLShadowTranslator, Node):
         if self.output_format_in() == 'quaternions':
             smpl_pose = np.zeros((20, 4))
             smpl_pose[:, 0] = 1.0
-        else:
+        elif self.output_format_in() == 'rotation_vectors':
             smpl_pose = np.zeros((20, 3))
+        else:
+            if len(active_pose.shape) == 1:
+                active_pose = np.expand_dims(active_pose, axis=1)
+            smpl_pose = np.zeros((20, active_pose.shape[-1]))
+
         if len(active_pose.shape) > 1:
             if active_pose.shape[1] == 3:
                 smpl_pose = SMPLShadowTranslator.translate_from_active_to_smpl(active_pose)
@@ -304,6 +321,8 @@ class ActiveToSMPLPoseNode(SMPLShadowTranslator, Node):
                 if self.output_format_in() != 'quaternions':
                     rot = scipy.spatial.transform.Rotation.from_quat(smpl_pose, scalar_first=True)
                     smpl_pose = rot.as_rotvec()
+            else:
+                smpl_pose = SMPLShadowTranslator.translate_from_active_to_smpl(active_pose)
         self.output.send(smpl_pose)
 
 
