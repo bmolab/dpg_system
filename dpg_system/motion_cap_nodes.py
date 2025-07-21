@@ -396,6 +396,7 @@ class OpenTakeNode(MoCapNode):
         self.streaming = False
         self.take_dict = {}
         self.record_frame_count = 0
+        self.sequence_keys = []
 
         self.take_data_in = self.add_input('take data in', callback=self.take_data_received)
         self.load_button = self.add_input('load', widget_type='button', callback=self.load_take)
@@ -606,8 +607,7 @@ class OpenTakeNode(MoCapNode):
         frame = int(self.current_frame)
 
         frame_dict = {}
-        keys_list = list(self.take_dict.keys())
-        for key in keys_list:
+        for key in self.sequence_keys:
             frame_dict[key] = self.take_dict[key][frame]
         self.take_data_out.send(frame_dict)
 
@@ -628,8 +628,33 @@ class OpenTakeNode(MoCapNode):
         self.load_path.set(path)
         self.take_dict = dict(take_file)
         keys_list = list(self.take_dict.keys())
+        print('keys_list', keys_list)
+        sequence_length = 0
         if len(keys_list) > 0:
-            self.frames = self.take_dict[keys_list[0]].shape[0]
+            for key in keys_list:
+                print('key', key)
+                data = self.take_dict[key]
+                print(data)
+                t = type(data)
+                if t is not np.ndarray:
+                    print('not array')
+                    print(key, data)
+                else:
+                    print('is array')
+                    print(data.shape)
+                    if len(data.shape) > 0:
+                        if data.shape[0] > sequence_length:
+                            sequence_length = data.shape[0]
+            self.sequence_keys = []
+            for key in keys_list:
+                data = self.take_dict[key]
+                t = type(data)
+                if t is np.ndarray:
+                    if len(data.shape) > 0 and data.shape[0] == sequence_length:
+                        self.sequence_keys.append(key)
+
+
+            self.frames = sequence_length
             self.length_property.set('length: ' + str(self.frames))
             self.clip_start = 0
             self.clip_end = self.frames - 1
@@ -650,8 +675,7 @@ class OpenTakeNode(MoCapNode):
         if data < self.frames:
             self.current_frame = data
             frame_dict = {}
-            keys_list = list(self.take_dict.keys())
-            for key in keys_list:
+            for key in self.sequence_keys:
                 frame_dict[key] = self.take_dict[key][self.current_frame]
             self.take_data_out.send(frame_dict)
         else:
@@ -668,8 +692,7 @@ class OpenTakeNode(MoCapNode):
             if t == int:
                 if data < self.frames:
                     frame_dict = {}
-                    keys_list = list(frame_dict.keys())
-                    for key in keys_list:
+                    for key in self.sequence_keys:
                         frame_dict[key] = frame_dict[key][self.current_frame]
                     self.take_data_out.send(frame_dict)
 

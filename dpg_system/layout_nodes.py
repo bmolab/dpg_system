@@ -365,6 +365,7 @@ class CairoTextLayoutNode(Node):
         self.layout.clear_layout()
         self.display_layout()
 
+# ISSUE HERE OF OVERNESTED LIST
     def add_text(self, new_data):
         tp = type(new_data)
 

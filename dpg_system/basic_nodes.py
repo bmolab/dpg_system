@@ -8,6 +8,7 @@ import sys
 import os
 import torch
 import copy
+import queue
 
 from dpg_system.node import Node
 import threading
@@ -89,7 +90,7 @@ def register_basic_nodes():
     Node.app.register_node('save', SaveNode.factory)
     Node.app.register_node('active_widget', ActiveWidgetNode.factory)
     Node.app.register_node('pass_with_triggers', TriggerBeforeAndAfterNode.factory)
-
+    Node.app.register_node('micro_metro', MicrosecondTimerNode.factory)
 
 class ActiveWidgetNode(Node):
     @staticmethod
@@ -135,19 +136,26 @@ class DeferNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.received = False
-        self.received_data = None
         self.input = self.add_input('input', triggers_execution=True)
         self.output = self.add_output('deferred output')
+        self.queue = queue.Queue()
+        self.output_only_last = self.add_option('output only last', widget_type='checkbox', default_value=False)
         self.add_frame_task()
 
     def execute(self):
-        self.received_data = self.input()
+        self.queue.put(self.input())
 
     def frame_task(self):
-        if self.received_data is not None:
-            self.output.send(self.received_data)
-            self.received_data = None
+        received_data = None
+        while not self.queue.empty():
+            try:
+                received_data = self.queue.get_nowait()
+                if not self.output_only_last():
+                    self.output.send(received_data)
+            except queue.Empty:
+                break
+        if self.output_only_last() and received_data is not None:
+            self.output.send(received_data)
 
     def custom_cleanup(self):
         self.remove_frame_tasks()
@@ -320,6 +328,122 @@ class MetroNode(Node):
     def execute(self):
         self.output.send('bang')
 
+
+class MicrosecondTimerNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = MicrosecondTimerNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        # set internal variables
+        self.last_tick = 0
+        self.on = False
+        self.units = 1000
+        self.units_dict = {'seconds': 1, 'milliseconds': 1000, 'minutes': 1.0/60.0, 'hours': 1.0/60.0/60.0}
+        self.period = self.arg_as_float(30.0)
+        self.streaming = False
+        self.last_tick = 0
+        # set inputs / properties / outputs / options
+        self.on_off_input = self.add_bool_input('on', widget_type='checkbox', callback=self.start_stop)
+        self.period_input = self.add_float_input('period', widget_type='drag_float', default_value=self.period, callback=self.change_period)
+        self.units_property = self.add_property('units', widget_type='combo', default_value='milliseconds', callback=self.set_units)
+        self.units_property.widget.combo_items = ['seconds', 'milliseconds', 'minutes', 'hours']
+        self.output = self.add_output('')
+        self.stop_event = threading.Event()
+        self.worker_thread = None
+
+
+    def change_period(self, input=None):
+        self.period = self.period_input()
+        if self.period <= 0:
+            self.period = .001
+
+    def start_stop(self, input=None):
+        self.on = self.on_off_input()
+        if self.on:
+            if self.worker_thread is None or not self.worker_thread.is_alive():
+                self.stop_event.clear()
+                self.worker_thread = threading.Thread(target=self._worker_loop, daemon=True)
+                self.worker_thread.start()
+
+                # Reset the timer when starting
+            self.last_tick = time.perf_counter()
+            # No need for an 'else' block; the worker loop handles the `self.on = False` state.
+
+    def set_units(self, input=None):
+        units_string = self.units_property()
+        if units_string in self.units_dict:
+            self.units = self.units_dict[units_string]
+
+    def _worker_loop(self):
+        """This function runs in a separate thread to generate bangs with high precision."""
+        while not self.stop_event.is_set():
+            if self.on:
+                # Calculate the period in seconds, ensuring it's not zero
+                period_in_seconds = self.period / self.units if self.units != 0 else 0.001
+                if period_in_seconds <= 0:
+                    period_in_seconds = 0.001  # Prevent zero/negative sleep time
+
+                # Use a high-precision monotonic clock
+                current_time = time.perf_counter()
+
+                if current_time - self.last_tick >= period_in_seconds:
+                    # It's time for a bang. Put it in the queue for the main thread to process.
+                    # self.bang_queue.put('bang')
+                    self.output.send('bang')
+                    # Advance the last_tick time. This prevents drift over time.
+                    self.last_tick += period_in_seconds
+
+                    # Catch-up mechanism: If we've fallen behind by more than one period,
+                    # reset the tick to the current time to avoid a burst of bangs.
+                    if self.last_tick < current_time - period_in_seconds:
+                        self.last_tick = current_time
+
+                # Smart sleep: sleep for a short duration to yield CPU
+                # This prevents a 100% CPU usage busy-wait loop.
+                # A sleep time of 0.0005s (0.5 ms) is a good balance.
+                time.sleep(0.0005)
+
+            else:
+                # If the metronome is off, sleep for a bit longer to reduce idle CPU usage
+                time.sleep(0.01)
+
+    # this routine is called every update frame (usually 60 fps). It is optional... for those nodes that need constant updating
+
+    # def frame_task(self):
+    #     if self.on:
+    #         current = time.time()
+    #         period_in_seconds = self.period / self.units
+    #         if current - self.last_tick >= period_in_seconds:
+    #             self.execute()
+    #             self.last_tick = self.last_tick + period_in_seconds
+    #             if self.last_tick + self.period < current:
+    #                 self.last_tick = current
+
+    # the execute function is what causes output. It is called whenever something is received in an input that declares a trigger_node
+    # it can also be called from other functions like frame_task() above
+
+    def execute(self):
+        self.output.send('bang')
+
+    def cleanup(self):
+        """
+        A custom cleanup method to be called when the node is deleted.
+        Ensures the worker thread is stopped properly.
+        """
+        self.stop_event.set()
+        if self.worker_thread and self.worker_thread.is_alive():
+            self.worker_thread.join(timeout=1.0)  # Wait up to 1 sec for thread to finish
+        super().cleanup()  # Call parent cleanup if it exists
+
+    # In Python, __del__ can be unreliable. It's better to have an explicit
+    # cleanup method that your framework calls when a node is destroyed.
+    # If your framework supports it, use that. Otherwise, __del__ is a fallback.
+    def __del__(self):
+        self.cleanup()
 
 class ClampNode(Node):
     @staticmethod
@@ -2673,7 +2797,7 @@ class TextFileNode(Node):
         self.file_name = self.arg_as_string(default_value='')
         self.dump_button = self.add_input('send', widget_type='button', triggers_execution=True)
 
-        self.text_editor = self.add_string_input('##text in', widget_type='text_editor', widget_width=500)
+        self.text_editor = self.add_string_input('##text in', widget_type='text_editor', widget_width=500, callback=self.new_text)
 
         # self.text_input = self.add_string_input('text in', triggers_execution=True)
         self.text_editor.set_strip_returns(False)
@@ -2688,9 +2812,19 @@ class TextFileNode(Node):
         self.file_name_property = self.add_option('name', widget_type='text_input', width=500, default_value=self.file_name)
         self.editor_width = self.add_option('editor width', widget_type='drag_int', default_value=500, callback=self.adjust_editor)
         self.editor_height = self.add_option('editor height', widget_type='drag_int', default_value=200, callback=self.adjust_editor)
+        self.message_handlers['output_char'] = self.output_character_message
 
-    def text_changed(self):
-        self.text_editor.set(self.text_input())
+    def new_text(self):
+        data = any_to_string(self.text_editor(), strip_returns=False)
+        self.text_contents = data
+
+    def output_character_message(self, message='', data=[]):
+        if len(data) > 0:
+            char_pos = any_to_int(data[0])
+            if char_pos < len(self.text_contents) and char_pos >= 0:
+                out_char = self.text_contents[char_pos]
+                self.output.send(out_char)
+        self.input_handled = True
 
     def clear_text(self):
         self.text_contents = ''

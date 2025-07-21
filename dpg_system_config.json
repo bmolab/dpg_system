@@ -20,7 +20,7 @@
   "vae_nodes": true,
   "digico_nodes": true,
   "google_translate_nodes": true,
-  "layout_nodes": false,
+  "layout_nodes": true,
   "eos_nodes": true,
   "orbbec_nodes": true,
   "default_ip_base": "10.1.1.0"

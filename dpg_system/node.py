@@ -123,14 +123,14 @@ class NodeOutput:
 
         return data
 
-    def send(self, data: Optional[Any] = None) -> None:  # called every time
+    def send(self, data: Optional[Any] = None, no_trigger=False) -> None:  # called every time
         if data is None:
-            self.send_internal()
+            self.send_internal(no_trigger)
         elif self.set_value(data) is not None:
-            self.send_internal()
+            self.send_internal(no_trigger)
         self.new_output = False
 
-    def send_internal(self) -> None:
+    def send_internal(self, no_trigger=False) -> None:
         if self.output_always or self.new_output:
             if self.node.visibility == 'show_all':
                 try:
@@ -155,10 +155,11 @@ class NodeOutput:
                     Node.app.get_current_editor().add_active_pin(self.uuid)
                 except Exception as e:
                     pass
-            for child in self._children:
-                child.node.active_input = child
-                child.trigger()
-                child.node.active_input = None
+            if not no_trigger:
+                for child in self._children:
+                    child.node.active_input = child
+                    child.trigger()
+                    child.node.active_input = None
 
 
     def create(self, parent: int) -> None:
@@ -1201,10 +1202,12 @@ class NodeInput:
         return data
 
     def trigger(self) -> None:
-        if self.triggers_execution:
+        if self.triggers_execution and not self.node.message_handled:
             self.node.active_input = self
             self.node.execute()
             self.node.active_input = None
+        else:
+            self.node.message_handled = False
 
     def set_parent(self, parent: 'NodeOutput') -> None:
         if parent not in self._parents:
@@ -1502,6 +1505,7 @@ class Node:
         self.message_handlers = {}
         self.message_handlers['set_preset'] = self.set_preset_state
         self.message_handlers['get_preset'] = self.get_preset_state
+        self.message_handled = False
 
         self.property_registery = {}
 
@@ -1936,13 +1940,15 @@ class Node:
                     dpg.hide_item(option_att.widget.uuid)
 
     def check_for_messages(self, in_data: Union[str, List[Any]]) -> bool:
-        handled = False
+        self.message_handled = False
         if len(self.message_handlers) > 0:
             message = ''
             message_data = []
             t = type(in_data)
             if t == str:
-                message = in_data
+                message_list = in_data.split(' ')
+                message = message_list[0]
+                message_data = message_list[1:]
             elif t == list:
                 list_len = len(in_data)
                 if list_len > 0:
@@ -1952,13 +1958,13 @@ class Node:
             if message != '':
                 if message in self.message_handlers:
                     self.message_handlers[message](message, message_data)
-                    handled = True
-                else:  # maybe two words in message header
-                    message = ' '.join(message.split('_'))
-                    if message in self.message_handlers:
-                        self.message_handlers[message](message, message_data)
-                        handled = True
-        return handled
+                    self.message_handled = True
+                # else:  # maybe two words in message header
+                #     message = ' '.join(message.split('_'))
+                #     if message in self.message_handlers:
+                #         self.message_handlers[message](message, message_data)
+                #         handled = True
+        return self.message_handled
 
     def save_custom(self, container: Dict[str, Any]):
         pass

@@ -248,6 +248,8 @@ class SMPLToActivePoseNode(SMPLShadowTranslator, Node):
     def execute(self):
         smpl_pose = self.input()
         smpl_pose = any_to_array(smpl_pose)
+        if len(smpl_pose.shape) == 1:
+            smpl_pose = np.reshape(smpl_pose, (-1, 3))
         if self.output_format_in() == 'quaternions':
             active_pose = np.zeros((22, 4))
             active_pose[:, 0] = 1.0
