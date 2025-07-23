@@ -397,8 +397,10 @@ class OpenTakeNode(MoCapNode):
         self.take_dict = {}
         self.record_frame_count = 0
         self.sequence_keys = []
+        self.global_keys = []
 
         self.take_data_in = self.add_input('take data in', callback=self.take_data_received)
+        self.global_data_in = self.add_input('global data in', callback=self.receive_globals)
         self.load_button = self.add_input('load', widget_type='button', callback=self.load_take)
         self.save_button = self.add_input('save', widget_type='button', callback=self.save_sequence)
         self.file_name = self.add_label('')
@@ -424,6 +426,7 @@ class OpenTakeNode(MoCapNode):
         self.add_spacer()
         self.dump_button = self.add_input('dump', widget_type='button', callback=self.dump_take)
         self.dump_out = self.add_output('dump')
+        self.global_params_out = self.add_output('globals')
         self.take_data_out = self.add_output('take data out')
 
         self.recording = False
@@ -431,6 +434,16 @@ class OpenTakeNode(MoCapNode):
         self.message_handlers['load'] = self.load_take_message
         self.new_positions = False
         self.load_take_task = -1
+
+    def receive_globals(self):
+        incoming = self.global_data_in()
+        t = type(incoming)
+        if t is dict:
+            self.global_dict = self.global_data_in()
+        elif t is list:
+            key = incoming[0]
+            data = incoming[1:]
+            self.global_dict[key] = data
 
     def reset_clip(self):
         self.clip_start = 0
@@ -497,6 +510,8 @@ class OpenTakeNode(MoCapNode):
                 for key, value in self.take_dict.items():
                     value = np.array(value)
                     self.take_dict[key] = value
+                for key, value in self.global_dict.items():
+                    self.take_dict[key] = value
                 key = list(self.take_dict.keys())[0]
                 self.frames = self.take_dict[key].shape[0]
                 self.current_frame = 0
@@ -526,6 +541,8 @@ class OpenTakeNode(MoCapNode):
 
     def save_take(self, save_path):
         if save_path != '':
+            for key, value in self.global_dict.items():
+                self.take_dict[key] = value
             np.savez(save_path, **self.take_dict)
             self.load_path.set(save_path)
             self.file_name.set(save_path)
@@ -563,6 +580,8 @@ class OpenTakeNode(MoCapNode):
                 value = np.array(value)
                 clip_value = value[self.clip_start:self.clip_end + 1]
                 clip_dict[key] = clip_value
+            for key, value in self.global_dict.items():
+                clip_dict[key] = value
             np.savez(save_path, **clip_dict)
             self.frames = self.record_frame_count
             return True
@@ -622,7 +641,7 @@ class OpenTakeNode(MoCapNode):
     def load_take_from_npz(self, path):
         if self.streaming:
             self.stop_button_clicked()
-        take_file = np.load(path)
+        take_file = np.load(path, allow_pickle=True)
         file_name = path.split('/')[-1]
         self.file_name.set(file_name)
         self.load_path.set(path)
@@ -632,27 +651,31 @@ class OpenTakeNode(MoCapNode):
         sequence_length = 0
         if len(keys_list) > 0:
             for key in keys_list:
-                print('key', key)
                 data = self.take_dict[key]
-                print(data)
                 t = type(data)
-                if t is not np.ndarray:
-                    print('not array')
-                    print(key, data)
-                else:
-                    print('is array')
-                    print(data.shape)
+                if t is np.ndarray:
                     if len(data.shape) > 0:
                         if data.shape[0] > sequence_length:
                             sequence_length = data.shape[0]
             self.sequence_keys = []
+            self.global_keys = []
             for key in keys_list:
                 data = self.take_dict[key]
                 t = type(data)
                 if t is np.ndarray:
                     if len(data.shape) > 0 and data.shape[0] == sequence_length:
                         self.sequence_keys.append(key)
+                    else:
+                        self.global_keys.append(key)
+                else:
+                    self.global_keys.append(key)
 
+            self.global_dict = {}
+            for key in self.global_keys:
+                data = self.take_dict[key]
+                self.global_dict[key] = data
+            if len(self.global_dict) > 0:
+                self.global_params_out.send(self.global_dict)
 
             self.frames = sequence_length
             self.length_property.set('length: ' + str(self.frames))

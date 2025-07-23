@@ -265,6 +265,8 @@ class SMPLToActivePoseNode(SMPLShadowTranslator, Node):
 
         if len(smpl_pose.shape) > 1:
             if smpl_pose.shape[1] == 3:
+                # if self.y_is_up():
+                #     smpl_pose[0] = rotate_vector_rodrigues(smpl_pose[0], np.array([1.0, 0.0, 0.0]), -90)
                 active_pose = SMPLShadowTranslator.translate_from_smpl_to_active(smpl_pose)
                 if self.output_format_in() == 'quaternions':
                     rot = scipy.spatial.transform.Rotation.from_rotvec(active_pose)
@@ -283,6 +285,30 @@ class SMPLToActivePoseNode(SMPLShadowTranslator, Node):
 
         self.output.send(active_pose)
 
+def rotate_vector_rodrigues(v, k, theta):
+    """
+    Rotates a 3D vector 'v' around an axis 'k' by an angle 'theta' using Rodrigues' rotation formula.
+
+    Args:
+        v (np.array): The 3D vector to be rotated.
+        k (np.array): The 3D axis of rotation (will be normalized).
+        theta (float): The angle of rotation in radians.
+
+    Returns:
+        np.array: The rotated 3D vector.
+    """
+    v = np.asarray(v)
+    k = np.asarray(k) / np.linalg.norm(k)  # Normalize the axis vector to a unit vector
+
+    cos_theta = np.cos(theta)
+    sin_theta = np.sin(theta)
+
+    # Rodrigues' formula components
+    term1 = v * cos_theta
+    term2 = np.cross(k, v) * sin_theta
+    term3 = k * np.dot(k, v) * (1 - cos_theta)
+
+    return term1 + term2 + term3
 
 class ActiveToSMPLPoseNode(SMPLShadowTranslator, Node):
     @staticmethod

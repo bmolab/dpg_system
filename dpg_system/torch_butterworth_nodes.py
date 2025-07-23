@@ -9,11 +9,14 @@ from dpg_system.conversion_utils import *
 import numpy as np
 import torch
 from dpg_system.torch_base_nodes import TorchDeviceDtypeNode
+import scipy
+
 # import torch_kf
 # import torch_kf.ckf
 
 def register_torch_butterworth_nodes():
     Node.app.register_node("t.filter_bank", TorchBandPassFilterBankNode.factory)
+    Node.app.register_node("t.sav_gol_filter", TorchSavGolFilterNode.factory)
 
 # class TorchKalmanFilterNode(TorchDeviceDtypeNode):
 #     @staticmethod
@@ -320,3 +323,201 @@ class TorchIIR2Filter:
 
         coefficient_set = coefficient_set.unsqueeze(-1)  # [order, 6, num_bands, 1]]
         return coefficient_set
+
+
+# gemini test
+
+class TorchParallelSavGolFilter:
+    """
+    Applies a Savitzky-Golay filter to a batch of parallel, independent streams.
+
+    This class is designed for scenarios where an input tensor of shape
+    [num_streams, num_components] represents a single time-step for multiple
+    independent data streams (e.g., all joint rotations in a skeleton).
+    """
+
+    def __init__(self, window_length: int, polyorder: int, num_streams: int, num_components: int,
+                 normalize_output: bool = False, device='cpu', dtype=torch.float32):
+        self.window_length = window_length
+        self.polyorder = polyorder
+        self.num_streams = num_streams
+        self.num_components = num_components
+        self.normalize_output = normalize_output
+        self.device = device
+        self.dtype = dtype
+
+        self.fir_coefficients = self.create_coefficients()
+
+        # The buffer now holds a history for each parallel stream
+        # Shape: [num_streams, window_length, num_components]
+        self.buffer = None
+        self.ptr = 0
+        self.is_warmed_up = False
+        self.allocate_buffers(self.num_streams, self.num_components)
+
+    def allocate_buffers(self, num_streams, num_components):
+        """Allocates or re-allocates the internal buffer for all streams."""
+        self.num_streams = num_streams
+        self.num_components = num_components
+        self.buffer = torch.zeros(
+            (self.num_streams, self.window_length, self.num_components),
+            dtype=self.dtype,
+            device=self.device
+        )
+        self.ptr = 0
+        self.is_warmed_up = False
+        print(f"Allocated Parallel SavGol buffer for {num_streams} streams of {num_components} components.")
+
+    def filter(self, input_batch: torch.Tensor) -> torch.Tensor:
+        """
+        Filters a batch of data representing one time-step for all parallel streams.
+
+        Args:
+            input_batch (torch.Tensor): A 2D tensor of shape [num_streams, num_components].
+
+        Returns:
+            torch.Tensor: The filtered output batch of shape [num_streams, num_components].
+        """
+        if self.buffer is None or self.buffer.shape[0] != input_batch.shape[0] or self.buffer.shape[2] != \
+                input_batch.shape[1]:
+            self.allocate_buffers(input_batch.shape[0], input_batch.shape[1])
+
+        # --- Update circular buffer for all streams at once ---
+        # input_batch shape: [num_streams, num_components]
+        # We need to insert it into the buffer at the current pointer index.
+        # buffer shape: [num_streams, window_length, num_components]
+        self.buffer[:, self.ptr, :] = input_batch
+        self.ptr = (self.ptr + 1) % self.window_length
+
+        # --- Handle warm-up period ---
+        if not self.is_warmed_up:
+            if self.ptr == 1:
+                # Prime the buffer with the first frame
+                self.buffer = self.buffer + input_batch.unsqueeze(1)
+            if self.ptr == 0:
+                self.is_warmed_up = True
+
+        # --- Apply FIR filter in parallel ---
+        # Roll the buffer to get a chronologically-ordered view for each stream
+        # Shape remains [num_streams, window_length, num_components]
+        ordered_buffer = torch.roll(self.buffer, shifts=-self.ptr, dims=1)
+
+        # Batched dot product using einsum. This is the key to parallelism.
+        # 'w,swc->sc': For each stream 's', sum over 'w' (window) dimension.
+        # coeffs ('w') and buffer ('swc'), result is stream-channel ('sc').
+        output = torch.einsum('w,swc->sc', self.fir_coefficients, ordered_buffer)
+
+        # --- Optional: Parallel normalization ---
+        if self.normalize_output:
+            # Calculate norms for each stream vector. keepdim=True makes it [num_streams, 1]
+            norms = torch.linalg.norm(output, dim=1, keepdim=True)
+            # Avoid division by zero
+            norms[norms < 1e-9] = 1.0
+            output = output / norms
+
+        return output
+
+    def create_coefficients(self):
+        coeffs = scipy.signal.savgol_coeffs(self.window_length, self.polyorder, deriv=0)
+        return torch.tensor(coeffs[::-1].copy(), dtype=self.dtype, device=self.device)
+
+    def reset(self):
+        if self.buffer is not None: self.buffer.zero_()
+        self.ptr = 0;
+        self.is_warmed_up = False
+
+# --- The New Node Class ---
+
+class TorchSavGolFilterNode(TorchDeviceDtypeNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchSavGolFilterNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.window_length = 31
+        self.polyorder = 3
+        self.normalize_output = True  # Defaulting to True as quaternions are the primary use case
+        self.setup_dtype_device_grad(args)
+        self.dtype = torch.float32
+        self.input_port = self.add_input("signal", triggers_execution=True)
+        self.reset_input = self.add_input('reset', widget_type='button', callback=self.reset_filter)
+        self.window_length_property = self.add_property('window length', widget_type='input_int',
+                                                        default_value=self.window_length, min=3, max=1001,
+                                                        callback=self.params_changed)
+        self.polyorder_property = self.add_property('polynomial order', widget_type='input_int',
+                                                    default_value=self.polyorder, min=1, max=8,
+                                                    callback=self.params_changed)
+        self.normalize_property = self.add_property('normalize output', widget_type='checkbox',
+                                                    default_value=self.normalize_output, callback=self.params_changed)
+        self.output_port = self.add_output('filtered')
+        self.filter = None
+        self.create_dtype_device_grad_properties(option=True)
+
+    def custom_create(self, from_file):
+        self.params_changed()
+
+    def reset_filter(self):
+        if self.filter:
+            print(f"Node '{self.label}': Resetting Parallel SavGol filter state.")
+            self.filter.reset()
+
+    def params_changed(self):
+        self.filter = None
+        self.window_length = self.window_length_property()
+        self.polyorder = self.polyorder_property()
+        self.normalize_output = self.normalize_property()
+        if self.window_length % 2 == 0: self.window_length += 1
+        if self.polyorder >= self.window_length: self.polyorder = self.window_length - 1
+        print(f"Node '{self.label}': Parameters changed. Filter will be recreated on next execution.")
+
+    def device_changed(self):
+        super().device_changed()
+        self.params_changed()
+
+    def execute(self):
+        """
+        The main execution logic. Handles an input tensor where the first
+        dimension is the number of parallel streams to be filtered.
+        """
+        signal_in = self.input_port()
+        if signal_in is None:
+            return
+
+        if not isinstance(signal_in, torch.Tensor):
+            signal_in = torch.tensor(signal_in, dtype=self.dtype, device=self.device)
+
+        # We now expect a 2D tensor [num_streams, num_components]
+        if signal_in.dim() != 2:
+            print(
+                f"Node '{self.label}': Error: Input must be a 2D tensor of shape [num_streams, num_components]. Got {signal_in.dim()} dimensions.")
+            return
+
+        num_streams, num_components = signal_in.shape
+
+        # --- Lazy Instantiation or Resizing of the Filter ---
+        if self.filter is None or self.filter.num_streams != num_streams or self.filter.num_components != num_components:
+            print(
+                f"Node '{self.label}': Instantiating/resizing Parallel SavGol filter for ({num_streams}, {num_components}).")
+            try:
+                # Use the new parallel filter class
+                self.filter = TorchParallelSavGolFilter(
+                    window_length=self.window_length,
+                    polyorder=self.polyorder,
+                    num_streams=num_streams,
+                    num_components=num_components,
+                    normalize_output=self.normalize_output,
+                    device=self.device,
+                    dtype=self.dtype
+                )
+            except ValueError as e:
+                print(f"Error creating filter: {e}")
+                self.filter = None
+                return
+
+        # --- Run the parallel filter ---
+        # The filter class now handles the parallel logic internally.
+        signal_out = self.filter.filter(signal_in)
+
+        self.output_port.send(signal_out)
