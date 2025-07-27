@@ -92,7 +92,7 @@ def torch_quaternion_to_axis_angle(quaternions: torch.Tensor) -> torch.Tensor:
         sin_half_angles_over_angles = 0.5 * torch.sin(half_angles) / half_angles
         sin_half_angles_over_angles[mask] = 0.5
     else:
-        sin_half_angles_over_angles = 0.5 * torch.sinc(half_angles / torch.pi)
+        sin_half_angles_over_angles = 0.5 * mps_sinc(half_angles / torch.pi)
     # angles/2 are between [-pi/2, pi/2], thus sin_half_angles_over_angles
     # can't be zero
     out = quaternions[..., 1:] / sin_half_angles_over_angles
@@ -130,6 +130,22 @@ class QuaternionToRotVecNode(Node):
                     if self.app.verbose:
                         print('quaternion_to_rotvec received improperly formatted input')
 
+def mps_sinc(x: torch.Tensor) -> torch.Tensor:
+    """
+    An MPS-compatible implementation of the normalized sinc function.
+    The PyTorch definition is sin(pi * x) / (pi * x), with sinc(0) = 1.
+    """
+    # Where x is 0, the value is 1. Otherwise, it's sin(pi*x)/(pi*x).
+    # torch.where is perfect for this and is MPS-compatible.
+    if x.is_mps:
+        return torch.where(
+            x == 0,
+            torch.ones_like(x),
+            torch.sin(torch.pi * x) / (torch.pi * x)
+        )
+    else:
+        return torch.sinc(x)
+
 def torch_axis_angle_to_quaternion(axis_angle: torch.Tensor) -> torch.Tensor:
     """
     Convert rotations given as axis/angle to quaternions.
@@ -148,7 +164,7 @@ def torch_axis_angle_to_quaternion(axis_angle: torch.Tensor) -> torch.Tensor:
         added_dim = True
         axis_angle = axis_angle.unsqueeze(0)
     angles = torch.norm(axis_angle, p=2, dim=-1, keepdim=True)
-    sin_half_angles_over_angles = 0.5 * torch.sinc(angles * 0.5 / torch.pi)
+    sin_half_angles_over_angles = 0.5 * mps_sinc(angles * 0.5 / torch.pi)
     if added_dim:
         return torch.cat([torch.cos(angles * 0.5), axis_angle * sin_half_angles_over_angles], dim=-1).squeeze(0)
     return torch.cat([torch.cos(angles * 0.5), axis_angle * sin_half_angles_over_angles], dim=-1)
@@ -630,7 +646,7 @@ def matrix_to_axis_angle(matrix: torch.Tensor, fast: bool = False) -> torch.Tens
 
     axis_angles = torch.empty_like(omegas)
     axis_angles[~near_pi] = (
-        0.5 * omegas[~near_pi] / torch.sinc(angles[~near_pi] / torch.pi)
+        0.5 * omegas[~near_pi] / mps_sinc(angles[~near_pi] / torch.pi)
     )
 
     # this derives from: nnT = (R + 1) / 2
@@ -738,7 +754,7 @@ def torch_matrix_to_axis_angle(matrix: torch.Tensor) -> torch.Tensor:
 
     axis_angles = torch.empty_like(omegas)
     axis_angles[~near_pi] = (
-        0.5 * omegas[~near_pi] / torch.sinc(angles[~near_pi] / torch.pi)
+        0.5 * omegas[~near_pi] / mps_sinc(angles[~near_pi] / torch.pi)
     )
 
     # this derives from: nnT = (R + 1) / 2

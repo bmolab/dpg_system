@@ -305,7 +305,6 @@ class RollingBuffer:
                                 if self.write_pos >= self.sample_count:
                                     self.write_pos = 0
                         self.lock.release()
-
             return True
         return False
 

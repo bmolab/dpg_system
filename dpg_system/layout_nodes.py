@@ -322,8 +322,8 @@ class CairoTextLayoutNode(Node):
                 data = self.input()
                 self.clear_layout()
                 self.add_text(data)
-            else:
-                data = self.input()
+            elif self.active_input is self.command_input:
+                data = self.command_input()
                 t = type(data)
                 if t == str:
                     data = string_to_list(data)
@@ -335,7 +335,9 @@ class CairoTextLayoutNode(Node):
                             date = time.strftime("%d-%m-%Y-%H_%M_%S")
                             self.layout.save_layout_as_text(dir + os.sep + 'llama_output_' + date + '.txt')
                         if data[0] == 'add':
-                            self.add_text([data[1:]])
+                            self.add_text(data[1:])
+                        elif data[0] == 'add_char':
+                            self.add_text(data[1:], add_space=False)
                         elif data[0] == 'clear' or data[0] == 'reset':
                             self.clear_layout()
                         elif data[0] == 'scroll_up':
@@ -366,7 +368,7 @@ class CairoTextLayoutNode(Node):
         self.display_layout()
 
 # ISSUE HERE OF OVERNESTED LIST
-    def add_text(self, new_data):
+    def add_text(self, new_data, add_space=True):
         tp = type(new_data)
 
         if tp is str:
@@ -382,7 +384,7 @@ class CairoTextLayoutNode(Node):
                 if tt[1] != 0.0:
                     if '\\' in tt[0]:
                         tt[0].replace('\\n', '\n')
-                    self.layout.add_string([tt])
+                    self.layout.add_string([tt], add_space)
 
         self.display_layout()
 
