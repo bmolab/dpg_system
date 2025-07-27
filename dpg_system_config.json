@@ -23,5 +23,6 @@
   "layout_nodes": true,
   "eos_nodes": true,
   "orbbec_nodes": true,
+  "vive_tracker_nodes": true,
   "default_ip_base": "10.1.1.0"
 }
