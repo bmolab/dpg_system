@@ -638,16 +638,19 @@ class CairoTextLayout:
             f.flush()
             f.close()
 
-    def add_string(self, elements):
+    def add_string(self, elements, add_space=True):
         for index, element in enumerate(elements):
             word = element[0]
             alpha = element[1]
 
-            if index == 0:
-                the_word = '  ' + word
+            if add_space:
+                if index == 0:
+                    the_word = '  ' + word
+                else:
+                    the_word = ' ' + word
+                new_element = [self.cursor_position.copy(), the_word, alpha]
             else:
-                the_word = ' ' + word
-            new_element = [self.cursor_position.copy(), the_word, alpha]
+                new_element = [self.cursor_position.copy(), word, alpha]
             self.add_element_to_layout(new_element)
 
     def trailing_returns(self):

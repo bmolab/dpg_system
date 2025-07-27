@@ -1837,7 +1837,6 @@ class App:
                         osc_nodes.OSCThreadingSource.osc_manager.relay_pending_messages()
                     dpg.render_dearpygui_frame()
                     then = time.time()
-                    elapsed = then - now
 
                     #  openGL separate thread?
                     if not self.gl_on_separate_thread:
@@ -1845,7 +1844,8 @@ class App:
                             if do_gl:
                                 gl_nodes.GLContextNode.maintenance_loop()
                             self.restore_gl_context(hold_context)
-                            # glfw.make_context_current(hold_context)
+
+                    elapsed = then - now
 
                 if self.do_exit:
                     _thread.interrupt_main()

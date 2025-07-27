@@ -1591,8 +1591,9 @@ class ActiveJointsNode(MoCapNode):
         incoming = self.full_pose_in()
         t = type(incoming)
         if t == torch.Tensor:
-            incoming = tensor_to_array(incoming)
-            t = np.ndarray
+            if incoming.shape[0] == 37:
+                active_joints = incoming[self.active_to_shadow_map]
+                self.active_joints_out.send(active_joints)
         if t == np.ndarray:
             # work on this!!!
             if incoming.shape[0] == 37:
