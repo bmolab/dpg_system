@@ -636,7 +636,6 @@ class TorchQuaternionESEKF:  # Renamed from UKF to EKF
         rot_part = (vel_noise_3d * self.dt) ** 2
 
         # Concatenate the two [num_streams, 3] tensors to get a [num_streams, 6] tensor.
-        # This is the line that caused the error. Now it will work correctly.
         Q_diagonals = torch.cat([rot_part, vel_part], dim=1)
         self.Q = torch.diag_embed(Q_diagonals)
 
@@ -741,7 +740,6 @@ class TorchTristateBlendESEKFNode(TorchDeviceDtypeNode):  # Renamed
         self.resp_params = [0.05, 1.0]
         self.err_params = [0.005, 10.0]
 
-        # ... (Your __init__ code for inputs and properties is fine) ...
         # --- Inputs ---
         self.quat_input = self.add_input("quaternions", triggers_execution=True)
         self.dt_input = self.add_input("dt (sec)", widget_type='drag_float', default_value=1.0 / 60.0,
@@ -751,7 +749,6 @@ class TorchTristateBlendESEKFNode(TorchDeviceDtypeNode):  # Renamed
                                                 min=0.01, max=1.0)
         self.reset_input = self.add_input('reset', widget_type='button', callback=self.reset_filter)
 
-        # --- REMOVED 'Drift Noise' inputs for all modes ---
         self.add_property("--- Damping Mode ---", widget_type='label')
         self.damp_meas_in = self.add_input('Damp Meas Noise', widget_type='drag_float',
                                            default_value=self.damp_params[0], callback=self.update_params)
@@ -787,6 +784,7 @@ class TorchTristateBlendESEKFNode(TorchDeviceDtypeNode):  # Renamed
     def reset_filter(self):
         if self.filter: self.filter.reset()
         self.last_input_quat = None
+
         # Reset the blended alphas to the default "Damping" state
         if self.filter:
              self.blended_alphas = torch.tensor([1.0, 0.0, 0.0], device=self.device, dtype=self.dtype).unsqueeze(0).repeat(self.filter.num_streams, 1)
@@ -827,8 +825,6 @@ class TorchTristateBlendESEKFNode(TorchDeviceDtypeNode):  # Renamed
 
         self.filter.predict()
 
-        # --- NEW "COMPETITIVE BLENDING" LOGIC ---
-
         # 1. Calculate the raw strength for each active mode (Responsive and Error Correct)
         motion_deg_per_sec = torch.zeros(num_streams, device=self.device, dtype=self.dtype)
         if self.last_input_quat is not None:
@@ -855,11 +851,9 @@ class TorchTristateBlendESEKFNode(TorchDeviceDtypeNode):  # Renamed
         # 4. Damping alpha is whatever is left over.
         target_alpha_damp = 1.0 - target_alpha_resp - target_alpha_err
 
-        # --- END OF NEW LOGIC ---
-
         target_alphas = torch.stack([target_alpha_damp, target_alpha_resp, target_alpha_err], dim=1)
 
-        # Smooth the alphas using LERP (this part remains the same and is still crucial)
+        # Smooth the alphas using LERP
         blending_speed = self.blending_speed_in()
         self.blended_alphas = torch.lerp(self.blended_alphas, target_alphas, blending_speed)
 
