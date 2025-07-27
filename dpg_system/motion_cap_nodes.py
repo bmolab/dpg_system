@@ -8,6 +8,7 @@ import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import XML
 import scipy
 import copy
+import datetime
 
 import dpg_system.MotionSDK as shadow
 
@@ -144,6 +145,7 @@ class MoCapTakeNode(MoCapNode):
         self.record_positions_input = self.add_input('record positions', widget_type='checkbox', default_value=False)
         self.positions_input = self.add_input('positions in', callback=self.positions_received)
         self.save_button = self.add_input('save', widget_type='button', callback=self.save_sequence)
+        self.temp_save_name = ''
 
         load_path = ''
         self.load_path = self.add_option('path', widget_type='text_input', default_value=load_path, callback=self.load_from_load_path)
@@ -173,7 +175,9 @@ class MoCapTakeNode(MoCapNode):
                 self.frames = self.quat_buffer.shape[0]
                 self.current_frame = 0
                 self.frame_input.set(self.current_frame)
-
+                starttime = datetime.datetime.now()
+                self.temp_save_name = datetime.datetime.strftime(starttime, 'temp_mocap_take_%Y%m%d_%H%M%S.npz')
+                self.save_take(self.temp_save_name)
             self.recording = False
 
     def save_sequence(self):
@@ -193,19 +197,21 @@ class MoCapTakeNode(MoCapNode):
             if self.quat_buffer is not None:
                 if self.position_buffer is not None:
                     np.savez(save_path, quats=self.quat_buffer, positions=self.position_buffer)
-            else:
-                np.savez(save_path, quaternions=self.quat_buffer)
-            self.load_path.set(save_path)
-            self.file_name.set(save_path)
-            self.frames = self.record_frame_count
-            return True
+                else:
+                    np.savez(save_path, quaternions=self.quat_buffer)
+                if self.load_path() == self.temp_save_name and self.temp_save_name[:15] == 'temp_mocap_take':
+                    os.remove(self.load_path())
+                self.load_path.set(save_path)
+                self.file_name.set(save_path)
+                self.frames = self.record_frame_count
+                return True
         return False
 
     def save_file_callback(self, sender, app_data):
         if app_data is not None and 'file_path_name' in app_data:
             save_path = app_data['file_path_name']
-            if self.save_take(save_path):
-                return
+            if not self.save_take(save_path):
+                print('failed to save')
         else:
             print('no file chosen')
         if sender is not None:
@@ -395,6 +401,7 @@ class OpenTakeNode(MoCapNode):
 
         self.streaming = False
         self.take_dict = {}
+        self.global_dict = {}
         self.record_frame_count = 0
         self.sequence_keys = []
         self.global_keys = []
@@ -428,7 +435,7 @@ class OpenTakeNode(MoCapNode):
         self.dump_out = self.add_output('dump')
         self.global_params_out = self.add_output('globals')
         self.take_data_out = self.add_output('take data out')
-
+        self.temp_save_name = ''
         self.recording = False
 
         self.message_handlers['load'] = self.load_take_message
@@ -506,6 +513,7 @@ class OpenTakeNode(MoCapNode):
             self.record_button.set_label('stop record')
         else:
             self.record_button.set_label('record')
+            self.recording = False
             if len(self.take_dict) > 0:
                 for key, value in self.take_dict.items():
                     value = np.array(value)
@@ -525,7 +533,10 @@ class OpenTakeNode(MoCapNode):
                 self.length_property.set('length: ' + str(self.frames))
                 self.frame_input.widget.max = self.frames - 1
                 self.frame_input.widget.min = 0
-            self.recording = False
+                starttime = datetime.datetime.now()
+                self.temp_save_name = datetime.datetime.strftime(starttime, 'temp_take_%Y%m%d_%H%M%S.npz')
+                self.save_take(self.temp_save_name)
+
 
     def save_sequence(self):
         arg = self.save_button()
@@ -544,6 +555,8 @@ class OpenTakeNode(MoCapNode):
             for key, value in self.global_dict.items():
                 self.take_dict[key] = value
             np.savez(save_path, **self.take_dict)
+            if self.load_path() == self.temp_save_name and self.temp_save_name[:9] == 'temp_take':
+                os.remove(self.load_path())
             self.load_path.set(save_path)
             self.file_name.set(save_path)
             self.frames = self.record_frame_count
@@ -553,8 +566,8 @@ class OpenTakeNode(MoCapNode):
     def save_file_callback(self, sender, app_data):
         if app_data is not None and 'file_path_name' in app_data:
             save_path = app_data['file_path_name']
-            if self.save_take(save_path):
-                return
+            if not self.save_take(save_path):
+                print('failed to save')
         else:
             print('no file chosen')
         if sender is not None:
@@ -590,8 +603,8 @@ class OpenTakeNode(MoCapNode):
     def save_clip_callback(self, sender, app_data):
         if app_data is not None and 'file_path_name' in app_data:
             save_path = app_data['file_path_name']
-            if self.save_clip_only(save_path):
-                return
+            if not self.save_clip_only(save_path):
+                print('failed to save')
         else:
             print('no file chosen')
         if sender is not None:

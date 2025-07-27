@@ -1527,6 +1527,7 @@ class NumpySequenceNode(Node):
             print('no file chosen')
         if sender is not None:
             dpg.delete_item(sender)
+        Node.app.active_widget = -1
 
     def save_array(self, path):
         numpy_array = np.array(self.sequence)

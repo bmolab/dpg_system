@@ -535,6 +535,7 @@ class SMPLBodyNode(SMPLNode):
         else:
             print('no file chosen')
         dpg.delete_item(sender)
+        Node.app.active_widget = -1
 
 
 class SMPLTakeNode(SMPLNode):
