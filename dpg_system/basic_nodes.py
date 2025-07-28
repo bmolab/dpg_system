@@ -33,7 +33,11 @@ def register_basic_nodes():
     Node.app.register_node('dict', CollectionNode.factory)
     Node.app.register_node('construct_dict', ConstructDictNode.factory)
     Node.app.register_node('gather_to_dict', ConstructDictNode.factory)
+
     Node.app.register_node('dict_extract', DictExtractNode.factory)
+    Node.app.register_node('unpack_dict', DictExtractNode.factory)
+
+    Node.app.register_node('pack_dict', PackDictNode.factory)
     Node.app.register_node("combine", CombineNode.factory)
     Node.app.register_node("kombine", CombineNode.factory)
     Node.app.register_node("concat", ConcatenateNode.factory)
@@ -2545,6 +2549,7 @@ def cancel_coll_load_callback(sender, app_data):
         dpg.delete_item(sender)
     Node.app.active_widget = -1
 
+
 class DictExtractNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -2554,20 +2559,36 @@ class DictExtractNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.input = self.add_input('dict in', triggers_execution=True)
+        for i in range(32):
+            self.add_output('')
         self.extract_keys = []
         for arg in args:
             if type(arg) is str:
                 self.extract_keys.append(arg)
         self.output_count = len(self.extract_keys)
 
-        for key in self.extract_keys:
-            self.add_output(key)
+    def custom_create(self, from_file):
+        for index, key in enumerate(self.extract_keys):
+            self.outputs[index].set_label(key)
+        for i in range(len(self.extract_keys), 32):
+            dpg.hide_item(self.outputs[i].uuid)
+
 
     def execute(self):
         received_dict = self.input()
-        for index, key in enumerate(self.extract_keys):
-            if key in received_dict:
+        if len(self.extract_keys) == 0:
+            keys = list(received_dict.keys())
+            for index, key in enumerate(keys):
+                self.outputs[index].set_label(key)
                 self.outputs[index].send(received_dict[key])
+                dpg.show_item(self.outputs[index].uuid)
+            for i in range(len(keys), 32):
+                dpg.hide_item(self.outputs[i].uuid)
+            self.unparsed_args = keys
+        else:
+            for index, key in enumerate(self.extract_keys):
+                if key in received_dict:
+                    self.outputs[index].send(received_dict[key])
 
 
 class ConstructDictNode(Node):
@@ -2590,6 +2611,36 @@ class ConstructDictNode(Node):
             key = incoming[0]
             value = incoming[1:]
             self.dict[key] = value
+
+    def execute(self):
+        self.dict_output.send(self.dict)
+        self.dict = {}
+
+
+class PackDictNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = PackDictNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('send dict', widget_type='button', triggers_execution=True)
+        self.labels = []
+        if len(args) > 0:
+            self.labels = args
+
+        for label in self.labels:
+            self.data_input = self.add_input(label, callback=self.received_data)
+        self.dict_output = self.add_output('dict out')
+        self.input_keys = []
+        self.dict = {}
+
+    def received_data(self):
+        this_input = self.active_input
+        key = this_input.get_label()
+        incoming = this_input()
+        self.dict[key] = incoming
 
     def execute(self):
         self.dict_output.send(self.dict)
