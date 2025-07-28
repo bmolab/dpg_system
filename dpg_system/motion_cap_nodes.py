@@ -1617,9 +1617,18 @@ class ActiveJointsNode(MoCapNode):
 
 def shadow_service_loop():
     while True:
+        was_client = False
         for node in MotionShadowNode.shadow_nodes:
-            node.receive_data()
-        # time.sleep(.01)
+            if node.client is not None:
+                node.receive_data()
+                was_client = True
+        if was_client:
+            time.sleep(.001)
+        else:
+            for node in MotionShadowNode.shadow_nodes:
+                if node.client is None:
+                    node.frame_task()
+            time.sleep(.10)
 
 
 class MotionShadowNode(MoCapNode):
@@ -1691,7 +1700,8 @@ class MotionShadowNode(MoCapNode):
                 # os.system("open /Applications/Shadow.app")
                 self.launching_shadow = True
         elif _platform.system() == 'Linux':
-            pass
+            process = subprocess.Popen(['/opt/Motion/Shadow'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            self.launching_shadow = True
 
     def direct_out_changed(self):
         if self.direct_out():
@@ -1738,10 +1748,13 @@ class MotionShadowNode(MoCapNode):
                     lock = None
                     if self.direct_out():
                         self.frame_task()
+        elif self.launching_shadow:
+            if self.direct_out():
+                self.frame_task()
 
     def frame_task(self):
         if self.launching_shadow:
-            if _platform.system() == 'Darwin':
+            if _platform.system() in ['Darwin', 'Linux']:
                 if find_process_id('Shadow') is not None:
                     try:
                         self.client = shadow.Client("", 32076)
