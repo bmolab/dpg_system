@@ -1488,6 +1488,13 @@ class Action:
         if self.action_function is not None:
             self.action_function()
 
+class NodeGroup:
+    """A wrapper for a Dear PyGui group widget within a Node."""
+
+    def __init__(self, tag: Union[str, int], parent_node: 'Node', **kwargs):
+        self.tag = tag
+        self.parent_node = parent_node
+        self.kwargs = kwargs  # Store extra dpg options like 'horizontal'
 
 class Node:
     app = None
@@ -1595,6 +1602,12 @@ class Node:
 
         self.set_custom_visibility()
 
+    # Add this method inside your base Node class
+    def _install_group(self, group: 'NodeGroup'):
+        """Creates the dpg.group widget and parents it to this node."""
+        # self.uuid should be the tag of the main dpg.node item
+        dpg.add_group(tag=group.tag, parent=self.uuid, **group.kwargs)
+
     def set_custom_visibility(self) -> None:
         pass
 
@@ -1670,6 +1683,33 @@ class Node:
             new_display.add_callback(callback=callback, user_data=self)
         return new_display
 
+    def add_group(self, tag: Optional[Union[str, int]] = None,
+                  horizontal: bool = False,
+                  width: int = -1) -> 'NodeGroup':
+        """
+        Adds a container group to the node.
+
+        Args:
+            tag (Optional[Union[str, int]]): The unique identifier for this group.
+                If None, DPG will generate one.
+            horizontal (bool): If True, widgets added to this group will be
+                arranged horizontally. Defaults to False.
+            width (int): The width of the group. -1 means auto-fit.
+
+        Returns:
+            NodeGroup: A wrapper object representing the created group.
+                Use its .tag attribute to parent other widgets to it.
+        """
+        # If no tag is provided, generate a unique one using DPG's internal system
+        group_tag = dpg.generate_uuid() if tag is None else tag
+
+        # Create the wrapper object, storing the dpg options in kwargs
+        new_group = NodeGroup(group_tag, self, horizontal=horizontal, width=width)
+
+        # Use the helper to create the actual DPG widget
+        self._install_group(new_group)
+
+        return new_group
     def add_input(self, label: str = "", uuid: Optional[int] = None,
                  widget_type: Optional[str] = None, widget_uuid: Optional[int] = None,
                  widget_width: int = 80, triggers_execution: bool = False,
@@ -2800,6 +2840,32 @@ class PlaceholderNode(Node):
                     Node.app.current_node_editor = hold_node_editor_index
                     return
 
+def load_cancel_callback(sender, app_data):
+    if sender is not None:
+        dpg.delete_item(sender)
+    Node.app.active_widget = -1
+
+class LoadDialog:
+    def __init__(self, parent, callback, extensions):
+        Node.app.active_widget = 1
+        self.callback = callback
+        self.parent = parent
+        with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
+                             callback=self.load_callback, cancel_callback=load_cancel_callback,
+                             tag='load_take_dict_dialog') as self.load_take_task:
+            for extension in extensions:
+                dpg.add_file_extension(extension)
+
+
+    def load_callback(self, sender, app_data):
+        if app_data is not None and 'file_path_name' in app_data:
+            load_path = app_data['file_path_name']
+            self.callback(load_path)
+        else:
+            print('no file chosen')
+        if sender is not None:
+            dpg.delete_item(sender)
+        Node.app.active_widget = -1
 
 
 

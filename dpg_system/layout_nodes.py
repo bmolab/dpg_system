@@ -337,7 +337,13 @@ class CairoTextLayoutNode(Node):
                         if data[0] == 'add':
                             self.add_text(data[1:])
                         elif data[0] == 'add_char':
-                            self.add_text(data[1:], add_space=False)
+                            if len(data) > 1:
+                                added_char = data[1]
+                                if added_char == '':
+                                    added_char = ' '
+                            else:
+                                added_char = ' '
+                            self.add_text(added_char, add_space=False)
                         elif data[0] == 'clear' or data[0] == 'reset':
                             self.clear_layout()
                         elif data[0] == 'scroll_up':
@@ -370,7 +376,9 @@ class CairoTextLayoutNode(Node):
 # ISSUE HERE OF OVERNESTED LIST
     def add_text(self, new_data, add_space=True):
         tp = type(new_data)
-
+        if new_data == ' ':
+            new_data = [' ']
+            tp = type(new_data)
         if tp is str:
             new_data = string_to_list(new_data)
         for t in new_data:

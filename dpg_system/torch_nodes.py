@@ -37,7 +37,6 @@ from dpg_system.torch_voxel_nodes import *
 
 torchaudio_avail = True
 try:
-    import pyaudio
     from dpg_system.torchaudio_nodes import *
 except Exception as e:
     print('pyaudio not found - torchaudio nodes not available')
