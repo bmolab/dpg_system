@@ -1,7 +1,6 @@
 from pyexpat import features
-
 import dearpygui.dearpygui as dpg
-from dpg_system.node import Node, NodeInput
+from dpg_system.node import Node, NodeInput, LoadDialog, SaveDialog
 from dpg_system.conversion_utils import *
 import time
 import numpy as np
@@ -1512,32 +1511,28 @@ class NumpySequenceNode(Node):
                 self.data_output.send(self.sequence[frame_num])
 
     def save_sequence(self):
-        Node.app.active_widget = 1
-        with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
-                             user_data=self, callback=self.save_file_callback, tag="file_dialog_id"):
-            dpg.add_file_extension(".npy")
+        SaveDialog(self, callback=self.save_file_callback, extensions=['.npy'])
+        # Node.app.active_widget = 1
+        # with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
+        #                      user_data=self, callback=self.save_file_callback, tag="file_dialog_id"):
+        #     dpg.add_file_extension(".npy")
 
-    def save_file_callback(self, sender, app_data):
-        global save_path
-        if app_data is not None and 'file_path_name' in app_data:
-            save_path = app_data['file_path_name']
-            if save_path != '':
-                self.save_array(save_path)
+    def save_file_callback(self, save_path):
+        if save_path != '':
+            self.save_array(save_path)
         else:
             print('no file chosen')
-        if sender is not None:
-            dpg.delete_item(sender)
-        Node.app.active_widget = -1
 
     def save_array(self, path):
         numpy_array = np.array(self.sequence)
         np.save(path, numpy_array)
 
     def load_sequence(self):
-        Node.app.active_widget = 1
-        with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
-                                 user_data=self, callback=self.load_npz_callback, tag="file_dialog_id"):
-            dpg.add_file_extension(".npy")
+        LoadDialog(self, callback=self.load_npz_callback, extensions=['.npy'])
+        # Node.app.active_widget = 1
+        # with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
+        #                          user_data=self, callback=self.load_npz_callback, tag="file_dialog_id"):
+        #     dpg.add_file_extension(".npy")
 
     def load_from_load_path(self):
         path = self.load_path()
@@ -1547,15 +1542,12 @@ class NumpySequenceNode(Node):
             except Exception as e:
                 print('no take file found:', path)
 
-    def load_npz_callback(self, sender, app_data):
-        if 'file_path_name' in app_data:
-            load_path = app_data['file_path_name']
-            if load_path != '':
-                self.load_path.set(load_path)
-                self.load_array(load_path)
+    def load_npz_callback(self, load_path):
+        if load_path != '':
+            self.load_path.set(load_path)
+            self.load_array(load_path)
         else:
             print('no file chosen')
-        dpg.delete_item(sender)
 
     def load_array(self, path):
         numpy_array = np.load(path)

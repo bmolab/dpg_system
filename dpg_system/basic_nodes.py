@@ -10,7 +10,8 @@ import torch
 import copy
 import queue
 
-from dpg_system.node import Node
+from dpg_system.node import Node, SaveDialog, LoadDialog
+
 import threading
 from dpg_system.conversion_utils import *
 import json
@@ -2518,38 +2519,6 @@ class AppendNode(Node):
         self.output.send(out_list)
 
 
-def save_coll_callback(sender, app_data):
-    global save_path
-    if 'file_path_name' in app_data:
-        save_path = app_data['file_path_name']
-        coll_node = dpg.get_item_user_data(sender)
-        if save_path != '':
-            coll_node.save_data(save_path)
-    else:
-        print('no file chosen')
-    dpg.delete_item(sender)
-    Node.app.active_widget = -1
-
-
-def load_coll_callback(sender, app_data):
-    global load_path
-    if 'file_path_name' in app_data:
-        load_path = app_data['file_path_name']
-        coll_node = dpg.get_item_user_data(sender)
-        if load_path != '':
-            coll_node.load_data(load_path)
-    else:
-        print('no file chosen')
-    dpg.delete_item(sender)
-    Node.app.active_widget = -1
-
-
-def cancel_coll_load_callback(sender, app_data):
-    if sender is not None:
-        dpg.delete_item(sender)
-    Node.app.active_widget = -1
-
-
 class DictExtractNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -2687,9 +2656,16 @@ class CollectionNode(Node):
             self.output.send(out_list)
 
     def save_dialog(self):
-        with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, user_data=self, callback=save_coll_callback, cancel_callback=cancel_coll_load_callback,
-                             tag="coll_dialog_id"):
-            dpg.add_file_extension(".json")
+        SaveDialog(self, callback=self.save_coll_callback, extensions=['json'])
+        # with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, user_data=self, callback=save_coll_callback, cancel_callback=cancel_coll_load_callback,
+        #                      tag="coll_dialog_id"):
+        #     dpg.add_file_extension(".json")
+
+    def save_coll_callback(self, save_path):
+        if save_path != '':
+            self.save_data(save_path)
+        else:
+            print('no file chosen')
 
     def save_data(self, path):
         with open(path, 'w') as f:
@@ -2710,9 +2686,13 @@ class CollectionNode(Node):
             self.collection = container['collection']
 
     def load_dialog(self):
-        with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, user_data=self, callback=load_coll_callback, cancel_callback=cancel_coll_load_callback,
-                             tag="coll_dialog_id"):
-            dpg.add_file_extension(".json")
+        LoadDialog(self, callback=self.load_coll_callback, extensions=['json'])
+
+    def load_coll_callback(self, load_path):
+        if load_path != '':
+            self.load_data(load_path)
+        else:
+            print('no file chosen')
 
     def load_message(self, message='', data=[]):
         if len(data) > 0:
@@ -2786,6 +2766,10 @@ class CollectionNode(Node):
             # if not handled:
             t = type(data)
 
+            if t is str:
+                if data[0] == '{':
+                    data = json.loads(data)
+                    t = dict
             if t is dict:
                 self.collection = copy.deepcopy(data)
             elif t == list:
@@ -2804,31 +2788,6 @@ class CollectionNode(Node):
                 else:
                     self.collection[index] = data
 
-
-def save_text_file_callback(sender, app_data):
-    global save_path
-    if 'file_path_name' in app_data:
-        save_path = app_data['file_path_name']
-        text_file_node = dpg.get_item_user_data(sender)
-        if save_path != '':
-            text_file_node.save_data(save_path)
-    else:
-        print('no file chosen')
-    dpg.delete_item(sender)
-    Node.app.active_widget = -1
-
-
-def load_text_file_callback(sender, app_data):
-    global load_path
-    if 'file_path_name' in app_data:
-        load_path = app_data['file_path_name']
-        text_file_node = dpg.get_item_user_data(sender)
-        if load_path != '':
-            text_file_node.load_data(load_path)
-    else:
-        print('no file chosen')
-    dpg.delete_item(sender)
-    Node.app.active_widget = -1
 
 
 class TextFileNode(Node):
@@ -2874,6 +2833,13 @@ class TextFileNode(Node):
             char_pos = any_to_int(data[0])
             if char_pos < len(self.text_contents) and char_pos >= 0:
                 out_char = self.text_contents[char_pos]
+                if out_char == '\\':
+                    if char_pos + 1 < len(self.text_contents):
+                        out_char_2 = self.text_contents[char_pos + 1]
+                        if out_char_2 == 'n':
+                            out_char = '\n'
+                        elif out_char_2 == 't':
+                            out_char = '\t'
                 self.output.send(out_char)
         self.input_handled = True
 
@@ -2890,9 +2856,16 @@ class TextFileNode(Node):
             self.load_data(self.file_name_property())
 
     def save_dialog(self):
-        with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, user_data=self, callback=save_text_file_callback, cancel_callback=cancel_textfile_callback,
-                             tag="text_dialog_id"):
-            dpg.add_file_extension(".txt")
+        SaveDialog(self, callback=self.save_text_file_callback, extensions=['.txt'])
+        # with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, user_data=self, callback=save_text_file_callback, cancel_callback=cancel_textfile_callback,
+        #                      tag="text_dialog_id"):
+        #     dpg.add_file_extension(".txt")
+
+    def save_text_file_callback(self, save_path):
+        if save_path != '':
+            self.save_data(save_path)
+        else:
+            print('no file chosen')
 
     def save_data(self, path):
         self.text_contents = self.text_editor()
@@ -2909,9 +2882,13 @@ class TextFileNode(Node):
             self.save_dialog()
 
     def load_dialog(self):
-        with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, user_data=self, callback=load_text_file_callback, cancel_callback=cancel_textfile_callback,
-                             tag="text_dialog_id"):
-            dpg.add_file_extension(".txt")
+        LoadDialog(self, callback=self.load_text_file_callback, extensions=['.txt'])
+
+    def load_text_file_callback(self, load_path):
+        if load_path != '':
+            self.load_data(load_path)
+        else:
+            print('no file chosen')
 
     def load_message(self):
         data = self.load_button()
@@ -3151,26 +3128,24 @@ class FuzzyMatchNode(Node):
             for artist in data:
                 self.option_list.append(artist)
 
+    def load_match_file(self):
+        LoadDialog(self, callback=self.load_match_file_callback, extensions=['.json'])
+        # with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
+        #                      user_data=self, callback=self.load_match_file_callback, tag="match_file_dialog_id"):
+        #     dpg.add_file_extension(".json")
+
+    def load_match_file_callback(self, path):
+        if path != '':
+            self.load_path.set(path)
+            self.load_from_load_path()
+        else:
+            print('no file chosen')
+
     def load_from_load_path(self):
         path = self.load_path()
         print('load_from_load_path', path)
         if path != '':
             self.load_match_file_from_json(self.load_path())
-
-    def load_match_file(self):
-        with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
-                             user_data=self, callback=self.load_match_file_callback, tag="match_file_dialog_id"):
-            dpg.add_file_extension(".json")
-
-    def load_match_file_callback(self, sender, app_data):
-        if 'file_path_name' in app_data:
-            path = app_data['file_path_name']
-            if path != '':
-                self.load_path.set(path)
-                self.load_from_load_path()
-        else:
-            print('no file chosen')
-        dpg.delete_item(sender)
 
     def load_match_file_from_json(self, path):
         print('load from json')
@@ -3673,10 +3648,14 @@ class ASCIIConverterNode(Node):
 
     def execute(self):
         codes = []
-        string = any_to_string(self.input())
-        for char in string:
-            code = ord(char)
-            codes.append(code)
+        received = self.input()
+        if received == '\n':
+            codes.append(10)
+        else:
+            string = any_to_string(self.input())
+            for char in string:
+                code = ord(char)
+                codes.append(code)
         if len(codes) == 1:
             self.output.send(codes[0])
         else:

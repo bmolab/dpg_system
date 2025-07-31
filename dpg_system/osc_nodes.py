@@ -1258,7 +1258,12 @@ class OSCAsyncIOSourceNode(OSCAsyncIOSource, Node):
         self.handle_in_loop_option = self.add_option('handle in main loop', widget_type='checkbox', default_value=self.handle_in_loop, callback=self.handle_in_loop_changed)
         # asyncio.run(self.init_main())
         self.node = self
-        self.path_option = self.add_option('path', widget_type='label')
+        self.path_option = self.add_option('path', widget_type='text_input', callback=self.set_path)
+
+    def set_path(self):
+        path = self.path_option()
+        self.path = path
+
 
     def custom_create(self, from_file):
         self.register()
@@ -1366,15 +1371,22 @@ class OSCDeviceNode(OSCAsyncIOSource, OSCTarget, Node):
         self.handle_in_loop_option = self.add_option('handle in main loop', widget_type='checkbox', default_value=self.handle_in_loop, callback=self.handle_in_loop_changed)
         OSCAsyncIOSource.node = self
         OSCTarget.node = self
-        self.path_option = self.add_option('path', widget_type='label')
+        self.path_option = self.add_option('path', widget_type='text_input', callback=self.change_path)
         self.node = self
+
+    def change_path(self):
+        path = self.path_option()
+        self.unregister()
+        self.path = self.osc_manager.registry.add_generic_receiver_to_registry([path])
+        self.path_option.set(self.path)
 
     def custom_create(self, from_file):
         self.register()
 
     def register(self):
         patcher_path = self.get_patcher_path()
-        self.path = self.osc_manager.registry.add_generic_receiver_to_registry([patcher_path, self.name])
+        # self.path = self.osc_manager.registry.add_generic_receiver_to_registry([patcher_path, self.name])
+        self.path = self.osc_manager.registry.add_generic_receiver_to_registry([self.name])
         self.path_option.set(self.path)
 
     def unregister(self):
@@ -1576,7 +1588,6 @@ class OSCReceiveNode(OSCReceiver, Node):
             self.find_source_node(self.name)
             self.register()
             self.outputs[0].set_label(self.path)
-
 
     def receive(self, data, address=None):
         if self.throttle() > 0:

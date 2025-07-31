@@ -44,6 +44,7 @@ def register_torchaudio_nodes():
     Node.app.register_node('t.audio.loudness', TorchAudioLoudnessNode.factory)
     Node.app.register_node('t.audio.overdrive', TorchAudioOverdriveNode.factory)
     Node.app.register_node('audio_mixer', AudioMixerNode.factory)
+    Node.app.register_node('t.audio.multiplayer', TorchAudioMultiPlayerNode.factory)
 
     # Node.app.register_node('ta.vad', TorchAudioVADNode.factory) - does not seem to do anything
 
@@ -460,7 +461,7 @@ class TorchAudioFileNode(TorchNode):
         self.file_name.set(file_name)
 
     def load_file(self):
-        filepath = self.path_input()
+        filepath = any_to_string(self.path_input())
         self.load_file_with_path(filepath)
 
     def execute(self):
@@ -531,6 +532,114 @@ class TorchAudioPlaySoundNode(TorchNode):
             except Exception as e:
                 print(f"Error sending sound to mixer: {e}")
             return self.last_sound_id
+
+    def execute(self):
+        waveform = self.input_to_tensor()
+        if not waveform.is_cpu:
+            waveform = waveform.cpu()
+        if waveform.ndim == 1:
+            # If mono, add a channel dimension
+            waveform = waveform.unsqueeze(1)
+        elif waveform.shape[1] > waveform.shape[0]:
+            waveform = waveform.T
+        self.waveform_np = waveform.numpy()
+        self.stored_waveform_np = self.waveform_np.copy()
+        try:
+            if AudioMixerNode.audio_mixer is not None:
+                self.last_sound_id = AudioMixerNode.audio_mixer.play(self.waveform_np)
+        except Exception as e:
+            print(f"Error sending sound to mixer: {e}")
+        return self.last_sound_id
+
+
+class TorchAudioMultiPlayerNode(TorchNode):
+    mixer = None
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchAudioMultiPlayerNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        if AudioMixerNode.audio_mixer is None:
+            AudioMixerNode.audio_mixer = AudioMixer()
+
+        self.trigger_input = self.add_input('trigger', widget_type='button', callback=self.play)
+        self.input = self.add_input('audio tensor in', triggers_execution=True)
+        self.path_input = self.add_input('path in', callback=self.load_file)
+        self.load_file = self.add_input('load file', widget_type='button', callback=self.request_load_file)
+        self.file_name = self.add_label('')
+        self.remove = self.add_input('remove wave', callback=self.remove_wave)
+        self.clear_button = self.add_input('clear waves', callback=self.clear_waves)
+        self.stop_button = self.add_input('stop', widget_type='button', callback=self.stop)
+        self.last_sound_id = None
+        self.waves = {}
+        self.player_ids = {}
+        self.last_loaded = None
+
+    def request_load_file(self):
+        loader = LoadDialog(self, self.load_file_callback, extensions=['.aif', '.wav', '.mp3'])
+
+    def load_file_callback(self, path):
+        self.path_input.set(path)
+        self.load_file_with_path(path)
+
+    def load_file_with_path(self, filepath):
+        if not os.path.exists(filepath):
+            print(f"File not found at: {filepath}")
+            return None, None
+
+            # torchaudio.load returns a tuple of (waveform, sample_rate)
+        self.waveform, self.sample_rate = torchaudio.load(filepath)
+        if not self.waveform.is_cpu:
+            self.waveform = self.waveform.cpu()
+        if self.waveform.ndim == 1:
+            # If mono, add a channel dimension
+            self.waveform = self.waveform.unsqueeze(1)
+        elif self.waveform.shape[1] > self.waveform.shape[0]:
+            self.waveform = self.waveform.T
+
+        file_name = filepath.split('/')[-1]
+        self.file_name.set(file_name)
+        sample_name = file_name.split('.')[0]
+        self.waves[sample_name] = self.waveform.numpy()
+        self.last_loaded = sample_name
+
+    def load_file(self):
+        filepath = self.path_input()
+        if type(filepath) == list:
+            for path in filepath:
+                self.load_file_with_path(path)
+        else:
+            self.load_file_with_path(filepath)
+
+    def remove_wave(self):
+        name = self.remove()
+        if name in self.waves:
+            del self.waves[name]
+        if name in self.player_ids:
+            del self.player_ids[name]
+
+    def clear_waves(self):
+        self.waves.clear()
+
+    def stop(self):
+        if self.last_sound_id is not None:
+            AudioMixerNode.audio_mixer.stop(self.last_sound_id)
+            self.last_sound_id = None
+
+    def play(self):
+        trigger = self.trigger_input()
+        name = self.last_loaded
+        if type(trigger) == str and trigger in self.waves:
+            name = trigger
+        try:
+            if AudioMixerNode.audio_mixer is not None:
+                self.last_sound_id = AudioMixerNode.audio_mixer.play(self.waves[name])
+                self.player_ids[name] = self.last_sound_id
+        except Exception as e:
+            print(f"Error sending sound to mixer: {e}")
+        return self.last_sound_id
 
     def execute(self):
         waveform = self.input_to_tensor()

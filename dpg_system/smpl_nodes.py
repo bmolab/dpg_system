@@ -522,20 +522,17 @@ class SMPLBodyNode(SMPLNode):
             self.skeleton_data_out.send(limb_data)
 
     def load_body(self, args=None):
-        with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
-                             user_data=self, callback=self.load_smpl_callback, tag="file_dialog_id"):
-            # dpg.add_file_extension(".npz")
-            dpg.add_file_extension(".pkl")
+        LoadDialog(self, callback=self.load_smpl_callback, extensions=['.pkl'])
+        # with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
+        #                      user_data=self, callback=self.load_smpl_callback, tag="file_dialog_id"):
+        #     # dpg.add_file_extension(".npz")
+        #     dpg.add_file_extension(".pkl")
 
-    def load_smpl_callback(self, sender, app_data):
-        if 'file_path_name' in app_data:
-            load_path = app_data['file_path_name']
-            if load_path != '':
-                self.load_smpl_model(load_path)
+    def load_smpl_callback(self, load_path):
+        if load_path != '':
+            self.load_smpl_model(load_path)
         else:
             print('no file chosen')
-        dpg.delete_item(sender)
-        Node.app.active_widget = -1
 
 
 class SMPLTakeNode(SMPLNode):
@@ -623,18 +620,16 @@ class SMPLTakeNode(SMPLNode):
                     self.root_position_out.send(self.root_positions[frame])
 
     def load_take(self, args=None):
-        with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
-                             user_data=self, callback=self.load_npz_callback, tag="file_dialog_id"):
-            dpg.add_file_extension(".npz")
+        LoadDialog(self, callback=self.load_npz_callback, extensions=['.npz'])
+        # with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
+        #                      user_data=self, callback=self.load_npz_callback, tag="file_dialog_id"):
+        #     dpg.add_file_extension(".npz")
 
-    def load_npz_callback(self, sender, app_data):
-        if 'file_path_name' in app_data:
-            load_path = app_data['file_path_name']
-            if load_path != '':
-                self.load_smpl(load_path)
+    def load_npz_callback(self, load_path):
+        if load_path != '':
+            self.load_smpl(load_path)
         else:
             print('no file chosen')
-        dpg.delete_item(sender)
 
 
 class SMPLPoseToJointsNode(SMPLNode):

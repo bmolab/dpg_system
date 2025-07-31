@@ -766,6 +766,7 @@ class ValueNode(Node):
         self.output = None
 
         if label in ['float', 'osc_float', 'param_float']:
+            self.format = '%.3f'
             widget_type = 'drag_float'
             for i in range(len(ordered_args)):
                 val, t = decode_arg(ordered_args, i)
@@ -779,6 +780,7 @@ class ValueNode(Node):
             self.output = self.add_float_output('float out')
 
         elif label in ['int', 'osc_int', 'param_int']:
+            self.format = '%d'
             widget_type = 'drag_int'
             for i in range(len(ordered_args)):
                 val, t = decode_arg(ordered_args, i)
@@ -808,10 +810,11 @@ class ValueNode(Node):
                     if t == float:
                         widget_type = 'slider_float'
                         self.max = val
-                        print('max is', val)
+                        self.format = '%.3f'
                     elif t == int:
                         widget_type = 'slider_int'
                         self.max = val
+                        self.format = '%d'
 
             if widget_type == 'slider_float':
                 if self.max is None:
@@ -853,30 +856,32 @@ class ValueNode(Node):
                                             trigger_button=True,
                                             max=self.max)
                 self.output = self.add_float_output('float out')
+                self.format = '%.3f'
             else:
                 self.input = self.add_int_input('', triggers_execution=True, widget_type=widget_type,
                                                   widget_uuid=self.value, widget_width=widget_width,
                                                   trigger_button=True,
                                                   max=self.max)
                 self.output = self.add_int_output('int out')
+                self.format = '%d'
 
         elif label in ['string', 'osc_string', 'param_string']:
             widget_type = 'text_input'
-            self.input = self.add_string_input('', triggers_execution=True, widget_type=widget_type,
+            self.input = self.add_string_input('###text in', triggers_execution=True, widget_type=widget_type,
                                         widget_uuid=self.value, widget_width=widget_width,
                                         trigger_button=True)
             self.output = self.add_string_output('string out')
 
         elif label in ['message', 'osc_message', 'list', 'osc_list', 'param_message', 'param_list']:
             widget_type = 'text_input'
-            self.input = self.add_input('', triggers_execution=True, widget_type=widget_type,
+            self.input = self.add_input('###text in', triggers_execution=True, widget_type=widget_type,
                                               widget_uuid=self.value, widget_width=widget_width,
                                               trigger_button=True)
             self.output = self.add_list_output('list out')
 
         elif label in ['text', 'param_text']:
             widget_type = 'text_editor'
-            self.input = self.add_string_input('', triggers_execution=True, widget_type=widget_type,
+            self.input = self.add_string_input('###text in', triggers_execution=True, widget_type=widget_type,
                                         widget_uuid=self.value, widget_width=400,
                                         trigger_button=True)
             self.input.set_strip_returns(False)

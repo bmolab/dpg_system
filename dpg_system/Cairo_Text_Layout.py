@@ -599,6 +599,7 @@ class CairoTextLayout:
         self.paragraph_indent = self.font_size * paragraph_indent_scaler
 
     def get_font(self, path):
+        self.face = []
         if path != '':
             self.face.append(create_cairo_font_face_for_file(path, 0))
         # self.face.append(create_cairo_font_face_for_file("/usr/share/fonts/truetype/liberation/LiberationSerif-Regular.ttf", 0))

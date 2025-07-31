@@ -2128,6 +2128,7 @@ class Node:
                     for input in self.inputs:
                         if input.widget is not None:
                             a_label = dpg.get_item_label(input.widget.uuid)
+                            a_label = a_label.strip('#')
                             if a_label == property_label or a_label == org_label:
                                 if 'value' in property_container:
                                     value = property_container['value']
@@ -2840,22 +2841,22 @@ class PlaceholderNode(Node):
                     Node.app.current_node_editor = hold_node_editor_index
                     return
 
-def load_cancel_callback(sender, app_data):
+def dialog_cancel_callback(sender, app_data):
     if sender is not None:
         dpg.delete_item(sender)
     Node.app.active_widget = -1
 
 class LoadDialog:
-    def __init__(self, parent, callback, extensions):
+    def __init__(self, parent, callback, extensions, default_path=''):
         Node.app.active_widget = 1
         self.callback = callback
         self.parent = parent
-        with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
-                             callback=self.load_callback, cancel_callback=load_cancel_callback,
-                             tag='load_take_dict_dialog') as self.load_take_task:
+        self.load_take_task = None
+        with dpg.file_dialog(modal=True, default_path=default_path, directory_selector=False, show=True, height=400, width=800,
+                             callback=self.load_callback, cancel_callback=dialog_cancel_callback,
+                             tag='load_dialog') as self.save_take_task:
             for extension in extensions:
                 dpg.add_file_extension(extension)
-
 
     def load_callback(self, sender, app_data):
         if app_data is not None and 'file_path_name' in app_data:
@@ -2868,4 +2869,25 @@ class LoadDialog:
         Node.app.active_widget = -1
 
 
+class SaveDialog:
+    def __init__(self, parent, callback, extensions, default_path=''):
+        Node.app.active_widget = 1
+        self.callback = callback
+        self.parent = parent
+        self.save_take_task = None
+        with dpg.file_dialog(modal=True, default_path=default_path, directory_selector=False, show=True, height=400, width=800,
+                             callback=self.save_callback, cancel_callback=dialog_cancel_callback,
+                             tag='save_dialog') as self.save_take_task:
+            for extension in extensions:
+                dpg.add_file_extension(extension)
+
+    def save_callback(self, sender, app_data):
+        if app_data is not None and 'file_path_name' in app_data:
+            save_path = app_data['file_path_name']
+            self.callback(save_path)
+        else:
+            print('no file chosen')
+        if sender is not None:
+            dpg.delete_item(sender)
+        Node.app.active_widget = -1
 

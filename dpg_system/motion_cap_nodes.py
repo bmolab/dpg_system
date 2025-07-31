@@ -124,7 +124,6 @@ class MoCapTakeNode(MoCapNode):
         self.streaming = False
         self.record_quat_sequence = []
         self.record_position_sequence = []
-        self.record_frame_count = 0
 
         self.on_off = self.add_input('on/off', widget_type='checkbox', callback=self.start_stop_streaming)
         self.load_button = self.add_input('load', widget_type='button', callback=self.load_take)
@@ -160,7 +159,7 @@ class MoCapTakeNode(MoCapNode):
             self.on_off.set(False)
         self.record_quat_sequence = []
         self.record_position_sequence = []
-        self.record_frame_count = 0
+        self.frame_count = 0
         self.recording = True
 
     def stop_recording(self):
@@ -186,11 +185,11 @@ class MoCapTakeNode(MoCapNode):
             save_path = arg
             if self.save_take(save_path):
                 return
+        SaveDialog(self, self.save_file_callback, extensions=['.npz'])
 
-        Node.app.active_widget = 1
-        with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
-                             user_data=self, callback=self.save_file_callback, cancel_callback=take_cancel_callback, tag="file_dialog_id"):
-            dpg.add_file_extension('.npz')
+    def save_file_callback(self, save_path):
+        if not self.save_take(save_path):
+            print('failed to save')
 
     def save_take(self, save_path):
         if save_path != '':
@@ -203,20 +202,8 @@ class MoCapTakeNode(MoCapNode):
                     os.remove(self.load_path())
                 self.load_path.set(save_path)
                 self.file_name.set(save_path)
-                self.frames = self.record_frame_count
                 return True
         return False
-
-    def save_file_callback(self, sender, app_data):
-        if app_data is not None and 'file_path_name' in app_data:
-            save_path = app_data['file_path_name']
-            if not self.save_take(save_path):
-                print('failed to save')
-        else:
-            print('no file chosen')
-        if sender is not None:
-            dpg.delete_item(sender)
-        Node.app.active_widget = -1
 
     def positions_received(self):
         self.new_positions = True
@@ -231,8 +218,8 @@ class MoCapTakeNode(MoCapNode):
                     print('take: positions expected but not received')
                     return
             self.record_quat_sequence.append(any_to_array(self.quaternions_input()).copy())
-            self.record_frame_count = len(self.record_quat_sequence)
-            self.frame_input.set(self.record_frame_count, propagate=False)
+            self.frame_count = len(self.record_quat_sequence)
+            self.frame_input.set(self.frame_count, propagate=False)
 
     def dump_take(self):
         self.dump_out.send(self.position_buffer)
@@ -260,39 +247,6 @@ class MoCapTakeNode(MoCapNode):
         if self.label_buffer is not None:
             self.labels_out.set_value(self.label_buffer[frame])
         self.send_all()
-
-    def load_from_load_path(self):
-        path = self.load_path()
-        if path != '':
-            try:
-                self.load_take_from_npz(path)
-            except Exception as e:
-                print('no take file found:', path)
-
-    def load_take_from_npz(self, path):
-        take_file = np.load(path)
-        file_name = path.split('/')[-1]
-        self.file_name.set(file_name)
-        self.load_path.set(path)
-        if 'quats' in take_file:
-            self.quat_buffer = take_file['quats']
-            for idx, quat in enumerate(self.quat_buffer):
-                if quat[10, 0] < 0:
-                    self.quat_buffer[idx, 10] *= -1
-        else:
-            self.quat_buffer = None
-
-        self.frames = self.quat_buffer.shape[0]
-        if 'positions' in take_file:
-            self.position_buffer = take_file['positions']
-        else:
-            self.position_buffer = None
-        if 'labels' in take_file:
-            self.label_buffer = take_file['labels']
-        else:
-            self.label_buffer = None
-        self.current_frame = 0
-        self.start_stop_streaming()
 
     def frame_widget_changed(self):
         data = self.frame_input()
@@ -337,51 +291,55 @@ class MoCapTakeNode(MoCapNode):
                 except Exception as e:
                     print('load_npz_callback: error loading take file:', e, arg)
                 return
-        Node.app.active_widget = 1
-        with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
-                             user_data=self, callback=self.load_npz_callback, cancel_callback=take_cancel_callback) as self.load_take_task:
-            print(self.load_take_task)
-            dpg.add_file_extension(".npz")
-        print('leaving load_take')
 
-    def load_npz_callback(self, sender, app_data):
-        # print('self=', self, 'sender=', sender, 'app_data=', app_data)
-        print('callback')
-        if app_data is not None and 'file_path_name' in app_data:
-            load_path = app_data['file_path_name']
-            if load_path != '':
-                try:
-                    self.load_path.set(load_path)
-                    self.load_take_from_npz(load_path)
-                except Exception as e:
-                    print('load_npz_callback: error loading take file:', e, load_path)
+        LoadDialog(self, self.load_npz_callback, extensions=['.npz'])
+
+    def load_npz_callback(self, load_path):
+        if load_path != '':
+            try:
+                self.load_path.set(load_path)
+                self.load_take_from_npz(load_path)
+            except Exception as e:
+                print('load_npz_callback: error loading take file:', e, load_path)
+
+    def load_from_load_path(self):
+        path = self.load_path()
+        if path != '':
+            try:
+                self.load_take_from_npz(path)
+            except Exception as e:
+                print('no take file found:', path)
+
+    def load_take_from_npz(self, path):
+        take_file = np.load(path)
+        file_name = path.split('/')[-1]
+        self.file_name.set(file_name)
+        self.load_path.set(path)
+        if 'quats' in take_file:
+            self.quat_buffer = take_file['quats']
+            for idx, quat in enumerate(self.quat_buffer):
+                if quat[10, 0] < 0:
+                    self.quat_buffer[idx, 10] *= -1
         else:
-            print('no file chosen')
-        if sender is not None:
-            print('deleting', self.load_take_task)
-            dpg.delete_item(self.load_take_task)
-        Node.app.active_widget = -1
+            self.quat_buffer = None
+
+        self.frames = self.quat_buffer.shape[0]
+        if 'positions' in take_file:
+            self.position_buffer = take_file['positions']
+        else:
+            self.position_buffer = None
+        if 'labels' in take_file:
+            self.label_buffer = take_file['labels']
+        else:
+            self.label_buffer = None
+        self.current_frame = 0
+        self.start_stop_streaming()
+
 
 def take_cancel_callback(sender, app_data):
     if sender is not None:
         dpg.delete_item(sender)
     Node.app.active_widget = -1
-
-    # def load_take_from_pt_file(self, path):
-    #     take_container = torch.jit.load(path)
-    #     self.take_quats = take_container.quaternions.numpy()
-    #     self.take_positions = take_container.positions.numpy()
-    #     self.take_labels = take_container.labels.numpy()
-    #
-    # def save_take_as_pt_file(self, path):
-    #     quat_tensor = torch.from_numpy(self.take_quats)
-    #     position_tensor = torch.from_numpy(self.take_positions)
-    #     label_tensor = torch.from_numpy(self.take_labels)
-    #     d = {'quaternions': quat_tensor, 'positions': position_tensor, 'labels': label_tensor}
-    #     container = torch.jit.script(Container(d))
-    #     container.save(path + '_container.pt')
-    #
-    #     torch.save(d, path + '.pt')
 
 
 class OpenTakeNode(MoCapNode):
@@ -394,7 +352,7 @@ class OpenTakeNode(MoCapNode):
         super().__init__(label, data, args)
         speed = 1
         self.buffer = None
-        self.frames = 0
+        self.frame_count = 0
         self.current_frame = 0
         self.clip_start = 0
         self.clip_end = -1
@@ -402,7 +360,6 @@ class OpenTakeNode(MoCapNode):
         self.streaming = False
         self.take_dict = {}
         self.global_dict = {}
-        self.record_frame_count = 0
         self.sequence_keys = []
         self.global_keys = []
 
@@ -454,7 +411,7 @@ class OpenTakeNode(MoCapNode):
 
     def reset_clip(self):
         self.clip_start = 0
-        self.clip_end = self.frames - 1
+        self.clip_end = self.frame_count - 1
         self.clip_start_input.set(self.clip_start)
         self.clip_end_input.set(self.clip_end)
 
@@ -463,13 +420,13 @@ class OpenTakeNode(MoCapNode):
         self.clip_end = self.clip_end_input()
         if self.clip_start < 0:
             self.clip_start = 0
-        elif self.clip_start >= self.frames:
-            self.clip_start = self.frames - 1
+        elif self.clip_start >= self.frame_count:
+            self.clip_start = self.frame_count - 1
 
         if self.clip_end < self.clip_start:
             self.clip_end = self.clip_start
-        elif self.clip_end >= self.frames:
-            self.clip_end = self.frames - 1
+        elif self.clip_end >= self.frame_count:
+            self.clip_end = self.frame_count - 1
 
         self.clip_start_input.set(self.clip_start)
         self.clip_end_input.set(self.clip_end)
@@ -490,7 +447,7 @@ class OpenTakeNode(MoCapNode):
             self.record_button_clicked()
 
     def play_button_clicked(self):
-        if not self.streaming and self.frames > 0:
+        if not self.streaming and self.frame_count > 0:
             self.add_frame_task()
             self.streaming = True
             self.play_pause_button.set_label('pause')
@@ -508,9 +465,10 @@ class OpenTakeNode(MoCapNode):
 
         if not self.recording:
             self.take_dict = {}
-            self.record_frame_count = 0
+            self.frame_count = 0
             self.recording = True
             self.record_button.set_label('stop record')
+            self.reset_clip()
         else:
             self.record_button.set_label('record')
             self.recording = False
@@ -521,21 +479,22 @@ class OpenTakeNode(MoCapNode):
                 for key, value in self.global_dict.items():
                     self.take_dict[key] = value
                 key = list(self.take_dict.keys())[0]
-                self.frames = self.take_dict[key].shape[0]
+                self.frame_count = self.take_dict[key].shape[0]
                 self.current_frame = 0
                 self.frame_input.set(self.current_frame)
                 self.clip_start = 0
-                self.clip_end = self.frames - 1
+                self.clip_end = self.frame_count - 1
                 self.frame_input.widget.max = self.clip_end
                 self.frame_input.widget.min = self.clip_start
                 self.clip_start_input.set(self.clip_start)
                 self.clip_end_input.set(self.clip_end)
-                self.length_property.set('length: ' + str(self.frames))
-                self.frame_input.widget.max = self.frames - 1
+                self.length_property.set('length: ' + str(self.frame_count))
+                self.frame_input.widget.max = self.frame_count - 1
                 self.frame_input.widget.min = 0
                 starttime = datetime.datetime.now()
                 self.temp_save_name = datetime.datetime.strftime(starttime, 'temp_take_%Y%m%d_%H%M%S.npz')
                 self.save_take(self.temp_save_name)
+                self.reset_clip()
 
 
     def save_sequence(self):
@@ -544,11 +503,11 @@ class OpenTakeNode(MoCapNode):
             save_path = arg
             if self.save_take(save_path):
                 return
+        SaveDialog(self, self.save_file_callback, extensions=['.npz'])
 
-        Node.app.active_widget = 1
-        with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
-                             user_data=self, callback=self.save_file_callback, cancel_callback=take_cancel_callback, tag="file_dialog_id"):
-            dpg.add_file_extension('.npz')
+    def save_file_callback(self, save_path):
+        if not self.save_take(save_path):
+            print('failed to save')
 
     def save_take(self, save_path):
         if save_path != '':
@@ -559,20 +518,8 @@ class OpenTakeNode(MoCapNode):
                 os.remove(self.load_path())
             self.load_path.set(save_path)
             self.file_name.set(save_path)
-            self.frames = self.record_frame_count
             return True
         return False
-
-    def save_file_callback(self, sender, app_data):
-        if app_data is not None and 'file_path_name' in app_data:
-            save_path = app_data['file_path_name']
-            if not self.save_take(save_path):
-                print('failed to save')
-        else:
-            print('no file chosen')
-        if sender is not None:
-            dpg.delete_item(sender)
-        Node.app.active_widget = -1
 
     def save_clip(self):
         arg = self.save_button()
@@ -581,10 +528,15 @@ class OpenTakeNode(MoCapNode):
             if self.save_clip_only(save_path):
                 return
 
-        Node.app.active_widget = 1
-        with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
-                             user_data=self, callback=self.save_clip_callback, tag="file_dialog_id"):
-            dpg.add_file_extension('.npz')
+        SaveDialog(self, self.save_clip_callback, extensions=['.npz'])
+        # Node.app.active_widget = 1
+        # with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
+        #                      user_data=self, callback=self.save_clip_callback, tag="file_dialog_id"):
+        #     dpg.add_file_extension('.npz')
+
+    def save_clip_callback(self, save_path):
+        if not self.save_clip_only(save_path):
+            print('failed to save clip')
 
     def save_clip_only(self, save_path):
         if save_path != '':
@@ -596,20 +548,8 @@ class OpenTakeNode(MoCapNode):
             for key, value in self.global_dict.items():
                 clip_dict[key] = value
             np.savez(save_path, **clip_dict)
-            self.frames = self.record_frame_count
             return True
         return False
-
-    def save_clip_callback(self, sender, app_data):
-        if app_data is not None and 'file_path_name' in app_data:
-            save_path = app_data['file_path_name']
-            if not self.save_clip_only(save_path):
-                print('failed to save')
-        else:
-            print('no file chosen')
-        if sender is not None:
-            dpg.delete_item(sender)
-        Node.app.active_widget = -1
 
     def take_data_received(self):
         if self.recording:
@@ -617,6 +557,7 @@ class OpenTakeNode(MoCapNode):
             max_len = 0
             if type(incoming_dict) is dict:
                 keys_list = list(incoming_dict.keys())
+                self.sequence_keys = keys_list.copy()
                 for key in keys_list:
                     if key in self.take_dict:
                         self.take_dict[key].append(incoming_dict[key])
@@ -624,9 +565,10 @@ class OpenTakeNode(MoCapNode):
                         self.take_dict[key] = [incoming_dict[key]]
                     if len(self.take_dict[key]) > max_len:
                         max_len = len(self.take_dict[key])
-
-            self.record_frame_count = max_len
-            self.frame_input.set(self.record_frame_count, propagate=False)
+                self.frame_count = max_len
+            else:
+                self.frame_count += 1
+            self.frame_input.set(self.frame_count, propagate=False)
 
     def dump_take(self):
         self.dump_out.send(self.take_dict)
@@ -690,10 +632,10 @@ class OpenTakeNode(MoCapNode):
             if len(self.global_dict) > 0:
                 self.global_params_out.send(self.global_dict)
 
-            self.frames = sequence_length
-            self.length_property.set('length: ' + str(self.frames))
+            self.frame_count = sequence_length
+            self.length_property.set('length: ' + str(self.frame_count))
             self.clip_start = 0
-            self.clip_end = self.frames - 1
+            self.clip_end = self.frame_count - 1
             self.frame_input.widget.max = self.clip_end
             self.frame_input.widget.min = self.clip_start
             self.clip_start_input.set(self.clip_start)
@@ -708,14 +650,14 @@ class OpenTakeNode(MoCapNode):
             data = 0
             self.current_frame = data
             self.frame_input.set(self.current_frame)
-        if data < self.frames:
+        if data < self.frame_count:
             self.current_frame = data
             frame_dict = {}
             for key in self.sequence_keys:
                 frame_dict[key] = self.take_dict[key][self.current_frame]
             self.take_data_out.send(frame_dict)
         else:
-            data = self.frames - 1
+            data = self.frame_count - 1
             self.current_frame = data
             self.frame_input.set(self.current_frame)
 
@@ -726,7 +668,7 @@ class OpenTakeNode(MoCapNode):
             # if not handled:
             t = type(data)
             if t == int:
-                if data < self.frames:
+                if data < self.frame_count:
                     frame_dict = {}
                     for key in self.sequence_keys:
                         frame_dict[key] = frame_dict[key][self.current_frame]
@@ -750,29 +692,15 @@ class OpenTakeNode(MoCapNode):
                 except Exception as e:
                     print('load_npz_callback: error loading take file:', e, arg)
                 return
-        try:
-            Node.app.active_widget = 1
-            with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800, callback=self.load_npz_callback, cancel_callback=take_cancel_callback, tag='load_take_dict_dialog') as self.load_take_task:
-                dpg.add_file_extension(".npz")
-        except Exception as e:
-            print('load_npz_callback: error loading take file:', e, arg)
-        self.active_widget = -1
+        LoadDialog(self, self.load_npz_callback, extensions=['.npz'])
 
-    def load_npz_callback(self, sender, app_data):
-        if app_data is not None and 'file_path_name' in app_data:
-            load_path = app_data['file_path_name']
-            if load_path != '':
-                try:
-                    self.load_path.set(load_path)
-                    self.load_take_from_npz(load_path)
-                except Exception as e:
-                    print('load_npz_callback: error loading take file:', e, load_path)
-        else:
-            print('no file chosen')
-        if sender is not None:
-            dpg.delete_item(sender)
-        Node.app.active_widget = -1
-
+    def load_npz_callback(self, load_path):
+        if load_path != '':
+            try:
+                self.load_path.set(load_path)
+                self.load_take_from_npz(load_path)
+            except Exception as e:
+                print('load_npz_callback: error loading take file:', e, load_path)
 
 
 class PoseNode(MoCapNode):
