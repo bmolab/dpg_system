@@ -788,7 +788,7 @@ class AudioMixerNode(Node):
 
         # --- Discover output devices ---
         if AudioMixerNode.audio_mixer is None:
-            print("No audio mixer found.")
+            # print("No audio mixer found.")
             # Determine a safe default device
             default_device_name = "No output devices found"
             if self.output_devices:

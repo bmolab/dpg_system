@@ -527,12 +527,7 @@ class OpenTakeNode(MoCapNode):
             save_path = arg
             if self.save_clip_only(save_path):
                 return
-
         SaveDialog(self, self.save_clip_callback, extensions=['.npz'])
-        # Node.app.active_widget = 1
-        # with dpg.file_dialog(modal=True, directory_selector=False, show=True, height=400, width=800,
-        #                      user_data=self, callback=self.save_clip_callback, tag="file_dialog_id"):
-        #     dpg.add_file_extension('.npz')
 
     def save_clip_callback(self, save_path):
         if not self.save_clip_only(save_path):

@@ -96,6 +96,7 @@ def register_basic_nodes():
     Node.app.register_node('active_widget', ActiveWidgetNode.factory)
     Node.app.register_node('pass_with_triggers', TriggerBeforeAndAfterNode.factory)
     Node.app.register_node('micro_metro', MicrosecondTimerNode.factory)
+    Node.app.register_node('stream_list', StreamListNode.factory)
 
 class ActiveWidgetNode(Node):
     @staticmethod
@@ -3700,11 +3701,18 @@ class PresentationModeNode(Node):
             self.app.get_current_editor().enter_edit_state()
 
 
-class TestNode(Node):
+class StreamListNode(Node):
     @staticmethod
     def factory(name, data, args=None):
-        node = TestNode(name, data, args)
+        node = StreamListNode(name, data, args)
         return node
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+        self.list_in = self.add_list_input('list in', triggers_execution=True)
+        self.stream_out = self.add_output('stream out')
+
+    def execute(self):
+        incoming = self.list_in()
+        for item in incoming:
+            self.stream_out.send(item)
