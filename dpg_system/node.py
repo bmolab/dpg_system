@@ -8,6 +8,7 @@ from typing import List, Any, Callable, Union, Tuple, Optional, Dict, Set, Type,
 from fuzzywuzzy import fuzz
 import sys
 
+
 class NodeOutput:
     _pin_active_theme = None
     _pin_active_string_theme = None
@@ -2162,6 +2163,19 @@ class Node:
                                             option.widget.value_changed(force=True)
                                     found = True
                                     break
+                    if not found:
+                        if property_label == '':
+                            if len(self.inputs) > 0:
+                                input = self.inputs[0]
+                                if input.widget is not None:
+                                    if 'value' in property_container:
+                                        value = property_container['value']
+                                        if input.widget.widget != 'button':
+                                            input.widget.set(value)
+                                            self.active_input = input
+                                            input.widget.value_changed(force=True)
+
+
         self.load_custom(node_container)
         self.update_parameters_from_widgets()
 
@@ -2596,20 +2610,18 @@ class OriginNode(Node):
         dpg.bind_item_theme(self.uuid, self.app.invisible_theme)
 
 
-class PlaceholderNode(Node):
+class PlaceholderNameNode(Node):
     node_list: List[str] = []
 
     @staticmethod
-    def factory(name: str, data: Any, args: Optional[List[str]] = None) -> 'PlaceholderNode':
-        node = PlaceholderNode('New Node', data, args)
+    def factory(name: str, data: Any, args: Optional[List[str]] = None) -> 'PlaceholderNameNode':
+        node = PlaceholderNameNode('New Node', data, args)
         return node
 
     def __init__(self, label: str, data: Any, args: Optional[List[str]]) -> None:
         super().__init__(label, data, args)
         self.filtered_list: List[str] = []
         self.name_property = self.add_property(label='##node_name', widget_type='text_input', width=180)
-        self.static_name = self.add_property(label='##static_name', widget_type='text_input', width=180)
-        self.args_property = self.add_property(label='args', widget_type='text_input', width=180)
         if len(self.node_list) == 0:
             self.node_list = self.app.node_factory_container.get_node_list()
         self.variable_list = self.app.get_variable_list()
@@ -2618,10 +2630,9 @@ class PlaceholderNode(Node):
         self.node_list_box = self.add_property('###options', widget_type='list_box', width=180)
         self.list_box_arrowed: bool = False
         self.current_name: str = ''
+        self.enter_args = False
 
     def custom_create(self, from_file: bool) -> None:
-        dpg.configure_item(self.args_property.widget.uuid, show=False, on_enter=False)
-        dpg.configure_item(self.static_name.widget.uuid, show=False)
         dpg.configure_item(self.node_list_box.widget.uuid, show=False)
 
     def calc_fuzz(self, test: str, node_name: str) -> float:
@@ -2691,59 +2702,35 @@ class PlaceholderNode(Node):
                 filter_name = self.filtered_list[index]
                 self.node_list_box.set(filter_name)
 
-    def prompt_for_args(self) -> None:
-        filter_name = dpg.get_value(self.name_property.widget.uuid)
-        if len(filter_name) > 0:
-            selection = filter_name
-            dpg.focus_item(self.node_list_box.widget.uuid)
-            dpg.configure_item(self.name_property.widget.uuid, enabled=False)
-            dpg.configure_item(self.node_list_box.widget.uuid, items=[], show=False)
-            dpg.configure_item(self.name_property.widget.uuid, show=False)
-            dpg.configure_item(self.static_name.widget.uuid, show=True)
-            dpg.configure_item(self.args_property.widget.uuid, show=True, on_enter=True)
-            self.static_name.set(selection)
-
     def on_edit(self, widget: PropertyWidget) -> None:
-        if widget == self.static_name:
-            return
-
         if widget == self.name_property.widget and len(self.node_list) > 0:
             self.list_box_arrowed = False
             self.filtered_list = []
             filter_name = dpg.get_value(self.name_property.widget.uuid)
+            self.current_name = filter_name
 
             if len(filter_name) > 0:
                 dpg.configure_item(self.node_list_box.widget.uuid, show=True)
             if len(filter_name) > 0 and filter_name[-1] == ' ':
                 selection = dpg.get_value(self.node_list_box.widget.uuid)
-                dpg.focus_item(self.node_list_box.widget.uuid)
-                dpg.configure_item(self.name_property.widget.uuid, enabled=False)
-                dpg.configure_item(self.node_list_box.widget.uuid, items=[], show=False)
-                dpg.configure_item(self.name_property.widget.uuid, show=False)
-                dpg.configure_item(self.static_name.widget.uuid, show=True)
-                dpg.configure_item(self.args_property.widget.uuid, show=True, on_enter=True)
-                self.static_name.set(selection)
-                dpg.focus_item(self.args_property.widget.uuid)
+                self.current_name = selection
+                self.enter_args = True
+                self.execute()
             else:
                 f = filter_name.lower()
                 self.fuzzy_score(f)
                 dpg.configure_item(self.node_list_box.widget.uuid, items=self.filtered_list)
                 if len(self.filtered_list) > 0:
                     dpg.set_value(self.node_list_box.widget.uuid, self.filtered_list[0])
+                    self.current_name = self.filtered_list[0]
 
         elif widget == self.node_list_box.widget:
             selection = dpg.get_value(self.node_list_box.widget.uuid)
-            dpg.focus_item(self.node_list_box.widget.uuid)
-            dpg.configure_item(self.name_property.widget.uuid, enabled=False)
-            dpg.configure_item(self.static_name.widget.uuid, show=True)
-            dpg.configure_item(self.args_property.widget.uuid, show=True, on_enter=True)
-            self.static_name.set(selection)
-            dpg.focus_item(self.args_property.widget.uuid)
-            dpg.configure_item(self.node_list_box.widget.uuid, items=[], show=False)
-            dpg.configure_item(self.name_property.widget.uuid, show=False)
+            self.current_name = selection
+            self.execute()
 
     def on_deactivate(self, widget: PropertyWidget) -> None:
-        if widget in [self.args_property.widget, self.name_property.widget]:
+        if widget == self.name_property.widget:
             if dpg.is_item_hovered(self.node_list_box.widget.uuid) or dpg.is_item_clicked(self.node_list_box.widget.uuid):
                 pass
             else:
@@ -2752,94 +2739,450 @@ class PlaceholderNode(Node):
             self.execute()
 
     def execute(self) -> None:
-        if dpg.is_item_active(self.name_property.widget.uuid):
-            print('execute', self.name_property())
+        if self.enter_args:
+            self.current_name = dpg.get_value(self.node_list_box.widget.uuid)
+            from dpg_system.node_editor import NodeFactory
+            node_model = NodeFactory('new_node', PlaceholderArgsNode.factory, data=None)
+            pos = dpg.get_item_pos(self.uuid)
+            if node_model:
+                new_node = Node.app.create_node_from_model(node_model, pos, args=[self.current_name])
+            # else:
+            #     new_node = Node.app.create_var_node_for_variable('placeholder_2', pos)
+            editor = self.my_editor
+            if editor is not None:
+                editor.remove_node(self)
         else:
-            selection_name = dpg.get_value(self.node_list_box.widget.uuid)
-            new_node_name = dpg.get_value(self.name_property.widget.uuid)
-            arg_string = dpg.get_value(self.args_property.widget.uuid)
-            new_node_args: List[str] = []
-            if len(arg_string) > 0:
-                args = arg_string.split(' ')
-                new_node_args = [selection_name] + args
-            else:
-                new_node_args = [selection_name]
-            node_model = None
+            self.current_name = dpg.get_value(self.node_list_box.widget.uuid)
             found = False
             v = None
             action = False
-            if new_node_args[0] in self.node_list:
+            if self.current_name in self.node_list:
                 found = True
-            # elif selection_name in self.node_list:
-            #     new_node_args[0] = selection_name
-            #     found = True
+                node_model = Node.app.node_factory_container.locate_node_by_name(self.current_name)
+                pos = dpg.get_item_pos(self.uuid)
+
+                if node_model:
+                    new_node = Node.app.create_node_from_model(node_model, pos, args=None)
+                else:
+                    new_node = Node.app.create_var_node_for_variable(self.current_name, pos)
+                editor = self.my_editor
+                if editor is not None:
+                    editor.remove_node(self)
+
+            elif self.current_name in self.variable_list:
+                v = self.app.find_variable(self.current_name)
+                if v is not None:
+                    found = True
+            elif self.current_name in self.action_list:
+                v = self.app.find_action(self.current_name)
+                if v is not None:
+                    found = True
+                    action = True
+            new_node_args = None
+            if found and v is not None:
+                found = False
+                new_node_args = []
+                if not action:
+                    t = type(v.value)
+                    if t == int:
+                        new_node_args = ['int', self.current_name]
+                        found = True
+                    elif t == float:
+                        new_node_args = ['float', self.current_name]
+                        found = True
+                    elif t == str:
+                        new_node_args = ['string', self.current_name]
+                        found = True
+                    elif t == bool:
+                        new_node_args = ['toggle', self.current_name]
+                        found = True
+                    elif t == list:
+                        new_node_args = ['message', self.current_name]
+                        found = True
+                else:
+                    new_node_args = ['button', self.current_name]
+                    found = True
+            if found and new_node_args is not None:
+                Node.app.create_node_by_name(new_node_args[0], self, args = new_node_args[1:])
+            else:
+                if self.current_name in self.patcher_list:
+                    hold_node_editor_index = Node.app.current_node_editor
+                    Node.app.create_node_by_name('patcher', self, )
+                    Node.app.current_node_editor = len(Node.app.node_editors) - 1
+                    print('dpg_system/patch_library/' + self.current_name + '.json')
+                    Node.app.load_from_file('dpg_system/patch_library/' + self.current_name + '.json')
+                    Node.app.current_node_editor = hold_node_editor_index
+            editor = self.my_editor
+            if editor is not None:
+                editor.remove_node(self)
+
+
+class PlaceholderArgsNode(Node):
+    node_list: List[str] = []
+
+    @staticmethod
+    def factory(name: str, data: Any, args: Optional[List[str]] = None) -> 'PlaceholderArgsNode':
+        node = PlaceholderArgsNode('New Node', data, args)
+        return node
+
+    def __init__(self, label: str, data: Any, args: Optional[List[str]]) -> None:
+        super().__init__(label, data, args)
+        self.name = ''
+
+        if len(args) > 0:
+            self.name = any_to_string(args[0])
+        self.static_name = self.add_property(label='##static_name', widget_type='label', width=180)
+        self.args_property = self.add_property(label='args', widget_type='text_input', width=180)
+        self.node_list = self.app.node_factory_container.get_node_list()
+        self.variable_list = self.app.get_variable_list()
+        self.patcher_list = self.app.patchers
+        self.action_list = list(self.app.actions.keys())
+
+    def prompt_for_args(self) -> None:
+        pass
+
+    def on_edit(self, widget: PropertyWidget) -> None:
+        pass
+
+    def custom_create(self, from_file):
+        self.static_name.set(self.name)
+        Node.app.set_widget_focus(self.args_property.widget.uuid)
+
+    def on_deactivate(self, widget: PropertyWidget) -> None:
+        self.execute()
+
+    def execute(self) -> None:
+        arg_string = dpg.get_value(self.args_property.widget.uuid)
+        new_node_args: List[str] = []
+        selection_name = self.name
+        if len(arg_string) > 0:
+            args = arg_string.split(' ')
+            new_node_args = [selection_name] + args
+        else:
+            new_node_args = [selection_name]
+
+        node_model = None
+        found = False
+        v = None
+        action = False
+        if new_node_args[0] in self.node_list:
+            found = True
+
+        if found:
+            if len(new_node_args) > 1:
+                print(new_node_args)
+                Node.app.create_node_by_name(new_node_args[0], self, new_node_args[1:])
+            else:
+                Node.app.create_node_by_name(new_node_args[0], self, )
+            return
+        elif new_node_args[0] in self.variable_list:
+            v = self.app.find_variable(new_node_args[0])
+            if v is not None:
+                found = True
+        elif selection_name in self.variable_list:
+            new_node_args[0] = selection_name
+            v = self.app.find_variable(new_node_args[0])
+            if v is not None:
+                found = True
+        elif selection_name in self.action_list:
+            new_node_args[0] = selection_name
+            v = self.app.find_action(new_node_args[0])
+            if v is not None:
+                found = True
+                action = True
+        if found:
+            additional = []
+            if len(new_node_args) > 1:
+                additional = new_node_args[1:]
+            found = False
+
+            if not action:
+                t = type(v.value)
+                if t == int:
+                    new_node_args = ['int', new_node_args[0]]
+                    found = True
+                elif t == float:
+                    new_node_args = ['float', new_node_args[0]]
+                    found = True
+                elif t == str:
+                    new_node_args = ['string', new_node_args[0]]
+                    found = True
+                elif t == bool:
+                    new_node_args = ['toggle', new_node_args[0]]
+                    found = True
+                elif t == list:
+                    new_node_args = ['message', new_node_args[0]]
+                    found = True
+            else:
+                new_node_args = ['button', new_node_args[0]]
+                found = True
             if found:
+                if len(additional) > 0:
+                    new_node_args += additional
                 if len(new_node_args) > 1:
                     Node.app.create_node_by_name(new_node_args[0], self, new_node_args[1:])
                 else:
                     Node.app.create_node_by_name(new_node_args[0], self, )
-                return
-            elif new_node_args[0] in self.variable_list:
-                v = self.app.find_variable(new_node_args[0])
-                if v is not None:
-                    found = True
-            elif selection_name in self.variable_list:
-                new_node_args[0] = selection_name
-                v = self.app.find_variable(new_node_args[0])
-                if v is not None:
-                    found = True
-            elif selection_name in self.action_list:
-                new_node_args[0] = selection_name
-                v = self.app.find_action(new_node_args[0])
-                if v is not None:
-                    found = True
-                    action = True
-            if found:
-                additional = []
-                if len(new_node_args) > 1:
-                    additional = new_node_args[1:]
-                found = False
 
-                if not action:
-                    t = type(v.value)
-                    if t == int:
-                        new_node_args = ['int', new_node_args[0]]
-                        found = True
-                    elif t == float:
-                        new_node_args = ['float', new_node_args[0]]
-                        found = True
-                    elif t == str:
-                        new_node_args = ['string', new_node_args[0]]
-                        found = True
-                    elif t == bool:
-                        new_node_args = ['toggle', new_node_args[0]]
-                        found = True
-                    elif t == list:
-                        new_node_args = ['message', new_node_args[0]]
-                        found = True
-                else:
-                    new_node_args = ['button', new_node_args[0]]
-                    found = True
-                if found:
-                    if len(additional) > 0:
-                        new_node_args += additional
-                    if len(new_node_args) > 1:
-                        Node.app.create_node_by_name(new_node_args[0], self, new_node_args[1:])
-                    else:
-                        Node.app.create_node_by_name(new_node_args[0], self, )
-            else:
-                if new_node_args[0] in self.patcher_list:
-                    found = True
-                elif selection_name in self.patcher_list:
-                    new_node_args[0] = selection_name
-                    found = True
-                if found:
-                    hold_node_editor_index = Node.app.current_node_editor
-                    Node.app.create_node_by_name('patcher', self, new_node_args[:1])
-                    Node.app.current_node_editor = len(Node.app.node_editors) - 1
-                    Node.app.load_from_file('dpg_system/patch_library/' + new_node_args[0] + '.json')
-                    Node.app.current_node_editor = hold_node_editor_index
-                    return
+# class PlaceholderNode(Node):
+#     node_list: List[str] = []
+#
+#     @staticmethod
+#     def factory(name: str, data: Any, args: Optional[List[str]] = None) -> 'PlaceholderNode':
+#         node = PlaceholderNode('New Node', data, args)
+#         return node
+#
+#     def __init__(self, label: str, data: Any, args: Optional[List[str]]) -> None:
+#         super().__init__(label, data, args)
+#         self.filtered_list: List[str] = []
+#         self.name_property = self.add_property(label='##node_name', widget_type='text_input', width=180)
+#         self.static_name = self.add_property(label='##static_name', widget_type='label', width=180)
+#         self.args_property = self.add_property(label='args', widget_type='text_input', width=180)
+#         if len(self.node_list) == 0:
+#             self.node_list = self.app.node_factory_container.get_node_list()
+#         self.variable_list = self.app.get_variable_list()
+#         self.patcher_list = self.app.patchers
+#         self.action_list = list(self.app.actions.keys())
+#         self.node_list_box = self.add_property('###options', widget_type='list_box', width=180)
+#         self.list_box_arrowed: bool = False
+#         self.current_name: str = ''
+#         self.arg_mode_width = 0
+#         self.arg_mode_width = 120
+#
+#     def custom_create(self, from_file: bool) -> None:
+#         dpg.configure_item(self.args_property.widget.uuid, show=False, on_enter=False)
+#         dpg.configure_item(self.static_name.widget.uuid, show=False)
+#         dpg.configure_item(self.node_list_box.widget.uuid, show=False)
+#
+#     def calc_fuzz(self, test: str, node_name: str) -> float:
+#         ratio = fuzz.partial_ratio(node_name.lower(), test.lower())
+#         full_ratio = fuzz.ratio(node_name.lower(), test.lower())
+#
+#         if ratio == 100:
+#             test_len = len(test)
+#             node_len = len(node_name)
+#             if test_len > node_len:
+#                 if node_name[:node_len] != test[:node_len]:
+#                     ratio = (full_ratio * 2 + ratio) / 3
+#             else:
+#                 if node_name[:test_len] != test[:test_len]:
+#                     ratio = (full_ratio * 2 + ratio) / 3
+#         len_ratio = len(test) / len(node_name)
+#
+#         if len_ratio < 1:
+#             len_ratio = pow(len_ratio, 4)
+#         len_ratio = len_ratio * .5 + 0.5
+#         final_ratio = (ratio * (1 - len_ratio) + full_ratio * len_ratio)
+#         return final_ratio
+#
+#     def fuzzy_score(self, test: str) -> None:
+#         scores: Dict[str, float] = {}
+#         for index, node_name in enumerate(self.node_list):
+#             final_ratio = self.calc_fuzz(test, node_name)
+#             scores[node_name] = final_ratio
+#
+#         for index, variable_name in enumerate(self.variable_list):
+#             final_ratio = self.calc_fuzz(test, variable_name)
+#             scores[variable_name] = final_ratio
+#
+#         for index, patcher_name in enumerate(self.patcher_list):
+#             final_ratio = self.calc_fuzz(test, patcher_name)
+#             scores[patcher_name] = final_ratio
+#
+#         for index, action_name in enumerate(self.action_list):
+#             final_ratio = self.calc_fuzz(test, action_name)
+#             scores[action_name] = final_ratio
+#
+#         sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+#         self.filtered_list = []
+#         for index, item in enumerate(sorted_scores):
+#             if item[1] == 100:
+#                 self.filtered_list.append(item[0])
+#             elif item[1] > 20 and len(self.filtered_list) < 10:
+#                 self.filtered_list.append(item[0])
+#
+#     def increment_widget(self, widget: PropertyWidget) -> None:
+#         filter_name = dpg.get_value(self.node_list_box.widget.uuid)
+#         if filter_name in self.filtered_list:
+#             index = self.filtered_list.index(filter_name)
+#             index -= 1
+#             if index >= 0:
+#                 self.list_box_arrowed = True
+#                 filter_name = self.filtered_list[index]
+#                 self.node_list_box.set(filter_name)
+#
+#     def decrement_widget(self, widget: PropertyWidget) -> None:
+#         filter_name = dpg.get_value(self.node_list_box.widget.uuid)
+#         if filter_name in self.filtered_list:
+#             index = self.filtered_list.index(filter_name)
+#             index += 1
+#             if index < len(self.filtered_list):
+#                 self.list_box_arrowed = True
+#                 filter_name = self.filtered_list[index]
+#                 self.node_list_box.set(filter_name)
+#
+#     def prompt_for_args(self) -> None:
+#         filter_name = dpg.get_value(self.name_property.widget.uuid)
+#         if len(filter_name) > 0:
+#             selection = filter_name
+#             dpg.focus_item(self.node_list_box.widget.uuid)
+#             dpg.configure_item(self.name_property.widget.uuid, enabled=False)
+#             dpg.configure_item(self.node_list_box.widget.uuid, items=[], show=False)
+#             dpg.set_item_width(self.node_list_box.widget.uuid, 0)
+#             dpg.configure_item(self.name_property.widget.uuid, show=False)
+#             dpg.set_item_width(self.name_property.widget.uuid, 0)
+#             dpg.configure_item(self.static_name.widget.uuid, show=True)
+#             dpg.configure_item(self.args_property.widget.uuid, show=True, on_enter=True)
+#             dpg.focus_item(self.args_property.widget.uuid)
+#             self.static_name.set(selection)
+#             self.add_frame_task()
+#
+#     def on_edit(self, widget: PropertyWidget) -> None:
+#         if widget == self.static_name:
+#             return
+#
+#         if widget == self.name_property.widget and len(self.node_list) > 0:
+#             self.list_box_arrowed = False
+#             self.filtered_list = []
+#             filter_name = dpg.get_value(self.name_property.widget.uuid)
+#
+#             if len(filter_name) > 0:
+#                 dpg.configure_item(self.node_list_box.widget.uuid, show=True)
+#             if len(filter_name) > 0 and filter_name[-1] == ' ':
+#                 selection = dpg.get_value(self.node_list_box.widget.uuid)
+#                 dpg.focus_item(self.node_list_box.widget.uuid)
+#                 dpg.configure_item(self.name_property.widget.uuid, enabled=False)
+#                 dpg.configure_item(self.name_property.widget.uuid, show=False)
+#
+#                 dpg.configure_item(self.node_list_box.widget.uuid, items=[], show=False)
+#                 dpg.configure_item(self.static_name.widget.uuid, show=True)
+#                 dpg.configure_item(self.args_property.widget.uuid, show=True, on_enter=True)
+#                 self.static_name.set(selection)
+#                 # Node.app.active_widget = self.args_property.widget.uuid
+#                 dpg.focus_item(self.args_property.widget.uuid)
+#             else:
+#                 f = filter_name.lower()
+#                 self.fuzzy_score(f)
+#                 dpg.configure_item(self.node_list_box.widget.uuid, items=self.filtered_list)
+#                 if len(self.filtered_list) > 0:
+#                     dpg.set_value(self.node_list_box.widget.uuid, self.filtered_list[0])
+#
+#         elif widget == self.node_list_box.widget:
+#             selection = dpg.get_value(self.node_list_box.widget.uuid)
+#             dpg.focus_item(self.node_list_box.widget.uuid)
+#             dpg.configure_item(self.name_property.widget.uuid, enabled=False)
+#             dpg.configure_item(self.static_name.widget.uuid, show=True)
+#             dpg.configure_item(self.args_property.widget.uuid, show=True, on_enter=True)
+#             self.static_name.set(selection)
+#             dpg.focus_item(self.args_property.widget.uuid)
+#             dpg.configure_item(self.node_list_box.widget.uuid, items=[], show=False)
+#             dpg.configure_item(self.name_property.widget.uuid, show=False)
+#
+#     def frame_task(self):
+#         name_width = dpg.get_item_width(self.static_name.widget.uuid)
+#         box_width = dpg.get_item_width(self.node_list_box.widget.uuid)
+#         arg_width = dpg.get_item_width(self.args_property.widget.uuid)
+#
+#
+#     def on_deactivate(self, widget: PropertyWidget) -> None:
+#         if widget in [self.args_property.widget, self.name_property.widget]:
+#             if dpg.is_item_hovered(self.node_list_box.widget.uuid) or dpg.is_item_clicked(self.node_list_box.widget.uuid):
+#                 pass
+#             else:
+#                 self.execute()
+#         elif widget == self.node_list_box.widget:
+#             self.execute()
+#
+#     def execute(self) -> None:
+#         self.remove_frame_tasks()
+#         if dpg.is_item_active(self.name_property.widget.uuid):
+#             print('execute', self.name_property())
+#         else:
+#             selection_name = dpg.get_value(self.node_list_box.widget.uuid)
+#             new_node_name = dpg.get_value(self.name_property.widget.uuid)
+#             arg_string = dpg.get_value(self.args_property.widget.uuid)
+#             new_node_args: List[str] = []
+#             if len(arg_string) > 0:
+#                 args = arg_string.split(' ')
+#                 new_node_args = [selection_name] + args
+#             else:
+#                 new_node_args = [selection_name]
+#             node_model = None
+#             found = False
+#             v = None
+#             action = False
+#             if new_node_args[0] in self.node_list:
+#                 found = True
+#             # elif selection_name in self.node_list:
+#             #     new_node_args[0] = selection_name
+#             #     found = True
+#             if found:
+#                 if len(new_node_args) > 1:
+#                     Node.app.create_node_by_name(new_node_args[0], self, new_node_args[1:])
+#                 else:
+#                     Node.app.create_node_by_name(new_node_args[0], self, )
+#                 return
+#             elif new_node_args[0] in self.variable_list:
+#                 v = self.app.find_variable(new_node_args[0])
+#                 if v is not None:
+#                     found = True
+#             elif selection_name in self.variable_list:
+#                 new_node_args[0] = selection_name
+#                 v = self.app.find_variable(new_node_args[0])
+#                 if v is not None:
+#                     found = True
+#             elif selection_name in self.action_list:
+#                 new_node_args[0] = selection_name
+#                 v = self.app.find_action(new_node_args[0])
+#                 if v is not None:
+#                     found = True
+#                     action = True
+#             if found:
+#                 additional = []
+#                 if len(new_node_args) > 1:
+#                     additional = new_node_args[1:]
+#                 found = False
+#
+#                 if not action:
+#                     t = type(v.value)
+#                     if t == int:
+#                         new_node_args = ['int', new_node_args[0]]
+#                         found = True
+#                     elif t == float:
+#                         new_node_args = ['float', new_node_args[0]]
+#                         found = True
+#                     elif t == str:
+#                         new_node_args = ['string', new_node_args[0]]
+#                         found = True
+#                     elif t == bool:
+#                         new_node_args = ['toggle', new_node_args[0]]
+#                         found = True
+#                     elif t == list:
+#                         new_node_args = ['message', new_node_args[0]]
+#                         found = True
+#                 else:
+#                     new_node_args = ['button', new_node_args[0]]
+#                     found = True
+#                 if found:
+#                     if len(additional) > 0:
+#                         new_node_args += additional
+#                     if len(new_node_args) > 1:
+#                         Node.app.create_node_by_name(new_node_args[0], self, new_node_args[1:])
+#                     else:
+#                         Node.app.create_node_by_name(new_node_args[0], self, )
+#             else:
+#                 if new_node_args[0] in self.patcher_list:
+#                     found = True
+#                 elif selection_name in self.patcher_list:
+#                     new_node_args[0] = selection_name
+#                     found = True
+#                 if found:
+#                     hold_node_editor_index = Node.app.current_node_editor
+#                     Node.app.create_node_by_name('patcher', self, new_node_args[:1])
+#                     Node.app.current_node_editor = len(Node.app.node_editors) - 1
+#                     Node.app.load_from_file('dpg_system/patch_library/' + new_node_args[0] + '.json')
+#                     Node.app.current_node_editor = hold_node_editor_index
+#                     return
 
 def dialog_cancel_callback(sender, app_data):
     if sender is not None:

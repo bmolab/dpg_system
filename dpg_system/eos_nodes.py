@@ -52,7 +52,7 @@ class ColorSourceNode(OSCSender, Node):
             self.address = '/eos/user/99/chan'
 
         if len(args) > 0:
-            for i in len(args):
+            for i in range(len(args)):
                 if is_number(args[0]):
                     self.channel = any_to_int(args[0])
                     break

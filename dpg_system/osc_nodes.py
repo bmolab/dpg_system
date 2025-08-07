@@ -303,6 +303,7 @@ class OSCQueryRegistry:
         if type(patch_path) == list:
             patch_path = compose_path(patch_path)
         patch_path_list = patch_path.split('/')
+        print('patch_path_list', patch_path_list)
         if patch_path_list[0] == '':
             patch_path_list = patch_path_list[1:]
         for ind, domain in enumerate(patch_path_list):
@@ -418,11 +419,18 @@ class OSCQueryRegistry:
 
     def prepare_basic_param_dict(self, type, path_list, access=3):
         path = compose_path(path_list)
-        param_dict = {'TYPE': type, 'DESCRIPTION': path_list[-1], 'ACCESS': access, 'FULL_PATH': path, 'FLOW': 'BOTH'}
+        if len(path_list) > 0:
+            param_dict = {'TYPE': type, 'DESCRIPTION': path_list[-1], 'ACCESS': access, 'FULL_PATH': path, 'FLOW': 'BOTH'}
+        else:
+            param_dict = {'TYPE': type, 'DESCRIPTION': '', 'ACCESS': access, 'FULL_PATH': path,
+                          'FLOW': 'BOTH'}
+
         return param_dict
 
     def add_generic_receiver_to_registry(self, path_list):
+        print(path_list)
         path_list = self.prepare_path_list(path_list)
+        print(path_list)
         generic_receiver_dict = self.prepare_basic_param_dict('b', path_list, access=1)
         generic_receiver_dict['FLOW'] = 'IN'
         self.insert_param_dict_into_registry(generic_receiver_dict)
@@ -807,7 +815,7 @@ class OSCTargetNode(OSCTarget, Node):
     def custom_create(self, from_file):
         OSCTarget.custom_create(self, from_file)
         self.register()
-        self.outputs[0].set_label(self.path)
+        # self.outputs[0].set_label(self.path)
 
     # def register(self):
     #     patcher_path = self.get_patcher_path()

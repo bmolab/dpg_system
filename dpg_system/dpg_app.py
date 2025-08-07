@@ -3,7 +3,7 @@ import time
 import numpy as np
 from importlib import import_module
 import dpg_system.dpg_app
-from dpg_system.node import Node, NodeInput, NodeOutput, Variable, PlaceholderNode
+from dpg_system.node import Node, NodeInput, NodeOutput, Variable, PlaceholderNameNode
 from dpg_system.node_editor import *
 from dpg_system.node import *
 from os.path import exists
@@ -1250,21 +1250,21 @@ class App:
     def new_handler(self, name=None):
         if self.get_current_editor() is not None and not self.get_current_editor().presenting:
             editor = self.get_current_editor()
-
+            if name is not None:
+                node_model = NodeFactory('new_node', PlaceholderArgsNode.factory, data=None)
+                mouse_pos = dpg.get_mouse_pos(local=False)
+                editor_mouse_pos = editor.global_pos_to_editor_pos(mouse_pos)
+                if node_model:
+                    new_node = Node.app.create_node_from_model(node_model, editor_mouse_pos, args=[name])
+                    return
             if self.active_widget == -1:
-                node = PlaceholderNode.factory("New Node", None)
+                node = PlaceholderNameNode.factory("New Node", None)
                 self.place_node(node)
                 # mouse_pos = dpg.get_mouse_pos(local=False)
                 # editor_mouse_pos = editor.global_pos_to_editor_pos(mouse_pos)
                 # node.create(editor.uuid, pos=editor_mouse_pos)
                 # editor.add_node(node)
-                if name is not None:
-                    self.set_widget_focus(node.name_property.widget.uuid)
-                    dpg.set_value(node.name_property.widget.uuid, name)
-                    node.node_list = [name]
-                    node.prompt_for_args()
-                else:
-                    self.set_widget_focus(node.name_property.widget.uuid)
+                self.set_widget_focus(node.name_property.widget.uuid)
 
     def update(self):
         pass
@@ -1846,7 +1846,6 @@ class App:
                     for task in self.frame_tasks:
                         if task.created:
                             task.frame_task()
-
                     jobs = dpg.get_callback_queue()  # retrieves and clears queue
                     dpg.run_callbacks(jobs)
                     self.frame_number += 1

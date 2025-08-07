@@ -1397,8 +1397,9 @@ class VectorNode(Node):
             if self.active_input is not None:
                 which = self.active_input.input_index - self.first_component_input_index
                 if which >= 0:
-                    self.output_vector[which] = self.component_properties[which]()
-                    did_set = True
+                    if which < self.current_component_count:
+                        self.output_vector[which] = self.component_properties[which]()
+                        did_set = True
             # elif self.vector_format_input() == 'torch':
             #     self.output_vector[which] = self.component_properties[which]()
             # else:
