@@ -192,8 +192,10 @@ class BasePlotNode(Node):
     def change_size(self):
         if self.width_option is not None:
             dpg.set_item_width(self.plot_tag, self.width_option())
+            self.width = self.width_option()
         if self.height_option is not None:
             dpg.set_item_height(self.plot_tag, self.height_option())
+            self.height = self.height_option()
 
     def change_range(self):
         self.max_y = self.max_y_option()
@@ -322,9 +324,12 @@ class PlotNode(BasePlotNode):
         buffer = self.y_data.get_buffer(block=True)
         if buffer is not None:
             if self.y_data.breadth > 1:
-                if len(self.plot_data_tag) < self.y_data.breadth:
-                    for i in range(len(self.plot_data_tag), self.y_data.breadth):
-                        self.plot_data_tag.append(dpg.generate_uuid())
+                for tag in self.plot_data_tag:
+                    if dpg.does_item_exist(tag):
+                        dpg.delete_item(tag)
+                # if len(self.plot_data_tag) < self.y_data.breadth:
+                for i in range(len(self.plot_data_tag), self.y_data.breadth):
+                    self.plot_data_tag.append(dpg.generate_uuid())
                 for i in range(self.y_data.breadth):
                     this_buffer = np.ascontiguousarray(np.expand_dims(buffer[i, :], axis=0))
                     if self.style_type == 'line':
@@ -543,7 +548,7 @@ class HeatMapNode(BasePlotNode):
         dpg.set_axis_limits(self.y_axis, 0.0, 1.0)
 
     def adjust_to_sample_count_change(self):
-        if self.rows != self.pending_rows:
+        if self.rows != self.pending_rows and self.pending_rows is not None:
             self.rows = self.pending_rows
             self.reallocate_buffer()
         self.x_axis_scaler = self.sample_count
@@ -652,15 +657,7 @@ class HeatMapNode(BasePlotNode):
                     self.format = ''
                     self.change_format()
         else:
-            if self.sample_count == 1:
-                if self.width / self.rows < 40:
-                    forced_format = True
-                    if len(self.format) > 0:
-                        self.hold_format = self.format
-                        self.format_option.set('')
-                        self.format = ''
-                        self.change_format()
-            elif self.width / self.rows < 40:
+            if self.width / self.rows < 40:
                 forced_format = True
                 if len(self.format) > 0:
                     self.hold_format = self.format
@@ -668,7 +665,7 @@ class HeatMapNode(BasePlotNode):
                     self.format = ''
                     self.change_format()
 
-            elif len(buffer.shape) > 1 and (self.height / buffer.shape[0]) < 16:
+            if len(buffer.shape) > 1 and (self.height / self.sample_count) < 16:
                 forced_format = True
                 if len(self.format) > 0:
                     self.hold_format = self.format
@@ -708,6 +705,19 @@ class HeatScrollNode(BasePlotNode):
 
         self.hold_format = self.format
         self.x_axis = self.sample_count
+        self.x_axis_scaler = self.sample_count
+        self.pending_rows = None
+
+    def frame_task(self):
+        if self.pending_sample_count != self.sample_count or (self.pending_rows is not None and self.pending_rows != self.rows):
+            if self.sample_count_option is not None:
+                self.sample_count_option.set(self.pending_sample_count)
+            else:
+                self.sample_count = self.pending_sample_count
+            self.change_sample_count()
+            self.input.fresh_input = True
+            self.execute()
+            self.remove_frame_tasks()
 
     def submit_display(self):
         with dpg.plot(label='', tag=self.plot_tag, height=self.height, width=self.width, no_title=True) as self.plotter:
@@ -730,31 +740,45 @@ class HeatScrollNode(BasePlotNode):
         dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Viridis)
         self.change_range()
 
-    # def buffer_changed(self, buffer):
-    #     self.sample_count_option.set(self.sample_count)
-    #     self.min_x = 0
-    #     self.max_x = self.sample_count
-    #     dpg.set_axis_limits(self.x_axis, self.min_x / self.sample_count, self.max_x / self.sample_count)
-    #     for i in range(len(self.plot_data_tag)):
-    #         if dpg.does_item_exist(self.plot_data_tag[i]):
-    #             dpg.configure_item(self.plot_data_tag[i], rows=1, cols=self.y_data.sample_count)
-    #
-    #     self.change_range()
+    def buffer_changed(self, buffer):
+        try:
+            if self.sample_count is not None:
+                self.sample_count_option.set(self.sample_count)
+
+            if self.min_x is not None:
+                self.min_x_option.set(0)
+            self.min_x = 0
+            if self.max_x_option is not None:
+                self.max_x_option.set(self.sample_count)
+            self.max_x = self.sample_count
+
+            dpg.set_axis_limits(self.x_axis, self.min_x / self.sample_count, self.max_x / self.sample_count)
+
+            for i in range(len(self.plot_data_tag)):
+                if dpg.does_item_exist(self.plot_data_tag[i]):
+                    dpg.configure_item(self.plot_data_tag[i], rows=1, cols=self.y_data.sample_count)
+
+            self.change_range()
+        except Exception as e:
+            pass
 
     def adjust_to_sample_count_change(self):
+        if self.rows != self.pending_rows and self.pending_rows is not None:
+            self.rows = self.pending_rows
+            self.reallocate_buffer()
         self.x_axis_scaler = self.sample_count
         buffer = self.y_data.get_buffer(block=True)
         if buffer is not None:
             dpg.set_axis_limits(self.y_axis, self.min_y, self.max_y)
             dpg.set_axis_limits(self.x_axis, self.min_x / self.x_axis_scaler, self.max_x / self.x_axis_scaler)
-            dpg.add_heat_series(x=buffer, rows=self.y_data.breadth, cols=self.y_data.sample_count, parent=self.y_axis,
+            dpg.add_heat_series(x=buffer.ravel(), rows=self.y_data.breadth, cols=self.y_data.sample_count, parent=self.y_axis,
                                 tag=self.plot_data_tag[0], format=self.format, scale_min=self.min_y, scale_max=self.max_y)
             self.change_colormap()
             self.y_data.release_buffer()
 
-    # def change_range(self):
-    #     super().change_range()
-    #     dpg.set_axis_limits(self.y_axis, 0.0, 1.0)
+    def change_range(self):
+        super().change_range()
+        dpg.set_axis_limits(self.y_axis, 0.0, 1.0)
 
     def change_format(self):
         self.format = self.format_option()
@@ -781,6 +805,12 @@ class HeatScrollNode(BasePlotNode):
 
             if t not in [list, np.ndarray]:
                 ii = any_to_array(data)
+                rows = len(ii)
+                if rows != self.rows:
+                    self.pending_rows = rows
+                    self.lock.release()
+                    self.add_frame_task()
+                    return
                 ii = (ii + self.offset) / self.range
                 self.y_data.update(ii)
             elif t == list:
@@ -791,8 +821,10 @@ class HeatScrollNode(BasePlotNode):
                 else:
                     rows = len(data)
                     if rows != self.rows:
-                        self.rows = rows
-                        self.sample_count_option.set(self.sample_count)
+                        self.pending_rows = rows
+                        self.lock.release()
+                        self.add_frame_task()
+                        return
                     ii = list_to_array(data, validate=True)
                     if ii is None:
                         return
@@ -806,7 +838,10 @@ class HeatScrollNode(BasePlotNode):
                 if data.dtype in [float, np.float32, np.double, int, np.int64, np.bool_]:
                     rows = data.size
                     if rows != self.rows:
-                        self.rows = rows
+                        self.pending_rows = rows
+                        self.lock.release()
+                        self.add_frame_task()
+                        return
                     ii = (data.reshape((rows, 1)) + self.offset) / self.range
                     self.y_data.update(ii)
 

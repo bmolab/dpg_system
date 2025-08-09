@@ -2762,7 +2762,7 @@ class PlaceholderNameNode(Node):
                 pos = dpg.get_item_pos(self.uuid)
 
                 if node_model:
-                    new_node = Node.app.create_node_from_model(node_model, pos, args=None)
+                    new_node = Node.app.create_node_from_model(node_model, pos, args=[])
                 else:
                     new_node = Node.app.create_var_node_for_variable(self.current_name, pos)
                 editor = self.my_editor
