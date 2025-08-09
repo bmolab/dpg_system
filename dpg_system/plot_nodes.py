@@ -13,11 +13,26 @@ from dpg_system.matrix_nodes import RollingBuffer
 def register_plot_nodes():
     Node.app.register_node("plot", PlotNode.factory)
     Node.app.register_node("heat_map", HeatMapNode.factory)
-    Node.app.register_node("heat_scroll", HeatScrollNode.factory)
+    Node.app.register_node("heat_scroll", HeatMapNode.factory)
+
+    # Node.app.register_node("heat_scroll", HeatScrollNode.factory)
     Node.app.register_node("profile", ProfileNode.factory)
 
 
 class BasePlotNode(Node):
+    # --- Start of Refactored Section ---
+    # Class attributes for managing colormaps efficiently
+    _plot_colors = ['none', 'deep', 'dark', 'pastel', 'paired', 'viridis', 'plasma', 'hot', 'cool', 'pink', 'jet', 'twilight', 'red-blue', 'brown-bluegreen', 'pink-yellowgreen', 'spectral', 'greys']
+    _dpg_color_map = {
+        'deep': dpg.mvPlotColormap_Deep, 'dark': dpg.mvPlotColormap_Dark, 'pastel': dpg.mvPlotColormap_Pastel,
+        'paired': dpg.mvPlotColormap_Paired, 'viridis': dpg.mvPlotColormap_Viridis, 'plasma': dpg.mvPlotColormap_Plasma,
+        'hot': dpg.mvPlotColormap_Hot, 'cool': dpg.mvPlotColormap_Cool, 'pink': dpg.mvPlotColormap_Pink,
+        'jet': dpg.mvPlotColormap_Jet, 'twilight': dpg.mvPlotColormap_Twilight, 'red-blue': dpg.mvPlotColormap_RdBu,
+        'brown-bluegreen': dpg.mvPlotColormap_BrBG, 'pink-yellowgreen': dpg.mvPlotColormap_PiYG,
+        'spectral': dpg.mvPlotColormap_Spectral, 'greys': dpg.mvPlotColormap_Greys
+    }
+    # --- End of Refactored Section ---
+
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.x_axis = dpg.generate_uuid()
@@ -65,9 +80,37 @@ class BasePlotNode(Node):
         self.plot_display.submit_callback = self.submit_display
 
         self.heat_map_colour_property = self.add_option('color', widget_type='combo', default_value=default_color_map, callback=self.change_colormap)
-        self.heat_map_colour_property.widget.combo_items = ['none', 'deep', 'dark', 'pastel', 'paired', 'viridis', 'plasma', 'hot', 'cool', 'pink', 'jet', 'twilight', 'red-blue', 'brown-bluegreen', 'pink-yellowgreen', 'spectral', 'greys']
+        # --- Start of Refactored Section ---
+        # Use the class attribute list for combo items
+        self.heat_map_colour_property.widget.combo_items = self._plot_colors
+        # --- End of Refactored Section ---
         self.width_option = self.add_option(label='width', widget_type='drag_int', default_value=self.width, max=3840, callback=self.change_size)
         self.height_option = self.add_option(label='height', widget_type='drag_int', default_value=self.height, max=3840, callback=self.change_size)
+
+    def _process_input_to_array(self, data):
+        """Converts various input data types to a numpy array."""
+        t = type(data)
+        original_data = data
+
+        if self.app.torch_available and t == torch.Tensor:
+            data = tensor_to_array(data)
+        elif t == list:
+            data = list_to_array(data, validate=True)
+            if data is None:
+                return None
+        elif t == str:
+            data = any_to_array(data)
+        elif t not in [np.ndarray]:  # Handles float, int, bool
+            data = any_to_array(float(data))
+
+        if isinstance(data, np.ndarray):
+            if data.dtype in [np.csingle, np.cdouble, np.clongdouble]:
+                data = data.real
+            if data.dtype not in [float, np.float32, np.double, int, np.int64, np.uint8, np.bool_]:
+                return None
+            return data
+        # If we couldn't convert, return None
+        return None
 
     def add_min_and_max_y_options(self):
         self.min_y_option = self.add_option(label='min y', widget_type='drag_float', default_value=self.min_y, callback=self.change_range)
@@ -112,43 +155,15 @@ class BasePlotNode(Node):
             dpg.bind_item_theme(self.x_axis, self.app.invisible_theme)
             dpg.configure_item(self.plot_tag, show=False)
 
+    # --- Start of Refactored Section ---
     def change_colormap(self):
         if self.heat_map_colour_property is not None:
-            colormap = self.heat_map_colour_property()
-            if colormap == 'none':
-                dpg.bind_colormap(self.plot_tag, None)
-            if colormap == 'deep':
-                dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Deep)
-            elif colormap == 'dark':
-                dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Dark)
-            elif colormap == 'pastel':
-                dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Pastel)
-            elif colormap == 'paired':
-                dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Paired)
-            elif colormap == 'viridis':
-                dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Viridis)
-            elif colormap == 'plasma':
-                dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Plasma)
-            elif colormap == 'hot':
-                dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Hot)
-            elif colormap == 'cool':
-                dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Cool)
-            elif colormap == 'pink':
-                dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Pink)
-            elif colormap == 'jet':
-                dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Jet)
-            elif colormap == 'twilight':
-                dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Twilight)
-            elif colormap == 'red-blue':
-                dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_RdBu)
-            elif colormap == 'brown-bluegreen':
-                dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_BrBG)
-            elif colormap == 'pink-yellowgreen':
-                dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_PiYG)
-            elif colormap == 'spectral':
-                dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Spectral)
-            elif colormap == 'greys':
-                dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Greys)
+            colormap_name = self.heat_map_colour_property()
+            # The long if/elif chain is replaced by this single lookup.
+            # .get() with a default of None handles the 'none' case gracefully.
+            dpg_colormap = self._dpg_color_map.get(colormap_name, None)
+            dpg.bind_colormap(self.plot_tag, dpg_colormap)
+    # --- End of Refactored Section ---
 
     def reallocate_buffer(self):
         self.y_data = RollingBuffer((self.sample_count, self.rows), roll_along_x=False)
@@ -242,6 +257,7 @@ class BasePlotNode(Node):
     def adjust_to_sample_count_change(self):
         pass
 
+
 class PlotNode(BasePlotNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -297,20 +313,6 @@ class PlotNode(BasePlotNode):
         self.change_style_property()
         self.change_colormap()
 
-    # def buffer_changed(self, buffer):
-    #     try:
-    #         self.sample_count_option.set(self.sample_count)
-    #         self.min_x_option.set(0)
-    #         self.max_x_option.set(self.sample_count)
-    #         dpg.set_axis_limits(self.x_axis, self.min_x, self.max_x)
-    #         for i in range(len(self.plot_data_tag)):
-    #             if dpg.does_item_exist(self.plot_data_tag[i]):
-    #                 dpg.configure_item(self.plot_data_tag[i], rows=1, cols=self.y_data.sample_count)
-    #
-    #         self.change_range()
-    #     except Exception as e:
-    #         print(e)
-
     def change_style_property(self):
         self.style_type = self.style_property()
         self.heat_map_colour_property.set('none')
@@ -357,14 +359,6 @@ class PlotNode(BasePlotNode):
                 self.change_colormap()
             self.y_data.release_buffer()
 
-    # def change_range(self):
-    #     self.max_y = self.max_y_option()
-    #     self.min_y = self.min_y_option()
-    #     self.range = self.max_y - self.min_y
-    #     self.offset = - self.min_y
-    #     dpg.set_axis_limits(self.y_axis, self.min_y, self.max_y)
-    #     dpg.set_axis_limits(self.x_axis, self.min_x_option(), self.max_x_option())
-
     def execute(self):
         if self.pending_sample_count != self.sample_count:
             self.sample_count_option.set(self.pending_sample_count)
@@ -376,94 +370,51 @@ class PlotNode(BasePlotNode):
 
         self.lock.acquire(blocking=True)
         if self.input.fresh_input:   # standard plot
-            data = self.input()
-
-            t = type(data)
-            if self.app.torch_available and t == torch.Tensor:
-                data = any_to_array(data)
-                t = np.ndarray
-            if t == str:
-                data = any_to_array(data)
-                t = np.ndarray
-            if t not in [list, np.ndarray, torch.Tensor]:
-                ii = any_to_array(float(data))
-                self.y_data.update(ii)
-            elif t == torch.Tensor:
-                data = tensor_to_array(data)
-                t = np.ndarray
-            elif t == list:
-                if len(data) == 1:
-                    ii = any_to_array(float(data[0]))
-                    self.y_data.update(ii)
-                else:
-                    data = list_to_array(data, validate=True)
-                    if data is None:
+            data_array = self._process_input_to_array(self.input())
+            if data_array is not None:
+                if self.update_style == 'input is stream of samples':
+                    if self.rows > 1:
+                        self.rows = 1
+                        self.pending_breadth = self.rows
+                    if self.rows != self.y_data.breadth:
+                        self.lock.release()
                         return
-                    t = np.ndarray
-            if t == np.ndarray:
-                if data.dtype in [np.csingle, np.cdouble, np.clongdouble]:
-                    data = data.real
-                if data.dtype in [float, np.float32, np.double, int, np.int64, np.uint8, np.bool_]:
-                    if self.update_style == 'input is stream of samples':
-                        if self.rows > 1:
-                            self.rows = 1
-                            self.pending_breadth = self.rows
-                        if self.rows != self.y_data.breadth:
-                            self.lock.release()
-                            return
-                        self.y_data.set_update_style(self.update_style)
 
-                        if len(data.shape) == 1:
-                            if data.shape[0] > self.sample_count:
-                                self.pending_sample_count = data.shape[0]
-                            else:
-                                self.y_data.update(data)
-                        elif len(data.shape) == 0:
-                            self.y_data.update(np.expand_dims(data, axis=0))
-                    elif self.update_style == 'input is multi-channel sample':
-                        if len(data.shape) == 2 and data.shape[1] > 1 and data.shape[0] > 1:
-                            rows = data.shape[0]
-                            self.pending_breadth = rows
-                            self.pending_sample_count = data.shape[1]
-                        else:
-                            rows = data.size
-                        if rows != self.rows:
-                            self.rows = rows
-                            self.pending_breadth = self.rows
-
-                        if len(self.plot_data_tag) < self.rows:
-                            for i in range(len(self.plot_data_tag), rows):
-                                self.plot_data_tag.append(dpg.generate_uuid())
-                        if self.rows != self.y_data.breadth or self.sample_count != self.pending_sample_count:
-                            self.lock.release()
-                            return
-
-                        self.y_data.set_update_style(self.update_style)
-                        if len(data.shape) == 2 and data.shape[1] > 1 and data.shape[0] > 1:
-                            ii = data.reshape((rows, self.sample_count))
-                        else:
-                            ii = data.reshape((rows, 1))
-
-                        self.y_data.update(ii)
-                    elif self.update_style == 'buffer holds one sample of input' and len(data.shape) > 0:
-                        if len(data.shape) == 1:
-                            if data.shape[0] == 1:
-                                self.y_data.update(data)
-                            else:
-                                if self.sample_count != data.shape[0]:
-                                    self.pending_sample_count = data.shape[0]
-                                    self.lock.release()
-                                    return
-                                else:
-                                    self.y_data.update(data)
+                    if len(data_array.shape) == 1 and data_array.shape[0] > self.sample_count:
+                        self.pending_sample_count = data_array.shape[0]
                     else:
-                        if len(data.shape) == 1:
-                            if data.shape[0] > self.sample_count:
-                                self.pending_sample_count = data.shape[0]
-                            else:
-                                self.y_data.update(data)
-                        elif len(data.shape) == 0:
-                            self.y_data.update(np.expand_dims(data, axis=0))
+                        self.y_data.update(data_array)
+
+                elif self.update_style == 'input is multi-channel sample':
+                    rows = data_array.size
+                    sample_count = self.sample_count
+                    if len(data_array.shape) == 2 and data_array.shape[0] > 1 and data_array.shape[1] > 1:
+                        rows = data_array.shape[0]
+                        sample_count = data_array.shape[1]
+                        self.pending_sample_count = sample_count
+
+                    if rows != self.rows:
+                        self.rows = rows
+                        self.pending_breadth = self.rows
+
+                    if len(self.plot_data_tag) < self.rows:
+                        for i in range(len(self.plot_data_tag), rows):
+                            self.plot_data_tag.append(dpg.generate_uuid())
+
+                    if self.rows != self.y_data.breadth or self.sample_count != sample_count:
+                        self.lock.release()
+                        return
+
+                    self.y_data.update(data_array.reshape((rows, -1)))
+
+                elif self.update_style == 'buffer holds one sample of input' and len(data_array.shape) > 0:
+                    if len(data_array.shape) == 1 and data_array.shape[0] != 1:
+                        if self.sample_count != data_array.shape[0]:
+                            self.pending_sample_count = data_array.shape[0]
+                            self.lock.release()
+                            return
+                    self.y_data.update(data_array)
+
         buffer = self.y_data.get_buffer()
         if buffer is not None:
             if self.y_data.breadth > 1:
@@ -491,73 +442,103 @@ class HeatMapNode(BasePlotNode):
         return node
 
     def __init__(self, label: str, data, args):
+        # We use 'args' to set the default mode.
+        # 'Static Frame' for heat_map, 'Scrolling' for heat_scroll.
+        default_mode = label
+
         super().__init__(label, data, args)
+
+        self.add_sample_count_option()
         self.add_min_and_max_y_options()
 
+        # Add an option to switch between the two behaviors.
+        self.update_mode_option = self.add_option(
+            'update_mode', widget_type='combo', default_value=default_mode,
+            callback=self.change_update_mode
+        )
+        self.update_mode_option.widget.combo_items = ['heat_map', 'heat_scroll']
+
         self.format = '%.3f'
-        self.format_option = self.add_option(label='number format', widget_type='text_input', default_value='', callback=self.change_format)
+        self.format_option = self.add_option(
+            label='number format', widget_type='text_input',
+            default_value='', callback=self.change_format
+        )
+
         self.hold_format = self.format
         self.x_axis_scaler = self.sample_count
         self.pending_rows = None
 
+    def change_update_mode(self):
+        # When the mode changes, we need to reconfigure the underlying buffer and plot.
+        if self.update_mode_option() == 'heat_scroll':
+            if self.sample_count == 1:
+                self.sample_count_option.set(200)
+
+        self.change_sample_count()
+        self.reallocate_buffer()
+
+    def reallocate_buffer(self):
+        # The buffer configuration now depends on the update mode.
+        mode = self.update_mode_option()
+        roll = False
+        update_style = 'buffer holds one sample of input'  # Static Frame default
+
+        if mode == 'heat_scroll':
+            roll = False
+            update_style = 'input is multi-channel sample'
+
+        self.y_data = RollingBuffer((self.sample_count, self.rows), roll_along_x=roll)
+        self.y_data.owner = self
+        self.y_data.buffer_changed_callback = self.buffer_changed
+        self.y_data.set_update_style(update_style)
+
     def submit_display(self):
+        # This is identical for both modes.
         with dpg.plot(label='', tag=self.plot_tag, height=self.height, width=self.width, no_title=True) as self.plotter:
             dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Viridis)
             dpg.add_plot_axis(dpg.mvXAxis, label="", tag=self.x_axis, no_tick_labels=True)
             dpg.add_plot_axis(dpg.mvYAxis, label="", tag=self.y_axis, no_tick_labels=True)
 
-    def frame_task(self):
-        if self.pending_sample_count != self.sample_count or (self.pending_rows is not None and self.pending_rows != self.rows):
-            if self.sample_count_option is not None:
-                self.sample_count_option.set(self.pending_sample_count)
-            else:
-                self.sample_count = self.pending_sample_count
-            self.change_sample_count()
-            self.input.fresh_input = True
-            self.execute()
-            self.remove_frame_tasks()
-
     def custom_create(self, from_file):
+        # We need to call reallocate_buffer first to set the correct mode.
         self.reallocate_buffer()
 
-        self.min_y = 0.0
         self.min_y_option.set(0.0)
-        self.max_y = 1.0
         self.max_y_option.set(1.0)
-        self.format = '%.3f'
-        dpg.set_axis_limits(self.y_axis, 0, 1)
-        dpg.set_axis_limits(self.x_axis, self.min_x / self.sample_count, self.max_x / self.sample_count)
-        buffer = self.y_data.get_buffer(block=True)
-        if buffer is not None:
-            dpg.add_heat_series(x=buffer.ravel(), rows=self.y_data.breadth, cols=self.y_data.sample_count, parent=self.y_axis,
-                                tag=self.plot_data_tag[0], format=self.format, scale_min=self.min_y, scale_max=self.max_y)
-            self.y_data.release_buffer()
+        self.change_range()  # this will set self.min_y, self.max_y, and axis limits
 
-        dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Viridis)
-        self.change_range()
         self.format_option.set(self.format)
 
-    def reallocate_buffer(self):
-        self.y_data = RollingBuffer((self.sample_count, self.rows), roll_along_x=False)
-        self.y_data.owner = self
-        self.y_data.buffer_changed_callback = self.buffer_changed
-        self.y_data.set_update_style('buffer holds one sample of input')
+        buffer = self.y_data.get_buffer(block=True)
+        if buffer is not None:
+            dpg.add_heat_series(
+                x=buffer.ravel(), rows=self.y_data.breadth, cols=self.y_data.sample_count,
+                parent=self.y_axis, tag=self.plot_data_tag[0], format=self.format,
+                scale_min=self.min_y, scale_max=self.max_y
+            )
+            self.y_data.release_buffer()
 
     def change_range(self):
         super().change_range()
+        # Heat maps always have a Y-axis from 0.0 to 1.0 representing row index.
         dpg.set_axis_limits(self.y_axis, 0.0, 1.0)
 
     def adjust_to_sample_count_change(self):
         if self.rows != self.pending_rows and self.pending_rows is not None:
             self.rows = self.pending_rows
+            # Reallocate buffer if rows change, respecting the current update mode.
             self.reallocate_buffer()
         self.x_axis_scaler = self.sample_count
         buffer = self.y_data.get_buffer(block=True)
         if buffer is not None:
+            # Set y axis limits for plot, not the data scale
             dpg.set_axis_limits(self.y_axis, self.min_y, self.max_y)
             dpg.set_axis_limits(self.x_axis, self.min_x / self.x_axis_scaler, self.max_x / self.x_axis_scaler)
-            dpg.add_heat_series(x=buffer.ravel(), rows=self.y_data.breadth, cols=self.y_data.sample_count, parent=self.y_axis,
-                                tag=self.plot_data_tag[0], format=self.format, scale_min=self.min_y, scale_max=self.max_y)
+            dpg.add_heat_series(
+                x=buffer.ravel(), rows=self.y_data.breadth, cols=self.y_data.sample_count,
+                parent=self.y_axis, tag=self.plot_data_tag[0], format=self.format,
+                scale_min=self.min_y, scale_max=self.max_y
+            )
             self.change_colormap()
             self.y_data.release_buffer()
 
@@ -567,325 +548,89 @@ class HeatMapNode(BasePlotNode):
             self.hold_format = self.format
         dpg.configure_item(self.plot_data_tag[0], format=self.format)
 
-    def execute(self):
-        if self.pending_sample_count != self.sample_count or (self.pending_rows is not None and self.pending_rows != self.rows):
+    def frame_task(self):
+        # This task handles re-configuration when input dimensions change. It works for both modes.
+        if self.pending_sample_count != self.sample_count or (
+                self.pending_rows is not None and self.pending_rows != self.rows):
             if self.sample_count_option is not None:
                 self.sample_count_option.set(self.pending_sample_count)
             else:
                 self.sample_count = self.pending_sample_count
             self.change_sample_count()
+            self.input.fresh_input = True
+            self.execute()
+            self.remove_frame_tasks()
+
+    def execute(self):
+        if self.pending_sample_count != self.sample_count or (
+                self.pending_rows is not None and self.pending_rows != self.rows):
+            self.add_frame_task()
+            return
 
         self.lock.acquire(blocking=True)
-        if self.input.fresh_input:   # standard plot
+        if self.input.fresh_input:
             data = self.input()
+            if isinstance(data, str) and data == 'dump':
+                self.output.send(self.y_data.get_buffer()[0])
+                self.y_data.release_buffer()
+                self.lock.release()
+                return
 
-            t = type(data)
-            if self.app.torch_available and t == torch.Tensor:
-                data = any_to_array(data)
-                t = np.ndarray
-            if t == str:
-                if data == 'dump':
-                    self.output.send(self.y_data.get_buffer()[0])
-                    self.y_data.release_buffer()
-                else:
-                    data = any_to_array(data)
-                    t = np.ndarray
+            data_array = self._process_input_to_array(data)
+            if data_array is not None:
+                mode = self.update_mode_option()
 
-            if t not in [list, np.ndarray, torch.Tensor]:
-                ii = any_to_array(data)
-                if self.range != 1.0 or self.offset != 0:
-                    ii = (ii + self.offset) / self.range
-                rows = 1
-                sample_count = 1
-                if rows != self.rows or sample_count != self.sample_count:
-                    self.pending_rows = rows
-                    self.pending_sample_count = sample_count
-                    self.lock.release()
-                    self.add_frame_task()
-                    return
-                self.y_data.update(ii)
-
-            elif t == list:
-                if len(data) == 1:
-                    ii = any_to_array(data[0])
-                    if self.range != 1.0 or self.offset != 0:
-                        ii = (ii + self.offset) / self.range
+                if mode == 'heat_map':
+                    # Logic from the original HeatMapNode
                     rows = 1
-                    sample_count = 1
-                    if rows != self.rows or sample_count != self.sample_count:
-                        self.pending_rows = rows
-                        self.pending_sample_count = sample_count
-                        self.lock.release()
-                        self.add_frame_task()
-                        return
-                    self.y_data.update(ii)
-                else:
-                    data = list_to_array(data, validate=True)
-                    if data is None:
-                        return
-                    t = np.ndarray
-            elif t == torch.Tensor:
-                data = tensor_to_array(data)
-                t = np.ndarray
-            if t == np.ndarray:
-                if data.dtype in [float, np.float32, np.double, int, np.int64, np.uint8, np.bool_]:
-                    dims = len(data.shape)
-                    rows = 1
-                    sample_count = data.shape[0]
-                    if dims > 1:
-                        rows = data.shape[1]
+                    sample_count = data_array.shape[0]
+                    if len(data_array.shape) > 1:
+                        rows = data_array.shape[1]
+
                     if rows != self.rows or self.sample_count != sample_count:
                         self.pending_rows = rows
                         self.pending_sample_count = sample_count
                         self.lock.release()
                         self.add_frame_task()
                         return
-                    if self.range != 1.0 or self.offset != 0:
-                        ii = (data + self.offset) / self.range
-                        self.y_data.update(ii)
-                    else:
-                        self.y_data.update(data)
 
-        buffer = self.y_data.get_buffer()
-        forced_format = False
-        if len(buffer.shape) == 1:
-            if self.width / self.rows < 40:
-                forced_format = True
-                if len(self.format) > 0:
-                    self.hold_format = self.format
-                    self.format_option.set('')
-                    self.format = ''
-                    self.change_format()
-        else:
-            if self.width / self.rows < 40:
-                forced_format = True
-                if len(self.format) > 0:
-                    self.hold_format = self.format
-                    self.format_option.set('')
-                    self.format = ''
-                    self.change_format()
+                    processed_data = (data_array + self.offset) / self.range
+                    self.y_data.update(processed_data)
 
-            if len(buffer.shape) > 1 and (self.height / self.sample_count) < 16:
-                forced_format = True
-                if len(self.format) > 0:
-                    self.hold_format = self.format
-                    self.format_option.set('')
-                    self.format = ''
-                    self.change_format()
-
-        if not forced_format and self.hold_format != self.format:
-            self.format = self.hold_format
-            self.format_option.set(self.hold_format)
-            self.change_format()
-
-        if buffer is not None:
-            dpg.set_value(self.plot_data_tag[0], [buffer.ravel(), self.x_data])
-            self.y_data.release_buffer()
-
-        self.lock.release()
-        self.send_all()
-
-
-class HeatScrollNode(BasePlotNode):
-    @staticmethod
-    def factory(name, data, args=None):
-        node = HeatScrollNode(name, data, args)
-        return node
-
-    def __init__(self, label: str, data, args):
-        super().__init__(label, data, args)
-
-        self.style_type = label
-        self.update_style = 'input is multi-channel sample'
-
-        self.add_sample_count_option()
-        self.add_min_and_max_y_options()
-
-        self.format_option = self.add_option(label='number format', widget_type='text_input', default_value='', callback=self.change_format)
-
-        self.hold_format = self.format
-        self.x_axis = self.sample_count
-        self.x_axis_scaler = self.sample_count
-        self.pending_rows = None
-
-    def frame_task(self):
-        if self.pending_sample_count != self.sample_count or (self.pending_rows is not None and self.pending_rows != self.rows):
-            if self.sample_count_option is not None:
-                self.sample_count_option.set(self.pending_sample_count)
-            else:
-                self.sample_count = self.pending_sample_count
-            self.change_sample_count()
-            self.input.fresh_input = True
-            self.execute()
-            self.remove_frame_tasks()
-
-    def submit_display(self):
-        with dpg.plot(label='', tag=self.plot_tag, height=self.height, width=self.width, no_title=True) as self.plotter:
-            dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Viridis)
-            dpg.add_plot_axis(dpg.mvXAxis, label="", tag=self.x_axis, no_tick_labels=True)
-            dpg.add_plot_axis(dpg.mvYAxis, label="", tag=self.y_axis, no_tick_labels=True)
-
-    def custom_create(self, from_file):
-        self.reallocate_buffer()
-        self.min_y = 0.0
-        self.min_y_option.set(0.0)
-        dpg.set_axis_limits(self.y_axis, 0, 1)
-        dpg.set_axis_limits(self.x_axis, self.min_x / self.sample_count, self.max_x / self.sample_count)
-
-        buffer = self.y_data.get_buffer(block=True)
-        if buffer is not None:
-            dpg.add_heat_series(x=buffer.ravel(), rows=self.y_data.breadth, cols=self.y_data.sample_count, parent=self.y_axis,
-                            tag=self.plot_data_tag[0], format=self.format, scale_min=0, scale_max=1)
-            self.y_data.release_buffer()
-        dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Viridis)
-        self.change_range()
-
-    def buffer_changed(self, buffer):
-        try:
-            if self.sample_count is not None:
-                self.sample_count_option.set(self.sample_count)
-
-            if self.min_x is not None:
-                self.min_x_option.set(0)
-            self.min_x = 0
-            if self.max_x_option is not None:
-                self.max_x_option.set(self.sample_count)
-            self.max_x = self.sample_count
-
-            dpg.set_axis_limits(self.x_axis, self.min_x / self.sample_count, self.max_x / self.sample_count)
-
-            for i in range(len(self.plot_data_tag)):
-                if dpg.does_item_exist(self.plot_data_tag[i]):
-                    dpg.configure_item(self.plot_data_tag[i], rows=1, cols=self.y_data.sample_count)
-
-            self.change_range()
-        except Exception as e:
-            pass
-
-    def adjust_to_sample_count_change(self):
-        if self.rows != self.pending_rows and self.pending_rows is not None:
-            self.rows = self.pending_rows
-            self.reallocate_buffer()
-        self.x_axis_scaler = self.sample_count
-        buffer = self.y_data.get_buffer(block=True)
-        if buffer is not None:
-            dpg.set_axis_limits(self.y_axis, self.min_y, self.max_y)
-            dpg.set_axis_limits(self.x_axis, self.min_x / self.x_axis_scaler, self.max_x / self.x_axis_scaler)
-            dpg.add_heat_series(x=buffer.ravel(), rows=self.y_data.breadth, cols=self.y_data.sample_count, parent=self.y_axis,
-                                tag=self.plot_data_tag[0], format=self.format, scale_min=self.min_y, scale_max=self.max_y)
-            self.change_colormap()
-            self.y_data.release_buffer()
-
-    def change_range(self):
-        super().change_range()
-        dpg.set_axis_limits(self.y_axis, 0.0, 1.0)
-
-    def change_format(self):
-        self.format = self.format_option()
-        if self.format != '':
-            self.hold_format = self.format
-        dpg.configure_item(self.plot_data_tag[0], format=self.format)
-
-    def execute(self):
-        if self.pending_sample_count != self.sample_count:
-            self.sample_count_option.set(self.pending_sample_count)
-            self.change_sample_count()
-
-        self.lock.acquire(blocking=True)
-        if self.input.fresh_input:   # standard plot
-            data = self.input()
-
-            t = type(data)
-            if self.app.torch_available and t == torch.Tensor:
-                data = any_to_array(data)
-                t = np.ndarray
-            if t == str:
-                data = any_to_array(data)
-                t = np.ndarray
-
-            if t not in [list, np.ndarray]:
-                ii = any_to_array(data)
-                rows = len(ii)
-                if rows != self.rows:
-                    self.pending_rows = rows
-                    self.lock.release()
-                    self.add_frame_task()
-                    return
-                ii = (ii + self.offset) / self.range
-                self.y_data.update(ii)
-            elif t == list:
-                if len(data) == 1:
-                    ii = any_to_array(data[0])
-                    ii = (ii + self.offset) / self.range
-                    self.y_data.update(ii)
-                else:
-                    rows = len(data)
+                elif mode == 'heat_scroll':
+                    # Logic from the original HeatScrollNode
+                    rows = data_array.size
                     if rows != self.rows:
                         self.pending_rows = rows
                         self.lock.release()
                         self.add_frame_task()
                         return
-                    ii = list_to_array(data, validate=True)
-                    if ii is None:
-                        return
-                    ii = ii.reshape((rows, 1))
-                    ii = (ii + self.offset) / self.range
-                    self.y_data.update(ii)
-            elif t == np.ndarray:
-                if data.dtype in [np.csingle, np.cdouble, np.clongdouble]:
-                    data = data.real
 
-                if data.dtype in [float, np.float32, np.double, int, np.int64, np.bool_]:
-                    rows = data.size
-                    if rows != self.rows:
-                        self.pending_rows = rows
-                        self.lock.release()
-                        self.add_frame_task()
-                        return
-                    ii = (data.reshape((rows, 1)) + self.offset) / self.range
-                    self.y_data.update(ii)
+                    processed_data = (data_array.reshape((rows, 1)) + self.offset) / self.range
+                    self.y_data.update(processed_data)
 
+        # This part is common to both modes
         buffer = self.y_data.get_buffer()
-        forced_format = False
-        if len(buffer.shape) == 1:
-            if self.width / self.rows < 40:
-                forced_format = True
-                if len(self.format) > 0:
-                    self.hold_format = self.format
-                    self.format_option.set('')
-                    self.format = ''
-                    self.change_format()
-        else:
-            if self.sample_count == 1:
-                if self.width / self.rows < 40:
-                    forced_format = True
-                    if len(self.format) > 0:
-                        self.hold_format = self.format
-                        self.format_option.set('')
-                        self.format = ''
-                        self.change_format()
-            elif self.width / self.sample_count < 40:
-                forced_format = True
-                if len(self.format) > 0:
-                    self.hold_format = self.format
-                    self.format_option.set('')
-                    self.format = ''
-                    self.change_format()
-
-            elif len(buffer.shape) > 1 and (self.height / buffer.shape[0]) < 16:
-                forced_format = True
-                if len(self.format) > 0:
-                    self.hold_format = self.format
-                    self.format_option.set('')
-                    self.format = ''
-                    self.change_format()
-
-        if not forced_format and self.hold_format != self.format:
-            self.format = self.hold_format
-            self.format_option.set(self.hold_format)
-            self.change_format()
 
         if buffer is not None:
+            # Code to auto-hide number format if cells are too small
+            changed_format = False
+            hide_format = False
+
+            if self.width / self.sample_count < 40 or (len(buffer.shape) > 1 and self.height / self.rows < 16):
+                hide_format = True
+                if self.format != '':
+                    self.hold_format = self.format
+                    changed_format = True
+                    self.format_option.set('')
+
+            elif self.format == '' and self.format_option() == '' and self.hold_format != '':
+                self.format_option.set(self.hold_format)
+                changed_format = True
+
+            if changed_format:
+                self.change_format()  # applies the format change
+
             dpg.set_value(self.plot_data_tag[0], [buffer.ravel(), self.x_data])
             self.y_data.release_buffer()
 
@@ -921,10 +666,10 @@ class ProfileNode(BasePlotNode):
 
         self.heat_map_colour_property = self.add_option('color', widget_type='combo', default_value=default_color_map,
                                                         callback=self.change_colormap)
-        self.heat_map_colour_property.widget.combo_items = ['none', 'deep', 'dark', 'pastel', 'paired', 'viridis',
-                                                            'plasma', 'hot', 'cool', 'pink', 'jet', 'twilight',
-                                                            'red-blue', 'brown-bluegreen', 'pink-yellowgreen',
-                                                            'spectral', 'greys']
+        # --- Start of Refactored Section ---
+        # Use the class attribute list for combo items
+        self.heat_map_colour_property.widget.combo_items = self._plot_colors
+        # --- End of Refactored Section ---
 
         self.continuous_output = self.add_option(label='continuous output', widget_type='checkbox', default_value=False)
 
@@ -963,118 +708,169 @@ class ProfileNode(BasePlotNode):
         self.lock.release()
 
     def frame_task(self):
-        if ProfileNode.mousing_plot == self.plotter or ProfileNode.mousing_plot is None:
-            x = 0
-            y = 0
-            ref_pos = [-1, -1]
+        # Only allow one plot to be drawn on at a time
+        if ProfileNode.mousing_plot is not None and ProfileNode.mousing_plot != self.plotter:
+            return
+
+        is_hovered = dpg.is_item_hovered(self.plotter)
+        mouse_down = dpg.is_mouse_button_down(0)
+
+        # Handle starting and stopping the drawing action
+        if mouse_down:
+            if is_hovered and not self.was_drawing:
+                # Start drawing
+                self.was_drawing = True
+                ProfileNode.mousing_plot = self.plotter
+                self.last_pos = [-1, -1]  # Reset last position for a new stroke
+        else:
             if self.was_drawing:
-                if not dpg.is_mouse_button_down(0):
-                    self.was_drawing = False
-                    self.output.send(self.y_data.get_buffer()[0])
-                    self.y_data.release_buffer()
-                    PlotNode.mousing_plot = None
-                else:
-                    editor = self.app.get_current_editor()
-                    if editor is not None:
-                        node_padding = editor.node_scalers[dpg.mvNodeStyleVar_NodePadding]
-                        window_padding = self.app.window_padding
-                        plot_padding = 10
-                        mouse = dpg.get_mouse_pos(local=True)
-                        pos_x = dpg.get_item_pos(self.plotter)[0] + plot_padding + node_padding[0] + window_padding[0]
-                        pos_y = dpg.get_item_pos(self.plotter)[1] + plot_padding + node_padding[1] + window_padding[1] + 4  # 4 is from unknown source
+                # Stop drawing
+                self.was_drawing = False
+                ProfileNode.mousing_plot = None
+                # Send the final profile data on mouse up
+                self.output.send(self.y_data.get_buffer()[0])
+                self.y_data.release_buffer()
+            return  # Exit if mouse is not down
 
-                        size = dpg.get_item_rect_size(self.plotter)
-                        size[0] -= (2 * plot_padding)
-                        size[1] -= (2 * plot_padding)
-                        x_scale = self.sample_count / size[0]
-                        y_scale = self.range / size[1]
+        if not self.was_drawing:
+            return
 
-                        off_x = mouse[0] - pos_x
-                        off_y = mouse[1] - pos_y
-                        unit_x = off_x * x_scale
-                        unit_y = off_y * y_scale
-                        unit_y = self.max_y - unit_y
-                        if unit_x < 0:
-                            unit_x = 0
-                        elif unit_x >= self.sample_count:
-                            unit_x = self.sample_count - 1
-                        if unit_y < self.min_y:
-                            unit_y = self.min_y
-                        elif unit_y > self.max_y:
-                            unit_y = self.max_y
-                        x = unit_x
-                        y = unit_y
-                        ref_pos = [x, y]
-                        x = int(x)
+        # --- Refactored Drawing Logic ---
+        # Get mouse position in plot data coordinates.
+        plot_mouse_pos = dpg.get_plot_mouse_pos()
 
-            if dpg.is_item_hovered(self.plotter):
-                if dpg.is_mouse_button_down(0):
-                    if self.hovered and not self.was_drawing:
-                        PlotNode.mousing_plot = self.plotter
-                        self.was_drawing = True
-                else:
-                    self.hovered = True
-                    self.last_pos = [-1, -1]
-                    if self.was_drawing:
-                        self.was_drawing = False
-                        PlotNode.mousing_plot = None
+        # Exit if the mouse is not over the plot area.
+        if plot_mouse_pos is None or (plot_mouse_pos[0] == -1 and plot_mouse_pos[1] == -1):
+            return
 
-            else:
-                self.hovered = False
-                if not dpg.is_mouse_button_down(0):
-                    self.was_drawing = False
-                    PlotNode.mousing_plot = None
+        # Clamp coordinates to the valid data range of the profile.
+        x_pos = max(0.0, min(self.sample_count - 1.0, plot_mouse_pos[0]))
+        y_pos = max(self.min_y, min(self.max_y, plot_mouse_pos[1]))
 
-            if self.was_drawing:
-                if self.last_pos[0] != -1:
-                    last_y = self.last_pos[1]
-                    last_x = int(round(self.last_pos[0]))
-                    change_x = x - last_x
-                    change_y = y - last_y
-                    if change_x > 0:
-                        for i in range(last_x, x):
-                            interpolated_y = ((i - last_x) / change_x) * change_y + last_y
-                            self.y_data.set_value(i, interpolated_y)
-                    else:
-                        for i in range(x, last_x):
-                            interpolated_y = ((i - x) / change_x) * change_y + last_y
-                            self.y_data.set_value(i, interpolated_y)
-                if ref_pos[0] != -1:
-                    self.last_pos = ref_pos
-                    self.y_data.set_value(x, y)
-                    self.y_data.set_write_pos(0)
-                    self.update_plot()
-                    self.was_drawing = True
-                    if self.continuous_output():
-                        self.output.send(self.y_data.get_buffer()[0])
-                        self.y_data.release_buffer()
+        # Get integer index for the buffer array.
+        x_index = int(round(x_pos))
 
-    # def value_dragged(self):
-    #     if not dpg.is_mouse_button_down(0):
-    #         return
-    #     self.value_changed()
+        # If this is not the first point in the stroke, interpolate from the last point.
+        if self.last_pos[0] != -1:
+            last_x_pos, last_y_pos = self.last_pos
+            last_x_index = int(round(last_x_pos))
 
-    # def buffer_changed(self, buffer):
-    #     try:
-    #         if self.sample_count is not None:
-    #             self.sample_count_option.set(self.sample_count)
-    #
-    #         if self.min_x is not None:
-    #             self.min_x_option.set(0)
-    #         self.min_x = 0
-    #         if self.max_x_option is not None:
-    #             self.max_x_option.set(self.sample_count)
-    #         self.max_x = self.sample_count
-    #
-    #         dpg.set_axis_limits(self.x_axis, self.min_x / self.x_axis_scaler, self.max_x / self.x_axis_scaler)
-    #
-    #         for i in range(len(self.plot_data_tag)):
-    #             if dpg.does_item_exist(self.plot_data_tag[i]):
-    #                 dpg.configure_item(self.plot_data_tag[i], rows=1, cols=self.y_data.sample_count)
-    #
-    #         self.change_range()
-    #     except Exception as e:
-    #         pass
+            # Fill in the gap between the last frame's point and this one.
+            # This handles fast mouse movements smoothly.
+            delta_x = x_index - last_x_index
+            if abs(delta_x) > 0:
+                delta_y = y_pos - last_y_pos
+                # Determine the range of indices to fill
+                start_index = min(last_x_index, x_index)
+                end_index = max(last_x_index, x_index)
+
+                # Linear interpolation for each integer step
+                for i in range(start_index, end_index + 1):
+                    # Avoid division by zero, although abs(delta_x) > 0 should prevent it.
+                    ratio = (i - last_x_index) / delta_x if delta_x != 0 else 0.0
+                    interpolated_y = last_y_pos + ratio * delta_y
+                    self.y_data.set_value(i, interpolated_y)
+
+        # Always set the value directly under the cursor
+        self.y_data.set_value(x_index, y_pos)
+
+        # Store the current float position for the next frame's interpolation.
+        self.last_pos = [x_pos, y_pos]
+
+        # Update the visual plot representation.
+        self.update_plot()
+
+        # If continuous output is enabled, send data every frame.
+        if self.continuous_output():
+            self.output.send(self.y_data.get_buffer()[0])
+            self.y_data.release_buffer()
+
+        # --- End of Refactored Section ---
+        # if ProfileNode.mousing_plot == self.plotter or ProfileNode.mousing_plot is None:
+        #     x = 0
+        #     y = 0
+        #     ref_pos = [-1, -1]
+        #     if self.was_drawing:
+        #         if not dpg.is_mouse_button_down(0):
+        #             self.was_drawing = False
+        #             self.output.send(self.y_data.get_buffer()[0])
+        #             self.y_data.release_buffer()
+        #             PlotNode.mousing_plot = None
+        #         else:
+        #             editor = self.app.get_current_editor()
+        #             if editor is not None:
+        #                 node_padding = editor.node_scalers[dpg.mvNodeStyleVar_NodePadding]
+        #                 window_padding = self.app.window_padding
+        #                 plot_padding = 10
+        #                 mouse = dpg.get_mouse_pos(local=True)
+        #                 pos_x = dpg.get_item_pos(self.plotter)[0] + plot_padding + node_padding[0] + window_padding[0]
+        #                 pos_y = dpg.get_item_pos(self.plotter)[1] + plot_padding + node_padding[1] + window_padding[1] + 4  # 4 is from unknown source
+        #
+        #                 size = dpg.get_item_rect_size(self.plotter)
+        #                 size[0] -= (2 * plot_padding)
+        #                 size[1] -= (2 * plot_padding)
+        #                 x_scale = self.sample_count / size[0]
+        #                 y_scale = self.range / size[1]
+        #
+        #                 off_x = mouse[0] - pos_x
+        #                 off_y = mouse[1] - pos_y
+        #                 unit_x = off_x * x_scale
+        #                 unit_y = off_y * y_scale
+        #                 unit_y = self.max_y - unit_y
+        #                 if unit_x < 0:
+        #                     unit_x = 0
+        #                 elif unit_x >= self.sample_count:
+        #                     unit_x = self.sample_count - 1
+        #                 if unit_y < self.min_y:
+        #                     unit_y = self.min_y
+        #                 elif unit_y > self.max_y:
+        #                     unit_y = self.max_y
+        #                 x = unit_x
+        #                 y = unit_y
+        #                 ref_pos = [x, y]
+        #                 x = int(x)
+        #
+        #     if dpg.is_item_hovered(self.plotter):
+        #         if dpg.is_mouse_button_down(0):
+        #             if self.hovered and not self.was_drawing:
+        #                 PlotNode.mousing_plot = self.plotter
+        #                 self.was_drawing = True
+        #         else:
+        #             self.hovered = True
+        #             self.last_pos = [-1, -1]
+        #             if self.was_drawing:
+        #                 self.was_drawing = False
+        #                 PlotNode.mousing_plot = None
+        #
+        #     else:
+        #         self.hovered = False
+        #         if not dpg.is_mouse_button_down(0):
+        #             self.was_drawing = False
+        #             PlotNode.mousing_plot = None
+        #
+        #     if self.was_drawing:
+        #         if self.last_pos[0] != -1:
+        #             last_y = self.last_pos[1]
+        #             last_x = int(round(self.last_pos[0]))
+        #             change_x = x - last_x
+        #             change_y = y - last_y
+        #             if change_x > 0:
+        #                 for i in range(last_x, x):
+        #                     interpolated_y = ((i - last_x) / change_x) * change_y + last_y
+        #                     self.y_data.set_value(i, interpolated_y)
+        #             else:
+        #                 for i in range(x, last_x):
+        #                     interpolated_y = ((i - x) / change_x) * change_y + last_y
+        #                     self.y_data.set_value(i, interpolated_y)
+        #         if ref_pos[0] != -1:
+        #             self.last_pos = ref_pos
+        #             self.y_data.set_value(x, y)
+        #             self.y_data.set_write_pos(0)
+        #             self.update_plot()
+        #             self.was_drawing = True
+        #             if self.continuous_output():
+        #                 self.output.send(self.y_data.get_buffer()[0])
+        #                 self.y_data.release_buffer()
 
     def adjust_to_sample_count_change(self):
         buffer = self.y_data.get_buffer(block=True)
@@ -1117,56 +913,45 @@ class ProfileNode(BasePlotNode):
         if self.input.fresh_input:   # standard plot
             data = self.input()
 
-            t = type(data)
-            if t == str:
-                if data == 'dump':
-                    self.output.send(self.y_data.get_buffer()[0])
-                    self.y_data.release_buffer()
-                    self.lock.release()
-                    return
-                else:
-                    data = any_to_array(data)
-                    t = np.ndarray
-
-            if t not in [list, np.ndarray, torch.Tensor]:
-                value = 0
-                float_data = any_to_float(data)
-                if float_data >= 0 and float_data < self.sample_count:
-                    pre_index = int(float_data)
-                    post_index = int(float_data + 1)
-                    interp = float_data - pre_index
-                    value = any_to_float(self.y_data.get_value(pre_index) * (1.0 - interp) + self.y_data.get_value(post_index) * interp)
+            # Handle special cases for ProfileNode first
+            if isinstance(data, str) and data == 'dump':
+                self.output.send(self.y_data.get_buffer()[0])
+                self.y_data.release_buffer()
                 self.lock.release()
-                self.output.send(value)
                 return
 
-            if self.app.torch_available and t == torch.Tensor:
-                data = any_to_array(data)
-                t = np.ndarray
+            # Case 1: Input is an index to look up
+            is_index = False
+            try:
+                float_data = float(data)
+                if not isinstance(data, (list, np.ndarray)):
+                    is_index = True
+            except (ValueError, TypeError):
+                is_index = False
 
-            if t == torch.Tensor:
-                data = tensor_to_array(data)
-                t = np.ndarray
-            elif t == list:
-                if len(data) == 1:
-                    ii = any_to_array(float(data[0]))
-                    self.y_data.update(ii)
+            if is_index:
+                value = 0
+                if 0 <= float_data < self.sample_count:
+                    pre_index = int(float_data)
+                    if pre_index >= self.sample_count:
+                        pre_index = self.sample_count - 1
+                    post_index = int(float_data + 1)
+                    if post_index >= self.sample_count:
+                        post_index = self.sample_count - 1
+                    interp = float_data - pre_index
+                    value = any_to_float(
+                        self.y_data.get_value(pre_index) * (1.0 - interp) + self.y_data.get_value(post_index) * interp)
+                self.output.send(value)
+                self.lock.release()
+                return
+
+            # Case 2: Input is data to fill the profile
+            data_array = self._process_input_to_array(data)
+            if data_array is not None:
+                if len(data_array.shape) == 1 and data_array.shape[0] > self.sample_count:
+                    self.pending_sample_count = data_array.shape[0]
                 else:
-                    data = list_to_array(data, validate=True)
-                    if data is None:
-                        return
-                    t = np.ndarray
-            if t == np.ndarray:
-                if data.dtype in [np.csingle, np.cdouble, np.clongdouble]:
-                    data = data.real
-                if data.dtype in [float, np.float32, np.double, int, np.int64, np.uint8, np.bool_]:
-                    if len(data.shape) == 1:
-                        if data.shape[0] > self.sample_count:
-                            self.pending_sample_count = data.shape[0]
-                        else:
-                            self.y_data.update(data)
-                    elif len(data.shape) == 0:
-                        self.y_data.update(np.expand_dims(data, axis=0))
+                    self.y_data.update(data_array)
 
         buffer = self.y_data.get_buffer()
         if buffer is not None:
@@ -1174,4 +959,3 @@ class ProfileNode(BasePlotNode):
             self.y_data.release_buffer()
 
         self.lock.release()
-
