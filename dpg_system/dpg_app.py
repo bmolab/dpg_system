@@ -849,13 +849,20 @@ class App:
         return new_node
 
     def create_node_from_model(self, model, pos, name=None, args=[], from_file=False):
-        node = model.create(name, args)
-        editor = self.get_current_editor()
-        if editor is not None:
-            node.create(editor.uuid, pos=pos, from_file=from_file)
-            editor.add_node(node)
-            if not from_file:
-                node.post_creation_callback()
+        node = None
+        editor = None
+        try:
+            node = model.create(name, args)
+            editor = self.get_current_editor()
+            if node is not None and editor is not None:
+                node.create(editor.uuid, pos=pos, from_file=from_file)
+                editor.add_node(node)
+                if not from_file:
+                    node.post_creation_callback()
+        except Exception as e:
+            # ideally create a ghost node (with connections?
+            print('create_node_from_model', name, 'failed', e)
+            node = None
         return node
 
     def remove_frame_task(self, remove_node):

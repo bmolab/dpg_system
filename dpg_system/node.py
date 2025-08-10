@@ -2406,6 +2406,10 @@ class PatcherNode(Node):
             self.patcher_outputs[i] = out_temp
         self.name_option = self.add_option('patcher name', widget_type='text_input', default_value=self.patcher_name, callback=self.name_changed)
 
+    def set_name(self, name: str) -> None:
+        self.name_option.set(name)
+        self.name_changed()
+
     def name_changed(self) -> None:
         new_name = self.name_option()
         self.unparsed_args = [new_name]
@@ -2448,7 +2452,7 @@ class PatcherNode(Node):
                 self.output_ins[i] = output
                 self.show_output[i] = True
                 if output_name != '':
-                    dpg.set_value(self.patcher_outputs[i].label_uuid, output_name)
+                    self.patcher_outputs[i].set_label(output_name)
                 self.update_outputs()
                 return self.patcher_outputs[i]
         return None
@@ -2470,14 +2474,13 @@ class PatcherNode(Node):
             else:
                 dpg.hide_item(self.patcher_outputs[i].uuid)
 
-    def add_patcher_input(self, input_name: str, input: 'NodeInput') -> Optional['NodeInput']:
-        # print('add patcher input', input_name)
+    def add_patcher_input(self, input_name: str, output: 'NodeOutput') -> Optional['NodeInput']:
         for i in range(self.max_input_count):
             if self.input_outs[i] is None:
-                self.input_outs[i] = input
+                self.input_outs[i] = output
                 self.show_input[i] = True
                 if input_name != '':
-                    dpg.set_value(self.patcher_inputs[i].label_uuid, input_name)
+                    self.patcher_inputs[i].set_label(input_name)
                 self.update_inputs()
                 return self.patcher_inputs[i]
 
@@ -2807,11 +2810,15 @@ class PlaceholderNameNode(Node):
             else:
                 if self.current_name in self.patcher_list:
                     hold_node_editor_index = Node.app.current_node_editor
-                    Node.app.create_node_by_name('patcher', self, )
+                    patcher_node = Node.app.create_node_by_name('patcher', self, )
                     Node.app.current_node_editor = len(Node.app.node_editors) - 1
-                    print('dpg_system/patch_library/' + self.current_name + '.json')
                     Node.app.load_from_file('dpg_system/patch_library/' + self.current_name + '.json')
+                    if patcher_node is not None:
+                        patcher_node.set_name(self.current_name)
                     Node.app.current_node_editor = hold_node_editor_index
+                    tab = self.app.tabs[Node.app.current_node_editor]
+                    dpg.set_value(self.app.tab_bar, tab)
+                    # Node.app.select_tab(Node.app.tabs[Node.app.current_node_editor])
             editor = self.my_editor
             if editor is not None:
                 editor.remove_node(self)
