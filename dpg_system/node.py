@@ -496,6 +496,10 @@ class PropertyWidget:
         self.variable = None
         self.action = None
         self.node = node
+        self.active_theme = Node.active_theme_base
+
+    def set_height(self, height):
+        dpg.set_item_height(self.input.widget.uuid, height)
 
     def set_visibility(self, visibility_state: str = 'show_all') -> None:
         if visibility_state == 'show_all':
@@ -506,16 +510,10 @@ class PropertyWidget:
             if self.widget != 'label':
                 dpg.enable_item(self.uuid)
             if self.trigger_widget is not None:
-                with dpg.theme() as item_theme:
-                    with dpg.theme_component(dpg.mvAll):
-                        dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
-                dpg.bind_item_theme(self.trigger_widget, item_theme)
+                dpg.bind_item_theme(self.trigger_widget, self.active_theme)
                 dpg.enable_item(self.trigger_widget)
             elif self.widget == 'button':
-                with dpg.theme() as item_theme:
-                    with dpg.theme_component(dpg.mvAll):
-                        dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
-                dpg.bind_item_theme(self.uuid, item_theme)
+                dpg.bind_item_theme(self.uuid, self.active_theme)
 
         elif visibility_state == 'widgets_only':
             dpg.bind_item_theme(self.uuid, theme=Node.app.widget_only_theme)
@@ -534,6 +532,14 @@ class PropertyWidget:
             if self.trigger_widget is not None:
                 dpg.bind_item_theme(self.trigger_widget, theme=Node.app.invisible_theme)
                 dpg.disable_item(self.trigger_widget)
+
+    def set_active_theme(self, theme):
+        self.active_theme = theme
+        if self.trigger_widget is not None:
+            dpg.bind_item_theme(self.trigger_widget, self.active_theme)
+            dpg.enable_item(self.trigger_widget)
+        elif self.widget == 'button':
+            dpg.bind_item_theme(self.uuid, self.active_theme)
 
     def create(self) -> None:
         if self.widget in ['drag_float', 'slider_float', 'input_float', 'knob_float']:
@@ -647,10 +653,7 @@ class PropertyWidget:
                 dpg.add_radio_button(self.combo_items, label=self._label, tag=self.uuid, user_data=self.node, horizontal=self.horizontal)
             elif self.widget == 'button':
                 button = dpg.add_button(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node)
-                with dpg.theme() as item_theme:
-                    with dpg.theme_component(dpg.mvAll):
-                        dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
-                dpg.bind_item_theme(button, item_theme)
+                dpg.bind_item_theme(button, self.active_theme)
             elif self.widget == 'text_input':
                 dpg.add_input_text(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node, default_value=self.default_value, on_enter=True)
             elif self.widget == 'text_editor':
@@ -678,10 +681,7 @@ class PropertyWidget:
                 else:
                     self.trigger_widget = dpg.add_button(label='', width=14, callback=self.trigger_value)
 
-                with dpg.theme() as item_theme:
-                    with dpg.theme_component(dpg.mvAll):
-                        dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
-                dpg.bind_item_theme(self.trigger_widget, item_theme)
+                dpg.bind_item_theme(self.trigger_widget, self.active_theme)
         return
 
     def trigger_value(self) -> None:
@@ -1499,6 +1499,14 @@ class NodeGroup:
 
 class Node:
     app = None
+    inactive_theme = None
+    active_theme = None
+    active_theme_red = None
+    active_theme_green = None
+    active_theme_yellow = None
+    active_theme_blue = None
+    active_theme_pink = None
+    active_theme_base = None
 
     def __init__(self, label: str, data: Any, args: Optional[List[str]] = None) -> None:
         self.label = label
@@ -1534,6 +1542,8 @@ class Node:
         self.active_input = None
         self.in_loading_process = False
         self.show_options_check = None
+        if Node.active_theme is None:
+            self.create_button_themes()
 
     def custom_cleanup(self) -> None:
         pass
@@ -1602,6 +1612,56 @@ class Node:
             display_.set_visibility(visibility_state)
 
         self.set_custom_visibility()
+
+    def create_button_themes(self):
+        with dpg.theme() as Node.active_theme:
+            with dpg.theme_component(dpg.mvAll):
+                dpg.add_theme_color(dpg.mvThemeCol_Button, (255, 255, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, (255, 255, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, (255, 255, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
+        with dpg.theme() as Node.inactive_theme:
+            with dpg.theme_component(dpg.mvAll):
+                dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
+        with dpg.theme() as Node.active_theme_green:
+            with dpg.theme_component(dpg.mvAll):
+                dpg.add_theme_color(dpg.mvThemeCol_Button, (0, 208, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, (255, 255, 255), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, (0, 255, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_Text, (0, 0, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
+        with dpg.theme() as Node.active_theme_blue:
+            with dpg.theme_component(dpg.mvAll):
+                dpg.add_theme_color(dpg.mvThemeCol_Button, (29, 151, 236, 103), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, (255, 255, 255), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, (29, 151, 236, 180), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_Text, (255, 255, 255), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
+        with dpg.theme() as Node.active_theme_red:
+            with dpg.theme_component(dpg.mvAll):
+                dpg.add_theme_color(dpg.mvThemeCol_Button, (192, 0, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, (255, 255, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, (255, 0, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
+        with dpg.theme() as Node.active_theme_pink:
+            with dpg.theme_component(dpg.mvAll):
+                dpg.add_theme_color(dpg.mvThemeCol_Button, (192, 0, 128), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, (255, 255, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, (255, 0, 192), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
+        with dpg.theme() as Node.active_theme_yellow:
+            with dpg.theme_component(dpg.mvAll):
+                dpg.add_theme_color(dpg.mvThemeCol_Button, (255, 255, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, (255, 255, 255), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, (255, 255, 128), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_Text, (0, 0, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
+        with dpg.theme() as Node.active_theme_base:
+            with dpg.theme_component(dpg.mvAll):
+                # dpg.add_theme_color(dpg.mvThemeCol_Button, (32, 64, 64), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, (255, 255, 0), category=dpg.mvThemeCat_Core)
+                # dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, (128, 128, 0), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
 
     # Add this method inside your base Node class
     def _install_group(self, group: 'NodeGroup'):
@@ -1709,8 +1769,8 @@ class Node:
 
         # Use the helper to create the actual DPG widget
         self._install_group(new_group)
-
         return new_group
+
     def add_input(self, label: str = "", uuid: Optional[int] = None,
                  widget_type: Optional[str] = None, widget_uuid: Optional[int] = None,
                  widget_width: int = 80, triggers_execution: bool = False,

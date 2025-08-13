@@ -84,16 +84,6 @@ class ButtonNode(Node):
         self.height = self.add_option('height', widget_type='input_int', default_value=14, min=14, max=None, callback=self.size_changed)
         self.flash_duration = self.add_option('flash_duration', widget_type='drag_float', min=0, max=1.0, default_value=flash_duration)
 
-        with dpg.theme() as self.active_theme:
-            with dpg.theme_component(dpg.mvAll):
-                dpg.add_theme_color(dpg.mvThemeCol_Button, (255, 255, 0), category=dpg.mvThemeCat_Core)
-                dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, (255, 255, 0), category=dpg.mvThemeCat_Core)
-                dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, (255, 255, 0), category=dpg.mvThemeCat_Core)
-                dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
-        with dpg.theme() as self.inactive_theme:
-            with dpg.theme_component(dpg.mvAll):
-                dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
-
     def size_changed(self):
         dpg.set_item_width(self.input.widget.uuid, self.width())
         dpg.set_item_height(self.input.widget.uuid, self.height())
@@ -128,7 +118,7 @@ class ButtonNode(Node):
 
     def clicked_function(self, input=None):
         self.target_time = time.time() + self.flash_duration()
-        dpg.bind_item_theme(self.input.widget.uuid, self.active_theme)
+        dpg.bind_item_theme(self.input.widget.uuid, Node.active_theme)
         self.add_frame_task()
 
     def custom_create(self, from_file):
@@ -146,7 +136,7 @@ class ButtonNode(Node):
         now = time.time()
         if now >= self.target_time:
             if dpg.does_item_exist(self.input.widget.uuid):
-                dpg.bind_item_theme(self.input.widget.uuid, self.inactive_theme)
+                dpg.bind_item_theme(self.input.widget.uuid, Node.inactive_theme)
             self.remove_frame_tasks()
 
     def execute(self):

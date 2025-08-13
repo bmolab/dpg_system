@@ -1110,58 +1110,6 @@ class NodeEditor:
                 dpg.add_theme_color(dpg.mvNodeCol_Pin, self.node_scalers[dpg.mvNodeCol_Pin], category=dpg.mvThemeCat_Nodes)
 
 
-    # def scale_nodes(self, scale):
-    #     with dpg.theme() as self.node_theme:
-    #         with dpg.theme_component(dpg.mvAll):
-    #             dpg.add_theme_style(dpg.mvNodeStyleVar_GridSpacing, round(self.node_scalers[dpg.mvNodeStyleVar_GridSpacing] * scale), category=dpg.mvThemeCat_Nodes)
-    #             new_grid = self.node_scalers[dpg.mvNodeCol_GridLine]
-    #             new_grid[0] = round(new_grid[0] * scale)
-    #             new_grid[1] = round(new_grid[1] * scale)
-    #             new_grid[2] = round(new_grid[2] * scale)
-    #             dpg.add_theme_color(dpg.mvNodeCol_GridLine, new_grid, category=dpg.mvThemeCat_Nodes)
-    #             node_padding = self.node_scalers[dpg.mvNodeStyleVar_NodePadding]
-    #             node_padding[0] *= scale
-    #             node_padding[1] *= scale
-    #             dpg.add_theme_style(dpg.mvNodeStyleVar_NodePadding, node_padding[0], node_padding[1], category=dpg.mvThemeCat_Nodes)
-    #             dpg.add_theme_style(dpg.mvNodeStyleVar_PinOffset, round(self.node_scalers[dpg.mvNodeStyleVar_PinOffset] * scale), category=dpg.mvThemeCat_Nodes)
-    #             dpg.add_theme_style(dpg.mvNodeStyleVar_LinkThickness, round(self.node_scalers[dpg.mvNodeStyleVar_LinkThickness] * scale), category=dpg.mvThemeCat_Nodes)
-    #     dpg.bind_theme(self.node_theme)
-#     def scale_theme(self):
-#         dpg.add_theme_style(dpg.mvNodeStyleVar_NodePadding)
-#         dpg.add_theme_style(dpg.mvNodeStyleVar_NodeCornerRounding)
-#         dpg.add_theme_style(dpg.mvNodeStyleVar_GridSpacing)
-#         dpg.add_theme_style(dpg.mvNodeStyleVar_PinCircleRadius)
-#         dpg.add_theme_style(dpg.mvNodeStyleVar_PinHoverRadius)
-#         dpg.add_theme_style(dpg.mvNodeStyleVar_LinkThickness)
-#
-#         dpg.add_theme_style(dpg.mvStyleVar_FrameRounding)
-#         dpg.add_theme_style(dpg.mvStyleVar_WindowPadding)
-#         dpg.add_theme_style(dpg.mvStyleVar_CellPadding)
-#         dpg.add_theme_style(dpg.mvStyleVar_WindowPadding)
-#         dpg.add_theme_style(dpg.mvStyleVar_WindowRounding)
-#         dpg.add_theme_style(dpg.mvStyleVar_WindowMinSize)
-#         dpg.add_theme_style(dpg.mvStyleVar_ChildRounding)
-#         dpg.add_theme_style(dpg.mvStyleVar_PopupRounding)
-#         dpg.add_theme_style(dpg.mvStyleVar_FramePadding)
-#         dpg.add_theme_style(dpg.mvStyleVar_FrameRounding)
-#         dpg.add_theme_style(dpg.mvStyleVar_ItemSpacing)
-#         dpg.add_theme_style(dpg.mvStyleVar_ItemInnerSpacing)
-#         dpg.add_theme_style(dpg.mvStyleVar_CellPadding)
-# #        dpg.add_theme_style(dpg.mvStyleVar_TouchExtraPadding)
-#         dpg.add_theme_style(dpg.mvStyleVar_IndentSpacing)
-# #        dpg.add_theme_style(dpg.mvStyleVar_ColumnsMinSpacing)
-#         dpg.add_theme_style(dpg.mvStyleVar_ScrollbarSize)
-#         dpg.add_theme_style(dpg.mvStyleVar_ScrollbarRounding)
-#         dpg.add_theme_style(dpg.mvStyleVar_GrabMinSize)
-#         dpg.add_theme_style(dpg.mvStyleVar_GrabRounding)
-# #        dpg.add_theme_style(dpg.mvStyleVar_LogSliderDeadzone)
-#         dpg.add_theme_style(dpg.mvStyleVar_TabRounding)
-# #        dpg.add_theme_style(dpg.mvStyleVar_TabMinWidthForCloseButton)
-# #        dpg.add_theme_style(dpg.mvStyleVar_DisplayWindowPadding)
-# #        dpg.add_theme_style(dpg.mvStyleVar_DisplaySafeAreaPadding)
-# #        dpg.add_theme_style(dpg.mvStyleVar_MouseCursorScale)
-
-
 ########################################################################################################################
 # Drag & Drop
 ########################################################################################################################

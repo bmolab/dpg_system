@@ -1599,16 +1599,6 @@ class TriggerNode(Node):
 
         self.new_triggers = True
 
-        with dpg.theme() as self.active_theme:
-            with dpg.theme_component(dpg.mvAll):
-                dpg.add_theme_color(dpg.mvThemeCol_Button, (255, 255, 0), category=dpg.mvThemeCat_Core)
-                dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, (255, 255, 0), category=dpg.mvThemeCat_Core)
-                dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, (255, 255, 0), category=dpg.mvThemeCat_Core)
-                dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
-        with dpg.theme() as self.inactive_theme:
-            with dpg.theme_component(dpg.mvAll):
-                dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
-
     def triggers_changed(self):
         self.new_triggers = True
         self.update_triggers()
@@ -1643,14 +1633,14 @@ class TriggerNode(Node):
     def call_execution(self, value=0):
         self.force_trigger = True
         self.target_time = time.time() + self.flash_duration
-        dpg.bind_item_theme(self.input.widget.uuid, self.active_theme)
+        dpg.bind_item_theme(self.input.widget.uuid, Node.active_theme)
         self.add_frame_task()
         self.execute()
 
     def frame_task(self):
         now = time.time()
         if now >= self.target_time:
-            dpg.bind_item_theme(self.input.widget.uuid, self.inactive_theme)
+            dpg.bind_item_theme(self.input.widget.uuid, Node.inactive_theme)
             self.remove_frame_tasks()
 
     def execute(self):
@@ -1715,16 +1705,6 @@ class DecodeToNode(Node):
 
         self.new_triggers = True
 
-        with dpg.theme() as self.active_theme:
-            with dpg.theme_component(dpg.mvAll):
-                dpg.add_theme_color(dpg.mvThemeCol_Button, (255, 255, 0), category=dpg.mvThemeCat_Core)
-                dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, (255, 255, 0), category=dpg.mvThemeCat_Core)
-                dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, (255, 255, 0), category=dpg.mvThemeCat_Core)
-                dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
-        with dpg.theme() as self.inactive_theme:
-            with dpg.theme_component(dpg.mvAll):
-                dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
-
     def triggers_changed(self):
         self.new_triggers = True
         self.update_triggers()
@@ -1743,14 +1723,14 @@ class DecodeToNode(Node):
     def call_execution(self, value=0):
         self.force_trigger = True
         self.target_time = time.time() + self.flash_duration
-        dpg.bind_item_theme(self.input.widget.uuid, self.active_theme)
+        dpg.bind_item_theme(self.input.widget.uuid, Node.active_theme)
         self.add_frame_task()
         self.execute()
 
     def frame_task(self):
         now = time.time()
         if now >= self.target_time:
-            dpg.bind_item_theme(self.input.widget.uuid, self.inactive_theme)
+            dpg.bind_item_theme(self.input.widget.uuid, Node.inactive_theme)
             self.remove_frame_tasks()
 
     def execute(self):

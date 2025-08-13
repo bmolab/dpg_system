@@ -365,8 +365,10 @@ class OpenTakeNode(MoCapNode):
 
         self.take_data_in = self.add_input('take data in', callback=self.take_data_received)
         self.global_data_in = self.add_input('global data in', callback=self.receive_globals)
+
         self.load_button = self.add_input('load', widget_type='button', callback=self.load_take)
         self.save_button = self.add_input('save', widget_type='button', callback=self.save_sequence)
+
         self.file_name = self.add_label('')
         load_path = ''
         self.load_path = self.add_option('path', widget_type='text_input', default_value=load_path,
@@ -398,6 +400,18 @@ class OpenTakeNode(MoCapNode):
         self.message_handlers['load'] = self.load_take_message
         self.new_positions = False
         self.load_take_task = -1
+
+    def custom_create(self, from_file):
+        self.load_button.widget.set_active_theme(Node.active_theme_blue)
+        self.load_button.widget.set_height(24)
+        self.save_button.widget.set_active_theme(Node.active_theme_blue)
+        self.save_button.widget.set_height(24)
+        self.record_button.widget.set_active_theme(Node.active_theme_pink)
+        self.record_button.widget.set_height(24)
+        self.stop_button.widget.set_active_theme(Node.active_theme_red)
+        self.stop_button.widget.set_height(24)
+        self.play_pause_button.widget.set_active_theme(Node.active_theme_green)
+        self.play_pause_button.widget.set_height(24)
 
     def receive_globals(self):
         incoming = self.global_data_in()
@@ -451,11 +465,13 @@ class OpenTakeNode(MoCapNode):
             self.add_frame_task()
             self.streaming = True
             self.play_pause_button.set_label('pause')
+            self.play_pause_button.widget.set_active_theme(Node.active_theme_yellow)
         else:
             if self.streaming:
                 self.remove_frame_tasks()
                 self.streaming = False
                 self.play_pause_button.set_label('play')
+                self.play_pause_button.widget.set_active_theme(Node.active_theme_green)
 
     def record_button_clicked(self):
         if self.streaming:
