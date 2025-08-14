@@ -169,11 +169,77 @@ class DeferNode(Node):
 
 class CommentNode(Node):
     comment_theme = None
+    comment_text_theme = None
     inited = False
 
     @staticmethod
     def factory(name, data, args=None):
         node = CommentNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.comment_text = 'comment'
+        if args is not None and len(args) > 0:
+            self.comment_text = ' '.join(args)
+        self.setup_themes()
+        self.comment_label = self.add_label(self.comment_text)
+        self.comment_text_option = self.add_option('text', widget_type='text_input', width=200, default_value=self.comment_text, callback=self.comment_changed)
+        self.large_text_option = self.add_option('large', widget_type='checkbox', default_value=False, callback=self.large_font_changed)
+
+    def setup_themes(self):
+        if not CommentNode.inited:
+            with dpg.theme() as CommentNode.comment_theme:
+                with dpg.theme_component(dpg.mvAll):
+                    dpg.add_theme_color(dpg.mvNodeCol_NodeBackground, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundHovered, [0, 0, 0, 0],
+                                        category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundSelected, [0, 0, 0, 0],
+                                        category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_NodeOutline, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_TitleBar, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+            CommentNode.inited = True
+
+    def large_font_changed(self):
+        use_large = self.large_text_option()
+        if use_large:
+            self.comment_label.widget.set_font(self.app.large_font)
+            self.comment_text_option.widget.set_font(self.app.default_font)
+            self.large_text_option.widget.set_font(self.app.default_font)
+            self.comment_text_option.widget.adjust_to_text_width()
+        else:
+            self.set_font(self.app.default_font)
+
+    def comment_changed(self):
+        self.comment_text = self.comment_text_option()
+        dpg.set_value(self.comment_label.widget.uuid, self.comment_text)
+        self.comment_text_option.widget.adjust_to_text_width()
+
+    def custom_create(self, from_file):
+        dpg.bind_item_theme(self.uuid, CommentNode.comment_theme)
+        dpg.configure_item(self.uuid, label='')
+
+    def save_custom(self, container):
+        container['name'] = 'comment'
+        container['comment'] = self.comment_text
+
+    def load_custom(self, container):
+        self.comment_text = container['comment']
+        dpg.bind_item_theme(self.uuid, CommentNode.comment_theme)
+        dpg.configure_item(self.uuid, label='')
+
+    def set_custom_visibility(self):
+        dpg.configure_item(self.uuid, label=self.comment_text)
+        dpg.bind_item_theme(self.uuid, CommentNode.comment_theme)
+
+
+class Comment2Node(Node):
+    comment_theme = None
+    inited = False
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = Comment2Node(name, data, args)
         return node
 
     def __init__(self, label: str, data, args):
@@ -196,6 +262,7 @@ class CommentNode(Node):
                                         category=dpg.mvThemeCat_Nodes)
                     dpg.add_theme_color(dpg.mvNodeCol_NodeOutline, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
                     dpg.add_theme_color(dpg.mvNodeCol_TitleBar, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_Text, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
             CommentNode.inited = True
 
     def large_font_changed(self):
