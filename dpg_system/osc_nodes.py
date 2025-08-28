@@ -13,6 +13,8 @@ import time
 import netifaces
 import socket
 
+
+
 # what if each main patcher has a udp port for receiving OSC
 # OSCSource is automatically created and all OSCReceive nodes automatically register with this
 # optional OSCSources can be created
@@ -130,21 +132,26 @@ class OSCManager:
         self.lock = threading.Lock()
         self.pending_message_queue = queue.Queue()
 
-    def  register_target(self, target):
+    def register_target(self, target):
         if target is not None:
             name = target.name
             if name != '' and name not in self.targets:
                 self.targets[name] = target
                 self.connect_new_target_to_send_nodes(target)
+                for node in OSCManagerNode.instances:
+                    node.update_targets()
 
     def remove_target(self, target):
         target.disconnect_from_send_nodes()
         if target.name in self.targets:
-            self.targets.pop(target.name)
+           self.targets.pop(target.name)
+            for node in OSCManagerNode.instances:
+                node.update_targets()
 
     def find_target(self, name):
         if name != '' and name in self.targets:
             return self.targets[name]
+
         return None
 
     def receive_pending_message(self, source, message, args):
@@ -182,11 +189,15 @@ class OSCManager:
             if name != '' and name not in self.sources:
                 self.sources[name] = source
                 self.connect_new_source_to_receive_nodes(source)
+                for node in OSCManagerNode.instances:
+                    node.update_sources()
 
     def remove_source(self, source):
         source.disconnect_from_receive_nodes()
         if source.name in self.sources:
             self.sources.pop(source.name)
+            for node in OSCManagerNode.instances:
+                node.update_sources()
 
     def find_source(self, name):
         if name != '' and name in self.sources:
@@ -335,14 +346,14 @@ class OSCQueryRegistry:
         reg = self.registry['CONTENTS']
         if reg is not None:
             for domain in patch_path:
-                print('domain', domain)
                 if domain not in reg:
                     reg[domain] = {'CONTENTS':{}}
-                    print('added missing domain', domain, reg)
                 reg = reg[domain]['CONTENTS']
                 if reg is None:
                     print('add_path_to_registry: reg = None')
                     break
+        if type(patch_path) == list:
+            patch_path = '/' + '/'.join(patch_path)
         return reg, patch_path
 
     # def add_target_to_registry(self, patch_name, target_name):
@@ -593,6 +604,8 @@ class OSCQueryJSONNode(OSCBase, Node):
 
 
 class OSCManagerNode(OSCBase, Node):
+    instances = []
+
     @staticmethod
     def factory(name, data, args=None):
         node = OSCManagerNode(name, data, args)
@@ -608,12 +621,38 @@ class OSCManagerNode(OSCBase, Node):
         self.name = self.add_property('name', widget_type='text_input', callback=self.name_changed)
         self.ip = self.add_property('ip address', widget_type='text_input', callback=self.ip_changed)
         self.port = self.add_property('port', widget_type='drag_int', callback=self.port_number_changed)
+        self.instances.append(self)
+
+    def custom_cleanup(self):
+        if self in self.instances:
+            self.instances.remove(self)
+
+    def update_sources(self):
+        if self.source_or_target() == 'source':
+            value = self.port_list()
+            source_ports = list(self.osc_manager.sources.keys())
+            self.port_list.widget.combo_items = source_ports
+            dpg.configure_item(self.port_list.widget.uuid, items=source_ports)
+            if value not in source_ports:
+                self.source_target_changed()
+
+    def update_targets(self):
+        if self.source_or_target() == 'target':
+            value = self.port_list()
+            target_ports = list(self.osc_manager.targets.keys())
+            self.port_list.widget.combo_items = target_ports
+            dpg.configure_item(self.port_list.widget.uuid, items=target_ports)
+            if value not in target_ports:
+                self.source_target_changed()
 
     def source_target_changed(self):
         value = self.source_or_target()
         if value == 'source':
             source_ports = list(self.osc_manager.sources.keys())
             self.port_list.widget.combo_items = source_ports
+            dpg.configure_item(self.port_list.widget.uuid, items=source_ports)
+            self.port_list.set_label('source')
+
             if len(source_ports) > 0:
                 name = source_ports[0]
                 self.current_port = self.osc_manager.sources[name]
@@ -621,10 +660,17 @@ class OSCManagerNode(OSCBase, Node):
                 self.name.set(name)
                 self.ip.set('')
                 self.port.set(self.current_port.source_port)
+            else:
+                self.port_list.set('')
+                self.name.set('')
 
         else:
             target_ports = list(self.osc_manager.targets.keys())
             self.port_list.widget.combo_items = target_ports
+            dpg.configure_item(self.port_list.widget.uuid, items=target_ports)
+
+            self.port_list.set_label('target')
+
             if len(target_ports) > 0:
                 name = target_ports[0]
                 self.current_port = self.osc_manager.targets[name]
@@ -632,6 +678,9 @@ class OSCManagerNode(OSCBase, Node):
                 self.name.set(name)
                 self.ip.set(self.current_port.ip)
                 self.port.set(self.current_port.target_port)
+            else:
+                self.port_list.set('')
+                self.name.set('')
 
     def port_changed(self):
         port_name = self.port_list()
@@ -743,7 +792,6 @@ class OSCTarget(OSCBase):
             self.osc_manager.register_target(self)
         except Exception as e:
             self.client = None
-            print('OSCTarget.create_client:')
             traceback.print_exception(e)
 
     def destroy_client(self):
@@ -775,7 +823,6 @@ class OSCTarget(OSCBase):
             self.target_port = port
             self.ip = ip
             self.create_client()
-
 
         if name != self.name or force:
             self.osc_manager.remove_target(self)
@@ -980,7 +1027,7 @@ class OSCSource(OSCBase):
     def unregister(self):
         if self.node is not None:
             patcher_path = self.node.get_patcher_path()
-            self.osc_manager.registry.remove_path_from_registry(patcher_path, self.name)
+            self.osc_manager.registry.remove_path_from_registry([patcher_path, self.name])
 
     def get_registry_container(self):
         if self.node is not None:
@@ -1194,11 +1241,21 @@ class OSCSourceNode(OSCThreadingSource, Node):
         self.output = self.add_output('osc received')
         self.start_serving()
         self.node = self
-        self.path_option = self.add_option('path', widget_type='label')
+        self.path_option = self.add_option('path', widget_type='text_input', callback=self.set_path)
+
+    def set_path(self):
+        path = self.path_option()
+        if '/' in path:
+            path = path.split('/')
+        elif ' ' in path:
+            path = path.split(' ')
+        path_text = '/'.join(self.path)
+        self.path_option.set(path_text)
+        self.path = path
 
     def custom_create(self, from_file):
         self.register()
-        self.node.outputs[0].set_label(self.path)
+        # self.node.outputs[0].set_label(self.path)
 
     def output_message_directly(self, address, args):
         if self.output:
@@ -1270,8 +1327,13 @@ class OSCAsyncIOSourceNode(OSCAsyncIOSource, Node):
 
     def set_path(self):
         path = self.path_option()
+        if '/' in path:
+            path = path.split('/')
+        elif ' ' in path:
+            path = path.split(' ')
+        path_text = '/'.join(self.path)
+        self.path_option.set(path_text)
         self.path = path
-
 
     def custom_create(self, from_file):
         self.register()
@@ -1389,6 +1451,7 @@ class OSCDeviceNode(OSCAsyncIOSource, OSCTarget, Node):
         self.path_option.set(self.path)
 
     def custom_create(self, from_file):
+        OSCTarget.custom_create(self, from_file)
         self.register()
 
     def register(self):
@@ -1595,7 +1658,7 @@ class OSCReceiveNode(OSCReceiver, Node):
         if self.name != '':
             self.find_source_node(self.name)
             self.register()
-            self.outputs[0].set_label(self.path)
+            # self.outputs[0].set_label(self.path)
 
     def receive(self, data, address=None):
         if self.throttle() > 0:
@@ -1708,7 +1771,7 @@ class OSCSendNode(OSCSender, Node):
         if self.name != '':
             self.find_target_node(self.name)
             self.register()
-            self.outputs[0].set_label(self.path)
+            # self.outputs[0].set_label(self.path)
 
     # def find_target_node(self, name):
     #     if self.osc_manager is not None:
@@ -1769,7 +1832,7 @@ class OSCCueNode(OSCSender, Node):
         if self.name != '':
             self.find_target_node(self.name)
             self.register()
-            self.outputs[0].set_label(self.path)
+            # self.outputs[0].set_label(self.path)
 
     # def find_target_node(self, name):
     #     if self.osc_manager is not None:
@@ -1945,7 +2008,7 @@ class OSCWidget(OSCReceiver, OSCSender):
         old_path = [patcher_path, self.name, self.address]
         OSCReceiver.name_changed(self)
         OSCSender.name_changed(self, force=True)
-        self.node.outputs[0].set_label(self.path)
+        # self.node.outputs[0].set_label(self.path)
         self.osc_manager.registry.change_path(old_path, [patcher_path, self.name, self.address])
 
     def address_changed(self):
@@ -1955,7 +2018,7 @@ class OSCWidget(OSCReceiver, OSCSender):
         old_path = [patcher_path, self.name, self.address]
         OSCReceiver.address_changed(self)
         OSCSender.address_changed(self)
-        self.node.outputs[0].set_label(self.path)
+        # self.node.outputs[0].set_label(self.path)
         self.osc_manager.registry.change_path(old_path, [patcher_path, self.name, self.address])
         reg = self.get_registry_container()
         if reg is not None:
@@ -1983,7 +2046,7 @@ class OSCWidget(OSCReceiver, OSCSender):
             self.find_target_node(self.name)
             self.find_source_node(self.name)
             self.register()
-            self.node.outputs[0].set_label(self.path)
+            # self.node.outputs[0].set_label(self.path)
 
     def cleanup(self):
         OSCSender.cleanup(self)

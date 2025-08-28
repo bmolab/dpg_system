@@ -373,7 +373,6 @@ class OpenTakeNode(MoCapNode):
         load_path = ''
         self.load_path = self.add_option('path', widget_type='text_input', default_value=load_path,
                                          callback=self.load_from_load_path)
-        self.add_spacer()
         self.record_button = self.add_input('record', widget_type='button', callback=self.record_button_clicked)
         self.play_pause_button = self.add_input('play', widget_type='button', callback=self.play_button_clicked)
         self.stop_button = self.add_input('stop', widget_type='button', callback=self.stop_button_clicked)
