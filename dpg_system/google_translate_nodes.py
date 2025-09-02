@@ -290,10 +290,10 @@ class GoogleTranslateNode(Node):
         self.source_language = 'en'
         self.target_language = 'fr'
 
-        if len(args) > 0:
+        if args is not None and len(args) > 0:
             self.source_language = args[0]
-        if len(args) > 1:
-            self.target_language = args[1]
+            if len(args) > 1:
+                self.target_language = args[1]
         self.translator = EasyGoogleTranslate(source_language=self.source_language, target_language=self.target_language, timeout=10)
         self.input = self.add_input('text in', triggers_execution=True)
 
@@ -383,10 +383,10 @@ class GoogleTranslateAPINode(Node):
         self.source_language = 'ko'
         self.target_language = 'en'
 
-        if len(args) > 0:
+        if args is not None and len(args) > 0:
             self.source_language = args[0]
-        if len(args) > 1:
-            self.target_language = args[1]
+            if len(args) > 1:
+                self.target_language = args[1]
 
         self.translate_client = translate.Client()
 

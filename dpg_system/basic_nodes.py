@@ -97,6 +97,7 @@ def register_basic_nodes():
     Node.app.register_node('pass_with_triggers', TriggerBeforeAndAfterNode.factory)
     Node.app.register_node('micro_metro', MicrosecondTimerNode.factory)
     Node.app.register_node('stream_list', StreamListNode.factory)
+    Node.app.register_node('directory_iterator', NPZDirectoryIteratorNode.factory)
 
 class ActiveWidgetNode(Node):
     @staticmethod
@@ -3763,3 +3764,104 @@ class StreamListNode(Node):
         incoming = self.list_in()
         for item in incoming:
             self.stream_out.send(item)
+
+
+class NpzFileIterator:
+    """
+    A class to recursively iterate through a directory and yield .npz files.
+
+    This class implements the Python iterator protocol, making it memory-efficient
+    for traversing large directory structures. It finds the next .npz file only
+    when requested.
+
+    Usage:
+        npz_finder = NpzFileIterator('/path/to/your/directory')
+        for file_path in npz_finder:
+            print(f"Found .npz file: {file_path}")
+
+        # Or using next() manually
+        # first_file = next(npz_finder)
+        # second_file = next(npz_finder)
+    """
+
+    def __init__(self, root_dir: str):
+        """
+        Initializes the iterator.
+
+        Args:
+            root_dir (str): The absolute or relative path to the directory
+                            you want to search.
+
+        Raises:
+            ValueError: If the provided path is not a valid directory.
+        """
+        if not os.path.isdir(root_dir):
+            raise ValueError(f"Error: The provided path '{root_dir}' is not a valid directory.")
+
+        self.root_dir = root_dir
+        # os.walk returns a generator, which is perfect for our lazy iteration
+        self._walker = os.walk(self.root_dir)
+        self._current_files = []
+        self._current_path = ''
+
+    def __iter__(self):
+        """Returns the iterator object itself."""
+        return self
+
+    def next_file(self):
+        return self.__next__()
+
+    def __next__(self):
+        """
+        Returns the full path to the next .npz file found.
+
+        Raises:
+            StopIteration: When there are no more .npz files to be found.
+        """
+        while True:
+            # If we have files in the current directory buffer, process them
+            if self._current_files:
+                filename = self._current_files.pop(0)
+                if filename.lower().endswith('.npz'):
+                    return os.path.join(self._current_path, filename)
+                # If not a .npz file, the loop continues to the next file
+
+            # If the buffer is empty, get the next directory from the walker
+            else:
+                try:
+                    # This advances the os.walk generator to the next directory
+                    self._current_path, _, self._current_files = next(self._walker)
+                except StopIteration:
+                    # If os.walk is exhausted, there are no more directories or files
+                    # So, we are done iterating.
+                    raise StopIteration
+
+
+class NPZDirectoryIteratorNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NPZDirectoryIteratorNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.iterator = None
+        self.next_file_input = self.add_input('next file', triggers_execution=True, trigger_button=True)
+        self.directory_input = self.add_input('directory in', widget_type='text_input', callback=self.new_directory)
+        self.output = self.add_output('next path out')
+        self.done_output = self.add_output('done')
+
+    def new_directory(self):
+        dir = self.directory_input()
+        if dir != '' and os.path.exists(dir):
+            self.iterator = NpzFileIterator(dir)
+
+    def execute(self):
+        try:
+            if self.iterator is not None:
+                file_name = self.iterator.next_file()
+                self.output.send(file_name)
+        except StopIteration:
+            self.done_output.send('bang')
+
