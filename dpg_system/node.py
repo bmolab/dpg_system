@@ -1509,6 +1509,9 @@ class Node:
     active_theme_base = None
 
     def __init__(self, label: str, data: Any, args: Optional[List[str]] = None) -> None:
+        print('__init__ Node')
+        self.label = label
+        self.data = data
         self.label = label
         self.uuid = dpg.generate_uuid()
         self.static_uuid = dpg.generate_uuid()
