@@ -678,6 +678,8 @@ class CairoTextLayoutNode(Node):
             tp = type(new_data)
         if tp is str:
             new_data = string_to_list(new_data)
+        else:
+            new_data = any_to_list(new_data)
         for t in new_data:
             if type(t) == str:
                 t = [t, 1.0]
