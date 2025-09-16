@@ -81,6 +81,7 @@ class LLMLayout:
         self.in_progress_position = self.cursor_position.copy()
         self.in_progress_previous_position = self.cursor_position.copy()
         self.temp = 1.0
+        self.entropy = 0.1
         self.draw_layout()
 
     def prepare_drawing(self, frame):

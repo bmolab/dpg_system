@@ -9,6 +9,7 @@ import os
 import torch
 import copy
 import queue
+import html
 
 from dpg_system.node import Node, SaveDialog, LoadDialog
 
@@ -98,6 +99,8 @@ def register_basic_nodes():
     Node.app.register_node('micro_metro', MicrosecondTimerNode.factory)
     Node.app.register_node('stream_list', StreamListNode.factory)
     Node.app.register_node('directory_iterator', NPZDirectoryIteratorNode.factory)
+    Node.app.register_node('patch_window_position', PositionPatchesNode.factory)
+    Node.app.register_node('unescape_text', UnescapeHTMLNode.factory)
 
 class ActiveWidgetNode(Node):
     @staticmethod
@@ -889,7 +892,7 @@ class CounterNode(Node):
 
     # messages
     def reset_message(self, message='', message_data=[]):
-        self.current_value = 0
+        self.current_value = -1
 
     def set_message(self, message='', message_data=[]):
         self.current_value = any_to_int(message_data[0])
@@ -2852,6 +2855,7 @@ class TextFileNode(Node):
         self.file_name = ''
         self.save_pointer = -1
         self.read_pointer = -1
+        self.char_pointer = -1
 
         self.file_name = self.arg_as_string(default_value='')
         self.dump_button = self.add_input('send', widget_type='button', triggers_execution=True)
@@ -2867,15 +2871,29 @@ class TextFileNode(Node):
         self.load_button = self.add_input('load', widget_type='button', callback=self.load_message)
         self.save_button = self.add_input('save', widget_type='button', callback=self.save_message)
         self.output = self.add_output("out")
+        self.message_out = self.add_output("messages")
 
         self.file_name_property = self.add_option('name', widget_type='text_input', width=500, default_value=self.file_name)
         self.editor_width = self.add_option('editor width', widget_type='drag_int', default_value=500, callback=self.adjust_editor)
         self.editor_height = self.add_option('editor height', widget_type='drag_int', default_value=200, callback=self.adjust_editor)
         self.message_handlers['output_char'] = self.output_character_message
+        self.message_handlers['next'] = self.next_character
+        self.message_handlers['reset_pointer'] = self.reset_char_pointer
 
     def new_text(self):
         data = any_to_string(self.text_editor(), strip_returns=False)
         self.text_contents = data
+
+    def reset_char_pointer(self, message='', data=[]):
+        self.char_pointer = -1
+
+    def next_character(self, message='', data=[]):
+        self.char_pointer += 1
+        if self.char_pointer >= len(self.text_contents):
+            self.message_out.send('done')
+            self.char_pointer = -1
+        else:
+            self.output_character_message('output_char', [self.char_pointer])
 
     def output_character_message(self, message='', data=[]):
         if len(data) > 0:
@@ -2887,8 +2905,13 @@ class TextFileNode(Node):
                         out_char_2 = self.text_contents[char_pos + 1]
                         if out_char_2 == 'n':
                             out_char = '\n'
+                            self.char_pointer += 1
                         elif out_char_2 == 't':
                             out_char = '\t'
+                            self.char_pointer += 1
+                        elif out_char_2 == 'c':
+                            out_char = '\c'
+                            self.char_pointer += 1
                 self.output.send(out_char)
         self.input_handled = True
 
@@ -3864,4 +3887,50 @@ class NPZDirectoryIteratorNode(Node):
                 self.output.send(file_name)
         except StopIteration:
             self.done_output.send('bang')
+
+
+class PositionPatchesNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = PositionPatchesNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        top, left = dpg.get_viewport_pos()
+        width = dpg.get_viewport_width()
+        height = dpg.get_viewport_height()
+        self.top_input = self.add_int_input('top', widget_type='drag_int', default_value=top, callback=self.reposition)
+        self.left_input = self.add_int_input('left', widget_type='drag_int', default_value=left, callback=self.reposition)
+        self.width_input = self.add_int_input('width', widget_type='drag_int', default_value=width, callback=self.reposition)
+        self.height_input = self.add_int_input('height', widget_type='drag_int', default_value=height, callback=self.reposition)
+
+    def reposition(self):
+        self.execute()
+
+    def execute(self):
+        Node.app.position_viewport(self.top_input(), self.left_input())
+        Node.app.resize_viewport(self.width_input(), self.height_input())
+
+    def post_load_callback(self):
+        self.reposition()
+
+
+class UnescapeHTMLNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = UnescapeHTMLNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('escaped string in', triggers_execution=True)
+        self.output = self.add_output('unescaped string out')
+
+    def execute(self):
+        escaped = any_to_string(self.input())
+        unescaped = html.unescape(escaped)
+        self.output.send(unescaped)
+
 

@@ -1509,7 +1509,6 @@ class Node:
     active_theme_base = None
 
     def __init__(self, label: str, data: Any, args: Optional[List[str]] = None) -> None:
-        print('__init__ Node')
         self.label = label
         self.data = data
         self.label = label
@@ -2940,7 +2939,7 @@ class PlaceholderArgsNode(Node):
 
         if found:
             if len(new_node_args) > 1:
-                print(new_node_args)
+                # print(new_node_args)
                 Node.app.create_node_by_name(new_node_args[0], self, new_node_args[1:])
             else:
                 Node.app.create_node_by_name(new_node_args[0], self, )

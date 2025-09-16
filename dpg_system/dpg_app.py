@@ -382,6 +382,9 @@ class App:
     def position_viewport(self, x, y):
         dpg.configure_viewport(self.viewport, x_pos=x, y_pos=y)
 
+    def resize_viewport(self, width, height):
+        dpg.configure_viewport(self.viewport, width=width, height=height)
+
     def setup_themes(self):
         with dpg.theme() as self.global_theme:
             with dpg.theme_component(dpg.mvAll):
@@ -852,15 +855,13 @@ class App:
         node = None
         editor = None
 
-        print(self, model, pos, name, args)
+        # print(self, model, pos, name, args)
         try:
             node = model.create(name, args)
             editor = self.get_current_editor()
             if node is not None and editor is not None:
                 node.create(editor.uuid, pos=pos, from_file=from_file)
-                print('created')
                 editor.add_node(node)
-                print('added')
                 if not from_file:
                     node.post_creation_callback()
         except Exception as e:
