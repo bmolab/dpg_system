@@ -101,6 +101,7 @@ def register_basic_nodes():
     Node.app.register_node('directory_iterator', NPZDirectoryIteratorNode.factory)
     Node.app.register_node('patch_window_position', PositionPatchesNode.factory)
     Node.app.register_node('unescape_text', UnescapeHTMLNode.factory)
+    Node.app.register_node('word_gate', WordGateNode.factory)
 
 class ActiveWidgetNode(Node):
     @staticmethod
@@ -3932,5 +3933,46 @@ class UnescapeHTMLNode(Node):
         escaped = any_to_string(self.input())
         unescaped = html.unescape(escaped)
         self.output.send(unescaped)
+
+
+class WordGateNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = WordGateNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('string in', triggers_execution=True)
+        self.dict_in = self.add_input('dictionary in', callback=self.receive_dict)
+        self.add_word_input = self.add_input('include word', callback=self.include_word)
+        self.output = self.add_output('gated string out')
+        self.gate_dict = {}
+
+    def include_word(self):
+        word = self.add_word_input()
+        if type(word) is str:
+            self.gate_dict[word] = word
+        elif type(word) is list:
+            for w in word:
+                if type(w) is str:
+                    self.gate_dict[w] = w
+
+    def receive_dict(self):
+        d = self.dict_in()
+        if type(d) is dict:
+            self.gate_dict = d
+
+    def execute(self):
+        incoming = any_to_string(self.input())
+        gated_list = []
+        incoming_list = re.split(r"[^a-zA-Z']+", incoming)
+        incoming_list = [word for word in incoming_list if word]
+        for word in incoming_list:
+            if word in self.gate_dict:
+                gated_list.append(word)
+        gated_string = ' '.join(gated_list)
+        self.output.send(gated_string)
 
 
