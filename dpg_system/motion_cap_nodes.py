@@ -376,6 +376,7 @@ class OpenTakeNode(MoCapNode):
         self.record_button = self.add_input('record', widget_type='button', callback=self.record_button_clicked)
         self.play_pause_button = self.add_input('play', widget_type='button', callback=self.play_button_clicked)
         self.stop_button = self.add_input('stop', widget_type='button', callback=self.stop_button_clicked)
+        self.loop_input = self.add_input('loop', widget_type='checkbox', default_value=True)
         self.add_spacer()
         self.frame_input = self.add_input('frame', widget_type='drag_int', triggers_execution=True, callback=self.frame_widget_changed)
         self.length_property = self.add_input('length: 0', widget_type='label')
@@ -393,7 +394,9 @@ class OpenTakeNode(MoCapNode):
         self.dump_out = self.add_output('dump')
         self.global_params_out = self.add_output('globals')
         self.take_data_out = self.add_output('take data out')
+        self.done_out = self.add_output('done')
         self.temp_save_name = ''
+        self.last_frame_out = -1
         self.recording = False
 
         self.message_handlers['load'] = self.load_take_message
@@ -461,6 +464,7 @@ class OpenTakeNode(MoCapNode):
 
     def play_button_clicked(self):
         if not self.streaming and self.frame_count > 0:
+            self.last_frame_out = -1
             self.add_frame_task()
             self.streaming = True
             self.play_pause_button.set_label('pause')
@@ -585,15 +589,22 @@ class OpenTakeNode(MoCapNode):
 
     def frame_task(self):
         self.current_frame += self.speed()
-        if self.current_frame >= self.clip_end:
-            self.current_frame = self.clip_start
-        self.frame_input.set(self.current_frame)
-        frame = int(self.current_frame)
+        if int(self.current_frame) > self.last_frame_out:
+            if self.current_frame >= self.clip_end:
+                self.done_out.send('done')
+                if self.loop_input():
+                    self.current_frame = self.clip_start
+                else:
+                    self.stop_button_clicked()
 
-        frame_dict = {}
-        for key in self.sequence_keys:
-            frame_dict[key] = self.take_dict[key][frame]
-        self.take_data_out.send(frame_dict)
+            self.frame_input.set(self.current_frame)
+            frame = int(self.current_frame)
+
+            self.last_frame_out = frame
+            frame_dict = {}
+            for key in self.sequence_keys:
+                frame_dict[key] = self.take_dict[key][frame]
+            self.take_data_out.send(frame_dict)
 
     def load_from_load_path(self):
         path = self.load_path()

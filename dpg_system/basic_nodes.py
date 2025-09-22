@@ -2621,7 +2621,12 @@ class ConstructDictNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+
         self.input = self.add_input('send dict', widget_type='button', triggers_execution=True)
+        self.arg_inputs = {}
+        for arg in args:
+            temp_input = self.add_input(arg)
+            self.arg_inputs[arg] = temp_input
         self.data_input = self.add_input('labelled data in', callback=self.received_data)
         self.dict_output = self.add_output('dict out')
         self.input_keys = []
@@ -2635,6 +2640,10 @@ class ConstructDictNode(Node):
             self.dict[key] = value
 
     def execute(self):
+        for data_input in self.arg_inputs:
+            temp_input = self.arg_inputs[data_input]
+            data = temp_input()
+            self.dict[data_input] = data
         self.dict_output.send(self.dict)
         self.dict = {}
 

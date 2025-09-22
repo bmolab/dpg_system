@@ -232,7 +232,6 @@ class SMPLShadowTranslator():
     def __init__(self, label, data, args):
         pass
 
-    
 class SMPLToActivePoseNode(SMPLShadowTranslator, Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -350,6 +349,125 @@ class SMPLToActivePoseNode(SMPLShadowTranslator, Node):
                 active_pose = SMPLShadowTranslator.translate_from_smpl_to_active(smpl_pose)
 
         self.output.send(active_pose)
+
+
+# class SMPLToQuaternionsNode(SMPLShadowTranslator, Node):
+#     @staticmethod
+#     def factory(name, data, args=None):
+#         node = SMPLToQuaternionsNode(name, data, args)
+#         return node
+#
+#     def __init__(self, label: str, data, args):
+#         SMPLShadowTranslator.__init__(self, label, data, args)
+#         Node.__init__(self, label, data, args)
+#
+#         self.input = self.add_input('smpl pose', triggers_execution=True)
+#         self.output_format_in = self.add_input('output_format', widget_type='combo', default_value='quaternions')
+#         self.output_format_in.widget.combo_items = ['quaternions', 'rotation_vectors', 'generic']
+#         self.y_is_up = self.add_property('y is up', widget_type='checkbox')
+#         self.output = self.add_output('active pose')
+#         self.y_up = np.array([0.7071067811865475, -0.7071067811865475, 0.0, 0.0])
+#
+#     def quaternion_multiply_scalar_first(self, q1: np.ndarray, q2: np.ndarray) -> np.ndarray:
+#         """
+#         Multiplies two quaternions in [w, x, y, z] format.
+#         This function is vectorized and can handle arrays of quaternions.
+#
+#         Args:
+#             q1 (np.ndarray): The first quaternion or batch of quaternions.
+#                              Shape can be (4,) for a single quaternion or
+#                              (N, 4) for a batch of N quaternions.
+#             q2 (np.ndarray): The second quaternion or batch of quaternions.
+#                              Must be compatible for broadcasting with q1.
+#
+#         Returns:
+#             np.ndarray: The resulting quaternion product, with the same shape as the inputs.
+#         """
+#         # Extract components using vectorized slicing for efficiency
+#         # The ellipsis (...) allows this to work for both single (4,) and batch (N, 4) arrays
+#         w1, x1, y1, z1 = q1[..., 0], q1[..., 1], q1[..., 2], q1[..., 3]
+#         w2, x2, y2, z2 = q2[..., 0], q2[..., 1], q2[..., 2], q2[..., 3]
+#
+#         # Apply the standard quaternion multiplication formula
+#         w = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2
+#         x = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2
+#         y = w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2
+#         z = w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2
+#
+#         # Stack the results back into a new array along the last axis
+#         return np.stack((w, x, y, z), axis=-1)
+#
+#     def swap_yz_axis_angle(self, axis_angle: np.ndarray) -> np.ndarray:
+#         """
+#         Swaps the Y and Z axes of a rotation defined in axis-angle format.
+#
+#         The axis-angle vector itself is transformed as a vector in the original
+#         coordinate space.
+#
+#         Args:
+#             axis_angle (np.ndarray): A 3-element NumPy array representing the
+#                                      rotation (axis * angle).
+#
+#         Returns:
+#             np.ndarray: The transformed 3-element axis-angle vector.
+#         """
+#         if not isinstance(axis_angle, np.ndarray):
+#             axis_angle = np.array(axis_angle)
+#
+#         if axis_angle.shape != (3,):
+#             raise ValueError("Input must be a 3-element axis-angle vector.")
+#
+#         x, y, z = axis_angle[0], axis_angle[1], axis_angle[2]
+#
+#         return np.array([x, z, -y])
+#
+#     def execute(self):
+#         smpl_pose = self.input()
+#         smpl_pose = any_to_array(smpl_pose)
+#         if len(smpl_pose.shape) == 1:
+#             smpl_pose = np.reshape(smpl_pose, (-1, 3))
+#         if self.output_format_in() == 'quaternions':
+#             active_pose = np.zeros((22, 4))
+#             active_pose[:, 0] = 1.0
+#         elif self.output_format_in() == 'rotation_vectors':
+#             active_pose = np.zeros((22, 3))
+#         else:
+#             if len(smpl_pose.shape) == 1:
+#                 smpl_pose = np.expand_dims(smpl_pose, axis=1)
+#             active_pose = np.zeros((22, smpl_pose.shape[-1]))
+#
+#         # NOTE: smpl seems to assume z is up vector which messes up axes of root rotation
+#         # we should force root rotation to rotate -90 around x axis
+#
+#         if len(smpl_pose.shape) > 1:
+#             if smpl_pose.shape[1] == 3:
+#                 # if self.y_is_up():
+#                 #     smpl_pose[0] = rotate_vector_rodrigues(smpl_pose[0], np.array([1.0, 0.0, 0.0]), -90)
+#                 active_pose = SMPLShadowTranslator.translate_from_smpl_to_active(smpl_pose)
+#                 if self.output_format_in() == 'quaternions':
+#                     rot = scipy.spatial.transform.Rotation.from_rotvec(active_pose)
+#                     active_pose = rot.as_quat(scalar_first=True)
+#                     if self.y_is_up():
+#                         active_pose[5] = self.quaternion_multiply_scalar_first(self.y_up, active_pose[5])
+#                 else:
+#                     if self.y_is_up():
+#                         rot = scipy.spatial.transform.Rotation.from_rotvec(active_pose[5])
+#                         root_rot = rot.as_quat(scalar_first=True)
+#                         root_rot = self.quaternion_multiply_scalar_first(self.y_up, root_rot)
+#                         rot = scipy.spatial.transform.Rotation.from_quat(root_rot, scalar_first=True)
+#                         active_pose[5] = rot.as_rotvec()
+#
+#             elif smpl_pose.shape[1] == 4:
+#                 active_pose = SMPLShadowTranslator.translate_from_smpl_to_active(smpl_pose)
+#                 if self.output_format_in() == 'rotation_vectors':
+#                     rot = scipy.spatial.transform.Rotation.from_quat(active_pose, scalar_first=True)
+#                     active_pose = rot.as_rotvec()
+#                 elif self.y_is_up():
+#                     active_pose[5] = self.quaternion_multiply_scalar_first(self.y_up, active_pose[5])
+#             else:
+#                 active_pose = SMPLShadowTranslator.translate_from_smpl_to_active(smpl_pose)
+#
+#         self.output.send(active_pose)
 
 def rotate_vector_rodrigues(v, k, theta):
     """

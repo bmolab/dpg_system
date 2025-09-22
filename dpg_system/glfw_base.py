@@ -38,6 +38,7 @@ class MyGLContext:
 #        gl.glutInitDisplayMode(glfw.GLUT_RGB | glfw.GLUT_DOUBLE | glfw.GLUT_DEPTH)
         if samples != 1 and samples < 8:
             glfw.window_hint(glfw.SAMPLES, samples)
+        # glfw.window_hint(glfw.SCALE_TO_MONITOR, False)
         self.window = glfw.create_window(width, height, name, None, None)
         if self.window:
             # print('window created')
