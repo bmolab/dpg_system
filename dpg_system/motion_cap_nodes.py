@@ -9,7 +9,11 @@ from xml.etree.ElementTree import XML
 import scipy
 import copy
 import datetime
-
+#
+# print('before body_defs')
+# import body_defs
+# # from body_defs import JointTranslator
+# print('after body_defs')
 import dpg_system.MotionSDK as shadow
 
 def register_motion_cap_nodes():
@@ -89,7 +93,7 @@ class MoCapNode(Node):
     }
 
     active_to_shadow_map = [2, 17, 1, 32, 31, 4, 14, 12, 8, 28, 26, 22, 13, 5, 9, 10, 27, 19, 23, 24]
-    shadow_to_active_map = joints_to_input_vector
+    shadow_to_active_map = JointTranslator.joints_to_input_vector
 
     @staticmethod
     def factory(name, data, args=None):
@@ -930,8 +934,8 @@ class MoCapGLBody(MoCapNode):
         if type(command[0]) == str:
             if command[0] in BodyDataBase.smpl_limb_to_joint_dict:
                 target_joint = BodyDataBase.smpl_limb_to_joint_dict[command[0]]
-                if target_joint in joint_name_to_linear_index:
-                    target_joint_index = joint_name_to_linear_index[target_joint]
+                if target_joint in JointTranslator.joint_name_to_bmolab_index:
+                    target_joint_index = JointTranslator.joint_name_to_bmolab_index[target_joint]
                     self.body.joints[target_joint_index].bone_translation = command[1:]
                     self.body.joints[target_joint_index].set_matrix()
                 # self.body.joints[target_joint_index].set_mass()
@@ -948,8 +952,8 @@ class MoCapGLBody(MoCapNode):
             elif command[0] == 'limb_size':
                 if len(command) > 1:
                     joint_name = command[1]
-                    if joint_name in joint_name_to_linear_index:
-                        joint_index = joint_name_to_linear_index[joint_name]
+                    if joint_name in JointTranslator.joint_name_to_bmolab_index:
+                        joint_index = JointTranslator.joint_name_to_bmolab_index[joint_name]
                         if len(command) > 2:
                             dims = command[2:]
                             for i in range(len(dims)):
@@ -982,6 +986,8 @@ class MoCapGLBody(MoCapNode):
         # joint_name = joint_index_to_name[joint_index]
         self.current_joint_output.send(joint_index)
         if self.external_joint_data is not None:
+            # in all cases, what if incoming data.shape[0] is 22
+            # then we need to remap the joint data from smpl to active
             if type(self.external_joint_data) is np.ndarray:
                 if self.external_joint_data.shape[0] == 20:
                     if joint_index < t_ActiveJointCount:
@@ -1043,8 +1049,13 @@ class MoCapGLBody(MoCapNode):
             if incoming.shape[0] == 80:
                 self.body.update_quats(np.reshape(incoming, [20, 4]))
             elif incoming.shape[0] == 20:
-                    if incoming.shape[1] == 4:
-                        self.body.update_quats(incoming)
+                if incoming.shape[1] == 4:
+                    self.body.update_quats(incoming)
+            elif incoming.shape[0] == 22:
+                if incoming.shape[1] == 4:
+                    # smpl joint order
+                    converted_joints = JointTranslator.translate_from_smpl_to_bmolab_active(incoming)
+                    self.body.update_quats(converted_joints)
             elif incoming.shape[0] == 37:
                 active_joints = incoming[self.active_to_shadow_map]
                 self.body.update_quats(active_joints)
@@ -1161,8 +1172,8 @@ class SimpleMoCapGLBody(MoCapNode):
         if type(command[0]) == str:
             if command[0] in BodyDataBase.smpl_limb_to_joint_dict:
                 target_joint = BodyDataBase.smpl_limb_to_joint_dict[command[0]]
-                if target_joint in joint_name_to_linear_index:
-                    target_joint_index = joint_name_to_linear_index[target_joint]
+                if target_joint in JointTranslator.joint_name_to_bmolab_index:
+                    target_joint_index = JointTranslator.joint_name_to_bmolab_index[target_joint]
                     if len(command) >= 2:
                         # self.body.limbs[target_joint_index].dims[2] = any_to_float(command[1])
                         self.body.joints[target_joint_index].set_limb_length(any_to_float(command[3]))
@@ -1668,8 +1679,8 @@ class MotionShadowNode(MoCapNode):
 
                     for it in name_map:
                         thisName = name_map[it]
-                        for idx, name_index in enumerate(joint_index_to_name):
-                            shadow_name = joint_to_shadow_limb[joint_index_to_name[name_index]]
+                        for idx, name_index in enumerate(JointTranslator.shadow_joint_index_to_name):
+                            shadow_name = JointTranslator.bmolab_joint_to_shadow_limb[JointTranslator.shadow_joint_index_to_name[name_index]]
                             body = thisName[1]
                             if thisName[0] == shadow_name:
                                 self.jointMap[it] = [idx + 1, thisName[1]]
@@ -1684,7 +1695,7 @@ class MotionShadowNode(MoCapNode):
                         master_key = self.jointMap[key][0] - 1          # keys start at 1
                         body_index = self.jointMap[key][1]
                         if master_key >= 0:
-                            joint = joint_index_to_name[master_key]
+                            joint = JointTranslator.shadow_joint_index_to_name[master_key]
 
                             joint_data = configData[key]
 
@@ -1752,8 +1763,8 @@ class MotionShadowNode(MoCapNode):
             node_name = itr.get("id")
             node_local = node_name
             node_body = 0
-            for code in joint_index_to_name:
-                node_code = joint_to_shadow_limb[joint_index_to_name[code]]
+            for code in JointTranslator.shadow_joint_index_to_name:
+                node_code = JointTranslator.bmolab_joint_to_shadow_limb[JointTranslator.shadow_joint_index_to_name[code]]
                 if len(node_code) == len(node_name) - 1:
                     if node_name.find(node_code) >= 0:
                         node_local = node_code
@@ -1890,8 +1901,8 @@ class AlternateMoCapGLBody(MoCapNode):
         if type(command[0]) == str:
             if command[0] in BodyDataBase.smpl_limb_to_joint_dict:
                 target_joint = BodyDataBase.smpl_limb_to_joint_dict[command[0]]
-                if target_joint in joint_name_to_linear_index:
-                    target_joint_index = joint_name_to_linear_index[target_joint]
+                if target_joint in JointTranslator.joint_name_to_bmolab_index:
+                    target_joint_index = JointTranslator.joint_name_to_bmolab_index[target_joint]
                     if len(command) >= 2: #lllll error!!!!
                         self.body.joints[target_joint_index].base_length = any_to_float(command[3])
                     if len(command) == 3:

@@ -738,9 +738,9 @@ class BodyDataBase:
             delete(limb)
 
     def create_joints(self):
-        for joint_index in joint_linear_index_to_name:
+        for joint_index in JointTranslator.bmolab_joint_index_to_name:
             if joint_index != -1:
-                name = joint_linear_index_to_name[joint_index]
+                name = JointTranslator.bmolab_joint_index_to_name[joint_index]
                 new_joint = Joint(self, name, joint_index)
                 self.joints.append(new_joint)
 
@@ -751,9 +751,9 @@ class BodyDataBase:
                 trans = node.attrib['translate']
                 trans_float = tuple(map(float, trans.split(' ')))
                 y = tuple(i / 100.0 for i in trans_float)
-                joint_name = shadow_limb_to_joint[node.attrib['id']]
-                if joint_name in joint_name_to_linear_index:
-                    joint_index = joint_name_to_linear_index[joint_name]
+                # joint_name = JointTranslator.shadow_limb_to_bmolab_joint(node.attrib['id'])
+                joint_index = JointTranslator.shadow_limb_name_to_bmolab_index(node.attrib['id'])
+                if joint_index != -1:
                     self.joints[joint_index].set_bone_translation(y)
 
         # limb_sizes = {}
@@ -918,7 +918,7 @@ class BodyData(BodyDataBase):
         self.pose_similarity = 0
         self.input_vector = np.zeros(80, dtype=float)
 
-        for joint_index in joint_index_to_name:
+        for joint_index in JointTranslator.shadow_joint_index_to_name:
             self.quaternions.append([1.0, 0.0, 0.0, 0.0])
             self.captured_quaternions.append([1.0, 0.0, 0.0, 0.0])
             self.positions.append([0.0, 0.0, 0.0])
@@ -1006,7 +1006,7 @@ class BodyData(BodyDataBase):
 
     def calc_distance_from_pose(self):
         d = 0
-        for j, jointIndex in enumerate(joint_index_to_name):
+        for j, jointIndex in enumerate(JointTranslator.shadow_joint_index_to_name):
             if jointIndex == 4:
                 continue
             q1 = Quaternion(self.captured_quaternions[jointIndex])
@@ -1299,8 +1299,8 @@ class AlternateBodyData(BodyDataBase):
             glPopMatrix()
 
     def create_joints(self):
-        for joint_index in joint_index_to_name:
-            name = joint_index_to_name[joint_index]
+        for joint_index in JointTranslator.shadow_joint_index_to_name:
+            name = JointTranslator.shadow_joint_index_to_name[joint_index]
             new_joint = BaseJoint(self, name, joint_index)
             self.joints.append(new_joint)
 
@@ -1311,10 +1311,12 @@ class AlternateBodyData(BodyDataBase):
                 trans = node.attrib['translate']
                 trans_float = tuple(map(float, trans.split(' ')))
                 y = tuple(i / 100.0 for i in trans_float)
-                joint_name = shadow_limb_to_joint[node.attrib['id']]
-                joint_index = joint_name_to_index[joint_name]
-                self.humanoid_bone_dims[joint_index] = np.array(y)
-                self.joints[joint_index].set_bone_translation(y)
+                joint_index = JointTranslator.shadow_limb_name_to_bmolab_index(node.attrib['id'])
+                if joint_index != -1:
+                # joint_name = JointTranslator.shadow_limb_to_bmolab_joint[node.attrib['id']]
+                # joint_index = joint_name_to_shadow_index[joint_name]
+                    self.humanoid_bone_dims[joint_index] = np.array(y)
+                    self.joints[joint_index].set_bone_translation(y)
 
         self.connect_limbs()
         for joint in self.joints:

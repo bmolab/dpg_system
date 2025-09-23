@@ -12,7 +12,7 @@ class BaseJoint:
     def __init__(self, in_body, in_name, in_index):
         self.body = in_body
         self.name = in_name
-        self.shadow_name = joint_to_shadow_limb[in_name]
+        self.shadow_name = JointTranslator.bmolab_joint_to_shadow_limb[in_name]
         self.joint_index = in_index
 #        self.input_vector_index = -1
 

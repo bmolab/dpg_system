@@ -258,8 +258,8 @@ class OpenGLBody(OpenGLObject):
         self.take_quats, self.take_positions, _, _ = load_take_from_npz('take.npz')
         self.frame_count = self.take_quats.shape[0]
         self.joint_order = []
-        for j, name in enumerate(joint_index_to_name):
-            actual_name = joint_index_to_name[name]
+        for j, name in enumerate(JointTranslator.shadow_joint_index_to_name):
+            actual_name = JointTranslator.shadow_joint_index_to_name[name]
             self.joint_order.append(actual_name)
 
     def handle_key(self, key, x, y):
