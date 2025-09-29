@@ -522,6 +522,8 @@ class OpenTakeNode(MoCapNode):
 
     def save_sequence(self):
         arg = self.save_button()
+        if type(arg) is list:
+            arg = ' '.join(arg)
         if type(arg) == str:
             save_path = arg
             if self.save_take(save_path):
@@ -536,6 +538,7 @@ class OpenTakeNode(MoCapNode):
         if save_path != '':
             for key, value in self.global_dict.items():
                 self.take_dict[key] = value
+            os.makedirs(os.path.dirname(save_path), exist_ok=True)
             np.savez(save_path, **self.take_dict)
             if self.load_path() == self.temp_save_name and self.temp_save_name[:9] == 'temp_take':
                 os.remove(self.load_path())
@@ -627,7 +630,7 @@ class OpenTakeNode(MoCapNode):
         self.load_path.set(path)
         self.take_dict = dict(take_file)
         keys_list = list(self.take_dict.keys())
-        print('keys_list', keys_list)
+        # print('keys_list', keys_list)
         sequence_length = 0
         if len(keys_list) > 0:
             for key in keys_list:

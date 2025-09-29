@@ -3837,6 +3837,14 @@ class NpzFileIterator:
         self._current_files = []
         self._current_path = ''
 
+    def reset(self):
+        """
+        Resets the iterator to the initial state.
+        """
+        self._walker = os.walk(self.root_dir)
+        self._current_files = []
+        self._current_path = ''
+
     def __iter__(self):
         """Returns the iterator object itself."""
         return self
@@ -3882,6 +3890,7 @@ class NPZDirectoryIteratorNode(Node):
         self.iterator = None
         self.next_file_input = self.add_input('next file', triggers_execution=True, trigger_button=True)
         self.directory_input = self.add_input('directory in', widget_type='text_input', callback=self.new_directory)
+        self.reset_input = self.add_input('reset', trigger_button=True, callback=self.reset_iterator, trigger_callback=self.reset_iterator)
         self.output = self.add_output('next path out')
         self.done_output = self.add_output('done')
 
@@ -3889,6 +3898,15 @@ class NPZDirectoryIteratorNode(Node):
         dir = self.directory_input()
         if dir != '' and os.path.exists(dir):
             self.iterator = NpzFileIterator(dir)
+
+    def reset_iterator(self):
+        self.iterator.reset()  # also work
+        # del self.iterator
+        # dir_path = self.directory_input()
+        # if dir_path and os.path.exists(dir_path):
+        #     self.iterator = NpzFileIterator(dir_path)
+        # elif self.iterator is not None:
+        #     self.iterator = NpzFileIterator(self.iterator.root_dir)
 
     def execute(self):
         try:
