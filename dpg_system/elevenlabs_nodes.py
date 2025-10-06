@@ -10,6 +10,7 @@ from dpg_system.node import Node
 from dpg_system.conversion_utils import *
 from elevenlabs import client, stream, Voice, VoiceSettings
 from elevenlabs.client import ElevenLabs
+from elevenlabs.play import play
 from queue import Queue
 import threading
 import traceback
@@ -118,6 +119,8 @@ class ElevenLabsNode(Node):
 
         try:
             self.client = ElevenLabs(api_key=api_key)
+            print(response)
+
             self.voices = self.client.voices.get_all()
             self.models = self.client.models.get_all()
             self.voice_name = 'David'

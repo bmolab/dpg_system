@@ -484,6 +484,7 @@ class TextLayoutNode(Node):
                 if t[1][0] == '\\' and t[1][1] == 'c':
                     self.clear_layout()
 
+
             self.layout.add_word(t[1], spread_color, t[0])
             if self.new_poss_dict:
                 self.layout.show_list = True
@@ -647,6 +648,8 @@ class CairoTextLayoutNode(Node):
                             self.scroll_up()
                         elif data[0] == 'scroll_down':
                             self.scroll_down()
+                        elif data[0] == 'delete_line':
+                            self.delete_line()
 
     def scroll_up(self):
         old_active_line = self.layout.active_line
@@ -668,6 +671,10 @@ class CairoTextLayoutNode(Node):
 
     def clear_layout(self):
         self.layout.clear_layout()
+        self.display_layout()
+
+    def delete_line(self):
+        self.layout.step_back_to_last_return()
         self.display_layout()
 
 # ISSUE HERE OF OVERNESTED LIST
@@ -693,6 +700,10 @@ class CairoTextLayoutNode(Node):
                         tt[0].replace('\\n', '\n')
                         if tt[0] == '\\c':
                             self.clear_layout()
+                            tt[0] = ''
+                        elif tt[0] == '\\d':
+                            print('deleting')
+                            self.delete_line()
                             tt[0] = ''
                     self.layout.add_string([tt], add_space)
 

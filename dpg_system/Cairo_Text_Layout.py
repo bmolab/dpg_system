@@ -624,6 +624,18 @@ class CairoTextLayout:
         self.layout = []
         self.cursor_position = [0, self.active_line * self.leading]
 
+    def step_back_to_last_return(self):
+        print('step_back_to_last_return')
+        last_return = -1
+        for i in range(len(self.layout)):
+            index = len(self.layout) - i - 1
+            if self.layout[index][1] == '\n':
+                last_return = index
+                break
+        if last_return != -1:
+            self.layout = self.layout[:last_return]
+            self.cursor_position = [0, self.active_line * self.leading]
+
     def save_layout_text_as(self):
         default_path = str(Path.home())
         file = asksaveasfile(mode='w', defaultextension=".txt", title='Save File As', initialdir=str(default_path))
