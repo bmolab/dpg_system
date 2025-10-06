@@ -605,6 +605,8 @@ class TorchQuaternionESEKF:  # Renamed from UKF to EKF
         self.R = torch.eye(self.dim_z, device=device, dtype=dtype).unsqueeze(0).repeat(num_streams, 1, 1) * 0.1
         # Unused UKF parameters have been removed.
 
+        self._reset_pending = False
+
     def update_device_to_match(self, input_tensor):
         if input_tensor.device != self.device:
             self.device = input_tensor.device
@@ -640,6 +642,8 @@ class TorchQuaternionESEKF:  # Renamed from UKF to EKF
         self.Q = torch.diag_embed(Q_diagonals)
 
     def predict(self):
+        if self._reset_pending:
+            return
         # 1. Propagate the nominal state using the current best guess of angular velocity
         delta_q = angular_velocity_to_delta_q(self.av, self.dt)
         self.q = F.normalize(q_mult(self.q, delta_q), p=2, dim=-1)
@@ -660,6 +664,21 @@ class TorchQuaternionESEKF:  # Renamed from UKF to EKF
         self.P = F_mat @ self.P @ F_mat.transpose(-1, -2) + self.Q
 
     def update(self, z_measured_q):
+        # Check if a reset is pending and use the current measurement for initialization
+        if self._reset_pending:
+            print("Performing pending reset using current measurement for nominal state initialization.")
+            self.q = z_measured_q.to(self.device, self.dtype)
+            self.av.zero_() # Reset angular velocity to zero
+            self.x.zero_()   # Reset error state
+            self.P = torch.eye(self.dim_x, device=self.device, dtype=self.dtype).unsqueeze(0).repeat(self.num_streams, 1, 1) * 0.1 # Reset covariance
+
+            self._reset_pending = False # Clear the flag
+            # After initialization, we can optionally skip the rest of the update for this frame
+            # to prevent a large initial correction if P is high and the "measurement" is already
+            # the new nominal state. However, performing the update is generally safer to
+            # immediately use the covariance matrix to refine the first measurement.
+            # Let's proceed with the update as usual, as `q` is now `z_measured_q`, making residual zero (or very small).
+
         # 1. Calculate the measurement residual in quaternion form
         residual_q = q_mult(q_conjugate(self.q), z_measured_q)
 
@@ -711,6 +730,23 @@ class TorchQuaternionESEKF:  # Renamed from UKF to EKF
         self.x.zero_()
         self.P = torch.eye(self.dim_x, device=self.device, dtype=self.dtype).unsqueeze(0).repeat(self.num_streams, 1,
                                                                                                  1) * 0.1
+    def flag_reset(self):
+        """
+        Flags that a reset is needed. The next call to `update` will use its
+        measurement to initialize the filter state.
+        """
+        print("Reset flagged. Next 'update' will re-initialize the filter.")
+        self._reset_pending = True
+
+    def reset_to_defaults(self):
+        print("Performing immediate reset to default values.")
+        self.q.zero_()
+        self.q[:, 0] = 1.0
+        self.av.zero_()
+        self.x.zero_()
+        self.P = torch.eye(self.dim_x, device=self.device, dtype=self.dtype).unsqueeze(0).repeat(self.num_streams, 1,
+                                                                                                 1) * 0.1
+        self._reset_pending = False # Ensure flag is off if doing a hard reset
 
 
 # --- CORRECTED NODE CLASS ---
@@ -782,7 +818,7 @@ class TorchTristateBlendESEKFNode(TorchDeviceDtypeNode):  # Renamed
         self.alphas_output = self.add_output('alphas (damp, resp, err)')
 
     def reset_filter(self):
-        if self.filter: self.filter.reset()
+        if self.filter: self.filter.flag_reset()
         self.last_input_quat = None
 
         # Reset the blended alphas to the default "Damping" state

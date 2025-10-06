@@ -2922,6 +2922,9 @@ class TextFileNode(Node):
                         elif out_char_2 == 'c':
                             out_char = '\c'
                             self.char_pointer += 1
+                        elif out_char_2 == 'd':
+                            out_char = '\d'
+                            self.char_pointer += 1
                 self.output.send(out_char)
         self.input_handled = True
 
