@@ -481,6 +481,7 @@ class OpenTakeNode(MoCapNode):
                 self.play_pause_button.widget.set_active_theme(Node.active_theme_green)
 
     def record_button_clicked(self):
+
         if self.streaming:
             self.remove_frame_tasks()
             self.streaming = False
@@ -493,10 +494,13 @@ class OpenTakeNode(MoCapNode):
             self.record_button.set_label('stop record')
             self.reset_clip()
         else:
+
             self.record_button.set_label('record')
             self.recording = False
+
             if len(self.take_dict) > 0:
                 for key, value in self.take_dict.items():
+
                     value = np.array(value)
                     self.take_dict[key] = value
                 for key, value in self.global_dict.items():
@@ -536,14 +540,17 @@ class OpenTakeNode(MoCapNode):
 
     def save_take(self, save_path):
         if save_path != '':
-            for key, value in self.global_dict.items():
-                self.take_dict[key] = value
-            os.makedirs(os.path.dirname(save_path), exist_ok=True)
-            np.savez(save_path, **self.take_dict)
-            if self.load_path() == self.temp_save_name and self.temp_save_name[:9] == 'temp_take':
-                os.remove(self.load_path())
-            self.load_path.set(save_path)
-            self.file_name.set(save_path)
+            try:
+                for key, value in self.global_dict.items():
+                    self.take_dict[key] = value
+                os.makedirs(os.path.dirname(save_path), exist_ok=True)
+                np.savez(save_path, **self.take_dict)
+                if self.load_path() == self.temp_save_name and self.temp_save_name[:9] == 'temp_take':
+                    os.remove(self.load_path())
+                self.load_path.set(save_path)
+                self.file_name.set(save_path)
+            except Exception as e:
+                print(e)
             return True
         return False
 

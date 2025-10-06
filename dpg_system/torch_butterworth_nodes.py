@@ -666,7 +666,7 @@ class TorchQuaternionESEKF:  # Renamed from UKF to EKF
     def update(self, z_measured_q):
         # Check if a reset is pending and use the current measurement for initialization
         if self._reset_pending:
-            print("Performing pending reset using current measurement for nominal state initialization.")
+
             self.q = z_measured_q.to(self.device, self.dtype)
             self.av.zero_() # Reset angular velocity to zero
             self.x.zero_()   # Reset error state
