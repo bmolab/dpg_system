@@ -1107,6 +1107,7 @@ class DiffQuaternionsNode(Node):
         self.smooth_b_input = self.add_input('smoothing B (0-1)', widget_type='drag_float', default_value=0.9, min=0.0, max=1.0)
         self.magnitude_out = self.add_output('magnitudes')
         self.normalized_axes_out = self.add_output('axes')
+        self.restart_cal_input = self.add_input('restart calculation', widget_type='button', callback=self.restart_cal)
         self.axes = None
         self.normalized_axes = None
         self.magnitudes = None
@@ -1124,6 +1125,9 @@ class DiffQuaternionsNode(Node):
         self.calc_diff_quaternions(incoming_quats)
         self.magnitude_out.send(self.magnitudes)
         self.normalized_axes_out.send(self.normalized_axes)
+
+    def restart_cal(self):
+        self.smoothed_quaternions_a = None
 
     def calc_diff_quaternions(self, incoming_quats):
         self.smoothed_quaternions_a = self.smoothed_quaternions_a * self.smooth_a_input() + incoming_quats * (1.0 - self.smooth_a_input())
