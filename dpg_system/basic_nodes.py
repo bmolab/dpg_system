@@ -3976,9 +3976,17 @@ class WordGateNode(Node):
 
         self.input = self.add_input('string in', triggers_execution=True)
         self.dict_in = self.add_input('dictionary in', callback=self.receive_dict)
+        self.dict_path_in = self.add_input('load dictionary', widget_type='text_input', callback=self.load_dict)
         self.add_word_input = self.add_input('include word', callback=self.include_word)
         self.output = self.add_output('gated string out')
         self.gate_dict = {}
+
+    def load_dict(self):
+        path = self.dict_path_in()
+        if type(path) is str:
+            if os.path.exists(path):
+                with open(path, 'r') as f:
+                    self.gate_dict = json.load(f)
 
     def include_word(self):
         word = self.add_word_input()
@@ -3997,12 +4005,21 @@ class WordGateNode(Node):
     def execute(self):
         incoming = any_to_string(self.input())
         gated_list = []
+        previous_word = ''
         incoming_list = re.split(r"[^a-zA-Z']+", incoming)
         incoming_list = [word for word in incoming_list if word]
         for word in incoming_list:
             if word in self.gate_dict:
                 gated_list.append(word)
+                previous_word = word
+            elif previous_word != '' and previous_word + ' ' + word in self.gate_dict:
+                gated_list.append(previous_word + ' ' + word)
+                previous_word = ''
+            else:
+                previous_word = word
+
         gated_string = ' '.join(gated_list)
-        self.output.send(gated_string)
+        if len(gated_string) > 0:
+            self.output.send(gated_string)
 
 
