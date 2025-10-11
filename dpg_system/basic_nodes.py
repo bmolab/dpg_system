@@ -4010,16 +4010,21 @@ class WordGateNode(Node):
         incoming_list = [word for word in incoming_list if word]
         for word in incoming_list:
             if word in self.gate_dict:
-                gated_list.append(word)
-                previous_word = word
+                gated_list.append(self.gate_dict[word])
+                previous_word = word.lower()
+            elif word.lower() in self.gate_dict:
+                gated_list.append(self.gate_dict[word.lower()])
+                previous_word = word.lower()
             elif previous_word != '' and previous_word + ' ' + word in self.gate_dict:
-                gated_list.append(previous_word + ' ' + word)
+                gated_list.append(self.gate_dict[previous_word + ' ' + word])
+                previous_word = ''
+            elif previous_word != '' and previous_word + ' ' + word.lower() in self.gate_dict:
+                gated_list.append(self.gate_dict[previous_word + ' ' + word.lower()])
                 previous_word = ''
             else:
-                previous_word = word
-
-        gated_string = ' '.join(gated_list)
-        if len(gated_string) > 0:
+                previous_word = word.lower()
+        if len(gated_list) > 0:
+            gated_string = ' '.join(gated_list)
             self.output.send(gated_string)
 
 
