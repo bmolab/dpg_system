@@ -172,6 +172,8 @@ class TextChangeNode(Node):
         new_words = []
         dead_words = []
         out_words = []
+        lower_case_word_list = [x.lower() for x in word_list]
+        word_list = lower_case_word_list
         for word in word_list:
             if word not in self.current_list:
                 new_words.append(word)
