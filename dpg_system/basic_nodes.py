@@ -179,16 +179,20 @@ class TextChangeNode(Node):
             word = word.translate(self.remove_punctuation)
             word_list[index] = word
             if word not in self.current_list:
-                new_words.append(word)
-                out_words.append(word)
+                if word not in new_words:
+                    new_words.append(word)
+                if word not in dead_words:
+                    out_words.append(word)
         for word in self.current_list:
             self.current_list[word] += 1
             if self.current_list[word] <= self.persistence():
-                out_words.append(word)
+                if word not in out_words:
+                    out_words.append(word)
             else:
                 if word not in word_list:
                     if self.current_list[word] > self.reset_period():
-                        dead_words.append(word)
+                        if word not in dead_words:
+                            dead_words.append(word)
 
         for word in dead_words:
             self.current_list.pop(word, None)
