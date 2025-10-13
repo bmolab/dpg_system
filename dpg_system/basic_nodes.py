@@ -197,7 +197,8 @@ class TextChangeNode(Node):
         for word in dead_words:
             self.current_list.pop(word, None)
         for word in new_words:
-            self.current_list[word] = 0
+            if word not in self.current_list:
+                self.current_list[word] = 0
         out_list = []
         for word in self.current_list:
             if word in out_words:
