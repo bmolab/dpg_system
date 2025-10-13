@@ -742,9 +742,23 @@ def list_to_bool(input, validate=False):
         pass
     return output
 
+def flatten_list(nested_list):
+    """
+    Recursively flattens a nested list of arbitrary depth.
+    Yields individual elements from the flattened list.
+    """
+    for item in nested_list:
+        if isinstance(item, list):
+            # If the item is a list, recursively call flatten_list on it
+            yield from flatten_list(item)
+        else:
+            # If the item is not a list, yield it directly
+            yield item
+
 
 def list_to_string(data, validate=False):
     simple_string = True
+
     for i in range(len(data)):
         if type(data[i]) != str:
             simple_string = False

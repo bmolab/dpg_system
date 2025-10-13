@@ -163,6 +163,8 @@ class TextChangeNode(Node):
 
     def execute(self):
         input_text = self.text_input()
+        if type(input_text) is list:
+            input_text = flatten_list(input_text)
         if type(input_text) == str:
             word_list = input_text.split(' ')
         else:
