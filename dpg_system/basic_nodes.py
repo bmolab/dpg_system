@@ -177,6 +177,7 @@ class TextChangeNode(Node):
         word_list = lower_case_word_list
         for index, word in enumerate(word_list):
             word = word.translate(self.remove_punctuation)
+            word_list[index] = word
             if word not in self.current_list:
                 new_words.append(word)
                 out_words.append(word)
