@@ -102,6 +102,97 @@ def register_basic_nodes():
     Node.app.register_node('patch_window_position', PositionPatchesNode.factory)
     Node.app.register_node('unescape_text', UnescapeHTMLNode.factory)
     Node.app.register_node('word_gate', WordGateNode.factory)
+    Node.app.register_node('text_change', TextChangeNode.factory)
+    Node.app.register_node('slice_list', SliceNode.factory)
+
+
+class SliceNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = SliceNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.list_input = self.add_input('list input', triggers_execution=True)
+        self.slice_after = self.add_input('slice after', widget_type='input_int', default_value=0)
+        self.output_1 = self.add_output('slice 1 out')
+        self.output_2 = self.add_output('slice 2 out')
+        self.output_only_if_both = self.add_option('output only if slice 2', widget_type='checkbox',
+                                                   default_value=False)
+
+    def execute(self):
+        incoming = self.list_input()
+        if type(incoming) is str:
+            incoming = incoming.split(' ')
+        first_slice = []
+        second_slice = []
+        if type(incoming) is list:
+            if len(incoming) > self.slice_after() + 1:
+                first_slice = incoming[:self.slice_after() + 1]
+                second_slice = incoming[self.slice_after() + 1:]
+            else:
+                first_slice = incoming
+            if self.output_only_if_both():
+                if len(second_slice) > 0:
+                    self.output_2.send(second_slice)
+                    self.output_1.send(first_slice)
+            else:
+                self.output_2.send(second_slice)
+                self.output_1.send(first_slice)
+
+
+class TextChangeNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TextChangeNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.text_input = self.add_input('text input', triggers_execution=True)
+        self.persistence = self.add_input('persistence', widget_type='input_int', default_value=3)
+        self.reset_period = self.add_input('reset_period', widget_type='input_int', default_value=10)
+        self.clear_input = self.add_input('clear', widget_type='button', callback=self.clear)
+        self.output = self.add_output('new words out')
+
+        self.current_list = {}
+
+    def clear(self):
+        self.current_list = {}
+
+    def execute(self):
+        input_text = self.text_input()
+        if type(input_text) == str:
+            word_list = input_text.split(' ')
+        else:
+            word_list = input_text
+        new_words = []
+        dead_words = []
+        out_words = []
+        for word in word_list:
+            if word not in self.current_list:
+                new_words.append(word)
+                out_words.append(word)
+        for word in self.current_list:
+            self.current_list[word] += 1
+            if self.current_list[word] <= self.persistence():
+                out_words.append(word)
+            else:
+                if word not in word_list:
+                    if self.current_list[word] > self.reset_period():
+                        dead_words.append(word)
+
+        for word in dead_words:
+            self.current_list.pop(word, None)
+        for word in new_words:
+            self.current_list[word] = 0
+        out_list = []
+        for word in self.current_list:
+            if word in out_words:
+                out_list.append(word)
+        self.output.send(' '.join(out_list))
+
 
 class ActiveWidgetNode(Node):
     @staticmethod
