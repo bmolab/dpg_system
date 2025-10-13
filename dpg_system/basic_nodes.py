@@ -10,6 +10,7 @@ import torch
 import copy
 import queue
 import html
+import string
 
 from dpg_system.node import Node, SaveDialog, LoadDialog
 
@@ -155,7 +156,7 @@ class TextChangeNode(Node):
         self.reset_period = self.add_input('reset_period', widget_type='input_int', default_value=10)
         self.clear_input = self.add_input('clear', widget_type='button', callback=self.clear)
         self.output = self.add_output('new words out')
-
+        self.remove_punctuation = str.maketrans('', '', string.punctuation)
         self.current_list = {}
 
     def clear(self):
@@ -174,7 +175,8 @@ class TextChangeNode(Node):
         out_words = []
         lower_case_word_list = [x.lower() for x in word_list]
         word_list = lower_case_word_list
-        for word in word_list:
+        for index, word in enumerate(word_list):
+            word = word.translate(self.remove_punctuation)
             if word not in self.current_list:
                 new_words.append(word)
                 out_words.append(word)
