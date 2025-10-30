@@ -378,11 +378,13 @@ class OpenTakeNode(MoCapNode):
         self.load_path = self.add_option('path', widget_type='text_input', default_value=load_path,
                                          callback=self.load_from_load_path)
         self.record_button = self.add_input('record', widget_type='button', callback=self.record_button_clicked)
+        self.record_button.name_archive.append('stop record')
         self.play_pause_button = self.add_input('play', widget_type='button', callback=self.play_button_clicked)
+        self.play_pause_button.name_archive.append('pause')
         self.stop_button = self.add_input('stop', widget_type='button', callback=self.stop_button_clicked)
         self.loop_input = self.add_input('loop', widget_type='checkbox', default_value=True)
         self.add_spacer()
-        self.frame_input = self.add_input('frame', widget_type='drag_int', triggers_execution=True, callback=self.frame_widget_changed)
+        self.frame_input = self.add_input('frame', widget_type='drag_int', callback=self.frame_widget_changed)
         self.length_property = self.add_input('length: 0', widget_type='label')
         self.speed = self.add_input('play speed', widget_type='drag_float', default_value=speed)
         self.add_spacer()
@@ -481,7 +483,6 @@ class OpenTakeNode(MoCapNode):
                 self.play_pause_button.widget.set_active_theme(Node.active_theme_green)
 
     def record_button_clicked(self):
-
         if self.streaming:
             self.remove_frame_tasks()
             self.streaming = False

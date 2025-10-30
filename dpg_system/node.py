@@ -770,8 +770,8 @@ class PropertyWidget:
                 self.set(val)
         # else:
         #     self.node.increment_widget(self.widget)
-        if self.callback is not None:
-            self.callback()
+        # if self.callback is not None:
+        #     self.callback()
 
     def decrement(self) -> None:
         if self.widget == 'checkbox':
@@ -793,8 +793,8 @@ class PropertyWidget:
                 self.set(val)
         # else:
         #     self.node.decrement_widget(self.widget)
-        if self.callback is not None:
-            self.callback()
+        # if self.callback is not None:
+        #     self.callback()
 
     def get_text_width(self, pad: int = 12, minimum_width: int = 100) -> float:
         ttt = any_to_string(self.value)
@@ -1684,7 +1684,9 @@ class Node:
         pass
 
     def send_all(self) -> None:
-        for output in self.outputs:
+        for i in range(len(self.outputs)):
+            j = len(self.outputs) - i - 1
+            output = self.outputs[j]
             output.send_internal()  # should not always trigger!!! make flag to indicate trigger always or trigger on change...
 
     def add_label(self, label: str = "") -> None:

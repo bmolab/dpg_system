@@ -629,8 +629,8 @@ class ThresholdTriggerNode(Node):
                 if data < self.release_threshold:
                     self.state = False
                     if self.output_mode == 0:
-                        self.output.send(0)
                         self.release_output.send(1)
+                        self.output.send(0)
                     else:
                         self.release_output.send('bang')
             else:
@@ -639,8 +639,8 @@ class ThresholdTriggerNode(Node):
                     if now - self.last_trigger_time > self.retrigger_delay:
                         self.state = True
                         if self.output_mode == 0:
-                            self.output.send(1)
                             self.release_output.send(0)
+                            self.output.send(1)
                         else:
                             self.output.send('bang')
                         self.last_trigger_time = now
@@ -655,8 +655,8 @@ class ThresholdTriggerNode(Node):
                 self.state = np.logical_and(self.state, not_off)
             if np.any(self.state != prev_state):
                 if self.output_mode == 0:
-                    self.output.send(self.state)
                     self.release_output.send(not self.state)
+                    self.output.send(self.state)
                 else:
                     if self.state:
                         self.output.send('bang')
@@ -674,8 +674,8 @@ class ThresholdTriggerNode(Node):
                 self.state = torch.logical_and(self.state, not_off)
             if torch.any(self.state != prev_state):
                 if self.output_mode == 0:
-                    self.output.send(self.state)
                     self.release_output.send(torch.logical_not(self.state))
+                    self.output.send(self.state)
                 else:
                     if self.state:
                         self.output.send('bang')

@@ -33,7 +33,8 @@ to_import = [
     'quaternion_nodes',
     'numpy_nodes',
     'matrix_nodes',
-    'osc_nodes'
+    'osc_nodes',
+    'text_nodes'
 ]
 
 optional_import = [

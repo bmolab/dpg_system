@@ -1410,10 +1410,15 @@ class PrintNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-
+        self.identifier = ''
+        if len(args) > 0:
+            self.identifier = any_to_string(args[0])
         self.precision = 3
         self.format_string = '{:.3f}'
-        self.input = self.add_input('in', triggers_execution=True)
+        if self.identifier != '':
+            self.input = self.add_input(self.identifier, triggers_execution=True)
+        else:
+            self.input = self.add_input('in', triggers_execution=True)
         self.input.bang_repeats_previous = False
         self.precision = self.add_option(label='precision', widget_type='drag_int', default_value=self.precision, min=0, max=32, callback=self.change_format)
         self.end = self.add_option(label='end', widget_type='text_input', default_value='\n')
@@ -1444,6 +1449,8 @@ class PrintNode(Node):
     def execute(self):
         data = self.input()
         t = type(data)
+        if self.identifier != '':
+            print(self.identifier, end=': ')
         if t in [int, np.int64, bool, np.bool_, str]:
             print(data, end=self.end())
         elif t in [float, np.double]:
