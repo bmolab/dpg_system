@@ -1449,6 +1449,12 @@ class PrintNode(Node):
                 print(self.format_string.format(d), end=end)
             elif tt == list:
                 self.print_list(d)
+            elif tt == np.ndarray:
+                np.set_printoptions(precision=self.precision())
+                print(d)
+            elif self.app.torch_available and tt == torch.Tensor:
+                torch.set_printoptions(precision=self.precision())
+                print(d)
         print(']', end=end)
 
     def execute(self):
@@ -1463,15 +1469,15 @@ class PrintNode(Node):
             print(data, end=end)
         elif t in [float, np.double]:
             print(self.format_string.format(data), end=end)
-        elif t == list:
+        elif t is list:
             self.print_list(data)
             print('', end=end)
-        elif t == np.ndarray:
+        elif t is np.ndarray:
             np.set_printoptions(precision=self.precision())
             print(data)
-        elif t == dict:
+        elif t is dict:
             print(data)
-        elif self.app.torch_available and t == torch.Tensor:
+        elif self.app.torch_available and t is torch.Tensor:
             torch.set_printoptions(precision=self.precision())
             print(data, end=end)
 
