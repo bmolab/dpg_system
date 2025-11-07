@@ -1,6 +1,9 @@
 import platform as _platform
 import subprocess
 import os
+
+import numpy as np
+import quaternion
 import torch
 from dpg_system.body_base import *
 from pyquaternion import Quaternion
@@ -400,6 +403,7 @@ class OpenTakeNode(MoCapNode):
         self.dump_out = self.add_output('dump')
         self.global_params_out = self.add_output('globals')
         self.take_data_out = self.add_output('take data out')
+        self.frame_out = self.add_output('frame')
         self.done_out = self.add_output('done')
         self.temp_save_name = ''
         self.last_frame_out = -1
@@ -471,21 +475,23 @@ class OpenTakeNode(MoCapNode):
     def play_button_clicked(self):
         if not self.streaming and self.frame_count > 0:
             self.last_frame_out = -1
+            self.current_frame = self.speed() * -1.0
+            print('play_button_clicked', self.current_frame)
             self.add_frame_task()
             self.streaming = True
             self.play_pause_button.set_label('pause')
             self.play_pause_button.widget.set_active_theme(Node.active_theme_yellow)
         else:
             if self.streaming:
-                self.remove_frame_tasks()
                 self.streaming = False
+                self.remove_frame_tasks()
                 self.play_pause_button.set_label('play')
                 self.play_pause_button.widget.set_active_theme(Node.active_theme_green)
 
     def record_button_clicked(self):
         if self.streaming:
-            self.remove_frame_tasks()
             self.streaming = False
+            self.remove_frame_tasks()
             self.play_pause_button.set_label('play')
 
         if not self.recording:
@@ -520,10 +526,10 @@ class OpenTakeNode(MoCapNode):
                 self.frame_input.widget.max = self.frame_count - 1
                 self.frame_input.widget.min = 0
                 starttime = datetime.datetime.now()
+                path_start = os.getcwd()
                 self.temp_save_name = datetime.datetime.strftime(starttime, 'temp_take_%Y%m%d_%H%M%S.npz')
-                self.save_take(self.temp_save_name)
+                self.save_take(path_start + '/' + self.temp_save_name)
                 self.reset_clip()
-
 
     def save_sequence(self):
         arg = self.save_button()
@@ -605,12 +611,14 @@ class OpenTakeNode(MoCapNode):
     def frame_task(self):
         self.current_frame += self.speed()
         if int(self.current_frame) > self.last_frame_out:
-            if self.current_frame >= self.clip_end:
-                self.done_out.send('done')
+            if self.current_frame > self.clip_end:
                 if self.loop_input():
                     self.current_frame = self.clip_start
                 else:
                     self.stop_button_clicked()
+                self.done_out.send('done')
+                if not self.loop_input():
+                    return
 
             self.frame_input.set(self.current_frame)
             frame = int(self.current_frame)
@@ -619,6 +627,7 @@ class OpenTakeNode(MoCapNode):
             frame_dict = {}
             for key in self.sequence_keys:
                 frame_dict[key] = self.take_dict[key][frame]
+            self.frame_out.send(self.last_frame_out)
             self.take_data_out.send(frame_dict)
 
     def load_from_load_path(self):
@@ -691,6 +700,7 @@ class OpenTakeNode(MoCapNode):
             frame_dict = {}
             for key in self.sequence_keys:
                 frame_dict[key] = self.take_dict[key][self.current_frame]
+            self.frame_out.send(self.current_frame)
             self.take_data_out.send(frame_dict)
         else:
             data = self.frame_count - 1
@@ -708,6 +718,7 @@ class OpenTakeNode(MoCapNode):
                     frame_dict = {}
                     for key in self.sequence_keys:
                         frame_dict[key] = frame_dict[key][self.current_frame]
+                    self.frame_out.send(self.current_frame)
                     self.take_data_out.send(frame_dict)
 
     def load_take_message(self, message='', args=None):
@@ -1126,37 +1137,48 @@ class DiffQuaternionsNode(Node):
 
     def execute(self):
         incoming_quats = any_to_array(self.input())
-        incoming_quats = np.expand_dims(incoming_quats, 0)
-        if self.smoothed_quaternions_a is None:
-            self.smoothed_quaternions_a = incoming_quats.copy()
-            self.smoothed_quaternions_b = incoming_quats.copy()
         self.calc_diff_quaternions(incoming_quats)
         self.magnitude_out.send(self.magnitudes)
         self.normalized_axes_out.send(self.normalized_axes)
 
     def restart_cal(self):
+        print('DiffQuaternionsNode armed reset')
         self.smoothed_quaternions_a = None
 
     def calc_diff_quaternions(self, incoming_quats):
-        self.smoothed_quaternions_a = self.smoothed_quaternions_a * self.smooth_a_input() + incoming_quats * (1.0 - self.smooth_a_input())
-        self.smoothed_quaternions_b = self.smoothed_quaternions_b * self.smooth_b_input() + incoming_quats * (1.0 - self.smooth_b_input())
+        if self.smoothed_quaternions_a is None:
+            print('DiffQuaternionsNode reset')
+            self.smoothed_quaternions_a = np.copy(incoming_quats)
+            self.smoothed_quaternions_b = np.copy(incoming_quats)
+        else:
+            self.smoothed_quaternions_a = self.smoothed_quaternions_a * self.smooth_a_input() + incoming_quats * (1.0 - self.smooth_a_input())
+            self.smoothed_quaternions_b = self.smoothed_quaternions_b * self.smooth_b_input() + incoming_quats * (1.0 - self.smooth_b_input())
         # we want axis, magnitude from diff_quat
 
         a = quaternion.as_quat_array(self.smoothed_quaternions_a)
         b = quaternion.as_quat_array(self.smoothed_quaternions_b)
-        self.diff_quats = a - b
-        self.axes = quaternion.as_rotation_vector(self.diff_quats)
-        angles = np.linalg.norm(self.axes, axis=2) + 1e-5
-        self.magnitudes = self.quaternion_distances(self.smoothed_quaternions_a, self.smoothed_quaternions_b).squeeze()
-        self.normalized_axes = (self.axes / np.expand_dims(angles, axis=-1)).squeeze()
+
+        b_inv = np.conjugate(b) / np.abs(b) ** 2
+        diff_quats = a * b_inv
+
+        self.diff_quats = np.expand_dims(diff_quats, axis=0)
+        try:
+            self.axes = quaternion.as_rotation_vector(self.diff_quats)
+        except Exception as a:
+            print(e)
+
+        angles = np.linalg.norm(self.axes, axis=2) + 1e-8
+        self.magnitudes = self.quaternion_distances(self.smoothed_quaternions_a, self.smoothed_quaternions_b)
+        self.normalized_axes = (self.axes / np.expand_dims(angles, axis=-1))
         self.diff_angles = angles
 
     def quaternion_distances(self, q1, q2):
         q1_ = q1 / np.expand_dims(np.linalg.norm(q1, axis=-1), -1)
         q2_ = q2 / np.expand_dims(np.linalg.norm(q2, axis=-1), -1)
-        diff = np.sum(np.multiply(q1_[:, :], q2_[:, :]), axis=2)
-        diff = np.clip(diff, a_min=-1, a_max=1)
-        distances = np.arccos(2 * diff[:, :] * diff[:, :] - 1)
+        q1__ = quaternion.as_quat_array(q1_)
+        q2__ = quaternion.as_quat_array(q2_)
+
+        distances = quaternion.rotation_intrinsic_distance(q1__, q2__)
         return distances
 
 

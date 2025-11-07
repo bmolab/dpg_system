@@ -56,6 +56,8 @@ def register_numpy_nodes():
     Node.app.register_node('np.edit', NumpyEditNode.factory)
     Node.app.register_node('np.sequence', NumpySequenceNode.factory)
     Node.app.register_node('np.reshape', NumpyReshapeNode.factory)
+    Node.app.register_node('np.any', NumpyAnyNode.factory)
+    Node.app.register_node('np.all', NumpyAllNode.factory)
 
 class NumpyGeneratorNode(Node):
     operations = {'np.rand': np.random.Generator.random, 'np.ones': np.ones, 'np.zeros': np.zeros}
@@ -1558,4 +1560,41 @@ class NumpySequenceNode(Node):
         self.frame_input.set(-1)
 
 
+class NumpyAnyNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyAnyNode(name, data, args)
+        return node
 
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('in', triggers_execution=True)
+        self.result_out = self.add_output('result')
+
+    def execute(self):
+        a = self.input()
+        a_arr = np.asarray(a)
+        if a_arr.dtype != bool:
+            a_arr = a_arr.astype(bool)
+        result = bool(np.any(a_arr))
+        self.result_out.send(result)
+
+
+class NumpyAllNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyAllNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('in', triggers_execution=True)
+        self.result_out = self.add_output('result')
+
+    def execute(self):
+        a = self.input()
+        a_arr = np.asarray(a)
+        if a_arr.dtype != bool:
+            a_arr = a_arr.astype(bool)
+        result = bool(np.all(a_arr))
+        self.result_out.send(result)
