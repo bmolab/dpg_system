@@ -425,7 +425,7 @@ class TorchParallelSavGolFilter:
 
     def reset(self):
         if self.buffer is not None: self.buffer.zero_()
-        self.ptr = 0;
+        self.ptr = 0
         self.is_warmed_up = False
 
 # --- The New Node Class ---
@@ -666,19 +666,21 @@ class TorchQuaternionESEKF:  # Renamed from UKF to EKF
     def update(self, z_measured_q):
         # Check if a reset is pending and use the current measurement for initialization
         if self._reset_pending:
-
+            # 1. Perform the hard reset by snapping the state to the measurement.
             self.q = z_measured_q.to(self.device, self.dtype)
-            self.av.zero_() # Reset angular velocity to zero
-            self.x.zero_()   # Reset error state
-            self.P = torch.eye(self.dim_x, device=self.device, dtype=self.dtype).unsqueeze(0).repeat(self.num_streams, 1, 1) * 0.1 # Reset covariance
+            self.av.zero_()  # Reset angular velocity to zero
+            self.x.zero_()  # Reset error state
+            self.P = torch.eye(self.dim_x, device=self.device, dtype=self.dtype).unsqueeze(0).repeat(self.num_streams, 1, 1) * 0.1  # Reset covariance
 
-            self._reset_pending = False # Clear the flag
-            # After initialization, we can optionally skip the rest of the update for this frame
-            # to prevent a large initial correction if P is high and the "measurement" is already
-            # the new nominal state. However, performing the update is generally safer to
-            # immediately use the covariance matrix to refine the first measurement.
-            # Let's proceed with the update as usual, as `q` is now `z_measured_q`, making residual zero (or very small).
+            # 2. Clear the flag.
+            self._reset_pending = False
 
+            # 3. CRITICAL FIX: Stop all further processing for this frame.
+            # Do not proceed to the Kalman update steps below. The reset is the only
+            # operation that should happen on this frame.
+            return
+
+        # --- The rest of the function remains unchanged ---
         # 1. Calculate the measurement residual in quaternion form
         residual_q = q_mult(q_conjugate(self.q), z_measured_q)
 
@@ -735,11 +737,9 @@ class TorchQuaternionESEKF:  # Renamed from UKF to EKF
         Flags that a reset is needed. The next call to `update` will use its
         measurement to initialize the filter state.
         """
-        print("Reset flagged. Next 'update' will re-initialize the filter.")
         self._reset_pending = True
 
     def reset_to_defaults(self):
-        print("Performing immediate reset to default values.")
         self.q.zero_()
         self.q[:, 0] = 1.0
         self.av.zero_()
@@ -818,12 +818,31 @@ class TorchTristateBlendESEKFNode(TorchDeviceDtypeNode):  # Renamed
         self.alphas_output = self.add_output('alphas (damp, resp, err)')
 
     def reset_filter(self):
-        if self.filter: self.filter.flag_reset()
+        # Safety check if the filter hasn't been created yet
+        if self.filter is None:
+            return
+
+        # 1. Command the filter to perform a reset on its next update.
+        self.filter.flag_reset()
+
+        # 2. Reset the node's own state variables to their initial conditions.
+        # This prevents calculating a huge motion spike on the next frame.
         self.last_input_quat = None
 
-        # Reset the blended alphas to the default "Damping" state
-        if self.filter:
-             self.blended_alphas = torch.tensor([1.0, 0.0, 0.0], device=self.device, dtype=self.dtype).unsqueeze(0).repeat(self.filter.num_streams, 1)
+        # 3. Reset the blended alphas to the default "Damping" state.
+        # This is now the ONLY place this reset happens, ensuring consistency.
+        if self.blended_alphas is not None:
+            self.blended_alphas.zero_()
+            self.blended_alphas[:, 0] = 1.0
+
+    # def reset_filter(self):
+    #     print('TorchTristateBlendESEKFNode armed reset')
+    #     if self.filter: self.filter.flag_reset()
+    #     self.last_input_quat = None
+    #
+    #     # Reset the blended alphas to the default "Damping" state
+    #     if self.filter:
+    #          self.blended_alphas = torch.tensor([1.0, 0.0, 0.0], device=self.device, dtype=self.dtype).unsqueeze(0).repeat(self.filter.num_streams, 1)
 
     def update_params(self):
         self.damp_params = [self.damp_meas_in(), self.damp_vel_in()]
@@ -852,16 +871,25 @@ class TorchTristateBlendESEKFNode(TorchDeviceDtypeNode):  # Renamed
 
         if self.filter is None or self.filter.num_streams != num_streams:
             self.filter = TorchQuaternionESEKF(dt, num_streams, self.device, self.dtype)
+            # Use the node's own reset method for a clean initialization
             self.reset_filter()
+            # Initialize blended_alphas for the first time
+            self.blended_alphas = torch.tensor([1.0, 0.0, 0.0], device=self.device, dtype=self.dtype).unsqueeze(0).repeat(num_streams, 1)
 
         self.filter.update_device_to_match(signal_in)
         if self.last_input_quat is not None:
             self.last_input_quat = self.last_input_quat.to(self.device)
         self.blended_alphas = self.blended_alphas.to(self.device)
 
+        # Predict step is always safe; it checks the reset flag internally.
         self.filter.predict()
 
-        # 1. Calculate the raw strength for each active mode (Responsive and Error Correct)
+        # --- REMOVED THE ENTIRE `if self.filter._reset_pending:` BLOCK ---
+        # The logic now flows through this single path on EVERY frame.
+        # The node's state (reset in `reset_filter`) will naturally produce the correct behavior.
+
+        # 1. Calculate the raw strength for each active mode.
+        # On the frame after reset, `last_input_quat` is None, so motion will be zero. PERFECT.
         motion_deg_per_sec = torch.zeros(num_streams, device=self.device, dtype=self.dtype)
         if self.last_input_quat is not None:
             motion_deg_per_frame = self._calculate_angular_difference_deg(signal_in, self.last_input_quat)
@@ -870,48 +898,43 @@ class TorchTristateBlendESEKFNode(TorchDeviceDtypeNode):  # Renamed
         strength_resp_vec = torch.clamp(
             (motion_deg_per_sec - self.motion_min) / (self.motion_max - self.motion_min + 1e-9), 0.0, 1.0)
 
+        # On the reset frame itself, `self.filter.q` is still the old value, so error_deg might be large.
+        # This is okay! The filter will reset *before* using this calculation.
         error_deg = self._calculate_angular_difference_deg(signal_in, self.filter.q)
         strength_err_vec = torch.clamp((error_deg - self.error_min) / (self.error_max - self.error_min + 1e-9), 0.0,
                                        1.0)
 
-        # 2. Determine the overall "active" level by taking the max of the two strengths.
-        # This decides how much we move away from the default Damping state.
+        # 2. Calculate target alphas based on current state.
         alpha_active = torch.maximum(strength_resp_vec, strength_err_vec)
-
-        # 3. Distribute the `alpha_active` amount between Resp and Err based on their relative strengths.
-        total_strength = strength_resp_vec + strength_err_vec + 1e-9  # Add epsilon to avoid div by zero
-
+        total_strength = strength_resp_vec + strength_err_vec + 1e-9
         target_alpha_resp = alpha_active * (strength_resp_vec / total_strength)
         target_alpha_err = alpha_active * (strength_err_vec / total_strength)
-
-        # 4. Damping alpha is whatever is left over.
         target_alpha_damp = 1.0 - target_alpha_resp - target_alpha_err
-
         target_alphas = torch.stack([target_alpha_damp, target_alpha_resp, target_alpha_err], dim=1)
 
-        # Smooth the alphas using LERP
+        # 3. Smooth the alphas.
+        # On the frame after reset, we smoothly blend from our reset state of [1,0,0]
+        # towards the new target. PERFECT.
         blending_speed = self.blending_speed_in()
         self.blended_alphas = torch.lerp(self.blended_alphas, target_alphas, blending_speed)
 
-        # Use the smoothed alphas to set filter parameters
+        # 4. Use smoothed alphas to set filter parameters.
         alpha_damp_vec, alpha_resp_vec, alpha_err_vec = self.blended_alphas.unbind(dim=-1)
-
         damp = torch.tensor(self.damp_params, device=self.device, dtype=self.dtype)
         resp = torch.tensor(self.resp_params, device=self.device, dtype=self.dtype)
         err = torch.tensor(self.err_params, device=self.device, dtype=self.dtype)
-
         blended_params = (alpha_damp_vec.unsqueeze(1) * damp +
                           alpha_resp_vec.unsqueeze(1) * resp +
                           alpha_err_vec.unsqueeze(1) * err)
-
         self.filter.set_noise_params(
             meas_noise_vec=blended_params[:, 0],
             vel_change_noise_vec=blended_params[:, 1],
             dt=dt
         )
 
-        # Run Update and send outputs
+        # 5. Run Update. If reset is pending, it will just reset and return. Otherwise, it updates.
         self.filter.update(signal_in)
+
         self.output_port.send(self.filter.q)
         self.alphas_output.send(self.blended_alphas)
         self.last_input_quat = signal_in.clone()

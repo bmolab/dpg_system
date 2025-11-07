@@ -1421,7 +1421,16 @@ class PrintNode(Node):
             self.input = self.add_input('in', triggers_execution=True)
         self.input.bang_repeats_previous = False
         self.precision = self.add_option(label='precision', widget_type='drag_int', default_value=self.precision, min=0, max=32, callback=self.change_format)
-        self.end = self.add_option(label='end', widget_type='text_input', default_value='\n')
+        self.end = self.add_option(label='end', widget_type='text_input', default_value='\n', callback=self.end_changed)
+
+    def end_changed(self):
+        end = self.end()
+        print('end len', len(end))
+        for i in range(len(end)):
+            print(end[i])
+        if end in ['\\n', '\n']:
+            print('setting \\n')
+            self.end.set('\n')
 
     def change_format(self):
         precision = self.precision()

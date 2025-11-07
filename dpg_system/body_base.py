@@ -975,12 +975,20 @@ class BodyData(BodyDataBase):
         self.rotationAxis[joint_index] = list(self.quaternionDiff[joint_index].unit.axis)
         self.set_label(label - 1)
 
+    # def quaternion_distances(self, q1, q2):
+    #     q1_ = q1 / np.expand_dims(np.linalg.norm(q1, axis=-1), -1)
+    #     q2_ = q2 / np.expand_dims(np.linalg.norm(q2, axis=-1), -1)
+    #     diff = np.sum(np.multiply(q1_[:, :], q2_[:, :]), axis=2)
+    #     diff = np.clip(diff, a_min=-1, a_max=1)
+    #     distances = np.arccos(2 * diff[:, :] * diff[:, :] - 1)
+    #     return distances
     def quaternion_distances(self, q1, q2):
         q1_ = q1 / np.expand_dims(np.linalg.norm(q1, axis=-1), -1)
         q2_ = q2 / np.expand_dims(np.linalg.norm(q2, axis=-1), -1)
-        diff = np.sum(np.multiply(q1_[:, :], q2_[:, :]), axis=2)
-        diff = np.clip(diff, a_min=-1, a_max=1)
-        distances = np.arccos(2 * diff[:, :] * diff[:, :] - 1)
+        q1__ = quaternion.as_quat_array(q1_)
+        q2__ = quaternion.as_quat_array(q2_)
+
+        distances = quaternion.rotation_intrinsic_distance(q1__, q2__)
         return distances
 
     def calc_diff_quaternions(self):
@@ -990,12 +998,27 @@ class BodyData(BodyDataBase):
 
         a = quaternion.as_quat_array(self.smoothed_quaternions_a)
         b = quaternion.as_quat_array(self.smoothed_quaternions_b)
-        self.diff_quats = a - b
-        self.axes = quaternion.as_rotation_vector(self.diff_quats)
+
+        b_inv = np.conjugate(b) / np.abs(b) ** 2
+        diff_quats = a * b_inv
+        # self.diff_quats = a - b
+        self.diff_quats = diff_quats
+        try:
+            self.axes = quaternion.as_rotation_vector(self.diff_quats)
+        except Exception as e:
+            print(e)
         angles = np.linalg.norm(self.axes, axis=2) + 1e-5
         self.magnitudes = self.quaternion_distances(self.smoothed_quaternions_a, self.smoothed_quaternions_b)
         self.normalized_axes = self.axes / np.expand_dims(angles, axis=-1)
         self.diff_angles = angles
+
+        # print(self.diff_quats == diff_quats)
+        # self.diff_quats = diff_quats
+
+        # angles = np.linalg.norm(self.axes, axis=2) + 1e-5
+        # self.magnitudes = self.quaternion_distances(self.smoothed_quaternions_a, self.smoothed_quaternions_b).squeeze()
+        # self.normalized_axes = (self.axes / np.expand_dims(angles, axis=-1)).squeeze()
+        # self.diff_angles = angles
 
     def clear_captured_pose(self):
         self.captured_quaternions = None

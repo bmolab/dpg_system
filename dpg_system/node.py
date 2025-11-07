@@ -855,7 +855,10 @@ class PropertyWidget:
                 else:
                     val = any_to_string(data, strip_returns=(self.widget != 'text_editor'))
             else:
-                val = any_to_string(data, strip_returns=(self.widget != 'text_editor'))
+                if type(data) == str and data == '\n':
+                    val = data
+                else:
+                    val = any_to_string(data, strip_returns=(self.widget != 'text_editor'))
             dpg.set_value(self.uuid, val)
             self.value = val
             # self.adjust_to_text_width(max=2048)
