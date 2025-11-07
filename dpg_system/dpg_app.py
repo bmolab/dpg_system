@@ -233,6 +233,24 @@ def save_patches_callback(sender, app_data):
         dpg.delete_item(sender)
     Node.app.active_widget = -1
 
+class DebugState:
+    def __init__(self):
+        self.current_node = None
+        self.current_output = None
+        self.current_child = None
+        self.current_data = None
+
+    def set(self, node, output, child, data):
+        self.current_node = node
+        self.current_output = output
+        self.current_child = child
+        self.current_data = data
+
+    def step(self):
+        if self.current_node is not None:
+            pass
+
+
 
 class App:
     def __init__(self):
@@ -251,6 +269,7 @@ class App:
         self.setup_dpg()
         self.verbose = False
         self.verbose_menu_item = -1
+        self.trace_menu_item = -1
         self.minimap_menu_item = -1
         self.colour_code_pins_menu_item = -1
         self.window_padding = [4, 3]
@@ -270,6 +289,10 @@ class App:
         self.new_patcher_index = 1
         self.patchers = []
         self.do_exit = False
+
+        self.trace = False
+        self.trace_indent = ''
+        self.global_trace = False
 
         self.node_editors = []
         self.current_node_editor = 0
@@ -330,6 +353,12 @@ class App:
         self.pausing = False
         self.load_recent_patchers_list()
         self.gl_on_separate_thread = False
+
+    def increment_trace_indent(self):
+        self.trace_indent += '  '
+
+    def decrement_trace_indent(self):
+        self.trace_indent = self.trace_indent[:-2]
 
     def get_local_project_name(self):
         self.project_name = os.path.basename(__file__).split('.')[0]
@@ -741,6 +770,7 @@ class App:
                 dpg.add_menu_item(label="Show Demo", callback=self.show_demo)
                 dpg.add_separator()
                 self.verbose_menu_item = dpg.add_menu_item(label="verbose logging", check=True, callback=self.set_verbose)
+                self.trace_menu_item = dpg.add_menu_item(label='trace', check=True, callback=self.set_trace)
                 dpg.add_separator()
 
                 self.colour_code_pins_menu_item = dpg.add_menu_item(label="Colour Code Pins", check=True,
@@ -749,6 +779,11 @@ class App:
 
                 dpg.add_menu_item(label='osc status', callback=self.print_osc_state)
                 self.minimap_menu_item = dpg.add_menu_item(label='minimap', callback=self.show_minimap, check=True)
+
+    def set_trace(self):
+        if self.trace_menu_item != -1:
+            self.trace = dpg.get_value(self.trace_menu_item)
+            self.global_trace = self.trace
 
     def print_osc_state(self):
         if self.osc_manager:
@@ -1856,9 +1891,20 @@ class App:
                     now = time.time()
                     for node_editor in self.node_editors:
                         node_editor.reset_pins()
+                    self.trace_indent = ''
+                    if self.trace:
+                        print()
+                        print('cycle:', self.frame_number)
                     for task in self.frame_tasks:
                         if task.created:
+                            if self.trace:
+                                self.trace_indent = ''
+                                print('node \'' + task.label + '\': frame task')
                             task.frame_task()
+                        if not self.global_trace:
+                            self.trace = False
+                    if not self.global_trace:
+                        self.trace = False
                     jobs = dpg.get_callback_queue()  # retrieves and clears queue
                     dpg.run_callbacks(jobs)
                     self.frame_number += 1
@@ -1868,6 +1914,8 @@ class App:
                     if do_osc_async:
                         osc_nodes.OSCThreadingSource.osc_manager.relay_pending_messages()
                     dpg.render_dearpygui_frame()
+                    if not self.global_trace:
+                        self.trace = False
                     then = time.time()
 
                     #  openGL separate thread?

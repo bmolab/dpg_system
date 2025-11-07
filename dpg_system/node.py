@@ -8,6 +8,115 @@ from typing import List, Any, Callable, Union, Tuple, Optional, Dict, Set, Type,
 from fuzzywuzzy import fuzz
 import sys
 
+def print_info(input_):
+    t = type(input_)
+    value_string = ''
+    if t == float:
+        type_string = 'float'
+        value_string = str(input_)
+    elif t == int:
+        type_string = 'int'
+        value_string = str(input_)
+    elif t == str:
+        if input_ == 'bang':
+            type_string = 'bang'
+        else:
+            type_string = 'string'
+            value_string = input_
+    elif t == list:
+        type_string = 'list[' + str(len(input_)) + ']'
+    elif t == bool:
+        type_string = 'bool'
+        value_string = str(input_)
+    elif t == np.ndarray:
+        comp = 'unknown'
+        shape = input_.shape
+        if input_.dtype == float:
+            comp = 'float'
+        elif input_.dtype == np.double:
+            comp = 'double'
+        elif input_.dtype == np.float32:
+            comp = 'float32'
+        elif input_.dtype == np.int64:
+            comp = 'int64'
+        elif input_.dtype == np.bool_:
+            comp = 'bool'
+        elif input_.dtype == np.uint8:
+            comp = 'uint8'
+
+        if len(shape) == 1:
+            type_string = 'array[' + str(shape[0]) + '] ' + comp
+        elif len(shape) == 2:
+            type_string = 'array[' + str(shape[0]) + ', ' + str(shape[1]) + '] ' + comp
+        elif len(shape) == 3:
+            type_string = 'array[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + '] ' + comp
+        elif len(shape) == 4:
+            type_string = 'array[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + ', ' + str(shape[3]) + '] ' + comp
+    elif t == dict:
+        keys = list(input_.keys())
+        type_string = 'dict' + str(keys)
+    elif Node.app.torch_available and t == torch.Tensor:
+        shape = input_.shape
+        comp = 'float'
+        if input_.dtype == torch.float:
+            comp = 'float'
+        elif input_.dtype == torch.double:
+            comp = 'double'
+        elif input_.dtype == torch.float32:
+            comp = 'float32'
+        elif input_.dtype == torch.int64:
+            comp = 'int64'
+        elif input_.dtype == torch.bool:
+            comp = 'bool'
+        elif input_.dtype == torch.uint8:
+            comp = 'uint8'
+        elif input_.dtype == torch.float16:
+            comp = 'float16'
+        elif input_.dtype == torch.bfloat16:
+            comp = 'bfloat16'
+        elif input_.dtype == torch.complex128:
+            comp = 'complex128'
+        elif input_.dtype == torch.complex64:
+            comp = 'complex64'
+        elif input_.dtype == torch.complex32:
+            comp = 'complex32'
+
+        device = 'cpu'
+        if input_.is_cuda:
+            device = 'cuda'
+        elif input_.is_mps:
+            device = 'mps'
+
+        if input_.requires_grad:
+            grad = 'requires_grad'
+        else:
+            grad = ''
+
+        if len(shape) == 0:
+            type_string = 'tensor[] ' + comp + ' ' + device + ' ' + grad
+        elif len(shape) == 1:
+            type_string = 'tensor[' + str(shape[0]) + '] ' + comp + ' ' + device + ' ' + grad
+        elif len(shape) == 2:
+            type_string = 'tensor[' + str(shape[0]) + ', ' + str(shape[1]) + '] ' + comp + ' ' + device + ' ' + grad
+        elif len(shape) == 3:
+            type_string = 'tensor[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(
+                    shape[2]) + '] ' + comp + ' ' + device + ' ' + grad
+        elif len(shape) == 4:
+            type_string = 'tensor[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + ', ' + str(shape[3]) + '] ' + comp + ' ' + device + ' ' + grad
+    elif t == np.float32:
+        type_string = 'numpy.float32'
+        value_string = str(input_)
+    elif t == np.double:
+        type_string = 'numpy.double'
+        value_string = str(input_)
+    elif t == np.int64:
+        type_string = 'numpy.int64'
+        value_string = str(input_)
+    elif t == np.bool_:
+        type_string = 'numpy.bool_'
+        value_string = str(input_)
+    return type_string, value_string
+
 
 class NodeOutput:
     _pin_active_theme = None
@@ -115,7 +224,24 @@ class NodeOutput:
         if data is not None:
             self.new_output = True
             for child in self._children:
-                child.receive_data(data)
+                if Node.app.trace:
+                    print(Node.app.trace_indent, end='')
+                    print('node \'' + self.node.label + '\' output ', end='')
+                    if self.get_label() != '':
+                        print('\'' + self.get_label() + '\' -> ', end='')
+                    type_string, value_string = print_info(data)
+                    print(type_string, end='')
+                    if len(value_string) > 0:
+                        print(':' + value_string, end='')
+                    print(' -> node \'' + child.node.label + '\' input', end='')
+                    if child.get_label() != '':
+                        print(' \'' +  child.get_label() + '\'')
+                    else:
+                        print()
+                    child.receive_data(data)
+                else:
+                    child.receive_data(data)
+
             self.sent_type = type(data)
             if self.sent_type == str and data == 'bang':
                 self.sent_bang = True
@@ -157,8 +283,15 @@ class NodeOutput:
                 except Exception as e:
                     pass
             if not no_trigger:
-                for child in self._children:
+                for child in self._children: # we want to be able to step debug...
                     child.node.active_input = child
+                    if Node.app.trace:
+                        if child.triggers_execution or child.callback is not None:
+                            print(Node.app.trace_indent, end='')
+                            if child.triggers_execution:
+                                print('node \'' +child.node.label + '\' execute')
+                            else:
+                                print('node', child.node.label, 'input', child.get_label(), 'callback')
                     child.trigger()
                     child.node.active_input = None
 
@@ -1144,6 +1277,10 @@ class NodeInput:
             self._parents.remove(parent)
 
     def receive_data(self, data: Any, orig_type: Optional[Type] = None) -> None:
+        # if Node.app.trace:
+        #     Node.app.increment_trace_indent()
+        #     print(Node.app.trace_indent, end='')
+        #     print('->', self.node.label + ':[' + self.get_label() + ']')
         if data is not None:
             if orig_type is None:
                 self.received_type = type(data)
@@ -1193,6 +1330,8 @@ class NodeInput:
                 self.received_bang = False
                 self.node.active_input = None
         self.received_bang = False
+        # if Node.app.trace:
+        #     Node.app.decrement_trace_indent()
 
     def conform_to_accepted_types(self, data: Any) -> Any:
         if self.accepted_types:
@@ -1205,7 +1344,13 @@ class NodeInput:
     def trigger(self) -> None:
         if self.triggers_execution and not self.node.message_handled:
             self.node.active_input = self
+            if Node.app.trace:
+                Node.app.increment_trace_indent()
+                # print(Node.app.trace_indent, end='')
+                # print('>> ' + self.node.label + ':[' + self.get_label() + ']')
             self.node.execute()
+            if Node.app.trace:
+                Node.app.decrement_trace_indent()
             self.node.active_input = None
         else:
             self.node.message_handled = False

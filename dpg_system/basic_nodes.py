@@ -81,6 +81,9 @@ def register_basic_nodes():
     Node.app.register_node('patch_window_position', PositionPatchesNode.factory)
     Node.app.register_node('slice_list', SliceNode.factory)
 
+    Node.app.register_node('start_trace', StartTraceNode.factory)
+    Node.app.register_node('end_trace', EndTraceNode.factory)
+
 
 class SliceNode(Node):
     @staticmethod
@@ -2602,25 +2605,25 @@ class RepeatNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.trigger_count = self.arg_as_int(default_value=2)
+        self.repeat_count = self.arg_as_int(default_value=2)
 
         self.input = self.add_input("", triggers_execution=True)
         self.input.bang_repeats_previous = False
         if self.label == 'repeat_in_order':
-            for i in range(self.trigger_count):
-                j = self.trigger_count - i
+            for i in range(self.repeat_count):
+                j = self.repeat_count - i
                 if str(j) in RepeatNode.output_dict:
                     self.add_output(RepeatNode.output_dict[str(j)])
         else:
-            for i in range(self.trigger_count):
+            for i in range(self.repeat_count):
                 self.add_output('out ' + str(i))
 
     def execute(self):
         data = self.input()
-        for i in range(self.trigger_count):
-            j = self.trigger_count - i - 1
-            self.outputs[j].set_value(data)
-        self.send_all()
+        for i in range(self.repeat_count):
+            j = self.repeat_count - i - 1
+            self.outputs[j].send(data)
+        # self.send_all()
 
 
 class ConduitSendNode(Node):
@@ -3036,3 +3039,41 @@ class PositionPatchesNode(Node):
         self.reposition()
 
 
+class StartTraceNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = StartTraceNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.add_input('start trace', triggers_execution=True)
+        self.enable = self.add_input('enable', widget_type='checkbox')
+        self.add_output('pass input')
+
+    def execute(self):
+        if self.enable():
+            Node.app.trace = True
+            print()
+            print('trace start: frame', Node.app.frame_number)
+        self.outputs[0].send(self.inputs[0]())
+
+
+class EndTraceNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = EndTraceNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.add_input('end trace', triggers_execution=True)
+        self.add_output('pass input')
+
+    def execute(self):
+        if Node.app.trace:
+            Node.app.trace = False
+            print('trace end')
+        self.outputs[0].send(self.inputs[0]())
