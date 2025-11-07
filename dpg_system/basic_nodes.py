@@ -2185,7 +2185,15 @@ class PrependNode(Node):
         elif t == list:
             out_list += data
         elif t == np.ndarray:
-            out_list += any_to_list(data)
+            if type(prepender) is str:
+                out_list.append(data)
+            else:
+                out_list += any_to_list(data)
+        elif self.app.torch_available and t == torch.Tensor:
+            if type(prepender) is str:
+                out_list.append(data)
+            else:
+                out_list += any_to_list(data)
         self.output.send(out_list)
 
 
@@ -2255,8 +2263,21 @@ class AppendNode(Node):
             out_list = data
             out_list.append(self.appender())
         elif t == np.ndarray:
-            out_list = any_to_list(data)
-            out_list.append(self.appender())
+            appender = self.appender()
+            if type(appender) is str:
+                out_list = [data]
+                out_list.append(appender)
+            else:
+                out_list = any_to_list(data)
+                out_list.append(self.appender())
+        elif self.app.torch_available and t == torch.Tensor:
+            appender = self.appender()
+            if type(appender) is str:
+                out_list = [data]
+                out_list.append(appender)
+            else:
+                out_list = any_to_list(data)
+                out_list.append(self.appender())
         self.output.send(out_list)
 
 

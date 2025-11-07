@@ -1412,7 +1412,7 @@ class PrintNode(Node):
         super().__init__(label, data, args)
         self.identifier = ''
         if len(args) > 0:
-            self.identifier = any_to_string(args[0])
+            self.identifier = ' '.join(args)
         self.precision = 3
         self.format_string = '{:.3f}'
         if self.identifier != '':
@@ -1420,6 +1420,7 @@ class PrintNode(Node):
         else:
             self.input = self.add_input('in', triggers_execution=True)
         self.input.bang_repeats_previous = False
+        self.identifier_option = self.add_option('identifier', widget_type='text_input', default_value=self.identifier, callback=self.identifier_changed)
         self.precision = self.add_option(label='precision', widget_type='drag_int', default_value=self.precision, min=0, max=32, callback=self.change_format)
         self.end = self.add_option(label='end', widget_type='text_input', default_value='\n', callback=self.end_changed)
 
@@ -1431,6 +1432,11 @@ class PrintNode(Node):
         if end in ['\\n', '\n']:
             print('setting \\n')
             self.end.set('\n')
+        self.end = self.add_option(label='end', widget_type='text_input', default_value='\\n')
+
+    def identifier_changed(self):
+        self.identifier = any_to_string(self.identifier_option())
+        self.input.set_label(self.identifier)
 
     def change_format(self):
         precision = self.precision()
@@ -1453,28 +1459,37 @@ class PrintNode(Node):
                 print(self.format_string.format(d), end=end)
             elif tt == list:
                 self.print_list(d)
+            elif tt == np.ndarray:
+                np.set_printoptions(precision=self.precision())
+                print(d)
+            elif self.app.torch_available and tt == torch.Tensor:
+                torch.set_printoptions(precision=self.precision())
+                print(d)
         print(']', end=end)
 
     def execute(self):
         data = self.input()
         t = type(data)
+        end = self.end()
+        if end == '\\n':
+            end = '\n'
         if self.identifier != '':
             print(self.identifier, end=': ')
         if t in [int, np.int64, bool, np.bool_, str]:
-            print(data, end=self.end())
+            print(data, end=end)
         elif t in [float, np.double]:
-            print(self.format_string.format(data), end=self.end())
-        elif t == list:
+            print(self.format_string.format(data), end=end)
+        elif t is list:
             self.print_list(data)
-            print('', end=self.end())
-        elif t == np.ndarray:
+            print('', end=end)
+        elif t is np.ndarray:
             np.set_printoptions(precision=self.precision())
             print(data)
-        elif t == dict:
+        elif t is dict:
             print(data)
-        elif self.app.torch_available and t == torch.Tensor:
+        elif self.app.torch_available and t is torch.Tensor:
             torch.set_printoptions(precision=self.precision())
-            print(data, end=self.end())
+            print(data, end=end)
 
 
 class LoadActionNode(Node):
