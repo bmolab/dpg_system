@@ -567,9 +567,6 @@ class TextFileNode(Node):
 
     def save_dialog(self):
         SaveDialog(self, callback=self.save_text_file_callback, extensions=['.txt'])
-        # with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, user_data=self, callback=save_text_file_callback, cancel_callback=cancel_textfile_callback,
-        #                      tag="text_dialog_id"):
-        #     dpg.add_file_extension(".txt")
 
     def save_text_file_callback(self, save_path):
         if save_path != '':

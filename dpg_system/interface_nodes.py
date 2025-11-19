@@ -54,6 +54,8 @@ def register_interface_nodes():
     Node.app.register_node('gain', GainNode.factory)
     Node.app.register_node('keys', KeyNode.factory)
 
+    Node.app.register_node('table', TableNode.factory)
+
 
 class ButtonNode(Node):
     @staticmethod
@@ -503,6 +505,108 @@ class PresetsNode(Node):
             self.load_preset()
 
 
+class TableNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TableNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.columns = 2
+        self.rows = 2
+
+        if len(args) > 1:
+            self.rows = any_to_int(args[0])
+            self.columns = any_to_int(args[1])
+        kwargs = {'columns': self.columns, 'rows': self.rows}
+        # print(kwargs)
+
+        self.input = self.add_input('array in', widget_type='table', triggers_execution=True, **kwargs)
+        self.set_input = self.add_input('set', callback=self.set)
+        self.get_input = self.add_input('get', callback=self.get)
+        self.output = self.add_output('out')
+
+
+        self.source = [0.0] * (self.columns * self.rows)
+        for i in range(self.rows):
+            for j in range(self.columns):
+                self.source[i * self.columns + j] = i * self.columns + j
+
+    def set(self):
+        incoming = self.set_input()
+        if type(incoming) is list:
+            if len(incoming) == 2:
+                address = incoming[0]
+                if type(address) is list and len(address) == 2:
+                    row = any_to_int(address[0])
+                    column = any_to_int(address[1])
+                    value = incoming[1]
+                    self.set_cell_widget_value(row, column, value)
+            elif len(incoming) == 3:
+                row = any_to_int(incoming[0])
+                column = any_to_int(incoming[1])
+                value = incoming[2]
+                self.set_cell_widget_value(row, column, value)
+
+    def get(self):
+        incoming = self.get_input()
+        if type(incoming) is list:
+            if len(incoming) == 1:
+                address = incoming[0]
+                row = any_to_int(address[0])
+                column = any_to_int(address[1])
+                value = self.get_cell_widget_value(row, column)
+                self.output.send(value)
+            elif len(incoming) == 2:
+                row = any_to_int(incoming[0])
+                column = any_to_int(incoming[1])
+                value = self.get_cell_widget_value(row, column)
+                self.output.send(value)
+
+    def custom_create(self, from_file):
+        for column in range(self.columns):
+            for row in range(self.rows):
+                self.set_cell_widget_value(row, column, self.source[row * self.columns + column])
+
+    def execute(self):
+        incoming = self.input()
+        handled = False
+        t = type(incoming)
+        if t is torch.Tensor:
+            incoming = any_to_list(incoming.flatten())
+            t = list
+        if t is np.ndarray:
+            incoming = any_to_list(incoming.ravel())
+            t = list
+        if t is list:
+            if len(incoming) == self.columns:
+                if len(incoming[0]) == self.rows:
+                    handled = True
+                    for row in range(self.rows):
+                        for column in range(self.columns):
+                            self.set_cell_widget_value(row, column, incoming[row][column])
+            if not handled:
+                if len(incoming) == self.columns * self.rows:
+                    for row in range(self.rows):
+                        for column in range(self.columns):
+                            self.set_cell_widget_value(row, column, incoming[row * self.columns + column])
+
+    def get_cell_tag(self, row, col):
+        return f"cell_{row}_{col}"
+
+    def get_cell_widget_value(self, row, col):
+        target_tag = self.get_cell_tag(row, col)
+        value = dpg.get_value(target_tag)
+        return value
+
+    def set_cell_widget_value(self, row, col, value):
+        if row >= 0 and row < self.rows and col >= 0 and col < self.columns:
+            target_tag = self.get_cell_tag(row, col)
+            dpg.set_value(target_tag, any_to_string(value))
+
+
 class RadioButtonsNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -644,12 +748,11 @@ class ToggleNode(Node):
         if not self.set_reset:
             if self.input.fresh_input:
                 received = self.input.get_received_data()     # so that we can catch 'bang' ?
-                if type(received) == str:
-                    if received == 'bang':
-                        self.value = 1 - self.value
-                        # self.value = not self.value
-                        self.input.set(self.value)
-                elif type(received) == list:
+                if type(received) == str and received == 'bang':
+                    self.value = 1 - self.value
+                    # self.value = not self.value
+                    self.input.set(self.value)
+                elif type(received) == list and len(received) > 1:
                     if type(received[0] == str):
                         if received[0] == 'set':
                             self.value = any_to_int(received[1])
@@ -862,13 +965,19 @@ class ValueNode(Node):
                                         trigger_button=True)
             self.output = self.add_string_output('string out')
 
-        elif label in ['message', 'osc_message', 'list', 'osc_list', 'param_message', 'param_list']:
+        elif label in ['message', 'osc_message', 'param_message']:
+            widget_type = 'text_input'
+            self.input = self.add_input('###text in', triggers_execution=True, widget_type=widget_type,
+                                              widget_uuid=self.value, widget_width=widget_width,
+                                              trigger_button=True)
+            self.output = self.add_output('message out')
+
+        elif label in ['list', 'osc_list', 'param_list']:
             widget_type = 'text_input'
             self.input = self.add_input('###text in', triggers_execution=True, widget_type=widget_type,
                                               widget_uuid=self.value, widget_width=widget_width,
                                               trigger_button=True)
             self.output = self.add_list_output('list out')
-
         elif label in ['text', 'param_text']:
             widget_type = 'text_editor'
             self.input = self.add_string_input('###text in', triggers_execution=True, widget_type=widget_type,
@@ -1031,16 +1140,11 @@ class ValueNode(Node):
             if t == str:
                 if self.label != 'string':
                     in_data, _, types = string_to_hybrid_list(in_data)
-                    # if len(in_data) == 1:
-                    #     in_data = in_data[0]
-                    #     t = type(in_data)
-                    # else:
                     t = list
                 else:
                     display_data = in_data
                     self.input.widget.set(display_data, propagate=False)
                     output_data = display_data
-                # value = in_data.split(' ')
             if t == list:
                 if len(in_data) == 1:
                     in_data = in_data[0]
@@ -1106,11 +1210,18 @@ class ValueNode(Node):
                         display_data = any_to_float(display_data)
                         self.input.widget.set(display_data, propagate=False)
                         output_data = display_data
-                    if self.input.widget.widget in ['drag_int', 'input_int', 'slider_int', 'knob_int']:
+                    elif self.input.widget.widget in ['drag_int', 'input_int', 'slider_int', 'knob_int']:
                         display_data = in_data
                         display_data = any_to_int(display_data)
                         self.input.widget.set(display_data, propagate=False)
                         output_data = display_data
+                    elif self.input.widget.widget in ['text_input', 'text_editor']:
+                        display_data = any_to_string(in_data)
+                        self.input.widget.set(display_data, propagate=False)
+                        if self.label == 'string':
+                            output_data = display_data
+                        elif self.label in ['list', 'message']:
+                            output_data = any_to_list(in_data)
             else:
                 if self.input.widget.widget in ['text_input', 'text_editor']:
                     if t == np.ndarray:
@@ -1173,6 +1284,10 @@ class ValueNode(Node):
             if self.input.widget.widget == 'slider_float':
                 if self.power() != 1.0:
                     output_data = pow(output_data, self.power())
+            elif self.label == 'message':
+                if type(output_data) == list:
+                    if len(output_data) == 1:
+                        output_data = output_data[0]
             self.do_send(output_data)
 
     def update(self, propagate=True):

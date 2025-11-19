@@ -283,18 +283,34 @@ class NodeOutput:
                 except Exception as e:
                     pass
             if not no_trigger:
-                for child in self._children: # we want to be able to step debug...
-                    child.node.active_input = child
-                    if Node.app.trace:
-                        if child.triggers_execution or child.callback is not None:
-                            print(Node.app.trace_indent, end='')
-                            if child.triggers_execution:
-                                print('node \'' +child.node.label + '\' execute')
-                            else:
-                                print('node', child.node.label, 'input', child.get_label(), 'callback')
-                    child.trigger()
-                    child.node.active_input = None
+                for child in self._children: # we want to be able to step debug...dialog
+                    self.send_to_one_child(child)
 
+    def send_to_one_child(self, child: 'NodeInput') -> None:
+        child.node.active_input = child
+        if Node.app.trace:
+            if child.triggers_execution or child.callback is not None:
+                print(Node.app.trace_indent, end='')
+                if child.triggers_execution:
+                    print('node \'' + child.node.label + '\' execute')
+                else:
+                    print('node', child.node.label, 'input', child.get_label(), 'callback')
+        child.trigger()
+        child.node.active_input = None
+
+    # would be called to make a step. App must record the node, output and which_child for next step
+    # if returns -1, then step has to know how to move to next bit of code that causes output.
+    # maybe just suspend the main thread? and continue on step to next output point
+    def step_output(self, which_child) -> int:
+        if which_child < len(self._children):
+            child = self._children[which_child]
+            self.send_to_one_child(child)
+            which_child += 1
+            if which_child >= len(self._children):
+                return -1
+            return which_child
+        else:
+            return -1
 
     def create(self, parent: int) -> None:
         if self.pos is not None:
@@ -380,10 +396,10 @@ class NodeListOutput(NodeOutput):
     def send(self, data: Optional[Any] = None) -> None:
         if data is not None:
             list_data = any_to_list(data)
-            if len(list_data) == 1 and type(data) is str:
-                super().send(data)
-            else:
-                super().send(list_data)
+            # if len(list_data) == 1 and type(data) is str:
+            #     super().send(data)
+            # else:
+            super().send(list_data)
         else:
             super().send()
 
@@ -499,11 +515,11 @@ class NodeDisplay:
 
 
 class NodeProperty:
-    def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
+    def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, **kwargs):
         self.label = label
         if uuid == None:
             self.uuid = dpg.generate_uuid()
-        self.widget = PropertyWidget(label, uuid, node=node, widget_type=widget_type, width=width, triggers_execution=triggers_execution, trigger_button=trigger_button, default_value=default_value, min=min, max=max)
+        self.widget = PropertyWidget(label, uuid, node=node, widget_type=widget_type, width=width, triggers_execution=triggers_execution, trigger_button=trigger_button, default_value=default_value, min=min, max=max, **kwargs)
         self.callback = None
         self.user_data = None
         self.node_attribute = None
@@ -596,7 +612,7 @@ class NodeProperty:
 
 
 class PropertyWidget:
-    def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
+    def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, **kwargs):
         self._label = label
         if uuid is None:
             self.uuid = dpg.generate_uuid()
@@ -618,6 +634,14 @@ class PropertyWidget:
         self.tag = self.uuid
         self.horizontal = False
         self.input = None
+        self.rows = 1
+        self.columns = 1
+
+        if 'rows' in kwargs:
+            self.rows = kwargs['rows']
+        if 'columns' in kwargs:
+            self.columns = kwargs['columns']
+
         if widget_type == 'drag_float':
             self.speed = 0.01
         else:
@@ -675,6 +699,7 @@ class PropertyWidget:
             dpg.bind_item_theme(self.uuid, self.active_theme)
 
     def create(self) -> None:
+        # add vector (drag_float_vector)
         if self.widget in ['drag_float', 'slider_float', 'input_float', 'knob_float']:
             if self.default_value is None:
                 self.default_value = 0.0
@@ -802,12 +827,22 @@ class PropertyWidget:
                 dpg.add_spacer(label='', height=13)
             elif self.widget == 'label':
                 dpg.add_text(self._label, tag=self.uuid)
-            if self.widget in ['checkbox', 'radio_group', 'button', 'combo', 'color_picker']:
+            elif self.widget == 'table':
+                # table = dpg.add_table(label=self._label, tag=self.uuid, user_data=self.node)
+                with dpg.table(tag="table", header_row=False, width=300) as selectablerows:
+                    for i in range(self.columns):
+                        dpg.add_table_column()
+                    for i in range(self.rows):
+                        with dpg.table_row():
+                            for j in range(self.columns):
+                                dpg.add_text('0', tag = f"cell_{i}_{j}")
+            if self.widget == 'table':
+                pass
+            elif self.widget in ['checkbox', 'radio_group', 'button', 'combo', 'color_picker']:
                 dpg.set_item_callback(self.uuid, callback=self.clickable_changed)
             elif self.widget not in ['spacer', 'label']:
                 dpg.set_item_user_data(self.uuid, user_data=self)
                 dpg.set_item_callback(self.uuid, callback=lambda s, a, u: self.value_changed(a))
-
             if self.widget_has_trigger:
                 if self.trigger_callback is not None:
                     self.trigger_widget = dpg.add_button(label='', width=14, callback=self.trigger_callback)
@@ -1094,7 +1129,7 @@ class NodeInput:
     _pin_active_bang_theme = None
     _pin_theme_created = False
 
-    def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
+    def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, **kwargs):
         if not self._pin_theme_created:
             self.create_pin_themes()
         self._label = label
@@ -1125,7 +1160,7 @@ class NodeInput:
         self.widget_has_trigger = trigger_button
         self.trigger_widget = None
         if widget_type:
-            self.widget = PropertyWidget(label, uuid=widget_uuid, node=node, widget_type=widget_type, width=widget_width, triggers_execution=triggers_execution, trigger_button=trigger_button, default_value=default_value, min=min, max=max)
+            self.widget = PropertyWidget(label, uuid=widget_uuid, node=node, widget_type=widget_type, width=widget_width, triggers_execution=triggers_execution, trigger_button=trigger_button, default_value=default_value, min=min, max=max, **kwargs)
             self.widget.input = self
         self.callback = None
         self.trigger_callback = None
@@ -1332,6 +1367,9 @@ class NodeInput:
                     self.callback()
                 self.received_bang = False
                 self.node.active_input = None
+        else:
+            self._data = data
+            self.fresh_input = True
         self.received_bang = False
         # if Node.app.trace:
         #     Node.app.decrement_trace_indent()
@@ -1929,8 +1967,10 @@ class Node:
                  trigger_button: bool = False, default_value: Any = None,
                  min: Optional[float] = None, max: Optional[float] = None,
                  callback: Optional[Callable] = None,
-                 trigger_callback: Optional[Callable] = None) -> 'NodeInput':
-        new_input = NodeInput(label, uuid, self, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
+                 trigger_callback: Optional[Callable] = None,
+                 **kwargs) -> 'NodeInput':
+        # print('add_input()', kwargs)
+        new_input = NodeInput(label, uuid, self, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max, **kwargs)
         self.install_input(new_input, callback=callback, trigger_callback=trigger_callback)
         return new_input
 
@@ -2595,10 +2635,8 @@ class PatcherNode(Node):
             s, t = decode_arg(args, 0)
             if t == str:
                 self.patcher_name = s
-                # print('patcher name', s)
         self.home_editor = self.app.get_current_editor()
         self.home_editor_index = self.app.current_node_editor
-        # print('init', self.patcher_name, self.home_editor)
         self.patch_editor = None
         text_size = dpg.get_text_size(text=self.patcher_name)
         if text_size is None:
@@ -2714,15 +2752,11 @@ class PatcherNode(Node):
 
     def custom_create(self, from_file: bool) -> None:
         if not from_file:
-            # hold_current_patcher = self.app.get_current_editor()
             self.patch_editor = self.app.add_node_editor()
             self.patch_editor.set_name(self.patcher_name)
             self.app.set_tab_title(len(self.app.node_editors) - 1, self.patcher_name)
 
-            # self.home_editor.add_subpatch(self.patch_editor)
             self.connect()
-            # self.app.current_node_editor = hold_current_patcher
-            # self.app.select_editor_tab(self.app.current_node_editor)
 
         # note that this happens before custom load setup... so 'self.subpatcher_loaded_uuid' is not yet valid
         # self.patch_editor = self.app.find_orphaned_subpatch(self.patcher_name, self.subpatcher_loaded_uuid)
@@ -3143,269 +3177,13 @@ class PlaceholderArgsNode(Node):
                 else:
                     Node.app.create_node_by_name(new_node_args[0], self, )
 
-# class PlaceholderNode(Node):
-#     node_list: List[str] = []
-#
-#     @staticmethod
-#     def factory(name: str, data: Any, args: Optional[List[str]] = None) -> 'PlaceholderNode':
-#         node = PlaceholderNode('New Node', data, args)
-#         return node
-#
-#     def __init__(self, label: str, data: Any, args: Optional[List[str]]) -> None:
-#         super().__init__(label, data, args)
-#         self.filtered_list: List[str] = []
-#         self.name_property = self.add_property(label='##node_name', widget_type='text_input', width=180)
-#         self.static_name = self.add_property(label='##static_name', widget_type='label', width=180)
-#         self.args_property = self.add_property(label='args', widget_type='text_input', width=180)
-#         if len(self.node_list) == 0:
-#             self.node_list = self.app.node_factory_container.get_node_list()
-#         self.variable_list = self.app.get_variable_list()
-#         self.patcher_list = self.app.patchers
-#         self.action_list = list(self.app.actions.keys())
-#         self.node_list_box = self.add_property('###options', widget_type='list_box', width=180)
-#         self.list_box_arrowed: bool = False
-#         self.current_name: str = ''
-#         self.arg_mode_width = 0
-#         self.arg_mode_width = 120
-#
-#     def custom_create(self, from_file: bool) -> None:
-#         dpg.configure_item(self.args_property.widget.uuid, show=False, on_enter=False)
-#         dpg.configure_item(self.static_name.widget.uuid, show=False)
-#         dpg.configure_item(self.node_list_box.widget.uuid, show=False)
-#
-#     def calc_fuzz(self, test: str, node_name: str) -> float:
-#         ratio = fuzz.partial_ratio(node_name.lower(), test.lower())
-#         full_ratio = fuzz.ratio(node_name.lower(), test.lower())
-#
-#         if ratio == 100:
-#             test_len = len(test)
-#             node_len = len(node_name)
-#             if test_len > node_len:
-#                 if node_name[:node_len] != test[:node_len]:
-#                     ratio = (full_ratio * 2 + ratio) / 3
-#             else:
-#                 if node_name[:test_len] != test[:test_len]:
-#                     ratio = (full_ratio * 2 + ratio) / 3
-#         len_ratio = len(test) / len(node_name)
-#
-#         if len_ratio < 1:
-#             len_ratio = pow(len_ratio, 4)
-#         len_ratio = len_ratio * .5 + 0.5
-#         final_ratio = (ratio * (1 - len_ratio) + full_ratio * len_ratio)
-#         return final_ratio
-#
-#     def fuzzy_score(self, test: str) -> None:
-#         scores: Dict[str, float] = {}
-#         for index, node_name in enumerate(self.node_list):
-#             final_ratio = self.calc_fuzz(test, node_name)
-#             scores[node_name] = final_ratio
-#
-#         for index, variable_name in enumerate(self.variable_list):
-#             final_ratio = self.calc_fuzz(test, variable_name)
-#             scores[variable_name] = final_ratio
-#
-#         for index, patcher_name in enumerate(self.patcher_list):
-#             final_ratio = self.calc_fuzz(test, patcher_name)
-#             scores[patcher_name] = final_ratio
-#
-#         for index, action_name in enumerate(self.action_list):
-#             final_ratio = self.calc_fuzz(test, action_name)
-#             scores[action_name] = final_ratio
-#
-#         sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-#         self.filtered_list = []
-#         for index, item in enumerate(sorted_scores):
-#             if item[1] == 100:
-#                 self.filtered_list.append(item[0])
-#             elif item[1] > 20 and len(self.filtered_list) < 10:
-#                 self.filtered_list.append(item[0])
-#
-#     def increment_widget(self, widget: PropertyWidget) -> None:
-#         filter_name = dpg.get_value(self.node_list_box.widget.uuid)
-#         if filter_name in self.filtered_list:
-#             index = self.filtered_list.index(filter_name)
-#             index -= 1
-#             if index >= 0:
-#                 self.list_box_arrowed = True
-#                 filter_name = self.filtered_list[index]
-#                 self.node_list_box.set(filter_name)
-#
-#     def decrement_widget(self, widget: PropertyWidget) -> None:
-#         filter_name = dpg.get_value(self.node_list_box.widget.uuid)
-#         if filter_name in self.filtered_list:
-#             index = self.filtered_list.index(filter_name)
-#             index += 1
-#             if index < len(self.filtered_list):
-#                 self.list_box_arrowed = True
-#                 filter_name = self.filtered_list[index]
-#                 self.node_list_box.set(filter_name)
-#
-#     def prompt_for_args(self) -> None:
-#         filter_name = dpg.get_value(self.name_property.widget.uuid)
-#         if len(filter_name) > 0:
-#             selection = filter_name
-#             dpg.focus_item(self.node_list_box.widget.uuid)
-#             dpg.configure_item(self.name_property.widget.uuid, enabled=False)
-#             dpg.configure_item(self.node_list_box.widget.uuid, items=[], show=False)
-#             dpg.set_item_width(self.node_list_box.widget.uuid, 0)
-#             dpg.configure_item(self.name_property.widget.uuid, show=False)
-#             dpg.set_item_width(self.name_property.widget.uuid, 0)
-#             dpg.configure_item(self.static_name.widget.uuid, show=True)
-#             dpg.configure_item(self.args_property.widget.uuid, show=True, on_enter=True)
-#             dpg.focus_item(self.args_property.widget.uuid)
-#             self.static_name.set(selection)
-#             self.add_frame_task()
-#
-#     def on_edit(self, widget: PropertyWidget) -> None:
-#         if widget == self.static_name:
-#             return
-#
-#         if widget == self.name_property.widget and len(self.node_list) > 0:
-#             self.list_box_arrowed = False
-#             self.filtered_list = []
-#             filter_name = dpg.get_value(self.name_property.widget.uuid)
-#
-#             if len(filter_name) > 0:
-#                 dpg.configure_item(self.node_list_box.widget.uuid, show=True)
-#             if len(filter_name) > 0 and filter_name[-1] == ' ':
-#                 selection = dpg.get_value(self.node_list_box.widget.uuid)
-#                 dpg.focus_item(self.node_list_box.widget.uuid)
-#                 dpg.configure_item(self.name_property.widget.uuid, enabled=False)
-#                 dpg.configure_item(self.name_property.widget.uuid, show=False)
-#
-#                 dpg.configure_item(self.node_list_box.widget.uuid, items=[], show=False)
-#                 dpg.configure_item(self.static_name.widget.uuid, show=True)
-#                 dpg.configure_item(self.args_property.widget.uuid, show=True, on_enter=True)
-#                 self.static_name.set(selection)
-#                 # Node.app.active_widget = self.args_property.widget.uuid
-#                 dpg.focus_item(self.args_property.widget.uuid)
-#             else:
-#                 f = filter_name.lower()
-#                 self.fuzzy_score(f)
-#                 dpg.configure_item(self.node_list_box.widget.uuid, items=self.filtered_list)
-#                 if len(self.filtered_list) > 0:
-#                     dpg.set_value(self.node_list_box.widget.uuid, self.filtered_list[0])
-#
-#         elif widget == self.node_list_box.widget:
-#             selection = dpg.get_value(self.node_list_box.widget.uuid)
-#             dpg.focus_item(self.node_list_box.widget.uuid)
-#             dpg.configure_item(self.name_property.widget.uuid, enabled=False)
-#             dpg.configure_item(self.static_name.widget.uuid, show=True)
-#             dpg.configure_item(self.args_property.widget.uuid, show=True, on_enter=True)
-#             self.static_name.set(selection)
-#             dpg.focus_item(self.args_property.widget.uuid)
-#             dpg.configure_item(self.node_list_box.widget.uuid, items=[], show=False)
-#             dpg.configure_item(self.name_property.widget.uuid, show=False)
-#
-#     def frame_task(self):
-#         name_width = dpg.get_item_width(self.static_name.widget.uuid)
-#         box_width = dpg.get_item_width(self.node_list_box.widget.uuid)
-#         arg_width = dpg.get_item_width(self.args_property.widget.uuid)
-#
-#
-#     def on_deactivate(self, widget: PropertyWidget) -> None:
-#         if widget in [self.args_property.widget, self.name_property.widget]:
-#             if dpg.is_item_hovered(self.node_list_box.widget.uuid) or dpg.is_item_clicked(self.node_list_box.widget.uuid):
-#                 pass
-#             else:
-#                 self.execute()
-#         elif widget == self.node_list_box.widget:
-#             self.execute()
-#
-#     def execute(self) -> None:
-#         self.remove_frame_tasks()
-#         if dpg.is_item_active(self.name_property.widget.uuid):
-#             print('execute', self.name_property())
-#         else:
-#             selection_name = dpg.get_value(self.node_list_box.widget.uuid)
-#             new_node_name = dpg.get_value(self.name_property.widget.uuid)
-#             arg_string = dpg.get_value(self.args_property.widget.uuid)
-#             new_node_args: List[str] = []
-#             if len(arg_string) > 0:
-#                 args = arg_string.split(' ')
-#                 new_node_args = [selection_name] + args
-#             else:
-#                 new_node_args = [selection_name]
-#             node_model = None
-#             found = False
-#             v = None
-#             action = False
-#             if new_node_args[0] in self.node_list:
-#                 found = True
-#             # elif selection_name in self.node_list:
-#             #     new_node_args[0] = selection_name
-#             #     found = True
-#             if found:
-#                 if len(new_node_args) > 1:
-#                     Node.app.create_node_by_name(new_node_args[0], self, new_node_args[1:])
-#                 else:
-#                     Node.app.create_node_by_name(new_node_args[0], self, )
-#                 return
-#             elif new_node_args[0] in self.variable_list:
-#                 v = self.app.find_variable(new_node_args[0])
-#                 if v is not None:
-#                     found = True
-#             elif selection_name in self.variable_list:
-#                 new_node_args[0] = selection_name
-#                 v = self.app.find_variable(new_node_args[0])
-#                 if v is not None:
-#                     found = True
-#             elif selection_name in self.action_list:
-#                 new_node_args[0] = selection_name
-#                 v = self.app.find_action(new_node_args[0])
-#                 if v is not None:
-#                     found = True
-#                     action = True
-#             if found:
-#                 additional = []
-#                 if len(new_node_args) > 1:
-#                     additional = new_node_args[1:]
-#                 found = False
-#
-#                 if not action:
-#                     t = type(v.value)
-#                     if t == int:
-#                         new_node_args = ['int', new_node_args[0]]
-#                         found = True
-#                     elif t == float:
-#                         new_node_args = ['float', new_node_args[0]]
-#                         found = True
-#                     elif t == str:
-#                         new_node_args = ['string', new_node_args[0]]
-#                         found = True
-#                     elif t == bool:
-#                         new_node_args = ['toggle', new_node_args[0]]
-#                         found = True
-#                     elif t == list:
-#                         new_node_args = ['message', new_node_args[0]]
-#                         found = True
-#                 else:
-#                     new_node_args = ['button', new_node_args[0]]
-#                     found = True
-#                 if found:
-#                     if len(additional) > 0:
-#                         new_node_args += additional
-#                     if len(new_node_args) > 1:
-#                         Node.app.create_node_by_name(new_node_args[0], self, new_node_args[1:])
-#                     else:
-#                         Node.app.create_node_by_name(new_node_args[0], self, )
-#             else:
-#                 if new_node_args[0] in self.patcher_list:
-#                     found = True
-#                 elif selection_name in self.patcher_list:
-#                     new_node_args[0] = selection_name
-#                     found = True
-#                 if found:
-#                     hold_node_editor_index = Node.app.current_node_editor
-#                     Node.app.create_node_by_name('patcher', self, new_node_args[:1])
-#                     Node.app.current_node_editor = len(Node.app.node_editors) - 1
-#                     Node.app.load_from_file('dpg_system/patch_library/' + new_node_args[0] + '.json')
-#                     Node.app.current_node_editor = hold_node_editor_index
-#                     return
 
 def dialog_cancel_callback(sender, app_data):
-    if sender is not None:
-        dpg.delete_item(sender)
+    try:
+        if sender is not None:
+            dpg.delete_item(sender)
+    except Exception as e:
+        print(e)
     Node.app.active_widget = -1
 
 class LoadDialog:
@@ -3421,13 +3199,16 @@ class LoadDialog:
                 dpg.add_file_extension(extension)
 
     def load_callback(self, sender, app_data):
-        if app_data is not None and 'file_path_name' in app_data:
-            load_path = app_data['file_path_name']
-            self.callback(load_path)
-        else:
-            print('no file chosen')
-        if sender is not None:
-            dpg.delete_item(sender)
+        try:
+            if app_data is not None and 'file_path_name' in app_data:
+                load_path = app_data['file_path_name']
+                self.callback(load_path)
+            else:
+                print('no file chosen')
+            if sender is not None:
+                dpg.delete_item(sender)
+        except Exception as e:
+            print(e)
         Node.app.active_widget = -1
 
 
@@ -3444,12 +3225,15 @@ class SaveDialog:
                 dpg.add_file_extension(extension)
 
     def save_callback(self, sender, app_data):
-        if app_data is not None and 'file_path_name' in app_data:
-            save_path = app_data['file_path_name']
-            self.callback(save_path)
-        else:
-            print('no file chosen')
-        if sender is not None:
-            dpg.delete_item(sender)
+        try:
+            if app_data is not None and 'file_path_name' in app_data:
+                save_path = app_data['file_path_name']
+                self.callback(save_path)
+            else:
+                print('no file chosen')
+            if sender is not None:
+                dpg.delete_item(sender)
+        except Exception as e:
+            print(e)
         Node.app.active_widget = -1
 

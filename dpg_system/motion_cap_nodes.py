@@ -343,11 +343,6 @@ class MoCapTakeNode(MoCapNode):
         self.start_stop_streaming()
 
 
-def take_cancel_callback(sender, app_data):
-    if sender is not None:
-        dpg.delete_item(sender)
-    Node.app.active_widget = -1
-
 
 class OpenTakeNode(MoCapNode):
     @staticmethod
@@ -476,7 +471,7 @@ class OpenTakeNode(MoCapNode):
         if not self.streaming and self.frame_count > 0:
             self.last_frame_out = -1
             self.current_frame = self.speed() * -1.0
-            print('play_button_clicked', self.current_frame)
+            # print('play_button_clicked', self.current_frame)
             self.add_frame_task()
             self.streaming = True
             self.play_pause_button.set_label('pause')

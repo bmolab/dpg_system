@@ -184,12 +184,6 @@ def widget_clicked(source, data, user_data):
 load_path = None
 save_path = None
 
-def cancel_callback(sender, app_data):
-    if sender is not None:
-        dpg.delete_item(sender)
-    Node.app.active_widget = -1
-
-
 def load_patches_callback(sender, app_data):
     global load_path
 
@@ -210,10 +204,6 @@ def save_file_callback(sender, app_data):
         save_path = app_data['file_path_name']
         if save_path != '':
             Node.app.save_internal(save_path)
-            # Node.app.save_patch(save_path)
-            # if Node.app.saving_to_lib:
-            #     Node.app.register_patcher(Node.app.patches_name)
-            #     Node.app.saving_to_lib = False
     else:
         print('no file chosen')
     if sender is not None:
@@ -1577,8 +1567,6 @@ class App:
         try:
             self.fresh_patcher = fresh_patcher
             LoadDialog(self, default_path='patches', callback=self.load_patches_callback, extensions=['.json'])
-            # with dpg.file_dialog(modal=True, default_path='patches', directory_selector=False, show=True, height=400, width=800, callback=load_patches_callback, cancel_callback=cancel_callback, tag="file_dialog_id"):
-            #     dpg.add_file_extension(".json")
         except Exception as e:
             print('error loading file')
         # self.active_widget = -1
@@ -1593,9 +1581,6 @@ class App:
         self.active_widget = 1
         self.fresh_patcher = True
         LoadDialog(self, default_path='examples', callback=self.load_patches_callback, extensions=['.json'])
-        # with dpg.file_dialog(modal=True, default_path='examples', directory_selector=False, show=True, height=400, width=800, callback=load_patches_callback,
-        #                      cancel_callback=cancel_callback, tag="file_dialog_id"):
-        #     dpg.add_file_extension(".json")
 
     def save_as_nodes(self):
         self.save('patches')
@@ -1672,9 +1657,6 @@ class App:
 
     def save(self, path='', default_directory='patches'):
         SaveDialog(self, default_path='patches', callback=self.save_file_callback, extensions=['.json'])
-        # self.active_widget = 1
-        # with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, callback=save_file_callback, cancel_callback=cancel_callback, default_path=default_directory, tag="file_dialog_id"):
-        #     dpg.add_file_extension(".json")
 
     def save_file_callback(self, save_path):
         if save_path != '':
@@ -1684,10 +1666,6 @@ class App:
 
     def save_patches(self, path=''):
         SaveDialog(self, default_path='patches', callback=self.save_patches_callback, extensions=['.json'])
-        #
-        # self.active_widget = 1
-        # with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, callback=save_patches_callback, cancel_callback=cancel_callback, tag="file_dialog_id"):
-        #     dpg.add_file_extension(".json")
 
     def save_patches_callback(self, save_path):
         if save_path != '':

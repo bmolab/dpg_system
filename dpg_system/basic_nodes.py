@@ -2431,9 +2431,6 @@ class CollectionNode(Node):
 
     def save_dialog(self):
         SaveDialog(self, callback=self.save_coll_callback, extensions=['json'])
-        # with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, user_data=self, callback=save_coll_callback, cancel_callback=cancel_coll_load_callback,
-        #                      tag="coll_dialog_id"):
-        #     dpg.add_file_extension(".json")
 
     def save_coll_callback(self, save_path):
         if save_path != '':
@@ -3047,7 +3044,6 @@ class StartTraceNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-
         self.add_input('start trace', triggers_execution=True)
         self.enable = self.add_input('enable', widget_type='checkbox')
         self.add_output('pass input')
@@ -3068,7 +3064,6 @@ class EndTraceNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-
         self.add_input('end trace', triggers_execution=True)
         self.add_output('pass input')
 
