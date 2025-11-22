@@ -1,0 +1,485 @@
+{
+    "height": 470,
+    "width": 996,
+    "position": [
+        100,
+        100
+    ],
+    "id": 7852,
+    "name": "radio_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/radio_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 7879,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment arguments: list of menu items",
+            "name": "comment",
+            "id": 7943,
+            "position_x": 493,
+            "position_y": 95,
+            "width": 439,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "arguments: list of radio group items (i.e. 'radio one two three four')",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "large",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "comment": "arguments: list of radio group items (i.e. 'radio one two three four')"
+        },
+        "2": {
+            "init": "comment arguments: list of menu items",
+            "name": "comment",
+            "id": 7954,
+            "position_x": 494,
+            "position_y": 154,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "output: selected item when selected",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "large",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "comment": "output: selected item when selected"
+        },
+        "3": {
+            "init": "select one two three four",
+            "name": "select",
+            "id": 7965,
+            "position_x": 241,
+            "position_y": 108,
+            "width": 45,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "selector 0",
+                    "value": "one",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "selector 1",
+                    "value": "two",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "selector 2",
+                    "value": "three",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "selector 3",
+                    "value": "four",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "output_mode",
+                    "value": "bang",
+                    "value_type": "string"
+                }
+            }
+        },
+        "4": {
+            "name": "b",
+            "id": 8083,
+            "position_x": 307,
+            "position_y": 124,
+            "width": 22,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "message",
+                    "value": "bang",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "height",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "flash_duration",
+                    "value": 0.10000000149011612,
+                    "value_type": "float"
+                }
+            }
+        },
+        "5": {
+            "name": "b",
+            "id": 8141,
+            "position_x": 339,
+            "position_y": 140,
+            "width": 22,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "message",
+                    "value": "bang",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "height",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "flash_duration",
+                    "value": 0.10000000149011612,
+                    "value_type": "float"
+                }
+            }
+        },
+        "6": {
+            "name": "b",
+            "id": 8199,
+            "position_x": 373,
+            "position_y": 156,
+            "width": 22,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "message",
+                    "value": "bang",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "height",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "flash_duration",
+                    "value": 0.10000000149011612,
+                    "value_type": "float"
+                }
+            }
+        },
+        "7": {
+            "name": "b",
+            "id": 8257,
+            "position_x": 409,
+            "position_y": 171,
+            "width": 22,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "message",
+                    "value": "bang",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "height",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "flash_duration",
+                    "value": 0.10000000149011612,
+                    "value_type": "float"
+                }
+            }
+        },
+        "8": {
+            "init": "comment menu",
+            "name": "comment",
+            "id": 8315,
+            "position_x": 46,
+            "position_y": 25,
+            "width": 70,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "radio",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "large",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            },
+            "comment": "radio"
+        },
+        "9": {
+            "init": "comment input: any thing causes output of current selection",
+            "name": "comment",
+            "id": 8326,
+            "position_x": 493,
+            "position_y": 125,
+            "width": 322,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "input: any thing causes output of current selection",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "large",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "comment": "input: any thing causes output of current selection"
+        },
+        "10": {
+            "name": "b",
+            "id": 8337,
+            "position_x": 52,
+            "position_y": 90,
+            "width": 22,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "message",
+                    "value": "bang",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "height",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "flash_duration",
+                    "value": 0.10000000149011612,
+                    "value_type": "float"
+                }
+            }
+        },
+        "11": {
+            "name": "close",
+            "id": 8395,
+            "position_x": 799,
+            "position_y": 189,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "12": {
+            "init": "radio one two three four",
+            "name": "radio",
+            "id": 8440,
+            "position_x": 121,
+            "position_y": 87,
+            "width": 57,
+            "height": 94,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": "one",
+                    "value_type": "string"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 7965,
+            "source_node_name": "select",
+            "source_output_index": 0,
+            "source_output_name": "one",
+            "dest_node": 8083,
+            "dest_node_name": "b",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 7965,
+            "source_node_name": "select",
+            "source_output_index": 1,
+            "source_output_name": "two",
+            "dest_node": 8141,
+            "dest_node_name": "b",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 7965,
+            "source_node_name": "select",
+            "source_output_index": 2,
+            "source_output_name": "three",
+            "dest_node": 8199,
+            "dest_node_name": "b",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 7965,
+            "source_node_name": "select",
+            "source_output_index": 3,
+            "source_output_name": "four",
+            "dest_node": 8257,
+            "dest_node_name": "b",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 8337,
+            "source_node_name": "b",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 8440,
+            "dest_node_name": "radio",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 8440,
+            "source_node_name": "radio",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 7965,
+            "dest_node_name": "select",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

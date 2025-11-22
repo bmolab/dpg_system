@@ -294,15 +294,15 @@ class ClosePatchNode(Node):
         Node.app.close_current_node_editor()
 
     def save_custom(self, container):
-        container['name'] = 'close_patch'
+        container['name'] = 'close'
 
     def load_custom(self, container):
-        dpg.bind_item_theme(self.uuid, CommentNode.comment_theme)
+        dpg.bind_item_theme(self.uuid, ClosePatchNode.theme)
         dpg.configure_item(self.uuid, label='')
 
     def set_custom_visibility(self):
         dpg.configure_item(self.uuid, label='')
-        dpg.bind_item_theme(self.uuid, CommentNode.comment_theme)
+        dpg.bind_item_theme(self.uuid, ClosePatchNode.theme)
 
 
 class SaveNode(Node):

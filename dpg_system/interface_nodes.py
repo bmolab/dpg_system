@@ -1128,6 +1128,7 @@ class NumericValueNode(ValueNode):
         self.format = '%.3f'
         self.min_property = None
         self.max_property = None
+        self.speed_property = None
         self.format_property = None
         super().__init__(label, data, args)
 
@@ -1139,6 +1140,14 @@ class NumericValueNode(ValueNode):
                                                 callback=self.options_changed)
             self.max_property = self.add_option('max', widget_type=w_type, default_value=self.max,
                                                 callback=self.options_changed)
+            if self.widget_type in ['drag_float', 'drag_int', 'input_float', 'input_int']:
+                default_value = 1
+                if self.widget_type == 'drag_float':
+                    default_value = 0.01
+                elif self.widget_type == 'input_float':
+                    default_value = 0.1
+
+                self.speed_property = self.add_option('speed_property', widget_type=w_type, default_value=default_value, callback=self.options_changed)
             self.format_property = self.add_option('format', widget_type='text_input', default_value=self.format,
                                                    callback=self.options_changed)
 
@@ -1159,7 +1168,9 @@ class NumericValueNode(ValueNode):
                     self.input.widget.set_limits(-2000000000, 2000000000)
                 else:
                     self.input.widget.set_limits(-1e15, 1e15)
-
+        if self.speed_property:
+            speed = self.speed_property()
+            self.input.widget.set_speed(speed)
         if self.format_property:
             self.format = self.format_property()
             self.input.widget.set_format(self.format)
@@ -2300,6 +2311,8 @@ class Vector2DNode(Node):
                     if which < self.current_dims[0]:
                         if self.vector_format_input() == 'torch':
                             self.output_vector[which] = torch.tensor(self.component_properties[which]())
+                        elif self.vector_format_input() == 'numpy':
+                            self.output_vector[which] = np.array(self.component_properties[which]())
                         else:
                             self.output_vector[which] = self.component_properties[which]()
                         did_set = True
@@ -2339,6 +2352,8 @@ class PrintNode(Node):
 
     def end_changed(self):
         end = self.end()
+        if end is None:
+            end = '\n'
         print('end len', len(end))
         for i in range(len(end)):
             print(end[i])
@@ -2435,7 +2450,6 @@ class LoadActionNode(Node):
         if not load_bang:
             self.load_action = self.add_property(label='##loadActionString', widget_type='text_input', default_value=message_string, callback=self.action_changed)
         self.output = self.add_output("out")
-        self.add_frame_task()
 
     def action_changed(self):
         action = self.load_action()
@@ -2447,8 +2461,12 @@ class LoadActionNode(Node):
     def frame_task(self):
         if self.first_time:
             self.first_time = False
+            self.first_time = False
             self.remove_frame_tasks()
             self.output.send(self.message)
+
+    def custom_create(self, from_file):
+        self.add_frame_task()
 
     def execute(self):
         self.output.send(self.message)

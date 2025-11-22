@@ -1,0 +1,538 @@
+{
+    "height": 645,
+    "width": 855,
+    "position": [
+        100,
+        100
+    ],
+    "id": 442,
+    "name": "counter_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/counter_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 469,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "name": "counter",
+            "id": 487,
+            "position_x": 201,
+            "position_y": 101,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "count",
+                    "value": 255,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "step",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "2": {
+            "name": "plot",
+            "id": 596,
+            "position_x": 372,
+            "position_y": 36,
+            "width": 308,
+            "height": 108,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 256.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "3": {
+            "init": "select 1",
+            "name": "select",
+            "id": 677,
+            "position_x": 372,
+            "position_y": 157,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "selector 0",
+                    "value": "1",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "output_mode",
+                    "value": "bang",
+                    "value_type": "string"
+                }
+            }
+        },
+        "4": {
+            "name": "counter",
+            "id": 726,
+            "position_x": 434,
+            "position_y": 156,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "count",
+                    "value": 255,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "step",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "5": {
+            "name": "int",
+            "id": 835,
+            "position_x": 587,
+            "position_y": 197,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "large_font",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "6": {
+            "name": "close",
+            "id": 897,
+            "position_x": 738,
+            "position_y": 520,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "7": {
+            "init": "range_counter 20 40",
+            "name": "range_counter",
+            "id": 927,
+            "position_x": 202,
+            "position_y": 343,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "start",
+                    "value": 80,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "end",
+                    "value": 120,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "step",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "8": {
+            "name": "plot",
+            "id": 1057,
+            "position_x": 359,
+            "position_y": 290,
+            "width": 308,
+            "height": 108,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 256.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "9": {
+            "init": "select 1",
+            "name": "select",
+            "id": 1138,
+            "position_x": 358,
+            "position_y": 412,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "selector 0",
+                    "value": "1",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "output_mode",
+                    "value": "bang",
+                    "value_type": "string"
+                }
+            }
+        },
+        "10": {
+            "name": "counter",
+            "id": 1187,
+            "position_x": 420,
+            "position_y": 411,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "count",
+                    "value": 255,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "step",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "11": {
+            "name": "int",
+            "id": 1296,
+            "position_x": 571,
+            "position_y": 453,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 11,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "large_font",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "12": {
+            "name": "tick",
+            "id": 1358,
+            "position_x": 56,
+            "position_y": 88,
+            "width": 33,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 487,
+            "source_node_name": "counter",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 596,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "1": {
+            "source_node": 487,
+            "source_node_name": "counter",
+            "source_output_index": 1,
+            "source_output_name": "carry out",
+            "dest_node": 677,
+            "dest_node_name": "select",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 677,
+            "source_node_name": "select",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 726,
+            "dest_node_name": "counter",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "3": {
+            "source_node": 726,
+            "source_node_name": "counter",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 835,
+            "dest_node_name": "int",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 927,
+            "source_node_name": "range_counter",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 1057,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "5": {
+            "source_node": 927,
+            "source_node_name": "range_counter",
+            "source_output_index": 1,
+            "source_output_name": "carry out",
+            "dest_node": 1138,
+            "dest_node_name": "select",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "6": {
+            "source_node": 1138,
+            "source_node_name": "select",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 1187,
+            "dest_node_name": "counter",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "7": {
+            "source_node": 1187,
+            "source_node_name": "counter",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 1296,
+            "dest_node_name": "int",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "8": {
+            "source_node": 1358,
+            "source_node_name": "tick",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 487,
+            "dest_node_name": "counter",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "9": {
+            "source_node": 1358,
+            "source_node_name": "tick",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 927,
+            "dest_node_name": "range_counter",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        }
+    }
+}

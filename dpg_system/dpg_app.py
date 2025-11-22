@@ -716,6 +716,7 @@ class App:
                 dpg.add_separator()
                 dpg.add_menu_item(label="Save Patch (S)", callback=self.save_nodes)
                 dpg.add_menu_item(label="Save Patch As", callback=self.save_as_nodes)
+                dpg.add_menu_item(label="Save Help Patch As", callback=self.save_as_help)
                 dpg.add_separator()
                 dpg.add_menu_item(label='Set As Default Patch', callback=self.set_as_default_patch)
                 dpg.add_menu_item(label='No Default Patch', callback=self.clear_default_patch)
@@ -1611,6 +1612,9 @@ class App:
     def save_as_nodes(self):
         self.save('patches')
 
+    def save_as_help(self):
+        self.save('dpg_system/help')
+
     def save_internal(self, path):
         self.save_patch(path)
         if self.saving_to_lib:
@@ -1681,8 +1685,8 @@ class App:
             for i in open(filename, "rt"):
                 self.get_current_editor().save(filename)
 
-    def save(self, path='', default_directory='patches'):
-        SaveDialog(self, default_path='patches', callback=self.save_file_callback, extensions=['.json'])
+    def save(self, default_directory='patches'):
+        SaveDialog(self, default_path=default_directory, callback=self.save_file_callback, extensions=['.json'])
 
     def save_file_callback(self, save_path):
         if save_path != '':

@@ -24,13 +24,13 @@ def register_torch_generator_nodes():
 
     Node.app.register_node('t.dist.cauchy', TorchDistributionLocScaleNode.factory)
     Node.app.register_node('t.dist.beta', TorchDistributionAlphaBetaNode.factory)
-    Node.app.register_node('t.dist.fishersnedecor', TorchDistributionFisherSnedecorNode.factory)
+    Node.app.register_node('t.dist.fisher_snedecor', TorchDistributionFisherSnedecorNode.factory)
     Node.app.register_node('t.dist.gamma', TorchDistributionGammaNode.factory)
     Node.app.register_node('t.dist.gumble', TorchDistributionLocScaleNode.factory)
     Node.app.register_node('t.dist.laplace', TorchDistributionLocScaleNode.factory)
     Node.app.register_node('t.dist.kumaraswamy', TorchDistributionAlphaBetaNode.factory)
     Node.app.register_node('t.dist.normal', TorchDistributionLocScaleNode.factory)
-    Node.app.register_node('t.dist.lognormal', TorchDistributionLocScaleNode.factory)
+    Node.app.register_node('t.dist.log_normal', TorchDistributionLocScaleNode.factory)
     Node.app.register_node('t.dist.pareto', TorchDistributionParetoNode.factory)
     Node.app.register_node('t.dist.uniform', TorchDistributionUniformNode.factory)
     Node.app.register_node('t.dist.von_mises', TorchDistributionVonMisesNode.factory)
@@ -58,7 +58,7 @@ class TorchGeneratorNode(TorchDeviceDtypeNode):
         if len(self.shape) == 0:
             self.shape = [1]
 
-        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+        self.input = self.add_input('###input', widget_type='button', widget_width=16, triggers_execution=True)
         self.shape_input = self.add_input('shape', widget_type='text_input', default_value=str(self.shape),
                                           callback=self.shape_changed)
 
@@ -186,7 +186,7 @@ class TorchGeneratorNode_o(TorchDeviceDtypeNode):
         if len(self.shape) == 0:
             self.shape = [1]
 
-        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+        self.input = self.add_input('###input', widget_type='button', widget_width=16, triggers_execution=True)
 
         self.shape_input = self.add_input('shape', widget_type='text_input', default_value=str(self.shape), callback=self.shape_changed)
         # self.shape_properties = []
@@ -280,9 +280,10 @@ class TorchDistributionNode(TorchNode):
         if len(self.shape) == 0:
             self.shape = [1]
 
-        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+        self.input = self.add_input('###input', widget_type='button', widget_width=16, triggers_execution=True)
         self.add_shape_input()
         self.distribution = None
+        self.help_file_name = 't.dist_help'
 
     def add_shape_input(self):
         self.shape_input = self.add_input('shape', widget_type='text_input', default_value=str(self.shape),
@@ -414,15 +415,24 @@ class TorchDistributionWithRateNode(TorchDistributionNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.add_param_1('rate', default_value=1.0, min=0.000001)
+        if self.label == 't.dist.half_cauchy':
+            self.add_param_1('scale', default_value=1.0, min=0.000001)
+        else:
+            self.add_param_1('rate', default_value=1.0, min=0.000001)
         self.dist = torch.distributions.half_cauchy.HalfCauchy
         if self.label in self.dist_dict:
             self.dist = self.dist_dict[self.label]
-        self.distribution = self.dist(scale=1.0)
+        if self.label == 't.dist.half_cauchy':
+            self.distribution = self.dist(scale=1.0)
+        else:
+            self.distribution = self.dist(rate=1.0)
         self.output = self.add_output('random tensor')
 
     def params_changed(self):
-        self.distribution = self.dist(scale=self.param_1())
+        if self.label == 't.dist.half_cauchy':
+            self.distribution = self.dist(scale=1.0)
+        else:
+            self.distribution = self.dist(rate=1.0)
 
 
 class TorchDistributionHalfNormalNode(TorchDistributionNode):
@@ -636,7 +646,7 @@ class TorchFullNode(TorchDeviceDtypeNode):
         if len(self.shape) == 0:
             self.shape = [1]
 
-        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+        self.input = self.add_input('###input', widget_type='button', widget_width=16, triggers_execution=True)
         self.value = 1.0
         self.value_input = self.add_input('value', widget_type='drag_float', default_value=self.value, callback=self.val_changed)
         self.shape_properties = []
@@ -770,7 +780,7 @@ class TorchLinSpaceNode(TorchDeviceDtypeNode):
             if t in [float, int]:
                 self.steps = any_to_int(d)
 
-        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+        self.input = self.add_input('###input', widget_type='button', widget_width=16, triggers_execution=True)
         self.start_property = self.add_property('start', widget_type='drag_float', default_value=self.start)
         self.stop_property = self.add_property('stop', widget_type='drag_float', default_value=self.stop)
         self.steps_property = self.add_property('steps', widget_type='drag_int', default_value=self.steps)
@@ -821,7 +831,7 @@ class TorchRangeNode(TorchDeviceDtypeNode):
             if t in [float, int]:
                 self.step = any_to_float(d)
 
-        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+        self.input = self.add_input('###input', widget_type='button', widget_width=16, triggers_execution=True)
         self.start_property = self.add_property('start', widget_type='drag_float', default_value=self.start)
         self.stop_property = self.add_property('stop', widget_type='drag_float', default_value=self.stop)
         self.step_property = self.add_property('step', widget_type='drag_float', default_value=self.step)
@@ -854,7 +864,7 @@ class TorchEyeNode(TorchDeviceDtypeNode):
             self.n = any_to_int(args[0])
         else:
             self.n = 4
-        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+        self.input = self.add_input('###input', widget_type='button', widget_width=16, triggers_execution=True)
         self.n_input = self.add_input('n', widget_type='input_int', default_value=self.n, callback=self.n_changed)
 
         self.setup_dtype_device_grad(args)

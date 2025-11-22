@@ -1,0 +1,1505 @@
+{
+    "height": 998,
+    "width": 1162,
+    "position": [
+        100,
+        100
+    ],
+    "id": 5254,
+    "name": "t.window_help.json",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.window_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 5281,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "name": "t.window.hamming",
+            "id": 5299,
+            "position_x": 19,
+            "position_y": 584,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "type",
+                    "value": "hamming",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "m",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "sym",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "6": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "2": {
+            "name": "plot",
+            "id": 5510,
+            "position_x": 217,
+            "position_y": 613,
+            "width": 264,
+            "height": 108,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 256.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "3": {
+            "name": "t.window.cosine",
+            "id": 5591,
+            "position_x": 19,
+            "position_y": 416,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "type",
+                    "value": "cosine",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "m",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "sym",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "6": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "name": "t.window.hann",
+            "id": 5802,
+            "position_x": 19,
+            "position_y": 752,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "type",
+                    "value": "hann",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "m",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "sym",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "6": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "5": {
+            "name": "t.window.nuttall",
+            "id": 6013,
+            "position_x": 533,
+            "position_y": 21,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "type",
+                    "value": "nuttall",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "m",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "sym",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "6": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "6": {
+            "name": "t.window.blackman",
+            "id": 6224,
+            "position_x": 19,
+            "position_y": 247,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "type",
+                    "value": "blackman",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "m",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "sym",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "6": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "7": {
+            "name": "t.window.bartlett",
+            "id": 6435,
+            "position_x": 19,
+            "position_y": 80,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "type",
+                    "value": "bartlett",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "m",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "sym",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "6": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "8": {
+            "name": "plot",
+            "id": 6646,
+            "position_x": 217,
+            "position_y": 436,
+            "width": 264,
+            "height": 108,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 256.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "9": {
+            "name": "plot",
+            "id": 6727,
+            "position_x": 214,
+            "position_y": 781,
+            "width": 264,
+            "height": 108,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 256.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "10": {
+            "name": "plot",
+            "id": 6808,
+            "position_x": 217,
+            "position_y": 82,
+            "width": 264,
+            "height": 108,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 256.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "11": {
+            "name": "plot",
+            "id": 6889,
+            "position_x": 217,
+            "position_y": 259,
+            "width": 264,
+            "height": 108,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 256.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "12": {
+            "name": "plot",
+            "id": 6970,
+            "position_x": 734,
+            "position_y": 77,
+            "width": 264,
+            "height": 108,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 256.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "13": {
+            "name": "t.window.gaussian",
+            "id": 7051,
+            "position_x": 537,
+            "position_y": 187,
+            "width": 163,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "type",
+                    "value": "gaussian",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "m",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "std",
+                    "value": 20.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "sym",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "6": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "14": {
+            "name": "plot",
+            "id": 7262,
+            "position_x": 734,
+            "position_y": 253,
+            "width": 264,
+            "height": 108,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 256.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "15": {
+            "name": "t.window.exponential",
+            "id": 7343,
+            "position_x": 541,
+            "position_y": 740,
+            "width": 163,
+            "height": 154,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "type",
+                    "value": "exponential",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "m",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "center",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "tau",
+                    "value": 24.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "sym",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "6": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "16": {
+            "name": "plot",
+            "id": 7554,
+            "position_x": 734,
+            "position_y": 783,
+            "width": 264,
+            "height": 108,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 256.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "17": {
+            "name": "t.window.general_hamming",
+            "id": 7635,
+            "position_x": 536,
+            "position_y": 370,
+            "width": 163,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "type",
+                    "value": "general_hamming",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "m",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "alpha",
+                    "value": 0.5400000214576721,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "sym",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "6": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "18": {
+            "name": "plot",
+            "id": 7846,
+            "position_x": 734,
+            "position_y": 430,
+            "width": 264,
+            "height": 108,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 256.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "19": {
+            "name": "t.window.kaiser",
+            "id": 7927,
+            "position_x": 540,
+            "position_y": 554,
+            "width": 163,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "type",
+                    "value": "kaiser",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "m",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "beta",
+                    "value": 12.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "sym",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "6": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "20": {
+            "name": "plot",
+            "id": 8138,
+            "position_x": 734,
+            "position_y": 606,
+            "width": 264,
+            "height": 108,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 256.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "21": {
+            "init": "comment t.window",
+            "name": "comment",
+            "id": 8219,
+            "position_x": 16,
+            "position_y": 31,
+            "width": 181,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.window nodes",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "large",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            },
+            "comment": "t.window nodes"
+        },
+        "22": {
+            "name": "load_bang",
+            "id": 8237,
+            "position_x": 289,
+            "position_y": 14,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "trigger",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "23": {
+            "name": "close",
+            "id": 8308,
+            "position_x": 1032,
+            "position_y": 843,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 5299,
+            "source_node_name": "t.window.hamming",
+            "source_output_index": 0,
+            "source_output_name": "window tensor out",
+            "dest_node": 5510,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "1": {
+            "source_node": 5591,
+            "source_node_name": "t.window.cosine",
+            "source_output_index": 0,
+            "source_output_name": "window tensor out",
+            "dest_node": 6646,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 5802,
+            "source_node_name": "t.window.hann",
+            "source_output_index": 0,
+            "source_output_name": "window tensor out",
+            "dest_node": 6727,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "3": {
+            "source_node": 6013,
+            "source_node_name": "t.window.nuttall",
+            "source_output_index": 0,
+            "source_output_name": "window tensor out",
+            "dest_node": 6970,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 6224,
+            "source_node_name": "t.window.blackman",
+            "source_output_index": 0,
+            "source_output_name": "window tensor out",
+            "dest_node": 6889,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "5": {
+            "source_node": 6435,
+            "source_node_name": "t.window.bartlett",
+            "source_output_index": 0,
+            "source_output_name": "window tensor out",
+            "dest_node": 6808,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "6": {
+            "source_node": 7051,
+            "source_node_name": "t.window.gaussian",
+            "source_output_index": 0,
+            "source_output_name": "window tensor out",
+            "dest_node": 7262,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "7": {
+            "source_node": 7343,
+            "source_node_name": "t.window.exponential",
+            "source_output_index": 0,
+            "source_output_name": "window tensor out",
+            "dest_node": 7554,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "8": {
+            "source_node": 7635,
+            "source_node_name": "t.window.general_hamming",
+            "source_output_index": 0,
+            "source_output_name": "window tensor out",
+            "dest_node": 7846,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "9": {
+            "source_node": 7927,
+            "source_node_name": "t.window.kaiser",
+            "source_output_index": 0,
+            "source_output_name": "window tensor out",
+            "dest_node": 8138,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "10": {
+            "source_node": 8237,
+            "source_node_name": "load_bang",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 6435,
+            "dest_node_name": "t.window.bartlett",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "11": {
+            "source_node": 8237,
+            "source_node_name": "load_bang",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 6224,
+            "dest_node_name": "t.window.blackman",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "12": {
+            "source_node": 8237,
+            "source_node_name": "load_bang",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 5591,
+            "dest_node_name": "t.window.cosine",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "13": {
+            "source_node": 8237,
+            "source_node_name": "load_bang",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 5299,
+            "dest_node_name": "t.window.hamming",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "14": {
+            "source_node": 8237,
+            "source_node_name": "load_bang",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 5802,
+            "dest_node_name": "t.window.hann",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "15": {
+            "source_node": 8237,
+            "source_node_name": "load_bang",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 6013,
+            "dest_node_name": "t.window.nuttall",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "16": {
+            "source_node": 8237,
+            "source_node_name": "load_bang",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 7051,
+            "dest_node_name": "t.window.gaussian",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "17": {
+            "source_node": 8237,
+            "source_node_name": "load_bang",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 7635,
+            "dest_node_name": "t.window.general_hamming",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "18": {
+            "source_node": 8237,
+            "source_node_name": "load_bang",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 7927,
+            "dest_node_name": "t.window.kaiser",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "19": {
+            "source_node": 8237,
+            "source_node_name": "load_bang",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 7343,
+            "dest_node_name": "t.window.exponential",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

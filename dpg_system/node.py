@@ -845,6 +845,9 @@ class ScalarWidget(BasePropertyWidget):
     def set_format(self, format: str) -> None:
         dpg.configure_item(self.uuid, format=format)
 
+    def set_speed(self, speed: float) -> None:
+        dpg.configure_item(self.uuid, speed=speed)
+
 
 
 class NumericInteractionWidget(ScalarWidget):
@@ -1875,6 +1878,7 @@ class Node:
         self.active_input = None
         self.in_loading_process = False
         self.show_options_check = None
+        self.help_file_name = None
         if Node.active_theme is None:
             self.create_button_themes()
 
@@ -2072,7 +2076,10 @@ class Node:
 
     def get_help(self):
         if os.path.exists('dpg_system/help'):
-            temp_path = 'dpg_system/help/' + self.label + '_help.json'
+            if self.help_file_name is not None:
+                temp_path = 'dpg_system/help/' + self.help_file_name + '.json'
+            else:
+                temp_path = 'dpg_system/help/' + self.label + '_help.json'
             if os.path.exists(temp_path):
                 # if patcher is already open?
                 tabs = Node.app.tabs
