@@ -73,6 +73,7 @@ def register_basic_nodes():
     Node.app.register_node('present', PresentationModeNode.factory)
     Node.app.register_node('clamp', ClampNode.factory)
     Node.app.register_node('save', SaveNode.factory)
+    Node.app.register_node('close', ClosePatchNode.factory)
     Node.app.register_node('active_widget', ActiveWidgetNode.factory)
     Node.app.register_node('pass_with_triggers', TriggerBeforeAndAfterNode.factory)
     Node.app.register_node('micro_metro', MicrosecondTimerNode.factory)
@@ -256,6 +257,54 @@ class CommentNode(Node):
         dpg.bind_item_theme(self.uuid, CommentNode.comment_theme)
 
 
+class ClosePatchNode(Node):
+    theme = None
+    inited = False
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ClosePatchNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('close patch', widget_type='button', callback=self.close_call)
+        self.setup_themes()
+
+    def setup_themes(self):
+        if not ClosePatchNode.inited:
+            with dpg.theme() as ClosePatchNode.theme:
+                with dpg.theme_component(dpg.mvAll):
+                    dpg.add_theme_color(dpg.mvNodeCol_NodeBackground, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundHovered, [0, 0, 0, 0],
+                                        category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundSelected, [0, 0, 0, 0],
+                                        category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_NodeOutline, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_TitleBar, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+            ClosePatchNode.inited = True
+
+    def custom_create(self, from_file):
+        dpg.bind_item_theme(self.uuid, ClosePatchNode.theme)
+        dpg.configure_item(self.uuid, label='')
+        self.input.widget.set_active_theme(Node.active_theme_yellow)
+        dpg.set_item_height(self.input.widget.uuid, 28)
+
+    def close_call(self):
+        Node.app.close_current_node_editor()
+
+    def save_custom(self, container):
+        container['name'] = 'close_patch'
+
+    def load_custom(self, container):
+        dpg.bind_item_theme(self.uuid, CommentNode.comment_theme)
+        dpg.configure_item(self.uuid, label='')
+
+    def set_custom_visibility(self):
+        dpg.configure_item(self.uuid, label='')
+        dpg.bind_item_theme(self.uuid, CommentNode.comment_theme)
+
+
 class SaveNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -264,7 +313,11 @@ class SaveNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.add_input('save', widget_type='button', callback=self.save_call)
+        self.input = self.add_input('save', widget_type='button', callback=self.save_call)
+
+    def custom_create(self, from_file):
+        self.input.widget.set_active_theme(Node.active_theme_green)
+        dpg.set_item_height(self.input.widget.uuid, 28)
 
     def save_call(self):
         Node.app.save_nodes()

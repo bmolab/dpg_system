@@ -7,6 +7,7 @@ import json
 from typing import List, Any, Callable, Union, Tuple, Optional, Dict, Set, Type, TypeVar, cast
 from fuzzywuzzy import fuzz
 import sys
+import os
 
 
 class NodeOutput:
@@ -2068,6 +2069,21 @@ class Node:
 
     def set_preset_state(self, preset):
         pass
+
+    def get_help(self):
+        if os.path.exists('dpg_system/help'):
+            temp_path = 'dpg_system/help/' + self.label + '_help.json'
+            if os.path.exists(temp_path):
+                # if patcher is already open?
+                tabs = Node.app.tabs
+                for tab in tabs:
+                    config = dpg.get_item_configuration(tab)
+                    if 'label' in config:
+                        title = config['label']
+                        if title == self.label + '_help':
+                            Node.app.select_tab(tab)
+                            return
+                Node.app.load_from_file(temp_path)
 
     def add_display(self, label: str = "", uuid=None, width=80, callback=None):
         new_display = NodeDisplay(label, uuid, self, width)

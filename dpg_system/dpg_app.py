@@ -944,8 +944,11 @@ class App:
             if centre_count > 0:
                 return [centre_acc[0] / centre_count, centre_acc[1] / centre_count]
 
+    def not_focussed_on_widget(self):
+        return self.active_widget == -1
+    
     def del_handler(self):
-        if self.active_widget == -1:
+        if self.not_focussed_on_widget():
             editor = self.get_current_editor()
             if editor is not None and not editor.presenting:
                 editor.delete_selected_items()
@@ -966,7 +969,7 @@ class App:
                 print('place_node', e)
 
     def int_handler(self):
-        if self.active_widget == -1:
+        if self.not_focussed_on_widget():
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 node = interface_nodes.ValueNode.factory("int", None)
                 self.place_node(node)
@@ -974,57 +977,65 @@ class App:
                 self.set_widget_focus(node.uuid)
 
     def float_handler(self):
-        if self.active_widget == -1:
+        if self.not_focussed_on_widget():
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 node = interface_nodes.ValueNode.factory("float", None)
                 self.place_node(node)
                 self.set_widget_focus(node.uuid)
 
     def vector_handler(self):
-        if self.active_widget == -1:
+        if self.not_focussed_on_widget():
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 node = interface_nodes.VectorNode.factory("vector", None, args=['4'])
                 self.place_node(node)
                 self.set_widget_focus(node.uuid)
 
     def comment_handler(self):
-        if self.active_widget == -1:
+        if self.not_focussed_on_widget():
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 self.new_handler('comment')
 
     def toggle_handler(self):
-        if self.active_widget == -1:
+        if self.not_focussed_on_widget():
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 node = interface_nodes.ToggleNode.factory("toggle", None)
                 self.place_node(node)
 
     def button_handler(self):
-        if self.active_widget == -1:
+        if self.not_focussed_on_widget():
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 node = interface_nodes.ButtonNode.factory("b", None)
                 self.place_node(node)
 
     def message_handler(self):
-        if self.active_widget == -1:
+        if self.not_focussed_on_widget():
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 node = interface_nodes.ValueNode.factory("message", None)
                 self.place_node(node)
                 self.set_widget_focus(node.input.widget.uuid)
 
     def list_handler(self):
-        if self.active_widget == -1:
+        if self.not_focussed_on_widget():
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 node = interface_nodes.ValueNode.factory("list", None)
                 self.place_node(node)
                 self.set_widget_focus(node.input.widget.uuid)
 
     def options_handler(self):
-        if self.active_widget == -1:
+        if self.not_focussed_on_widget():
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 selected_nodes_uuids = dpg.get_selected_nodes(self.get_current_editor().uuid)
                 for selected_nodes_uuid in selected_nodes_uuids:
                     node_object = dpg.get_item_user_data(selected_nodes_uuid)
                     node_object.toggle_show_hide_options()
+
+    def help_handler(self):
+        if self.not_focussed_on_widget():
+            if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+                selected_nodes_uuids = dpg.get_selected_nodes(self.get_current_editor().uuid)
+                node_uuid = selected_nodes_uuids[0]
+                node = dpg.get_item_user_data(node_uuid)
+                node.get_help()
 
     def M_handler(self):
         if self.control_or_command_down():
@@ -1127,6 +1138,9 @@ class App:
         return dpg.is_key_down(dpg.mvKey_LControl) or dpg.is_key_down(dpg.mvKey_RControl) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin)
         # return dpg.is_key_down(dpg.mvKey_ModCtrl) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin)
 
+    def alt_down(self):
+        return dpg.is_key_down(dpg.mvKey_LAlt) or dpg.is_key_down(dpg.mvKey_RAlt)
+
     def X_handler(self):
         if self.control_or_command_down():
             if self.get_current_editor() is not None:
@@ -1144,6 +1158,11 @@ class App:
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 self.options_handler()
 
+    def H_handler(self):
+        if self.alt_down():
+            if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+                self.help_handler()
+
     def K_handler(self):
         if self.get_current_editor() is not None and not self.get_current_editor().presenting:
             if self.control_or_command_down():
@@ -1158,8 +1177,9 @@ class App:
         if self.control_or_command_down():
             self.add_node_editor()
         else:
-            if self.get_current_editor() is not None and not self.get_current_editor().presenting:
-                self.new_handler()
+            if self.not_focussed_on_widget():
+                if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+                    self.new_handler()
 
     def W_handler(self):
         if self.control_or_command_down():
@@ -1174,7 +1194,7 @@ class App:
 
     def D_handler(self):
         if self.control_or_command_down():
-            if self.active_widget == -1:
+            if self.not_focussed_on_widget():
                 if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                     self.get_current_editor().duplicate_selection()
 
@@ -1185,7 +1205,7 @@ class App:
 
     def duplicate_handler(self):
         if self.get_current_editor() is not None and not self.get_current_editor().presenting:
-            if self.active_widget == -1:
+            if self.not_focussed_on_widget():
                 self.get_current_editor().duplicate_selection()
 
     def patchify_handler(self):
@@ -1193,12 +1213,12 @@ class App:
             self.get_current_editor().patchify_selection()
 
     def cut_selected(self):
-        if self.active_widget == -1:
+        if self.not_focussed_on_widget():
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 self.get_current_editor().cut_selection()
 
     def copy_selected(self):
-        if self.active_widget == -1:
+        if self.not_focussed_on_widget():
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 self.get_current_editor().copy_selection()
 
@@ -1206,7 +1226,13 @@ class App:
         if self.control_or_command_down():
             self.toggle_presentation()
         else:
+            if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+                if self.alt_down():
+                    self.help_handler()
             self.dragging_created_nodes = False
+
+            # else:
+            #     self.dragging_created_nodes = False
 
     def drag_create_nodes(self):
         if self.dragging_created_nodes:
@@ -1253,7 +1279,7 @@ class App:
                     self.hovered_item.node.increment_widget(self.hovered_item)
                     if self.hovered_item.callback is not None:
                         self.hovered_item.callback()
-        if not handled and self.active_widget != -1:
+        if not handled and self.not_focussed_on_widget():
             if dpg.does_item_exist(self.active_widget):
                 widget = dpg.get_item_user_data(self.active_widget)
                 if widget is not None:
@@ -1275,7 +1301,7 @@ class App:
                     self.hovered_item.node.decrement_widget(self.hovered_item)
                     if self.hovered_item.callback is not None:
                         self.hovered_item.callback()
-        if not handled and self.active_widget != -1:
+        if not handled and self.not_focussed_on_widget():
             if dpg.does_item_exist(self.active_widget):
                 widget = dpg.get_item_user_data(self.active_widget)
                 if widget is not None:
@@ -1295,7 +1321,7 @@ class App:
                 if node_model:
                     new_node = Node.app.create_node_from_model(node_model, editor_mouse_pos, args=[name])
                     return
-            if self.active_widget == -1:
+            if self.not_focussed_on_widget():
                 node = PlaceholderNameNode.factory("New Node", None)
                 self.place_node(node)
                 # mouse_pos = dpg.get_mouse_pos(local=False)
@@ -1687,6 +1713,7 @@ class App:
     def select_editor_tab(self, which_editor):
         if 0 <= which_editor < len(self.tabs):
             self.select_tab(self.tabs[which_editor])
+
     def get_current_tab(self):
         return dpg.get_value(self.tab_bar)
 
@@ -1820,6 +1847,7 @@ class App:
                             dpg.add_key_press_handler(dpg.mvKey_X, callback=self.X_handler)
                             dpg.add_key_press_handler(dpg.mvKey_W, callback=self.W_handler)
                             dpg.add_key_press_handler(dpg.mvKey_O, callback=self.O_handler)
+                            dpg.add_key_press_handler(dpg.mvKey_H, callback=self.H_handler)
                             dpg.add_key_press_handler(dpg.mvKey_S, callback=self.S_handler)
                             dpg.add_key_press_handler(dpg.mvKey_N, callback=self.N_handler)
                             dpg.add_key_press_handler(dpg.mvKey_K, callback=self.K_handler)
