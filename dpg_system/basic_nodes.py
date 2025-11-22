@@ -252,7 +252,7 @@ class CommentNode(Node):
         dpg.configure_item(self.uuid, label='')
 
     def set_custom_visibility(self):
-        dpg.configure_item(self.uuid, label=self.comment_text)
+        dpg.configure_item(self.uuid, label='')
         dpg.bind_item_theme(self.uuid, CommentNode.comment_theme)
 
 
@@ -489,26 +489,57 @@ class ClampNode(Node):
         self.max_input = self.add_input('max', widget_type='drag_float', default_value=1.0)
         self.output = self.add_output('clamped output')
 
+    # def execute(self):
+    #     data = self.input()
+    #     t = type(data)
+    #     if t in [int, float, np.int64, np.float32, np.float64]:
+    #         if data < self.min_input():
+    #             data =  self.min_input()
+    #         elif data > self.max_input():
+    #             data = self.max_input()
+    #         self.output.send(data)
+    #     elif t is list:
+    #         a = any_to_array(data, validate=True)
+    #         if a is not None:
+    #             a = np.clip(a, self.min_input(), self.max_input())
+    #             self.output.send(a)
+    #     elif t is np.ndarray:
+    #         a = np.clip(data, self.min_input(), self.max_input())
+    #         self.output.send(a)
+    #     elif torch_available and t is torch.Tensor:
+    #         a = torch.clamp(data, self.min_input(), self.max_input())
+    #         self.output.send(a)
+
     def execute(self):
         data = self.input()
-        t = type(data)
-        if t in [int, float, np.int64, np.float32, np.float64]:
-            if data < self.min_input():
-                data =  self.min_input()
-            elif data > self.max_input():
-                data = self.max_input()
-            self.output.send(data)
-        elif t is list:
-            a = any_to_array(data, validate=True)
-            if a is not None:
-                a = np.clip(a, self.min_input(), self.max_input())
-                self.output.send(a)
-        elif t is np.ndarray:
-            a = np.clip(data, self.min_input(), self.max_input())
-            self.output.send(a)
-        elif torch_available and t is torch.Tensor:
-            a = torch.clamp(data, self.min_input(), self.max_input())
-            self.output.send(a)
+        min_v = self.min_input()
+        max_v = self.max_input()
+
+        # 1. Handle Lists (The specific fix you requested)
+        if isinstance(data, list):
+            # Convert to numpy for fast clipping, then convert back to list
+            arr = any_to_array(data, validate=True)
+            if arr is not None:
+                # .tolist() converts the numpy array back to a standard Python list
+                self.output.send(np.clip(arr, min_v, max_v).tolist())
+
+        # 2. Handle Torch Tensors
+        elif torch_available and isinstance(data, torch.Tensor):
+            self.output.send(torch.clamp(data, min_v, max_v))
+
+        # 3. Handle Numpy Arrays
+        elif isinstance(data, np.ndarray):
+            self.output.send(np.clip(data, min_v, max_v))
+
+        # 4. Handle Numpy Scalars (np.int64, np.float32, etc.)
+        elif isinstance(data, np.number):
+            self.output.send(np.clip(data, min_v, max_v))
+
+        # 5. Handle Standard Python Scalars (int, float)
+        elif isinstance(data, (int, float)):
+            # Use standard python math to strictly preserve python types
+            # (avoids wrapping them in numpy objects)
+            self.output.send(max(min_v, min(data, max_v)))
 
 
 class RampNode(Node):
@@ -593,37 +624,47 @@ class RampNode(Node):
             self.lock.release()
 
     def execute(self):
-        # if we receive a list... target time... esle fo
-        if self.input.fresh_input:
-            data = self.input.get_received_data()
-            t = type(data)
-            self.lock.acquire(blocking=True)
-            if t == str:
-                t = list
-                data = any_to_list(data)
-            if t == list:
-                if len(data) == 2:
-                    self.new_target = True
-                    self.target = any_to_float(data[0])
-                    self.duration = any_to_float(data[1])
-                    self.start_value = self.current_value
-                    self.update_time_base()
-                elif len(data) == 3:
-                    self.new_target = True
-                    self.start_value = any_to_float(data[0])
-                    self.current_value = self.start_value
-                    self.target = any_to_float(data[1])
-                    self.duration = any_to_float(data[2])
-                    self.update_time_base()
-                elif len(data) == 1:
-                    self.new_target = True
-                    self.go_to_value(any_to_float(data[0]))
-                    self.update_time_base()
-            elif t in [int, float]:
-                self.new_target = True
-                self.go_to_value(data)
-                self.update_time_base()
-            self.lock.release()
+        if not self.input.fresh_input:
+            return
+
+        raw_data = self.input.get_received_data()
+        print(raw_data)
+        # 1. Normalize input to a list of floats
+        # We do this outside the lock to minimize blocking time
+        try:
+            if isinstance(raw_data, str):
+                args = [any_to_float(x) for x in any_to_list(raw_data)]
+            elif isinstance(raw_data, (int, float)):
+                args = [raw_data]
+            elif isinstance(raw_data, list):
+                args = [any_to_float(x) for x in raw_data]
+            else:
+                return  # Unknown type, ignore
+        except (ValueError, TypeError):
+            return  # Handle parsing errors gracefully
+
+        print(args)
+        # 2. Update State safely
+        with self.lock:
+            count = len(args)
+
+            if count == 1:
+                self.go_to_value(args[0])
+
+            elif count == 2:
+                self.start_value = self.current_value
+                self.target, self.duration = args
+
+            elif count == 3:
+                self.start_value, self.target, self.duration = args
+                self.current_value = self.start_value
+
+            else:
+                return  # Handle invalid list lengths (0 or >3)
+
+            # Common actions for all valid updates
+            self.new_target = True
+            self.update_time_base()
 
 
 class TimeBetweenNode(Node):
@@ -850,28 +891,29 @@ class CounterNode(Node):
     def set_message(self, message='', message_data=[]):
         self.current_value = any_to_int(message_data[0])
 
-    # def step_message(self, message='', message_data=[]):
-    #     self.step = any_to_int(message_data[0])
-
     def execute(self):
-        in_data = self.input()
-        # handled, do_output = self.check_for_messages(in_data)
-        #
-        # if not handled:
-        self.current_value += self.step
-        if self.current_value < 0:
-            self.carry_state = -1
-            self.carry_output.send(self.carry_state)
-            self.current_value += self.max_count
-            self.current_value &= self.max_count
-        elif self.current_value >= self.max_count:
-            self.carry_state = 1
-            self.carry_output.send(self.carry_state)
-            self.current_value %= self.max_count
-        elif self.carry_state != 0:
-            self.carry_state = 0
-            self.carry_output.send(0)
+        self.input()  # Clear input
 
+        next_val = self.current_value + self.step
+        max_val = self.max_count
+
+        # 1. Determine Carry State (-1, 0, or 1)
+        if next_val < 0:
+            carry = -1
+        elif next_val >= max_val:
+            carry = 1
+        else:
+            carry = 0
+
+        # 2. Handle Carry Output
+        # Send if we are currently carrying/wrapping OR if we need to reset previous state
+        if carry != 0 or self.carry_state != 0:
+            self.carry_state = carry
+            self.carry_output.send(carry)
+
+        # 3. Wrap Value and Send
+        # Python's % operator handles both overflow and negative underflow correctly
+        self.current_value = next_val % max_val
         self.output.send(self.current_value)
 
 
@@ -928,24 +970,33 @@ class RangeCounterNode(Node):
     #     self.step = any_to_int(message_data[0])
 
     def execute(self):
-        in_data = self.input()
-        # handled, do_output = self.check_for_messages(in_data)
-        #
-        # if not handled:
-        self.current_value += self.step
-        if self.current_value < self.start_count:
-            gap = self.end_count - self.start_count
-            self.current_value += gap
-            self.carry_state = -1
-            self.carry_output.set_value(self.carry_state)
-        elif self.current_value >= self.end_count:
-            gap = self.end_count - self.start_count
-            self.current_value -= gap
-            self.carry_state = 1
-            self.carry_output.send(self.carry_state)
-        elif self.carry_state != 0:
-            self.carry_state = 0
-            self.carry_output.send(self.carry_state)
+        self.input()  # Clear input
+
+        start = self.start_count
+        end = self.end_count
+        gap = end - start
+
+        # Calculate potential next value
+        next_val = self.current_value + self.step
+
+        # 1. Determine Carry (-1, 0, or 1)
+        new_carry = 0
+        if next_val < start:
+            new_carry = -1
+        elif next_val >= end:
+            new_carry = 1
+
+        # 2. Calculate Wrapped Value
+        # Using modulo (%) handles both underflow and overflow in one line.
+        # We normalize to zero (next_val - start), wrap (%), then add start back.
+        self.current_value = start + ((next_val - start) % gap)
+
+        # 3. Handle Carry Output
+        # Update if we are currently carrying, or if we need to reset the state to 0
+        if new_carry != 0 or self.carry_state != 0:
+            self.carry_state = new_carry
+            self.carry_output.send(new_carry)
+
         self.output.send(self.current_value)
 
 
@@ -1832,6 +1883,65 @@ class ConcatenateNode(Node):
             tensor: tensor[shape] dtype device requires_grad
 '''
 
+
+def print_info(input_):
+    # Default values to ensure variables are always defined
+    type_string = 'unknown'
+    value_string = ''
+
+    # 1. Handle Basic Primitives (int, float, bool)
+    if isinstance(input_, (int, float, bool)):
+        type_string = type(input_).__name__
+        value_string = str(input_)
+
+    # 2. Handle Strings
+    elif isinstance(input_, str):
+        if input_ == 'bang':
+            type_string = 'bang'
+        else:
+            type_string = 'string'
+            value_string = input_
+
+    # 3. Handle Lists
+    elif isinstance(input_, list):
+        type_string = f"list[{len(input_)}]"
+
+    # 4. Handle Dicts
+    elif isinstance(input_, dict):
+        type_string = f"dict{list(input_.keys())}"
+
+    # 5. Handle Numpy Arrays
+    elif isinstance(input_, np.ndarray):
+        # Join shape dimensions dynamically: "2, 3, 4"
+        shape_str = ", ".join(map(str, input_.shape))
+        # Get dtype name automatically (e.g., 'float32', 'int64')
+        dtype_str = input_.dtype.name
+        type_string = f"array[{shape_str}] {dtype_str}"
+
+    # 6. Handle Numpy Scalars (e.g. np.float32(1.0))
+    elif isinstance(input_, (np.number, np.bool_)):
+        type_string = f"numpy.{input_.dtype.name}"
+        value_string = str(input_)
+
+    # 7. Handle Torch Tensors
+    # We check if torch is defined and matches type
+    elif 'torch' in globals() and isinstance(input_, torch.Tensor):
+        shape_str = ", ".join(map(str, input_.shape))
+
+        # Clean up dtype string (e.g., 'torch.float32' -> 'float32')
+        dtype_str = str(input_.dtype).replace('torch.', '')
+
+        # Device handling
+        device_str = input_.device.type  # 'cpu', 'cuda', 'mps'
+
+        # Grad handling
+        grad_str = ' requires_grad' if input_.requires_grad else ''
+
+        type_string = f"tensor[{shape_str}] {dtype_str} {device_str}{grad_str}"
+
+    return type_string, value_string
+
+
 class TypeNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -1843,168 +1953,19 @@ class TypeNode(Node):
 
         self.input = self.add_input("in", triggers_execution=True)
         self.input.bang_repeats_previous = False
-        width = 128
-        if label == 'info':
-            width = 192
+
+        # 'info' usually requires more space for the detailed string
+        width = 192 if label == 'info' else 128
         self.type_property = self.add_property(self.label, widget_type='text_input', width=width)
 
     def execute(self):
         input_ = self.input()
-        if self.label == 'type':
-            t = type(input_)
-            if t == float:
-                self.type_property.set('float')
-            elif t == int:
-                self.type_property.set('int')
-            elif t == str:
-                if input_ == 'bang':
-                    self.type_property.set('bang')
-                else:
-                    self.type_property.set('string')
-            elif t == list:
-                self.type_property.set('list[' + str(len(input_)) + ']')
-            elif t == bool:
-                self.type_property.set('bool')
-            elif t == np.ndarray:
-                shape = input_.shape
-                if len(shape) == 1:
-                    self.type_property.set('array[' + str(shape[0]) + ']')
-                elif len(shape) == 2:
-                    self.type_property.set('array[' + str(shape[0]) + ', ' + str(shape[1]) + ']')
-                elif len(shape) == 3:
-                    self.type_property.set('array[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + ']')
-                elif len(shape) == 4:
-                    self.type_property.set('array[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + ', ' + str(shape[3]) + ']')
-            elif t == dict:
-                self.type_property.set('dict')
-            elif self.app.torch_available and t == torch.Tensor:
-                shape = input_.shape
-                if len(shape) == 0:
-                    self.type_property.set('tensor[]')
-                elif len(shape) == 1:
-                    self.type_property.set('tensor[' + str(shape[0]) + ']')
-                elif len(shape) == 2:
-                    self.type_property.set('tensor[' + str(shape[0]) + ', ' + str(shape[1]) + ']')
-                elif len(shape) == 3:
-                    self.type_property.set('tensor[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + ']')
-                elif len(shape) == 4:
-                    self.type_property.set(
-                        'tensor[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + ', ' + str(
-                            shape[3]) + ']')
-            elif t == np.double:
-                self.type_property.set('numpy.double')
-            elif t == float:
-                self.type_property.set('float')
-            elif t == np.float32:
-                self.type_property.set('numpy.float32')
-            elif t == np.int64:
-                self.type_property.set('numpy.int64')
-            elif t == np.bool_:
-                self.type_property.set('numpy.bool_')
-        else:
-            t = type(input_)
-            if t == float:
-                self.type_property.set('float')
-            elif t == int:
-                self.type_property.set('int')
-            elif t == str:
-                if input_ == 'bang':
-                    self.type_property.set('bang')
-                else:
-                    self.type_property.set('string')
-            elif t == list:
-                self.type_property.set('list[' + str(len(input_)) + ']')
-            elif t == bool:
-                self.type_property.set('bool')
-            elif t == np.ndarray:
-                comp = 'unknown'
-                shape = input_.shape
-                if input_.dtype == float:
-                    comp = 'float'
-                elif input_.dtype == np.double:
-                    comp = 'double'
-                elif input_.dtype == np.float32:
-                    comp = 'float32'
-                elif input_.dtype == np.int64:
-                    comp = 'int64'
-                elif input_.dtype == np.bool_:
-                    comp = 'bool'
-                elif input_.dtype == np.uint8:
-                    comp = 'uint8'
 
-                if len(shape) == 1:
-                    self.type_property.set('array[' + str(shape[0]) + '] ' + comp)
-                elif len(shape) == 2:
-                    self.type_property.set('array[' + str(shape[0]) + ', ' + str(shape[1]) + '] ' + comp)
-                elif len(shape) == 3:
-                    self.type_property.set('array[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + '] ' + comp)
-                elif len(shape) == 4:
-                    self.type_property.set(
-                        'array[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + ', ' + str(
-                            shape[3]) + '] ' + comp)
-            elif t == dict:
-                keys = list(input_.keys())
-                self.type_property.set('dict' + str(keys))
+        # If label is 'type', we want brief info. If 'info', we want detailed info.
+        is_detailed = (self.label != 'type')
 
-            elif self.app.torch_available and t == torch.Tensor:
-                shape = input_.shape
-                if input_.dtype == torch.float:
-                    comp = 'float'
-                elif input_.dtype == torch.double:
-                    comp = 'double'
-                elif input_.dtype == torch.float32:
-                    comp = 'float32'
-                elif input_.dtype == torch.int64:
-                    comp = 'int64'
-                elif input_.dtype == torch.bool:
-                    comp = 'bool'
-                elif input_.dtype == torch.uint8:
-                    comp = 'uint8'
-                elif input_.dtype == torch.float16:
-                    comp = 'float16'
-                elif input_.dtype == torch.bfloat16:
-                    comp = 'bfloat16'
-                elif input_.dtype == torch.complex128:
-                    comp = 'complex128'
-                elif input_.dtype == torch.complex64:
-                    comp = 'complex64'
-                elif input_.dtype == torch.complex32:
-                    comp = 'complex32'
-
-                device = 'cpu'
-                if input_.is_cuda:
-                    device = 'cuda'
-                elif input_.is_mps:
-                    device = 'mps'
-
-                if input_.requires_grad:
-                    grad = 'requires_grad'
-                else:
-                    grad = ''
-
-                if len(shape) == 0:
-                    self.type_property.set('tensor[] ' + comp + ' ' + device + ' ' + grad)
-                elif len(shape) == 1:
-                    self.type_property.set('tensor[' + str(shape[0]) + '] ' + comp + ' ' + device + ' ' + grad)
-                elif len(shape) == 2:
-                    self.type_property.set('tensor[' + str(shape[0]) + ', ' + str(shape[1]) + '] ' + comp + ' ' + device + ' ' + grad)
-                elif len(shape) == 3:
-                    self.type_property.set(
-                        'tensor[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + '] ' + comp + ' ' + device + ' ' + grad)
-                elif len(shape) == 4:
-                    self.type_property.set(
-                        'tensor[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + ', ' + str(
-                            shape[3]) + '] ' + comp + ' ' + device + ' ' + grad)
-            elif t == float:
-                self.type_property.set('float')
-            elif t == np.float32:
-                self.type_property.set('numpy.float32')
-            elif t == np.double:
-                self.type_property.set('numpy.double')
-            elif t == np.int64:
-                self.type_property.set('numpy.int64')
-            elif t == np.bool_:
-                self.type_property.set('numpy.bool_')
+        type_string = print_info(input_)
+        self.type_property.set(type_string)
 
 
 class LengthNode(Node):

@@ -143,6 +143,56 @@ class UDPNumpySendNode(Node):
         self.port_in = self.add_input('port', widget_type='drag_int', default_value=self.port, triggers_execution=True)
 
     def pack_data(self, data):
+        # 1. Safe Dtype Mapping
+        # Maps specific NumPy dtypes to your protocol codes.
+        # Using a dictionary prevents logic errors in if/else chains.
+        dtype_map = {
+            np.dtype('float32'): b'f',
+            np.dtype('float64'): b'd',
+            np.dtype('int32'): b'i',
+            np.dtype('int64'): b'l',
+            np.dtype('bool'): b'b',
+        }
+
+        try:
+            dtype_code = dtype_map[data.dtype]
+        except KeyError:
+            # Handle cases like float16 or uint8 gracefully
+            raise ValueError(f"Unsupported dtype: {data.dtype}")
+
+        # 2. Detect Memory Layout (Row-major C vs Column-major Fortran)
+        # If the array is stored in Fortran order, we should label it 'F'
+        # so the unpacker reconstructs it correctly.
+        if data.flags['F_CONTIGUOUS']:
+            order_code = b'F'
+            order_str = 'F'
+        else:
+            order_code = b'C'
+            order_str = 'C'
+
+        # 3. Prepare Metadata
+        shape = data.shape
+        shape_length = len(shape)
+        shape_size = data.size  # 'size' is faster/cleaner than int(np.prod)
+
+        # 4. Pack Header
+        # Use '<' to enforce Little Endian (consistent with unpack_data improvement)
+        header_fmt = '<ciic'
+        header = struct.pack(header_fmt, dtype_code, shape_length, shape_size, order_code)
+
+        # 5. Pack Shape
+        shape_fmt = f'<{shape_length}i'
+        shape_bytes = struct.pack(shape_fmt, *shape)
+
+        # 6. Serialize Data
+        # Crucial: ensure tobytes uses the same order (C or F) as our header flag
+        data_bytes = data.tobytes(order=order_str)
+
+        # 7. Efficient Join
+        # b''.join is generally more efficient than A + B + C for large binary blobs
+        return b''.join([header, shape_bytes, data_bytes])
+
+    def pack_data_o(self, data):
         header_format = 'ciic'
         if data.dtype in [float, np.float32]:
             dtype_code = b'f'
@@ -252,7 +302,7 @@ class UDPNumpyReceiveNode(Node):
         elif self.incoming_dtype == b'b':
             self.incoming_element_size = 1
 
-    def unpack_data(self, data):
+    def unpack_data_o(self, data):
         header_size = struct.calcsize('ciic')
         dtype_code, shape_length, shape_size, order_code = struct.unpack('ciic', data[:header_size])
         print(dtype_code, shape_length, shape_size, order_code)
@@ -282,6 +332,48 @@ class UDPNumpyReceiveNode(Node):
         data = struct.unpack(code * shape_size, data[offset:])
         array = np.array(data, dtype=dtype).reshape(shape_holder)
         return array
+
+    def unpack_data(self, data):
+        # Define header format: char, int, int, char
+        # '<' forces little-endian (standard for data transfer).
+        # Remove '<' if you rely on machine-native byte order.
+        header_fmt = '<ciic'
+        header_size = struct.calcsize(header_fmt)
+
+        # Unpack header
+        dtype_code, ndim, total_size, order_code = struct.unpack(header_fmt, data[:header_size])
+
+        # Unpack shape (read all dimensions at once)
+        shape_fmt = f'<{ndim}i'
+        shape_end = header_size + struct.calcsize(shape_fmt)
+        shape = struct.unpack(shape_fmt, data[header_size:shape_end])
+
+        # Type mapping
+        type_map = {
+            b'f': np.float32,
+            b'd': np.float64,
+            b'i': np.int32,
+            b'l': np.int64,
+            b'b': bool,
+        }
+
+        dtype = type_map.get(dtype_code)
+        if dtype is None:
+            raise ValueError(f"Unknown dtype code: {dtype_code}")
+
+        # 1. Optimization: Use frombuffer
+        # This creates a view directly into memory without copying data or
+        # creating intermediate Python objects.
+        array = np.frombuffer(data, dtype=dtype, count=total_size, offset=shape_end)
+
+        # 2. Handle Array Order (C-contiguous or Fortran-contiguous)
+        # Assuming 'F' byte means Fortran order, otherwise default to C
+        order = 'F' if order_code == b'F' else 'C'
+
+        # 3. Reshape
+        # Use copy() if you need a writable array that owns its memory,
+        # otherwise return the view for maximum speed.
+        return array.reshape(shape, order=order).copy()
 
 
 def string_is_valid_ip(ip_string):
@@ -698,7 +790,6 @@ class TCPNumpyReceiveNode(Node):
             print('receive socket_init_exception', e)
 
     def receive_thread(self):
-        print('enter receive_thread')
         while self.running:
             if self.port != self.port_property() or self.serving_ip != self.ip_serving_address_property():
                 if self.app.verbose:

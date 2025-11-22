@@ -5,20 +5,21 @@
         100,
         100
     ],
-    "id": 1784,
+    "id": 20857,
     "name": "torch_fft",
-    "path": "/Users/drokeby/PycharmProjects/dpg_system/examples/torch_fft.json",
+    "path": "/Users/drokeby/dpg_system/examples/torch_fft.json",
     "nodes": {
         "0": {
             "name": "",
-            "id": 1805,
+            "id": 20884,
             "position_x": 0,
             "position_y": 0,
             "width": 9,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
-            "presentation_state": "show_all",
+            "protected": true,
+            "presentation_state": "hidden",
             "properties": {
                 "0": {
                     "name": "",
@@ -30,11 +31,11 @@
         "1": {
             "init": "t.linspace 0 1 256",
             "name": "t.linspace",
-            "id": 1826,
+            "id": 20902,
             "position_x": 20,
             "position_y": 48,
             "width": 163,
-            "height": 156,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -78,29 +79,22 @@
         },
         "2": {
             "name": "*",
-            "id": 1875,
+            "id": 21017,
             "position_x": 256,
             "position_y": 260,
-            "width": 88,
-            "height": 66,
+            "width": 52,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "",
-                    "value": 0.08000001311302185,
-                    "value_type": "float"
-                }
-            }
+            "presentation_state": "show_all"
         },
         "3": {
             "name": "t.window.hamming",
-            "id": 1896,
+            "id": 21081,
             "position_x": 28,
             "position_y": 398,
             "width": 163,
-            "height": 156,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -154,11 +148,11 @@
         },
         "4": {
             "name": "sin",
-            "id": 1966,
+            "id": 21292,
             "position_x": 117,
             "position_y": 228,
-            "width": 70,
-            "height": 66,
+            "width": 68,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -172,11 +166,11 @@
         },
         "5": {
             "name": "t.rfft",
-            "id": 1984,
+            "id": 21338,
             "position_x": 561,
             "position_y": 108,
             "width": 131,
-            "height": 66,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -190,11 +184,11 @@
         },
         "6": {
             "name": "t.irfft",
-            "id": 2005,
+            "id": 21402,
             "position_x": 723,
             "position_y": 221,
             "width": 131,
-            "height": 66,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -208,11 +202,11 @@
         },
         "7": {
             "name": "t.fft",
-            "id": 2026,
+            "id": 21466,
             "position_x": 534,
             "position_y": 419,
             "width": 131,
-            "height": 66,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -226,11 +220,11 @@
         },
         "8": {
             "name": "t.ifft",
-            "id": 2047,
+            "id": 21530,
             "position_x": 688,
             "position_y": 419,
             "width": 131,
-            "height": 66,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -244,65 +238,65 @@
         },
         "9": {
             "name": "t.real",
-            "id": 2068,
+            "id": 21594,
             "position_x": 722,
             "position_y": 108,
             "width": 76,
-            "height": 48,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "10": {
             "name": "abs",
-            "id": 2083,
+            "id": 21637,
             "position_x": 827,
             "position_y": 108,
-            "width": 27,
-            "height": 48,
+            "width": 45,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "11": {
             "name": "plot",
-            "id": 2098,
+            "id": 21680,
             "position_x": 211,
             "position_y": 47,
             "width": 264,
-            "height": 152,
+            "height": 144,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "style",
-                    "value": "line",
-                    "value_type": "string"
-                },
-                "1": {
                     "name": "color",
                     "value": "none",
                     "value_type": "string"
                 },
-                "2": {
-                    "name": "sample count",
-                    "value": 1024,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "array fills plot",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "4": {
+                "1": {
                     "name": "width",
                     "value": 256,
                     "value_type": "int"
                 },
-                "5": {
+                "2": {
                     "name": "height",
                     "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 1024,
                     "value_type": "int"
                 },
                 "6": {
@@ -324,58 +318,48 @@
                     "name": "max y",
                     "value": 1.0,
                     "value_type": "float"
-                },
-                "10": {
-                    "name": "number format",
-                    "value": "",
-                    "value_type": "string"
-                },
-                "11": {
-                    "name": "continuous output",
-                    "value": false,
-                    "value_type": "bool"
                 }
             }
         },
         "12": {
             "name": "plot",
-            "id": 2157,
+            "id": 21761,
             "position_x": 431,
             "position_y": 240,
             "width": 264,
-            "height": 152,
+            "height": 144,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "style",
-                    "value": "line",
-                    "value_type": "string"
-                },
-                "1": {
                     "name": "color",
                     "value": "none",
                     "value_type": "string"
                 },
-                "2": {
-                    "name": "sample count",
-                    "value": 1024,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "array fills plot",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "4": {
+                "1": {
                     "name": "width",
                     "value": 256,
                     "value_type": "int"
                 },
-                "5": {
+                "2": {
                     "name": "height",
                     "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 1024,
                     "value_type": "int"
                 },
                 "6": {
@@ -397,58 +381,48 @@
                     "name": "max y",
                     "value": 1.0,
                     "value_type": "float"
-                },
-                "10": {
-                    "name": "number format",
-                    "value": "",
-                    "value_type": "string"
-                },
-                "11": {
-                    "name": "continuous output",
-                    "value": false,
-                    "value_type": "bool"
                 }
             }
         },
         "13": {
             "name": "plot",
-            "id": 2216,
+            "id": 21842,
             "position_x": 220,
             "position_y": 403,
             "width": 264,
-            "height": 152,
+            "height": 144,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "style",
-                    "value": "line",
-                    "value_type": "string"
-                },
-                "1": {
                     "name": "color",
                     "value": "none",
                     "value_type": "string"
                 },
-                "2": {
-                    "name": "sample count",
-                    "value": 1024,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "array fills plot",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "4": {
+                "1": {
                     "name": "width",
                     "value": 256,
                     "value_type": "int"
                 },
-                "5": {
+                "2": {
                     "name": "height",
                     "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 1024,
                     "value_type": "int"
                 },
                 "6": {
@@ -470,58 +444,48 @@
                     "name": "max y",
                     "value": 1.0,
                     "value_type": "float"
-                },
-                "10": {
-                    "name": "number format",
-                    "value": "",
-                    "value_type": "string"
-                },
-                "11": {
-                    "name": "continuous output",
-                    "value": false,
-                    "value_type": "bool"
                 }
             }
         },
         "14": {
             "name": "plot",
-            "id": 2275,
+            "id": 21923,
             "position_x": 877,
             "position_y": 40,
             "width": 264,
-            "height": 152,
+            "height": 144,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "style",
-                    "value": "line",
-                    "value_type": "string"
-                },
-                "1": {
                     "name": "color",
                     "value": "none",
                     "value_type": "string"
                 },
-                "2": {
-                    "name": "sample count",
-                    "value": 513,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "array fills plot",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "4": {
+                "1": {
                     "name": "width",
                     "value": 256,
                     "value_type": "int"
                 },
-                "5": {
+                "2": {
                     "name": "height",
                     "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 513,
                     "value_type": "int"
                 },
                 "6": {
@@ -543,58 +507,48 @@
                     "name": "max y",
                     "value": 100.0,
                     "value_type": "float"
-                },
-                "10": {
-                    "name": "number format",
-                    "value": "",
-                    "value_type": "string"
-                },
-                "11": {
-                    "name": "continuous output",
-                    "value": false,
-                    "value_type": "bool"
                 }
             }
         },
         "15": {
             "name": "plot",
-            "id": 2334,
+            "id": 22004,
             "position_x": 877,
             "position_y": 221,
             "width": 264,
-            "height": 152,
+            "height": 144,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "style",
-                    "value": "line",
-                    "value_type": "string"
-                },
-                "1": {
                     "name": "color",
                     "value": "none",
                     "value_type": "string"
                 },
-                "2": {
-                    "name": "sample count",
-                    "value": 1024,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "array fills plot",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "4": {
+                "1": {
                     "name": "width",
                     "value": 256,
                     "value_type": "int"
                 },
-                "5": {
+                "2": {
                     "name": "height",
                     "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 1024,
                     "value_type": "int"
                 },
                 "6": {
@@ -616,58 +570,48 @@
                     "name": "max y",
                     "value": 1.0,
                     "value_type": "float"
-                },
-                "10": {
-                    "name": "number format",
-                    "value": "",
-                    "value_type": "string"
-                },
-                "11": {
-                    "name": "continuous output",
-                    "value": false,
-                    "value_type": "bool"
                 }
             }
         },
         "16": {
             "name": "plot",
-            "id": 2393,
+            "id": 22085,
             "position_x": 877,
             "position_y": 405,
             "width": 264,
-            "height": 152,
+            "height": 144,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "style",
-                    "value": "line",
-                    "value_type": "string"
-                },
-                "1": {
                     "name": "color",
                     "value": "none",
                     "value_type": "string"
                 },
-                "2": {
-                    "name": "sample count",
-                    "value": 1024,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "array fills plot",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "4": {
+                "1": {
                     "name": "width",
                     "value": 256,
                     "value_type": "int"
                 },
-                "5": {
+                "2": {
                     "name": "height",
                     "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 1024,
                     "value_type": "int"
                 },
                 "6": {
@@ -689,27 +633,17 @@
                     "name": "max y",
                     "value": 1.0,
                     "value_type": "float"
-                },
-                "10": {
-                    "name": "number format",
-                    "value": "",
-                    "value_type": "string"
-                },
-                "11": {
-                    "name": "continuous output",
-                    "value": false,
-                    "value_type": "bool"
                 }
             }
         },
         "17": {
             "init": "comment spectrum",
             "name": "comment",
-            "id": 2452,
+            "id": 22166,
             "position_x": 877,
             "position_y": 16,
             "width": 58,
-            "height": 16,
+            "height": 30,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -730,11 +664,11 @@
         "18": {
             "init": "comment reconstructed",
             "name": "comment",
-            "id": 2460,
+            "id": 22177,
             "position_x": 879,
             "position_y": 200,
             "width": 88,
-            "height": 16,
+            "height": 30,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -755,11 +689,11 @@
         "19": {
             "init": "comment reconstructed",
             "name": "comment",
-            "id": 2468,
+            "id": 22188,
             "position_x": 877,
             "position_y": 381,
             "width": 88,
-            "height": 16,
+            "height": 30,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -780,11 +714,11 @@
         "20": {
             "init": "comment window",
             "name": "comment",
-            "id": 2476,
+            "id": 22199,
             "position_x": 228,
             "position_y": 384,
             "width": 45,
-            "height": 16,
+            "height": 30,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -805,11 +739,11 @@
         "21": {
             "init": "comment windowed signal",
             "name": "comment",
-            "id": 2484,
+            "id": 22210,
             "position_x": 432,
             "position_y": 219,
             "width": 101,
-            "height": 16,
+            "height": 30,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -830,11 +764,11 @@
         "22": {
             "init": "comment signal",
             "name": "comment",
-            "id": 2492,
+            "id": 22221,
             "position_x": 212,
             "position_y": 26,
             "width": 45,
-            "height": 16,
+            "height": 30,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -855,11 +789,11 @@
         "23": {
             "init": "comment t.fft",
             "name": "comment",
-            "id": 2500,
+            "id": 22232,
             "position_x": 16,
             "position_y": 224,
             "width": 70,
-            "height": 28,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -879,30 +813,34 @@
         },
         "24": {
             "name": "load_action",
-            "id": 2508,
+            "id": 22243,
             "position_x": 18,
             "position_y": 296,
             "width": 88,
-            "height": 66,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "##loadActionString",
+                    "name": "trigger",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "loadActionString",
                     "value": "bang",
                     "value_type": "string"
                 }
             }
         },
         "25": {
-            "init": "repeat 2",
-            "name": "repeat",
-            "id": 2526,
-            "position_x": 120,
-            "position_y": 308,
-            "width": 45,
-            "height": 66,
+            "name": "repeat_in_order",
+            "id": 22378,
+            "position_x": 128,
+            "position_y": 312,
+            "width": 101,
+            "height": 62,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
@@ -910,112 +848,184 @@
     },
     "links": {
         "0": {
-            "source_node": 1826,
+            "source_node": 20902,
+            "source_node_name": "t.linspace",
             "source_output_index": 0,
-            "dest_node": 1966,
-            "dest_input_index": 0
+            "source_output_name": "linspace out",
+            "dest_node": 21292,
+            "dest_node_name": "sin",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
         },
         "1": {
-            "source_node": 1875,
+            "source_node": 21017,
+            "source_node_name": "*",
             "source_output_index": 0,
-            "dest_node": 2026,
-            "dest_input_index": 0
+            "source_output_name": "result",
+            "dest_node": 21466,
+            "dest_node_name": "t.fft",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
         },
         "2": {
-            "source_node": 1875,
+            "source_node": 21017,
+            "source_node_name": "*",
             "source_output_index": 0,
-            "dest_node": 1984,
-            "dest_input_index": 0
+            "source_output_name": "result",
+            "dest_node": 21338,
+            "dest_node_name": "t.rfft",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
         },
         "3": {
-            "source_node": 1875,
+            "source_node": 21017,
+            "source_node_name": "*",
             "source_output_index": 0,
-            "dest_node": 2157,
-            "dest_input_index": 0
+            "source_output_name": "result",
+            "dest_node": 21761,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
         },
         "4": {
-            "source_node": 1896,
+            "source_node": 21081,
+            "source_node_name": "t.window.hamming",
             "source_output_index": 0,
-            "dest_node": 1875,
-            "dest_input_index": 1
+            "source_output_name": "window tensor out",
+            "dest_node": 21017,
+            "dest_node_name": "*",
+            "dest_input_index": 1,
+            "dest_input_name": "operand"
         },
         "5": {
-            "source_node": 1896,
+            "source_node": 21081,
+            "source_node_name": "t.window.hamming",
             "source_output_index": 0,
-            "dest_node": 2216,
-            "dest_input_index": 0
+            "source_output_name": "window tensor out",
+            "dest_node": 21842,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
         },
         "6": {
-            "source_node": 1966,
+            "source_node": 21292,
+            "source_node_name": "sin",
             "source_output_index": 0,
-            "dest_node": 1875,
-            "dest_input_index": 0
+            "source_output_name": "out",
+            "dest_node": 21017,
+            "dest_node_name": "*",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
         },
         "7": {
-            "source_node": 1966,
+            "source_node": 21292,
+            "source_node_name": "sin",
             "source_output_index": 0,
-            "dest_node": 2098,
-            "dest_input_index": 0
+            "source_output_name": "out",
+            "dest_node": 21680,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
         },
         "8": {
-            "source_node": 1984,
+            "source_node": 21338,
+            "source_node_name": "t.rfft",
             "source_output_index": 0,
-            "dest_node": 2005,
-            "dest_input_index": 0
+            "source_output_name": "histogram tensor out",
+            "dest_node": 21402,
+            "dest_node_name": "t.irfft",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
         },
         "9": {
-            "source_node": 1984,
+            "source_node": 21338,
+            "source_node_name": "t.rfft",
             "source_output_index": 0,
-            "dest_node": 2068,
-            "dest_input_index": 0
+            "source_output_name": "histogram tensor out",
+            "dest_node": 21594,
+            "dest_node_name": "t.real",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
         },
         "10": {
-            "source_node": 2005,
+            "source_node": 21402,
+            "source_node_name": "t.irfft",
             "source_output_index": 0,
-            "dest_node": 2334,
-            "dest_input_index": 0
+            "source_output_name": "histogram tensor out",
+            "dest_node": 22004,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
         },
         "11": {
-            "source_node": 2026,
+            "source_node": 21466,
+            "source_node_name": "t.fft",
             "source_output_index": 0,
-            "dest_node": 2047,
-            "dest_input_index": 0
+            "source_output_name": "histogram tensor out",
+            "dest_node": 21530,
+            "dest_node_name": "t.ifft",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
         },
         "12": {
-            "source_node": 2047,
+            "source_node": 21530,
+            "source_node_name": "t.ifft",
             "source_output_index": 0,
-            "dest_node": 2393,
-            "dest_input_index": 0
+            "source_output_name": "histogram tensor out",
+            "dest_node": 22085,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
         },
         "13": {
-            "source_node": 2068,
+            "source_node": 21594,
+            "source_node_name": "t.real",
             "source_output_index": 0,
-            "dest_node": 2083,
-            "dest_input_index": 0
+            "source_output_name": "real tensor",
+            "dest_node": 21637,
+            "dest_node_name": "abs",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
         },
         "14": {
-            "source_node": 2083,
+            "source_node": 21637,
+            "source_node_name": "abs",
             "source_output_index": 0,
-            "dest_node": 2275,
-            "dest_input_index": 0
+            "source_output_name": "result",
+            "dest_node": 21923,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
         },
         "15": {
-            "source_node": 2508,
+            "source_node": 22243,
+            "source_node_name": "load_action",
             "source_output_index": 0,
-            "dest_node": 2526,
-            "dest_input_index": 0
+            "source_output_name": "out",
+            "dest_node": 22378,
+            "dest_node_name": "repeat_in_order",
+            "dest_input_index": 0,
+            "dest_input_name": ""
         },
         "16": {
-            "source_node": 2526,
+            "source_node": 22378,
+            "source_node_name": "repeat_in_order",
             "source_output_index": 0,
-            "dest_node": 1896,
-            "dest_input_index": 0
+            "source_output_name": "second",
+            "dest_node": 20902,
+            "dest_node_name": "t.linspace",
+            "dest_input_index": 0,
+            "dest_input_name": ""
         },
         "17": {
-            "source_node": 2526,
+            "source_node": 22378,
+            "source_node_name": "repeat_in_order",
             "source_output_index": 1,
-            "dest_node": 1826,
-            "dest_input_index": 0
+            "source_output_name": "first",
+            "dest_node": 21081,
+            "dest_node_name": "t.window.hamming",
+            "dest_input_index": 0,
+            "dest_input_name": ""
         }
     }
 }

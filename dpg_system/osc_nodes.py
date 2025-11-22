@@ -2692,7 +2692,7 @@ class OSCValueNode(ValueNode, OSCWidget):
         widget_type = self.input.widget.widget
         if widget_type in ['drag_float', 'slider_float', 'knob_float', 'input_float']:
             return self.osc_manager.registry.add_float_to_registry(path_components)
-        elif widget_type in ['drag_int', 'slider_int', 'knob_int', 'input_int']:
+        elif widget_type in ['drag_int', 'slider_int', 'input_int']:
             return self.osc_manager.registry.add_int_to_registry(path_components)
         elif widget_type in ['text_input', 'text_editor']:
             return self.osc_manager.registry.add_string_to_registry(path_components)

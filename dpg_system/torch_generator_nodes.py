@@ -40,7 +40,136 @@ def register_torch_generator_nodes():
     Node.app.register_node('t.ones_like', TorchGeneratorLikeNode.factory)
     Node.app.register_node('t.zeros_like', TorchGeneratorLikeNode.factory)
 
+
 class TorchGeneratorNode(TorchDeviceDtypeNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchGeneratorNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.shape = []
+        for i in range(len(args)):
+            d, t = decode_arg(args, i)
+            if t == int:
+                self.shape += (d,)
+        if len(self.shape) == 0:
+            self.shape = [1]
+
+        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+        self.shape_input = self.add_input('shape', widget_type='text_input', default_value=str(self.shape),
+                                          callback=self.shape_changed)
+
+        self.setup_dtype_device_grad(args)
+
+        # Initialize min/max to safe defaults
+        self.min = 0
+        self.max = 1
+
+        if self.label == 't.rand':
+            self.min_input = self.add_input('min', widget_type='drag_float', default_value=self.min,
+                                            callback=self.range_changed)
+            self.max_input = self.add_input('max', widget_type='drag_float', default_value=self.max,
+                                            callback=self.range_changed)
+
+        out_label = 'random tensor'
+        if self.label == 't.ones':
+            out_label = 'tensor of ones'
+        elif self.label == 't.zeros':
+            out_label = 'tensor of zeros'
+
+        self.output = self.add_output(out_label)
+        self.create_dtype_device_grad_properties()
+
+    def range_changed(self):
+        """Updates internal variables from UI. Does NOT trigger execution."""
+        self.min = self.min_input()
+        self.max = self.max_input()
+
+    def shape_changed(self):
+        """Updates internal shape variable from UI. Does NOT trigger execution."""
+        shape_text = self.shape_input()
+        shape_list = re.findall(r'[-+]?\d+', shape_text)
+        shape = []
+        for dim_text in shape_list:
+            shape.append(any_to_int(dim_text))
+        self.shape = shape
+
+    def dtype_changed(self):
+        """
+        Updates UI ranges based on new dtype and syncs internal state.
+        Does NOT trigger execution.
+        """
+        super().dtype_changed()
+        if self.label == 't.rand':
+            # Smart adjustments for UI ranges based on DType limitations
+            if self.dtype == torch.uint8:
+                if self.min < 0:
+                    self.min_input.set(0.0)
+                if self.max == 1.0 or self.max < 255:
+                    self.max_input.set(255.0)
+            elif self.dtype == torch.int64:
+                if self.min < -32768:
+                    self.min_input.set(-32768)
+                if self.max == 1.0:
+                    self.max_input.set(32767)
+            elif self.dtype in [torch.float, torch.double, torch.float32, torch.float16, torch.bfloat16]:
+                if self.min == -32768:
+                    self.min_input.set(0.0)
+                if self.max == 255 or self.max == 32767:
+                    self.max_input.set(1.0)
+
+            # Sync the internal self.min/max with the updated UI values
+            self.range_changed()
+
+    def execute(self):
+        size = tuple(self.shape)
+
+        # Pre-pack common arguments
+        kwargs = {
+            'size': size,
+            'device': self.device,
+            'dtype': self.dtype,
+            'requires_grad': self.requires_grad
+        }
+
+        if self.label == 't.rand':
+            # List of floating point types
+            floats = [torch.float, torch.float32, torch.double, torch.float16, torch.bfloat16, torch.complex32,
+                      torch.complex64, torch.complex128]
+            # List of integer types
+            ints = [torch.int64, torch.int32, torch.int16, torch.int8, torch.uint8]
+
+            if self.dtype in floats:
+                range_ = self.max - self.min
+                out_array = torch.rand(**kwargs) * range_ + self.min
+
+            elif self.dtype in ints:
+                # Ensure safe casting to int for logic, use kwargs for tensor creation
+                low_val = int(self.min)
+                high_val = int(self.max)
+                out_array = torch.randint(low=low_val, high=high_val, **kwargs)
+
+            elif self.dtype == torch.bool:
+                # FIX: randint high is exclusive. To get 0s and 1s, high must be 2.
+                out_array = torch.randint(low=0, high=2, **kwargs).bool()
+
+            else:
+                # Fallback for edge cases to prevent crash
+                out_array = torch.zeros(**kwargs)
+
+        elif self.label == 't.ones':
+            out_array = torch.ones(**kwargs)
+
+        elif self.label == 't.zeros':
+            out_array = torch.zeros(**kwargs)
+
+        self.output.send(out_array)
+
+
+class TorchGeneratorNode_o(TorchDeviceDtypeNode):
     @staticmethod
     def factory(name, data, args=None):
         node = TorchGeneratorNode(name, data, args)

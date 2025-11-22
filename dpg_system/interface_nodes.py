@@ -42,7 +42,8 @@ def register_interface_nodes():
     Node.app.register_node('load_action', LoadActionNode.factory)
     Node.app.register_node('load_bang', LoadActionNode.factory)
     Node.app.register_node('color', ColorPickerNode.factory)
-    Node.app.register_node('vector', VectorNode.factory)
+    Node.app.register_node('vector', Vector2DNode.factory)
+    # Node.app.register_node('vector2d', Vector2DNode.factory)
     Node.app.register_node('radio', RadioButtonsNode.factory)
     Node.app.register_node('radio_h', RadioButtonsNode.factory)
     Node.app.register_node('radio_v', RadioButtonsNode.factory)
@@ -624,7 +625,7 @@ class RadioButtonsNode(Node):
                 v, t = decode_arg(args, i)
                 self.buttons.append(v)
 
-        self.radio_group = self.add_property(widget_type='radio_group', callback=self.execute)
+        self.radio_group = self.add_input(widget_type='radio_group', callback=self.execute)
         self.radio_group.widget.combo_items = self.buttons
         if label == 'radio_h':
             self.radio_group.widget.horizontal = True
@@ -826,7 +827,537 @@ class GainNode(Node):
 class ValueNode(Node):
     @staticmethod
     def factory(name, data, args=None):
-        node = ValueNode(name, data, args)
+        base_name = name.split('_')[-1]
+
+        if base_name == 'float':
+            return FloatNode(name, data, args)
+        elif base_name == 'int':
+            return IntNode(name, data, args)
+        elif base_name == 'slider':
+            return SliderNode(name, data, args)
+        elif base_name == 'knob':
+            return KnobNode(name, data, args)
+        elif base_name in ['string', 'message', 'list']:
+            return StringNode(name, data, args)
+        elif base_name == 'text':
+            return TextEditorNode(name, data, args)
+        else:
+            return StringNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        # --- Parsing Prefixes ---
+        if label.startswith('osc_'):
+            self.ordered_args = self.ordered_args[2:]
+        elif label.startswith('param_'):
+            self.ordered_args = self.ordered_args[1:]
+
+        # --- Common State ---
+        self.value = dpg.generate_uuid()
+        self.variable = None
+        self.variable_name = ''
+        self.input = None
+        self.output = None
+        self.width_option = None
+
+        self.grow_mode = 'grow_to_fit'
+        self.grow_option = None
+
+        # Initialize specific UI components
+        self.setup_specific_ui(self.ordered_args)
+
+        # --- Common Options ---
+        if self.ordered_args and len(self.ordered_args) > 0:
+            for i in range(len(self.ordered_args)):
+                var_name, t = decode_arg(self.ordered_args, i)
+                if t == str and var_name != '+':
+                    if getattr(self, 'widget_type', '') not in ['input_int', 'input_float']:
+                        self.variable_name = var_name
+
+        if self.output is None:
+            out_label = self.variable_name if self.variable_name else 'out'
+            self.output = self.add_output(out_label)
+
+        self.variable_binding_property = self.add_option(
+            'bind to', widget_type='text_input', width=120,
+            default_value=self.variable_name, callback=self.binding_changed
+        )
+
+        # Widget Width
+        default_width = getattr(self, 'widget_width', 100)
+        self.width_option = self.add_option(
+            'width', widget_type='drag_int', default_value=default_width,
+            callback=self.options_changed
+        )
+
+        if 'knob' not in label:
+            self.large_text_option = self.add_option(
+                'large_font', widget_type='checkbox', default_value=False,
+                callback=self.large_font_changed
+            )
+
+    # --- Button Handlers ---
+    def increment_widget(self, widget):
+        widget.increment()
+        self.execute()
+
+    def decrement_widget(self, widget):
+        widget.decrement()
+        self.execute()
+
+    # --- Base Methods ---
+    def setup_specific_ui(self, args):
+        pass
+
+    def cast_value(self, value):
+        return value
+
+    def large_font_changed(self):
+        use_large = self.large_text_option()
+        self.input.set_font(self.app.large_font if use_large else self.app.default_font)
+        adjusted_width = self.input.widget.adjust_to_text_width()
+        self.width_option.widget.set(adjusted_width)
+
+        trigger = self.input.widget.trigger_widget
+        if trigger:
+            dpg.set_item_width(trigger, 28 if use_large else 14)
+
+    def options_changed(self):
+        width = self.width_option()
+        dpg.set_item_width(self.input.widget.uuid, width)
+
+    def binding_changed(self):
+        binding = self.variable_binding_property()
+        self.bind_to_variable(binding)
+
+    def bind_to_variable(self, variable_name):
+        if self.variable is not None:
+            self.variable.detach_client(self)
+            self.variable = None
+
+        if variable_name != '':
+            v = Node.app.find_variable(variable_name)
+            if v is None:
+                default = 0.0 if self.label in ['float', 'slider', 'knob'] else 0
+                if self.label in ['string', 'text', 'message', 'list']: default = ''
+                v = Node.app.add_variable(variable_name, default_value=default)
+
+            if v:
+                self.variable_name = variable_name
+                self.variable = v
+                self.input.attach_to_variable(v)
+                self.variable.attach_client(self)
+                self.output.set_label(self.variable_name)
+                self.variable_update()
+
+    def variable_update(self):
+        if self.variable is not None:
+            data = self.variable.get_value()
+            self.input.set(data, propagate=False)
+        self.update(propagate=False)
+
+    def custom_create(self, from_file):
+        if self.variable_name != '':
+            self.bind_to_variable(self.variable_name)
+        if hasattr(self, 'start_value') and self.start_value is not None:
+            self.input.set(self.start_value)
+        self.input.set_font(self.app.default_font)
+
+    def custom_cleanup(self):
+        if self.variable is not None:
+            self.variable.detach_client(self)
+
+    def get_preset_state(self):
+        return {'value': self.input()}
+
+    def set_preset_state(self, preset):
+        if 'value' in preset:
+            self.input.widget.set(preset['value'])
+            self.execute()
+
+    def do_send(self, value):
+        self.outputs[0].send(value)
+
+    def _parse_text_input(self, text_value):
+        """
+        Robust parsing for list/message nodes.
+        Mimics string_to_list and space-splitting logic.
+        """
+        if self.label in ['string', 'text']:
+            return text_value
+
+        if not text_value:
+            return []
+
+        clean_val = text_value.strip()
+        output_data = []
+        is_list_structure = False
+
+        # 1. Try bracketed parsing (standard Python list syntax)
+        if clean_val.startswith('['):
+            try:
+                # Use ast.literal_eval as a safe replacement for string_to_list
+                # if string_to_list is not globally available
+                output_data = ast.literal_eval(clean_val)
+                if isinstance(output_data, (list, tuple)):
+                    output_data = list(output_data)
+                    is_list_structure = True
+            except:
+                pass  # Fallback to space splitting
+
+        # 2. Fallback: Space splitting
+        if not is_list_structure:
+            parts = clean_val.split(' ')
+            for part in parts:
+                if not part: continue
+                # Try converting to number
+                try:
+                    if '.' in part:
+                        output_data.append(float(part))
+                    else:
+                        output_data.append(int(part))
+                except ValueError:
+                    output_data.append(part)
+
+        # 3. Unwrap single items based on Node Type
+        # 'list' nodes always output a list.
+        # 'message' nodes output a single value if len is 1.
+        if self.label != 'list':
+            if len(output_data) == 1:
+                return output_data[0]
+
+        return output_data
+
+    def update(self, propagate=True):
+        raw_value = dpg.get_value(self.value)
+        processed_value = raw_value
+
+        # Parse text inputs for list/message nodes
+        if isinstance(raw_value, str) and getattr(self, 'widget_type', '') in ['text_input', 'text_editor']:
+            processed_value = self._parse_text_input(raw_value)
+
+        if self.variable is not None and propagate:
+            self.variable.set(processed_value, from_client=self)
+
+        if getattr(self, 'widget_type', '') == 'text_input':
+            self.input.widget.adjust_to_text_width(max=2048)
+            self._handle_auto_grow()
+
+        if getattr(self, 'power', None) is not None and self.power() != 1.0:
+            try:
+                processed_value = pow(float(processed_value), self.power())
+            except:
+                pass
+
+        self.do_send(processed_value)
+
+    def execute(self):
+        output_data = None
+        should_output = True
+
+        # CASE A: Input from Pipe
+        if self.inputs[0].fresh_input:
+            in_data = self.inputs[0]()
+            processed_data = in_data
+
+            if isinstance(processed_data, list) and len(processed_data) == 1:
+                processed_data = processed_data[0]
+
+            if isinstance(processed_data, list) and len(processed_data) == 2 and processed_data[0] == 'set':
+                processed_data = processed_data[1]
+                should_output = False
+
+            try:
+                final_val = self.cast_value(processed_data)
+
+                # Display conversion
+                display_val = final_val
+                if isinstance(final_val, list) and getattr(self, 'widget_type', '') == 'text_input':
+                    display_val = any_to_string(final_val)
+
+                self.input.widget.set(display_val, propagate=False)
+
+                if self.variable is not None:
+                    self.variable.set(final_val, from_client=self)
+
+                if should_output:
+                    output_data = final_val
+
+            except (ValueError, TypeError):
+                display_str = any_to_string(processed_data)
+                self.input.widget.set(display_str, propagate=False)
+                output_data = processed_data
+
+        # CASE B: Input from GUI (Direct interaction)
+        else:
+            self.update()
+            return
+
+        # Post-processing
+        if getattr(self, 'widget_type', '') == 'text_input':
+            self._handle_auto_grow()
+
+        if should_output and output_data is not None:
+            if getattr(self, 'power', None) is not None and self.power() != 1.0:
+                try:
+                    output_data = pow(float(output_data), self.power())
+                except:
+                    pass
+
+            self.do_send(output_data)
+
+    def _handle_auto_grow(self):
+        if self.grow_mode in ['grow_to_fit', 'grow_or_shrink_to_fit']:
+            adjusted_width = self.input.widget.get_text_width()
+            current_opt = self.width_option()
+            if self.grow_mode == 'grow_to_fit':
+                if adjusted_width > current_opt:
+                    dpg.configure_item(self.input.widget.uuid, width=adjusted_width)
+                    self.width_option.set(adjusted_width)
+            else:
+                dpg.configure_item(self.input.widget.uuid, width=adjusted_width)
+                self.width_option.set(adjusted_width)
+
+
+class NumericValueNode(ValueNode):
+    def __init__(self, label, data, args):
+        self.min = None
+        self.max = None
+        self.start_value = None
+        self.format = '%.3f'
+        self.min_property = None
+        self.max_property = None
+        self.format_property = None
+        super().__init__(label, data, args)
+
+    def create_numeric_options(self):
+        if self.widget_type in ['drag_float', 'slider_float', 'input_float', 'knob_float',
+                                'drag_int', 'slider_int', 'input_int']:
+            w_type = 'drag_int' if 'int' in self.widget_type else 'drag_float'
+            self.min_property = self.add_option('min', widget_type=w_type, default_value=self.min,
+                                                callback=self.options_changed)
+            self.max_property = self.add_option('max', widget_type=w_type, default_value=self.max,
+                                                callback=self.options_changed)
+            self.format_property = self.add_option('format', widget_type='text_input', default_value=self.format,
+                                                   callback=self.options_changed)
+
+    def options_changed(self):
+        super().options_changed()
+        if self.min_property and self.max_property:
+            self.min = self.min_property()
+            self.max = self.max_property()
+
+            current_min = self.min if self.min is not None else 0
+            current_max = self.max if self.max is not None else 0
+
+            if current_max > current_min:
+                self.input.widget.set_limits(current_min, current_max)
+            else:
+                # Pass large limits to unbind
+                if 'int' in self.widget_type:
+                    self.input.widget.set_limits(-2000000000, 2000000000)
+                else:
+                    self.input.widget.set_limits(-1e15, 1e15)
+
+        if self.format_property:
+            self.format = self.format_property()
+            self.input.widget.set_format(self.format)
+
+
+class FloatNode(NumericValueNode):
+    def setup_specific_ui(self, args):
+        self.format = '%.3f'
+        self.widget_type = 'drag_float'
+        self.widget_width = 100
+
+        for i in range(len(args)):
+            val, t = decode_arg(args, i)
+            if t in [float, int]:
+                self.start_value = val
+            elif t == str and val == '+':
+                self.widget_type = 'input_float'
+
+        self.input = self.add_float_input('', triggers_execution=True, widget_type=self.widget_type,
+                                          widget_uuid=self.value, widget_width=self.widget_width, trigger_button=True)
+        self.output = self.add_float_output('float out')
+        self.create_numeric_options()
+
+    def cast_value(self, value):
+        return any_to_float(value)
+
+
+class IntNode(NumericValueNode):
+    def setup_specific_ui(self, args):
+        self.format = '%d'
+        self.widget_type = 'drag_int'
+        self.widget_width = 100
+
+        for i in range(len(args)):
+            val, t = decode_arg(args, i)
+            if t in [float, int]:
+                self.max = int(val)
+            elif t == str and val == '+':
+                self.widget_type = 'input_int'
+
+        kwargs = {}
+        if self.max is not None:
+            kwargs['max'] = self.max
+        if self.min is not None:
+            kwargs['min'] = self.min
+
+        self.input = self.add_int_input('', triggers_execution=True, widget_type=self.widget_type,
+                                        widget_uuid=self.value, widget_width=self.widget_width, trigger_button=True,
+                                        **kwargs)
+        self.output = self.add_int_output('int out')
+        self.create_numeric_options()
+
+    def cast_value(self, value):
+        return any_to_int(value)
+
+
+class SliderNode(NumericValueNode):
+    def setup_specific_ui(self, args):
+        self.widget_type = 'slider_float'
+        self.widget_width = 100
+        is_int = False
+
+        if args:
+            for i in range(len(args)):
+                val, t = decode_arg(args, i)
+                if t == float:
+                    self.widget_type = 'slider_float'
+                    self.max = val
+                    self.format = '%.3f'
+                elif t == int:
+                    self.widget_type = 'slider_int'
+                    self.max = val
+                    self.format = '%d'
+                    is_int = True
+
+        if self.max is None:
+            self.max = 100 if is_int else 1.0
+
+        if is_int:
+            self.input = self.add_int_input('', triggers_execution=True, widget_type=self.widget_type,
+                                            widget_uuid=self.value, widget_width=self.widget_width,
+                                            trigger_button=True, max=self.max)
+            self.output = self.add_int_output('int out')
+        else:
+            self.input = self.add_float_input('', triggers_execution=True, widget_type=self.widget_type,
+                                              widget_uuid=self.value, widget_width=self.widget_width,
+                                              trigger_button=True, max=self.max)
+            self.output = self.add_float_output('float out')
+
+        self.create_numeric_options()
+        if not is_int:
+            self.power = self.add_option('power', widget_type='drag_float', default_value=1.0)
+
+    def cast_value(self, value):
+        if 'int' in self.widget_type:
+            return any_to_int(value)
+        return any_to_float(value)
+
+
+class KnobNode(NumericValueNode):
+    def setup_specific_ui(self, args):
+        self.widget_type = 'knob_float'
+        self.widget_width = 100
+        value_type = float
+
+        if args:
+            for i in range(len(args)):
+                val, t = decode_arg(args, i)
+                if t in [float, int]:
+                    self.max = val
+                    value_type = t
+                    break
+
+        if self.max is None:
+            self.max = 1.0 if value_type is float else 100
+
+        if value_type is float:
+            self.format = '%.3f'
+            self.input = self.add_float_input('', triggers_execution=True, widget_type='knob_float',
+                                              widget_uuid=self.value, widget_width=self.widget_width,
+                                              trigger_button=True, max=self.max)
+            self.output = self.add_float_output('float out')
+        else:
+            self.format = '%d'
+            self.input = self.add_int_input('', triggers_execution=True, widget_type='knob_float',
+                                            widget_uuid=self.value, widget_width=self.widget_width,
+                                            trigger_button=True, max=self.max)
+            self.output = self.add_int_output('int out')
+
+        self.create_numeric_options()
+
+    def cast_value(self, value):
+        if self.format == '%d':
+            return any_to_int(value)
+        return any_to_float(value)
+
+
+class StringNode(ValueNode):
+    def setup_specific_ui(self, args):
+        self.widget_type = 'text_input'
+        self.widget_width = 100
+        self.input = self.add_string_input('###text in', triggers_execution=True, widget_type=self.widget_type,
+                                           widget_uuid=self.value, widget_width=self.widget_width,
+                                           trigger_button=True)
+
+        if 'list' in self.label:
+            self.output = self.add_list_output('list out')
+        elif 'message' in self.label:
+            self.output = self.add_output('message out')
+        else:
+            self.output = self.add_string_output('string out')
+
+        self.grow_option = self.add_option('adapt_width', widget_type='combo', width=150,
+                                           default_value='grow_to_fit', callback=self.options_changed)
+        self.grow_option.widget.combo_items = ['grow_to_fit', 'grow_or_shrink_to_fit', 'fixed_width']
+
+    def options_changed(self):
+        super().options_changed()
+        if self.grow_option:
+            self.grow_mode = self.grow_option()
+
+    def cast_value(self, value):
+        if self.label == 'string':
+            return any_to_string(value)
+        elif self.label in ['list', 'message']:
+            if isinstance(value, np.ndarray):
+                return value.tolist()
+            return value
+        return str(value)
+
+
+class TextEditorNode(StringNode):
+    def setup_specific_ui(self, args):
+        self.widget_type = 'text_editor'
+        self.widget_width = 400
+        self.input = self.add_string_input('###text in', triggers_execution=True, widget_type=self.widget_type,
+                                           widget_uuid=self.value, widget_width=self.widget_width,
+                                           trigger_button=True)
+        self.input.set_strip_returns(False)
+        self.output = self.add_string_output('string out')
+
+        self.height_option = self.add_option('height', widget_type='drag_int', default_value=200,
+                                             callback=self.options_changed)
+
+    def custom_create(self, from_file):
+        super().custom_create(from_file)
+        dpg.set_item_height(self.input.widget.uuid, 200)
+
+    def options_changed(self):
+        super().options_changed()
+        if self.height_option:
+            dpg.set_item_height(self.input.widget.uuid, self.height_option())
+
+
+class ValueNode_o(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ValueNode_o(name, data, args)
         return node
 
     def __init__(self, label: str, data, args):
@@ -935,8 +1466,6 @@ class ValueNode(Node):
                         self.max = val
                         value_type = t
                         break
-            if value_type is not float:
-                widget_type = 'knob_int'
             if self.max is None:
                 if value_type is float:
                     self.max = 1.0
@@ -1006,9 +1535,15 @@ class ValueNode(Node):
 
         self.variable_binding_property = self.add_option('bind to', widget_type='text_input', width=120, default_value=self.variable_name, callback=self.binding_changed)
 
-        if widget_type in ['drag_float', 'slider_float', "knob_float"]:
+        if widget_type in ['drag_float', 'slider_float', 'input_float', 'knob_float']:
             self.min_property = self.add_option('min', widget_type='drag_float', default_value=self.min, callback=self.options_changed)
             self.max_property = self.add_option('max', widget_type='drag_float', default_value=self.max, callback=self.options_changed)
+
+        if widget_type in ['drag_int', 'slider_int', "input_int"]:
+            self.min_property = self.add_option('min', widget_type='drag_int', default_value=self.min,
+                                                callback=self.options_changed)
+            self.max_property = self.add_option('max', widget_type='drag_int', default_value=self.max,
+                                                callback=self.options_changed)
 
         if widget_type == 'slider_float':
             self.power = self.add_option('power', widget_type='drag_float', default_value=1.0)
@@ -1021,7 +1556,7 @@ class ValueNode(Node):
             self.height_option = self.add_option('height', widget_type='drag_int', default_value=200,
                                                 callback=self.options_changed)
 
-        if widget_type in ['drag_float', 'slider_float', 'drag_int', 'slider_int', 'knob_int', 'knob_float', 'input_int', 'input_float']:
+        if widget_type in ['drag_float', 'slider_float', 'drag_int', 'slider_int', 'knob_float', 'input_int', 'input_float']:
             self.format_property = self.add_option('format', widget_type='text_input', default_value=self.format, callback=self.options_changed)
         if widget_type != 'knob':
             self.large_text_option = self.add_option('large_font', widget_type='checkbox', default_value=False, callback=self.large_font_changed)
@@ -1065,7 +1600,7 @@ class ValueNode(Node):
                 default = 0.0
                 if self.input.widget.widget in ['drag_float', 'slider_float', "knob_float"]:
                     default = 0.0
-                elif self.input.widget.widget in ['drag_int', 'slider_int', "knob_int", 'input_int']:
+                elif self.input.widget.widget in ['drag_int', 'slider_int', 'input_int']:
                     default = 0
                 elif self.input.widget.widget in ['combo', 'text_input', 'radio_group', 'text_editor']:
                     default = ''
@@ -1155,13 +1690,13 @@ class ValueNode(Node):
                             display_data = any_to_float(display_data)
                             self.input.widget.set(display_data, propagate=False)
                             output_data = display_data
-                        if self.input.widget.widget in ['drag_int', 'input_int', 'slider_int', 'knob_int']:
+                        if self.input.widget.widget in ['drag_int', 'input_int', 'slider_int']:
                             display_data = in_data
                             display_data = any_to_int(display_data)
                             self.input.widget.set(display_data, propagate=False)
                             output_data = display_data
                 elif len(in_data) > 0:
-                    if self.input.widget.widget in ['drag_float', 'drag_int', 'input_float', 'input_int', 'slider_float', 'slider_int', 'knob_float', 'knob_int']:
+                    if self.input.widget.widget in ['drag_float', 'drag_int', 'input_float', 'input_int', 'slider_float', 'slider_int', 'knob_float']:
                         if not is_number(in_data[0]):
                             if type(in_data[0]) == str:
                                 if in_data[0] == 'set':
@@ -1181,7 +1716,7 @@ class ValueNode(Node):
                                     display_data = any_to_float(display_data)
                                     self.input.widget.set(display_data, propagate=False)
                                     output_data = display_data
-                                if self.input.widget.widget in ['drag_int', 'input_int', 'slider_int', 'knob_int']:
+                                if self.input.widget.widget in ['drag_int', 'input_int', 'slider_int']:
                                     display_data = any_to_int(display_data)
                                     self.input.widget.set(display_data, propagate=False)
                                     output_data = display_data
@@ -1210,7 +1745,7 @@ class ValueNode(Node):
                         display_data = any_to_float(display_data)
                         self.input.widget.set(display_data, propagate=False)
                         output_data = display_data
-                    elif self.input.widget.widget in ['drag_int', 'input_int', 'slider_int', 'knob_int']:
+                    elif self.input.widget.widget in ['drag_int', 'input_int', 'slider_int']:
                         display_data = in_data
                         display_data = any_to_int(display_data)
                         self.input.widget.set(display_data, propagate=False)
@@ -1265,7 +1800,7 @@ class ValueNode(Node):
                             if len(output_data) == 1:
                                 output_value = output_data[0]
                                 output_data = output_value
-                if self.input.widget.widget in ['drag_float', 'drag_int', 'input_float', 'input_int', 'slider_float', 'slider_int', 'knob_float', 'knob_int']:
+                if self.input.widget.widget in ['drag_float', 'drag_int', 'input_float', 'input_int', 'slider_float', 'slider_int', 'knob_float']:
                     if not is_number(output_data):
                         return
 
@@ -1311,41 +1846,254 @@ class ValueNode(Node):
         self.outputs[0].send(value)
 
 
-class VectorNode(Node):
+# class VectorNode(Node):
+#     @staticmethod
+#     def factory(name, data, args=None):
+#         node = VectorNode(name, data, args)
+#         return node
+#
+#     def __init__(self, label: str, data, args):
+#         super().__init__(label, data, args)
+#
+#         self.max_component_count = 64
+#         if len(args) > 0:
+#             self.max_component_count = any_to_int(args[0])
+#         self.format = '%.3f'
+#
+#         self.current_component_count = self.arg_as_int(default_value=4)
+#
+#         self.input = self.add_input('in', triggers_execution=True)
+#         self.input.bang_repeats_previous = False
+#         self.zero_input = self.add_input('zero', widget_type='button', callback=self.zero)
+#         self.vector_format_input = self.add_input('###vector format', widget_type='combo', default_value='numpy', callback=self.vector_format_changed)
+#         if Node.app.torch_available:
+#             self.vector_format_input.widget.combo_items = ['numpy', 'torch', 'list']
+#         else:
+#             self.vector_format_input.widget.combo_items = ['numpy', 'list']
+#         self.output_vector = None
+#         self.component_properties = []
+#         for i in range(self.max_component_count):
+#             cp = self.add_input('##' + str(i), widget_type='drag_float', callback=self.component_changed)
+#             self.component_properties.append(cp)
+#
+#         self.output = self.add_output('out')
+#
+#         self.component_count_property = self.add_option('component count', widget_type='drag_int', default_value=self.current_component_count, callback=self.component_count_changed)
+#         self.format_option = self.add_option(label='number format', widget_type='text_input', default_value=self.format, callback=self.change_format)
+#         self.output_vector = np.zeros(self.current_component_count)
+#
+#         self.first_component_input_index = -1
+#
+#     def vector_format_changed(self):
+#         t = type(self.output_vector)
+#         vf = self.vector_format_input()
+#
+#         if t == np.ndarray:
+#             if vf == 'torch':
+#                 self.output_vector = torch.from_numpy(self.output_vector)
+#             elif vf == 'list':
+#                 self.output_vector = self.output_vector.tolist()
+#         elif t == torch.Tensor:
+#             if vf == 'numpy':
+#                 self.output_vector = torch.numpy(self.output_vector)
+#             elif vf == 'list':
+#                 self.output_vector = self.output_vector.tolist()
+#         elif t == list:
+#             if vf == 'numpy':
+#                 self.output_vector = np.array(self.output_vector)
+#             elif vf == 'torch':
+#                 self.output_vector = torch.tensor(self.output_vector)
+#
+#     def zero(self):
+#         if self.vector_format_input() == 'numpy':
+#             self.output_vector = np.zeros(self.current_component_count)
+#         elif self.vector_format_input() == 'torch':
+#             self.output_vector = torch.zeros(self.current_component_count)
+#         else:
+#             self.output_vector = [0.0] * self.current_component_count
+#         self.execute()
+#
+#     def get_preset_state(self):
+#         preset = {}
+#         values = []
+#         for i in range(self.current_component_count):
+#             values.append(self.component_properties[i]())
+#         preset['values'] = values
+#         return preset
+#
+#     def set_preset_state(self, preset):
+#         if 'values' in preset:
+#             values = preset['values']
+#             count = len(values)
+#             if count != self.current_component_count:
+#                 self.component_count_property.set(count)
+#                 self.component_count_changed()
+#             for i in range(self.current_component_count):
+#                 self.component_properties[i].widget.set(values[i])
+#             self.execute()
+#
+#     def custom_create(self, from_file):
+#         for i in range(self.max_component_count):
+#             if i < self.current_component_count:
+#                 dpg.show_item(self.component_properties[i].uuid)
+#             else:
+#                 dpg.hide_item(self.component_properties[i].uuid)
+#         self.first_component_input_index = self.component_properties[0].input_index
+#
+#     def component_count_changed(self):
+#         self.current_component_count = self.component_count_property()
+#         if self.current_component_count > self.max_component_count:
+#             self.current_component_count = self.max_component_count
+#             self.component_count_property.set(self.current_component_count)
+#         for i in range(self.max_component_count):
+#             if i < self.current_component_count:
+#                 dpg.show_item(self.component_properties[i].uuid)
+#             else:
+#                 dpg.hide_item(self.component_properties[i].uuid)
+#
+#     def component_changed(self):
+#         self.execute()
+#
+#     def change_format(self):
+#         self.format = self.format_option()
+#         for i in range(self.max_component_count):
+#             dpg.configure_item(self.component_properties[i].widget.uuid, format=self.format)
+#
+#     def execute(self):
+#         if self.input.fresh_input:
+#             value = self.input()
+#             t = type(value)
+#             if t == str:
+#                 if value == 'bang':
+#                     output_array = np.ndarray(self.current_component_count)
+#                     for i in range(self.current_component_count):
+#                         output_array[i] = self.component_properties[i]()
+#                     self.output.set_value(output_array)
+#                 else:
+#                     if self.vector_format_input() == 'list':
+#                         value = string_to_list(value)
+#                         t = list
+#                     elif self.vector_format_input() == 'numpy':
+#                         value = string_to_array(value)
+#                         t = np.ndarray
+#                     elif self.vector_format_input() == 'torch':
+#                         value = string_to_tensor(value)
+#                         t = torch.tensor
+#             if t == list:
+#                 value = any_to_numerical_list(value)
+#                 if self.vector_format_input() == 'list':
+#                     self.output_vector = value.copy()
+#                 elif self.vector_format_input() == 'numpy':
+#                     self.output_vector = np.array(value)
+#                 elif self.vector_format_input() == 'torch':
+#                     self.output_vector = torch.tensor(value)
+#
+#             elif t in [float, int, np.double, np.int64]:
+#                 if self.vector_format_input() == 'list':
+#                     self.output_vector = [value]
+#                 elif self.vector_format_input() == 'numpy':
+#                     self.output_vector = np.array([value])
+#                 elif self.vector_format_input() == 'torch':
+#                     self.output_vector = torch.tensor([value])
+#
+#             elif t == np.ndarray:
+#                 if self.vector_format_input() == 'list':
+#                     self.output_vector = value.tolist()
+#                 elif self.vector_format_input() == 'numpy':
+#                     self.output_vector = value.copy()
+#                 elif self.vector_format_input() == 'torch':
+#                     self.output_vector = torch.from_numpy(value)
+#
+#             elif t == torch.Tensor:
+#                 if self.vector_format_input() == 'list':
+#                     self.output_vector = value.tolist()
+#                 elif self.vector_format_input() == 'numpy':
+#                     self.output_vector = value.numpy()
+#                 elif self.vector_format_input() == 'torch':
+#                     self.output_vector = value.clone()
+#
+#             if type(self.output_vector) == np.ndarray:
+#                 if self.current_component_count != self.output_vector.size:
+#                     self.component_count_property.set(self.output_vector.size)
+#             elif type(self.output_vector) == torch.Tensor:
+#                 if self.current_component_count != self.output_vector.numel():
+#                     self.component_count_property.set(self.output_vector.numel())
+#             elif type(self.output_vector) == list:
+#                 if self.current_component_count != len(self.output_vector):
+#                     self.component_count_property.set(len(self.output_vector))
+#             self.current_component_count = self.component_count_property()
+#
+#             if self.current_component_count > self.max_component_count:
+#                 self.current_component_count = self.max_component_count
+#             for i in range(self.max_component_count):
+#                 if i < self.current_component_count:
+#                     dpg.show_item(self.component_properties[i].uuid)
+#                     self.component_properties[i].set(any_to_float(self.output_vector[i]))
+#                 else:
+#                     dpg.hide_item(self.component_properties[i].uuid)
+#                 self.output.set_value(self.output_vector)
+#         else:
+#             did_set = False
+#             if self.active_input is not None:
+#                 which = self.active_input.input_index - self.first_component_input_index
+#                 if which >= 0:
+#                     if which < self.current_component_count:
+#                         self.output_vector[which] = self.component_properties[which]()
+#                         did_set = True
+#             # elif self.vector_format_input() == 'torch':
+#             #     self.output_vector[which] = self.component_properties[which]()
+#             # else:
+#             #     self.output_vector[which] = self.component_properties[which]()
+#                 self.output.set_value(self.output_vector)
+#             if not did_set:
+#                 for i in range(self.current_component_count):
+#                     self.component_properties[i].set(any_to_float(self.output_vector[i]))
+#                 self.output.set_value(self.output_vector)
+#         self.output.send()
+
+class Vector2DNode(Node):
     @staticmethod
     def factory(name, data, args=None):
-        node = VectorNode(name, data, args)
+        node = Vector2DNode(name, data, args)
         return node
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
         self.max_component_count = 64
+        dim1 = 4
+        dim2 = 1
         if len(args) > 0:
-            self.max_component_count = any_to_int(args[0])
+            dim1 = int(args[0])
+        if len(args) > 1:
+            dim2 = int(args[1])
+
         self.format = '%.3f'
 
-        self.current_component_count = self.arg_as_int(default_value=4)
+        self.current_dims = [dim1, dim2]
 
         self.input = self.add_input('in', triggers_execution=True)
         self.input.bang_repeats_previous = False
+        self.output_vector = None
+        self.component_properties = []
+        if dim2 > 8:
+            dim2 = 8
+        kwargs = {'columns': dim2}
+        for i in range(self.max_component_count):
+            cp = self.add_input('row ' + str(i), widget_type='drag_float_n', callback=self.component_changed, **kwargs)
+            self.component_properties.append(cp)
+
         self.zero_input = self.add_input('zero', widget_type='button', callback=self.zero)
-        self.vector_format_input = self.add_input('###vector format', widget_type='combo', default_value='numpy', callback=self.vector_format_changed)
+        self.vector_format_input = self.add_input('output type', widget_type='combo', default_value='numpy', callback=self.vector_format_changed)
         if Node.app.torch_available:
             self.vector_format_input.widget.combo_items = ['numpy', 'torch', 'list']
         else:
             self.vector_format_input.widget.combo_items = ['numpy', 'list']
-        self.output_vector = None
-        self.component_properties = []
-        for i in range(self.max_component_count):
-            cp = self.add_input('##' + str(i), widget_type='drag_float', callback=self.component_changed)
-            self.component_properties.append(cp)
-
         self.output = self.add_output('out')
 
-        self.component_count_property = self.add_option('component count', widget_type='drag_int', default_value=self.current_component_count, callback=self.component_count_changed)
+        self.component_count_property = self.add_option('component count', widget_type='drag_int', default_value=self.current_dims[0], callback=self.component_count_changed)
         self.format_option = self.add_option(label='number format', widget_type='text_input', default_value=self.format, callback=self.change_format)
-        self.output_vector = np.zeros(self.current_component_count)
+        self.output_vector = np.zeros(self.current_dims)
 
         self.first_component_input_index = -1
 
@@ -1360,7 +2108,7 @@ class VectorNode(Node):
                 self.output_vector = self.output_vector.tolist()
         elif t == torch.Tensor:
             if vf == 'numpy':
-                self.output_vector = torch.numpy(self.output_vector)
+                self.output_vector = self.output_vector.numpy()
             elif vf == 'list':
                 self.output_vector = self.output_vector.tolist()
         elif t == list:
@@ -1370,59 +2118,91 @@ class VectorNode(Node):
                 self.output_vector = torch.tensor(self.output_vector)
 
     def zero(self):
+        not_zeroed = True
         if self.vector_format_input() == 'numpy':
-            self.output_vector = np.zeros(self.current_component_count)
+            if self.current_dims[0] == self.output_vector.shape[0]:
+                if self.current_dims[1] == 1 and len(self.output_vector.shape) == 1:
+                    self.output_vector = np.zeros(self.current_dims[0])
+                    not_zeroed = False
+            if not_zeroed:
+                self.output_vector = np.zeros(self.current_dims)
+
         elif self.vector_format_input() == 'torch':
-            self.output_vector = torch.zeros(self.current_component_count)
+            if self.current_dims[0] == self.output_vector.shape[0]:
+                if self.current_dims[1] == 1 and len(self.output_vector.shape) == 1:
+                    self.output_vector = torch.zeros(self.current_dims[0])
+                    not_zeroed = False
+            if not_zeroed:
+                self.output_vector = torch.zeros(self.current_dims)
         else:
-            self.output_vector = [0.0] * self.current_component_count
+            if self.current_dims[0] == len(self.output_vector):
+                if self.current_dims[1] == 1 and not isinstance(self.output_vector[0], list):
+                    self.output_vector = [0.0] * self.current_dims[0]
+                    not_zeroed = False
+            if not_zeroed:
+                self.output_vector = [[0.0] * self.current_dims[0]] * self.current_dims[1]
         self.execute()
 
     def get_preset_state(self):
         preset = {}
         values = []
-        for i in range(self.current_component_count):
-            values.append(self.component_properties[i]())
+        for i in range(self.current_dims[0]):
+            values.append(list(self.output_vector[i]))
         preset['values'] = values
         return preset
 
     def set_preset_state(self, preset):
         if 'values' in preset:
             values = preset['values']
-            count = len(values)
-            if count != self.current_component_count:
-                self.component_count_property.set(count)
-                self.component_count_changed()
-            for i in range(self.current_component_count):
-                self.component_properties[i].widget.set(values[i])
+            self.input._data = values
+            self.input.fresh_input = True
             self.execute()
 
     def custom_create(self, from_file):
         for i in range(self.max_component_count):
-            if i < self.current_component_count:
+            if i < self.current_dims[0]:
                 dpg.show_item(self.component_properties[i].uuid)
+                for uuid in self.component_properties[i].widget.uuids:
+                    dpg.show_item(uuid)
             else:
                 dpg.hide_item(self.component_properties[i].uuid)
+                for uuid in self.component_properties[i].widget.uuids:
+                    dpg.hide_item(uuid)
         self.first_component_input_index = self.component_properties[0].input_index
 
     def component_count_changed(self):
-        self.current_component_count = self.component_count_property()
-        if self.current_component_count > self.max_component_count:
-            self.current_component_count = self.max_component_count
-            self.component_count_property.set(self.current_component_count)
+        self.current_dims[0] = self.component_count_property()
         for i in range(self.max_component_count):
-            if i < self.current_component_count:
+            if i < self.current_dims[0]:
                 dpg.show_item(self.component_properties[i].uuid)
+                for uuid in self.component_properties[i].widget.uuids:
+                    dpg.show_item(uuid)
             else:
                 dpg.hide_item(self.component_properties[i].uuid)
+                for uuid in self.component_properties[i].widget.uuids:
+                    dpg.hide_item(uuid)
+        # if type(self.output_vector) == np.ndarray:
+        #     if tuple(self.current_dims) != self.output_vector.shape:
+        #         self.component_count_property.set(self.output_vector.shape[0])
+        # elif type(self.output_vector) == torch.Tensor:
+        #     if self.current_dims != self.output_vector.shape:
+        #         self.component_count_property.set(self.output_vector.shape[0])
+        # elif type(self.output_vector) == list:
+        #     if self.current_dims != len(self.output_vector):
+        #         self.component_count_property.set(len(self.output_vector))
 
     def component_changed(self):
-        self.execute()
+        if self.first_component_input_index != -1:
+            input = self.active_input()
+            # print(input)
+            self.active_input.widget.set(any_to_list(input))
+            self.execute()
 
     def change_format(self):
         self.format = self.format_option()
         for i in range(self.max_component_count):
-            dpg.configure_item(self.component_properties[i].widget.uuid, format=self.format)
+            for uuid in self.component_properties[i].widget.uuids:
+                dpg.configure_item(uuid, format=self.format)
 
     def execute(self):
         if self.input.fresh_input:
@@ -1430,9 +2210,10 @@ class VectorNode(Node):
             t = type(value)
             if t == str:
                 if value == 'bang':
-                    output_array = np.ndarray(self.current_component_count)
-                    for i in range(self.current_component_count):
-                        output_array[i] = self.component_properties[i]()
+                    output_array = np.ndarray(self.current_dims)
+                    for i in range(self.current_dims[0]):
+                        for j in range(self.current_dims[1]):
+                            output_array[i, j] = self.component_properties[i, j]()
                     self.output.set_value(output_array)
                 else:
                     if self.vector_format_input() == 'list':
@@ -1445,6 +2226,13 @@ class VectorNode(Node):
                         value = string_to_tensor(value)
                         t = torch.tensor
             if t == list:
+                dim1 = len(value)
+                dim2 = 1
+                if type(value[0]) is list:
+                    dim2 = len(value[0])
+                new_dims = [dim1, dim2]
+                if new_dims != self.current_dims:
+                    self.current_dims = new_dims
                 value = any_to_numerical_list(value)
                 if self.vector_format_input() == 'list':
                     self.output_vector = value.copy()
@@ -1460,8 +2248,10 @@ class VectorNode(Node):
                     self.output_vector = np.array([value])
                 elif self.vector_format_input() == 'torch':
                     self.output_vector = torch.tensor([value])
+                self.current_dims = [1, 1]
 
             elif t == np.ndarray:
+                self.current_dims = list(value.shape)
                 if self.vector_format_input() == 'list':
                     self.output_vector = value.tolist()
                 elif self.vector_format_input() == 'numpy':
@@ -1470,6 +2260,7 @@ class VectorNode(Node):
                     self.output_vector = torch.from_numpy(value)
 
             elif t == torch.Tensor:
+                self.current_dims = list(value.shape)
                 if self.vector_format_input() == 'list':
                     self.output_vector = value.tolist()
                 elif self.vector_format_input() == 'numpy':
@@ -1478,32 +2269,39 @@ class VectorNode(Node):
                     self.output_vector = value.clone()
 
             if type(self.output_vector) == np.ndarray:
-                if self.current_component_count != self.output_vector.size:
-                    self.component_count_property.set(self.output_vector.size)
+                if tuple(self.current_dims) != self.output_vector.shape or self.component_count_property() != self.current_dims[0]:
+                    self.component_count_property.set(self.output_vector.shape[0])
             elif type(self.output_vector) == torch.Tensor:
-                if self.current_component_count != self.output_vector.numel():
-                    self.component_count_property.set(self.output_vector.numel())
+                if self.current_dims != self.output_vector.shape or self.component_count_property() != self.current_dims[0]:
+                    self.component_count_property.set(self.output_vector.shape[0])
             elif type(self.output_vector) == list:
-                if self.current_component_count != len(self.output_vector):
+                if self.current_dims != len(self.output_vector) or self.component_count_property() != self.current_dims[0]:
                     self.component_count_property.set(len(self.output_vector))
-            self.current_component_count = self.component_count_property()
+            # self.current_component_count = self.component_count_property()
 
-            if self.current_component_count > self.max_component_count:
-                self.current_component_count = self.max_component_count
+            if self.current_dims[0] > self.max_component_count:
+                self.current_dims[0] = self.max_component_count
             for i in range(self.max_component_count):
-                if i < self.current_component_count:
+                if i < self.current_dims[0]:
                     dpg.show_item(self.component_properties[i].uuid)
-                    self.component_properties[i].set(any_to_float(self.output_vector[i]))
+                    for uuid in self.component_properties[i].widget.uuids:
+                        dpg.show_item(uuid)
+                    self.component_properties[i].set(any_to_list(self.output_vector[i]))
                 else:
                     dpg.hide_item(self.component_properties[i].uuid)
+                    for uuid in self.component_properties[i].widget.uuids:
+                        dpg.hide_item(uuid)
                 self.output.set_value(self.output_vector)
         else:
             did_set = False
             if self.active_input is not None:
                 which = self.active_input.input_index - self.first_component_input_index
                 if which >= 0:
-                    if which < self.current_component_count:
-                        self.output_vector[which] = self.component_properties[which]()
+                    if which < self.current_dims[0]:
+                        if self.vector_format_input() == 'torch':
+                            self.output_vector[which] = torch.tensor(self.component_properties[which]())
+                        else:
+                            self.output_vector[which] = self.component_properties[which]()
                         did_set = True
             # elif self.vector_format_input() == 'torch':
             #     self.output_vector[which] = self.component_properties[which]()
@@ -1511,8 +2309,8 @@ class VectorNode(Node):
             #     self.output_vector[which] = self.component_properties[which]()
                 self.output.set_value(self.output_vector)
             if not did_set:
-                for i in range(self.current_component_count):
-                    self.component_properties[i].set(any_to_float(self.output_vector[i]))
+                for i in range(self.current_dims[0]):
+                    self.component_properties[i].set(any_to_list(self.output_vector[i]))
                 self.output.set_value(self.output_vector)
         self.output.send()
 
