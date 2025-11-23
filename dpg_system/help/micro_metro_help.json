@@ -1,17 +1,17 @@
 {
-    "height": 666,
-    "width": 1309,
+    "height": 616,
+    "width": 1268,
     "position": [
-        100,
-        100
+        268,
+        516
     ],
-    "id": 695,
+    "id": 1503,
     "name": "micro_metro_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/micro_metro_help.json",
     "nodes": {
         "0": {
             "name": "",
-            "id": 722,
+            "id": 1530,
             "position_x": 0,
             "position_y": 0,
             "width": 9,
@@ -30,7 +30,7 @@
         },
         "1": {
             "name": "micro_metro",
-            "id": 740,
+            "id": 1548,
             "position_x": 34,
             "position_y": 131,
             "width": 129,
@@ -59,7 +59,7 @@
         "2": {
             "init": "comment micro_metro",
             "name": "comment",
-            "id": 807,
+            "id": 1615,
             "position_x": 13,
             "position_y": 11,
             "width": 439,
@@ -83,13 +83,13 @@
         },
         "3": {
             "name": "text_block",
-            "id": 818,
-            "position_x": 491,
-            "position_y": 1,
+            "id": 1626,
+            "position_x": 464,
+            "position_y": 3,
             "width": 798,
             "height": 580,
             "visibility": "show_all",
-            "draggable": false,
+            "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
@@ -122,7 +122,7 @@
         },
         "4": {
             "name": "counter",
-            "id": 835,
+            "id": 1643,
             "position_x": 185,
             "position_y": 180,
             "width": 123,
@@ -145,7 +145,7 @@
         },
         "5": {
             "name": "int",
-            "id": 944,
+            "id": 1752,
             "position_x": 332,
             "position_y": 221,
             "width": 127,
@@ -156,7 +156,7 @@
             "properties": {
                 "0": {
                     "name": "",
-                    "value": 225,
+                    "value": 153,
                     "value_type": "int"
                 },
                 "1": {
@@ -198,7 +198,7 @@
         },
         "6": {
             "name": "elapsed",
-            "id": 1009,
+            "id": 1817,
             "position_x": 185,
             "position_y": 302,
             "width": 143,
@@ -209,7 +209,7 @@
             "properties": {
                 "0": {
                     "name": "",
-                    "value": 1.3267993927001953,
+                    "value": 3.162860870361328,
                     "value_type": "float"
                 },
                 "1": {
@@ -226,9 +226,9 @@
         },
         "7": {
             "name": "close",
-            "id": 1058,
-            "position_x": 1189,
-            "position_y": 562,
+            "id": 1866,
+            "position_x": 35,
+            "position_y": 513,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -245,31 +245,31 @@
     },
     "links": {
         "0": {
-            "source_node": 740,
+            "source_node": 1548,
             "source_node_name": "micro_metro",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 835,
+            "dest_node": 1643,
             "dest_node_name": "counter",
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
         "1": {
-            "source_node": 740,
+            "source_node": 1548,
             "source_node_name": "micro_metro",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 1009,
+            "dest_node": 1817,
             "dest_node_name": "elapsed",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "2": {
-            "source_node": 835,
+            "source_node": 1643,
             "source_node_name": "counter",
             "source_output_index": 0,
             "source_output_name": "count out",
-            "dest_node": 944,
+            "dest_node": 1752,
             "dest_node_name": "int",
             "dest_input_index": 0,
             "dest_input_name": ""

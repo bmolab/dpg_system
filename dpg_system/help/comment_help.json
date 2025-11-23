@@ -1,0 +1,215 @@
+{
+    "height": 577,
+    "width": 1190,
+    "position": [
+        455,
+        231
+    ],
+    "id": 2797,
+    "name": "comment_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/comment_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 2824,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment This is a comment!",
+            "name": "comment",
+            "id": 2858,
+            "position_x": 37,
+            "position_y": 110,
+            "width": 119,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "This is a comment!",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "This is a comment!"
+        },
+        "2": {
+            "init": "comment comment - add a single line text comment",
+            "name": "comment",
+            "id": 2877,
+            "position_x": 32,
+            "position_y": 8,
+            "width": 500,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "comment - add a single line text comment",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "comment - add a single line text comment"
+        },
+        "3": {
+            "init": "comment This is a 30 point comment!",
+            "name": "comment",
+            "id": 2896,
+            "position_x": 37,
+            "position_y": 161,
+            "width": 216,
+            "height": 33,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "This is a 30 point comment!",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "comment": "This is a 30 point comment!"
+        },
+        "4": {
+            "init": "comment This is a 36 point comment!",
+            "name": "comment",
+            "id": 2915,
+            "position_x": 37,
+            "position_y": 220,
+            "width": 257,
+            "height": 36,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "This is a 36 point comment!",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "36",
+                    "value_type": "string"
+                }
+            },
+            "comment": "This is a 36 point comment!"
+        },
+        "5": {
+            "init": "comment This is a 48 point comment!",
+            "name": "comment",
+            "id": 2934,
+            "position_x": 39,
+            "position_y": 279,
+            "width": 340,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "This is a 48 point comment!",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "This is a 48 point comment!"
+        },
+        "6": {
+            "name": "text_block",
+            "id": 2953,
+            "position_x": 420,
+            "position_y": 62,
+            "width": 736,
+            "height": 469,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The comment node places floating text directly onto the node graph canvas. \n\nUnlike standard nodes, it renders with a transparent background, no border, and no title bar,\nmaking it look like a simple label. \n\nYou use this node to annotate your patch, label groups of nodes, add instructions, \nor leave notes for yourself without affecting the data flow.\n\nSYNTAX:\ncomment <text: string>\n\nEXAMPLE:\ncomment Audio Processing Section\n\nOPTIONS: (options are only visible if you select the comment and press the 'o' key).\n\ntext: \nThe content of the label. \nYou can type here to update the displayed message on the canvas.\n\nfont size:\nSelects the visual size of the text. \nAvailable options are 24, 30, 36, and 48.\n\nOUTPUTS: \n\nNone. \nThis node is purely visual and has no data output.",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 728,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 453,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "The comment node places floating text directly onto the node graph canvas. \n\nUnlike standard nodes, it renders with a transparent background, no border, and no title bar,\nmaking it look like a simple label. \n\nYou use this node to annotate your patch, label groups of nodes, add instructions, \nor leave notes for yourself without affecting the data flow.\n\nSYNTAX:\ncomment <text: string>\n\nEXAMPLE:\ncomment Audio Processing Section\n\nOPTIONS: (options are only visible if you select the comment and press the 'o' key).\n\ntext: \nThe content of the label. \nYou can type here to update the displayed message on the canvas.\n\nfont size:\nSelects the visual size of the text. \nAvailable options are 24, 30, 36, and 48.\n\nOUTPUTS: \n\nNone. \nThis node is purely visual and has no data output."
+        },
+        "7": {
+            "name": "close",
+            "id": 2978,
+            "position_x": 57,
+            "position_y": 455,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {}
+}

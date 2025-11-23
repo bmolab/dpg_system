@@ -1,0 +1,133 @@
+{
+    "height": 518,
+    "width": 1027,
+    "position": [
+        593,
+        118
+    ],
+    "id": 3355,
+    "name": "save_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/save_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 3382,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment save - save the patcher containing this save node",
+            "name": "comment",
+            "id": 3408,
+            "position_x": 20,
+            "position_y": 10,
+            "width": 611,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "save - save the patcher containing this save node",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "save - save the patcher containing this save node"
+        },
+        "2": {
+            "name": "save",
+            "id": 3427,
+            "position_x": 31,
+            "position_y": 86,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "save",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "3": {
+            "name": "close",
+            "id": 3458,
+            "position_x": 31,
+            "position_y": 382,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "4": {
+            "name": "text_block",
+            "id": 3514,
+            "position_x": 169,
+            "position_y": 71,
+            "width": 848,
+            "height": 316,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The save node provides a mechanism to save the patcher that contains the save node.\n\nIt renders a distinct green button that writes the current state of the project and node layout to disk \nwhen activated. \n\nYou use this node if you are likely to regularly save the containing patcher.\n\nSYNTAX:\nsave\n\nEXAMPLE:\nsave\n\nINPUTS and PARAMETERS:\n\nsave: \nA trigger input and button. \nReceiving a signal here, or manually clicking the green button, saves the patcher\n",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 840,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "The save node provides a mechanism to save the patcher that contains the save node.\n\nIt renders a distinct green button that writes the current state of the project and node layout to disk \nwhen activated. \n\nYou use this node if you are likely to regularly save the containing patcher.\n\nSYNTAX:\nsave\n\nEXAMPLE:\nsave\n\nINPUTS and PARAMETERS:\n\nsave: \nA trigger input and button. \nReceiving a signal here, or manually clicking the green button, saves the patcher\n"
+        }
+    },
+    "links": {}
+}

@@ -614,6 +614,8 @@ class MicrosecondTimerNode(Node):
     def __del__(self):
         self.cleanup()
 
+# HELP done to here ------
+
 class ClampNode(Node):
     @staticmethod
     def factory(name, data, args=None):

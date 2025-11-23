@@ -1,0 +1,268 @@
+{
+    "height": 556,
+    "width": 1001,
+    "position": [
+        593,
+        118
+    ],
+    "id": 3355,
+    "name": "tick_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/tick_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 3382,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment save - save the patcher containing this save node",
+            "name": "comment",
+            "id": 3408,
+            "position_x": 15,
+            "position_y": 1,
+            "width": 844,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "tick - this sends a 'bang' once per main thread render loop (60 fps)",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "tick - this sends a 'bang' once per main thread render loop (60 fps)"
+        },
+        "2": {
+            "name": "close",
+            "id": 3458,
+            "position_x": 35,
+            "position_y": 400,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "3": {
+            "name": "text_block",
+            "id": 3543,
+            "position_x": 263,
+            "position_y": 48,
+            "width": 725,
+            "height": 460,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "\nThe tick node generates a continuous stream of trigger signals synchronized with \nthe application's visual update loop (frame rate).\n\nIt sends a \"bang\" message every single time the screen redraws, which is typically \n60 times per second depending on your system's performance. \n\nYou use this node to drive smooth per-frame animations, to continuously poll data sources, \nor to trigger logic that must run as fast as possible without delay.\n\nSYNTAX:\ntick\n\nEXAMPLE:\ntick\n\nINPUTS and PARAMETERS:\n\n[checkbox input]: \nAn unnamed checkbox control serving as an on/off switch.\nWhen checked (default), the node fires every frame. \nWhen unchecked, the node stops sending signals.\n\nOUTPUTS: \n\noutput:\nSends a \"bang\" trigger once every frame while the node is enabled.",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 717,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 444,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "\nThe tick node generates a continuous stream of trigger signals synchronized with \nthe application's visual update loop (frame rate).\n\nIt sends a \"bang\" message every single time the screen redraws, which is typically \n60 times per second depending on your system's performance. \n\nYou use this node to drive smooth per-frame animations, to continuously poll data sources, \nor to trigger logic that must run as fast as possible without delay.\n\nSYNTAX:\ntick\n\nEXAMPLE:\ntick\n\nINPUTS and PARAMETERS:\n\n[checkbox input]: \nAn unnamed checkbox control serving as an on/off switch.\nWhen checked (default), the node fires every frame. \nWhen unchecked, the node stops sending signals.\n\nOUTPUTS: \n\noutput:\nSends a \"bang\" trigger once every frame while the node is enabled."
+        },
+        "4": {
+            "name": "tick",
+            "id": 3568,
+            "position_x": 24,
+            "position_y": 88,
+            "width": 33,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "5": {
+            "name": "elapsed",
+            "id": 3619,
+            "position_x": 85,
+            "position_y": 86,
+            "width": 143,
+            "height": 62,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 17.581939697265625,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "output integers",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "6": {
+            "name": "counter",
+            "id": 3677,
+            "position_x": 76,
+            "position_y": 184,
+            "width": 123,
+            "height": 94,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "count",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "step",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "7": {
+            "name": "int",
+            "id": 3787,
+            "position_x": 80,
+            "position_y": 292,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 39,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 3568,
+            "source_node_name": "tick",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 3619,
+            "dest_node_name": "elapsed",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 3568,
+            "source_node_name": "tick",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 3677,
+            "dest_node_name": "counter",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "2": {
+            "source_node": 3677,
+            "source_node_name": "counter",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 3787,
+            "dest_node_name": "int",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}
