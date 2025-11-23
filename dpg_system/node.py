@@ -1857,6 +1857,7 @@ class Node:
         self.message_handlers = {}
         self.message_handlers['set_preset'] = self.set_preset_state
         self.message_handlers['get_preset'] = self.get_preset_state
+        self.message_handlers['options'] = self.show_options
         self.message_handled = False
 
         self.property_registery = {}
@@ -2403,6 +2404,18 @@ class Node:
                     dpg.hide_item(option_att.uuid)
                     dpg.hide_item(option_att.widget.uuid)
 
+    def show_options(self, message, value) -> None:
+        if len(self.options) > 0:
+            value = any_to_int(value)
+            if value:
+                for option_att in self.options:
+                    dpg.show_item(option_att.uuid)
+                    dpg.show_item(option_att.widget.uuid)
+            else:
+                for option_att in self.options:
+                    dpg.hide_item(option_att.uuid)
+                    dpg.hide_item(option_att.widget.uuid)
+
     def check_for_messages(self, in_data: Union[str, List[Any]]) -> bool:
         self.message_handled = False
         if len(self.message_handlers) > 0:
@@ -2423,11 +2436,6 @@ class Node:
                 if message in self.message_handlers:
                     self.message_handlers[message](message, message_data)
                     self.message_handled = True
-                # else:  # maybe two words in message header
-                #     message = ' '.join(message.split('_'))
-                #     if message in self.message_handlers:
-                #         self.message_handlers[message](message, message_data)
-                #         handled = True
         return self.message_handled
 
     def save_custom(self, container: Dict[str, Any]):

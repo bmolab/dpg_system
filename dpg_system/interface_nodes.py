@@ -25,25 +25,21 @@ def register_interface_nodes():
     Node.app.register_node("list", ValueNode.factory)
     Node.app.register_node("knob", ValueNode.factory)
 
-    Node.app.register_node('param', ParamValueNode.factory)
-    Node.app.register_node('param_slider', ParamValueNode.factory)
-    Node.app.register_node('param_float', ParamValueNode.factory)
-    Node.app.register_node('param_int', ParamValueNode.factory)
-    Node.app.register_node('param_message', ParamValueNode.factory)
-    Node.app.register_node('param_string', ParamValueNode.factory)
-    Node.app.register_node('param_knob', ParamValueNode.factory)
+    # Node.app.register_node('param', ValueNode.factory)
+    Node.app.register_node('param_slider', ValueNode.factory)
+    Node.app.register_node('param_float', ValueNode.factory)
+    Node.app.register_node('param_int', ValueNode.factory)
+    Node.app.register_node('param_message', ValueNode.factory)
+    Node.app.register_node('param_string', ValueNode.factory)
+    Node.app.register_node('param_list', ValueNode.factory)
+    Node.app.register_node('param_knob', ValueNode.factory)
 
-    # Node.app.register_node("plot", PlotNode.factory)
-    # Node.app.register_node("heat_map", PlotNode.factory)
-    # Node.app.register_node("heat_scroll", PlotNode.factory)
-    # Node.app.register_node("profile", PlotNode.factory)
-    # Node.app.register_node("Value Tool", ValueNode.factory)
     Node.app.register_node('print', PrintNode.factory)
     Node.app.register_node('load_action', LoadActionNode.factory)
     Node.app.register_node('load_bang', LoadActionNode.factory)
     Node.app.register_node('color', ColorPickerNode.factory)
     Node.app.register_node('vector', Vector2DNode.factory)
-    # Node.app.register_node('vector2d', Vector2DNode.factory)
+
     Node.app.register_node('radio', RadioButtonsNode.factory)
     Node.app.register_node('radio_h', RadioButtonsNode.factory)
     Node.app.register_node('radio_v', RadioButtonsNode.factory)
@@ -827,14 +823,13 @@ class ValueNode(Node):
     @staticmethod
     def factory(name, data, args=None):
         base_name = name.split('_')[-1]
-
-        if base_name == 'float':
+        if base_name in ['float']:
             return FloatNode(name, data, args)
-        elif base_name == 'int':
+        elif base_name in ['int']:
             return IntNode(name, data, args)
-        elif base_name == 'slider':
+        elif base_name in ['slider']:
             return SliderNode(name, data, args)
-        elif base_name == 'knob':
+        elif base_name in ['knob']:
             return KnobNode(name, data, args)
         elif base_name in ['string', 'message', 'list']:
             return StringNode(name, data, args)
@@ -846,11 +841,15 @@ class ValueNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
+        self.param_name = None
+
         # --- Parsing Prefixes ---
         if label.startswith('osc_'):
             self.ordered_args = self.ordered_args[2:]
         elif label.startswith('param_'):
-            self.ordered_args = self.ordered_args[1:]
+            self.param_name = self.ordered_args[0]
+            if len(self.ordered_args) > 0:
+                self.ordered_args = self.ordered_args[1:]
 
         # --- Common State ---
         self.value = dpg.generate_uuid()
@@ -896,6 +895,9 @@ class ValueNode(Node):
                 callback=self.large_font_changed
             )
             self.large_text_option.widget.combo_items = ['24', '30', '36', '48']
+
+        if self.param_name is not None:
+            self.param_name_option = self.add_option('parameter name', widget_type='text_input', default_value=self.param_name)
 
     # --- Button Handlers ---
     def increment_widget(self, widget):
@@ -989,7 +991,11 @@ class ValueNode(Node):
             self.execute()
 
     def do_send(self, value):
-        self.outputs[0].send(value)
+        if self.param_name:
+            output_list = [self.param_name_option(), value]
+            self.output.send(output_list)
+        else:
+            self.outputs[0].send(value)
 
     def _parse_text_input(self, text_value):
         """
@@ -1203,7 +1209,10 @@ class FloatNode(NumericValueNode):
 
         self.input = self.add_float_input('', triggers_execution=True, widget_type=self.widget_type,
                                           widget_uuid=self.value, widget_width=self.widget_width, trigger_button=True)
-        self.output = self.add_float_output('float out')
+        if self.param_name is not None:
+            self.output = self.add_output(self.param_name + ' out')
+        else:
+            self.output = self.add_float_output('float out')
         self.create_numeric_options()
 
     def cast_value(self, value):
@@ -1232,7 +1241,10 @@ class IntNode(NumericValueNode):
         self.input = self.add_int_input('', triggers_execution=True, widget_type=self.widget_type,
                                         widget_uuid=self.value, widget_width=self.widget_width, trigger_button=True,
                                         **kwargs)
-        self.output = self.add_int_output('int out')
+        if self.param_name is not None:
+            self.output = self.add_output(self.param_name + ' out')
+        else:
+            self.output = self.add_int_output('int out')
         self.create_numeric_options()
 
     def cast_value(self, value):
@@ -1265,12 +1277,18 @@ class SliderNode(NumericValueNode):
             self.input = self.add_int_input('', triggers_execution=True, widget_type=self.widget_type,
                                             widget_uuid=self.value, widget_width=self.widget_width,
                                             trigger_button=True, max=self.max)
-            self.output = self.add_int_output('int out')
+            if self.param_name is not None:
+                self.output = self.add_output(self.param_name + ' out')
+            else:
+                self.output = self.add_int_output('int out')
         else:
             self.input = self.add_float_input('', triggers_execution=True, widget_type=self.widget_type,
                                               widget_uuid=self.value, widget_width=self.widget_width,
                                               trigger_button=True, max=self.max)
-            self.output = self.add_float_output('float out')
+            if self.param_name is not None:
+                self.output = self.add_output(self.param_name + ' out')
+            else:
+                self.output = self.add_float_output('float out')
 
         self.create_numeric_options()
         if not is_int:
@@ -1304,13 +1322,19 @@ class KnobNode(NumericValueNode):
             self.input = self.add_float_input('', triggers_execution=True, widget_type='knob_float',
                                               widget_uuid=self.value, widget_width=self.widget_width,
                                               trigger_button=True, max=self.max)
-            self.output = self.add_float_output('float out')
+            if self.param_name is not None:
+                self.output = self.add_output(self.param_name + ' out')
+            else:
+                self.output = self.add_float_output('float out')
         else:
             self.format = '%d'
             self.input = self.add_int_input('', triggers_execution=True, widget_type='knob_float',
                                             widget_uuid=self.value, widget_width=self.widget_width,
                                             trigger_button=True, max=self.max)
-            self.output = self.add_int_output('int out')
+            if self.param_name is not None:
+                self.output = self.add_output(self.param_name + ' out')
+            else:
+                self.output = self.add_int_output('int out')
 
         self.create_numeric_options()
 
@@ -1328,12 +1352,15 @@ class StringNode(ValueNode):
                                            widget_uuid=self.value, widget_width=self.widget_width,
                                            trigger_button=True)
 
-        if 'list' in self.label:
-            self.output = self.add_list_output('list out')
-        elif 'message' in self.label:
-            self.output = self.add_output('message out')
+        if self.param_name is not None:
+            self.output = self.add_output(self.param_name + ' out')
         else:
-            self.output = self.add_string_output('string out')
+            if 'list' in self.label:
+                self.output = self.add_list_output('list out')
+            elif 'message' in self.label:
+                self.output = self.add_output('message out')
+            else:
+                self.output = self.add_string_output('string out')
 
         self.grow_option = self.add_option('adapt_width', widget_type='combo', width=150,
                                            default_value='grow_to_fit', callback=self.options_changed)
@@ -1348,9 +1375,7 @@ class StringNode(ValueNode):
         if self.label == 'string':
             return any_to_string(value)
         elif self.label in ['list', 'message']:
-            if isinstance(value, np.ndarray):
-                return value.tolist()
-            return value
+            return any_to_list(value)
         return str(value)
 
 
@@ -1362,7 +1387,10 @@ class TextEditorNode(StringNode):
                                            widget_uuid=self.value, widget_width=self.widget_width,
                                            trigger_button=True)
         self.input.set_strip_returns(False)
-        self.output = self.add_string_output('string out')
+        if self.param_name is not None:
+            self.output = self.add_output(self.param_name + ' out')
+        else:
+            self.output = self.add_string_output('string out')
 
         self.height_option = self.add_option('height', widget_type='drag_int', default_value=200,
                                              callback=self.options_changed)
@@ -2953,18 +2981,30 @@ class KeyNode(Node):
 class ParamValueNode(ValueNode):
     @staticmethod
     def factory(name, data, args=None):
-        node = ParamValueNode(name, data, args)
+        def factory(name, data, args=None):
+            base_name = name.split('_')[-1]
+            if base_name in ['float']:
+                return FloatNode(name, data, args)
+            elif base_name in ['int']:
+                return IntNode(name, data, args)
+            elif base_name in ['slider']:
+                return SliderNode(name, data, args)
+            elif base_name in ['knob']:
+                return KnobNode(name, data, args)
+            elif base_name in ['string', 'message', 'list']:
+                return StringNode(name, data, args)
+            elif base_name == 'text':
+                return TextEditorNode(name, data, args)
+            else:
+                return StringNode(name, data, args)
         return node
 
     def __init__(self, label: str, data, args):
-        ValueNode.__init__(self, label, data, args)
-
         param_name = ''
         if len(args) > 0:
             param_name = args[0]
-            args_ = args[1:]
 
-        super().__init__(label, data, args_)
+        super().__init__(label, data, args)
         self.unparsed_args = args
         self.param_output = self.add_output(param_name)
         self.param_name = self.add_option('parameter name', widget_type='text_input', default_value=param_name, callback=self.param_name_changed)
