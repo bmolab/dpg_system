@@ -953,7 +953,10 @@ class FilterNode(Node):
         input_value = self.input.get_data()
         t = type(input_value)
 
-        if type(self.accum) != t:
+        if t in [int, float]:
+            if type(self.accum) != float:
+                self.accum = float(input_value)
+        elif type(self.accum) != t:
             self.accum = any_to_match(self.accum, input_value)
 
         if t is np.ndarray:

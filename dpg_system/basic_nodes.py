@@ -65,6 +65,7 @@ def register_basic_nodes():
     Node.app.register_node('bucket_brigade', BucketBrigadeNode.factory)
     Node.app.register_node('tick', TickNode.factory)
     Node.app.register_node('comment', CommentNode.factory)
+    Node.app.register_node('text_block', TextBlockNode.factory)
     Node.app.register_node('length', LengthNode.factory)
     Node.app.register_node('time_between', TimeBetweenNode.factory)
     Node.app.register_node('int_replace', IntReplaceNode.factory)
@@ -255,6 +256,73 @@ class CommentNode(Node):
     def set_custom_visibility(self):
         dpg.configure_item(self.uuid, label='')
         dpg.bind_item_theme(self.uuid, CommentNode.comment_theme)
+
+
+class TextBlockNode(Node):
+    theme = None
+    text_block_text_theme = None
+    inited = False
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TextBlockNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.comment_text = 'text_block'
+        if args is not None and len(args) > 0:
+            self.comment_text = ' '.join(args)
+        self.setup_themes()
+        self.text_block = self.add_property('###block', widget_type='text_editor', width=400, default_value='')
+        self.lock_option = self.add_option('lock', widget_type='checkbox', default_value=False, callback=self.lock)
+        self.width_option = self.add_option('width', widget_type='drag_int',
+                                                      default_value=400, callback=self.width_changed)
+        self.height_option = self.add_option('height', widget_type='drag_int',
+                                                      default_value=400, callback=self.height_changed)
+    def lock(self):
+        if self.lock_option():
+            dpg.configure_item(self.text_block.widget.uuid, readonly=True)
+        else:
+            dpg.configure_item(self.text_block.widget.uuid, readonly=False)
+
+    def width_changed(self):
+        dpg.configure_item(self.text_block.widget.uuid, width=self.width_option())
+
+    def height_changed(self):
+        dpg.configure_item(self.text_block.widget.uuid, height=self.height_option())
+
+    def setup_themes(self):
+        if not TextBlockNode.inited:
+            with dpg.theme() as TextBlockNode.theme:
+                with dpg.theme_component(dpg.mvAll):
+                    dpg.add_theme_color(dpg.mvNodeCol_NodeBackground, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundHovered, [0, 0, 0, 0],
+                                        category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundSelected, [0, 0, 0, 0],
+                                        category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_NodeOutline, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_TitleBar, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvThemeCol_FrameBg, [0, 0, 0, 0], category=dpg.mvThemeCat_Core)
+            TextBlockNode.inited = True
+
+    def custom_create(self, from_file):
+        dpg.bind_item_theme(self.uuid, TextBlockNode.theme)
+        dpg.configure_item(self.uuid, label='')
+
+    def save_custom(self, container):
+        container['name'] = 'text_block'
+        container['text'] = self.text_block()
+
+    def load_custom(self, container):
+        text = container['text']
+        self.text_block.set(text)
+        dpg.bind_item_theme(self.uuid, TextBlockNode.theme)
+        dpg.configure_item(self.uuid, label='')
+
+    def set_custom_visibility(self):
+        dpg.configure_item(self.uuid, label='')
+        dpg.bind_item_theme(self.uuid, TextBlockNode.theme)
 
 
 class ClosePatchNode(Node):
@@ -829,7 +897,7 @@ class TimerNode(Node):
         self.units_property.widget.combo_items = ['seconds', 'milliseconds', 'minutes', 'hours']
         self.output = self.add_output("")
 
-        self.output_integers_option = self.add_option('output integers', widget_type='checkbox', default_value=True)
+        self.output_integers_option = self.add_option('output integers', widget_type='checkbox', default_value=False)
 
         if self.mode == 0:
             self.add_frame_task()
