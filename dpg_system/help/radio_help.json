@@ -5,13 +5,13 @@
         100,
         100
     ],
-    "id": 7852,
+    "id": 5334,
     "name": "radio_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/radio_help.json",
     "nodes": {
         "0": {
             "name": "",
-            "id": 7879,
+            "id": 5361,
             "position_x": 0,
             "position_y": 0,
             "width": 9,
@@ -31,7 +31,7 @@
         "1": {
             "init": "comment arguments: list of menu items",
             "name": "comment",
-            "id": 7943,
+            "id": 5379,
             "position_x": 493,
             "position_y": 95,
             "width": 439,
@@ -46,9 +46,9 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             },
             "comment": "arguments: list of radio group items (i.e. 'radio one two three four')"
@@ -56,7 +56,7 @@
         "2": {
             "init": "comment arguments: list of menu items",
             "name": "comment",
-            "id": 7954,
+            "id": 5390,
             "position_x": 494,
             "position_y": 154,
             "width": 224,
@@ -71,9 +71,9 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             },
             "comment": "output: selected item when selected"
@@ -81,7 +81,7 @@
         "3": {
             "init": "select one two three four",
             "name": "select",
-            "id": 7965,
+            "id": 5401,
             "position_x": 241,
             "position_y": 108,
             "width": 45,
@@ -119,7 +119,7 @@
         },
         "4": {
             "name": "b",
-            "id": 8083,
+            "id": 5519,
             "position_x": 307,
             "position_y": 124,
             "width": 22,
@@ -162,7 +162,7 @@
         },
         "5": {
             "name": "b",
-            "id": 8141,
+            "id": 5577,
             "position_x": 339,
             "position_y": 140,
             "width": 22,
@@ -205,7 +205,7 @@
         },
         "6": {
             "name": "b",
-            "id": 8199,
+            "id": 5635,
             "position_x": 373,
             "position_y": 156,
             "width": 22,
@@ -248,7 +248,7 @@
         },
         "7": {
             "name": "b",
-            "id": 8257,
+            "id": 5693,
             "position_x": 409,
             "position_y": 171,
             "width": 22,
@@ -292,7 +292,7 @@
         "8": {
             "init": "comment menu",
             "name": "comment",
-            "id": 8315,
+            "id": 5751,
             "position_x": 46,
             "position_y": 25,
             "width": 70,
@@ -307,9 +307,9 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": true,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
                 }
             },
             "comment": "radio"
@@ -317,7 +317,7 @@
         "9": {
             "init": "comment input: any thing causes output of current selection",
             "name": "comment",
-            "id": 8326,
+            "id": 5762,
             "position_x": 493,
             "position_y": 125,
             "width": 322,
@@ -332,16 +332,16 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             },
             "comment": "input: any thing causes output of current selection"
         },
         "10": {
             "name": "b",
-            "id": 8337,
+            "id": 5773,
             "position_x": 52,
             "position_y": 90,
             "width": 22,
@@ -384,7 +384,7 @@
         },
         "11": {
             "name": "close",
-            "id": 8395,
+            "id": 5831,
             "position_x": 799,
             "position_y": 189,
             "width": 88,
@@ -403,11 +403,11 @@
         "12": {
             "init": "radio one two three four",
             "name": "radio",
-            "id": 8440,
+            "id": 5854,
             "position_x": 121,
             "position_y": 87,
-            "width": 57,
-            "height": 94,
+            "width": 55,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -422,61 +422,61 @@
     },
     "links": {
         "0": {
-            "source_node": 7965,
+            "source_node": 5401,
             "source_node_name": "select",
             "source_output_index": 0,
             "source_output_name": "one",
-            "dest_node": 8083,
+            "dest_node": 5519,
             "dest_node_name": "b",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "1": {
-            "source_node": 7965,
+            "source_node": 5401,
             "source_node_name": "select",
             "source_output_index": 1,
             "source_output_name": "two",
-            "dest_node": 8141,
+            "dest_node": 5577,
             "dest_node_name": "b",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "2": {
-            "source_node": 7965,
+            "source_node": 5401,
             "source_node_name": "select",
             "source_output_index": 2,
             "source_output_name": "three",
-            "dest_node": 8199,
+            "dest_node": 5635,
             "dest_node_name": "b",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "3": {
-            "source_node": 7965,
+            "source_node": 5401,
             "source_node_name": "select",
             "source_output_index": 3,
             "source_output_name": "four",
-            "dest_node": 8257,
+            "dest_node": 5693,
             "dest_node_name": "b",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "4": {
-            "source_node": 8337,
+            "source_node": 5773,
             "source_node_name": "b",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 8440,
+            "dest_node": 5854,
             "dest_node_name": "radio",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "5": {
-            "source_node": 8440,
+            "source_node": 5854,
             "source_node_name": "radio",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 7965,
+            "dest_node": 5401,
             "dest_node_name": "select",
             "dest_input_index": 0,
             "dest_input_name": "in"

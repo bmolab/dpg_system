@@ -210,7 +210,8 @@ class CommentNode(Node):
         self.setup_themes()
         self.comment_label = self.add_label(self.comment_text)
         self.comment_text_option = self.add_option('text', widget_type='text_input', width=200, default_value=self.comment_text, callback=self.comment_changed)
-        self.large_text_option = self.add_option('large', widget_type='checkbox', default_value=False, callback=self.large_font_changed)
+        self.font_size_option = self.add_option('font size', widget_type='combo', default_value='24', callback=self.large_font_changed)
+        self.font_size_option.widget.combo_items = ['24', '30', '36', '48']
 
     def setup_themes(self):
         if not CommentNode.inited:
@@ -226,14 +227,17 @@ class CommentNode(Node):
             CommentNode.inited = True
 
     def large_font_changed(self):
-        use_large = self.large_text_option()
-        if use_large:
-            self.comment_label.widget.set_font(self.app.large_font)
-            self.comment_text_option.widget.set_font(self.app.default_font)
-            self.large_text_option.widget.set_font(self.app.default_font)
-            self.comment_text_option.widget.adjust_to_text_width()
-        else:
-            self.set_font(self.app.default_font)
+        font_size = self.font_size_option()
+        if font_size == '24':
+            self.comment_label.widget.set_font(self.app.font_24)
+        elif font_size == '30':
+            self.comment_label.widget.set_font(self.app.font_30)
+        elif font_size == '36':
+            self.comment_label.widget.set_font(self.app.font_36)
+        elif font_size == '48':
+            self.comment_label.widget.set_font(self.app.font_48)
+        self.comment_text_option.widget.adjust_to_text_width()
+
 
     def comment_changed(self):
         self.comment_text = self.comment_text_option()
@@ -280,6 +284,20 @@ class TextBlockNode(Node):
                                                       default_value=400, callback=self.width_changed)
         self.height_option = self.add_option('height', widget_type='drag_int',
                                                       default_value=400, callback=self.height_changed)
+        self.text_size_option = self.add_option('text_size', widget_type='combo', default_value='24', callback=self.font_size_changed)
+        self.text_size_option.widget.combo_items = ['24', '30', '36', '48']
+
+    def font_size_changed(self):
+        font_size = self.text_size_option()
+        if font_size == '24':
+            self.text_block.widget.set_font(self.app.font_24)
+        elif font_size == '30':
+            self.text_block.widget.set_font(self.app.font_30)
+        elif font_size == '36':
+            self.text_block.widget.set_font(self.app.font_36)
+        elif font_size == '48':
+            self.text_block.widget.set_font(self.app.font_48)
+
     def lock(self):
         if self.lock_option():
             dpg.configure_item(self.text_block.widget.uuid, readonly=True)

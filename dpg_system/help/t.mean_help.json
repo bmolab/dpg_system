@@ -5,13 +5,13 @@
         100,
         100
     ],
-    "id": 376,
+    "id": 6483,
     "name": "t.mean_help.json",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.mean_help.json",
     "nodes": {
         "0": {
             "name": "",
-            "id": 403,
+            "id": 6510,
             "position_x": 0,
             "position_y": 0,
             "width": 9,
@@ -31,7 +31,7 @@
         "1": {
             "init": "t.rand 16 16",
             "name": "t.rand",
-            "id": 421,
+            "id": 6528,
             "position_x": 50,
             "position_y": 75,
             "width": 163,
@@ -79,7 +79,7 @@
         },
         "2": {
             "name": "t.median",
-            "id": 590,
+            "id": 6697,
             "position_x": 283,
             "position_y": 101,
             "width": 64,
@@ -90,7 +90,7 @@
         },
         "3": {
             "name": "float",
-            "id": 633,
+            "id": 6740,
             "position_x": 372,
             "position_y": 112,
             "width": 127,
@@ -101,7 +101,7 @@
             "properties": {
                 "0": {
                     "name": "",
-                    "value": 0.44136857986450195,
+                    "value": 0.5043979287147522,
                     "value_type": "float"
                 },
                 "1": {
@@ -115,30 +115,35 @@
                     "value_type": "float"
                 },
                 "3": {
+                    "name": "speed_property",
+                    "value": 0.009999999776482582,
+                    "value_type": "float"
+                },
+                "4": {
                     "name": "format",
                     "value": "%.3f",
                     "value_type": "string"
                 },
-                "4": {
+                "5": {
                     "name": "bind to",
                     "value": "",
                     "value_type": "string"
                 },
-                "5": {
+                "6": {
                     "name": "width",
                     "value": 100,
                     "value_type": "int"
                 },
-                "6": {
-                    "name": "large_font",
-                    "value": false,
-                    "value_type": "bool"
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             }
         },
         "4": {
             "name": "t.mean",
-            "id": 695,
+            "id": 6805,
             "position_x": 284,
             "position_y": 28,
             "width": 64,
@@ -149,7 +154,7 @@
         },
         "5": {
             "name": "float",
-            "id": 738,
+            "id": 6848,
             "position_x": 371,
             "position_y": 46,
             "width": 127,
@@ -160,7 +165,7 @@
             "properties": {
                 "0": {
                     "name": "",
-                    "value": 0.4821379482746124,
+                    "value": 0.49943697452545166,
                     "value_type": "float"
                 },
                 "1": {
@@ -174,31 +179,36 @@
                     "value_type": "float"
                 },
                 "3": {
+                    "name": "speed_property",
+                    "value": 0.009999999776482582,
+                    "value_type": "float"
+                },
+                "4": {
                     "name": "format",
                     "value": "%.3f",
                     "value_type": "string"
                 },
-                "4": {
+                "5": {
                     "name": "bind to",
                     "value": "",
                     "value_type": "string"
                 },
-                "5": {
+                "6": {
                     "name": "width",
                     "value": 100,
                     "value_type": "int"
                 },
-                "6": {
-                    "name": "large_font",
-                    "value": false,
-                    "value_type": "bool"
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             }
         },
         "6": {
             "init": "t.median 1",
             "name": "t.median",
-            "id": 800,
+            "id": 6913,
             "position_x": 273,
             "position_y": 259,
             "width": 111,
@@ -221,7 +231,7 @@
         },
         "7": {
             "name": "heat_map",
-            "id": 905,
+            "id": 7018,
             "position_x": 410,
             "position_y": 254,
             "width": 136,
@@ -274,7 +284,7 @@
         },
         "8": {
             "name": "heat_map",
-            "id": 977,
+            "id": 7090,
             "position_x": 46,
             "position_y": 229,
             "width": 136,
@@ -328,7 +338,7 @@
         "9": {
             "init": "t.mean 1",
             "name": "t.mean",
-            "id": 1049,
+            "id": 7162,
             "position_x": 276,
             "position_y": 519,
             "width": 111,
@@ -351,7 +361,7 @@
         },
         "10": {
             "name": "heat_map",
-            "id": 1134,
+            "id": 7247,
             "position_x": 412,
             "position_y": 515,
             "width": 136,
@@ -404,7 +414,7 @@
         },
         "11": {
             "name": "message",
-            "id": 1206,
+            "id": 7319,
             "position_x": 409,
             "position_y": 461,
             "width": 346,
@@ -415,7 +425,7 @@
             "properties": {
                 "0": {
                     "name": "text in",
-                    "value": "[[ 0  1 15  3 13 15 15  4  7  6  4 10 14  2  2  2]]",
+                    "value": "[[11  2 15  1 15 12  0  5 14 14  8  7  1  7 13 10]]",
                     "value_type": "string"
                 },
                 "1": {
@@ -434,16 +444,16 @@
                     "value_type": "int"
                 },
                 "4": {
-                    "name": "large_font",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             }
         },
         "12": {
             "init": "comment torch.mean and torch.median",
             "name": "comment",
-            "id": 1262,
+            "id": 7375,
             "position_x": 548,
             "position_y": 40,
             "width": 463,
@@ -458,9 +468,9 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": true,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
                 }
             },
             "comment": "torch.mean / torch.median / torch.sum"
@@ -468,7 +478,7 @@
         "13": {
             "init": "comment indices",
             "name": "comment",
-            "id": 1280,
+            "id": 7386,
             "position_x": 406,
             "position_y": 426,
             "width": 52,
@@ -483,9 +493,9 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             },
             "comment": "indices"
@@ -493,7 +503,7 @@
         "14": {
             "init": "t.nanmean 0",
             "name": "t.nanmean",
-            "id": 1291,
+            "id": 7397,
             "position_x": 573,
             "position_y": 521,
             "width": 111,
@@ -516,7 +526,7 @@
         },
         "15": {
             "name": "heat_map",
-            "id": 1376,
+            "id": 7482,
             "position_x": 704,
             "position_y": 516,
             "width": 136,
@@ -570,7 +580,7 @@
         "16": {
             "init": "t.nanmedian 0",
             "name": "t.nanmedian",
-            "id": 1448,
+            "id": 7554,
             "position_x": 570,
             "position_y": 256,
             "width": 111,
@@ -593,7 +603,7 @@
         },
         "17": {
             "name": "heat_map",
-            "id": 1553,
+            "id": 7659,
             "position_x": 701,
             "position_y": 256,
             "width": 136,
@@ -646,7 +656,7 @@
         },
         "18": {
             "name": "t.info",
-            "id": 1625,
+            "id": 7731,
             "position_x": 570,
             "position_y": 605,
             "width": 88,
@@ -657,7 +667,7 @@
         },
         "19": {
             "name": "t.info",
-            "id": 1728,
+            "id": 7834,
             "position_x": 567,
             "position_y": 358,
             "width": 88,
@@ -669,7 +679,7 @@
         "20": {
             "init": "t.sum dim=0",
             "name": "t.sum",
-            "id": 1831,
+            "id": 7937,
             "position_x": 279,
             "position_y": 734,
             "width": 111,
@@ -692,7 +702,7 @@
         },
         "21": {
             "name": "t.sum",
-            "id": 1916,
+            "id": 8022,
             "position_x": 281,
             "position_y": 171,
             "width": 64,
@@ -703,7 +713,7 @@
         },
         "22": {
             "name": "float",
-            "id": 1959,
+            "id": 8065,
             "position_x": 374,
             "position_y": 174,
             "width": 127,
@@ -714,7 +724,7 @@
             "properties": {
                 "0": {
                     "name": "",
-                    "value": 123.42731475830078,
+                    "value": 127.85586547851562,
                     "value_type": "float"
                 },
                 "1": {
@@ -728,31 +738,36 @@
                     "value_type": "float"
                 },
                 "3": {
+                    "name": "speed_property",
+                    "value": 0.009999999776482582,
+                    "value_type": "float"
+                },
+                "4": {
                     "name": "format",
                     "value": "%.3f",
                     "value_type": "string"
                 },
-                "4": {
+                "5": {
                     "name": "bind to",
                     "value": "",
                     "value_type": "string"
                 },
-                "5": {
+                "6": {
                     "name": "width",
                     "value": 100,
                     "value_type": "int"
                 },
-                "6": {
-                    "name": "large_font",
-                    "value": false,
-                    "value_type": "bool"
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             }
         },
         "23": {
             "init": "vector 16",
             "name": "vector",
-            "id": 2021,
+            "id": 8130,
             "position_x": 428,
             "position_y": 716,
             "width": 160,
@@ -763,82 +778,82 @@
             "properties": {
                 "0": {
                     "name": "row 0",
-                    "value": 6.782346725463867,
+                    "value": 6.3556928634643555,
                     "value_type": "float"
                 },
                 "1": {
                     "name": "row 1",
-                    "value": 8.82700252532959,
+                    "value": 9.228548049926758,
                     "value_type": "float"
                 },
                 "2": {
                     "name": "row 2",
-                    "value": 8.116186141967773,
+                    "value": 7.9246697425842285,
                     "value_type": "float"
                 },
                 "3": {
                     "name": "row 3",
-                    "value": 8.406785011291504,
+                    "value": 8.948972702026367,
                     "value_type": "float"
                 },
                 "4": {
                     "name": "row 4",
-                    "value": 8.66754150390625,
+                    "value": 8.49591064453125,
                     "value_type": "float"
                 },
                 "5": {
                     "name": "row 5",
-                    "value": 9.327917098999023,
+                    "value": 7.265224933624268,
                     "value_type": "float"
                 },
                 "6": {
                     "name": "row 6",
-                    "value": 10.003860473632812,
+                    "value": 8.748956680297852,
                     "value_type": "float"
                 },
                 "7": {
                     "name": "row 7",
-                    "value": 6.349673271179199,
+                    "value": 8.377751350402832,
                     "value_type": "float"
                 },
                 "8": {
                     "name": "row 8",
-                    "value": 7.284697532653809,
+                    "value": 7.354991912841797,
                     "value_type": "float"
                 },
                 "9": {
                     "name": "row 9",
-                    "value": 6.643821716308594,
+                    "value": 8.64963150024414,
                     "value_type": "float"
                 },
                 "10": {
                     "name": "row 10",
-                    "value": 7.635202407836914,
+                    "value": 6.0586042404174805,
                     "value_type": "float"
                 },
                 "11": {
                     "name": "row 11",
-                    "value": 8.22704792022705,
+                    "value": 8.62647533416748,
                     "value_type": "float"
                 },
                 "12": {
                     "name": "row 12",
-                    "value": 6.704315185546875,
+                    "value": 9.265520095825195,
                     "value_type": "float"
                 },
                 "13": {
                     "name": "row 13",
-                    "value": 7.30888557434082,
+                    "value": 6.856396675109863,
                     "value_type": "float"
                 },
                 "14": {
                     "name": "row 14",
-                    "value": 7.052923202514648,
+                    "value": 7.235813617706299,
                     "value_type": "float"
                 },
                 "15": {
                     "name": "row 15",
-                    "value": 6.089107513427734,
+                    "value": 8.462709426879883,
                     "value_type": "float"
                 },
                 "16": {
@@ -1106,7 +1121,7 @@
         "24": {
             "init": "t.nansum 1",
             "name": "t.nansum",
-            "id": 3456,
+            "id": 9565,
             "position_x": 623,
             "position_y": 729,
             "width": 111,
@@ -1130,7 +1145,7 @@
         "25": {
             "init": "vector 16",
             "name": "vector",
-            "id": 3541,
+            "id": 9650,
             "position_x": 774,
             "position_y": 718,
             "width": 160,
@@ -1141,82 +1156,82 @@
             "properties": {
                 "0": {
                     "name": "row 0",
-                    "value": 6.782346725463867,
+                    "value": 6.3556928634643555,
                     "value_type": "float"
                 },
                 "1": {
                     "name": "row 1",
-                    "value": 8.82700252532959,
+                    "value": 9.228548049926758,
                     "value_type": "float"
                 },
                 "2": {
                     "name": "row 2",
-                    "value": 8.116186141967773,
+                    "value": 7.9246697425842285,
                     "value_type": "float"
                 },
                 "3": {
                     "name": "row 3",
-                    "value": 8.406785011291504,
+                    "value": 8.948972702026367,
                     "value_type": "float"
                 },
                 "4": {
                     "name": "row 4",
-                    "value": 8.66754150390625,
+                    "value": 8.49591064453125,
                     "value_type": "float"
                 },
                 "5": {
                     "name": "row 5",
-                    "value": 9.327917098999023,
+                    "value": 7.265224933624268,
                     "value_type": "float"
                 },
                 "6": {
                     "name": "row 6",
-                    "value": 10.003860473632812,
+                    "value": 8.748956680297852,
                     "value_type": "float"
                 },
                 "7": {
                     "name": "row 7",
-                    "value": 6.349673271179199,
+                    "value": 8.377751350402832,
                     "value_type": "float"
                 },
                 "8": {
                     "name": "row 8",
-                    "value": 7.284697532653809,
+                    "value": 7.354991912841797,
                     "value_type": "float"
                 },
                 "9": {
                     "name": "row 9",
-                    "value": 6.643821716308594,
+                    "value": 8.64963150024414,
                     "value_type": "float"
                 },
                 "10": {
                     "name": "row 10",
-                    "value": 7.635202407836914,
+                    "value": 6.0586042404174805,
                     "value_type": "float"
                 },
                 "11": {
                     "name": "row 11",
-                    "value": 8.22704792022705,
+                    "value": 8.62647533416748,
                     "value_type": "float"
                 },
                 "12": {
                     "name": "row 12",
-                    "value": 6.704315185546875,
+                    "value": 9.265520095825195,
                     "value_type": "float"
                 },
                 "13": {
                     "name": "row 13",
-                    "value": 7.30888557434082,
+                    "value": 6.856396675109863,
                     "value_type": "float"
                 },
                 "14": {
                     "name": "row 14",
-                    "value": 7.052923202514648,
+                    "value": 7.235813617706299,
                     "value_type": "float"
                 },
                 "15": {
                     "name": "row 15",
-                    "value": 6.089107513427734,
+                    "value": 8.462709426879883,
                     "value_type": "float"
                 },
                 "16": {
@@ -1483,11 +1498,11 @@
         },
         "26": {
             "name": "load_bang",
-            "id": 5006,
+            "id": 11085,
             "position_x": 51,
             "position_y": 17,
             "width": 88,
-            "height": 46,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -1501,7 +1516,7 @@
         },
         "27": {
             "name": "close",
-            "id": 5058,
+            "id": 11128,
             "position_x": 969,
             "position_y": 962,
             "width": 88,
@@ -1520,231 +1535,231 @@
     },
     "links": {
         "0": {
-            "source_node": 421,
+            "source_node": 6528,
             "source_node_name": "t.rand",
             "source_output_index": 0,
             "source_output_name": "random tensor",
-            "dest_node": 590,
+            "dest_node": 6697,
             "dest_node_name": "t.median",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "1": {
-            "source_node": 421,
+            "source_node": 6528,
             "source_node_name": "t.rand",
             "source_output_index": 0,
             "source_output_name": "random tensor",
-            "dest_node": 695,
+            "dest_node": 6805,
             "dest_node_name": "t.mean",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "2": {
-            "source_node": 421,
+            "source_node": 6528,
             "source_node_name": "t.rand",
             "source_output_index": 0,
             "source_output_name": "random tensor",
-            "dest_node": 800,
+            "dest_node": 6913,
             "dest_node_name": "t.median",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "3": {
-            "source_node": 421,
+            "source_node": 6528,
             "source_node_name": "t.rand",
             "source_output_index": 0,
             "source_output_name": "random tensor",
-            "dest_node": 977,
+            "dest_node": 7090,
             "dest_node_name": "heat_map",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "4": {
-            "source_node": 421,
+            "source_node": 6528,
             "source_node_name": "t.rand",
             "source_output_index": 0,
             "source_output_name": "random tensor",
-            "dest_node": 1049,
+            "dest_node": 7162,
             "dest_node_name": "t.mean",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "5": {
-            "source_node": 421,
+            "source_node": 6528,
             "source_node_name": "t.rand",
             "source_output_index": 0,
             "source_output_name": "random tensor",
-            "dest_node": 1291,
+            "dest_node": 7397,
             "dest_node_name": "t.nanmean",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "6": {
-            "source_node": 421,
+            "source_node": 6528,
             "source_node_name": "t.rand",
             "source_output_index": 0,
             "source_output_name": "random tensor",
-            "dest_node": 1448,
+            "dest_node": 7554,
             "dest_node_name": "t.nanmedian",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "7": {
-            "source_node": 421,
+            "source_node": 6528,
             "source_node_name": "t.rand",
             "source_output_index": 0,
             "source_output_name": "random tensor",
-            "dest_node": 1831,
+            "dest_node": 7937,
             "dest_node_name": "t.sum",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "8": {
-            "source_node": 421,
+            "source_node": 6528,
             "source_node_name": "t.rand",
             "source_output_index": 0,
             "source_output_name": "random tensor",
-            "dest_node": 1916,
+            "dest_node": 8022,
             "dest_node_name": "t.sum",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "9": {
-            "source_node": 421,
+            "source_node": 6528,
             "source_node_name": "t.rand",
             "source_output_index": 0,
             "source_output_name": "random tensor",
-            "dest_node": 3456,
+            "dest_node": 9565,
             "dest_node_name": "t.nansum",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "10": {
-            "source_node": 590,
+            "source_node": 6697,
             "source_node_name": "t.median",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 633,
+            "dest_node": 6740,
             "dest_node_name": "float",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "11": {
-            "source_node": 695,
+            "source_node": 6805,
             "source_node_name": "t.mean",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 738,
+            "dest_node": 6848,
             "dest_node_name": "float",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "12": {
-            "source_node": 800,
+            "source_node": 6913,
             "source_node_name": "t.median",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 905,
+            "dest_node": 7018,
             "dest_node_name": "heat_map",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "13": {
-            "source_node": 800,
+            "source_node": 6913,
             "source_node_name": "t.median",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 1728,
+            "dest_node": 7834,
             "dest_node_name": "t.info",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
         "14": {
-            "source_node": 800,
+            "source_node": 6913,
             "source_node_name": "t.median",
             "source_output_index": 1,
             "source_output_name": "index output",
-            "dest_node": 1206,
+            "dest_node": 7319,
             "dest_node_name": "message",
             "dest_input_index": 0,
             "dest_input_name": "###text in"
         },
         "15": {
-            "source_node": 1049,
+            "source_node": 7162,
             "source_node_name": "t.mean",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 1134,
+            "dest_node": 7247,
             "dest_node_name": "heat_map",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "16": {
-            "source_node": 1291,
+            "source_node": 7397,
             "source_node_name": "t.nanmean",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 1376,
+            "dest_node": 7482,
             "dest_node_name": "heat_map",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "17": {
-            "source_node": 1448,
+            "source_node": 7554,
             "source_node_name": "t.nanmedian",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 1553,
+            "dest_node": 7659,
             "dest_node_name": "heat_map",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "18": {
-            "source_node": 1448,
+            "source_node": 7554,
             "source_node_name": "t.nanmedian",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 1625,
+            "dest_node": 7731,
             "dest_node_name": "t.info",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
         "19": {
-            "source_node": 1831,
+            "source_node": 7937,
             "source_node_name": "t.sum",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 2021,
+            "dest_node": 8130,
             "dest_node_name": "vector",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
         "20": {
-            "source_node": 1916,
+            "source_node": 8022,
             "source_node_name": "t.sum",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 1959,
+            "dest_node": 8065,
             "dest_node_name": "float",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "21": {
-            "source_node": 3456,
+            "source_node": 9565,
             "source_node_name": "t.nansum",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 3541,
+            "dest_node": 9650,
             "dest_node_name": "vector",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
         "22": {
-            "source_node": 5006,
+            "source_node": 11085,
             "source_node_name": "load_bang",
             "source_output_index": 0,
             "source_output_name": "out",
-            "dest_node": 421,
+            "dest_node": 6528,
             "dest_node_name": "t.rand",
             "dest_input_index": 0,
             "dest_input_name": "###input"

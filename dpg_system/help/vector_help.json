@@ -5,13 +5,13 @@
         100,
         100
     ],
-    "id": 12955,
+    "id": 1449,
     "name": "vector_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/vector_help.json",
     "nodes": {
         "0": {
             "name": "",
-            "id": 12982,
+            "id": 1476,
             "position_x": 0,
             "position_y": 0,
             "width": 9,
@@ -31,7 +31,7 @@
         "1": {
             "init": "comment arguments: list of menu items",
             "name": "comment",
-            "id": 13000,
+            "id": 1494,
             "position_x": 549,
             "position_y": 116,
             "width": 310,
@@ -46,9 +46,9 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             },
             "comment": "arguments: up to two dimension values to set size"
@@ -56,7 +56,7 @@
         "2": {
             "init": "comment arguments: list of menu items",
             "name": "comment",
-            "id": 13011,
+            "id": 1505,
             "position_x": 550,
             "position_y": 265,
             "width": 346,
@@ -71,9 +71,9 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             },
             "comment": "output: when value received or changed, value is output"
@@ -81,7 +81,7 @@
         "3": {
             "init": "comment menu",
             "name": "comment",
-            "id": 13022,
+            "id": 1516,
             "position_x": 19,
             "position_y": 2,
             "width": 574,
@@ -96,9 +96,9 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": true,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
                 }
             },
             "comment": "vector - display or create and output a vector"
@@ -106,7 +106,7 @@
         "4": {
             "init": "comment input: any thing causes output of current selection",
             "name": "comment",
-            "id": 13033,
+            "id": 1527,
             "position_x": 549,
             "position_y": 146,
             "width": 310,
@@ -121,16 +121,16 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             },
             "comment": "input: float, int, list, array, tensor to display"
         },
         "5": {
             "name": "close",
-            "id": 13044,
+            "id": 1538,
             "position_x": 808,
             "position_y": 601,
             "width": 88,
@@ -149,7 +149,7 @@
         "6": {
             "init": "vector 8",
             "name": "vector",
-            "id": 13067,
+            "id": 1561,
             "position_x": 236,
             "position_y": 89,
             "width": 160,
@@ -160,42 +160,42 @@
             "properties": {
                 "0": {
                     "name": "row 0",
-                    "value": 1.0,
+                    "value": 0.0,
                     "value_type": "float"
                 },
                 "1": {
                     "name": "row 1",
-                    "value": 2.0,
+                    "value": 0.0,
                     "value_type": "float"
                 },
                 "2": {
                     "name": "row 2",
-                    "value": 3.0,
+                    "value": 0.0,
                     "value_type": "float"
                 },
                 "3": {
                     "name": "row 3",
-                    "value": 4.0,
+                    "value": 0.0,
                     "value_type": "float"
                 },
                 "4": {
                     "name": "row 4",
-                    "value": 5.0,
+                    "value": 0.0,
                     "value_type": "float"
                 },
                 "5": {
                     "name": "row 5",
-                    "value": 6.0,
+                    "value": 0.0,
                     "value_type": "float"
                 },
                 "6": {
                     "name": "row 6",
-                    "value": 7.0,
+                    "value": 0.0,
                     "value_type": "float"
                 },
                 "7": {
                     "name": "row 7",
-                    "value": 8.0,
+                    "value": 0.0,
                     "value_type": "float"
                 },
                 "8": {
@@ -503,7 +503,7 @@
         "7": {
             "init": "comment vector 8",
             "name": "comment",
-            "id": 14502,
+            "id": 2996,
             "position_x": 16,
             "position_y": 41,
             "width": 58,
@@ -518,9 +518,9 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             },
             "comment": "vector 8"
@@ -528,7 +528,7 @@
         "8": {
             "init": "vector 4 4",
             "name": "vector",
-            "id": 14513,
+            "id": 3007,
             "position_x": 236,
             "position_y": 443,
             "width": 343,
@@ -540,40 +540,40 @@
                 "0": {
                     "name": "row 0",
                     "value": [
-                        0.4480000138282776,
-                        0.08249437808990479,
-                        0.42491263151168823,
-                        0.24443745613098145
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
                     ],
                     "value_type": "list"
                 },
                 "1": {
                     "name": "row 1",
                     "value": [
-                        0.5431557297706604,
-                        0.10670143365859985,
-                        0.4937223196029663,
-                        0.6356068849563599
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
                     ],
                     "value_type": "list"
                 },
                 "2": {
                     "name": "row 2",
                     "value": [
-                        0.6156991720199585,
-                        0.49817341566085815,
-                        0.1951170563697815,
-                        0.5805994868278503
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
                     ],
                     "value_type": "list"
                 },
                 "3": {
                     "name": "row 3",
                     "value": [
-                        0.9208461046218872,
-                        0.8867226243019104,
-                        0.7233219742774963,
-                        0.8819732069969177
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
                     ],
                     "value_type": "list"
                 },
@@ -1202,7 +1202,7 @@
         "9": {
             "init": "comment vector 4 4",
             "name": "comment",
-            "id": 16140,
+            "id": 4634,
             "position_x": 237,
             "position_y": 409,
             "width": 70,
@@ -1217,9 +1217,9 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             },
             "comment": "vector 4 4"
@@ -1227,7 +1227,7 @@
         "10": {
             "init": "np.rand 4 4",
             "name": "np.rand",
-            "id": 16151,
+            "id": 4645,
             "position_x": 22,
             "position_y": 397,
             "width": 123,
@@ -1271,7 +1271,7 @@
         "11": {
             "init": "comment widgets:",
             "name": "comment",
-            "id": 16245,
+            "id": 4739,
             "position_x": 550,
             "position_y": 180,
             "width": 58,
@@ -1286,9 +1286,9 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             },
             "comment": "widgets:"
@@ -1296,7 +1296,7 @@
         "12": {
             "init": "comment zero: zeros contents and sends output",
             "name": "comment",
-            "id": 16256,
+            "id": 4750,
             "position_x": 571,
             "position_y": 203,
             "width": 236,
@@ -1311,9 +1311,9 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             },
             "comment": "zero: zeros contents and sends output"
@@ -1321,7 +1321,7 @@
         "13": {
             "init": "comment output_type: selects output type (numpy, torch, list)",
             "name": "comment",
-            "id": 16267,
+            "id": 4761,
             "position_x": 571,
             "position_y": 231,
             "width": 334,
@@ -1336,9 +1336,9 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             },
             "comment": "output_type: selects output type (numpy, torch, list)"
@@ -1346,7 +1346,7 @@
         "14": {
             "init": "comment quick key: type v to create with no arguments",
             "name": "comment",
-            "id": 16278,
+            "id": 4772,
             "position_x": 547,
             "position_y": 45,
             "width": 297,
@@ -1361,9 +1361,9 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             },
             "comment": "(quick key: type v to create with no arguments)"
@@ -1371,11 +1371,11 @@
         "15": {
             "init": "t.rand 4 4",
             "name": "t.rand",
-            "id": 16306,
+            "id": 4783,
             "position_x": 22,
             "position_y": 503,
             "width": 163,
-            "height": 142,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -1419,11 +1419,11 @@
         },
         "16": {
             "name": "list",
-            "id": 16476,
+            "id": 4952,
             "position_x": 24,
             "position_y": 81,
             "width": 127,
-            "height": 46,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -1449,20 +1449,20 @@
                     "value_type": "int"
                 },
                 "4": {
-                    "name": "large_font",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             }
         },
         "17": {
             "init": "np.rand 8",
             "name": "np.rand",
-            "id": 16549,
+            "id": 5008,
             "position_x": 24,
             "position_y": 136,
             "width": 123,
-            "height": 94,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -1497,11 +1497,11 @@
         "18": {
             "init": "t.rand 8",
             "name": "t.rand",
-            "id": 16657,
+            "id": 5099,
             "position_x": 25,
             "position_y": 235,
             "width": 163,
-            "height": 142,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -1545,11 +1545,11 @@
         },
         "19": {
             "name": "message",
-            "id": 16846,
+            "id": 5268,
             "position_x": 241,
             "position_y": 314,
             "width": 641,
-            "height": 46,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -1575,70 +1575,70 @@
                     "value_type": "int"
                 },
                 "4": {
-                    "name": "large_font",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             }
         }
     },
     "links": {
         "0": {
-            "source_node": 13067,
+            "source_node": 1561,
             "source_node_name": "vector",
             "source_output_index": 0,
             "source_output_name": "out",
-            "dest_node": 16846,
+            "dest_node": 5268,
             "dest_node_name": "message",
             "dest_input_index": 0,
             "dest_input_name": "###text in"
         },
         "1": {
-            "source_node": 16151,
+            "source_node": 4645,
             "source_node_name": "np.rand",
             "source_output_index": 0,
             "source_output_name": "random array",
-            "dest_node": 14513,
+            "dest_node": 3007,
             "dest_node_name": "vector",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
         "2": {
-            "source_node": 16306,
+            "source_node": 4783,
             "source_node_name": "t.rand",
             "source_output_index": 0,
             "source_output_name": "random tensor",
-            "dest_node": 14513,
+            "dest_node": 3007,
             "dest_node_name": "vector",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
         "3": {
-            "source_node": 16476,
+            "source_node": 4952,
             "source_node_name": "list",
             "source_output_index": 0,
             "source_output_name": "list out",
-            "dest_node": 13067,
+            "dest_node": 1561,
             "dest_node_name": "vector",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
         "4": {
-            "source_node": 16549,
+            "source_node": 5008,
             "source_node_name": "np.rand",
             "source_output_index": 0,
             "source_output_name": "random array",
-            "dest_node": 13067,
+            "dest_node": 1561,
             "dest_node_name": "vector",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
         "5": {
-            "source_node": 16657,
+            "source_node": 5099,
             "source_node_name": "t.rand",
             "source_output_index": 0,
             "source_output_name": "random tensor",
-            "dest_node": 13067,
+            "dest_node": 1561,
             "dest_node_name": "vector",
             "dest_input_index": 0,
             "dest_input_name": "in"

@@ -5,13 +5,13 @@
         100,
         100
     ],
-    "id": 442,
+    "id": 197,
     "name": "counter_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/counter_help.json",
     "nodes": {
         "0": {
             "name": "",
-            "id": 469,
+            "id": 228,
             "position_x": 0,
             "position_y": 0,
             "width": 9,
@@ -30,7 +30,7 @@
         },
         "1": {
             "name": "counter",
-            "id": 487,
+            "id": 327,
             "position_x": 201,
             "position_y": 101,
             "width": 123,
@@ -53,7 +53,7 @@
         },
         "2": {
             "name": "plot",
-            "id": 596,
+            "id": 436,
             "position_x": 372,
             "position_y": 36,
             "width": 308,
@@ -117,7 +117,7 @@
         "3": {
             "init": "select 1",
             "name": "select",
-            "id": 677,
+            "id": 517,
             "position_x": 372,
             "position_y": 157,
             "width": 45,
@@ -140,7 +140,7 @@
         },
         "4": {
             "name": "counter",
-            "id": 726,
+            "id": 566,
             "position_x": 434,
             "position_y": 156,
             "width": 123,
@@ -163,7 +163,7 @@
         },
         "5": {
             "name": "int",
-            "id": 835,
+            "id": 675,
             "position_x": 587,
             "position_y": 197,
             "width": 127,
@@ -174,7 +174,7 @@
             "properties": {
                 "0": {
                     "name": "",
-                    "value": 1,
+                    "value": 10,
                     "value_type": "int"
                 },
                 "1": {
@@ -188,30 +188,35 @@
                     "value_type": "int"
                 },
                 "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
                     "name": "format",
                     "value": "%d",
                     "value_type": "string"
                 },
-                "4": {
+                "5": {
                     "name": "bind to",
                     "value": "",
                     "value_type": "string"
                 },
-                "5": {
+                "6": {
                     "name": "width",
                     "value": 100,
                     "value_type": "int"
                 },
-                "6": {
-                    "name": "large_font",
-                    "value": false,
-                    "value_type": "bool"
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             }
         },
         "6": {
             "name": "close",
-            "id": 897,
+            "id": 740,
             "position_x": 738,
             "position_y": 520,
             "width": 88,
@@ -230,7 +235,7 @@
         "7": {
             "init": "range_counter 20 40",
             "name": "range_counter",
-            "id": 927,
+            "id": 770,
             "position_x": 202,
             "position_y": 343,
             "width": 123,
@@ -258,7 +263,7 @@
         },
         "8": {
             "name": "plot",
-            "id": 1057,
+            "id": 900,
             "position_x": 359,
             "position_y": 290,
             "width": 308,
@@ -322,7 +327,7 @@
         "9": {
             "init": "select 1",
             "name": "select",
-            "id": 1138,
+            "id": 981,
             "position_x": 358,
             "position_y": 412,
             "width": 45,
@@ -345,7 +350,7 @@
         },
         "10": {
             "name": "counter",
-            "id": 1187,
+            "id": 1030,
             "position_x": 420,
             "position_y": 411,
             "width": 123,
@@ -368,7 +373,7 @@
         },
         "11": {
             "name": "int",
-            "id": 1296,
+            "id": 1139,
             "position_x": 571,
             "position_y": 453,
             "width": 127,
@@ -379,7 +384,7 @@
             "properties": {
                 "0": {
                     "name": "",
-                    "value": 11,
+                    "value": 65,
                     "value_type": "int"
                 },
                 "1": {
@@ -393,30 +398,35 @@
                     "value_type": "int"
                 },
                 "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
                     "name": "format",
                     "value": "%d",
                     "value_type": "string"
                 },
-                "4": {
+                "5": {
                     "name": "bind to",
                     "value": "",
                     "value_type": "string"
                 },
-                "5": {
+                "6": {
                     "name": "width",
                     "value": 100,
                     "value_type": "int"
                 },
-                "6": {
-                    "name": "large_font",
-                    "value": false,
-                    "value_type": "bool"
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             }
         },
         "12": {
             "name": "tick",
-            "id": 1358,
+            "id": 1204,
             "position_x": 56,
             "position_y": 88,
             "width": 33,
@@ -431,105 +441,130 @@
                     "value_type": "bool"
                 }
             }
+        },
+        "13": {
+            "init": "comment counter",
+            "name": "comment",
+            "id": 1265,
+            "position_x": 40,
+            "position_y": 21,
+            "width": 291,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "counter / range_counter",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "counter / range_counter"
         }
     },
     "links": {
         "0": {
-            "source_node": 487,
+            "source_node": 327,
             "source_node_name": "counter",
             "source_output_index": 0,
             "source_output_name": "count out",
-            "dest_node": 596,
+            "dest_node": 436,
             "dest_node_name": "plot",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "1": {
-            "source_node": 487,
+            "source_node": 327,
             "source_node_name": "counter",
             "source_output_index": 1,
             "source_output_name": "carry out",
-            "dest_node": 677,
+            "dest_node": 517,
             "dest_node_name": "select",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
         "2": {
-            "source_node": 677,
+            "source_node": 517,
             "source_node_name": "select",
             "source_output_index": 0,
             "source_output_name": "1",
-            "dest_node": 726,
+            "dest_node": 566,
             "dest_node_name": "counter",
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
         "3": {
-            "source_node": 726,
+            "source_node": 566,
             "source_node_name": "counter",
             "source_output_index": 0,
             "source_output_name": "count out",
-            "dest_node": 835,
+            "dest_node": 675,
             "dest_node_name": "int",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "4": {
-            "source_node": 927,
+            "source_node": 770,
             "source_node_name": "range_counter",
             "source_output_index": 0,
             "source_output_name": "count out",
-            "dest_node": 1057,
+            "dest_node": 900,
             "dest_node_name": "plot",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "5": {
-            "source_node": 927,
+            "source_node": 770,
             "source_node_name": "range_counter",
             "source_output_index": 1,
             "source_output_name": "carry out",
-            "dest_node": 1138,
+            "dest_node": 981,
             "dest_node_name": "select",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
         "6": {
-            "source_node": 1138,
+            "source_node": 981,
             "source_node_name": "select",
             "source_output_index": 0,
             "source_output_name": "1",
-            "dest_node": 1187,
+            "dest_node": 1030,
             "dest_node_name": "counter",
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
         "7": {
-            "source_node": 1187,
+            "source_node": 1030,
             "source_node_name": "counter",
             "source_output_index": 0,
             "source_output_name": "count out",
-            "dest_node": 1296,
+            "dest_node": 1139,
             "dest_node_name": "int",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "8": {
-            "source_node": 1358,
+            "source_node": 1204,
             "source_node_name": "tick",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 487,
+            "dest_node": 327,
             "dest_node_name": "counter",
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
         "9": {
-            "source_node": 1358,
+            "source_node": 1204,
             "source_node_name": "tick",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 927,
+            "dest_node": 770,
             "dest_node_name": "range_counter",
             "dest_input_index": 0,
             "dest_input_name": "input"

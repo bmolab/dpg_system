@@ -5,13 +5,13 @@
         100,
         100
     ],
-    "id": 6512,
+    "id": 5907,
     "name": "menu_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/menu_help.json",
     "nodes": {
         "0": {
             "name": "",
-            "id": 6539,
+            "id": 5934,
             "position_x": 0,
             "position_y": 0,
             "width": 9,
@@ -31,11 +31,11 @@
         "1": {
             "init": "menu one two three four",
             "name": "menu",
-            "id": 6573,
+            "id": 5952,
             "position_x": 116,
             "position_y": 91,
             "width": 108,
-            "height": 46,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -46,16 +46,16 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large_font",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             }
         },
         "2": {
             "init": "comment arguments: list of menu items",
             "name": "comment",
-            "id": 6627,
+            "id": 5998,
             "position_x": 493,
             "position_y": 95,
             "width": 389,
@@ -70,9 +70,9 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             },
             "comment": "arguments: list of menu items (i.e. 'menu one two three four')"
@@ -80,7 +80,7 @@
         "3": {
             "init": "comment arguments: list of menu items",
             "name": "comment",
-            "id": 6638,
+            "id": 6009,
             "position_x": 494,
             "position_y": 154,
             "width": 224,
@@ -95,9 +95,9 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             },
             "comment": "output: selected item when selected"
@@ -105,11 +105,11 @@
         "4": {
             "init": "select one two three four",
             "name": "select",
-            "id": 6722,
+            "id": 6020,
             "position_x": 241,
             "position_y": 108,
             "width": 45,
-            "height": 94,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -143,11 +143,11 @@
         },
         "5": {
             "name": "b",
-            "id": 6841,
+            "id": 6138,
             "position_x": 307,
             "position_y": 124,
             "width": 22,
-            "height": 46,
+            "height": 44,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -186,11 +186,11 @@
         },
         "6": {
             "name": "b",
-            "id": 6899,
+            "id": 6196,
             "position_x": 339,
             "position_y": 140,
             "width": 22,
-            "height": 46,
+            "height": 44,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -229,11 +229,11 @@
         },
         "7": {
             "name": "b",
-            "id": 6957,
+            "id": 6254,
             "position_x": 373,
             "position_y": 156,
             "width": 22,
-            "height": 46,
+            "height": 44,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -272,11 +272,11 @@
         },
         "8": {
             "name": "b",
-            "id": 7015,
+            "id": 6312,
             "position_x": 409,
             "position_y": 171,
             "width": 22,
-            "height": 46,
+            "height": 44,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -316,7 +316,7 @@
         "9": {
             "init": "comment menu",
             "name": "comment",
-            "id": 7085,
+            "id": 6370,
             "position_x": 46,
             "position_y": 25,
             "width": 58,
@@ -331,9 +331,9 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": true,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
                 }
             },
             "comment": "menu"
@@ -341,7 +341,7 @@
         "10": {
             "init": "comment input: any thing causes output of current selection",
             "name": "comment",
-            "id": 7104,
+            "id": 6381,
             "position_x": 493,
             "position_y": 125,
             "width": 322,
@@ -356,20 +356,20 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             },
             "comment": "input: any thing causes output of current selection"
         },
         "11": {
             "name": "b",
-            "id": 7115,
+            "id": 6392,
             "position_x": 52,
             "position_y": 90,
             "width": 22,
-            "height": 46,
+            "height": 44,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -408,7 +408,7 @@
         },
         "12": {
             "name": "close",
-            "id": 7182,
+            "id": 6450,
             "position_x": 799,
             "position_y": 189,
             "width": 88,
@@ -427,61 +427,61 @@
     },
     "links": {
         "0": {
-            "source_node": 6573,
+            "source_node": 5952,
             "source_node_name": "menu",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 6722,
+            "dest_node": 6020,
             "dest_node_name": "select",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
         "1": {
-            "source_node": 6722,
+            "source_node": 6020,
             "source_node_name": "select",
             "source_output_index": 0,
             "source_output_name": "one",
-            "dest_node": 6841,
+            "dest_node": 6138,
             "dest_node_name": "b",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "2": {
-            "source_node": 6722,
+            "source_node": 6020,
             "source_node_name": "select",
             "source_output_index": 1,
             "source_output_name": "two",
-            "dest_node": 6899,
+            "dest_node": 6196,
             "dest_node_name": "b",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "3": {
-            "source_node": 6722,
+            "source_node": 6020,
             "source_node_name": "select",
             "source_output_index": 2,
             "source_output_name": "three",
-            "dest_node": 6957,
+            "dest_node": 6254,
             "dest_node_name": "b",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "4": {
-            "source_node": 6722,
+            "source_node": 6020,
             "source_node_name": "select",
             "source_output_index": 3,
             "source_output_name": "four",
-            "dest_node": 7015,
+            "dest_node": 6312,
             "dest_node_name": "b",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "5": {
-            "source_node": 7115,
+            "source_node": 6392,
             "source_node_name": "b",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 6573,
+            "dest_node": 5952,
             "dest_node_name": "menu",
             "dest_input_index": 0,
             "dest_input_name": "##choice"

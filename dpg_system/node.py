@@ -2835,7 +2835,7 @@ class PatcherNode(Node):
         new_name = self.name_option()
         self.unparsed_args = [new_name]
         self.button.set_label(new_name)
-        size = dpg.get_text_size(new_name, font=self.app.default_font)
+        size = dpg.get_text_size(new_name, font=self.app.font_24)
         if size is not None:
             dpg.set_item_width(self.button.widget.uuid, int(size[0] * self.app.font_scale_variable() + 12))
 

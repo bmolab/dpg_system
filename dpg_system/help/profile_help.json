@@ -5,13 +5,13 @@
         100,
         100
     ],
-    "id": 195,
+    "id": 1087,
     "name": "profile_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/profile_help.json",
     "nodes": {
         "0": {
             "name": "",
-            "id": 226,
+            "id": 1114,
             "position_x": 0,
             "position_y": 0,
             "width": 9,
@@ -31,7 +31,7 @@
         "1": {
             "init": "comment arguments: list of menu items",
             "name": "comment",
-            "id": 323,
+            "id": 1132,
             "position_x": 439,
             "position_y": 163,
             "width": 267,
@@ -46,9 +46,9 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             },
             "comment": "arguments: number of values in the profile"
@@ -56,7 +56,7 @@
         "2": {
             "init": "comment arguments: list of menu items",
             "name": "comment",
-            "id": 341,
+            "id": 1143,
             "position_x": 438,
             "position_y": 224,
             "width": 316,
@@ -71,9 +71,9 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             },
             "comment": "output: value in profile corresponding to the indx"
@@ -81,7 +81,7 @@
         "3": {
             "init": "comment menu",
             "name": "comment",
-            "id": 352,
+            "id": 1154,
             "position_x": 19,
             "position_y": 2,
             "width": 537,
@@ -96,9 +96,9 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": true,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
                 }
             },
             "comment": "profile - a graphical ui for a lookup table"
@@ -106,7 +106,7 @@
         "4": {
             "init": "comment input: any thing causes output of current selection",
             "name": "comment",
-            "id": 363,
+            "id": 1165,
             "position_x": 439,
             "position_y": 193,
             "width": 236,
@@ -121,16 +121,16 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             },
             "comment": "input: float, int as index to profile"
         },
         "5": {
             "name": "close",
-            "id": 374,
+            "id": 1176,
             "position_x": 681,
             "position_y": 410,
             "width": 88,
@@ -148,7 +148,7 @@
         },
         "6": {
             "name": "profile",
-            "id": 404,
+            "id": 1199,
             "position_x": 28,
             "position_y": 162,
             "width": 308,
@@ -232,7 +232,7 @@
         "7": {
             "init": "comment value in",
             "name": "comment",
-            "id": 550,
+            "id": 1280,
             "position_x": 168,
             "position_y": 61,
             "width": 58,
@@ -247,9 +247,9 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             },
             "comment": "value in"
@@ -257,7 +257,7 @@
         "8": {
             "init": "comment outputs value corresponding to the interpolated value of the profile at the index of the input",
             "name": "comment",
-            "id": 561,
+            "id": 1291,
             "position_x": 34,
             "position_y": 356,
             "width": 586,
@@ -272,9 +272,9 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             },
             "comment": "outputs value corresponding to the interpolated value of the profile at the index of the input"
@@ -282,7 +282,7 @@
         "9": {
             "init": "comment drag mouse in profile to set",
             "name": "comment",
-            "id": 572,
+            "id": 1302,
             "position_x": 119,
             "position_y": 128,
             "width": 224,
@@ -297,16 +297,16 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             },
             "comment": "drag mouse in profile to set values"
         },
         "10": {
             "name": "slider",
-            "id": 583,
+            "id": 1313,
             "position_x": 35,
             "position_y": 401,
             "width": 127,
@@ -351,20 +351,20 @@
                     "value_type": "int"
                 },
                 "7": {
-                    "name": "large_font",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             }
         },
         "11": {
             "init": "slider 16.0",
             "name": "slider",
-            "id": 666,
+            "id": 1378,
             "position_x": 30,
             "position_y": 70,
             "width": 127,
-            "height": 46,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -405,30 +405,30 @@
                     "value_type": "int"
                 },
                 "7": {
-                    "name": "large_font",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             }
         }
     },
     "links": {
         "0": {
-            "source_node": 404,
+            "source_node": 1199,
             "source_node_name": "profile",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 583,
+            "dest_node": 1313,
             "dest_node_name": "slider",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "1": {
-            "source_node": 666,
+            "source_node": 1378,
             "source_node_name": "slider",
             "source_output_index": 0,
             "source_output_name": "float out",
-            "dest_node": 404,
+            "dest_node": 1199,
             "dest_node_name": "profile",
             "dest_input_index": 0,
             "dest_input_name": "index into profile"

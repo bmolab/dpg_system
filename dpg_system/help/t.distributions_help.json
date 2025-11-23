@@ -5,13 +5,13 @@
         100,
         100
     ],
-    "id": 6031,
-    "name": "t",
-    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.json",
+    "id": 5535,
+    "name": "t.distributions_help.json",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.distributions_help.json",
     "nodes": {
         "0": {
             "name": "",
-            "id": 6058,
+            "id": 5562,
             "position_x": 0,
             "position_y": 0,
             "width": 9,
@@ -30,7 +30,7 @@
         },
         "1": {
             "name": "t.bernoulli",
-            "id": 6076,
+            "id": 5580,
             "position_x": 206,
             "position_y": 63,
             "width": 76,
@@ -41,7 +41,7 @@
         },
         "2": {
             "name": "t.poisson",
-            "id": 6119,
+            "id": 5623,
             "position_x": 222,
             "position_y": 269,
             "width": 70,
@@ -52,7 +52,7 @@
         },
         "3": {
             "name": "heat_map",
-            "id": 6162,
+            "id": 5666,
             "position_x": 308,
             "position_y": 57,
             "width": 136,
@@ -106,7 +106,7 @@
         "4": {
             "init": "t.rand 64 64",
             "name": "t.rand",
-            "id": 6234,
+            "id": 5738,
             "position_x": 15,
             "position_y": 56,
             "width": 163,
@@ -116,7 +116,7 @@
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "",
+                    "name": "input",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -154,7 +154,7 @@
         },
         "5": {
             "name": "t.cauchy",
-            "id": 6403,
+            "id": 5907,
             "position_x": 170,
             "position_y": 473,
             "width": 129,
@@ -177,7 +177,7 @@
         },
         "6": {
             "name": "heat_map",
-            "id": 6488,
+            "id": 5992,
             "position_x": 316,
             "position_y": 469,
             "width": 136,
@@ -230,7 +230,7 @@
         },
         "7": {
             "name": "t.normal",
-            "id": 6560,
+            "id": 6064,
             "position_x": 178,
             "position_y": 676,
             "width": 117,
@@ -253,7 +253,7 @@
         },
         "8": {
             "name": "heat_map",
-            "id": 6645,
+            "id": 6149,
             "position_x": 315,
             "position_y": 674,
             "width": 136,
@@ -306,7 +306,7 @@
         },
         "9": {
             "name": "t.log_normal",
-            "id": 6717,
+            "id": 6221,
             "position_x": 173,
             "position_y": 874,
             "width": 117,
@@ -329,7 +329,7 @@
         },
         "10": {
             "name": "heat_map",
-            "id": 6802,
+            "id": 6306,
             "position_x": 315,
             "position_y": 865,
             "width": 136,
@@ -382,7 +382,7 @@
         },
         "11": {
             "name": "t.uniform",
-            "id": 6874,
+            "id": 6378,
             "position_x": 492,
             "position_y": 62,
             "width": 117,
@@ -405,7 +405,7 @@
         },
         "12": {
             "name": "heat_map",
-            "id": 6959,
+            "id": 6463,
             "position_x": 628,
             "position_y": 61,
             "width": 136,
@@ -458,7 +458,7 @@
         },
         "13": {
             "name": "t.exponential",
-            "id": 7031,
+            "id": 6535,
             "position_x": 480,
             "position_y": 272,
             "width": 129,
@@ -476,7 +476,7 @@
         },
         "14": {
             "name": "heat_map",
-            "id": 7095,
+            "id": 6599,
             "position_x": 632,
             "position_y": 271,
             "width": 136,
@@ -529,7 +529,7 @@
         },
         "15": {
             "name": "t.geometric",
-            "id": 7167,
+            "id": 6671,
             "position_x": 506,
             "position_y": 471,
             "width": 99,
@@ -547,7 +547,7 @@
         },
         "16": {
             "name": "heat_map",
-            "id": 7231,
+            "id": 6735,
             "position_x": 629,
             "position_y": 470,
             "width": 136,
@@ -600,7 +600,7 @@
         },
         "17": {
             "name": "heat_map",
-            "id": 7303,
+            "id": 6807,
             "position_x": 310,
             "position_y": 270,
             "width": 136,
@@ -653,7 +653,7 @@
         },
         "18": {
             "name": "load_bang",
-            "id": 7375,
+            "id": 6879,
             "position_x": 46,
             "position_y": 264,
             "width": 88,
@@ -671,7 +671,7 @@
         },
         "19": {
             "name": "close",
-            "id": 7443,
+            "id": 6922,
             "position_x": 648,
             "position_y": 951,
             "width": 88,
@@ -690,9 +690,9 @@
         "20": {
             "init": "comment torch distributions",
             "name": "comment",
-            "id": 7474,
+            "id": 6945,
             "position_x": 15,
-            "position_y": 10,
+            "position_y": 5,
             "width": 242,
             "height": 42,
             "visibility": "show_all",
@@ -705,9 +705,9 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": true,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
                 }
             },
             "comment": "torch distributions"
@@ -715,174 +715,174 @@
     },
     "links": {
         "0": {
-            "source_node": 6076,
+            "source_node": 5580,
             "source_node_name": "t.bernoulli",
             "source_output_index": 0,
             "source_output_name": "tensor out",
-            "dest_node": 6162,
+            "dest_node": 5666,
             "dest_node_name": "heat_map",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "1": {
-            "source_node": 6119,
+            "source_node": 5623,
             "source_node_name": "t.poisson",
             "source_output_index": 0,
             "source_output_name": "tensor out",
-            "dest_node": 7303,
+            "dest_node": 6807,
             "dest_node_name": "heat_map",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "2": {
-            "source_node": 6234,
+            "source_node": 5738,
             "source_node_name": "t.rand",
             "source_output_index": 0,
             "source_output_name": "random tensor",
-            "dest_node": 6076,
+            "dest_node": 5580,
             "dest_node_name": "t.bernoulli",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "3": {
-            "source_node": 6234,
+            "source_node": 5738,
             "source_node_name": "t.rand",
             "source_output_index": 0,
             "source_output_name": "random tensor",
-            "dest_node": 6119,
+            "dest_node": 5623,
             "dest_node_name": "t.poisson",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "4": {
-            "source_node": 6234,
+            "source_node": 5738,
             "source_node_name": "t.rand",
             "source_output_index": 0,
             "source_output_name": "random tensor",
-            "dest_node": 6403,
+            "dest_node": 5907,
             "dest_node_name": "t.cauchy",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "5": {
-            "source_node": 6234,
+            "source_node": 5738,
             "source_node_name": "t.rand",
             "source_output_index": 0,
             "source_output_name": "random tensor",
-            "dest_node": 6560,
+            "dest_node": 6064,
             "dest_node_name": "t.normal",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "6": {
-            "source_node": 6234,
+            "source_node": 5738,
             "source_node_name": "t.rand",
             "source_output_index": 0,
             "source_output_name": "random tensor",
-            "dest_node": 6717,
+            "dest_node": 6221,
             "dest_node_name": "t.log_normal",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "7": {
-            "source_node": 6234,
+            "source_node": 5738,
             "source_node_name": "t.rand",
             "source_output_index": 0,
             "source_output_name": "random tensor",
-            "dest_node": 6874,
+            "dest_node": 6378,
             "dest_node_name": "t.uniform",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "8": {
-            "source_node": 6234,
+            "source_node": 5738,
             "source_node_name": "t.rand",
             "source_output_index": 0,
             "source_output_name": "random tensor",
-            "dest_node": 7031,
+            "dest_node": 6535,
             "dest_node_name": "t.exponential",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "9": {
-            "source_node": 6234,
+            "source_node": 5738,
             "source_node_name": "t.rand",
             "source_output_index": 0,
             "source_output_name": "random tensor",
-            "dest_node": 7167,
+            "dest_node": 6671,
             "dest_node_name": "t.geometric",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "10": {
-            "source_node": 6403,
+            "source_node": 5907,
             "source_node_name": "t.cauchy",
             "source_output_index": 0,
             "source_output_name": "tensor out",
-            "dest_node": 6488,
+            "dest_node": 5992,
             "dest_node_name": "heat_map",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "11": {
-            "source_node": 6560,
+            "source_node": 6064,
             "source_node_name": "t.normal",
             "source_output_index": 0,
             "source_output_name": "tensor out",
-            "dest_node": 6645,
+            "dest_node": 6149,
             "dest_node_name": "heat_map",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "12": {
-            "source_node": 6717,
+            "source_node": 6221,
             "source_node_name": "t.log_normal",
             "source_output_index": 0,
             "source_output_name": "tensor out",
-            "dest_node": 6802,
+            "dest_node": 6306,
             "dest_node_name": "heat_map",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "13": {
-            "source_node": 6874,
+            "source_node": 6378,
             "source_node_name": "t.uniform",
             "source_output_index": 0,
             "source_output_name": "tensor out",
-            "dest_node": 6959,
+            "dest_node": 6463,
             "dest_node_name": "heat_map",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "14": {
-            "source_node": 7031,
+            "source_node": 6535,
             "source_node_name": "t.exponential",
             "source_output_index": 0,
             "source_output_name": "tensor out",
-            "dest_node": 7095,
+            "dest_node": 6599,
             "dest_node_name": "heat_map",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "15": {
-            "source_node": 7167,
+            "source_node": 6671,
             "source_node_name": "t.geometric",
             "source_output_index": 0,
             "source_output_name": "tensor out",
-            "dest_node": 7231,
+            "dest_node": 6735,
             "dest_node_name": "heat_map",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "16": {
-            "source_node": 7375,
+            "source_node": 6879,
             "source_node_name": "load_bang",
             "source_output_index": 0,
             "source_output_name": "out",
-            "dest_node": 6234,
+            "dest_node": 5738,
             "dest_node_name": "t.rand",
             "dest_input_index": 0,
-            "dest_input_name": ""
+            "dest_input_name": "###input"
         }
     }
 }

@@ -1,17 +1,17 @@
 {
-    "height": 671,
-    "width": 1231,
+    "height": 610,
+    "width": 1127,
     "position": [
         100,
         100
     ],
-    "id": 195,
+    "id": 695,
     "name": "metro_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/metro_help.json",
     "nodes": {
         "0": {
             "name": "",
-            "id": 226,
+            "id": 722,
             "position_x": 0,
             "position_y": 0,
             "width": 9,
@@ -30,41 +30,51 @@
         },
         "1": {
             "name": "text_block",
-            "id": 331,
-            "position_x": 582,
-            "position_y": 73,
-            "width": 645,
-            "height": 410,
+            "id": 740,
+            "position_x": 362,
+            "position_y": 18,
+            "width": 775,
+            "height": 515,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "The metro node acts like a ticking clock or a heartbeat for your project. \n\nIt generates a repeating pulse signal (sending out the word \"bang\") at a specific speed. \nYou use this node to trigger events, animate objects, or keep rhythm in your patch.\n\nSyntax:\nmetro <period: int or float)>\n\nExample:\nmetro 30\n\n\nInputs and Parameters\n\non: \nWhen checked, the metronome starts running and sending signals. \nWhen unchecked, the metronome stops.\n\nperiod:\nThis sets the speed. It represents the amount of time between each \"tick.\" \nFor example, if you set this to 1000 and your units are milliseconds, it ticks once every second. \nLower numbers mean faster ticks.\n\nunits: \nThis lets you decide what time scale the period number represents. \nYou can choose between milliseconds (default), seconds, minutes, or hours.\n\n\nOutputs: \n\noutput:\nEvery time the timer completes a cycle, the node sends a \"bang\" trigger out of its output pin. ",
+                    "value": "The metro node acts like a ticking clock or a heartbeat for your project. \n\nIt generaotes a repeating pulse signal (sending out the word \"bang\") at a specific speed. \nYou use this node to trigger events, animate objects, or keep rhythm in your patch.\n\nSYNTAX:\nmetro <period: int or float)>\n\nEXAMPLE:\nmetro 30\n\nINPUTS and PARAMETERS:\n\non: \nWhen checked, the metronome starts running and sending signals. \nWhen unchecked, the metronome stops.\n\nperiod:\nThis sets the speed. It represents the amount of time between each \"tick.\" \nFor example, if you set this to 1000 and your units are milliseconds, it ticks once every second. \nLower numbers mean faster ticks.\n\nunits: \nThis lets you decide what time scale the period number represents. \nYou can choose between milliseconds (default), seconds, minutes, or hours.\n\nOUTPUTS: \n\noutput:\nEvery time the timer completes a cycle, the node sends a \"bang\" trigger out of its output pin. ",
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "width",
-                    "value": 637,
-                    "value_type": "int"
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
                 },
                 "2": {
-                    "name": "height",
-                    "value": 394,
+                    "name": "width",
+                    "value": 767,
                     "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 499,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
                 }
             },
-            "text": "The metro node acts like a ticking clock or a heartbeat for your project. \n\nIt generates a repeating pulse signal (sending out the word \"bang\") at a specific speed. \nYou use this node to trigger events, animate objects, or keep rhythm in your patch.\n\nSyntax:\nmetro <period: int or float)>\n\nExample:\nmetro 30\n\n\nInputs and Parameters\n\non: \nWhen checked, the metronome starts running and sending signals. \nWhen unchecked, the metronome stops.\n\nperiod:\nThis sets the speed. It represents the amount of time between each \"tick.\" \nFor example, if you set this to 1000 and your units are milliseconds, it ticks once every second. \nLower numbers mean faster ticks.\n\nunits: \nThis lets you decide what time scale the period number represents. \nYou can choose between milliseconds (default), seconds, minutes, or hours.\n\n\nOutputs: \n\noutput:\nEvery time the timer completes a cycle, the node sends a \"bang\" trigger out of its output pin. "
+            "text": "The metro node acts like a ticking clock or a heartbeat for your project. \n\nIt generaotes a repeating pulse signal (sending out the word \"bang\") at a specific speed. \nYou use this node to trigger events, animate objects, or keep rhythm in your patch.\n\nSYNTAX:\nmetro <period: int or float)>\n\nEXAMPLE:\nmetro 30\n\nINPUTS and PARAMETERS:\n\non: \nWhen checked, the metronome starts running and sending signals. \nWhen unchecked, the metronome stops.\n\nperiod:\nThis sets the speed. It represents the amount of time between each \"tick.\" \nFor example, if you set this to 1000 and your units are milliseconds, it ticks once every second. \nLower numbers mean faster ticks.\n\nunits: \nThis lets you decide what time scale the period number represents. \nYou can choose between milliseconds (default), seconds, minutes, or hours.\n\nOUTPUTS: \n\noutput:\nEvery time the timer completes a cycle, the node sends a \"bang\" trigger out of its output pin. "
         },
         "2": {
             "init": "metro 30",
             "name": "metro",
-            "id": 366,
-            "position_x": 91,
+            "id": 757,
+            "position_x": 26,
             "position_y": 124,
             "width": 129,
-            "height": 78,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -88,11 +98,11 @@
         },
         "3": {
             "name": "counter",
-            "id": 441,
-            "position_x": 245,
+            "id": 824,
+            "position_x": 180,
             "position_y": 128,
             "width": 123,
-            "height": 94,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -111,18 +121,18 @@
         },
         "4": {
             "name": "int",
-            "id": 551,
-            "position_x": 392,
-            "position_y": 175,
+            "id": 933,
+            "position_x": 181,
+            "position_y": 221,
             "width": 127,
-            "height": 46,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "",
-                    "value": 90,
+                    "value": 214,
                     "value_type": "int"
                 },
                 "1": {
@@ -156,16 +166,16 @@
                     "value_type": "int"
                 },
                 "7": {
-                    "name": "large_font",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             }
         },
         "5": {
             "init": "comment metro",
             "name": "comment",
-            "id": 626,
+            "id": 998,
             "position_x": 22,
             "position_y": 9,
             "width": 70,
@@ -180,18 +190,18 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": true,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
                 }
             },
             "comment": "metro"
         },
         "6": {
             "name": "close",
-            "id": 652,
-            "position_x": 1054,
-            "position_y": 526,
+            "id": 1009,
+            "position_x": 1008,
+            "position_y": 505,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -207,18 +217,18 @@
         },
         "7": {
             "name": "toggle",
-            "id": 682,
-            "position_x": 15,
-            "position_y": 107,
+            "id": 1032,
+            "position_x": 26,
+            "position_y": 74,
             "width": 45,
-            "height": 46,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "",
-                    "value": false,
+                    "value": true,
                     "value_type": "bool"
                 },
                 "1": {
@@ -231,31 +241,31 @@
     },
     "links": {
         "0": {
-            "source_node": 366,
+            "source_node": 757,
             "source_node_name": "metro",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 441,
+            "dest_node": 824,
             "dest_node_name": "counter",
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
         "1": {
-            "source_node": 441,
+            "source_node": 824,
             "source_node_name": "counter",
             "source_output_index": 0,
             "source_output_name": "count out",
-            "dest_node": 551,
+            "dest_node": 933,
             "dest_node_name": "int",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "2": {
-            "source_node": 682,
+            "source_node": 1032,
             "source_node_name": "toggle",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 366,
+            "dest_node": 757,
             "dest_node_name": "metro",
             "dest_input_index": 0,
             "dest_input_name": "on"

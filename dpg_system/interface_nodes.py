@@ -161,8 +161,9 @@ class MenuNode(Node):
         self.choices = self.args_as_list(ordered_args)
         self.choice = self.add_input('##choice', widget_type='combo', default_value=self.choices[0], callback=self.set_choice)
         self.choice.widget.combo_items = self.choices
-        self.large_text = self.add_option('large_font', widget_type='checkbox', default_value=False,
+        self.font_size_option = self.add_option('font size', widget_type='combo', default_value='24',
                                                  callback=self.large_font_changed)
+        self.font_size_option.widget.combo_items = ['24', '30', '36', '48']
         self.output = self.add_output('')
 
     def get_preset_state(self):
@@ -176,18 +177,16 @@ class MenuNode(Node):
             self.execute()
 
     def large_font_changed(self):
-        use_large = self.large_text()
-        if use_large:
-            self.choice.set_font(self.app.large_font)
-        else:
-            self.choice.set_font(self.app.default_font)
+        font_size = self.font_size_option()
+        if font_size == '24':
+            self.choice.set_font(self.app.font_24)
+        elif font_size == '30':
+            self.choice.set_font(self.app.font_30)
+        elif font_size == '36':
+            self.choice.set_font(self.app.font_36)
+        elif font_size == '48':
+            self.choice.set_font(self.app.font_48)
         adjusted_width = self.choice.widget.adjust_to_text_width()
-        # self.width_option.widget.set(adjusted_width)
-        # if self.choice.widget.trigger_widget is not None:
-        #     if use_large:
-        #         dpg.set_item_width(self.choice.widget.trigger_widget, 28)
-        #     else:
-        #         dpg.set_item_width(self.choice.widget.trigger_widget, 14)
 
     def set_choice_internal(self):
         input_choice = self.choice()
@@ -893,9 +892,10 @@ class ValueNode(Node):
 
         if 'knob' not in label:
             self.large_text_option = self.add_option(
-                'large_font', widget_type='checkbox', default_value=False,
+                'font size', widget_type='combo', default_value='24',
                 callback=self.large_font_changed
             )
+            self.large_text_option.widget.combo_items = ['24', '30', '36', '48']
 
     # --- Button Handlers ---
     def increment_widget(self, widget):
@@ -914,14 +914,26 @@ class ValueNode(Node):
         return value
 
     def large_font_changed(self):
-        use_large = self.large_text_option()
-        self.input.set_font(self.app.large_font if use_large else self.app.default_font)
+        font_size = self.large_text_option()
+        if font_size == '24':
+            self.input.set_font(self.app.font_24)
+            trigger_size = 14
+        elif font_size == '30':
+            self.input.set_font(self.app.font_30)
+            trigger_size = 17
+        elif font_size == '36':
+            self.input.set_font(self.app.font_36)
+            trigger_size = 20
+        elif font_size == '48':
+            self.input.set_font(self.app.font_48)
+            trigger_size = 28
+
         adjusted_width = self.input.widget.adjust_to_text_width()
         self.width_option.widget.set(adjusted_width)
 
         trigger = self.input.widget.trigger_widget
         if trigger:
-            dpg.set_item_width(trigger, 28 if use_large else 14)
+            dpg.set_item_width(trigger, trigger_size)
 
     def options_changed(self):
         width = self.width_option()
@@ -962,7 +974,7 @@ class ValueNode(Node):
             self.bind_to_variable(self.variable_name)
         if hasattr(self, 'start_value') and self.start_value is not None:
             self.input.set(self.start_value)
-        self.input.set_font(self.app.default_font)
+        self.input.set_font(self.app.font_24)
 
     def custom_cleanup(self):
         if self.variable is not None:
@@ -1570,21 +1582,30 @@ class ValueNode_o(Node):
         if widget_type in ['drag_float', 'slider_float', 'drag_int', 'slider_int', 'knob_float', 'input_int', 'input_float']:
             self.format_property = self.add_option('format', widget_type='text_input', default_value=self.format, callback=self.options_changed)
         if widget_type != 'knob':
-            self.large_text_option = self.add_option('large_font', widget_type='checkbox', default_value=False, callback=self.large_font_changed)
+            self.large_text_option = self.add_option('font_size', widget_type='combo', default_value='24', callback=self.large_font_changed)
+            self.large_text_option.widget.combo_items = ['24', '30', '36', '48']
 
     def large_font_changed(self):
-        use_large = self.large_text_option()
-        if use_large:
-            self.input.set_font(self.app.large_font)
-        else:
-            self.input.set_font(self.app.default_font)
+        trigger_size = 14
+        font_size = self.large_text_option()
+        if font_size == '24':
+            self.input.set_font(self.app.font_24)
+            trigger_size = 14
+        elif font_size == '30':
+            self.input.set_font(self.app.font_30)
+            trigger_size = 17
+        elif font_size == '36':
+            self.input.set_font(self.app.font_36)
+            trigger_size = 20
+        elif font_size == '48':
+            self.input.set_font(self.app.font_48)
+            trigger_size = 28
+
         adjusted_width = self.input.widget.adjust_to_text_width()
         self.width_option.widget.set(adjusted_width)
+
         if self.input.widget.trigger_widget is not None:
-            if use_large:
-                dpg.set_item_width(self.input.widget.trigger_widget, 28)
-            else:
-                dpg.set_item_width(self.input.widget.trigger_widget, 14)
+            dpg.set_item_width(self.input.widget.trigger_widget, trigger_size)
 
     def get_preset_state(self):
         preset = {}
@@ -1629,7 +1650,7 @@ class ValueNode_o(Node):
             self.bind_to_variable(self.variable_name)
         if self.start_value is not None:
             self.input.set(self.start_value)
-        self.input.set_font(self.app.default_font)
+        self.input.set_font(self.app.font_24)
         if self.input.widget.widget == 'text_editor':
             dpg.set_item_height(self.input.widget.uuid, 200)
 
