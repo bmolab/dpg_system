@@ -1,0 +1,684 @@
+{
+    "height": 736,
+    "width": 1367,
+    "position": [
+        100,
+        100
+    ],
+    "id": 197,
+    "name": "gate_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/gate_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 228,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "name": "close",
+            "id": 325,
+            "position_x": 40,
+            "position_y": 610,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "2": {
+            "init": "comment counter",
+            "name": "comment",
+            "id": 355,
+            "position_x": 14,
+            "position_y": -5,
+            "width": 463,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "gate - pass or block the flow of data",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "gate - pass or block the flow of data"
+        },
+        "3": {
+            "name": "text_block",
+            "id": 373,
+            "position_x": 548,
+            "position_y": 7,
+            "width": 798,
+            "height": 700,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The gate node functions as a flow control switch or a data router.\n\nDepending on how it is configured, it can act as a simple on/off valve (passing data or blocking it) \nor as a demultiplexer (routing one input signal to one of many possible outputs). \n\nYou use this node to mute data streams, selectively trigger specific parts of your patch, \nor switch between different processing logic.\n\nSYNTAX:\ngate <number_of_outputs: int>\n\nEXAMPLE:\ngate 4\n\nINPUTS and PARAMETERS:\n\n(control input): \nThe first input changes appearance based on the number of outputs defined:\nIf 1 output: This appears as a checkbox. When checked, the gate is open and data passes through. \nWhen unchecked, the gate is closed.\nIf >1 output: This appears as a number dial. Setting this to 0 closes all gates. \nSetting it to 1 routes data to the first output, setting it to 2 routes to the second, and so on.\n\ninput:\nThe data source to be routed. \nData received here is only sent to an output if the gate is currently open \n(or a valid output is selected).\n\nOUTPUTS: \n\nout (1...n):\nThe routed data appears here. \nIf the node is set to multiple outputs, only the specific output selected by the control input \nwill transmit data; the others remain silent.",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 684,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "The gate node functions as a flow control switch or a data router.\n\nDepending on how it is configured, it can act as a simple on/off valve (passing data or blocking it) \nor as a demultiplexer (routing one input signal to one of many possible outputs). \n\nYou use this node to mute data streams, selectively trigger specific parts of your patch, \nor switch between different processing logic.\n\nSYNTAX:\ngate <number_of_outputs: int>\n\nEXAMPLE:\ngate 4\n\nINPUTS and PARAMETERS:\n\n(control input): \nThe first input changes appearance based on the number of outputs defined:\nIf 1 output: This appears as a checkbox. When checked, the gate is open and data passes through. \nWhen unchecked, the gate is closed.\nIf >1 output: This appears as a number dial. Setting this to 0 closes all gates. \nSetting it to 1 routes data to the first output, setting it to 2 routes to the second, and so on.\n\ninput:\nThe data source to be routed. \nData received here is only sent to an output if the gate is currently open \n(or a valid output is selected).\n\nOUTPUTS: \n\nout (1...n):\nThe routed data appears here. \nIf the node is set to multiple outputs, only the specific output selected by the control input \nwill transmit data; the others remain silent."
+        },
+        "4": {
+            "name": "signal",
+            "id": 398,
+            "position_x": 32,
+            "position_y": 81,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "5": {
+            "name": "gate",
+            "id": 492,
+            "position_x": 221,
+            "position_y": 89,
+            "width": 39,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "6": {
+            "name": "plot",
+            "id": 556,
+            "position_x": 317,
+            "position_y": 82,
+            "width": 208,
+            "height": 108,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "7": {
+            "init": "gate 4",
+            "name": "gate",
+            "id": 637,
+            "position_x": 196,
+            "position_y": 211,
+            "width": 88,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 3,
+                    "value_type": "int"
+                }
+            }
+        },
+        "8": {
+            "name": "plot",
+            "id": 761,
+            "position_x": 317,
+            "position_y": 205,
+            "width": 208,
+            "height": 108,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "9": {
+            "name": "plot",
+            "id": 842,
+            "position_x": 317,
+            "position_y": 324,
+            "width": 208,
+            "height": 108,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "10": {
+            "name": "plot",
+            "id": 923,
+            "position_x": 317,
+            "position_y": 443,
+            "width": 208,
+            "height": 108,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "11": {
+            "name": "plot",
+            "id": 1004,
+            "position_x": 317,
+            "position_y": 562,
+            "width": 208,
+            "height": 108,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "12": {
+            "init": "comment gate 4",
+            "name": "comment",
+            "id": 1085,
+            "position_x": 213,
+            "position_y": 175,
+            "width": 45,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "gate 4",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "gate 4"
+        },
+        "13": {
+            "init": "metro 1000",
+            "name": "metro",
+            "id": 1096,
+            "position_x": 24,
+            "position_y": 192,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 1000.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "string"
+                }
+            }
+        },
+        "14": {
+            "init": "range_counter 1 4",
+            "name": "range_counter",
+            "id": 1163,
+            "position_x": 28,
+            "position_y": 289,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "start",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "end",
+                    "value": 5,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "step",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 398,
+            "source_node_name": "signal",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 492,
+            "dest_node_name": "gate",
+            "dest_input_index": 1,
+            "dest_input_name": "input"
+        },
+        "1": {
+            "source_node": 398,
+            "source_node_name": "signal",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 637,
+            "dest_node_name": "gate",
+            "dest_input_index": 1,
+            "dest_input_name": "input"
+        },
+        "2": {
+            "source_node": 492,
+            "source_node_name": "gate",
+            "source_output_index": 0,
+            "source_output_name": "out 1",
+            "dest_node": 556,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "3": {
+            "source_node": 637,
+            "source_node_name": "gate",
+            "source_output_index": 0,
+            "source_output_name": "out 1",
+            "dest_node": 761,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 637,
+            "source_node_name": "gate",
+            "source_output_index": 1,
+            "source_output_name": "out 2",
+            "dest_node": 842,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "5": {
+            "source_node": 637,
+            "source_node_name": "gate",
+            "source_output_index": 2,
+            "source_output_name": "out 3",
+            "dest_node": 923,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "6": {
+            "source_node": 637,
+            "source_node_name": "gate",
+            "source_output_index": 3,
+            "source_output_name": "out 4",
+            "dest_node": 1004,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "7": {
+            "source_node": 1096,
+            "source_node_name": "metro",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 1163,
+            "dest_node_name": "range_counter",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "8": {
+            "source_node": 1163,
+            "source_node_name": "range_counter",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 637,
+            "dest_node_name": "gate",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

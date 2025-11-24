@@ -614,7 +614,6 @@ class MicrosecondTimerNode(Node):
     def __del__(self):
         self.cleanup()
 
-# HELP done to here ------
 
 class ClampNode(Node):
     @staticmethod
@@ -629,27 +628,6 @@ class ClampNode(Node):
         self.min_input = self.add_input('min', widget_type='drag_float', default_value=0.0)
         self.max_input = self.add_input('max', widget_type='drag_float', default_value=1.0)
         self.output = self.add_output('clamped output')
-
-    # def execute(self):
-    #     data = self.input()
-    #     t = type(data)
-    #     if t in [int, float, np.int64, np.float32, np.float64]:
-    #         if data < self.min_input():
-    #             data =  self.min_input()
-    #         elif data > self.max_input():
-    #             data = self.max_input()
-    #         self.output.send(data)
-    #     elif t is list:
-    #         a = any_to_array(data, validate=True)
-    #         if a is not None:
-    #             a = np.clip(a, self.min_input(), self.max_input())
-    #             self.output.send(a)
-    #     elif t is np.ndarray:
-    #         a = np.clip(data, self.min_input(), self.max_input())
-    #         self.output.send(a)
-    #     elif torch_available and t is torch.Tensor:
-    #         a = torch.clamp(data, self.min_input(), self.max_input())
-    #         self.output.send(a)
 
     def execute(self):
         data = self.input()
@@ -784,7 +762,6 @@ class RampNode(Node):
         except (ValueError, TypeError):
             return  # Handle parsing errors gracefully
 
-        print(args)
         # 2. Update State safely
         with self.lock:
             count = len(args)
@@ -1161,7 +1138,7 @@ class GateNode(Node):
         self.gated_input = self.add_input("input", triggers_execution=True)
 
         for i in range(self.num_gates):
-            self.add_output("out " + str(i))
+            self.add_output("out " + str(i + 1))
 
     def change_state(self, input=None):
         if self.num_gates == 1:
@@ -1219,6 +1196,7 @@ class SwitchNode(Node):
         received = self.switch_inputs[self.state - 1]()
         self.out.send(received)
 
+# HELP done to here ------
 
 class UnpackNode(Node):
     @staticmethod

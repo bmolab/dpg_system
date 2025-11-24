@@ -1,0 +1,303 @@
+{
+    "height": 632,
+    "width": 1301,
+    "position": [
+        100,
+        100
+    ],
+    "id": 197,
+    "name": "time_between_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/time_between_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 228,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment save - save the patcher containing this save node",
+            "name": "comment",
+            "id": 325,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 574,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "time_between - measure the time between events",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "time_between - measure the time between events"
+        },
+        "2": {
+            "name": "close",
+            "id": 343,
+            "position_x": 37,
+            "position_y": 516,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "3": {
+            "name": "text_block",
+            "id": 943,
+            "position_x": 559,
+            "position_y": 14,
+            "width": 717,
+            "height": 588,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "\nThe time_between node acts as a stopwatch or timer for your patch.\n\nIt measures the duration of time elapsed between receiving a signal at the start input \nand receiving a signal at the end input. \n\nYou use this node to profile the performance of your code, measure user reaction speeds, \nor calculate the length of specific events.\n\nSYNTAX:\ntime_between <units: string>\n\nEXAMPLE:\ntime_between seconds\n\nINPUTS and PARAMETERS:\n\nstart: \nTriggers the \"start\" of the timer. \nWhen data is received here, the node records the current time. \nIt does not produce any output.\n\nend:\nTriggers the \"stop\" of the timer. \nWhen data is received here, the node compares the current time to the recorded start time \nand outputs the difference. \n\nunits: \nThis determines the scale of the output number. \nYou can choose between milliseconds (default), seconds, minutes, or hours.\n\nOUTPUTS: \n\noutput:\nThe calculated duration between the start and end triggers. \nThis is sent as a number (float) immediately after the \"end\" input is triggered.",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 709,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 572,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "\nThe time_between node acts as a stopwatch or timer for your patch.\n\nIt measures the duration of time elapsed between receiving a signal at the start input \nand receiving a signal at the end input. \n\nYou use this node to profile the performance of your code, measure user reaction speeds, \nor calculate the length of specific events.\n\nSYNTAX:\ntime_between <units: string>\n\nEXAMPLE:\ntime_between seconds\n\nINPUTS and PARAMETERS:\n\nstart: \nTriggers the \"start\" of the timer. \nWhen data is received here, the node records the current time. \nIt does not produce any output.\n\nend:\nTriggers the \"stop\" of the timer. \nWhen data is received here, the node compares the current time to the recorded start time \nand outputs the difference. \n\nunits: \nThis determines the scale of the output number. \nYou can choose between milliseconds (default), seconds, minutes, or hours.\n\nOUTPUTS: \n\noutput:\nThe calculated duration between the start and end triggers. \nThis is sent as a number (float) immediately after the \"end\" input is triggered."
+        },
+        "4": {
+            "name": "time_between",
+            "id": 1025,
+            "position_x": 168,
+            "position_y": 101,
+            "width": 123,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "units",
+                    "value": "seconds",
+                    "value_type": "string"
+                }
+            }
+        },
+        "5": {
+            "name": "b",
+            "id": 1092,
+            "position_x": 64,
+            "position_y": 83,
+            "width": 22,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "message",
+                    "value": "bang",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "height",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "flash_duration",
+                    "value": 0.10000000149011612,
+                    "value_type": "float"
+                }
+            }
+        },
+        "6": {
+            "name": "b",
+            "id": 1150,
+            "position_x": 66,
+            "position_y": 138,
+            "width": 22,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "message",
+                    "value": "bang",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "height",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "flash_duration",
+                    "value": 0.10000000149011612,
+                    "value_type": "float"
+                }
+            }
+        },
+        "7": {
+            "name": "float",
+            "id": 1210,
+            "position_x": 341,
+            "position_y": 133,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 5.032567024230957,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 0.009999999776482582,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 1025,
+            "source_node_name": "time_between",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 1210,
+            "dest_node_name": "float",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 1092,
+            "source_node_name": "b",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 1025,
+            "dest_node_name": "time_between",
+            "dest_input_index": 0,
+            "dest_input_name": "start"
+        },
+        "2": {
+            "source_node": 1150,
+            "source_node_name": "b",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 1025,
+            "dest_node_name": "time_between",
+            "dest_input_index": 1,
+            "dest_input_name": "end"
+        }
+    }
+}

@@ -1,0 +1,601 @@
+{
+    "height": 686,
+    "width": 1275,
+    "position": [
+        100,
+        100
+    ],
+    "id": 197,
+    "name": "date_time_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/date_time_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 228,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment save - save the patcher containing this save node",
+            "name": "comment",
+            "id": 325,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 549,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "date_time - report the current date and time",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "date_time - report the current date and time"
+        },
+        "2": {
+            "name": "close",
+            "id": 343,
+            "position_x": 39,
+            "position_y": 560,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "3": {
+            "name": "text_block",
+            "id": 943,
+            "position_x": 366,
+            "position_y": 34,
+            "width": 865,
+            "height": 616,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The date_time node retrieves the current local system time and date.\n\nIt breaks this information down into individual numerical components and pre-formatted \nstrings for easy use. \n\nYou use this node to create timestamps for logs, trigger events at specific times of day, \nor display digital clocks in your interface.\n\nSYNTAX:\ndate_time\n\nEXAMPLE:\ndate_time\n\nINPUTS and PARAMETERS:\n\nget time: \nThe trigger input. \nReceiving a signal here (or clicking the button on the node) captures the current moment \nand updates all output values.\n\nOUTPUTS: \n\nhours: The current hour (0-23).\n\nminutes: The current minute (0-59).\n\nseconds: The current second (0-59).\n\nday: The day of the month (1-31).\n\nmonth: The month of the year (1-12).\n\nyear: The current year (e.g., 2023).\n\ndate string: A combined string representing the date in the format \"Year-Month-Day\" (e.g., \"2023-10-27\").\n\ntime string: A combined string representing the time in the format \"Hours:Minutes:Seconds\" (e.g., \"14:30:05\").",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 857,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 600,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "The date_time node retrieves the current local system time and date.\n\nIt breaks this information down into individual numerical components and pre-formatted \nstrings for easy use. \n\nYou use this node to create timestamps for logs, trigger events at specific times of day, \nor display digital clocks in your interface.\n\nSYNTAX:\ndate_time\n\nEXAMPLE:\ndate_time\n\nINPUTS and PARAMETERS:\n\nget time: \nThe trigger input. \nReceiving a signal here (or clicking the button on the node) captures the current moment \nand updates all output values.\n\nOUTPUTS: \n\nhours: The current hour (0-23).\n\nminutes: The current minute (0-59).\n\nseconds: The current second (0-59).\n\nday: The day of the month (1-31).\n\nmonth: The month of the year (1-12).\n\nyear: The current year (e.g., 2023).\n\ndate string: A combined string representing the date in the format \"Year-Month-Day\" (e.g., \"2023-10-27\").\n\ntime string: A combined string representing the time in the format \"Hours:Minutes:Seconds\" (e.g., \"14:30:05\")."
+        },
+        "4": {
+            "name": "date_time",
+            "id": 1286,
+            "position_x": 69,
+            "position_y": 74,
+            "width": 77,
+            "height": 158,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "5": {
+            "name": "int",
+            "id": 1473,
+            "position_x": 206,
+            "position_y": 69,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "6": {
+            "name": "int",
+            "id": 1539,
+            "position_x": 206,
+            "position_y": 118,
+            "width": 127,
+            "height": 45,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 52,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "7": {
+            "name": "int",
+            "id": 1605,
+            "position_x": 206,
+            "position_y": 166,
+            "width": 127,
+            "height": 45,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 59,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "8": {
+            "name": "int",
+            "id": 1671,
+            "position_x": 206,
+            "position_y": 214,
+            "width": 127,
+            "height": 45,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "9": {
+            "name": "int",
+            "id": 1737,
+            "position_x": 206,
+            "position_y": 263,
+            "width": 127,
+            "height": 45,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 11,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "10": {
+            "name": "int",
+            "id": 1803,
+            "position_x": 206,
+            "position_y": 311,
+            "width": 127,
+            "height": 45,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 2025,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "11": {
+            "name": "string",
+            "id": 1939,
+            "position_x": 206,
+            "position_y": 359,
+            "width": 127,
+            "height": 45,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "2025-11-24",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "12": {
+            "name": "string",
+            "id": 1995,
+            "position_x": 206,
+            "position_y": 409,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "12:52:59",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 1286,
+            "source_node_name": "date_time",
+            "source_output_index": 0,
+            "source_output_name": "hours",
+            "dest_node": 1473,
+            "dest_node_name": "int",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 1286,
+            "source_node_name": "date_time",
+            "source_output_index": 1,
+            "source_output_name": "minutes",
+            "dest_node": 1539,
+            "dest_node_name": "int",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 1286,
+            "source_node_name": "date_time",
+            "source_output_index": 2,
+            "source_output_name": "seconds",
+            "dest_node": 1605,
+            "dest_node_name": "int",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 1286,
+            "source_node_name": "date_time",
+            "source_output_index": 3,
+            "source_output_name": "day",
+            "dest_node": 1671,
+            "dest_node_name": "int",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 1286,
+            "source_node_name": "date_time",
+            "source_output_index": 4,
+            "source_output_name": "month",
+            "dest_node": 1737,
+            "dest_node_name": "int",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 1286,
+            "source_node_name": "date_time",
+            "source_output_index": 5,
+            "source_output_name": "year",
+            "dest_node": 1803,
+            "dest_node_name": "int",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 1286,
+            "source_node_name": "date_time",
+            "source_output_index": 6,
+            "source_output_name": "date string",
+            "dest_node": 1939,
+            "dest_node_name": "string",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "7": {
+            "source_node": 1286,
+            "source_node_name": "date_time",
+            "source_output_index": 7,
+            "source_output_name": "time string",
+            "dest_node": 1995,
+            "dest_node_name": "string",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        }
+    }
+}
