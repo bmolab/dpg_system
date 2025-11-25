@@ -850,8 +850,8 @@ class DateTimeNode(Node):
         date_string = str(date_time[0]) + '-' + str(date_time[1]) + '-' + str(date_time[2])
         time_string = str(date_time[3]) + ':' + str(date_time[4]) + ':' + str(date_time[5])
 
-        self.date_string_output.send(date_string)
         self.time_string_output.send(time_string)
+        self.date_string_output.send(date_string)
 
         self.year_output.send(date_time[0])
         self.month_output.send(date_time[1])
@@ -1092,7 +1092,7 @@ class RangeCounterNode(Node):
 
         start = self.start_count
         end = self.end_count
-        gap = end - start
+        gap = end - start + 1
 
         # Calculate potential next value
         next_val = self.current_value + self.step
@@ -1101,7 +1101,7 @@ class RangeCounterNode(Node):
         new_carry = 0
         if next_val < start:
             new_carry = -1
-        elif next_val >= end:
+        elif next_val > end:
             new_carry = 1
 
         # 2. Calculate Wrapped Value
@@ -1196,7 +1196,6 @@ class SwitchNode(Node):
         received = self.switch_inputs[self.state - 1]()
         self.out.send(received)
 
-# HELP done to here ------
 
 class UnpackNode(Node):
     @staticmethod
@@ -1270,41 +1269,39 @@ class UnpackNode(Node):
             else:
                 self.add_output(out_names[i])
 
-
     def execute(self):
         if self.input.fresh_input:
             value = self.input()
             t = type(value)
             if t in [float, int, bool, np.float32, np.int64]:
-                self.outputs[0].set_value(value)
+                self.outputs[0].send(value)
             elif t == 'str':
                 listing, _, _ = string_to_hybrid_list(value)
                 out_count = len(listing)
                 if out_count > self.num_outs:
                     out_count = self.num_outs
-                for i in range(out_count):
-                    self.outputs[i].set_value(listing[i])
+                for j in reversed(range(out_count)):
+                    self.outputs[j].send(listing[j])
             elif t == list:
                 listing, _, _ = list_to_hybrid_list(value)
                 out_count = len(listing)
                 if out_count > self.num_outs:
                     out_count = self.num_outs
-                for i in range(out_count):
-                    self.outputs[i].set_value(listing[i])
+                for j in reversed(range(out_count)):
+                    self.outputs[j].send(listing[j])
             elif t == np.ndarray:
                 out_count = value.shape[0]
                 if out_count > self.num_outs:
                     out_count = self.num_outs
-                for i in range(out_count):
-                    self.outputs[i].set_value(value[i])
+                for j in reversed(range(out_count)):
+                    self.outputs[j].send(value[j])
             elif torch_available:
                 if t == torch.Tensor:
                     out_count = value.shape[0]
                     if out_count > self.num_outs:
                         out_count = self.num_outs
-                    for i in range(out_count):
-                        self.outputs[i].set_value(value[i])
-            self.send_all()
+                    for j in reversed(range(out_count)):
+                        self.outputs[j].send(value[j])
 
 
 class PackNode(Node):
@@ -1468,6 +1465,7 @@ class PackNode(Node):
                         out_list = torch.from_numpy(out_list)
                     self.output.send(out_list)
 
+# HELP done to here ------
 
 class BucketBrigadeNode(Node):
     @staticmethod
@@ -1492,8 +1490,7 @@ class BucketBrigadeNode(Node):
             self.head = (self.head + 1) % self.bucket_count
             data = self.input()
             self.buckets[self.head] = data
-            for i in range(self.bucket_count):
-                rev_i = self.bucket_count - i - 1
+            for rev_i in reversed(range(self.bucket_count)):
                 source = (self.head - rev_i) % self.bucket_count
                 self.outs[rev_i].send(self.buckets[source])
 
@@ -1845,24 +1842,22 @@ class TriggerNode(Node):
         if self.input.fresh_input or self.force_trigger:
             self.force_trigger = False
             in_data = self.input()
-            for i in range(self.trigger_count):
-                j = self.trigger_count - i - 1
+            for j in reversed(range(self.trigger_count)):
                 trig_mode = self.trigger_pass[j]
                 if trig_mode == 0:
-                    self.outputs[j].set_value(self.triggers[j])
+                    self.outputs[j].send(self.triggers[j])
                 elif trig_mode == 1:
-                    self.outputs[j].set_value(any_to_int(in_data))
+                    self.outputs[j].send(any_to_int(in_data))
                 elif trig_mode == 2:
-                    self.outputs[j].set_value(any_to_float(in_data))
+                    self.outputs[j].send(any_to_float(in_data))
                 elif trig_mode == 3:
-                    self.outputs[j].set_value(any_to_string(in_data))
+                    self.outputs[j].send(any_to_string(in_data))
                 elif trig_mode == 4:
-                    self.outputs[j].set_value(any_to_list(in_data))
+                    self.outputs[j].send(any_to_list(in_data))
                 elif trig_mode == 5:
-                    self.outputs[j].set_value(any_to_array(in_data))
+                    self.outputs[j].send(any_to_array(in_data))
                 elif trig_mode == 6:
-                    self.outputs[j].set_value('bang')
-            self.send_all()
+                    self.outputs[j].send('bang')
 
 
 class DecodeToNode(Node):
@@ -2697,10 +2692,8 @@ class RepeatNode(Node):
 
     def execute(self):
         data = self.input()
-        for i in range(self.repeat_count):
-            j = self.repeat_count - i - 1
+        for j in reversed(range(self.repeat_count)):
             self.outputs[j].send(data)
-        # self.send_all()
 
 
 class ConduitSendNode(Node):

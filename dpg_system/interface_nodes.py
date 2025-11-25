@@ -265,9 +265,8 @@ class MouseNode(Node):
 
     def execute(self):
         if self.mouse_pos is not None:
-            self.output_y.set_value(self.mouse_pos[1])
-            self.output_x.set_value(self.mouse_pos[0])
-        self.send_all()
+            self.output_y.send(self.mouse_pos[1])
+            self.output_x.send(self.mouse_pos[0])
 
 
 # presets can hold UI state, Nodes state, Patch state

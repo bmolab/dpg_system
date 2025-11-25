@@ -135,13 +135,20 @@ class CombineNode(Node):
                 else:
                     input_ = self.add_input("in " + str(i + 1))
             input_._data = ''
-
+        self.separator_input = self.add_input('separator', widget_type='text_input', default_value='')
         self.output = self.add_output("out")
 
     def execute(self):
         output_string = ''
-        for i in range(self.num_ins):
-            output_string += any_to_string(self.inputs[i]._data)
+        if self.separator_input() != '':
+            sep = self.separator_input()
+            for i in range(self.num_ins):
+                output_string += any_to_string(self.inputs[i]._data)
+                if i < self.num_ins - 1:
+                    output_string += sep
+        else:
+            for i in range(self.num_ins):
+                output_string += any_to_string(self.inputs[i]._data)
         self.output.send(output_string)
 
 

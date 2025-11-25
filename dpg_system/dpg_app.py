@@ -1162,8 +1162,8 @@ class App:
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 self.options_handler()
 
-    def H_handler(self):
-        if self.alt_down():
+    def QuestionMark_handler(self):
+        if self.control_or_command_down():
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 self.help_handler()
 
@@ -1854,7 +1854,7 @@ class App:
                             dpg.add_key_press_handler(dpg.mvKey_X, callback=self.X_handler)
                             dpg.add_key_press_handler(dpg.mvKey_W, callback=self.W_handler)
                             dpg.add_key_press_handler(dpg.mvKey_O, callback=self.O_handler)
-                            dpg.add_key_press_handler(dpg.mvKey_H, callback=self.H_handler)
+                            dpg.add_key_press_handler(dpg.mvKey_Slash, callback=self.QuestionMark_handler)
                             dpg.add_key_press_handler(dpg.mvKey_S, callback=self.S_handler)
                             dpg.add_key_press_handler(dpg.mvKey_N, callback=self.N_handler)
                             dpg.add_key_press_handler(dpg.mvKey_K, callback=self.K_handler)

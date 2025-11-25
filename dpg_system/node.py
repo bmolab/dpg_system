@@ -2020,8 +2020,7 @@ class Node:
         pass
 
     def send_all(self) -> None:
-        for i in range(len(self.outputs)):
-            j = len(self.outputs) - i - 1
+        for j in reversed(range(len(self.outputs))):
             output = self.outputs[j]
             output.send_internal()  # should not always trigger!!! make flag to indicate trigger always or trigger on change...
 
