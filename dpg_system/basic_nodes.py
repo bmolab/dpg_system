@@ -11,6 +11,7 @@ import copy
 import queue
 import html
 import string
+import itertools
 
 from dpg_system.node import Node, SaveDialog, LoadDialog
 
@@ -1465,7 +1466,6 @@ class PackNode(Node):
                         out_list = torch.from_numpy(out_list)
                     self.output.send(out_list)
 
-# HELP done to here ------
 
 class BucketBrigadeNode(Node):
     @staticmethod
@@ -1967,18 +1967,17 @@ class ConcatenateNode(Node):
                 self.input_list[i + 1].triggers_execution = False
 
     def execute(self):
-        # out_list = self.input_list[0]().copy()
+        out_list = []
         out_value = any_to_list(self.input_list[0]())
-        outlist = []
-        if type(out_value) is list:
-            out_list = out_value.copy()
+        if out_value:
+            out_list.extend(out_value)
 
-        for i in range(self.count - 1):
-            l = self.input_list[i + 1]()
-            if type(l) == list:
-                out_list += l.copy()
-        if len(out_list) > 0:
-            self.output.send(out_list)
+            for i in range(self.count - 1):
+                l = any_to_list(self.input_list[i + 1]())
+                if l:
+                    out_list.extend(l)
+            if len(out_list) > 0:
+                self.output.send(out_list)
 
 
 '''info : TypeNode
@@ -2004,9 +2003,13 @@ def print_info(input_):
     value_string = ''
 
     # 1. Handle Basic Primitives (int, float, bool)
-    if isinstance(input_, (int, float, bool)):
+    if isinstance(input_, (int, bool)):
         type_string = type(input_).__name__
         value_string = str(input_)
+
+    elif isinstance(input_, float):
+        type_string = type(input_).__name__
+        value_string = f'{input_:.3f}'
 
     # 2. Handle Strings
     elif isinstance(input_, str):
@@ -2055,6 +2058,7 @@ def print_info(input_):
 
     return type_string, value_string
 
+# HELP done to here ------
 
 class TypeNode(Node):
     @staticmethod

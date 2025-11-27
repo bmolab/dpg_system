@@ -1007,35 +1007,38 @@ class ValueNode(Node):
         if not text_value:
             return []
 
-        clean_val = text_value.strip()
-        output_data = []
-        is_list_structure = False
+        # why not use string_to_list?
+        output_data = string_to_list(text_value)
 
-        # 1. Try bracketed parsing (standard Python list syntax)
-        if clean_val.startswith('['):
-            try:
-                # Use ast.literal_eval as a safe replacement for string_to_list
-                # if string_to_list is not globally available
-                output_data = ast.literal_eval(clean_val)
-                if isinstance(output_data, (list, tuple)):
-                    output_data = list(output_data)
-                    is_list_structure = True
-            except:
-                pass  # Fallback to space splitting
-
-        # 2. Fallback: Space splitting
-        if not is_list_structure:
-            parts = clean_val.split(' ')
-            for part in parts:
-                if not part: continue
-                # Try converting to number
-                try:
-                    if '.' in part:
-                        output_data.append(float(part))
-                    else:
-                        output_data.append(int(part))
-                except ValueError:
-                    output_data.append(part)
+        # clean_val = text_value.strip()
+        # output_data = []
+        # is_list_structure = False
+        #
+        # # 1. Try bracketed parsing (standard Python list syntax)
+        # if clean_val.startswith('['):
+        #     try:
+        #         # Use ast.literal_eval as a safe replacement for string_to_list
+        #         # if string_to_list is not globally available
+        #         output_data = ast.literal_eval(clean_val)
+        #         if isinstance(output_data, (list, tuple)):
+        #             output_data = list(output_data)
+        #             is_list_structure = True
+        #     except:
+        #         pass  # Fallback to space splitting
+        #
+        # # 2. Fallback: Space splitting
+        # if not is_list_structure:
+        #     parts = clean_val.split(' ')
+        #     for part in parts:
+        #         if not part: continue
+        #         # Try converting to number
+        #         try:
+        #             if '.' in part:
+        #                 output_data.append(float(part))
+        #             else:
+        #                 output_data.append(int(part))
+        #         except ValueError:
+        #             output_data.append(part)
 
         # 3. Unwrap single items based on Node Type
         # 'list' nodes always output a list.
