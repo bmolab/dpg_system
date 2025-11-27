@@ -2425,6 +2425,8 @@ class ConstructDictNode(Node):
 
     def received_data(self):
         incoming = self.data_input()
+        if type(incoming) is str:
+            incoming = string_to_list(incoming)
         if type(incoming) is list:
             key = incoming[0]
             value = incoming[1:]
@@ -2620,6 +2622,9 @@ class CollectionNode(Node):
                 if data[0] == '{':
                     data = json.loads(data)
                     t = dict
+                else:
+                    data = string_to_list(data)
+                    t = list
             if t is dict:
                 self.collection = copy.deepcopy(data)
             elif t == list:
