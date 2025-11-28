@@ -2437,7 +2437,7 @@ def flatten_list(nested_input):
 #             yield item
 
 
-def list_to_string_o(input_list, validate=False):
+def list_to_string_org(input_list, validate=False):
     """
     Converts a list to a standardized single-line string.
 
