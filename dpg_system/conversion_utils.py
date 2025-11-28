@@ -2437,7 +2437,7 @@ def flatten_list(nested_input):
 #             yield item
 
 
-def list_to_string(input_list, validate=False):
+def list_to_string_org(input_list, validate=False):
     """
     Converts a list to a standardized single-line string.
 
@@ -2457,6 +2457,13 @@ def list_to_string(input_list, validate=False):
         if isinstance(input_list, (list, tuple, np.ndarray)):
             if len(input_list) > 0:
                 is_all_strings = all(isinstance(x, (str, np.str_)) for x in input_list)
+            if not is_all_strings:
+                is_all_lists = all(isinstance(x, list) for x in input_list)
+                if is_all_lists:
+                    if len(input_list) == 1:
+                        input_list = input_list[0]
+                        if len(input_list) > 0:
+                            is_all_strings = all(isinstance(x, (str, np.str_)) for x in input_list)
 
         # 3. Format the String
         if is_all_strings:
@@ -2472,6 +2479,66 @@ def list_to_string(input_list, validate=False):
         # 4. Clean Whitespace (Global)
         # " ".join(s.split()) replaces all newlines (\n), tabs, and
         # multiple spaces with a single space.
+        clean_string = ' '.join(raw_string.split())
+
+        return clean_string
+
+    except Exception:
+        if validate:
+            return None
+        return ""
+
+
+def list_to_string(input_list, validate=False):
+    """
+    Converts a list (nested or flat) to a standardized single-line string.
+
+    - Nested Strings:  [['a', 'b'], ['c']] -> "a b c" (Flattened & joined)
+    - Mixed/Numeric:   [1, [2, 3]]         -> "[1, [2, 3]]" (Repr, cleaned)
+    """
+    # 1. Handle Empty/None
+    if input_list is None:
+        if validate: return None
+        return ""
+
+    # Helper function to flatten nested structures
+    def flatten(container):
+        for i in container:
+            if isinstance(i, (list, tuple, np.ndarray)):
+                yield from flatten(i)
+            else:
+                yield i
+
+    try:
+        # 2. Flatten and Analyze Content
+        # We assume it is iterable. If not (e.g., input is just an int),
+        # the try/except block will catch it or we wrap it.
+        if not isinstance(input_list, (list, tuple, np.ndarray)):
+            # If input is a single string or number, wrap it to treat as list
+            input_list = [input_list]
+
+        # Create a flat list of all atoms
+        flat_list = list(flatten(input_list))
+
+        if not flat_list:
+            # Handle empty lists [], [[]], etc.
+            return ""
+
+        # Check if EVERY element in the flattened list is a string
+        is_all_strings = all(isinstance(x, (str, np.str_)) for x in flat_list)
+
+        # 3. Format the String
+        if is_all_strings:
+            # Path A: Pure Text (Deeply Nested) -> Flatten and join
+            # [['a'], 'b'] -> "a b"
+            raw_string = ' '.join(str(x) for x in flat_list)
+        else:
+            # Path B: Mixed/Numeric -> Use Original Structure Representation
+            # [1, [2]] -> "[1, [2]]"
+            raw_string = str(input_list)
+
+        # 4. Clean Whitespace (Global)
+        # Replaces newlines, tabs, and multi-spaces with single space
         clean_string = ' '.join(raw_string.split())
 
         return clean_string
