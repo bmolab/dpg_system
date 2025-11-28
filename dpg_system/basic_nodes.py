@@ -87,6 +87,8 @@ def register_basic_nodes():
     Node.app.register_node('start_trace', StartTraceNode.factory)
     Node.app.register_node('end_trace', EndTraceNode.factory)
 
+    Node.app.register_node('dict_replace', DictReplaceNode.factory)
+
 
 class SliceNode(Node):
     @staticmethod
@@ -2440,6 +2442,7 @@ class ConstructDictNode(Node):
         self.dict_output.send(self.dict)
         self.dict = {}
 
+# deprecated - use gather_to_dict
 
 class PackDictNode(Node):
     @staticmethod
@@ -2471,6 +2474,82 @@ class PackDictNode(Node):
         self.dict = {}
 
 
+class DictReplaceNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = DictReplaceNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('in', triggers_execution=True)
+        self.replace_pairs_in = self.add_input('replace pairs', callback=self.add_replace_pair)
+        self.clear_input = self.add_input('clear', callback=self.clear)
+        self.output = self.add_output('out')
+        self.dict_output = self.add_output('dict out')
+        self.dict = {}
+        self.update_dict()
+
+    def add_replace_pair(self):
+        pair = self.replace_pairs_in()
+        if isinstance(pair, str):
+            pair = string_to_list(pair)
+        if isinstance(pair, list):
+            if len(pair) == 2:
+                if isinstance(pair[0], str) and isinstance(pair[1], str):
+                    self.dict[pair[0]] = pair[1]
+            elif len(pair) == 1:
+                self.dict.pop(pair[0])
+        self.update_dict()
+
+    def update_dict(self):
+        # 1. Create a normalized lookup dictionary (keys to lowercase)
+        # This allows us to find the key regardless of how the user typed it in the dict
+        self.lookup = {k.lower(): v for k, v in self.dict.items()}
+        # 2. Sort keys by length (longest first) to avoid partial match errors
+        keys = sorted(self.lookup.keys(), key=len, reverse=True)
+        # 3. Create the regex pattern
+        # \b ensures whole words only. re.IGNORECASE handles the search.
+        self.pattern = re.compile(r'\b(' + '|'.join(re.escape(k) for k in keys) + r')\b', re.IGNORECASE)
+
+    def clear(self):
+        self.dict = {}
+        self.update_dict()
+
+    def replace_with_case(self, text):
+        def match_case_replace(match):
+            original_word = match.group()
+            lower_key = original_word.lower()
+            replacement = self.lookup[lower_key]
+            return replacement
+
+        # 5. Perform the substitution
+        return self.pattern.sub(match_case_replace, text)
+
+    def execute(self):
+        incoming = self.input()
+        if isinstance(incoming, dict):
+            self.dict = copy.deepcopy(incoming)
+            return
+        incoming = any_to_string(incoming)
+        outgoing = self.replace_with_case(incoming)
+        self.output.send(outgoing)
+
+    def save_custom(self, container):
+        container['dict'] = self.dict
+
+    def load_custom(self, container):
+        if 'dict' in container:
+            self.dict = container['dict']
+            self.update_dict()
+
+    def dump_dict(self):
+        self.dict_out.send(self.dict)
+
+
+
+
+
 class CollectionNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -2489,9 +2568,13 @@ class CollectionNode(Node):
 
         self.input = self.add_input('retrieve by key', triggers_execution=True)
         self.store_input = self.add_input('store', triggers_execution=True)
+
         self.collection_name_input = self.add_input('name', widget_type='text_input', default_value=self.collection_name, callback=self.load_coll_by_name)
+        self.clear_input = self.add_input('clear', widget_type='button', callback=self.clear)
+        self.input = self.add_input('send dict', widget_type='button', callback=self.send_dict)
         self.output = self.add_output("out")
         self.unmatched_output = self.add_output('unmatched')
+        self.dict_out = self.add_output('dict out')
 
         self.message_handlers['clear'] = self.clear_message
         self.message_handlers['dump'] = self.dump
@@ -2509,6 +2592,9 @@ class CollectionNode(Node):
             out_list = [key]
             out_list += self.collection[key]
             self.output.send(out_list)
+
+    def send_dict(self):
+        self.dict_out.send(self.collection)
 
     def save_dialog(self):
         SaveDialog(self, callback=self.save_coll_callback, extensions=['json'])
@@ -2557,10 +2643,12 @@ class CollectionNode(Node):
         if os.path.exists(path):
             with open(path, 'r') as f:
                 self.collection = json.load(f)
-
-    def clear_message(self, message='', data=[]):
+    def clear(self):
         self.collection = {}
         self.save_pointer = -1
+
+    def clear_message(self, message='', data=[]):
+        self.clear()
 
     def execute(self):
         if self.active_input == self.input:
