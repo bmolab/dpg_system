@@ -1,0 +1,1768 @@
+{
+    "height": 1069,
+    "width": 1087,
+    "position": [
+        100,
+        100
+    ],
+    "id": 6483,
+    "name": "t.mean_help.json",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.mean_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 6510,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "t.rand 16 16",
+            "name": "t.rand",
+            "id": 6528,
+            "position_x": 50,
+            "position_y": 75,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "input",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "shape",
+                    "value": "[16, 16]",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "2": {
+            "name": "t.median",
+            "id": 6697,
+            "position_x": 283,
+            "position_y": 101,
+            "width": 64,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "3": {
+            "name": "float",
+            "id": 6740,
+            "position_x": 372,
+            "position_y": 112,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0.5043979287147522,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 0.009999999776482582,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "4": {
+            "name": "t.mean",
+            "id": 6805,
+            "position_x": 284,
+            "position_y": 28,
+            "width": 64,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "5": {
+            "name": "float",
+            "id": 6848,
+            "position_x": 371,
+            "position_y": 46,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0.49943697452545166,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 0.009999999776482582,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "6": {
+            "init": "t.median 1",
+            "name": "t.median",
+            "id": 6913,
+            "position_x": 273,
+            "position_y": 259,
+            "width": 111,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "dim",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "keep_dims",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "7": {
+            "name": "heat_map",
+            "id": 7018,
+            "position_x": 410,
+            "position_y": 254,
+            "width": 136,
+            "height": 172,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                }
+            }
+        },
+        "8": {
+            "name": "heat_map",
+            "id": 7090,
+            "position_x": 46,
+            "position_y": 229,
+            "width": 136,
+            "height": 172,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 16,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                }
+            }
+        },
+        "9": {
+            "init": "t.mean 1",
+            "name": "t.mean",
+            "id": 7162,
+            "position_x": 276,
+            "position_y": 519,
+            "width": 111,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "dim",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "keep_dims",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "10": {
+            "name": "heat_map",
+            "id": 7247,
+            "position_x": 412,
+            "position_y": 515,
+            "width": 136,
+            "height": 172,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                }
+            }
+        },
+        "11": {
+            "name": "message",
+            "id": 7319,
+            "position_x": 409,
+            "position_y": 461,
+            "width": 346,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "[[11  2 15  1 15 12  0  5 14 14  8  7  1  7 13 10]]",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 319,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "12": {
+            "init": "comment torch.mean and torch.median",
+            "name": "comment",
+            "id": 7375,
+            "position_x": 548,
+            "position_y": 40,
+            "width": 463,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "torch.mean / torch.median / torch.sum",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "torch.mean / torch.median / torch.sum"
+        },
+        "13": {
+            "init": "comment indices",
+            "name": "comment",
+            "id": 7386,
+            "position_x": 406,
+            "position_y": 426,
+            "width": 52,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "indices",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "indices"
+        },
+        "14": {
+            "init": "t.nanmean 0",
+            "name": "t.nanmean",
+            "id": 7397,
+            "position_x": 573,
+            "position_y": 521,
+            "width": 111,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "dim",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "keep_dims",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "15": {
+            "name": "heat_map",
+            "id": 7482,
+            "position_x": 704,
+            "position_y": 516,
+            "width": 136,
+            "height": 172,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                }
+            }
+        },
+        "16": {
+            "init": "t.nanmedian 0",
+            "name": "t.nanmedian",
+            "id": 7554,
+            "position_x": 570,
+            "position_y": 256,
+            "width": 111,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "dim",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "keep_dims",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "17": {
+            "name": "heat_map",
+            "id": 7659,
+            "position_x": 701,
+            "position_y": 256,
+            "width": 136,
+            "height": 172,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                }
+            }
+        },
+        "18": {
+            "name": "t.info",
+            "id": 7731,
+            "position_x": 570,
+            "position_y": 605,
+            "width": 88,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "19": {
+            "name": "t.info",
+            "id": 7834,
+            "position_x": 567,
+            "position_y": 358,
+            "width": 88,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "20": {
+            "init": "t.sum dim=0",
+            "name": "t.sum",
+            "id": 7937,
+            "position_x": 279,
+            "position_y": 734,
+            "width": 111,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "dim",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "keep_dims",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "21": {
+            "name": "t.sum",
+            "id": 8022,
+            "position_x": 281,
+            "position_y": 171,
+            "width": 64,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "22": {
+            "name": "float",
+            "id": 8065,
+            "position_x": 374,
+            "position_y": 174,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 127.85586547851562,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 0.009999999776482582,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "23": {
+            "init": "vector 16",
+            "name": "vector",
+            "id": 8130,
+            "position_x": 428,
+            "position_y": 716,
+            "width": 160,
+            "height": 294,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "row 0",
+                    "value": 6.3556928634643555,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "row 1",
+                    "value": 9.228548049926758,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "row 2",
+                    "value": 7.9246697425842285,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "row 3",
+                    "value": 8.948972702026367,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "row 4",
+                    "value": 8.49591064453125,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "row 5",
+                    "value": 7.265224933624268,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "row 6",
+                    "value": 8.748956680297852,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "row 7",
+                    "value": 8.377751350402832,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "row 8",
+                    "value": 7.354991912841797,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "row 9",
+                    "value": 8.64963150024414,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "row 10",
+                    "value": 6.0586042404174805,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "row 11",
+                    "value": 8.62647533416748,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "row 12",
+                    "value": 9.265520095825195,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "row 13",
+                    "value": 6.856396675109863,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "row 14",
+                    "value": 7.235813617706299,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "row 15",
+                    "value": 8.462709426879883,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "row 16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "row 17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "row 18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "row 19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "row 20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "row 21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "row 22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "row 23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "row 24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "row 25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "row 26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "row 27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "row 28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "row 29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "row 30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "row 31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "row 32",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "33": {
+                    "name": "row 33",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "34": {
+                    "name": "row 34",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "35": {
+                    "name": "row 35",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "36": {
+                    "name": "row 36",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "37": {
+                    "name": "row 37",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "38": {
+                    "name": "row 38",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "39": {
+                    "name": "row 39",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "40": {
+                    "name": "row 40",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "41": {
+                    "name": "row 41",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "42": {
+                    "name": "row 42",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "43": {
+                    "name": "row 43",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "44": {
+                    "name": "row 44",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "45": {
+                    "name": "row 45",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "46": {
+                    "name": "row 46",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "47": {
+                    "name": "row 47",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "48": {
+                    "name": "row 48",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "49": {
+                    "name": "row 49",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "50": {
+                    "name": "row 50",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "51": {
+                    "name": "row 51",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "52": {
+                    "name": "row 52",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "53": {
+                    "name": "row 53",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "54": {
+                    "name": "row 54",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "55": {
+                    "name": "row 55",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "56": {
+                    "name": "row 56",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "57": {
+                    "name": "row 57",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "58": {
+                    "name": "row 58",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "59": {
+                    "name": "row 59",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "60": {
+                    "name": "row 60",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "61": {
+                    "name": "row 61",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "62": {
+                    "name": "row 62",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "63": {
+                    "name": "row 63",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "64": {
+                    "name": "zero",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "65": {
+                    "name": "output type",
+                    "value": "numpy",
+                    "value_type": "string"
+                },
+                "66": {
+                    "name": "component count",
+                    "value": 16,
+                    "value_type": "int"
+                },
+                "67": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "24": {
+            "init": "t.nansum 1",
+            "name": "t.nansum",
+            "id": 9565,
+            "position_x": 623,
+            "position_y": 729,
+            "width": 111,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "dim",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "keep_dims",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "25": {
+            "init": "vector 16",
+            "name": "vector",
+            "id": 9650,
+            "position_x": 774,
+            "position_y": 718,
+            "width": 160,
+            "height": 294,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "row 0",
+                    "value": 6.3556928634643555,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "row 1",
+                    "value": 9.228548049926758,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "row 2",
+                    "value": 7.9246697425842285,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "row 3",
+                    "value": 8.948972702026367,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "row 4",
+                    "value": 8.49591064453125,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "row 5",
+                    "value": 7.265224933624268,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "row 6",
+                    "value": 8.748956680297852,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "row 7",
+                    "value": 8.377751350402832,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "row 8",
+                    "value": 7.354991912841797,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "row 9",
+                    "value": 8.64963150024414,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "row 10",
+                    "value": 6.0586042404174805,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "row 11",
+                    "value": 8.62647533416748,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "row 12",
+                    "value": 9.265520095825195,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "row 13",
+                    "value": 6.856396675109863,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "row 14",
+                    "value": 7.235813617706299,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "row 15",
+                    "value": 8.462709426879883,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "row 16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "row 17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "row 18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "row 19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "row 20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "row 21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "row 22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "row 23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "row 24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "row 25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "row 26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "row 27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "row 28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "row 29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "row 30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "row 31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "row 32",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "33": {
+                    "name": "row 33",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "34": {
+                    "name": "row 34",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "35": {
+                    "name": "row 35",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "36": {
+                    "name": "row 36",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "37": {
+                    "name": "row 37",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "38": {
+                    "name": "row 38",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "39": {
+                    "name": "row 39",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "40": {
+                    "name": "row 40",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "41": {
+                    "name": "row 41",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "42": {
+                    "name": "row 42",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "43": {
+                    "name": "row 43",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "44": {
+                    "name": "row 44",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "45": {
+                    "name": "row 45",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "46": {
+                    "name": "row 46",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "47": {
+                    "name": "row 47",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "48": {
+                    "name": "row 48",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "49": {
+                    "name": "row 49",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "50": {
+                    "name": "row 50",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "51": {
+                    "name": "row 51",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "52": {
+                    "name": "row 52",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "53": {
+                    "name": "row 53",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "54": {
+                    "name": "row 54",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "55": {
+                    "name": "row 55",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "56": {
+                    "name": "row 56",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "57": {
+                    "name": "row 57",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "58": {
+                    "name": "row 58",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "59": {
+                    "name": "row 59",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "60": {
+                    "name": "row 60",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "61": {
+                    "name": "row 61",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "62": {
+                    "name": "row 62",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "63": {
+                    "name": "row 63",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "64": {
+                    "name": "zero",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "65": {
+                    "name": "output type",
+                    "value": "numpy",
+                    "value_type": "string"
+                },
+                "66": {
+                    "name": "component count",
+                    "value": 16,
+                    "value_type": "int"
+                },
+                "67": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "26": {
+            "name": "load_bang",
+            "id": 11085,
+            "position_x": 51,
+            "position_y": 17,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "trigger",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "27": {
+            "name": "close",
+            "id": 11128,
+            "position_x": 969,
+            "position_y": 962,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 6528,
+            "source_node_name": "t.rand",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 6697,
+            "dest_node_name": "t.median",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "1": {
+            "source_node": 6528,
+            "source_node_name": "t.rand",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 6805,
+            "dest_node_name": "t.mean",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "2": {
+            "source_node": 6528,
+            "source_node_name": "t.rand",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 6913,
+            "dest_node_name": "t.median",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "3": {
+            "source_node": 6528,
+            "source_node_name": "t.rand",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 7090,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 6528,
+            "source_node_name": "t.rand",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 7162,
+            "dest_node_name": "t.mean",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "5": {
+            "source_node": 6528,
+            "source_node_name": "t.rand",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 7397,
+            "dest_node_name": "t.nanmean",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "6": {
+            "source_node": 6528,
+            "source_node_name": "t.rand",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 7554,
+            "dest_node_name": "t.nanmedian",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "7": {
+            "source_node": 6528,
+            "source_node_name": "t.rand",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 7937,
+            "dest_node_name": "t.sum",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "8": {
+            "source_node": 6528,
+            "source_node_name": "t.rand",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 8022,
+            "dest_node_name": "t.sum",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "9": {
+            "source_node": 6528,
+            "source_node_name": "t.rand",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 9565,
+            "dest_node_name": "t.nansum",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "10": {
+            "source_node": 6697,
+            "source_node_name": "t.median",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 6740,
+            "dest_node_name": "float",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "11": {
+            "source_node": 6805,
+            "source_node_name": "t.mean",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 6848,
+            "dest_node_name": "float",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "12": {
+            "source_node": 6913,
+            "source_node_name": "t.median",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 7018,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "13": {
+            "source_node": 6913,
+            "source_node_name": "t.median",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 7834,
+            "dest_node_name": "t.info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "14": {
+            "source_node": 6913,
+            "source_node_name": "t.median",
+            "source_output_index": 1,
+            "source_output_name": "index output",
+            "dest_node": 7319,
+            "dest_node_name": "message",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "15": {
+            "source_node": 7162,
+            "source_node_name": "t.mean",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 7247,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "16": {
+            "source_node": 7397,
+            "source_node_name": "t.nanmean",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 7482,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "17": {
+            "source_node": 7554,
+            "source_node_name": "t.nanmedian",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 7659,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "18": {
+            "source_node": 7554,
+            "source_node_name": "t.nanmedian",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 7731,
+            "dest_node_name": "t.info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "19": {
+            "source_node": 7937,
+            "source_node_name": "t.sum",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 8130,
+            "dest_node_name": "vector",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "20": {
+            "source_node": 8022,
+            "source_node_name": "t.sum",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 8065,
+            "dest_node_name": "float",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "21": {
+            "source_node": 9565,
+            "source_node_name": "t.nansum",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 9650,
+            "dest_node_name": "vector",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "22": {
+            "source_node": 11085,
+            "source_node_name": "load_bang",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 6528,
+            "dest_node_name": "t.rand",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        }
+    }
+}

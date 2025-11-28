@@ -1,0 +1,554 @@
+{
+    "height": 750,
+    "width": 1298,
+    "position": [
+        100,
+        100
+    ],
+    "id": 444,
+    "name": "counter_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/counter_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 471,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "name": "counter",
+            "id": 489,
+            "position_x": 83,
+            "position_y": 72,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "count",
+                    "value": 255,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "step",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "2": {
+            "name": "plot",
+            "id": 598,
+            "position_x": 231,
+            "position_y": 73,
+            "width": 308,
+            "height": 108,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 256.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "3": {
+            "init": "select 1",
+            "name": "select",
+            "id": 679,
+            "position_x": 199,
+            "position_y": 259,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "selector 0",
+                    "value": "1",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "output_mode",
+                    "value": "bang",
+                    "value_type": "string"
+                }
+            }
+        },
+        "4": {
+            "name": "counter",
+            "id": 728,
+            "position_x": 267,
+            "position_y": 254,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "count",
+                    "value": 255,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "step",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "5": {
+            "name": "int",
+            "id": 837,
+            "position_x": 408,
+            "position_y": 295,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 50,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "6": {
+            "name": "close",
+            "id": 902,
+            "position_x": 29,
+            "position_y": 513,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "7": {
+            "name": "tick",
+            "id": 932,
+            "position_x": 27,
+            "position_y": 73,
+            "width": 33,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "8": {
+            "init": "comment counter",
+            "name": "comment",
+            "id": 975,
+            "position_x": 21,
+            "position_y": -5,
+            "width": 95,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "counter",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "counter"
+        },
+        "9": {
+            "name": "text_block",
+            "id": 993,
+            "position_x": 565,
+            "position_y": 1,
+            "width": 735,
+            "height": 700,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The counter node maintains a numerical tally that updates every time it is triggered.\n\nIt operates as a modulo counter, meaning it counts up to a specific limit \nand then wraps back around to zero. It also indicates when this \"wrap-around\" occurs. \n\nYou use this node to sequence events, cycle through lists, drive sequencers, \nor create looping logic.\n\nSYNTAX:\ncounter <max_count: int> <step_size: int>\n\nEXAMPLE:\ncounter 16 1\n\nINPUTS and PARAMETERS:\n\ninput: \nThe trigger source. \nEvery time this input receives data (or the button is pressed), the counter advances \nby the step size.\n\ncount:\nThis sets the maximum limit (modulus). \nThe counter will count from 0 up to (but not including) this number. \nFor example, if set to 10, the counter outputs 0 through 9, then wraps back to 0.\n\nstep:\nThe increment amount added to the counter on every trigger. \nYou can use negative numbers to count backwards, or larger numbers to skip values.\n\nOUTPUTS: \n\ncount out:\nThe current value of the counter.\n\ncarry out:\nA status signal indicating if the counter has wrapped around. \nIt outputs 1 if the counter overflowed (looped forward past the max), -1 if it underflowed \n(looped backward below zero), and 0 if it is counting normally.\n\nMESSAGES:\n\nset <new_value: int>: continue the count from this value\n\nreset: restart count from 0",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 727,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 684,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "The counter node maintains a numerical tally that updates every time it is triggered.\n\nIt operates as a modulo counter, meaning it counts up to a specific limit \nand then wraps back around to zero. It also indicates when this \"wrap-around\" occurs. \n\nYou use this node to sequence events, cycle through lists, drive sequencers, \nor create looping logic.\n\nSYNTAX:\ncounter <max_count: int> <step_size: int>\n\nEXAMPLE:\ncounter 16 1\n\nINPUTS and PARAMETERS:\n\ninput: \nThe trigger source. \nEvery time this input receives data (or the button is pressed), the counter advances \nby the step size.\n\ncount:\nThis sets the maximum limit (modulus). \nThe counter will count from 0 up to (but not including) this number. \nFor example, if set to 10, the counter outputs 0 through 9, then wraps back to 0.\n\nstep:\nThe increment amount added to the counter on every trigger. \nYou can use negative numbers to count backwards, or larger numbers to skip values.\n\nOUTPUTS: \n\ncount out:\nThe current value of the counter.\n\ncarry out:\nA status signal indicating if the counter has wrapped around. \nIt outputs 1 if the counter overflowed (looped forward past the max), -1 if it underflowed \n(looped backward below zero), and 0 if it is counting normally.\n\nMESSAGES:\n\nset <new_value: int>: continue the count from this value\n\nreset: restart count from 0"
+        },
+        "10": {
+            "name": "int",
+            "id": 1023,
+            "position_x": 230,
+            "position_y": 194,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 212,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "11": {
+            "name": "message",
+            "id": 1090,
+            "position_x": 26,
+            "position_y": 221,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "set 50",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "12": {
+            "name": "message",
+            "id": 1147,
+            "position_x": 26,
+            "position_y": 274,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "reset",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "13": {
+            "init": "comment MESSAGES",
+            "name": "comment",
+            "id": 1212,
+            "position_x": 25,
+            "position_y": 188,
+            "width": 58,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "MESSAGES",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "MESSAGES"
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 489,
+            "source_node_name": "counter",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 598,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "1": {
+            "source_node": 489,
+            "source_node_name": "counter",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 1023,
+            "dest_node_name": "int",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 489,
+            "source_node_name": "counter",
+            "source_output_index": 1,
+            "source_output_name": "carry out",
+            "dest_node": 679,
+            "dest_node_name": "select",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 679,
+            "source_node_name": "select",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 728,
+            "dest_node_name": "counter",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "4": {
+            "source_node": 728,
+            "source_node_name": "counter",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 837,
+            "dest_node_name": "int",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 932,
+            "source_node_name": "tick",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 489,
+            "dest_node_name": "counter",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "6": {
+            "source_node": 1090,
+            "source_node_name": "message",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 489,
+            "dest_node_name": "counter",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "7": {
+            "source_node": 1147,
+            "source_node_name": "message",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 489,
+            "dest_node_name": "counter",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        }
+    }
+}

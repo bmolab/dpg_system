@@ -72,6 +72,7 @@ class TorchWindowNode_(TorchDeviceDtypeNode):
 
         m = 256
         sym = True
+        self.help_file_name = 't.window_help'
 
         self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
         self.window_type = self.add_input('type', widget_type='combo', widget_width=120, default_value=window_type, callback=self.window_type_changed)
@@ -165,6 +166,7 @@ class TorchFFTNode(TorchWithDimNode):
         self.norm = self.add_input('norm', widget_type='combo', default_value=norm)
         self.norm.widget.combo_items = ['forward', 'backward', 'ortho']
         self.output = self.add_output('histogram tensor out')
+        self.help_file_name = 't.fft_help'
 
     def execute(self):
         input_tensor = self.input_to_tensor()

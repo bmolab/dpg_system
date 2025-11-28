@@ -324,6 +324,7 @@ class TorchSpecialNode(TorchNode):
             self.op = self.op_dict[self.label]
         self.input = self.add_input('tensor in', triggers_execution=True)
         self.output = self.add_output('tensor out')
+        self.help_file_name = 't.special_help'
 
     def execute(self):
         input_tensor = self.input_to_tensor()

@@ -1,0 +1,292 @@
+{
+    "height": 592,
+    "width": 1239,
+    "position": [
+        268,
+        516
+    ],
+    "id": 197,
+    "name": "pass_with_triggers_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/pass_with_triggers_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 228,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "name": "pass_with_triggers",
+            "id": 424,
+            "position_x": 187,
+            "position_y": 70,
+            "width": 119,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "2": {
+            "name": "message",
+            "id": 507,
+            "position_x": 34,
+            "position_y": 71,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "save",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "3": {
+            "init": "comment pass_with_triggers",
+            "name": "comment",
+            "id": 572,
+            "position_x": 30,
+            "position_y": -5,
+            "width": 783,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "pass_with_triggers - pass the input with a pre and post trigger",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "pass_with_triggers - pass the input with a pre and post trigger"
+        },
+        "4": {
+            "init": "print first",
+            "name": "print",
+            "id": 663,
+            "position_x": 333,
+            "position_y": 143,
+            "width": 39,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "identifier",
+                    "value": "first",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "precision",
+                    "value": 3,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "end",
+                    "value": "\n",
+                    "value_type": "string"
+                }
+            }
+        },
+        "5": {
+            "init": "print second",
+            "name": "print",
+            "id": 712,
+            "position_x": 330,
+            "position_y": 104,
+            "width": 45,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "identifier",
+                    "value": "second",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "precision",
+                    "value": 3,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "end",
+                    "value": "\n",
+                    "value_type": "string"
+                }
+            }
+        },
+        "6": {
+            "init": "print third",
+            "name": "print",
+            "id": 761,
+            "position_x": 331,
+            "position_y": 66,
+            "width": 39,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "identifier",
+                    "value": "third",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "precision",
+                    "value": 3,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "end",
+                    "value": "\n",
+                    "value_type": "string"
+                }
+            }
+        },
+        "7": {
+            "name": "text_block",
+            "id": 1225,
+            "position_x": 398,
+            "position_y": 42,
+            "width": 810,
+            "height": 508,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The pass_with_triggers node allows you to sequence events around a specific data transmission. \n\nIt acts as a wrapper for a data flow. \nWhen data is received, the node fires a \"bang\" immediately before passing the data along, \nand another \"bang\" immediately after. \n\nYou use this node to set up conditions before processing a value \n(like resetting a counter or opening a gate) and to trigger cleanup or notification events afterwards.\n\nSYNTAX:\npass_with_triggers\n\nEXAMPLE:\npass_with_triggers\n\nINPUTS and PARAMETERS:\n\ninput: \nThe trigger source. Receiving any data here initiates the three-step sequence. \nThe data received here is preserved and passed to the middle output.\n\nOUTPUTS:\n\npre_trigger:\nFires first. Sends a \"bang\" trigger immediately before the data is passed.\n\npass input:\nFires second. The original data received at the input is sent out here.\n\npost_trigger:\nFires last. Sends a \"bang\" trigger immediately after the data has been passed.",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 802,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 492,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "The pass_with_triggers node allows you to sequence events around a specific data transmission. \n\nIt acts as a wrapper for a data flow. \nWhen data is received, the node fires a \"bang\" immediately before passing the data along, \nand another \"bang\" immediately after. \n\nYou use this node to set up conditions before processing a value \n(like resetting a counter or opening a gate) and to trigger cleanup or notification events afterwards.\n\nSYNTAX:\npass_with_triggers\n\nEXAMPLE:\npass_with_triggers\n\nINPUTS and PARAMETERS:\n\ninput: \nThe trigger source. Receiving any data here initiates the three-step sequence. \nThe data received here is preserved and passed to the middle output.\n\nOUTPUTS:\n\npre_trigger:\nFires first. Sends a \"bang\" trigger immediately before the data is passed.\n\npass input:\nFires second. The original data received at the input is sent out here.\n\npost_trigger:\nFires last. Sends a \"bang\" trigger immediately after the data has been passed."
+        },
+        "8": {
+            "name": "close",
+            "id": 1410,
+            "position_x": 48,
+            "position_y": 466,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 424,
+            "source_node_name": "pass_with_triggers",
+            "source_output_index": 0,
+            "source_output_name": "post_trigger",
+            "dest_node": 761,
+            "dest_node_name": "print",
+            "dest_input_index": 0,
+            "dest_input_name": "third"
+        },
+        "1": {
+            "source_node": 424,
+            "source_node_name": "pass_with_triggers",
+            "source_output_index": 1,
+            "source_output_name": "pass input",
+            "dest_node": 712,
+            "dest_node_name": "print",
+            "dest_input_index": 0,
+            "dest_input_name": "second"
+        },
+        "2": {
+            "source_node": 424,
+            "source_node_name": "pass_with_triggers",
+            "source_output_index": 2,
+            "source_output_name": "pre_trigger",
+            "dest_node": 663,
+            "dest_node_name": "print",
+            "dest_input_index": 0,
+            "dest_input_name": "first"
+        },
+        "3": {
+            "source_node": 507,
+            "source_node_name": "message",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 424,
+            "dest_node_name": "pass_with_triggers",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        }
+    }
+}

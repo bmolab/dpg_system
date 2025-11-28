@@ -1014,10 +1014,13 @@ class NodeEditor:
                     else:
                         new_node = self.app.create_node_by_name_from_file(node_name, pos, )
                 if new_node != None:
-                    new_node.load(node_container, offset=offset)
-                    self.app.created_nodes[new_node.loaded_uuid] = new_node
-                    dpg.focus_item(new_node.uuid)
-                    new_node.post_creation_callback()
+                    try:
+                        new_node.load(node_container, offset=offset)
+                        self.app.created_nodes[new_node.loaded_uuid] = new_node
+                        dpg.focus_item(new_node.uuid)
+                        new_node.post_creation_callback()
+                    except Exception as e:
+                        print('error loading node', new_node.label, e)
 
         if self.loaded_parent_node_uuid != -1:
             parent_node = self.app.find_loaded_parent(self.loaded_parent_node_uuid)

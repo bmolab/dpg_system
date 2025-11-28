@@ -250,24 +250,22 @@ class MoCapTakeNode(MoCapNode):
             self.current_frame = 0
         self.frame_input.set(self.current_frame)
         frame = int(self.current_frame)
-        if self.quat_buffer is not None:
-            self.quaternions_out.set_value(self.quat_buffer[frame])
-        if self.position_buffer is not None:
-            self.positions_out.set_value(self.position_buffer[frame])
         if self.label_buffer is not None:
-            self.labels_out.set_value(self.label_buffer[frame])
-        self.send_all()
+            self.labels_out.send(self.label_buffer[frame])
+        if self.position_buffer is not None:
+            self.positions_out.send(self.position_buffer[frame])
+        if self.quat_buffer is not None:
+            self.quaternions_out.send(self.quat_buffer[frame])
 
     def frame_widget_changed(self):
         data = self.frame_input()
         if data < self.frames:
             self.current_frame = data
-            self.quaternions_out.set_value(self.quat_buffer[self.current_frame])
-            if self.position_buffer is not None:
-                self.positions_out.set_value(self.position_buffer[self.current_frame])
             if self.label_buffer is not None:
-                self.labels_out.set_value(self.label_buffer[self.current_frame])
-            self.send_all()
+                self.labels_out.send(self.label_buffer[self.current_frame])
+            if self.position_buffer is not None:
+                self.positions_out.send(self.position_buffer[self.current_frame])
+            self.quaternions_out.send(self.quat_buffer[self.current_frame])
 
     def execute(self):
         if self.frame_input.fresh_input:
@@ -278,10 +276,9 @@ class MoCapTakeNode(MoCapNode):
             if t == int:
                 if data < self.frames:
                     self.current_frame = int(data)
-                    self.quaternions_out.set_value(self.quat_buffer[self.current_frame])
-                    self.positions_out.set_value(self.position_buffer[self.current_frame])
-                    self.labels_out.set_value(self.label_buffer[self.current_frame])
-                    self.send_all()
+                    self.labels_out.send(self.label_buffer[self.current_frame])
+                    self.positions_out.send(self.position_buffer[self.current_frame])
+                    self.quaternions_out.send(self.quat_buffer[self.current_frame])
 
     def load_take_message(self, message='', args=None):
         if args is not None:
@@ -481,7 +478,7 @@ class OpenTakeNode(MoCapNode):
         if not self.streaming and self.frame_count > 0:
             self.last_frame_out = -1
             self.current_frame = self.speed() * -1.0
-            print('play_button_clicked', self.current_frame)
+#            print('play_button_clicked', self.current_frame)
             self.start_playing()
             self.streaming = True
             self.play_pause_button.set_label('pause')

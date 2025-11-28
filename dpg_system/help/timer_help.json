@@ -1,0 +1,207 @@
+{
+    "height": 570,
+    "width": 1073,
+    "position": [
+        100,
+        100
+    ],
+    "id": 197,
+    "name": "timer_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/timer_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 228,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment save - save the patcher containing this save node",
+            "name": "comment",
+            "id": 325,
+            "position_x": 24,
+            "position_y": 7,
+            "width": 70,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "timer",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "timer"
+        },
+        "2": {
+            "name": "close",
+            "id": 343,
+            "position_x": 45,
+            "position_y": 461,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "3": {
+            "name": "timer",
+            "id": 2063,
+            "position_x": 26,
+            "position_y": 115,
+            "width": 143,
+            "height": 62,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "units",
+                    "value": "seconds",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "output integers",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "name": "text_block",
+            "id": 2187,
+            "position_x": 363,
+            "position_y": 11,
+            "width": 858,
+            "height": 523,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The timer node functions as a running stopwatch.\n\nIt continuously outputs the duration of time that has passed since it was activated. \nYou use this node to drive time-based animations, track session durations, \nor generate increasing values for math operations.\n\nSYNTAX:\ntimer <units: string>\n\nEXAMPLE:\ntimer seconds\n\nINPUTS and PARAMETERS:\n\non: \nWhen checked, the timer resets to zero and begins counting up. \nIt outputs the elapsed time every frame while active. \nWhen unchecked, the timer stops updating and stops sending triggers.\n\nunits: \nThis determines the scale of the output number. \nYou can choose between milliseconds (default), seconds, minutes, or hours.\n\noutput integers:\nWhen checked, the node rounds the time down to the nearest whole number. \nIt will only send a new output trigger when that whole number changes \n(e.g., exactly once per second if units are set to seconds).\n\nOUTPUTS: \n\noutput:\nA continuous stream of numbers representing the elapsed time.",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 850,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 507,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "The timer node functions as a running stopwatch.\n\nIt continuously outputs the duration of time that has passed since it was activated. \nYou use this node to drive time-based animations, track session durations, \nor generate increasing values for math operations.\n\nSYNTAX:\ntimer <units: string>\n\nEXAMPLE:\ntimer seconds\n\nINPUTS and PARAMETERS:\n\non: \nWhen checked, the timer resets to zero and begins counting up. \nIt outputs the elapsed time every frame while active. \nWhen unchecked, the timer stops updating and stops sending triggers.\n\nunits: \nThis determines the scale of the output number. \nYou can choose between milliseconds (default), seconds, minutes, or hours.\n\noutput integers:\nWhen checked, the node rounds the time down to the nearest whole number. \nIt will only send a new output trigger when that whole number changes \n(e.g., exactly once per second if units are set to seconds).\n\nOUTPUTS: \n\noutput:\nA continuous stream of numbers representing the elapsed time."
+        },
+        "5": {
+            "name": "float",
+            "id": 2204,
+            "position_x": 209,
+            "position_y": 147,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 4.183023929595947,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 0.009999999776482582,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 2063,
+            "source_node_name": "timer",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 2204,
+            "dest_node_name": "float",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

@@ -1,0 +1,274 @@
+{
+    "height": 610,
+    "width": 1127,
+    "position": [
+        100,
+        100
+    ],
+    "id": 695,
+    "name": "metro_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/metro_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 722,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "name": "text_block",
+            "id": 740,
+            "position_x": 362,
+            "position_y": 18,
+            "width": 775,
+            "height": 515,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The metro node acts like a ticking clock or a heartbeat for your project. \n\nIt generaotes a repeating pulse signal (sending out the word \"bang\") at a specific speed. \nYou use this node to trigger events, animate objects, or keep rhythm in your patch.\n\nSYNTAX:\nmetro <period: int or float)>\n\nEXAMPLE:\nmetro 30\n\nINPUTS and PARAMETERS:\n\non: \nWhen checked, the metronome starts running and sending signals. \nWhen unchecked, the metronome stops.\n\nperiod:\nThis sets the speed. It represents the amount of time between each \"tick.\" \nFor example, if you set this to 1000 and your units are milliseconds, it ticks once every second. \nLower numbers mean faster ticks.\n\nunits: \nThis lets you decide what time scale the period number represents. \nYou can choose between milliseconds (default), seconds, minutes, or hours.\n\nOUTPUTS: \n\noutput:\nEvery time the timer completes a cycle, the node sends a \"bang\" trigger out of its output pin. ",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 767,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 499,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "The metro node acts like a ticking clock or a heartbeat for your project. \n\nIt generaotes a repeating pulse signal (sending out the word \"bang\") at a specific speed. \nYou use this node to trigger events, animate objects, or keep rhythm in your patch.\n\nSYNTAX:\nmetro <period: int or float)>\n\nEXAMPLE:\nmetro 30\n\nINPUTS and PARAMETERS:\n\non: \nWhen checked, the metronome starts running and sending signals. \nWhen unchecked, the metronome stops.\n\nperiod:\nThis sets the speed. It represents the amount of time between each \"tick.\" \nFor example, if you set this to 1000 and your units are milliseconds, it ticks once every second. \nLower numbers mean faster ticks.\n\nunits: \nThis lets you decide what time scale the period number represents. \nYou can choose between milliseconds (default), seconds, minutes, or hours.\n\nOUTPUTS: \n\noutput:\nEvery time the timer completes a cycle, the node sends a \"bang\" trigger out of its output pin. "
+        },
+        "2": {
+            "init": "metro 30",
+            "name": "metro",
+            "id": 757,
+            "position_x": 26,
+            "position_y": 124,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 30.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "string"
+                }
+            }
+        },
+        "3": {
+            "name": "counter",
+            "id": 824,
+            "position_x": 180,
+            "position_y": 128,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "count",
+                    "value": 255,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "step",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "name": "int",
+            "id": 933,
+            "position_x": 181,
+            "position_y": 221,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 214,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "5": {
+            "init": "comment metro",
+            "name": "comment",
+            "id": 998,
+            "position_x": 22,
+            "position_y": 9,
+            "width": 70,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "metro",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "metro"
+        },
+        "6": {
+            "name": "close",
+            "id": 1009,
+            "position_x": 1008,
+            "position_y": 505,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "7": {
+            "name": "toggle",
+            "id": 1032,
+            "position_x": 26,
+            "position_y": 74,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 757,
+            "source_node_name": "metro",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 824,
+            "dest_node_name": "counter",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "1": {
+            "source_node": 824,
+            "source_node_name": "counter",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 933,
+            "dest_node_name": "int",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 1032,
+            "source_node_name": "toggle",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 757,
+            "dest_node_name": "metro",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        }
+    }
+}

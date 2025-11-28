@@ -1,0 +1,115 @@
+{
+    "height": 543,
+    "width": 1047,
+    "position": [
+        455,
+        231
+    ],
+    "id": 3231,
+    "name": "close_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/close_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 3258,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment close - close the patcher containing this node",
+            "name": "comment",
+            "id": 3284,
+            "position_x": 14,
+            "position_y": 13,
+            "width": 574,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "close - close the patcher containing this node",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "close - close the patcher containing this node"
+        },
+        "2": {
+            "name": "close",
+            "id": 3303,
+            "position_x": 30,
+            "position_y": 78,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "3": {
+            "name": "text_block",
+            "id": 3334,
+            "position_x": 330,
+            "position_y": 77,
+            "width": 716,
+            "height": 283,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The close patch node acts as a navigation control within your project.\n\nIt renders as a standalone button without the standard node frame or background\nthat closes its containing patcher window when activated. \n\nSYNTAX:\nclose\n\nEXAMPLE:\nclose\n\nINPUTS and PARAMETERS:\n\nclose patch:\nA trigger input and button. \nReceiving a signal here, or manually clicking the yellow button, closes the patch window.\n",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 708,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 267,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "The close patch node acts as a navigation control within your project.\n\nIt renders as a standalone button without the standard node frame or background\nthat closes its containing patcher window when activated. \n\nSYNTAX:\nclose\n\nEXAMPLE:\nclose\n\nINPUTS and PARAMETERS:\n\nclose patch:\nA trigger input and button. \nReceiving a signal here, or manually clicking the yellow button, closes the patch window.\n"
+        }
+    },
+    "links": {}
+}

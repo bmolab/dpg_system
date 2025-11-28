@@ -1,0 +1,278 @@
+{
+    "height": 616,
+    "width": 1268,
+    "position": [
+        268,
+        516
+    ],
+    "id": 1503,
+    "name": "micro_metro_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/micro_metro_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 1530,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "name": "micro_metro",
+            "id": 1548,
+            "position_x": 34,
+            "position_y": 131,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 3.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "string"
+                }
+            }
+        },
+        "2": {
+            "init": "comment micro_metro",
+            "name": "comment",
+            "id": 1615,
+            "position_x": 13,
+            "position_y": 11,
+            "width": 439,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "micro_metro - a more accurate metro",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "micro_metro - a more accurate metro"
+        },
+        "3": {
+            "name": "text_block",
+            "id": 1626,
+            "position_x": 464,
+            "position_y": 3,
+            "width": 798,
+            "height": 580,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "\nThe microsecond timer node is a high-precision alternative to the standard metro node.\n\nIt generates a repeating pulse signal (sending out the word \"bang\") using a dedicated background \nthread rather than the visual update loop. \n\nYou use this node when you need timing that is faster or more accurate than the interface frame rate, \nor when you need a steady rhythm that is not affected by visual lag.\n\nSYNTAX:\n\nmicrosecond_timer <period: int or float>\n\nExample:\nmicrosecond_timer 10\n\nINPUTS and PARAMETERS:\n\non: \nWhen checked, the timer initiates a background worker thread to begin sending signals. \nWhen unchecked, the thread pauses.\n\nperiod:\nThis sets the speed. It represents the amount of time between each \"tick.\" \nBecause this node uses a high-precision clock, it can handle very fast intervals (low numbers) \nmore accurately than the standard metro node.\n\nunits: \nThis lets you decide what time scale the period number represents. \nYou can choose between milliseconds (default), seconds, minutes, or hours.\n\nOUTPUTS: \n\noutput:\nEvery time the high-precision loop completes a cycle, the node sends a \"bang\" trigger out of its \noutput pin.",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 564,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "\nThe microsecond timer node is a high-precision alternative to the standard metro node.\n\nIt generates a repeating pulse signal (sending out the word \"bang\") using a dedicated background \nthread rather than the visual update loop. \n\nYou use this node when you need timing that is faster or more accurate than the interface frame rate, \nor when you need a steady rhythm that is not affected by visual lag.\n\nSYNTAX:\n\nmicrosecond_timer <period: int or float>\n\nExample:\nmicrosecond_timer 10\n\nINPUTS and PARAMETERS:\n\non: \nWhen checked, the timer initiates a background worker thread to begin sending signals. \nWhen unchecked, the thread pauses.\n\nperiod:\nThis sets the speed. It represents the amount of time between each \"tick.\" \nBecause this node uses a high-precision clock, it can handle very fast intervals (low numbers) \nmore accurately than the standard metro node.\n\nunits: \nThis lets you decide what time scale the period number represents. \nYou can choose between milliseconds (default), seconds, minutes, or hours.\n\nOUTPUTS: \n\noutput:\nEvery time the high-precision loop completes a cycle, the node sends a \"bang\" trigger out of its \noutput pin."
+        },
+        "4": {
+            "name": "counter",
+            "id": 1643,
+            "position_x": 185,
+            "position_y": 180,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "count",
+                    "value": 255,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "step",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "5": {
+            "name": "int",
+            "id": 1752,
+            "position_x": 332,
+            "position_y": 221,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "6": {
+            "name": "elapsed",
+            "id": 1817,
+            "position_x": 185,
+            "position_y": 302,
+            "width": 143,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 3.162860870361328,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "output integers",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "7": {
+            "name": "close",
+            "id": 1866,
+            "position_x": 35,
+            "position_y": 513,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 1548,
+            "source_node_name": "micro_metro",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 1643,
+            "dest_node_name": "counter",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "1": {
+            "source_node": 1548,
+            "source_node_name": "micro_metro",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 1817,
+            "dest_node_name": "elapsed",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 1643,
+            "source_node_name": "counter",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 1752,
+            "dest_node_name": "int",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

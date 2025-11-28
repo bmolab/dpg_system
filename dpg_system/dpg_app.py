@@ -184,12 +184,6 @@ def widget_clicked(source, data, user_data):
 load_path = None
 save_path = None
 
-def cancel_callback(sender, app_data):
-    if sender is not None:
-        dpg.delete_item(sender)
-    Node.app.active_widget = -1
-
-
 def load_patches_callback(sender, app_data):
     global load_path
 
@@ -210,10 +204,6 @@ def save_file_callback(sender, app_data):
         save_path = app_data['file_path_name']
         if save_path != '':
             Node.app.save_internal(save_path)
-            # Node.app.save_patch(save_path)
-            # if Node.app.saving_to_lib:
-            #     Node.app.register_patcher(Node.app.patches_name)
-            #     Node.app.saving_to_lib = False
     else:
         print('no file chosen')
     if sender is not None:
@@ -233,6 +223,24 @@ def save_patches_callback(sender, app_data):
         dpg.delete_item(sender)
     Node.app.active_widget = -1
 
+class DebugState:
+    def __init__(self):
+        self.current_node = None
+        self.current_output = None
+        self.current_child = None
+        self.current_data = None
+
+    def set(self, node, output, child, data):
+        self.current_node = node
+        self.current_output = output
+        self.current_child = child
+        self.current_data = data
+
+    def step(self):
+        if self.current_node is not None:
+            pass
+
+
 
 class App:
     def __init__(self):
@@ -246,11 +254,13 @@ class App:
         self.viewport = None
         self.main_window_id = -1
         self.loading = False
-        self.large_font = None
-        self.default_font = None
+        self.font_48 = None
+        self.font_36 = None
+        self.font_24 = None
         self.setup_dpg()
         self.verbose = False
         self.verbose_menu_item = -1
+        self.trace_menu_item = -1
         self.minimap_menu_item = -1
         self.colour_code_pins_menu_item = -1
         self.window_padding = [4, 3]
@@ -270,6 +280,10 @@ class App:
         self.new_patcher_index = 1
         self.patchers = []
         self.do_exit = False
+
+        self.trace = False
+        self.trace_indent = ''
+        self.global_trace = False
 
         self.node_editors = []
         self.current_node_editor = 0
@@ -331,6 +345,12 @@ class App:
         self.load_recent_patchers_list()
         self.gl_on_separate_thread = False
 
+    def increment_trace_indent(self):
+        self.trace_indent += '  '
+
+    def decrement_trace_indent(self):
+        self.trace_indent = self.trace_indent[:-2]
+
     def get_local_project_name(self):
         self.project_name = os.path.basename(__file__).split('.')[0]
 
@@ -362,10 +382,12 @@ class App:
         if 'macOS' in platform_.platform():
             with dpg.font_registry():
                 if os.path.exists('Inconsolata-g.otf'):
-                    self.default_font = dpg.add_font("Inconsolata-g.otf", 24)
-                    dpg.bind_font(self.default_font)
+                    self.font_24 = dpg.add_font("Inconsolata-g.otf", 24)
+                    dpg.bind_font(self.font_24)
                     dpg.set_global_font_scale(0.5)
-                    self.large_font = dpg.add_font("Inconsolata-g.otf", 48)
+                    self.font_30 = dpg.add_font("Inconsolata-g.otf", 30)
+                    self.font_48 = dpg.add_font("Inconsolata-g.otf", 48)
+                    self.font_36 = dpg.add_font("Inconsolata-g.otf", 36)
         # handle other platforms...
         self.viewport = dpg.create_viewport()
         dpg.setup_dearpygui()
@@ -697,6 +719,7 @@ class App:
                 dpg.add_separator()
                 dpg.add_menu_item(label="Save Patch (S)", callback=self.save_nodes)
                 dpg.add_menu_item(label="Save Patch As", callback=self.save_as_nodes)
+                dpg.add_menu_item(label="Save Help Patch As", callback=self.save_as_help)
                 dpg.add_separator()
                 dpg.add_menu_item(label='Set As Default Patch', callback=self.set_as_default_patch)
                 dpg.add_menu_item(label='No Default Patch', callback=self.clear_default_patch)
@@ -741,6 +764,7 @@ class App:
                 dpg.add_menu_item(label="Show Demo", callback=self.show_demo)
                 dpg.add_separator()
                 self.verbose_menu_item = dpg.add_menu_item(label="verbose logging", check=True, callback=self.set_verbose)
+                self.trace_menu_item = dpg.add_menu_item(label='trace', check=True, callback=self.set_trace)
                 dpg.add_separator()
 
                 self.colour_code_pins_menu_item = dpg.add_menu_item(label="Colour Code Pins", check=True,
@@ -749,6 +773,11 @@ class App:
 
                 dpg.add_menu_item(label='osc status', callback=self.print_osc_state)
                 self.minimap_menu_item = dpg.add_menu_item(label='minimap', callback=self.show_minimap, check=True)
+
+    def set_trace(self):
+        if self.trace_menu_item != -1:
+            self.trace = dpg.get_value(self.trace_menu_item)
+            self.global_trace = self.trace
 
     def print_osc_state(self):
         if self.osc_manager:
@@ -919,8 +948,11 @@ class App:
             if centre_count > 0:
                 return [centre_acc[0] / centre_count, centre_acc[1] / centre_count]
 
+    def not_focussed_on_widget(self):
+        return self.active_widget == -1
+    
     def del_handler(self):
-        if self.active_widget == -1:
+        if self.not_focussed_on_widget():
             editor = self.get_current_editor()
             if editor is not None and not editor.presenting:
                 editor.delete_selected_items()
@@ -941,7 +973,7 @@ class App:
                 print('place_node', e)
 
     def int_handler(self):
-        if self.active_widget == -1:
+        if self.not_focussed_on_widget():
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 node = interface_nodes.ValueNode.factory("int", None)
                 self.place_node(node)
@@ -949,57 +981,65 @@ class App:
                 self.set_widget_focus(node.uuid)
 
     def float_handler(self):
-        if self.active_widget == -1:
+        if self.not_focussed_on_widget():
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 node = interface_nodes.ValueNode.factory("float", None)
                 self.place_node(node)
                 self.set_widget_focus(node.uuid)
 
     def vector_handler(self):
-        if self.active_widget == -1:
+        if self.not_focussed_on_widget():
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 node = interface_nodes.VectorNode.factory("vector", None, args=['4'])
                 self.place_node(node)
                 self.set_widget_focus(node.uuid)
 
     def comment_handler(self):
-        if self.active_widget == -1:
+        if self.not_focussed_on_widget():
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 self.new_handler('comment')
 
     def toggle_handler(self):
-        if self.active_widget == -1:
+        if self.not_focussed_on_widget():
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 node = interface_nodes.ToggleNode.factory("toggle", None)
                 self.place_node(node)
 
     def button_handler(self):
-        if self.active_widget == -1:
+        if self.not_focussed_on_widget():
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 node = interface_nodes.ButtonNode.factory("b", None)
                 self.place_node(node)
 
     def message_handler(self):
-        if self.active_widget == -1:
+        if self.not_focussed_on_widget():
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 node = interface_nodes.ValueNode.factory("message", None)
                 self.place_node(node)
                 self.set_widget_focus(node.input.widget.uuid)
 
     def list_handler(self):
-        if self.active_widget == -1:
+        if self.not_focussed_on_widget():
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 node = interface_nodes.ValueNode.factory("list", None)
                 self.place_node(node)
                 self.set_widget_focus(node.input.widget.uuid)
 
     def options_handler(self):
-        if self.active_widget == -1:
+        if self.not_focussed_on_widget():
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 selected_nodes_uuids = dpg.get_selected_nodes(self.get_current_editor().uuid)
                 for selected_nodes_uuid in selected_nodes_uuids:
                     node_object = dpg.get_item_user_data(selected_nodes_uuid)
                     node_object.toggle_show_hide_options()
+
+    def help_handler(self):
+        if self.not_focussed_on_widget():
+            if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+                selected_nodes_uuids = dpg.get_selected_nodes(self.get_current_editor().uuid)
+                node_uuid = selected_nodes_uuids[0]
+                node = dpg.get_item_user_data(node_uuid)
+                node.get_help()
 
     def M_handler(self):
         if self.control_or_command_down():
@@ -1102,6 +1142,9 @@ class App:
         return dpg.is_key_down(dpg.mvKey_LControl) or dpg.is_key_down(dpg.mvKey_RControl) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin)
         # return dpg.is_key_down(dpg.mvKey_ModCtrl) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin)
 
+    def alt_down(self):
+        return dpg.is_key_down(dpg.mvKey_LAlt) or dpg.is_key_down(dpg.mvKey_RAlt)
+
     def X_handler(self):
         if self.control_or_command_down():
             if self.get_current_editor() is not None:
@@ -1119,6 +1162,11 @@ class App:
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 self.options_handler()
 
+    def QuestionMark_handler(self):
+        if self.control_or_command_down():
+            if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+                self.help_handler()
+
     def K_handler(self):
         if self.get_current_editor() is not None and not self.get_current_editor().presenting:
             if self.control_or_command_down():
@@ -1133,8 +1181,9 @@ class App:
         if self.control_or_command_down():
             self.add_node_editor()
         else:
-            if self.get_current_editor() is not None and not self.get_current_editor().presenting:
-                self.new_handler()
+            if self.not_focussed_on_widget():
+                if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+                    self.new_handler()
 
     def W_handler(self):
         if self.control_or_command_down():
@@ -1149,7 +1198,7 @@ class App:
 
     def D_handler(self):
         if self.control_or_command_down():
-            if self.active_widget == -1:
+            if self.not_focussed_on_widget():
                 if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                     self.get_current_editor().duplicate_selection()
 
@@ -1160,7 +1209,7 @@ class App:
 
     def duplicate_handler(self):
         if self.get_current_editor() is not None and not self.get_current_editor().presenting:
-            if self.active_widget == -1:
+            if self.not_focussed_on_widget():
                 self.get_current_editor().duplicate_selection()
 
     def patchify_handler(self):
@@ -1168,12 +1217,12 @@ class App:
             self.get_current_editor().patchify_selection()
 
     def cut_selected(self):
-        if self.active_widget == -1:
+        if self.not_focussed_on_widget():
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 self.get_current_editor().cut_selection()
 
     def copy_selected(self):
-        if self.active_widget == -1:
+        if self.not_focussed_on_widget():
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 self.get_current_editor().copy_selection()
 
@@ -1181,7 +1230,13 @@ class App:
         if self.control_or_command_down():
             self.toggle_presentation()
         else:
+            if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+                if self.alt_down():
+                    self.help_handler()
             self.dragging_created_nodes = False
+
+            # else:
+            #     self.dragging_created_nodes = False
 
     def drag_create_nodes(self):
         if self.dragging_created_nodes:
@@ -1228,7 +1283,7 @@ class App:
                     self.hovered_item.node.increment_widget(self.hovered_item)
                     if self.hovered_item.callback is not None:
                         self.hovered_item.callback()
-        if not handled and self.active_widget != -1:
+        if not handled and self.not_focussed_on_widget():
             if dpg.does_item_exist(self.active_widget):
                 widget = dpg.get_item_user_data(self.active_widget)
                 if widget is not None:
@@ -1250,7 +1305,7 @@ class App:
                     self.hovered_item.node.decrement_widget(self.hovered_item)
                     if self.hovered_item.callback is not None:
                         self.hovered_item.callback()
-        if not handled and self.active_widget != -1:
+        if not handled and self.not_focussed_on_widget():
             if dpg.does_item_exist(self.active_widget):
                 widget = dpg.get_item_user_data(self.active_widget)
                 if widget is not None:
@@ -1270,7 +1325,7 @@ class App:
                 if node_model:
                     new_node = Node.app.create_node_from_model(node_model, editor_mouse_pos, args=[name])
                     return
-            if self.active_widget == -1:
+            if self.not_focussed_on_widget():
                 node = PlaceholderNameNode.factory("New Node", None)
                 self.place_node(node)
                 # mouse_pos = dpg.get_mouse_pos(local=False)
@@ -1542,8 +1597,6 @@ class App:
         try:
             self.fresh_patcher = fresh_patcher
             LoadDialog(self, default_path='patches', callback=self.load_patches_callback, extensions=['.json'])
-            # with dpg.file_dialog(modal=True, default_path='patches', directory_selector=False, show=True, height=400, width=800, callback=load_patches_callback, cancel_callback=cancel_callback, tag="file_dialog_id"):
-            #     dpg.add_file_extension(".json")
         except Exception as e:
             print('error loading file')
         # self.active_widget = -1
@@ -1558,12 +1611,12 @@ class App:
         self.active_widget = 1
         self.fresh_patcher = True
         LoadDialog(self, default_path='examples', callback=self.load_patches_callback, extensions=['.json'])
-        # with dpg.file_dialog(modal=True, default_path='examples', directory_selector=False, show=True, height=400, width=800, callback=load_patches_callback,
-        #                      cancel_callback=cancel_callback, tag="file_dialog_id"):
-        #     dpg.add_file_extension(".json")
 
     def save_as_nodes(self):
         self.save('patches')
+
+    def save_as_help(self):
+        self.save('dpg_system/help')
 
     def save_internal(self, path):
         self.save_patch(path)
@@ -1635,11 +1688,8 @@ class App:
             for i in open(filename, "rt"):
                 self.get_current_editor().save(filename)
 
-    def save(self, path='', default_directory='patches'):
-        SaveDialog(self, default_path='patches', callback=self.save_file_callback, extensions=['.json'])
-        # self.active_widget = 1
-        # with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, callback=save_file_callback, cancel_callback=cancel_callback, default_path=default_directory, tag="file_dialog_id"):
-        #     dpg.add_file_extension(".json")
+    def save(self, default_directory='patches'):
+        SaveDialog(self, default_path=default_directory, callback=self.save_file_callback, extensions=['.json'])
 
     def save_file_callback(self, save_path):
         if save_path != '':
@@ -1649,10 +1699,6 @@ class App:
 
     def save_patches(self, path=''):
         SaveDialog(self, default_path='patches', callback=self.save_patches_callback, extensions=['.json'])
-        #
-        # self.active_widget = 1
-        # with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, callback=save_patches_callback, cancel_callback=cancel_callback, tag="file_dialog_id"):
-        #     dpg.add_file_extension(".json")
 
     def save_patches_callback(self, save_path):
         if save_path != '':
@@ -1674,6 +1720,7 @@ class App:
     def select_editor_tab(self, which_editor):
         if 0 <= which_editor < len(self.tabs):
             self.select_tab(self.tabs[which_editor])
+
     def get_current_tab(self):
         return dpg.get_value(self.tab_bar)
 
@@ -1807,6 +1854,7 @@ class App:
                             dpg.add_key_press_handler(dpg.mvKey_X, callback=self.X_handler)
                             dpg.add_key_press_handler(dpg.mvKey_W, callback=self.W_handler)
                             dpg.add_key_press_handler(dpg.mvKey_O, callback=self.O_handler)
+                            dpg.add_key_press_handler(dpg.mvKey_Slash, callback=self.QuestionMark_handler)
                             dpg.add_key_press_handler(dpg.mvKey_S, callback=self.S_handler)
                             dpg.add_key_press_handler(dpg.mvKey_N, callback=self.N_handler)
                             dpg.add_key_press_handler(dpg.mvKey_K, callback=self.K_handler)
@@ -1856,9 +1904,20 @@ class App:
                     now = time.time()
                     for node_editor in self.node_editors:
                         node_editor.reset_pins()
+                    self.trace_indent = ''
+                    if self.trace:
+                        print()
+                        print('cycle:', self.frame_number)
                     for task in self.frame_tasks:
                         if task.created:
+                            if self.trace:
+                                self.trace_indent = ''
+                                print('node \'' + task.label + '\': frame task')
                             task.frame_task()
+                        if not self.global_trace:
+                            self.trace = False
+                    if not self.global_trace:
+                        self.trace = False
                     jobs = dpg.get_callback_queue()  # retrieves and clears queue
                     dpg.run_callbacks(jobs)
                     self.frame_number += 1
@@ -1868,6 +1927,8 @@ class App:
                     if do_osc_async:
                         osc_nodes.OSCThreadingSource.osc_manager.relay_pending_messages()
                     dpg.render_dearpygui_frame()
+                    if not self.global_trace:
+                        self.trace = False
                     then = time.time()
 
                     #  openGL separate thread?

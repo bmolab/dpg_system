@@ -1,0 +1,760 @@
+{
+    "height": 740,
+    "width": 1342,
+    "position": [
+        100,
+        100
+    ],
+    "id": 2036,
+    "name": "unpack_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/unpack_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 2063,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "name": "close",
+            "id": 2494,
+            "position_x": 43,
+            "position_y": 628,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "2": {
+            "init": "comment counter",
+            "name": "comment",
+            "id": 2560,
+            "position_x": 21,
+            "position_y": -5,
+            "width": 500,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "unpack - separate a list into components",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "unpack - separate a list into components"
+        },
+        "3": {
+            "name": "text_block",
+            "id": 2571,
+            "position_x": 570,
+            "position_y": 46,
+            "width": 762,
+            "height": 618,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The unpack node breaks down composite data structures into individual elements. \n\nIt takes a list, string, numpy array, or tensor and distributes its contents across \nmultiple output pins. \n\nYou use this node when you have a packet of data (such as a coordinate list `[x, y, z]`) \nand need to route the individual values to different parts of your patch.\n\nSYNTAX:\n\nunpack <count> <optional_type>\nOR\nunpack <type_flag_1> <type_flag_2> ...\n\nType Flags:\ni (int), f (float), s (string), b (bool), l (list), a (numpy array), t (torch tensor)\n\nEXAMPLE:\n\nunpack 3      (Creates 3 generic outputs)\nunpack 3 f    (Creates 3 float outputs)\nunpack i f s  (Creates an Integer, Float, and String output)\n\nINPUTS AND PARAMETERS:\n\ninput: \nThe composite data to be unpacked. \nAccepts lists, strings, numpy arrays, or torch tensors.\nIf the input contains more elements than there are output pins, the extra elements are ignored.\nIf the input is a single number (int/float), it is sent out of the first output.\n\nOUTPUTS: \n\nout (variable):\nA series of output pins corresponding to the index of the input list. \nOutput 1 sends index 0, Output 2 sends index 1, and so on.\n\nThe data type of the output is determined by the creation arguments \n(e.g., `unpack i f` will force the first output to an integer and the second to a float).",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 754,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 602,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "The unpack node breaks down composite data structures into individual elements. \n\nIt takes a list, string, numpy array, or tensor and distributes its contents across \nmultiple output pins. \n\nYou use this node when you have a packet of data (such as a coordinate list `[x, y, z]`) \nand need to route the individual values to different parts of your patch.\n\nSYNTAX:\n\nunpack <count> <optional_type>\nOR\nunpack <type_flag_1> <type_flag_2> ...\n\nType Flags:\ni (int), f (float), s (string), b (bool), l (list), a (numpy array), t (torch tensor)\n\nEXAMPLE:\n\nunpack 3      (Creates 3 generic outputs)\nunpack 3 f    (Creates 3 float outputs)\nunpack i f s  (Creates an Integer, Float, and String output)\n\nINPUTS AND PARAMETERS:\n\ninput: \nThe composite data to be unpacked. \nAccepts lists, strings, numpy arrays, or torch tensors.\nIf the input contains more elements than there are output pins, the extra elements are ignored.\nIf the input is a single number (int/float), it is sent out of the first output.\n\nOUTPUTS: \n\nout (variable):\nA series of output pins corresponding to the index of the input list. \nOutput 1 sends index 0, Output 2 sends index 1, and so on.\n\nThe data type of the output is determined by the creation arguments \n(e.g., `unpack i f` will force the first output to an integer and the second to a float)."
+        },
+        "4": {
+            "name": "message",
+            "id": 2784,
+            "position_x": 25,
+            "position_y": 70,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1 2 3 4 5 6",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "5": {
+            "init": "unpack 6",
+            "name": "unpack",
+            "id": 2856,
+            "position_x": 241,
+            "position_y": 84,
+            "width": 45,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "6": {
+            "init": "comment unpack 6",
+            "name": "comment",
+            "id": 3503,
+            "position_x": 236,
+            "position_y": 49,
+            "width": 58,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "unpack 6",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "unpack 6"
+        },
+        "7": {
+            "name": "info",
+            "id": 4328,
+            "position_x": 326,
+            "position_y": 537,
+            "width": 228,
+            "height": 41,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "info",
+                    "value": "int 4",
+                    "value_type": "string"
+                }
+            }
+        },
+        "8": {
+            "name": "info",
+            "id": 4354,
+            "position_x": 326,
+            "position_y": 585,
+            "width": 228,
+            "height": 41,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "info",
+                    "value": "int 5",
+                    "value_type": "string"
+                }
+            }
+        },
+        "9": {
+            "name": "info",
+            "id": 4380,
+            "position_x": 326,
+            "position_y": 633,
+            "width": 228,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "info",
+                    "value": "int 6",
+                    "value_type": "string"
+                }
+            }
+        },
+        "10": {
+            "init": "np.rand 6",
+            "name": "np.rand",
+            "id": 4428,
+            "position_x": 22,
+            "position_y": 130,
+            "width": 123,
+            "height": 94,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 10.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "dim 0",
+                    "value": 6,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                }
+            }
+        },
+        "11": {
+            "name": "info",
+            "id": 4521,
+            "position_x": 327,
+            "position_y": 395,
+            "width": 229,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "info",
+                    "value": "float 1.0",
+                    "value_type": "string"
+                }
+            }
+        },
+        "12": {
+            "name": "info",
+            "id": 4547,
+            "position_x": 327,
+            "position_y": 443,
+            "width": 229,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "info",
+                    "value": "float 2.0",
+                    "value_type": "string"
+                }
+            }
+        },
+        "13": {
+            "name": "info",
+            "id": 4573,
+            "position_x": 327,
+            "position_y": 491,
+            "width": 229,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "info",
+                    "value": "float 3.0",
+                    "value_type": "string"
+                }
+            }
+        },
+        "14": {
+            "init": "unpack f f f i i i",
+            "name": "unpack",
+            "id": 4618,
+            "position_x": 245,
+            "position_y": 390,
+            "width": 45,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "name": "info",
+            "id": 5164,
+            "position_x": 326,
+            "position_y": 205,
+            "width": 229,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "info",
+                    "value": "string four",
+                    "value_type": "string"
+                }
+            }
+        },
+        "16": {
+            "name": "info",
+            "id": 5190,
+            "position_x": 326,
+            "position_y": 253,
+            "width": 229,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "info",
+                    "value": "string five",
+                    "value_type": "string"
+                }
+            }
+        },
+        "17": {
+            "name": "info",
+            "id": 5216,
+            "position_x": 326,
+            "position_y": 301,
+            "width": 229,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "info",
+                    "value": "string six",
+                    "value_type": "string"
+                }
+            }
+        },
+        "18": {
+            "name": "info",
+            "id": 5242,
+            "position_x": 327,
+            "position_y": 63,
+            "width": 229,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "info",
+                    "value": "string one",
+                    "value_type": "string"
+                }
+            }
+        },
+        "19": {
+            "name": "info",
+            "id": 5268,
+            "position_x": 327,
+            "position_y": 111,
+            "width": 229,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "info",
+                    "value": "string two",
+                    "value_type": "string"
+                }
+            }
+        },
+        "20": {
+            "name": "info",
+            "id": 5294,
+            "position_x": 327,
+            "position_y": 159,
+            "width": 229,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "info",
+                    "value": "string three",
+                    "value_type": "string"
+                }
+            }
+        },
+        "21": {
+            "init": "t.rand 6",
+            "name": "t.rand",
+            "id": 5342,
+            "position_x": 21,
+            "position_y": 235,
+            "width": 163,
+            "height": 142,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "input",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "shape",
+                    "value": "[6]",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "max",
+                    "value": 10.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "22": {
+            "init": "comment unpack f f f i i i",
+            "name": "comment",
+            "id": 5680,
+            "position_x": 230,
+            "position_y": 356,
+            "width": 119,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "unpack f f f i i i",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "unpack f f f i i i"
+        },
+        "23": {
+            "name": "message",
+            "id": 5691,
+            "position_x": 19,
+            "position_y": 393,
+            "width": 199,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "one two three four five six",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 172,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 2784,
+            "source_node_name": "message",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 2856,
+            "dest_node_name": "unpack",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 2856,
+            "source_node_name": "unpack",
+            "source_output_index": 0,
+            "source_output_name": "out 1",
+            "dest_node": 5242,
+            "dest_node_name": "info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 2856,
+            "source_node_name": "unpack",
+            "source_output_index": 1,
+            "source_output_name": "out 2",
+            "dest_node": 5268,
+            "dest_node_name": "info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 2856,
+            "source_node_name": "unpack",
+            "source_output_index": 2,
+            "source_output_name": "out 3",
+            "dest_node": 5294,
+            "dest_node_name": "info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 2856,
+            "source_node_name": "unpack",
+            "source_output_index": 3,
+            "source_output_name": "out 4",
+            "dest_node": 5164,
+            "dest_node_name": "info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 2856,
+            "source_node_name": "unpack",
+            "source_output_index": 4,
+            "source_output_name": "out 5",
+            "dest_node": 5190,
+            "dest_node_name": "info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "6": {
+            "source_node": 2856,
+            "source_node_name": "unpack",
+            "source_output_index": 5,
+            "source_output_name": "out 6",
+            "dest_node": 5216,
+            "dest_node_name": "info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "7": {
+            "source_node": 4428,
+            "source_node_name": "np.rand",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 2856,
+            "dest_node_name": "unpack",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "8": {
+            "source_node": 4428,
+            "source_node_name": "np.rand",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 4618,
+            "dest_node_name": "unpack",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "9": {
+            "source_node": 4618,
+            "source_node_name": "unpack",
+            "source_output_index": 0,
+            "source_output_name": "float",
+            "dest_node": 4521,
+            "dest_node_name": "info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "10": {
+            "source_node": 4618,
+            "source_node_name": "unpack",
+            "source_output_index": 1,
+            "source_output_name": "float",
+            "dest_node": 4547,
+            "dest_node_name": "info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "11": {
+            "source_node": 4618,
+            "source_node_name": "unpack",
+            "source_output_index": 2,
+            "source_output_name": "float",
+            "dest_node": 4573,
+            "dest_node_name": "info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "12": {
+            "source_node": 4618,
+            "source_node_name": "unpack",
+            "source_output_index": 3,
+            "source_output_name": "int",
+            "dest_node": 4328,
+            "dest_node_name": "info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "13": {
+            "source_node": 4618,
+            "source_node_name": "unpack",
+            "source_output_index": 4,
+            "source_output_name": "int",
+            "dest_node": 4354,
+            "dest_node_name": "info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "14": {
+            "source_node": 4618,
+            "source_node_name": "unpack",
+            "source_output_index": 5,
+            "source_output_name": "int",
+            "dest_node": 4380,
+            "dest_node_name": "info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "15": {
+            "source_node": 5342,
+            "source_node_name": "t.rand",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 2856,
+            "dest_node_name": "unpack",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "16": {
+            "source_node": 5342,
+            "source_node_name": "t.rand",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 4618,
+            "dest_node_name": "unpack",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "17": {
+            "source_node": 5691,
+            "source_node_name": "message",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 2856,
+            "dest_node_name": "unpack",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "18": {
+            "source_node": 5691,
+            "source_node_name": "message",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 4618,
+            "dest_node_name": "unpack",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

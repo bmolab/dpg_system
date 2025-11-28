@@ -1,0 +1,2624 @@
+{
+    "height": 1194,
+    "width": 1351,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1289,
+    "name": "t.special_help.json",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.special_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 1316,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "t.linspace 0 1 16",
+            "name": "t.linspace",
+            "id": 1334,
+            "position_x": 31,
+            "position_y": 75,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "input",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "start",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "stop",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "steps",
+                    "value": 512,
+                    "value_type": "int"
+                }
+            }
+        },
+        "2": {
+            "name": "t.special.airy_ai",
+            "id": 1449,
+            "position_x": 204,
+            "position_y": 71,
+            "width": 113,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "3": {
+            "name": "t.special.bessel_j0",
+            "id": 1492,
+            "position_x": 206,
+            "position_y": 276,
+            "width": 125,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "4": {
+            "name": "t.special.bessel_j1",
+            "id": 1535,
+            "position_x": 205,
+            "position_y": 484,
+            "width": 125,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "5": {
+            "name": "t.special.digamma",
+            "id": 1578,
+            "position_x": 204,
+            "position_y": 697,
+            "width": 113,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "6": {
+            "name": "t.special.entr",
+            "id": 1621,
+            "position_x": 200,
+            "position_y": 916,
+            "width": 95,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "7": {
+            "name": "plot",
+            "id": 1664,
+            "position_x": 203,
+            "position_y": 968,
+            "width": 136,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "8": {
+            "name": "t.special.erf",
+            "id": 1745,
+            "position_x": 396,
+            "position_y": 71,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
+            "name": "t.special.erfc",
+            "id": 1788,
+            "position_x": 399,
+            "position_y": 276,
+            "width": 95,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "name": "t.special.erfcx",
+            "id": 1831,
+            "position_x": 399,
+            "position_y": 484,
+            "width": 101,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "name": "t.special.erfinv",
+            "id": 1874,
+            "position_x": 398,
+            "position_y": 697,
+            "width": 107,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "name": "t.special.exp2",
+            "id": 1917,
+            "position_x": 395,
+            "position_y": 916,
+            "width": 95,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "name": "t.special.expit",
+            "id": 1960,
+            "position_x": 588,
+            "position_y": 71,
+            "width": 101,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "name": "t.special.expm1",
+            "id": 2003,
+            "position_x": 593,
+            "position_y": 276,
+            "width": 101,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "name": "t.special.gammaln",
+            "id": 2046,
+            "position_x": 593,
+            "position_y": 484,
+            "width": 113,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "name": "t.special.i0",
+            "id": 2089,
+            "position_x": 592,
+            "position_y": 697,
+            "width": 82,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "17": {
+            "name": "t.special.i0e",
+            "id": 2132,
+            "position_x": 591,
+            "position_y": 916,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "18": {
+            "name": "t.special.log1p",
+            "id": 2175,
+            "position_x": 780,
+            "position_y": 71,
+            "width": 101,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "19": {
+            "name": "t.special.ndtr",
+            "id": 2218,
+            "position_x": 787,
+            "position_y": 276,
+            "width": 95,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "20": {
+            "name": "t.special.ndtri",
+            "id": 2261,
+            "position_x": 788,
+            "position_y": 484,
+            "width": 101,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "21": {
+            "name": "t.special.scaled_modified_bessel_k0",
+            "id": 2304,
+            "position_x": 787,
+            "position_y": 697,
+            "width": 224,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "22": {
+            "name": "t.special.sinc",
+            "id": 2347,
+            "position_x": 787,
+            "position_y": 916,
+            "width": 95,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "23": {
+            "name": "t.special.spherical_bessel_j0",
+            "id": 2390,
+            "position_x": 973,
+            "position_y": 71,
+            "width": 187,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "24": {
+            "name": "plot",
+            "id": 2433,
+            "position_x": 203,
+            "position_y": 749,
+            "width": 136,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "25": {
+            "name": "plot",
+            "id": 2514,
+            "position_x": 203,
+            "position_y": 538,
+            "width": 136,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "26": {
+            "name": "plot",
+            "id": 2595,
+            "position_x": 203,
+            "position_y": 331,
+            "width": 136,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "27": {
+            "name": "plot",
+            "id": 2676,
+            "position_x": 201,
+            "position_y": 124,
+            "width": 136,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "28": {
+            "name": "plot",
+            "id": 2757,
+            "position_x": 398,
+            "position_y": 968,
+            "width": 136,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "29": {
+            "name": "plot",
+            "id": 2838,
+            "position_x": 398,
+            "position_y": 749,
+            "width": 136,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "30": {
+            "name": "plot",
+            "id": 2919,
+            "position_x": 398,
+            "position_y": 537,
+            "width": 136,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "31": {
+            "name": "plot",
+            "id": 3000,
+            "position_x": 398,
+            "position_y": 331,
+            "width": 136,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "32": {
+            "name": "plot",
+            "id": 3081,
+            "position_x": 393,
+            "position_y": 124,
+            "width": 136,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "33": {
+            "name": "plot",
+            "id": 3162,
+            "position_x": 593,
+            "position_y": 968,
+            "width": 136,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "34": {
+            "name": "plot",
+            "id": 3243,
+            "position_x": 593,
+            "position_y": 749,
+            "width": 136,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "35": {
+            "name": "plot",
+            "id": 3324,
+            "position_x": 593,
+            "position_y": 538,
+            "width": 136,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "36": {
+            "name": "plot",
+            "id": 3405,
+            "position_x": 593,
+            "position_y": 331,
+            "width": 136,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "37": {
+            "name": "plot",
+            "id": 3486,
+            "position_x": 586,
+            "position_y": 124,
+            "width": 136,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "38": {
+            "name": "plot",
+            "id": 3567,
+            "position_x": 786,
+            "position_y": 974,
+            "width": 136,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "39": {
+            "name": "plot",
+            "id": 3648,
+            "position_x": 788,
+            "position_y": 749,
+            "width": 136,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "40": {
+            "name": "plot",
+            "id": 3729,
+            "position_x": 788,
+            "position_y": 538,
+            "width": 136,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "41": {
+            "name": "plot",
+            "id": 3810,
+            "position_x": 788,
+            "position_y": 331,
+            "width": 136,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "42": {
+            "name": "plot",
+            "id": 3891,
+            "position_x": 779,
+            "position_y": 124,
+            "width": 136,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "43": {
+            "name": "plot",
+            "id": 3972,
+            "position_x": 972,
+            "position_y": 124,
+            "width": 136,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "44": {
+            "name": "t.special.softmax",
+            "id": 4053,
+            "position_x": 976,
+            "position_y": 271,
+            "width": 113,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "45": {
+            "name": "plot",
+            "id": 4096,
+            "position_x": 976,
+            "position_y": 325,
+            "width": 136,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "46": {
+            "name": "plot",
+            "id": 4177,
+            "position_x": 980,
+            "position_y": 538,
+            "width": 136,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "47": {
+            "name": "t.special.log_softmax",
+            "id": 4258,
+            "position_x": 977,
+            "position_y": 484,
+            "width": 138,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "48": {
+            "name": "plot",
+            "id": 4301,
+            "position_x": 986,
+            "position_y": 752,
+            "width": 136,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "49": {
+            "name": "t.special.polygamma",
+            "id": 4382,
+            "position_x": 1023,
+            "position_y": 687,
+            "width": 125,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "n",
+                    "value": 0,
+                    "value_type": "int"
+                }
+            }
+        },
+        "50": {
+            "name": "plot",
+            "id": 4446,
+            "position_x": 987,
+            "position_y": 974,
+            "width": 136,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "51": {
+            "name": "t.special.multigammaln",
+            "id": 4527,
+            "position_x": 986,
+            "position_y": 903,
+            "width": 144,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "p",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "52": {
+            "name": "plot",
+            "id": 4591,
+            "position_x": 1175,
+            "position_y": 126,
+            "width": 136,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 96,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 512.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "53": {
+            "name": "t.special.logits",
+            "id": 4672,
+            "position_x": 1178,
+            "position_y": 57,
+            "width": 111,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "eps",
+                    "value": 1.0000000116860974e-07,
+                    "value_type": "float"
+                }
+            }
+        },
+        "54": {
+            "name": "load_action",
+            "id": 4736,
+            "position_x": 48,
+            "position_y": 250,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "trigger",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "loadActionString",
+                    "value": "bang",
+                    "value_type": "string"
+                }
+            }
+        },
+        "55": {
+            "name": "close",
+            "id": 4782,
+            "position_x": 1171,
+            "position_y": 1049,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "56": {
+            "init": "comment t.special",
+            "name": "comment",
+            "id": 4866,
+            "position_x": 40,
+            "position_y": 11,
+            "width": 119,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.special",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "t.special"
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 1334,
+            "source_node_name": "t.linspace",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 1449,
+            "dest_node_name": "t.special.airy_ai",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "1": {
+            "source_node": 1334,
+            "source_node_name": "t.linspace",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 1492,
+            "dest_node_name": "t.special.bessel_j0",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "2": {
+            "source_node": 1334,
+            "source_node_name": "t.linspace",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 1535,
+            "dest_node_name": "t.special.bessel_j1",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "3": {
+            "source_node": 1334,
+            "source_node_name": "t.linspace",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 1578,
+            "dest_node_name": "t.special.digamma",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "4": {
+            "source_node": 1334,
+            "source_node_name": "t.linspace",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 1621,
+            "dest_node_name": "t.special.entr",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "5": {
+            "source_node": 1334,
+            "source_node_name": "t.linspace",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 1917,
+            "dest_node_name": "t.special.exp2",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "6": {
+            "source_node": 1334,
+            "source_node_name": "t.linspace",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 2132,
+            "dest_node_name": "t.special.i0e",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "7": {
+            "source_node": 1334,
+            "source_node_name": "t.linspace",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 2347,
+            "dest_node_name": "t.special.sinc",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "8": {
+            "source_node": 1334,
+            "source_node_name": "t.linspace",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 1745,
+            "dest_node_name": "t.special.erf",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "9": {
+            "source_node": 1334,
+            "source_node_name": "t.linspace",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 1788,
+            "dest_node_name": "t.special.erfc",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "10": {
+            "source_node": 1334,
+            "source_node_name": "t.linspace",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 1831,
+            "dest_node_name": "t.special.erfcx",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "11": {
+            "source_node": 1334,
+            "source_node_name": "t.linspace",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 1874,
+            "dest_node_name": "t.special.erfinv",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "12": {
+            "source_node": 1334,
+            "source_node_name": "t.linspace",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 1960,
+            "dest_node_name": "t.special.expit",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "13": {
+            "source_node": 1334,
+            "source_node_name": "t.linspace",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 2003,
+            "dest_node_name": "t.special.expm1",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "14": {
+            "source_node": 1334,
+            "source_node_name": "t.linspace",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 2046,
+            "dest_node_name": "t.special.gammaln",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "15": {
+            "source_node": 1334,
+            "source_node_name": "t.linspace",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 2089,
+            "dest_node_name": "t.special.i0",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "16": {
+            "source_node": 1334,
+            "source_node_name": "t.linspace",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 2175,
+            "dest_node_name": "t.special.log1p",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "17": {
+            "source_node": 1334,
+            "source_node_name": "t.linspace",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 2218,
+            "dest_node_name": "t.special.ndtr",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "18": {
+            "source_node": 1334,
+            "source_node_name": "t.linspace",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 2261,
+            "dest_node_name": "t.special.ndtri",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "19": {
+            "source_node": 1334,
+            "source_node_name": "t.linspace",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 2304,
+            "dest_node_name": "t.special.scaled_modified_bessel_k0",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "20": {
+            "source_node": 1334,
+            "source_node_name": "t.linspace",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 2390,
+            "dest_node_name": "t.special.spherical_bessel_j0",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "21": {
+            "source_node": 1334,
+            "source_node_name": "t.linspace",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 4053,
+            "dest_node_name": "t.special.softmax",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "22": {
+            "source_node": 1334,
+            "source_node_name": "t.linspace",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 4258,
+            "dest_node_name": "t.special.log_softmax",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "23": {
+            "source_node": 1334,
+            "source_node_name": "t.linspace",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 4382,
+            "dest_node_name": "t.special.polygamma",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "24": {
+            "source_node": 1334,
+            "source_node_name": "t.linspace",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 4527,
+            "dest_node_name": "t.special.multigammaln",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "25": {
+            "source_node": 1334,
+            "source_node_name": "t.linspace",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 4672,
+            "dest_node_name": "t.special.logits",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "26": {
+            "source_node": 1449,
+            "source_node_name": "t.special.airy_ai",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 2676,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "27": {
+            "source_node": 1492,
+            "source_node_name": "t.special.bessel_j0",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 2595,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "28": {
+            "source_node": 1535,
+            "source_node_name": "t.special.bessel_j1",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 2514,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "29": {
+            "source_node": 1578,
+            "source_node_name": "t.special.digamma",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 2433,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "30": {
+            "source_node": 1621,
+            "source_node_name": "t.special.entr",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 1664,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "31": {
+            "source_node": 1745,
+            "source_node_name": "t.special.erf",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 3081,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "32": {
+            "source_node": 1788,
+            "source_node_name": "t.special.erfc",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 3000,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "33": {
+            "source_node": 1831,
+            "source_node_name": "t.special.erfcx",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 2919,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "34": {
+            "source_node": 1874,
+            "source_node_name": "t.special.erfinv",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 2838,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "35": {
+            "source_node": 1917,
+            "source_node_name": "t.special.exp2",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 2757,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "36": {
+            "source_node": 1960,
+            "source_node_name": "t.special.expit",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 3486,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "37": {
+            "source_node": 2003,
+            "source_node_name": "t.special.expm1",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 3405,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "38": {
+            "source_node": 2046,
+            "source_node_name": "t.special.gammaln",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 3324,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "39": {
+            "source_node": 2089,
+            "source_node_name": "t.special.i0",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 3243,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "40": {
+            "source_node": 2132,
+            "source_node_name": "t.special.i0e",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 3162,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "41": {
+            "source_node": 2175,
+            "source_node_name": "t.special.log1p",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 3891,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "42": {
+            "source_node": 2218,
+            "source_node_name": "t.special.ndtr",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 3810,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "43": {
+            "source_node": 2261,
+            "source_node_name": "t.special.ndtri",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 3729,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "44": {
+            "source_node": 2304,
+            "source_node_name": "t.special.scaled_modified_bessel_k0",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 3648,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "45": {
+            "source_node": 2347,
+            "source_node_name": "t.special.sinc",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 3567,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "46": {
+            "source_node": 2390,
+            "source_node_name": "t.special.spherical_bessel_j0",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 3972,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "47": {
+            "source_node": 4053,
+            "source_node_name": "t.special.softmax",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 4096,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "48": {
+            "source_node": 4258,
+            "source_node_name": "t.special.log_softmax",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 4177,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "49": {
+            "source_node": 4382,
+            "source_node_name": "t.special.polygamma",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 4301,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "50": {
+            "source_node": 4527,
+            "source_node_name": "t.special.multigammaln",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 4446,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "51": {
+            "source_node": 4672,
+            "source_node_name": "t.special.logits",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 4591,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "52": {
+            "source_node": 4736,
+            "source_node_name": "load_action",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 1334,
+            "dest_node_name": "t.linspace",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        }
+    }
+}

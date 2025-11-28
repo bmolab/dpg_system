@@ -1,0 +1,179 @@
+{
+    "height": 692,
+    "width": 1190,
+    "position": [
+        455,
+        231
+    ],
+    "id": 3005,
+    "name": "text_block_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/text_block_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 3032,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment text_block - a multi-line block of text",
+            "name": "comment",
+            "id": 3114,
+            "position_x": 18,
+            "position_y": 3,
+            "width": 488,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "text_block - a multi-line block of text",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "text_block - a multi-line block of text"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 3133,
+            "position_x": 14,
+            "position_y": 94,
+            "width": 353,
+            "height": 104,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "This is a text block. \n\nIt can have multiple lines.",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 345,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 88,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "text": "This is a text block. \n\nIt can have multiple lines."
+        },
+        "3": {
+            "name": "text_block",
+            "id": 3158,
+            "position_x": 373,
+            "position_y": 23,
+            "width": 823,
+            "height": 596,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "\nThe text block node places a resizable, multi-line text editor directly onto the node graph canvas.\n\nLike the comment node, it renders with a transparent background to blend into the workspace, \nbut it provides a larger, scrollable area suitable for longer paragraphs. \n\nYou use this node for extensive documentation, changelogs, keeping project notes, or pasting code \nsnippets for reference.\n\nSYNTAX:\ntext_block <text: string>\n\nEXAMPLE:\ntext_block Phase 1: Initialization logic\n\nOPTIONS: (these are only visible if you select the top bar of the text block and press 'o')\n\n[Main Text Area]:\nThe central editor widget. You can type or paste multi-line text here.\n\nlock:\nWhen checked, the text editor becomes read-only. \nThe content cannot be edited, preventing accidental changes, but text can still be selected and copied.\n\nwidth:\nSets the horizontal size of the text editor in pixels.\n\nheight:\nSets the vertical size of the text editor in pixels.\n\ntext_size:\nSelects the visual size of the text inside the editor. \nAvailable options are 24, 30, 36, and 48.\n\nOUTPUTS: \n\nNone. \nThis node is purely visual and has no data output.",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 815,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 580,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "\nThe text block node places a resizable, multi-line text editor directly onto the node graph canvas.\n\nLike the comment node, it renders with a transparent background to blend into the workspace, \nbut it provides a larger, scrollable area suitable for longer paragraphs. \n\nYou use this node for extensive documentation, changelogs, keeping project notes, or pasting code \nsnippets for reference.\n\nSYNTAX:\ntext_block <text: string>\n\nEXAMPLE:\ntext_block Phase 1: Initialization logic\n\nOPTIONS: (these are only visible if you select the top bar of the text block and press 'o')\n\n[Main Text Area]:\nThe central editor widget. You can type or paste multi-line text here.\n\nlock:\nWhen checked, the text editor becomes read-only. \nThe content cannot be edited, preventing accidental changes, but text can still be selected and copied.\n\nwidth:\nSets the horizontal size of the text editor in pixels.\n\nheight:\nSets the vertical size of the text editor in pixels.\n\ntext_size:\nSelects the visual size of the text inside the editor. \nAvailable options are 24, 30, 36, and 48.\n\nOUTPUTS: \n\nNone. \nThis node is purely visual and has no data output."
+        },
+        "4": {
+            "init": "comment select the blue top bar and press 'o'",
+            "name": "comment",
+            "id": 3183,
+            "position_x": 18,
+            "position_y": 53,
+            "width": 340,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "(select the blue top bar and press 'o' to see options)",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "(select the blue top bar and press 'o' to see options)"
+        },
+        "5": {
+            "name": "close",
+            "id": 3204,
+            "position_x": 32,
+            "position_y": 564,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {}
+}

@@ -371,6 +371,7 @@ class PlotNode(BasePlotNode):
         self.lock.acquire(blocking=True)
         if self.input.fresh_input:   # standard plot
             data_array = self._process_input_to_array(self.input())
+
             if data_array is not None:
                 if self.update_style == 'input is stream of samples':
                     if self.rows > 1:

@@ -11,6 +11,7 @@ import copy
 import queue
 import html
 import string
+import itertools
 
 from dpg_system.node import Node, SaveDialog, LoadDialog
 
@@ -65,6 +66,7 @@ def register_basic_nodes():
     Node.app.register_node('bucket_brigade', BucketBrigadeNode.factory)
     Node.app.register_node('tick', TickNode.factory)
     Node.app.register_node('comment', CommentNode.factory)
+    Node.app.register_node('text_block', TextBlockNode.factory)
     Node.app.register_node('length', LengthNode.factory)
     Node.app.register_node('time_between', TimeBetweenNode.factory)
     Node.app.register_node('int_replace', IntReplaceNode.factory)
@@ -73,6 +75,7 @@ def register_basic_nodes():
     Node.app.register_node('present', PresentationModeNode.factory)
     Node.app.register_node('clamp', ClampNode.factory)
     Node.app.register_node('save', SaveNode.factory)
+    Node.app.register_node('close', ClosePatchNode.factory)
     Node.app.register_node('active_widget', ActiveWidgetNode.factory)
     Node.app.register_node('pass_with_triggers', TriggerBeforeAndAfterNode.factory)
     Node.app.register_node('micro_metro', MicrosecondTimerNode.factory)
@@ -80,6 +83,11 @@ def register_basic_nodes():
     Node.app.register_node('directory_iterator', NPZDirectoryIteratorNode.factory)
     Node.app.register_node('patch_window_position', PositionPatchesNode.factory)
     Node.app.register_node('slice_list', SliceNode.factory)
+
+    Node.app.register_node('start_trace', StartTraceNode.factory)
+    Node.app.register_node('end_trace', EndTraceNode.factory)
+
+    Node.app.register_node('dict_replace', DictReplaceNode.factory)
 
 
 class SliceNode(Node):
@@ -205,7 +213,8 @@ class CommentNode(Node):
         self.setup_themes()
         self.comment_label = self.add_label(self.comment_text)
         self.comment_text_option = self.add_option('text', widget_type='text_input', width=200, default_value=self.comment_text, callback=self.comment_changed)
-        self.large_text_option = self.add_option('large', widget_type='checkbox', default_value=False, callback=self.large_font_changed)
+        self.font_size_option = self.add_option('font size', widget_type='combo', default_value='24', callback=self.large_font_changed)
+        self.font_size_option.widget.combo_items = ['24', '30', '36', '48']
 
     def setup_themes(self):
         if not CommentNode.inited:
@@ -221,14 +230,17 @@ class CommentNode(Node):
             CommentNode.inited = True
 
     def large_font_changed(self):
-        use_large = self.large_text_option()
-        if use_large:
-            self.comment_label.widget.set_font(self.app.large_font)
-            self.comment_text_option.widget.set_font(self.app.default_font)
-            self.large_text_option.widget.set_font(self.app.default_font)
-            self.comment_text_option.widget.adjust_to_text_width()
-        else:
-            self.set_font(self.app.default_font)
+        font_size = self.font_size_option()
+        if font_size == '24':
+            self.comment_label.widget.set_font(self.app.font_24)
+        elif font_size == '30':
+            self.comment_label.widget.set_font(self.app.font_30)
+        elif font_size == '36':
+            self.comment_label.widget.set_font(self.app.font_36)
+        elif font_size == '48':
+            self.comment_label.widget.set_font(self.app.font_48)
+        self.comment_text_option.widget.adjust_to_text_width()
+
 
     def comment_changed(self):
         self.comment_text = self.comment_text_option()
@@ -249,8 +261,137 @@ class CommentNode(Node):
         dpg.configure_item(self.uuid, label='')
 
     def set_custom_visibility(self):
-        dpg.configure_item(self.uuid, label=self.comment_text)
+        dpg.configure_item(self.uuid, label='')
         dpg.bind_item_theme(self.uuid, CommentNode.comment_theme)
+
+
+class TextBlockNode(Node):
+    theme = None
+    text_block_text_theme = None
+    inited = False
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TextBlockNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.comment_text = 'text_block'
+        if args is not None and len(args) > 0:
+            self.comment_text = ' '.join(args)
+        self.setup_themes()
+        self.text_block = self.add_property('###block', widget_type='text_editor', width=400, default_value='')
+        self.lock_option = self.add_option('lock', widget_type='checkbox', default_value=False, callback=self.lock)
+        self.width_option = self.add_option('width', widget_type='drag_int',
+                                                      default_value=400, callback=self.width_changed)
+        self.height_option = self.add_option('height', widget_type='drag_int',
+                                                      default_value=400, callback=self.height_changed)
+        self.text_size_option = self.add_option('text_size', widget_type='combo', default_value='24', callback=self.font_size_changed)
+        self.text_size_option.widget.combo_items = ['24', '30', '36', '48']
+
+    def font_size_changed(self):
+        font_size = self.text_size_option()
+        if font_size == '24':
+            self.text_block.widget.set_font(self.app.font_24)
+        elif font_size == '30':
+            self.text_block.widget.set_font(self.app.font_30)
+        elif font_size == '36':
+            self.text_block.widget.set_font(self.app.font_36)
+        elif font_size == '48':
+            self.text_block.widget.set_font(self.app.font_48)
+
+    def lock(self):
+        if self.lock_option():
+            dpg.configure_item(self.text_block.widget.uuid, readonly=True)
+        else:
+            dpg.configure_item(self.text_block.widget.uuid, readonly=False)
+
+    def width_changed(self):
+        dpg.configure_item(self.text_block.widget.uuid, width=self.width_option())
+
+    def height_changed(self):
+        dpg.configure_item(self.text_block.widget.uuid, height=self.height_option())
+
+    def setup_themes(self):
+        if not TextBlockNode.inited:
+            with dpg.theme() as TextBlockNode.theme:
+                with dpg.theme_component(dpg.mvAll):
+                    dpg.add_theme_color(dpg.mvNodeCol_NodeBackground, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundHovered, [0, 0, 0, 0],
+                                        category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundSelected, [0, 0, 0, 0],
+                                        category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_NodeOutline, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_TitleBar, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvThemeCol_FrameBg, [0, 0, 0, 0], category=dpg.mvThemeCat_Core)
+            TextBlockNode.inited = True
+
+    def custom_create(self, from_file):
+        dpg.bind_item_theme(self.uuid, TextBlockNode.theme)
+        dpg.configure_item(self.uuid, label='')
+
+    def save_custom(self, container):
+        container['name'] = 'text_block'
+        container['text'] = self.text_block()
+
+    def load_custom(self, container):
+        text = container['text']
+        self.text_block.set(text)
+        dpg.bind_item_theme(self.uuid, TextBlockNode.theme)
+        dpg.configure_item(self.uuid, label='')
+
+    def set_custom_visibility(self):
+        dpg.configure_item(self.uuid, label='')
+        dpg.bind_item_theme(self.uuid, TextBlockNode.theme)
+
+
+class ClosePatchNode(Node):
+    theme = None
+    inited = False
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ClosePatchNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('close patch', widget_type='button', callback=self.close_call)
+        self.setup_themes()
+
+    def setup_themes(self):
+        if not ClosePatchNode.inited:
+            with dpg.theme() as ClosePatchNode.theme:
+                with dpg.theme_component(dpg.mvAll):
+                    dpg.add_theme_color(dpg.mvNodeCol_NodeBackground, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundHovered, [0, 0, 0, 0],
+                                        category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundSelected, [0, 0, 0, 0],
+                                        category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_NodeOutline, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_TitleBar, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+            ClosePatchNode.inited = True
+
+    def custom_create(self, from_file):
+        dpg.bind_item_theme(self.uuid, ClosePatchNode.theme)
+        dpg.configure_item(self.uuid, label='')
+        self.input.widget.set_active_theme(Node.active_theme_yellow)
+        dpg.set_item_height(self.input.widget.uuid, 28)
+
+    def close_call(self):
+        Node.app.close_current_node_editor()
+
+    def save_custom(self, container):
+        container['name'] = 'close'
+
+    def load_custom(self, container):
+        dpg.bind_item_theme(self.uuid, ClosePatchNode.theme)
+        dpg.configure_item(self.uuid, label='')
+
+    def set_custom_visibility(self):
+        dpg.configure_item(self.uuid, label='')
+        dpg.bind_item_theme(self.uuid, ClosePatchNode.theme)
 
 
 class SaveNode(Node):
@@ -261,7 +402,11 @@ class SaveNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.add_input('save', widget_type='button', callback=self.save_call)
+        self.input = self.add_input('save', widget_type='button', callback=self.save_call)
+
+    def custom_create(self, from_file):
+        self.input.widget.set_active_theme(Node.active_theme_green)
+        dpg.set_item_height(self.input.widget.uuid, 28)
 
     def save_call(self):
         Node.app.save_nodes()
@@ -472,6 +617,7 @@ class MicrosecondTimerNode(Node):
     def __del__(self):
         self.cleanup()
 
+
 class ClampNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -488,24 +634,34 @@ class ClampNode(Node):
 
     def execute(self):
         data = self.input()
-        t = type(data)
-        if t in [int, float, np.int64, np.float32, np.float64]:
-            if data < self.min_input():
-                data =  self.min_input()
-            elif data > self.max_input():
-                data = self.max_input()
-            self.output.send(data)
-        elif t is list:
-            a = any_to_array(data, validate=True)
-            if a is not None:
-                a = np.clip(a, self.min_input(), self.max_input())
-                self.output.send(a)
-        elif t is np.ndarray:
-            a = np.clip(data, self.min_input(), self.max_input())
-            self.output.send(a)
-        elif torch_available and t is torch.Tensor:
-            a = torch.clamp(data, self.min_input(), self.max_input())
-            self.output.send(a)
+        min_v = self.min_input()
+        max_v = self.max_input()
+
+        # 1. Handle Lists (The specific fix you requested)
+        if isinstance(data, list):
+            # Convert to numpy for fast clipping, then convert back to list
+            arr = any_to_array(data, validate=True)
+            if arr is not None:
+                # .tolist() converts the numpy array back to a standard Python list
+                self.output.send(np.clip(arr, min_v, max_v).tolist())
+
+        # 2. Handle Torch Tensors
+        elif torch_available and isinstance(data, torch.Tensor):
+            self.output.send(torch.clamp(data, min_v, max_v))
+
+        # 3. Handle Numpy Arrays
+        elif isinstance(data, np.ndarray):
+            self.output.send(np.clip(data, min_v, max_v))
+
+        # 4. Handle Numpy Scalars (np.int64, np.float32, etc.)
+        elif isinstance(data, np.number):
+            self.output.send(np.clip(data, min_v, max_v))
+
+        # 5. Handle Standard Python Scalars (int, float)
+        elif isinstance(data, (int, float)):
+            # Use standard python math to strictly preserve python types
+            # (avoids wrapping them in numpy objects)
+            self.output.send(max(min_v, min(data, max_v)))
 
 
 class RampNode(Node):
@@ -590,37 +746,46 @@ class RampNode(Node):
             self.lock.release()
 
     def execute(self):
-        # if we receive a list... target time... esle fo
-        if self.input.fresh_input:
-            data = self.input.get_received_data()
-            t = type(data)
-            self.lock.acquire(blocking=True)
-            if t == str:
-                t = list
-                data = any_to_list(data)
-            if t == list:
-                if len(data) == 2:
-                    self.new_target = True
-                    self.target = any_to_float(data[0])
-                    self.duration = any_to_float(data[1])
-                    self.start_value = self.current_value
-                    self.update_time_base()
-                elif len(data) == 3:
-                    self.new_target = True
-                    self.start_value = any_to_float(data[0])
-                    self.current_value = self.start_value
-                    self.target = any_to_float(data[1])
-                    self.duration = any_to_float(data[2])
-                    self.update_time_base()
-                elif len(data) == 1:
-                    self.new_target = True
-                    self.go_to_value(any_to_float(data[0]))
-                    self.update_time_base()
-            elif t in [int, float]:
-                self.new_target = True
-                self.go_to_value(data)
-                self.update_time_base()
-            self.lock.release()
+        if not self.input.fresh_input:
+            return
+
+        raw_data = self.input.get_received_data()
+        print(raw_data)
+        # 1. Normalize input to a list of floats
+        # We do this outside the lock to minimize blocking time
+        try:
+            if isinstance(raw_data, str):
+                args = [any_to_float(x) for x in any_to_list(raw_data)]
+            elif isinstance(raw_data, (int, float)):
+                args = [raw_data]
+            elif isinstance(raw_data, list):
+                args = [any_to_float(x) for x in raw_data]
+            else:
+                return  # Unknown type, ignore
+        except (ValueError, TypeError):
+            return  # Handle parsing errors gracefully
+
+        # 2. Update State safely
+        with self.lock:
+            count = len(args)
+
+            if count == 1:
+                self.go_to_value(args[0])
+
+            elif count == 2:
+                self.start_value = self.current_value
+                self.target, self.duration = args
+
+            elif count == 3:
+                self.start_value, self.target, self.duration = args
+                self.current_value = self.start_value
+
+            else:
+                return  # Handle invalid list lengths (0 or >3)
+
+            # Common actions for all valid updates
+            self.new_target = True
+            self.update_time_base()
 
 
 class TimeBetweenNode(Node):
@@ -688,8 +853,8 @@ class DateTimeNode(Node):
         date_string = str(date_time[0]) + '-' + str(date_time[1]) + '-' + str(date_time[2])
         time_string = str(date_time[3]) + ':' + str(date_time[4]) + ':' + str(date_time[5])
 
-        self.date_string_output.send(date_string)
         self.time_string_output.send(time_string)
+        self.date_string_output.send(date_string)
 
         self.year_output.send(date_time[0])
         self.month_output.send(date_time[1])
@@ -732,7 +897,7 @@ class TimerNode(Node):
         self.units_property.widget.combo_items = ['seconds', 'milliseconds', 'minutes', 'hours']
         self.output = self.add_output("")
 
-        self.output_integers_option = self.add_option('output integers', widget_type='checkbox', default_value=True)
+        self.output_integers_option = self.add_option('output integers', widget_type='checkbox', default_value=False)
 
         if self.mode == 0:
             self.add_frame_task()
@@ -847,28 +1012,29 @@ class CounterNode(Node):
     def set_message(self, message='', message_data=[]):
         self.current_value = any_to_int(message_data[0])
 
-    # def step_message(self, message='', message_data=[]):
-    #     self.step = any_to_int(message_data[0])
-
     def execute(self):
-        in_data = self.input()
-        # handled, do_output = self.check_for_messages(in_data)
-        #
-        # if not handled:
-        self.current_value += self.step
-        if self.current_value < 0:
-            self.carry_state = -1
-            self.carry_output.send(self.carry_state)
-            self.current_value += self.max_count
-            self.current_value &= self.max_count
-        elif self.current_value >= self.max_count:
-            self.carry_state = 1
-            self.carry_output.send(self.carry_state)
-            self.current_value %= self.max_count
-        elif self.carry_state != 0:
-            self.carry_state = 0
-            self.carry_output.send(0)
+        self.input()  # Clear input
 
+        next_val = self.current_value + self.step
+        max_val = self.max_count
+
+        # 1. Determine Carry State (-1, 0, or 1)
+        if next_val < 0:
+            carry = -1
+        elif next_val >= max_val:
+            carry = 1
+        else:
+            carry = 0
+
+        # 2. Handle Carry Output
+        # Send if we are currently carrying/wrapping OR if we need to reset previous state
+        if carry != 0 or self.carry_state != 0:
+            self.carry_state = carry
+            self.carry_output.send(carry)
+
+        # 3. Wrap Value and Send
+        # Python's % operator handles both overflow and negative underflow correctly
+        self.current_value = next_val % max_val
         self.output.send(self.current_value)
 
 
@@ -925,24 +1091,33 @@ class RangeCounterNode(Node):
     #     self.step = any_to_int(message_data[0])
 
     def execute(self):
-        in_data = self.input()
-        # handled, do_output = self.check_for_messages(in_data)
-        #
-        # if not handled:
-        self.current_value += self.step
-        if self.current_value < self.start_count:
-            gap = self.end_count - self.start_count
-            self.current_value += gap
-            self.carry_state = -1
-            self.carry_output.set_value(self.carry_state)
-        elif self.current_value >= self.end_count:
-            gap = self.end_count - self.start_count
-            self.current_value -= gap
-            self.carry_state = 1
-            self.carry_output.send(self.carry_state)
-        elif self.carry_state != 0:
-            self.carry_state = 0
-            self.carry_output.send(self.carry_state)
+        self.input()  # Clear input
+
+        start = self.start_count
+        end = self.end_count
+        gap = end - start + 1
+
+        # Calculate potential next value
+        next_val = self.current_value + self.step
+
+        # 1. Determine Carry (-1, 0, or 1)
+        new_carry = 0
+        if next_val < start:
+            new_carry = -1
+        elif next_val > end:
+            new_carry = 1
+
+        # 2. Calculate Wrapped Value
+        # Using modulo (%) handles both underflow and overflow in one line.
+        # We normalize to zero (next_val - start), wrap (%), then add start back.
+        self.current_value = start + ((next_val - start) % gap)
+
+        # 3. Handle Carry Output
+        # Update if we are currently carrying, or if we need to reset the state to 0
+        if new_carry != 0 or self.carry_state != 0:
+            self.carry_state = new_carry
+            self.carry_output.send(new_carry)
+
         self.output.send(self.current_value)
 
 
@@ -966,7 +1141,7 @@ class GateNode(Node):
         self.gated_input = self.add_input("input", triggers_execution=True)
 
         for i in range(self.num_gates):
-            self.add_output("out " + str(i))
+            self.add_output("out " + str(i + 1))
 
     def change_state(self, input=None):
         if self.num_gates == 1:
@@ -1097,41 +1272,39 @@ class UnpackNode(Node):
             else:
                 self.add_output(out_names[i])
 
-
     def execute(self):
         if self.input.fresh_input:
             value = self.input()
             t = type(value)
             if t in [float, int, bool, np.float32, np.int64]:
-                self.outputs[0].set_value(value)
+                self.outputs[0].send(value)
             elif t == 'str':
                 listing, _, _ = string_to_hybrid_list(value)
                 out_count = len(listing)
                 if out_count > self.num_outs:
                     out_count = self.num_outs
-                for i in range(out_count):
-                    self.outputs[i].set_value(listing[i])
+                for j in reversed(range(out_count)):
+                    self.outputs[j].send(listing[j])
             elif t == list:
                 listing, _, _ = list_to_hybrid_list(value)
                 out_count = len(listing)
                 if out_count > self.num_outs:
                     out_count = self.num_outs
-                for i in range(out_count):
-                    self.outputs[i].set_value(listing[i])
+                for j in reversed(range(out_count)):
+                    self.outputs[j].send(listing[j])
             elif t == np.ndarray:
                 out_count = value.shape[0]
                 if out_count > self.num_outs:
                     out_count = self.num_outs
-                for i in range(out_count):
-                    self.outputs[i].set_value(value[i])
+                for j in reversed(range(out_count)):
+                    self.outputs[j].send(value[j])
             elif torch_available:
                 if t == torch.Tensor:
                     out_count = value.shape[0]
                     if out_count > self.num_outs:
                         out_count = self.num_outs
-                    for i in range(out_count):
-                        self.outputs[i].set_value(value[i])
-            self.send_all()
+                    for j in reversed(range(out_count)):
+                        self.outputs[j].send(value[j])
 
 
 class PackNode(Node):
@@ -1319,8 +1492,7 @@ class BucketBrigadeNode(Node):
             self.head = (self.head + 1) % self.bucket_count
             data = self.input()
             self.buckets[self.head] = data
-            for i in range(self.bucket_count):
-                rev_i = self.bucket_count - i - 1
+            for rev_i in reversed(range(self.bucket_count)):
                 source = (self.head - rev_i) % self.bucket_count
                 self.outs[rev_i].send(self.buckets[source])
 
@@ -1672,24 +1844,22 @@ class TriggerNode(Node):
         if self.input.fresh_input or self.force_trigger:
             self.force_trigger = False
             in_data = self.input()
-            for i in range(self.trigger_count):
-                j = self.trigger_count - i - 1
+            for j in reversed(range(self.trigger_count)):
                 trig_mode = self.trigger_pass[j]
                 if trig_mode == 0:
-                    self.outputs[j].set_value(self.triggers[j])
+                    self.outputs[j].send(self.triggers[j])
                 elif trig_mode == 1:
-                    self.outputs[j].set_value(any_to_int(in_data))
+                    self.outputs[j].send(any_to_int(in_data))
                 elif trig_mode == 2:
-                    self.outputs[j].set_value(any_to_float(in_data))
+                    self.outputs[j].send(any_to_float(in_data))
                 elif trig_mode == 3:
-                    self.outputs[j].set_value(any_to_string(in_data))
+                    self.outputs[j].send(any_to_string(in_data))
                 elif trig_mode == 4:
-                    self.outputs[j].set_value(any_to_list(in_data))
+                    self.outputs[j].send(any_to_list(in_data))
                 elif trig_mode == 5:
-                    self.outputs[j].set_value(any_to_array(in_data))
+                    self.outputs[j].send(any_to_array(in_data))
                 elif trig_mode == 6:
-                    self.outputs[j].set_value('bang')
-            self.send_all()
+                    self.outputs[j].send('bang')
 
 
 class DecodeToNode(Node):
@@ -1799,18 +1969,17 @@ class ConcatenateNode(Node):
                 self.input_list[i + 1].triggers_execution = False
 
     def execute(self):
-        # out_list = self.input_list[0]().copy()
+        out_list = []
         out_value = any_to_list(self.input_list[0]())
-        outlist = []
-        if type(out_value) is list:
-            out_list = out_value.copy()
+        if out_value:
+            out_list.extend(out_value)
 
-        for i in range(self.count - 1):
-            l = self.input_list[i + 1]()
-            if type(l) == list:
-                out_list += l.copy()
-        if len(out_list) > 0:
-            self.output.send(out_list)
+            for i in range(self.count - 1):
+                l = any_to_list(self.input_list[i + 1]())
+                if l:
+                    out_list.extend(l)
+            if len(out_list) > 0:
+                self.output.send(out_list)
 
 
 '''info : TypeNode
@@ -1829,6 +1998,70 @@ class ConcatenateNode(Node):
             tensor: tensor[shape] dtype device requires_grad
 '''
 
+
+def print_info(input_):
+    # Default values to ensure variables are always defined
+    type_string = 'unknown'
+    value_string = ''
+
+    # 1. Handle Basic Primitives (int, float, bool)
+    if isinstance(input_, (int, bool)):
+        type_string = type(input_).__name__
+        value_string = str(input_)
+
+    elif isinstance(input_, float):
+        type_string = type(input_).__name__
+        value_string = f'{input_:.3f}'
+
+    # 2. Handle Strings
+    elif isinstance(input_, str):
+        if input_ == 'bang':
+            type_string = 'bang'
+        else:
+            type_string = 'string'
+            value_string = input_
+
+    # 3. Handle Lists
+    elif isinstance(input_, list):
+        type_string = f"list[{len(input_)}]"
+
+    # 4. Handle Dicts
+    elif isinstance(input_, dict):
+        type_string = f"dict{list(input_.keys())}"
+
+    # 5. Handle Numpy Arrays
+    elif isinstance(input_, np.ndarray):
+        # Join shape dimensions dynamically: "2, 3, 4"
+        shape_str = ", ".join(map(str, input_.shape))
+        # Get dtype name automatically (e.g., 'float32', 'int64')
+        dtype_str = input_.dtype.name
+        type_string = f"array[{shape_str}] {dtype_str}"
+
+    # 6. Handle Numpy Scalars (e.g. np.float32(1.0))
+    elif isinstance(input_, (np.number, np.bool_)):
+        type_string = f"numpy.{input_.dtype.name}"
+        value_string = str(input_)
+
+    # 7. Handle Torch Tensors
+    # We check if torch is defined and matches type
+    elif 'torch' in globals() and isinstance(input_, torch.Tensor):
+        shape_str = ", ".join(map(str, input_.shape))
+
+        # Clean up dtype string (e.g., 'torch.float32' -> 'float32')
+        dtype_str = str(input_.dtype).replace('torch.', '')
+
+        # Device handling
+        device_str = input_.device.type  # 'cpu', 'cuda', 'mps'
+
+        # Grad handling
+        grad_str = ' requires_grad' if input_.requires_grad else ''
+
+        type_string = f"tensor[{shape_str}] {dtype_str} {device_str}{grad_str}"
+
+    return type_string, value_string
+
+# HELP done to here ------
+
 class TypeNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -1840,168 +2073,19 @@ class TypeNode(Node):
 
         self.input = self.add_input("in", triggers_execution=True)
         self.input.bang_repeats_previous = False
-        width = 128
-        if label == 'info':
-            width = 192
+
+        # 'info' usually requires more space for the detailed string
+        width = 192 if label == 'info' else 128
         self.type_property = self.add_property(self.label, widget_type='text_input', width=width)
 
     def execute(self):
         input_ = self.input()
-        if self.label == 'type':
-            t = type(input_)
-            if t == float:
-                self.type_property.set('float')
-            elif t == int:
-                self.type_property.set('int')
-            elif t == str:
-                if input_ == 'bang':
-                    self.type_property.set('bang')
-                else:
-                    self.type_property.set('string')
-            elif t == list:
-                self.type_property.set('list[' + str(len(input_)) + ']')
-            elif t == bool:
-                self.type_property.set('bool')
-            elif t == np.ndarray:
-                shape = input_.shape
-                if len(shape) == 1:
-                    self.type_property.set('array[' + str(shape[0]) + ']')
-                elif len(shape) == 2:
-                    self.type_property.set('array[' + str(shape[0]) + ', ' + str(shape[1]) + ']')
-                elif len(shape) == 3:
-                    self.type_property.set('array[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + ']')
-                elif len(shape) == 4:
-                    self.type_property.set('array[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + ', ' + str(shape[3]) + ']')
-            elif t == dict:
-                self.type_property.set('dict')
-            elif self.app.torch_available and t == torch.Tensor:
-                shape = input_.shape
-                if len(shape) == 0:
-                    self.type_property.set('tensor[]')
-                elif len(shape) == 1:
-                    self.type_property.set('tensor[' + str(shape[0]) + ']')
-                elif len(shape) == 2:
-                    self.type_property.set('tensor[' + str(shape[0]) + ', ' + str(shape[1]) + ']')
-                elif len(shape) == 3:
-                    self.type_property.set('tensor[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + ']')
-                elif len(shape) == 4:
-                    self.type_property.set(
-                        'tensor[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + ', ' + str(
-                            shape[3]) + ']')
-            elif t == np.double:
-                self.type_property.set('numpy.double')
-            elif t == float:
-                self.type_property.set('float')
-            elif t == np.float32:
-                self.type_property.set('numpy.float32')
-            elif t == np.int64:
-                self.type_property.set('numpy.int64')
-            elif t == np.bool_:
-                self.type_property.set('numpy.bool_')
-        else:
-            t = type(input_)
-            if t == float:
-                self.type_property.set('float')
-            elif t == int:
-                self.type_property.set('int')
-            elif t == str:
-                if input_ == 'bang':
-                    self.type_property.set('bang')
-                else:
-                    self.type_property.set('string')
-            elif t == list:
-                self.type_property.set('list[' + str(len(input_)) + ']')
-            elif t == bool:
-                self.type_property.set('bool')
-            elif t == np.ndarray:
-                comp = 'unknown'
-                shape = input_.shape
-                if input_.dtype == float:
-                    comp = 'float'
-                elif input_.dtype == np.double:
-                    comp = 'double'
-                elif input_.dtype == np.float32:
-                    comp = 'float32'
-                elif input_.dtype == np.int64:
-                    comp = 'int64'
-                elif input_.dtype == np.bool_:
-                    comp = 'bool'
-                elif input_.dtype == np.uint8:
-                    comp = 'uint8'
 
-                if len(shape) == 1:
-                    self.type_property.set('array[' + str(shape[0]) + '] ' + comp)
-                elif len(shape) == 2:
-                    self.type_property.set('array[' + str(shape[0]) + ', ' + str(shape[1]) + '] ' + comp)
-                elif len(shape) == 3:
-                    self.type_property.set('array[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + '] ' + comp)
-                elif len(shape) == 4:
-                    self.type_property.set(
-                        'array[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + ', ' + str(
-                            shape[3]) + '] ' + comp)
-            elif t == dict:
-                keys = list(input_.keys())
-                self.type_property.set('dict' + str(keys))
+        # If label is 'type', we want brief info. If 'info', we want detailed info.
+        is_detailed = (self.label != 'type')
 
-            elif self.app.torch_available and t == torch.Tensor:
-                shape = input_.shape
-                if input_.dtype == torch.float:
-                    comp = 'float'
-                elif input_.dtype == torch.double:
-                    comp = 'double'
-                elif input_.dtype == torch.float32:
-                    comp = 'float32'
-                elif input_.dtype == torch.int64:
-                    comp = 'int64'
-                elif input_.dtype == torch.bool:
-                    comp = 'bool'
-                elif input_.dtype == torch.uint8:
-                    comp = 'uint8'
-                elif input_.dtype == torch.float16:
-                    comp = 'float16'
-                elif input_.dtype == torch.bfloat16:
-                    comp = 'bfloat16'
-                elif input_.dtype == torch.complex128:
-                    comp = 'complex128'
-                elif input_.dtype == torch.complex64:
-                    comp = 'complex64'
-                elif input_.dtype == torch.complex32:
-                    comp = 'complex32'
-
-                device = 'cpu'
-                if input_.is_cuda:
-                    device = 'cuda'
-                elif input_.is_mps:
-                    device = 'mps'
-
-                if input_.requires_grad:
-                    grad = 'requires_grad'
-                else:
-                    grad = ''
-
-                if len(shape) == 0:
-                    self.type_property.set('tensor[] ' + comp + ' ' + device + ' ' + grad)
-                elif len(shape) == 1:
-                    self.type_property.set('tensor[' + str(shape[0]) + '] ' + comp + ' ' + device + ' ' + grad)
-                elif len(shape) == 2:
-                    self.type_property.set('tensor[' + str(shape[0]) + ', ' + str(shape[1]) + '] ' + comp + ' ' + device + ' ' + grad)
-                elif len(shape) == 3:
-                    self.type_property.set(
-                        'tensor[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + '] ' + comp + ' ' + device + ' ' + grad)
-                elif len(shape) == 4:
-                    self.type_property.set(
-                        'tensor[' + str(shape[0]) + ', ' + str(shape[1]) + ', ' + str(shape[2]) + ', ' + str(
-                            shape[3]) + '] ' + comp + ' ' + device + ' ' + grad)
-            elif t == float:
-                self.type_property.set('float')
-            elif t == np.float32:
-                self.type_property.set('numpy.float32')
-            elif t == np.double:
-                self.type_property.set('numpy.double')
-            elif t == np.int64:
-                self.type_property.set('numpy.int64')
-            elif t == np.bool_:
-                self.type_property.set('numpy.bool_')
+        type_string = print_info(input_)
+        self.type_property.set(type_string)
 
 
 class LengthNode(Node):
@@ -2343,6 +2427,8 @@ class ConstructDictNode(Node):
 
     def received_data(self):
         incoming = self.data_input()
+        if type(incoming) is str:
+            incoming = string_to_list(incoming)
         if type(incoming) is list:
             key = incoming[0]
             value = incoming[1:]
@@ -2356,6 +2442,7 @@ class ConstructDictNode(Node):
         self.dict_output.send(self.dict)
         self.dict = {}
 
+# deprecated - use gather_to_dict
 
 class PackDictNode(Node):
     @staticmethod
@@ -2387,6 +2474,82 @@ class PackDictNode(Node):
         self.dict = {}
 
 
+class DictReplaceNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = DictReplaceNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('in', triggers_execution=True)
+        self.replace_pairs_in = self.add_input('replace pairs', callback=self.add_replace_pair)
+        self.clear_input = self.add_input('clear', callback=self.clear)
+        self.output = self.add_output('out')
+        self.dict_output = self.add_output('dict out')
+        self.dict = {}
+        self.update_dict()
+
+    def add_replace_pair(self):
+        pair = self.replace_pairs_in()
+        if isinstance(pair, str):
+            pair = string_to_list(pair)
+        if isinstance(pair, list):
+            if len(pair) == 2:
+                if isinstance(pair[0], str) and isinstance(pair[1], str):
+                    self.dict[pair[0]] = pair[1]
+            elif len(pair) == 1:
+                self.dict.pop(pair[0])
+        self.update_dict()
+
+    def update_dict(self):
+        # 1. Create a normalized lookup dictionary (keys to lowercase)
+        # This allows us to find the key regardless of how the user typed it in the dict
+        self.lookup = {k.lower(): v for k, v in self.dict.items()}
+        # 2. Sort keys by length (longest first) to avoid partial match errors
+        keys = sorted(self.lookup.keys(), key=len, reverse=True)
+        # 3. Create the regex pattern
+        # \b ensures whole words only. re.IGNORECASE handles the search.
+        self.pattern = re.compile(r'\b(' + '|'.join(re.escape(k) for k in keys) + r')\b', re.IGNORECASE)
+
+    def clear(self):
+        self.dict = {}
+        self.update_dict()
+
+    def replace_with_case(self, text):
+        def match_case_replace(match):
+            original_word = match.group()
+            lower_key = original_word.lower()
+            replacement = self.lookup[lower_key]
+            return replacement
+
+        # 5. Perform the substitution
+        return self.pattern.sub(match_case_replace, text)
+
+    def execute(self):
+        incoming = self.input()
+        if isinstance(incoming, dict):
+            self.dict = copy.deepcopy(incoming)
+            return
+        incoming = any_to_string(incoming)
+        outgoing = self.replace_with_case(incoming)
+        self.output.send(outgoing)
+
+    def save_custom(self, container):
+        container['dict'] = self.dict
+
+    def load_custom(self, container):
+        if 'dict' in container:
+            self.dict = container['dict']
+            self.update_dict()
+
+    def dump_dict(self):
+        self.dict_out.send(self.dict)
+
+
+
+
+
 class CollectionNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -2405,9 +2568,13 @@ class CollectionNode(Node):
 
         self.input = self.add_input('retrieve by key', triggers_execution=True)
         self.store_input = self.add_input('store', triggers_execution=True)
+
         self.collection_name_input = self.add_input('name', widget_type='text_input', default_value=self.collection_name, callback=self.load_coll_by_name)
+        self.clear_input = self.add_input('clear', widget_type='button', callback=self.clear)
+        self.input = self.add_input('send dict', widget_type='button', callback=self.send_dict)
         self.output = self.add_output("out")
         self.unmatched_output = self.add_output('unmatched')
+        self.dict_out = self.add_output('dict out')
 
         self.message_handlers['clear'] = self.clear_message
         self.message_handlers['dump'] = self.dump
@@ -2426,11 +2593,11 @@ class CollectionNode(Node):
             out_list += self.collection[key]
             self.output.send(out_list)
 
+    def send_dict(self):
+        self.dict_out.send(self.collection)
+
     def save_dialog(self):
         SaveDialog(self, callback=self.save_coll_callback, extensions=['json'])
-        # with dpg.file_dialog(directory_selector=False, show=True, height=400, width=800, user_data=self, callback=save_coll_callback, cancel_callback=cancel_coll_load_callback,
-        #                      tag="coll_dialog_id"):
-        #     dpg.add_file_extension(".json")
 
     def save_coll_callback(self, save_path):
         if save_path != '':
@@ -2476,10 +2643,12 @@ class CollectionNode(Node):
         if os.path.exists(path):
             with open(path, 'r') as f:
                 self.collection = json.load(f)
-
-    def clear_message(self, message='', data=[]):
+    def clear(self):
         self.collection = {}
         self.save_pointer = -1
+
+    def clear_message(self, message='', data=[]):
+        self.clear()
 
     def execute(self):
         if self.active_input == self.input:
@@ -2541,6 +2710,9 @@ class CollectionNode(Node):
                 if data[0] == '{':
                     data = json.loads(data)
                     t = dict
+                else:
+                    data = string_to_list(data)
+                    t = list
             if t is dict:
                 self.collection = copy.deepcopy(data)
             elif t == list:
@@ -2602,25 +2774,23 @@ class RepeatNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.trigger_count = self.arg_as_int(default_value=2)
+        self.repeat_count = self.arg_as_int(default_value=2)
 
         self.input = self.add_input("", triggers_execution=True)
         self.input.bang_repeats_previous = False
         if self.label == 'repeat_in_order':
-            for i in range(self.trigger_count):
-                j = self.trigger_count - i
+            for i in range(self.repeat_count):
+                j = self.repeat_count - i
                 if str(j) in RepeatNode.output_dict:
                     self.add_output(RepeatNode.output_dict[str(j)])
         else:
-            for i in range(self.trigger_count):
+            for i in range(self.repeat_count):
                 self.add_output('out ' + str(i))
 
     def execute(self):
         data = self.input()
-        for i in range(self.trigger_count):
-            j = self.trigger_count - i - 1
-            self.outputs[j].set_value(data)
-        self.send_all()
+        for j in reversed(range(self.repeat_count)):
+            self.outputs[j].send(data)
 
 
 class ConduitSendNode(Node):
@@ -3036,3 +3206,39 @@ class PositionPatchesNode(Node):
         self.reposition()
 
 
+class StartTraceNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = StartTraceNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.add_input('start trace', triggers_execution=True)
+        self.enable = self.add_input('enable', widget_type='checkbox')
+        self.add_output('pass input')
+
+    def execute(self):
+        if self.enable():
+            Node.app.trace = True
+            print()
+            print('trace start: frame', Node.app.frame_number)
+        self.outputs[0].send(self.inputs[0]())
+
+
+class EndTraceNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = EndTraceNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.add_input('end trace', triggers_execution=True)
+        self.add_output('pass input')
+
+    def execute(self):
+        if Node.app.trace:
+            Node.app.trace = False
+            print('trace end')
+        self.outputs[0].send(self.inputs[0]())

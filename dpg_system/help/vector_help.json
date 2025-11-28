@@ -1,0 +1,1647 @@
+{
+    "height": 707,
+    "width": 932,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1449,
+    "name": "vector_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/vector_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 1476,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment arguments: list of menu items",
+            "name": "comment",
+            "id": 1494,
+            "position_x": 549,
+            "position_y": 116,
+            "width": 310,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "arguments: up to two dimension values to set size",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "arguments: up to two dimension values to set size"
+        },
+        "2": {
+            "init": "comment arguments: list of menu items",
+            "name": "comment",
+            "id": 1505,
+            "position_x": 550,
+            "position_y": 265,
+            "width": 346,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "output: when value received or changed, value is output",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "output: when value received or changed, value is output"
+        },
+        "3": {
+            "init": "comment menu",
+            "name": "comment",
+            "id": 1516,
+            "position_x": 19,
+            "position_y": 2,
+            "width": 574,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "vector - display or create and output a vector",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "vector - display or create and output a vector"
+        },
+        "4": {
+            "init": "comment input: any thing causes output of current selection",
+            "name": "comment",
+            "id": 1527,
+            "position_x": 549,
+            "position_y": 146,
+            "width": 310,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "input: float, int, list, array, tensor to display",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "input: float, int, list, array, tensor to display"
+        },
+        "5": {
+            "name": "close",
+            "id": 1538,
+            "position_x": 808,
+            "position_y": 601,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "6": {
+            "init": "vector 8",
+            "name": "vector",
+            "id": 1561,
+            "position_x": 236,
+            "position_y": 89,
+            "width": 160,
+            "height": 182,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "row 0",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "row 1",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "row 2",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "row 3",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "row 4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "row 5",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "row 6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "row 7",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "row 8",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "row 9",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "row 10",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "row 11",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "row 12",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "row 13",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "row 14",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "row 15",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "row 16",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "row 17",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "row 18",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "row 19",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "row 20",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "row 21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "row 22",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "row 23",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "row 24",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "row 25",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "row 26",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "row 27",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "row 28",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "row 29",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "row 30",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "row 31",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "row 32",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "33": {
+                    "name": "row 33",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "34": {
+                    "name": "row 34",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "35": {
+                    "name": "row 35",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "36": {
+                    "name": "row 36",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "37": {
+                    "name": "row 37",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "38": {
+                    "name": "row 38",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "39": {
+                    "name": "row 39",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "40": {
+                    "name": "row 40",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "41": {
+                    "name": "row 41",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "42": {
+                    "name": "row 42",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "43": {
+                    "name": "row 43",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "44": {
+                    "name": "row 44",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "45": {
+                    "name": "row 45",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "46": {
+                    "name": "row 46",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "47": {
+                    "name": "row 47",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "48": {
+                    "name": "row 48",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "49": {
+                    "name": "row 49",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "50": {
+                    "name": "row 50",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "51": {
+                    "name": "row 51",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "52": {
+                    "name": "row 52",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "53": {
+                    "name": "row 53",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "54": {
+                    "name": "row 54",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "55": {
+                    "name": "row 55",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "56": {
+                    "name": "row 56",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "57": {
+                    "name": "row 57",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "58": {
+                    "name": "row 58",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "59": {
+                    "name": "row 59",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "60": {
+                    "name": "row 60",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "61": {
+                    "name": "row 61",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "62": {
+                    "name": "row 62",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "63": {
+                    "name": "row 63",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "64": {
+                    "name": "zero",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "65": {
+                    "name": "output type",
+                    "value": "numpy",
+                    "value_type": "string"
+                },
+                "66": {
+                    "name": "component count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "67": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "7": {
+            "init": "comment vector 8",
+            "name": "comment",
+            "id": 2996,
+            "position_x": 16,
+            "position_y": 41,
+            "width": 58,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "vector 8",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "vector 8"
+        },
+        "8": {
+            "init": "vector 4 4",
+            "name": "vector",
+            "id": 3007,
+            "position_x": 236,
+            "position_y": 443,
+            "width": 343,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "row 0",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "1": {
+                    "name": "row 1",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "2": {
+                    "name": "row 2",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "3": {
+                    "name": "row 3",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "4": {
+                    "name": "row 4",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "5": {
+                    "name": "row 5",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "6": {
+                    "name": "row 6",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "7": {
+                    "name": "row 7",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "8": {
+                    "name": "row 8",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "9": {
+                    "name": "row 9",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "10": {
+                    "name": "row 10",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "11": {
+                    "name": "row 11",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "12": {
+                    "name": "row 12",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "13": {
+                    "name": "row 13",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "14": {
+                    "name": "row 14",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "15": {
+                    "name": "row 15",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "16": {
+                    "name": "row 16",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "17": {
+                    "name": "row 17",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "18": {
+                    "name": "row 18",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "19": {
+                    "name": "row 19",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "20": {
+                    "name": "row 20",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "21": {
+                    "name": "row 21",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "22": {
+                    "name": "row 22",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "23": {
+                    "name": "row 23",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "24": {
+                    "name": "row 24",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "25": {
+                    "name": "row 25",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "26": {
+                    "name": "row 26",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "27": {
+                    "name": "row 27",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "28": {
+                    "name": "row 28",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "29": {
+                    "name": "row 29",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "30": {
+                    "name": "row 30",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "31": {
+                    "name": "row 31",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "32": {
+                    "name": "row 32",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "33": {
+                    "name": "row 33",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "34": {
+                    "name": "row 34",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "35": {
+                    "name": "row 35",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "36": {
+                    "name": "row 36",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "37": {
+                    "name": "row 37",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "38": {
+                    "name": "row 38",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "39": {
+                    "name": "row 39",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "40": {
+                    "name": "row 40",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "41": {
+                    "name": "row 41",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "42": {
+                    "name": "row 42",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "43": {
+                    "name": "row 43",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "44": {
+                    "name": "row 44",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "45": {
+                    "name": "row 45",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "46": {
+                    "name": "row 46",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "47": {
+                    "name": "row 47",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "48": {
+                    "name": "row 48",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "49": {
+                    "name": "row 49",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "50": {
+                    "name": "row 50",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "51": {
+                    "name": "row 51",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "52": {
+                    "name": "row 52",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "53": {
+                    "name": "row 53",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "54": {
+                    "name": "row 54",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "55": {
+                    "name": "row 55",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "56": {
+                    "name": "row 56",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "57": {
+                    "name": "row 57",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "58": {
+                    "name": "row 58",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "59": {
+                    "name": "row 59",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "60": {
+                    "name": "row 60",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "61": {
+                    "name": "row 61",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "62": {
+                    "name": "row 62",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "63": {
+                    "name": "row 63",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "64": {
+                    "name": "zero",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "65": {
+                    "name": "output type",
+                    "value": "numpy",
+                    "value_type": "string"
+                },
+                "66": {
+                    "name": "component count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "67": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "9": {
+            "init": "comment vector 4 4",
+            "name": "comment",
+            "id": 4634,
+            "position_x": 237,
+            "position_y": 409,
+            "width": 70,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "vector 4 4",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "vector 4 4"
+        },
+        "10": {
+            "init": "np.rand 4 4",
+            "name": "np.rand",
+            "id": 4645,
+            "position_x": 22,
+            "position_y": 397,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "dim 0",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "dim 1",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                }
+            }
+        },
+        "11": {
+            "init": "comment widgets:",
+            "name": "comment",
+            "id": 4739,
+            "position_x": 550,
+            "position_y": 180,
+            "width": 58,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "widgets:",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "widgets:"
+        },
+        "12": {
+            "init": "comment zero: zeros contents and sends output",
+            "name": "comment",
+            "id": 4750,
+            "position_x": 571,
+            "position_y": 203,
+            "width": 236,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "zero: zeros contents and sends output",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "zero: zeros contents and sends output"
+        },
+        "13": {
+            "init": "comment output_type: selects output type (numpy, torch, list)",
+            "name": "comment",
+            "id": 4761,
+            "position_x": 571,
+            "position_y": 231,
+            "width": 334,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "output_type: selects output type (numpy, torch, list)",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "output_type: selects output type (numpy, torch, list)"
+        },
+        "14": {
+            "init": "comment quick key: type v to create with no arguments",
+            "name": "comment",
+            "id": 4772,
+            "position_x": 547,
+            "position_y": 45,
+            "width": 297,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "(quick key: type v to create with no arguments)",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "(quick key: type v to create with no arguments)"
+        },
+        "15": {
+            "init": "t.rand 4 4",
+            "name": "t.rand",
+            "id": 4783,
+            "position_x": 22,
+            "position_y": 503,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "input",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "shape",
+                    "value": "[4, 4]",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "16": {
+            "name": "list",
+            "id": 4952,
+            "position_x": 24,
+            "position_y": 81,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1 2 3 4 5 6 7 8",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "17": {
+            "init": "np.rand 8",
+            "name": "np.rand",
+            "id": 5008,
+            "position_x": 24,
+            "position_y": 136,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "dim 0",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                }
+            }
+        },
+        "18": {
+            "init": "t.rand 8",
+            "name": "t.rand",
+            "id": 5099,
+            "position_x": 25,
+            "position_y": 235,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "input",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "shape",
+                    "value": "[8]",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "19": {
+            "name": "message",
+            "id": 5268,
+            "position_x": 241,
+            "position_y": 314,
+            "width": 641,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "[1 2 3 4 5 6 7 8]",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 614,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 1561,
+            "source_node_name": "vector",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 5268,
+            "dest_node_name": "message",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "1": {
+            "source_node": 4645,
+            "source_node_name": "np.rand",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 3007,
+            "dest_node_name": "vector",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 4783,
+            "source_node_name": "t.rand",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 3007,
+            "dest_node_name": "vector",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 4952,
+            "source_node_name": "list",
+            "source_output_index": 0,
+            "source_output_name": "list out",
+            "dest_node": 1561,
+            "dest_node_name": "vector",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 5008,
+            "source_node_name": "np.rand",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 1561,
+            "dest_node_name": "vector",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 5099,
+            "source_node_name": "t.rand",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 1561,
+            "dest_node_name": "vector",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

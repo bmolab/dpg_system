@@ -1,17 +1,17 @@
 {
-    "height": 647,
-    "width": 1280,
+    "height": 684,
+    "width": 1291,
     "position": [
         100,
         100
     ],
-    "id": 20857,
-    "name": "torch_fft",
-    "path": "/Users/drokeby/dpg_system/examples/torch_fft.json",
+    "id": 3860,
+    "name": "t.fft_help.json",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.fft_help.json",
     "nodes": {
         "0": {
             "name": "",
-            "id": 20884,
+            "id": 3887,
             "position_x": 0,
             "position_y": 0,
             "width": 9,
@@ -31,7 +31,7 @@
         "1": {
             "init": "t.linspace 0 1 256",
             "name": "t.linspace",
-            "id": 20902,
+            "id": 3905,
             "position_x": 20,
             "position_y": 48,
             "width": 163,
@@ -41,7 +41,7 @@
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "",
+                    "name": "input",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -79,9 +79,9 @@
         },
         "2": {
             "name": "*",
-            "id": 21017,
-            "position_x": 256,
-            "position_y": 260,
+            "id": 4020,
+            "position_x": 299,
+            "position_y": 261,
             "width": 52,
             "height": 56,
             "visibility": "show_all",
@@ -90,9 +90,9 @@
         },
         "3": {
             "name": "t.window.hamming",
-            "id": 21081,
-            "position_x": 28,
-            "position_y": 398,
+            "id": 4084,
+            "position_x": 29,
+            "position_y": 400,
             "width": 163,
             "height": 126,
             "visibility": "show_all",
@@ -148,7 +148,7 @@
         },
         "4": {
             "name": "sin",
-            "id": 21292,
+            "id": 4295,
             "position_x": 117,
             "position_y": 228,
             "width": 68,
@@ -166,7 +166,7 @@
         },
         "5": {
             "name": "t.rfft",
-            "id": 21338,
+            "id": 4341,
             "position_x": 561,
             "position_y": 108,
             "width": 131,
@@ -184,7 +184,7 @@
         },
         "6": {
             "name": "t.irfft",
-            "id": 21402,
+            "id": 4405,
             "position_x": 723,
             "position_y": 221,
             "width": 131,
@@ -202,7 +202,7 @@
         },
         "7": {
             "name": "t.fft",
-            "id": 21466,
+            "id": 4469,
             "position_x": 534,
             "position_y": 419,
             "width": 131,
@@ -220,7 +220,7 @@
         },
         "8": {
             "name": "t.ifft",
-            "id": 21530,
+            "id": 4533,
             "position_x": 688,
             "position_y": 419,
             "width": 131,
@@ -238,7 +238,7 @@
         },
         "9": {
             "name": "t.real",
-            "id": 21594,
+            "id": 4597,
             "position_x": 722,
             "position_y": 108,
             "width": 76,
@@ -249,9 +249,9 @@
         },
         "10": {
             "name": "abs",
-            "id": 21637,
-            "position_x": 827,
-            "position_y": 108,
+            "id": 4640,
+            "position_x": 816,
+            "position_y": 107,
             "width": 45,
             "height": 42,
             "visibility": "show_all",
@@ -260,7 +260,7 @@
         },
         "11": {
             "name": "plot",
-            "id": 21680,
+            "id": 4683,
             "position_x": 211,
             "position_y": 47,
             "width": 264,
@@ -323,9 +323,9 @@
         },
         "12": {
             "name": "plot",
-            "id": 21761,
+            "id": 4764,
             "position_x": 431,
-            "position_y": 240,
+            "position_y": 238,
             "width": 264,
             "height": 144,
             "visibility": "show_all",
@@ -386,7 +386,7 @@
         },
         "13": {
             "name": "plot",
-            "id": 21842,
+            "id": 4845,
             "position_x": 220,
             "position_y": 403,
             "width": 264,
@@ -449,7 +449,7 @@
         },
         "14": {
             "name": "plot",
-            "id": 21923,
+            "id": 4926,
             "position_x": 877,
             "position_y": 40,
             "width": 264,
@@ -512,7 +512,7 @@
         },
         "15": {
             "name": "plot",
-            "id": 22004,
+            "id": 5007,
             "position_x": 877,
             "position_y": 221,
             "width": 264,
@@ -575,7 +575,7 @@
         },
         "16": {
             "name": "plot",
-            "id": 22085,
+            "id": 5088,
             "position_x": 877,
             "position_y": 405,
             "width": 264,
@@ -639,9 +639,9 @@
         "17": {
             "init": "comment spectrum",
             "name": "comment",
-            "id": 22166,
+            "id": 5169,
             "position_x": 877,
-            "position_y": 16,
+            "position_y": -1,
             "width": 58,
             "height": 30,
             "visibility": "show_all",
@@ -654,9 +654,9 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             },
             "comment": "spectrum"
@@ -664,9 +664,9 @@
         "18": {
             "init": "comment reconstructed",
             "name": "comment",
-            "id": 22177,
+            "id": 5187,
             "position_x": 879,
-            "position_y": 200,
+            "position_y": 186,
             "width": 88,
             "height": 30,
             "visibility": "show_all",
@@ -679,9 +679,9 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             },
             "comment": "reconstructed"
@@ -689,9 +689,9 @@
         "19": {
             "init": "comment reconstructed",
             "name": "comment",
-            "id": 22188,
+            "id": 5198,
             "position_x": 877,
-            "position_y": 381,
+            "position_y": 371,
             "width": 88,
             "height": 30,
             "visibility": "show_all",
@@ -704,9 +704,9 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             },
             "comment": "reconstructed"
@@ -714,9 +714,9 @@
         "20": {
             "init": "comment window",
             "name": "comment",
-            "id": 22199,
-            "position_x": 228,
-            "position_y": 384,
+            "id": 5209,
+            "position_x": 226,
+            "position_y": 372,
             "width": 45,
             "height": 30,
             "visibility": "show_all",
@@ -729,9 +729,9 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             },
             "comment": "window"
@@ -739,9 +739,9 @@
         "21": {
             "init": "comment windowed signal",
             "name": "comment",
-            "id": 22210,
+            "id": 5220,
             "position_x": 432,
-            "position_y": 219,
+            "position_y": 204,
             "width": 101,
             "height": 30,
             "visibility": "show_all",
@@ -754,9 +754,9 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             },
             "comment": "windowed signal"
@@ -764,9 +764,9 @@
         "22": {
             "init": "comment signal",
             "name": "comment",
-            "id": 22221,
+            "id": 5231,
             "position_x": 212,
-            "position_y": 26,
+            "position_y": 12,
             "width": 45,
             "height": 30,
             "visibility": "show_all",
@@ -779,9 +779,9 @@
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": false,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
                 }
             },
             "comment": "signal"
@@ -789,10 +789,10 @@
         "23": {
             "init": "comment t.fft",
             "name": "comment",
-            "id": 22232,
-            "position_x": 16,
-            "position_y": 224,
-            "width": 70,
+            "id": 5242,
+            "position_x": 326,
+            "position_y": -3,
+            "width": 414,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -800,22 +800,22 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "t.fft",
+                    "value": "t.fft / t.ifft / t.rfft / t.irfft",
                     "value_type": "string"
                 },
                 "1": {
-                    "name": "large",
-                    "value": true,
-                    "value_type": "bool"
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
                 }
             },
-            "comment": "t.fft"
+            "comment": "t.fft / t.ifft / t.rfft / t.irfft"
         },
         "24": {
             "name": "load_action",
-            "id": 22243,
-            "position_x": 18,
-            "position_y": 296,
+            "id": 5253,
+            "position_x": 24,
+            "position_y": 313,
             "width": 88,
             "height": 56,
             "visibility": "show_all",
@@ -836,193 +836,282 @@
         },
         "25": {
             "name": "repeat_in_order",
-            "id": 22378,
+            "id": 5299,
             "position_x": 128,
             "position_y": 312,
             "width": 101,
-            "height": 62,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
+        },
+        "26": {
+            "name": "close",
+            "id": 5362,
+            "position_x": 1155,
+            "position_y": 525,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "27": {
+            "init": "comment convert to fourier space and back",
+            "name": "comment",
+            "id": 5385,
+            "position_x": 547,
+            "position_y": 387,
+            "width": 260,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "convert to complex fourier space and back",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "convert to complex fourier space and back"
+        },
+        "28": {
+            "name": "t.info",
+            "id": 5396,
+            "position_x": 685,
+            "position_y": 488,
+            "width": 45,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "29": {
+            "init": "comment extract real",
+            "name": "comment",
+            "id": 5499,
+            "position_x": 719,
+            "position_y": 70,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "extract real",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "extract real"
         }
     },
     "links": {
         "0": {
-            "source_node": 20902,
+            "source_node": 3905,
             "source_node_name": "t.linspace",
             "source_output_index": 0,
             "source_output_name": "linspace out",
-            "dest_node": 21292,
+            "dest_node": 4295,
             "dest_node_name": "sin",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
         "1": {
-            "source_node": 21017,
+            "source_node": 4020,
             "source_node_name": "*",
             "source_output_index": 0,
             "source_output_name": "result",
-            "dest_node": 21466,
+            "dest_node": 4469,
             "dest_node_name": "t.fft",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "2": {
-            "source_node": 21017,
+            "source_node": 4020,
             "source_node_name": "*",
             "source_output_index": 0,
             "source_output_name": "result",
-            "dest_node": 21338,
+            "dest_node": 4341,
             "dest_node_name": "t.rfft",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "3": {
-            "source_node": 21017,
+            "source_node": 4020,
             "source_node_name": "*",
             "source_output_index": 0,
             "source_output_name": "result",
-            "dest_node": 21761,
+            "dest_node": 4764,
             "dest_node_name": "plot",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "4": {
-            "source_node": 21081,
+            "source_node": 4084,
             "source_node_name": "t.window.hamming",
             "source_output_index": 0,
             "source_output_name": "window tensor out",
-            "dest_node": 21017,
+            "dest_node": 4020,
             "dest_node_name": "*",
             "dest_input_index": 1,
             "dest_input_name": "operand"
         },
         "5": {
-            "source_node": 21081,
+            "source_node": 4084,
             "source_node_name": "t.window.hamming",
             "source_output_index": 0,
             "source_output_name": "window tensor out",
-            "dest_node": 21842,
+            "dest_node": 4845,
             "dest_node_name": "plot",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "6": {
-            "source_node": 21292,
+            "source_node": 4295,
             "source_node_name": "sin",
             "source_output_index": 0,
             "source_output_name": "out",
-            "dest_node": 21017,
+            "dest_node": 4020,
             "dest_node_name": "*",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
         "7": {
-            "source_node": 21292,
+            "source_node": 4295,
             "source_node_name": "sin",
             "source_output_index": 0,
             "source_output_name": "out",
-            "dest_node": 21680,
+            "dest_node": 4683,
             "dest_node_name": "plot",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "8": {
-            "source_node": 21338,
+            "source_node": 4341,
             "source_node_name": "t.rfft",
             "source_output_index": 0,
             "source_output_name": "histogram tensor out",
-            "dest_node": 21402,
+            "dest_node": 4405,
             "dest_node_name": "t.irfft",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "9": {
-            "source_node": 21338,
+            "source_node": 4341,
             "source_node_name": "t.rfft",
             "source_output_index": 0,
             "source_output_name": "histogram tensor out",
-            "dest_node": 21594,
+            "dest_node": 4597,
             "dest_node_name": "t.real",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "10": {
-            "source_node": 21402,
+            "source_node": 4405,
             "source_node_name": "t.irfft",
             "source_output_index": 0,
             "source_output_name": "histogram tensor out",
-            "dest_node": 22004,
+            "dest_node": 5007,
             "dest_node_name": "plot",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "11": {
-            "source_node": 21466,
+            "source_node": 4469,
             "source_node_name": "t.fft",
             "source_output_index": 0,
             "source_output_name": "histogram tensor out",
-            "dest_node": 21530,
+            "dest_node": 4533,
             "dest_node_name": "t.ifft",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "12": {
-            "source_node": 21530,
+            "source_node": 4469,
+            "source_node_name": "t.fft",
+            "source_output_index": 0,
+            "source_output_name": "histogram tensor out",
+            "dest_node": 5396,
+            "dest_node_name": "t.info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "13": {
+            "source_node": 4533,
             "source_node_name": "t.ifft",
             "source_output_index": 0,
             "source_output_name": "histogram tensor out",
-            "dest_node": 22085,
+            "dest_node": 5088,
             "dest_node_name": "plot",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "13": {
-            "source_node": 21594,
+        "14": {
+            "source_node": 4597,
             "source_node_name": "t.real",
             "source_output_index": 0,
             "source_output_name": "real tensor",
-            "dest_node": 21637,
+            "dest_node": 4640,
             "dest_node_name": "abs",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "14": {
-            "source_node": 21637,
+        "15": {
+            "source_node": 4640,
             "source_node_name": "abs",
             "source_output_index": 0,
             "source_output_name": "result",
-            "dest_node": 21923,
+            "dest_node": 4926,
             "dest_node_name": "plot",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "15": {
-            "source_node": 22243,
+        "16": {
+            "source_node": 5253,
             "source_node_name": "load_action",
             "source_output_index": 0,
             "source_output_name": "out",
-            "dest_node": 22378,
+            "dest_node": 5299,
             "dest_node_name": "repeat_in_order",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "16": {
-            "source_node": 22378,
+        "17": {
+            "source_node": 5299,
             "source_node_name": "repeat_in_order",
             "source_output_index": 0,
             "source_output_name": "second",
-            "dest_node": 20902,
+            "dest_node": 3905,
             "dest_node_name": "t.linspace",
             "dest_input_index": 0,
-            "dest_input_name": ""
+            "dest_input_name": "###input"
         },
-        "17": {
-            "source_node": 22378,
+        "18": {
+            "source_node": 5299,
             "source_node_name": "repeat_in_order",
             "source_output_index": 1,
             "source_output_name": "first",
-            "dest_node": 21081,
+            "dest_node": 4084,
             "dest_node_name": "t.window.hamming",
             "dest_input_index": 0,
             "dest_input_name": ""

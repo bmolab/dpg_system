@@ -1,0 +1,1448 @@
+{
+    "height": 914,
+    "width": 1415,
+    "position": [
+        100,
+        100
+    ],
+    "id": 2036,
+    "name": "pack_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/pack_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 2063,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "name": "close",
+            "id": 2494,
+            "position_x": 32,
+            "position_y": 815,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "2": {
+            "init": "comment counter",
+            "name": "comment",
+            "id": 2560,
+            "position_x": 21,
+            "position_y": -5,
+            "width": 537,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "pack / pak - combine components into a list",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "pack / pak - combine components into a list"
+        },
+        "3": {
+            "name": "text_block",
+            "id": 2571,
+            "position_x": 611,
+            "position_y": 12,
+            "width": 762,
+            "height": 762,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The pack node combines individual values from multiple input pins into a single composite \ndata structure. \n\nIt is the reverse of the unpack node. It gathers data such as integers, floats, or strings \nand bundles them into a List, Numpy Array, or PyTorch Tensor. \n\nNote on Triggering: \nIf created as 'pack', only the first input (leftmost) is \"hot\" and triggers the output. \nThe other inputs just update their values stored in memory.\n\nIf created as 'pak', all inputs are \"hot\" and changing any value will immediately trigger \na new output.\n\nSYNTAX:\n\npack <count> \nOR\npack <type_flag_1> <type_flag_2> ...\nOR\npack <default_val_1> <default_val_2> ...\n\n(You can also use 'pak' in place of 'pack' to change the triggering behavior).\n\nType Flags:\ni (int), f (float), s (string), b (bool), l (list), a (numpy array), t (torch tensor)\n\nEXAMPLE:\n\npack 3        (Creates 3 generic inputs; output triggers only on input 1)\npack i f s    (Creates Int, Float, and String inputs)\npak 3         (Creates 3 generic inputs; output triggers on ANY input)\n\nINPUTS AND PARAMETERS:\n\nin (variable):\nA series of input pins. Data received here is stored until output occurs.\nIf 'pack': Input 1 triggers execution and sends the result. Inputs 2+ only update stored values.\nIf 'pak': Receiving data on ANY input triggers execution and sends the result immediately.\n\noutput pref (Option):\nSelects the format of the output data.\nlist: Returns a standard Python list (default).\narray: Returns a Numpy array (if types are compatible).\ntensor: Returns a PyTorch Tensor (if types are compatible and Torch is installed).\n\nOUTPUTS: \n\nout:\nThe bundled data structure containing the current values of all input pins.",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 754,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 746,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "The pack node combines individual values from multiple input pins into a single composite \ndata structure. \n\nIt is the reverse of the unpack node. It gathers data such as integers, floats, or strings \nand bundles them into a List, Numpy Array, or PyTorch Tensor. \n\nNote on Triggering: \nIf created as 'pack', only the first input (leftmost) is \"hot\" and triggers the output. \nThe other inputs just update their values stored in memory.\n\nIf created as 'pak', all inputs are \"hot\" and changing any value will immediately trigger \na new output.\n\nSYNTAX:\n\npack <count> \nOR\npack <type_flag_1> <type_flag_2> ...\nOR\npack <default_val_1> <default_val_2> ...\n\n(You can also use 'pak' in place of 'pack' to change the triggering behavior).\n\nType Flags:\ni (int), f (float), s (string), b (bool), l (list), a (numpy array), t (torch tensor)\n\nEXAMPLE:\n\npack 3        (Creates 3 generic inputs; output triggers only on input 1)\npack i f s    (Creates Int, Float, and String inputs)\npak 3         (Creates 3 generic inputs; output triggers on ANY input)\n\nINPUTS AND PARAMETERS:\n\nin (variable):\nA series of input pins. Data received here is stored until output occurs.\nIf 'pack': Input 1 triggers execution and sends the result. Inputs 2+ only update stored values.\nIf 'pak': Receiving data on ANY input triggers execution and sends the result immediately.\n\noutput pref (Option):\nSelects the format of the output data.\nlist: Returns a standard Python list (default).\narray: Returns a Numpy array (if types are compatible).\ntensor: Returns a PyTorch Tensor (if types are compatible and Torch is installed).\n\nOUTPUTS: \n\nout:\nThe bundled data structure containing the current values of all input pins."
+        },
+        "4": {
+            "init": "pack 6",
+            "name": "pack",
+            "id": 5767,
+            "position_x": 194,
+            "position_y": 72,
+            "width": 33,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "output pref",
+                    "value": "list",
+                    "value_type": "string"
+                }
+            }
+        },
+        "5": {
+            "name": "message",
+            "id": 5918,
+            "position_x": 290,
+            "position_y": 93,
+            "width": 187,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "[115, 9, 34, 33, -30, 34]",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 160,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "6": {
+            "name": "int",
+            "id": 6380,
+            "position_x": 32,
+            "position_y": 64,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 115,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "7": {
+            "name": "int",
+            "id": 6446,
+            "position_x": 32,
+            "position_y": 114,
+            "width": 127,
+            "height": 41,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 9,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "8": {
+            "name": "int",
+            "id": 6511,
+            "position_x": 32,
+            "position_y": 159,
+            "width": 127,
+            "height": 41,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "9": {
+            "name": "int",
+            "id": 6576,
+            "position_x": 32,
+            "position_y": 204,
+            "width": 127,
+            "height": 41,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "10": {
+            "name": "int",
+            "id": 6641,
+            "position_x": 32,
+            "position_y": 249,
+            "width": 127,
+            "height": 41,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "11": {
+            "name": "int",
+            "id": 6706,
+            "position_x": 32,
+            "position_y": 294,
+            "width": 127,
+            "height": 41,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "12": {
+            "init": "pack i i f 0.0 thought",
+            "name": "pack",
+            "id": 6793,
+            "position_x": 192,
+            "position_y": 485,
+            "width": 52,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "output pref",
+                    "value": "list",
+                    "value_type": "string"
+                }
+            }
+        },
+        "13": {
+            "name": "list",
+            "id": 6988,
+            "position_x": 263,
+            "position_y": 560,
+            "width": 309,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "[29, 72, 0.17000000178813934, 0.0, 'thought']",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 282,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "14": {
+            "name": "int",
+            "id": 7045,
+            "position_x": 30,
+            "position_y": 464,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 29,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "15": {
+            "name": "int",
+            "id": 7112,
+            "position_x": 29,
+            "position_y": 518,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 72,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "16": {
+            "name": "float",
+            "id": 7178,
+            "position_x": 29,
+            "position_y": 568,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0.10000000149011612,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 0.009999999776482582,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "17": {
+            "init": "pack 6",
+            "name": "pack",
+            "id": 7244,
+            "position_x": 193,
+            "position_y": 336,
+            "width": 33,
+            "height": 112,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "output pref",
+                    "value": "array",
+                    "value_type": "string"
+                }
+            }
+        },
+        "18": {
+            "name": "message",
+            "id": 7401,
+            "position_x": 372,
+            "position_y": 362,
+            "width": 217,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "[115, 9, 0, 0, 0, 0]",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 190,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "19": {
+            "name": "info",
+            "id": 7466,
+            "position_x": 370,
+            "position_y": 423,
+            "width": 229,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "info",
+                    "value": "array[6] int64",
+                    "value_type": "string"
+                }
+            }
+        },
+        "20": {
+            "name": "info",
+            "id": 7493,
+            "position_x": 288,
+            "position_y": 150,
+            "width": 229,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "info",
+                    "value": "list[6]",
+                    "value_type": "string"
+                }
+            }
+        },
+        "21": {
+            "init": "comment pack 6",
+            "name": "comment",
+            "id": 7528,
+            "position_x": 188,
+            "position_y": 39,
+            "width": 45,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "pack 6",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "pack 6"
+        },
+        "22": {
+            "init": "comment option: output",
+            "name": "comment",
+            "id": 7547,
+            "position_x": 192,
+            "position_y": 303,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "option: output pref: array",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "option: output pref: array"
+        },
+        "23": {
+            "init": "comment pack i i f 0.0 thought",
+            "name": "comment",
+            "id": 7623,
+            "position_x": 188,
+            "position_y": 450,
+            "width": 144,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "pack i i f 0.0 thought",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "pack i i f 0.0 thought"
+        },
+        "24": {
+            "name": "toggle",
+            "id": 7634,
+            "position_x": 198,
+            "position_y": 257,
+            "width": 45,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                }
+            }
+        },
+        "25": {
+            "init": "prepend options",
+            "name": "prepend",
+            "id": 7750,
+            "position_x": 277,
+            "position_y": 250,
+            "width": 129,
+            "height": 62,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "prefix",
+                    "value": "options",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "always output list",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "26": {
+            "init": "comment open options (or press 'o' when selected)",
+            "name": "comment",
+            "id": 7887,
+            "position_x": 196,
+            "position_y": 216,
+            "width": 260,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "open options (or press 'o' when selected)",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "open options (or press 'o' when selected)"
+        },
+        "27": {
+            "init": "pak 3",
+            "name": "pak",
+            "id": 7914,
+            "position_x": 192,
+            "position_y": 671,
+            "width": 33,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "output pref",
+                    "value": "list",
+                    "value_type": "string"
+                }
+            }
+        },
+        "28": {
+            "name": "list",
+            "id": 8059,
+            "position_x": 259,
+            "position_y": 719,
+            "width": 205,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "[1, 0.2800000011920929, 30]",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 178,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "29": {
+            "name": "int",
+            "id": 8173,
+            "position_x": 32,
+            "position_y": 648,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "30": {
+            "name": "float",
+            "id": 8239,
+            "position_x": 34,
+            "position_y": 704,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0.2800000011920929,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 0.009999999776482582,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "31": {
+            "name": "int",
+            "id": 8488,
+            "position_x": 33,
+            "position_y": 759,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 30,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "32": {
+            "init": "comment pak 3",
+            "name": "comment",
+            "id": 8565,
+            "position_x": 188,
+            "position_y": 634,
+            "width": 211,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "pak 3 (any input triggers output)",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "pak 3 (any input triggers output)"
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 5767,
+            "source_node_name": "pack",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 5918,
+            "dest_node_name": "message",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "1": {
+            "source_node": 5767,
+            "source_node_name": "pack",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 7493,
+            "dest_node_name": "info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 6380,
+            "source_node_name": "int",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 5767,
+            "dest_node_name": "pack",
+            "dest_input_index": 0,
+            "dest_input_name": "in 1"
+        },
+        "3": {
+            "source_node": 6380,
+            "source_node_name": "int",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 7244,
+            "dest_node_name": "pack",
+            "dest_input_index": 0,
+            "dest_input_name": "in 1"
+        },
+        "4": {
+            "source_node": 6446,
+            "source_node_name": "int",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 5767,
+            "dest_node_name": "pack",
+            "dest_input_index": 1,
+            "dest_input_name": "in 2"
+        },
+        "5": {
+            "source_node": 6446,
+            "source_node_name": "int",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 7244,
+            "dest_node_name": "pack",
+            "dest_input_index": 1,
+            "dest_input_name": "in 2"
+        },
+        "6": {
+            "source_node": 6511,
+            "source_node_name": "int",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 5767,
+            "dest_node_name": "pack",
+            "dest_input_index": 2,
+            "dest_input_name": "in 3"
+        },
+        "7": {
+            "source_node": 6511,
+            "source_node_name": "int",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 7244,
+            "dest_node_name": "pack",
+            "dest_input_index": 2,
+            "dest_input_name": "in 3"
+        },
+        "8": {
+            "source_node": 6576,
+            "source_node_name": "int",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 5767,
+            "dest_node_name": "pack",
+            "dest_input_index": 3,
+            "dest_input_name": "in 4"
+        },
+        "9": {
+            "source_node": 6576,
+            "source_node_name": "int",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 7244,
+            "dest_node_name": "pack",
+            "dest_input_index": 3,
+            "dest_input_name": "in 4"
+        },
+        "10": {
+            "source_node": 6641,
+            "source_node_name": "int",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 5767,
+            "dest_node_name": "pack",
+            "dest_input_index": 4,
+            "dest_input_name": "in 5"
+        },
+        "11": {
+            "source_node": 6641,
+            "source_node_name": "int",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 7244,
+            "dest_node_name": "pack",
+            "dest_input_index": 4,
+            "dest_input_name": "in 5"
+        },
+        "12": {
+            "source_node": 6706,
+            "source_node_name": "int",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 5767,
+            "dest_node_name": "pack",
+            "dest_input_index": 5,
+            "dest_input_name": "in 6"
+        },
+        "13": {
+            "source_node": 6706,
+            "source_node_name": "int",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 7244,
+            "dest_node_name": "pack",
+            "dest_input_index": 5,
+            "dest_input_name": "in 6"
+        },
+        "14": {
+            "source_node": 6793,
+            "source_node_name": "pack",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 6988,
+            "dest_node_name": "list",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "15": {
+            "source_node": 7045,
+            "source_node_name": "int",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 6793,
+            "dest_node_name": "pack",
+            "dest_input_index": 0,
+            "dest_input_name": "int"
+        },
+        "16": {
+            "source_node": 7112,
+            "source_node_name": "int",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 6793,
+            "dest_node_name": "pack",
+            "dest_input_index": 1,
+            "dest_input_name": "int"
+        },
+        "17": {
+            "source_node": 7178,
+            "source_node_name": "float",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 6793,
+            "dest_node_name": "pack",
+            "dest_input_index": 2,
+            "dest_input_name": "float"
+        },
+        "18": {
+            "source_node": 7244,
+            "source_node_name": "pack",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 7401,
+            "dest_node_name": "message",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "19": {
+            "source_node": 7244,
+            "source_node_name": "pack",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 7466,
+            "dest_node_name": "info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "20": {
+            "source_node": 7634,
+            "source_node_name": "toggle",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 7750,
+            "dest_node_name": "prepend",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "21": {
+            "source_node": 7750,
+            "source_node_name": "prepend",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 7244,
+            "dest_node_name": "pack",
+            "dest_input_index": 0,
+            "dest_input_name": "in 1"
+        },
+        "22": {
+            "source_node": 7914,
+            "source_node_name": "pak",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 8059,
+            "dest_node_name": "list",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "23": {
+            "source_node": 8173,
+            "source_node_name": "int",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 7914,
+            "dest_node_name": "pak",
+            "dest_input_index": 0,
+            "dest_input_name": "in 1"
+        },
+        "24": {
+            "source_node": 8239,
+            "source_node_name": "float",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 7914,
+            "dest_node_name": "pak",
+            "dest_input_index": 1,
+            "dest_input_name": "in 2"
+        },
+        "25": {
+            "source_node": 8488,
+            "source_node_name": "int",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 7914,
+            "dest_node_name": "pak",
+            "dest_input_index": 2,
+            "dest_input_name": "in 3"
+        }
+    }
+}

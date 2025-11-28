@@ -355,6 +355,7 @@ class GLNode(Node):
     def handle_other_messages(self, message):
         pass
 
+
 class TexturedGLNode(GLNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
@@ -367,10 +368,43 @@ class TexturedGLNode(GLNode):
 
     def update_texture(self):
         if self.texture_data_pending is not None:
+            # Check if we have an existing texture
+            if self.numpy_texture is not None:
+                # We must check if the incoming data is compatible with the existing OpenGL texture.
+                # If the Shape OR the DType has changed, we cannot use .update().
+                # We must destroy the old texture and make a new one.
+
+                # Note: This assumes GLNumpyTexture exposes .shape and .dtype.
+                # If not, you might need to store self.current_shape/dtype separately.
+
+                prev_shape = getattr(self.numpy_texture, 'shape', None)
+                prev_dtype = getattr(self.numpy_texture, 'dtype', None)
+
+                new_shape = self.texture_data_pending.shape
+                new_dtype = self.texture_data_pending.dtype
+
+                if prev_shape != new_shape or prev_dtype != new_dtype:
+                    # Optional: explicit cleanup if your class supports it
+                    if hasattr(self.numpy_texture, 'delete'):
+                        self.numpy_texture.delete()
+                    elif hasattr(self.numpy_texture, 'release'):
+                        self.numpy_texture.release()
+
+                    # Force re-initialization
+                    self.numpy_texture = None
+
+            # Logic to Create vs Update
             if self.numpy_texture is None:
+                # Create a fresh texture (allocates GPU memory with correct format)
                 self.numpy_texture = GLNumpyTexture(self.texture_data_pending)
+
+                # Store metadata for future comparison if GLNumpyTexture doesn't expose them
+                # self.numpy_texture.shape = self.texture_data_pending.shape
+                # self.numpy_texture.dtype = self.texture_data_pending.dtype
             else:
+                # Safe to simply upload pixels because shape and type match
                 self.numpy_texture.update(self.texture_data_pending)
+
             self.texture_data_pending = None
 
     def prepare_texture_for_drawing(self):
@@ -380,8 +414,51 @@ class TexturedGLNode(GLNode):
     def finish_texture_drawing(self):
         glBindTexture(GL_TEXTURE_2D, 0)
 
-
     def receive_texture_data(self, data):
+        # 1. Handle NumPy Arrays (Direct assignment)
+        if isinstance(data, np.ndarray):
+            self.texture_data_pending = data
+            return
+
+        # 2. Handle PyTorch Tensors
+        if self.app.torch_available and 'torch' in globals() and isinstance(data, torch.Tensor):
+            # Heuristic: Convert CHW to HWC if dimensions suggest a channel-first image
+            if data.ndim > 2 and data.shape[-3] <= 5 and data.shape[-1] > 5:
+                # Permute (..., C, H, W) -> (..., H, W, C)
+                data = data.permute(-2, -1, -3)
+
+            self.texture_data_pending = data.cpu().numpy()
+            return
+
+        # 3. Handle Scalars (int/float) and Lists
+        # This block generates a 16x16 texture filled with the provided value(s)
+        dtype = np.float32  # Default
+        values = data
+        channels = 1
+
+        if isinstance(data, (int, float)):
+            dtype = np.uint8 if isinstance(data, int) else np.float32
+            # Scalar values broadcast automatically to (16, 16, 1)
+
+        elif isinstance(data, list):
+            if not data: return  # Handle empty list safety
+
+            # Check type of first element to determine array type
+            dtype = np.uint8 if isinstance(data[0], int) else np.float32
+            values = np.array(data, dtype=dtype)
+            channels = len(data)
+
+            # Filter for supported component counts (Optional: remove to support any N-channels)
+            if channels not in (1, 3, 4):
+                return
+
+                # Create base canvas (16x16)
+        # NumPy broadcasting handles the math: (16,16,3) * (3,) -> (16,16,3)
+        base_texture = np.ones((16, 16, channels), dtype=dtype)
+        self.texture_data_pending = base_texture * values
+
+
+    def receive_texture_data_o(self, data):
         if type(data) == np.ndarray:
             self.texture_data_pending = data  # * 255.0
         elif self.app.torch_available and type(data) == torch.Tensor:

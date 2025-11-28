@@ -7,6 +7,7 @@ import json
 from typing import List, Any, Callable, Union, Tuple, Optional, Dict, Set, Type, TypeVar, cast
 from fuzzywuzzy import fuzz
 import sys
+import os
 
 
 class NodeOutput:
@@ -112,10 +113,28 @@ class NodeOutput:
                 break
 
     def set_value(self, data: Any) -> Any:
+        from dpg_system.basic_nodes import print_info
         if data is not None:
             self.new_output = True
             for child in self._children:
-                child.receive_data(data)
+                if Node.app.trace:
+                    print(Node.app.trace_indent, end='')
+                    print('node \'' + self.node.label + '\' output ', end='')
+                    if self.get_label() != '':
+                        print('\'' + self.get_label() + '\' -> ', end='')
+                    type_string, value_string = print_info(input_=data)
+                    print(type_string, end='')
+                    if len(value_string) > 0:
+                        print(':' + value_string, end='')
+                    print(' -> node \'' + child.node.label + '\' input', end='')
+                    if child.get_label() != '':
+                        print(' \'' +  child.get_label() + '\'')
+                    else:
+                        print()
+                    child.receive_data(data)
+                else:
+                    child.receive_data(data)
+
             self.sent_type = type(data)
             if self.sent_type == str and data == 'bang':
                 self.sent_bang = True
@@ -157,11 +176,34 @@ class NodeOutput:
                 except Exception as e:
                     pass
             if not no_trigger:
-                for child in self._children:
-                    child.node.active_input = child
-                    child.trigger()
-                    child.node.active_input = None
+                for child in self._children: # we want to be able to step debug...dialog
+                    self.send_to_one_child(child)
 
+    def send_to_one_child(self, child: 'NodeInput') -> None:
+        child.node.active_input = child
+        if Node.app.trace:
+            if child.triggers_execution or child.callback is not None:
+                print(Node.app.trace_indent, end='')
+                if child.triggers_execution:
+                    print('node \'' + child.node.label + '\' execute')
+                else:
+                    print('node', child.node.label, 'input', child.get_label(), 'callback')
+        child.trigger()
+        child.node.active_input = None
+
+    # would be called to make a step. App must record the node, output and which_child for next step
+    # if returns -1, then step has to know how to move to next bit of code that causes output.
+    # maybe just suspend the main thread? and continue on step to next output point
+    def step_output(self, which_child) -> int:
+        if which_child < len(self._children):
+            child = self._children[which_child]
+            self.send_to_one_child(child)
+            which_child += 1
+            if which_child >= len(self._children):
+                return -1
+            return which_child
+        else:
+            return -1
 
     def create(self, parent: int) -> None:
         if self.pos is not None:
@@ -247,10 +289,10 @@ class NodeListOutput(NodeOutput):
     def send(self, data: Optional[Any] = None) -> None:
         if data is not None:
             list_data = any_to_list(data)
-            if len(list_data) == 1 and type(data) is str:
-                super().send(data)
-            else:
-                super().send(list_data)
+            # if len(list_data) == 1 and type(data) is str:
+            #     super().send(data)
+            # else:
+            super().send(list_data)
         else:
             super().send()
 
@@ -366,11 +408,11 @@ class NodeDisplay:
 
 
 class NodeProperty:
-    def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
+    def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, **kwargs):
         self.label = label
         if uuid == None:
             self.uuid = dpg.generate_uuid()
-        self.widget = PropertyWidget(label, uuid, node=node, widget_type=widget_type, width=width, triggers_execution=triggers_execution, trigger_button=trigger_button, default_value=default_value, min=min, max=max)
+        self.widget = PropertyWidget(label, uuid, node=node, widget_type=widget_type, width=width, triggers_execution=triggers_execution, trigger_button=trigger_button, default_value=default_value, min=min, max=max, **kwargs)
         self.callback = None
         self.user_data = None
         self.node_attribute = None
@@ -462,364 +504,256 @@ class NodeProperty:
             self.variable.set_value(data)  # will propagate to all instances
 
 
-class PropertyWidget:
-    def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
+class BasePropertyWidget:
+    def __init__(self, label: str, uuid=None, node=None, widget_type=None,
+                 width=80, triggers_execution=False, trigger_button=False,
+                 default_value=None, **kwargs):
+
         self._label = label
-        if uuid is None:
-            self.uuid = dpg.generate_uuid()
-        else:
-            self.uuid = uuid
+        self.uuid = uuid if uuid is not None else dpg.generate_uuid()
+        self.uuids = [self.uuid]  # List for handling vectors/multi-item widgets
+        self.node = node
+        self.widget = widget_type  # Stored for save/load identification
+        self.widget_width = width
+
+        # Execution & Trigger Logic
+        self.triggers_execution = triggers_execution
         self.widget_has_trigger = trigger_button
         self.trigger_widget = None
-        self.widget = widget_type
-        self.widget_width = width
-        self.triggers_execution = triggers_execution
+
+        # State
         self.default_value = default_value
         self.value = None
-        self.min = min
-        self.max = max
-        self.combo_items = []
-        self.callback = None
-        self.trigger_callback = None
         self.user_data = self
         self.tag = self.uuid
-        self.horizontal = False
-        self.input = None
-        if widget_type == 'drag_float':
-            self.speed = 0.01
-        else:
-            self.speed = 1
-        if widget_type == 'input_float':
-            self.step = .1
-        else:
-            self.step = 1
-        self.variable = None
-        self.action = None
-        self.node = node
-        self.active_theme = Node.active_theme_base
+        self.input = None  # assigned externally usually
 
-    def set_height(self, height):
-        dpg.set_item_height(self.input.widget.uuid, height)
+        # Callbacks
+        self.callback = None
+        self.trigger_callback = None
+        self.variable = None  # Attached variable
+        self.action = None  # Attached action
+
+        # Theme
+        self.active_theme = getattr(node, 'active_theme_base', None) if node else None
+
+    def create(self) -> None:
+        """Template Method: Defines the skeleton of widget creation."""
+        # 1. Determine layout
+        horizontal = self.widget_has_trigger or self._force_horizontal()
+
+        # 2. Initialize Value
+        self._init_default_value()
+
+        # 3. Draw
+        with dpg.group(horizontal=horizontal):
+            self._draw_widget()
+            self._setup_interaction()
+            self._create_trigger_button()
+
+    def _draw_widget(self):
+        """Subclasses must implement the specific DPG draw call."""
+        raise NotImplementedError
+
+    def _force_horizontal(self):
+        """Hook for subclasses (like vectors) to force horizontal layout."""
+        return False
+
+    def _init_default_value(self):
+        """Subclasses can normalize default_value type here."""
+        if self.default_value is None:
+            self.default_value = self._get_zero_value()
+        self.value = self.default_value
+
+    def _get_zero_value(self):
+        """Fallback value if None provided."""
+        return None
+
+    def _setup_interaction(self):
+        """Binds callbacks to the generated UUIDs."""
+        if self.widget in ['spacer', 'label', 'table']:
+            return
+
+        # Specific widgets use 'clickable_changed', others 'value_changed'
+        clickable = ['checkbox', 'radio_group', 'button', 'combo', 'color_picker']
+
+        handler = self.clickable_changed if self.widget in clickable else \
+            lambda s, a, u: self.value_changed(a)
+
+        for uid in self.uuids:
+            dpg.set_item_user_data(uid, user_data=self)
+            dpg.set_item_callback(uid, callback=handler)
+
+    def _create_trigger_button(self):
+        if not self.widget_has_trigger:
+            return
+
+        cb = self.trigger_callback if self.trigger_callback else self.trigger_value
+        self.trigger_widget = dpg.add_button(label='', width=14, callback=cb)
+        if self.active_theme:
+            dpg.bind_item_theme(self.trigger_widget, self.active_theme)
+
+    # --- Core Logic (Visibility, Themes, Execution) ---
+
+    def trigger_value(self) -> None:
+        if self.node:
+            self.node.active_input = self.input
+            self.node.execute()
+            self.node.active_input = None
 
     def set_visibility(self, visibility_state: str = 'show_all') -> None:
-        if visibility_state == 'show_all':
-            if self.node.do_not_delete:
-                dpg.bind_item_theme(self.uuid, theme=Node.app.do_not_delete_theme)
-            else:
-                dpg.bind_item_theme(self.uuid, theme=Node.app.global_theme)
-            if self.widget != 'label':
-                dpg.enable_item(self.uuid)
-            if self.trigger_widget is not None:
-                dpg.bind_item_theme(self.trigger_widget, self.active_theme)
-                dpg.enable_item(self.trigger_widget)
-            elif self.widget == 'button':
-                dpg.bind_item_theme(self.uuid, self.active_theme)
+        # Determine themes based on state
+        item_theme = None
+        trigger_theme = None
+        enable_item = True
+        enable_trigger = True
 
+        if visibility_state == 'show_all':
+            if self.node and self.node.do_not_delete:
+                item_theme = self.node.app.do_not_delete_theme
+            else:
+                item_theme = self.node.app.global_theme
+            trigger_theme = self.active_theme
         elif visibility_state == 'widgets_only':
-            dpg.bind_item_theme(self.uuid, theme=Node.app.widget_only_theme)
+            item_theme = self.node.app.widget_only_theme
+            # Custom theme for trigger in widgets_only mode
+            # Note: In a real app, creating a theme every frame/call is bad for performance.
+            # Ideally this theme is cached, but keeping logic identical to source:
+            with dpg.theme() as t_theme:
+                with dpg.theme_component(dpg.mvAll):
+                    dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
+            trigger_theme = t_theme
+        else:  # Hidden
+            item_theme = self.node.app.invisible_theme
+            trigger_theme = self.node.app.invisible_theme
+            enable_item = False
+            enable_trigger = False
+
+        # Apply to main widget(s)
+        for uid in self.uuids:
+            dpg.bind_item_theme(uid, item_theme)
             if self.widget != 'label':
-                dpg.enable_item(self.uuid)
-            if self.trigger_widget is not None:
-                with dpg.theme() as item_theme:
-                    with dpg.theme_component(dpg.mvAll):
-                        dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
-                dpg.bind_item_theme(self.trigger_widget, item_theme)
+                if enable_item:
+                    dpg.enable_item(uid)
+                else:
+                    dpg.disable_item(uid)
+
+        # Apply to trigger
+        if self.trigger_widget:
+            dpg.bind_item_theme(self.trigger_widget, trigger_theme)
+            if enable_trigger:
                 dpg.enable_item(self.trigger_widget)
-        else:
-            dpg.bind_item_theme(self.uuid, theme=Node.app.invisible_theme)
-            if self.widget != 'label':
-                dpg.disable_item(self.uuid)
-            if self.trigger_widget is not None:
-                dpg.bind_item_theme(self.trigger_widget, theme=Node.app.invisible_theme)
+            else:
                 dpg.disable_item(self.trigger_widget)
+        elif self.widget == 'button':
+            if visibility_state != 'hidden':
+                dpg.bind_item_theme(self.uuid, self.active_theme)
 
     def set_active_theme(self, theme):
         self.active_theme = theme
-        if self.trigger_widget is not None:
+        if self.trigger_widget:
             dpg.bind_item_theme(self.trigger_widget, self.active_theme)
             dpg.enable_item(self.trigger_widget)
         elif self.widget == 'button':
             dpg.bind_item_theme(self.uuid, self.active_theme)
 
-    def create(self) -> None:
-        if self.widget in ['drag_float', 'slider_float', 'input_float', 'knob_float']:
-            if self.default_value is None:
-                self.default_value = 0.0
-            if type(self.default_value) is not float:
-                if type(self.default_value) is not int:
-                    self.default_value = 0.0
-            self.value = self.default_value
-        elif self.widget in ['drag_int', 'slider_int', 'input_int', 'knob_int']:
-            if self.default_value is None:
-                self.default_value = 0
-            if type(self.default_value) is not int:
-                if type(self.default_value) is not float:
-                    self.default_value = 0
-            self.value = self.default_value
-        elif self.widget in ['text_input', 'combo', 'radio_group', 'text_editor']:
-            if self.default_value is None:
-                self.default_value = ''
-            self.value = self.default_value
-        elif self.widget == 'checkbox':
-            if self.default_value is None:
-                self.default_value = False
-            if type(self.default_value) is not bool:
-                    self.default_value = False
-            self.value = self.default_value
+    def set_height(self, height):
+        if self.input and hasattr(self.input.widget, 'uuid'):
+            dpg.set_item_height(self.input.widget.uuid, height)
 
-        with dpg.group(horizontal=self.widget_has_trigger):
-            if self.widget == 'drag_float':
-                if self.min is not None:
-                    min = self.min
-                else:
-                    min = -math.inf
-                if self.max is not None:
-                    max = self.max
-                else:
-                    max = math.inf
-                dpg.add_drag_float(width=self.widget_width, clamped=True, label=self._label, tag=self.uuid, max_value=max, min_value=min, user_data=self.node, default_value=self.default_value, speed=self.speed)
-            elif self.widget == 'drag_int':
-                if self.min is not None:
-                    min = self.min
-                else:
-                    min = -math.inf
-                if self.max is not None:
-                    max = self.max
-                else:
-                    max = math.inf
-                dpg.add_drag_int(label=self._label, width=self.widget_width, tag=self.uuid, max_value=max, min_value=min, user_data=self.node, default_value=self.default_value)
-            elif self.widget == 'slider_float':
-                if self.min is not None:
-                    min = self.min
-                else:
-                    min = 0
-                if self.max is not None:
-                    max = self.max
-                else:
-                    max = 100
-                dpg.add_slider_float(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node, default_value=self.default_value, min_value=min, max_value=max)
-            elif self.widget == 'slider_int':
-                if self.min is not None:
-                    min = self.min
-                else:
-                    min = 0
-                    self.min = 0
-                if self.max is not None:
-                    max = self.max
-                else:
-                    max = 100
-                    self.max = 100
-                dpg.add_slider_int(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node, default_value=self.default_value, min_value=min, max_value=max)
-            elif self.widget == 'knob_float':
-                if self.min is not None:
-                    min = self.min
-                else:
-                    min = 0
-                    self.min = 0
-                if self.max is not None:
-                    max = self.max
-                else:
-                    max = 1.0
-                    self.max = 1.0
-                dpg.add_knob_float(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node, default_value=self.default_value, min_value=min, max_value=max)
-            elif self.widget == 'input_float':
-                if self.min is not None:
-                    min = self.min
-                else:
-                    min = sys.float_info.min
-                    self.min = min
-                if self.max is not None:
-                    max = self.max
-                else:
-                    max = sys.float_info.max
-                    self.max = max
-                dpg.add_input_float(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node, default_value=self.default_value, step=self.step, min_value=min, max_value=max)
-            elif self.widget == 'input_int':
-                if self.min is not None:
-                    min = self.min
-                else:
-                    min = 0
-                    self.min = 0
-                if self.max is not None:
-                    max = self.max
-                else:
-                    max = 2**31 - 1
-                    self.max = max
-                dpg.add_input_int(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node, default_value=self.default_value, step=self.step, min_value=min, max_value=max)
-            elif self.widget == 'checkbox':
-                check = dpg.add_checkbox(label=self._label, tag=self.uuid, default_value=self.default_value, user_data=self)
-                dpg.set_item_user_data(self.uuid, user_data=self)
-            elif self.widget == 'radio_group':
-                dpg.add_radio_button(self.combo_items, label=self._label, tag=self.uuid, user_data=self.node, horizontal=self.horizontal)
-            elif self.widget == 'button':
-                button = dpg.add_button(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node)
-                dpg.bind_item_theme(button, self.active_theme)
-            elif self.widget == 'text_input':
-                dpg.add_input_text(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node, default_value=self.default_value, on_enter=True)
-            elif self.widget == 'text_editor':
-                dpg.add_input_text(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node,
-                                   default_value=self.default_value, on_enter=False, multiline=True)
-            elif self.widget == 'combo':
-                dpg.add_combo(self.combo_items, label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node, default_value=self.default_value)
-            elif self.widget == 'color_picker':
-                dpg.add_color_picker(label='color', width=self.widget_width, display_type=dpg.mvColorEdit_float, tag=self.uuid, picker_mode=dpg.mvColorPicker_wheel, no_side_preview=False, no_alpha=False, alpha_bar=True, alpha_preview=dpg.mvColorEdit_AlphaPreviewHalf, user_data=self.node, no_inputs=True, default_value=self.default_value)
-            elif self.widget == 'list_box':
-                dpg.add_listbox(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node, num_items=8)
-            elif self.widget == 'spacer':
-                dpg.add_spacer(label='', height=13)
-            elif self.widget == 'label':
-                dpg.add_text(self._label, tag=self.uuid)
-            if self.widget in ['checkbox', 'radio_group', 'button', 'combo', 'color_picker']:
-                dpg.set_item_callback(self.uuid, callback=self.clickable_changed)
-            elif self.widget not in ['spacer', 'label']:
-                dpg.set_item_user_data(self.uuid, user_data=self)
-                dpg.set_item_callback(self.uuid, callback=lambda s, a, u: self.value_changed(a))
+    # --- Data Flow & Callbacks ---
 
-            if self.widget_has_trigger:
-                if self.trigger_callback is not None:
-                    self.trigger_widget = dpg.add_button(label='', width=14, callback=self.trigger_callback)
-                else:
-                    self.trigger_widget = dpg.add_button(label='', width=14, callback=self.trigger_value)
-
-                dpg.bind_item_theme(self.trigger_widget, self.active_theme)
-        return
-
-    def trigger_value(self) -> None:
-        self.node.active_input = self.input
-        self.node.execute()
-        self.node.active_input = None
-
-    def set_default_value(self, data: Any) -> None:
-        if self.widget in ['drag_float', 'slider_float', 'knob_float', 'input_float']:
-            self.default_value = any_to_float(data)
-        elif self.widget in ['drag_int', 'slider_int', 'knob_int', 'input_int']:
-            self.default_value = any_to_int(data)
-        elif self.widget == 'checkbox':
-            self.default_value = any_to_bool(data)
-        elif self.widget in ['text_input', 'combo', 'list_box', 'radio_group', 'text_editor']:
-            self.default_value = any_to_string(data)
-        elif self.widget == 'color_picker':
-            self.default_value = tuple(any_to_list(data))
-
-    def set_limits(self, min_: Union[int, float], max_: Union[int, float]) -> None:
-        self.min = min_
-        self.max = max_
-        dpg.configure_item(self.uuid, min_value=self.min, max_value=self.max)
-
-    def set_format(self, format: str) -> None:
-        dpg.configure_item(self.uuid, format=format)
-
-    def attach_to_variable(self, variable: 'Variable') -> None:
-        self.variable = variable
-
-    def attach_to_action(self, action: 'Action') -> None:
-        self.action = action
+    def _update_value_from_dpg(self):
+        if len(self.uuids) > 1:
+            self.value = [dpg.get_value(uid) for uid in self.uuids]
+        else:
+            self.value = dpg.get_value(self.uuid)
 
     def value_changed(self, uuid: int = -1, force: bool = False) -> None:
         if not dpg.is_mouse_button_down(0) and not force:
             return
-        hold_active_input = self.node.active_input
-        self.value = dpg.get_value(self.uuid)
+
+        hold_active_input = self.node.active_input if self.node else None
+
+        self._update_value_from_dpg()
+        self._propagate_changes(hold_active_input)
+
+    def clickable_changed(self) -> None:
+        self._update_value_from_dpg()
+        # Clickables don't check mouse down
+        self._propagate_changes(None)
+
+    def _propagate_changes(self, hold_active_input):
         if self.variable:
             self.variable.set_value(self.value)
-        if self.action is not None:
+        if self.action:
             self.action()
-        if self.callback is not None:
-            self.node.active_input = self.input
+
+        if self.callback:
+            if self.node: self.node.active_input = self.input
             self.callback()
-            self.node.active_input = hold_active_input
-        if self.triggers_execution and not self.node.in_loading_process:
+            if self.node: self.node.active_input = hold_active_input
+
+        if self.triggers_execution and self.node and not self.node.in_loading_process:
             self.node.active_input = self.input
             self.node.execute()
             self.node.active_input = hold_active_input
+
+    def set(self, data: Any, propagate: bool = True) -> None:
+        """Abstract set. Subclasses implement _convert_and_set."""
+        self._convert_and_set(data)
+
+        if self.variable and propagate:
+            self.variable.set_value(self.value)
+        if self.action and propagate:
+            self.action()
+
+    def _convert_and_set(self, data):
+        """Override in subclasses."""
+        pass
+
+    # --- Public API Utils ---
 
     def set_label(self, name: str) -> None:
         self._label = name
         dpg.set_item_label(self.uuid, name)
 
-    def clickable_changed(self) -> None:
-        self.value = dpg.get_value(self.uuid)
-        if self.variable:
-            self.variable.set_value(self.value)
-        if self.action is not None:
-            self.action()
-        if self.callback is not None:
-            self.callback()
-        if self.triggers_execution:
-            self.node.active_input = self.input
-            self.node.execute()
-            self.node.active_input = None
+    def set_limits(self, min_: Union[int, float], max_: Union[int, float]) -> None:
+        # Base implementation, overridden by scalars
+        pass
+
+    def set_format(self, format: str) -> None:
+        pass
+
+    def attach_to_variable(self, variable) -> None:
+        self.variable = variable
+
+    def attach_to_action(self, action) -> None:
+        self.action = action
 
     def increment(self) -> None:
-        if self.widget == 'checkbox':
-            val = dpg.get_value(self.uuid)
-            val = not val
-            self.set(val)
-        elif self.widget in ['drag_int', 'slider_int', 'input_int', 'knob_int']:
-            val = dpg.get_value(self.uuid)
-            self.set(val + self.speed)
-        elif self.widget in ['drag_float', 'slider_float', 'input_float', 'knob_float']:
-            val = dpg.get_value(self.uuid)
-            self.set(val + self.speed)
-        elif self.widget == 'combo':
-            val = dpg.get_value(self.uuid)
-            index = self.combo_items.index(val)
-            index += 1
-            if index < len(self.combo_items):
-                val = self.combo_items[index]
-                self.set(val)
-        # else:
-        #     self.node.increment_widget(self.widget)
-        # if self.callback is not None:
-        #     self.callback()
+        pass
 
     def decrement(self) -> None:
-        if self.widget == 'checkbox':
-            val = dpg.get_value(self.uuid)
-            val = not val
-            self.set(val)
-        elif self.widget in ['drag_int', 'slider_int', 'input_int', 'knob_int']:
-            val = dpg.get_value(self.uuid)
-            self.set(val - self.speed)
-        elif self.widget in ['drag_float', 'slider_float', 'input_float', 'knob_float']:
-            val = dpg.get_value(self.uuid)
-            self.set(val - self.speed)
-        elif self.widget == 'combo':
-            val = dpg.get_value(self.uuid)
-            index = self.combo_items.index(val)
-            index -= 1
-            if index >= 0:
-                val = self.combo_items[index]
-                self.set(val)
-        # else:
-        #     self.node.decrement_widget(self.widget)
-        # if self.callback is not None:
-        #     self.callback()
+        pass
 
     def get_text_width(self, pad: int = 12, minimum_width: int = 100) -> float:
         ttt = any_to_string(self.value)
-        font_id = dpg.get_item_font(self.uuid)
-        size = dpg.get_text_size(ttt, font=font_id)
-        width = minimum_width
-        if size is not None:
-            width = size[0] + pad
-        font_scale = 1.0
-        if font_id is not None:
-            font_scale = Node.app.font_scale_variable()
-        if width < minimum_width / font_scale:
-            width = minimum_width / font_scale
-        return width * font_scale
+        return self._calculate_width(ttt, pad, minimum_width)
 
     def get_label_width(self, pad: int = 12, minimum_width: int = 100) -> float:
         label = dpg.get_item_label(self.uuid)
+        return self._calculate_width(label, pad, minimum_width)
+
+    def _calculate_width(self, text, pad, minimum_width):
         font_id = dpg.get_item_font(self.uuid)
-        size = dpg.get_text_size(label, font=font_id)
+        size = dpg.get_text_size(text, font=font_id)
         width = minimum_width
         if size is not None:
             width = size[0] + pad
         font_scale = 1.0
-        if font_id is not None:
-            font_scale = Node.app.font_scale_variable()
+        if font_id is not None and self.node:
+            font_scale = self.node.app.font_scale_variable()
         if width < minimum_width / font_scale:
             width = minimum_width / font_scale
         return width * font_scale
@@ -830,125 +764,505 @@ class PropertyWidget:
             dpg.configure_item(self.uuid, width=width)
         return width
 
-    def set(self, data: Any, propagate: bool = True) -> None:
-        if self.widget == 'checkbox':
-            if data == 'bang':
-                val = not self.value
-                dpg.set_value(self.uuid, val)
-                self.value = val
-            else:
-                val = any_to_bool(data)
-                dpg.set_value(self.uuid, val)
-                self.value = val
-        elif self.widget in ['combo', 'radio_group']:
-            val = any_to_string(data)
-            dpg.set_value(self.uuid, val)
-            self.value = val
-        elif self.widget == 'list_box':
-            val = any_to_string(data)
-            dpg.set_value(self.uuid, val)
-            self.value = val
-        elif self.widget in ['text_input', 'text_editor']:
-            if type(data) == list:
-                if len(data) > 0 and type(data[0]) == list:
-                    val = str(data)
-                else:
-                    val = any_to_string(data, strip_returns=(self.widget != 'text_editor'))
-            else:
-                if type(data) == str and data == '\n':
-                    val = data
-                else:
-                    val = any_to_string(data, strip_returns=(self.widget != 'text_editor'))
-            dpg.set_value(self.uuid, val)
-            self.value = val
-            # self.adjust_to_text_width(max=2048)
-        elif self.widget in ['drag_int', 'input_int', 'slider_int', 'knob_int']:
-            if is_number(data):
-                val = any_to_int(data)
-                if val:
-                    if self.min != self.max:
-                        if self.max and val > self.max:
-                            val = self.max
-                        if self.min and val < self.min:
-                            val = self.min
-                dpg.set_value(self.uuid, val)
-                self.value = val
-            elif type(data) == bool:
-                if data:
-                    val = 1
-                else:
-                    val = 0
-                dpg.set_value(self.uuid, val)
-                self.value = val
-        elif self.widget in ['drag_float', 'input_float', 'slider_float', 'knob_float']:
-            if is_number(data):
-                val = any_to_float(data)
-                if val:
-                    if self.min != self.max:
-                        if self.max and val > self.max:
-                            val = self.max
-                        if self.min and val < self.min:
-                            val = self.min
-                dpg.set_value(self.uuid, val)
-                self.value = val
-            elif type(data) == bool:
-                if data:
-                    val = 1
-                else:
-                    val = 0
-                dpg.set_value(self.uuid, val)
-                self.value = val
-        elif self.widget == 'color_picker':
-            if type(data) != tuple:
-                val = tuple(any_to_array(data))
-            else:
-                val = data
-            dpg.set_value(self.uuid, val)
-            self.value = val
-        elif self.widget == 'label':
-            label_string = any_to_string(data)
-            dpg.set_value(self.uuid, label_string)
-        if self.variable and propagate:
-            self.variable.set_value(self.value)
-        if self.action and propagate:
-            self.action()
+    def set_font(self, font: Any) -> None:
+        dpg.bind_item_font(self.uuid, font)
+
+    # --- Load / Save ---
 
     def load(self, widget_container: Dict[str, Any]) -> None:
         if 'value' in widget_container:
-            val = widget_container['value']
-            self.set(val)
+            self.set(widget_container['value'])
 
     def save(self, widget_container: Dict[str, Any]) -> None:
         property_label = self._label.strip('#')
         widget_container['name'] = property_label
-        value = dpg.get_value(self.uuid)
+
+        # Get value directly from DPG to ensure sync
+        if len(self.uuids) > 1:
+            value = [dpg.get_value(u) for u in self.uuids]
+        else:
+            value = dpg.get_value(self.uuid)
+
         widget_container['value'] = value
+
         value_type = type(value).__name__
         if value_type == 'str':
             widget_container['value_type'] = 'string'
         else:
             widget_container['value_type'] = value_type
 
-    def get_as_float(self, data: Any) -> float:
+    # --- Helpers ---
+    def get_as_float(self, data):
         return any_to_float(data)
 
-    def get_as_bool(self, data: Any) -> bool:
+    def get_as_bool(self, data):
         return any_to_bool(data)
 
-    def get_as_string(self, data: Any) -> str:
+    def get_as_string(self, data):
         return any_to_string(data)
 
-    def get_as_list(self, data: Any) -> List[Any]:
+    def get_as_list(self, data):
         return any_to_list(data)
 
-    def get_as_int(self, data: Any) -> int:
+    def get_as_int(self, data):
         return any_to_int(data)
 
-    def get_as_array(self, data: Any) -> np.ndarray:
+    def get_as_array(self, data):
         return any_to_array(data)
 
-    def set_font(self, font: Any) -> None:
-        dpg.bind_item_font(self.uuid, font)
+    def set_default_value(self, data):
+        self.default_value = data  # Generic fallback
+
+
+# --- 2. Intermediate Category Classes ---
+
+class ScalarWidget(BasePropertyWidget):
+    """Base for Float and Int widgets handling clamping and limits."""
+
+    def __init__(self, *args, min=None, max=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.min = min
+        self.max = max
+        # Defaults for step/speed are handled in concrete classes or kwargs
+
+    def set_limits(self, min_: Union[int, float], max_: Union[int, float]) -> None:
+        self.min = min_
+        self.max = max_
+        dpg.configure_item(self.uuid, min_value=self.min, max_value=self.max)
+
+    def _clamp(self, val):
+        if val is None: return val
+        if self.min is not None and val < self.min: return self.min
+        if self.max is not None and val > self.max: return self.max
+        return val
+
+    def _get_limits(self, default_min, default_max):
+        # Logic from original create() to determine dpg args
+        mn = self.min if self.min is not None else default_min
+        mx = self.max if self.max is not None else default_max
+        return mn, mx
+
+    def set_format(self, format: str) -> None:
+        dpg.configure_item(self.uuid, format=format)
+
+    def set_speed(self, speed: float) -> None:
+        dpg.configure_item(self.uuid, speed=speed)
+
+
+
+class NumericInteractionWidget(ScalarWidget):
+    """Adds increment/decrement logic."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.speed = 1
+        self.step = 1
+
+    def increment(self) -> None:
+        val = dpg.get_value(self.uuid)
+        self.set(val + self.speed)
+
+    def decrement(self) -> None:
+        val = dpg.get_value(self.uuid)
+        self.set(val - self.speed)
+
+
+# --- 3. Specific Implementations ---
+
+class FloatWidget(NumericInteractionWidget):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Original logic: drag_float defaults speed 0.01, others 1
+        if self.widget and self.widget.startswith('drag_float'):
+            self.speed = 0.01
+        if self.widget == 'input_float':
+            self.step = 0.1
+
+    def _get_zero_value(self):
+        return 0.0
+
+    def set_default_value(self, data):
+        self.default_value = any_to_float(data)
+
+    def _convert_and_set(self, data):
+        if is_number(data):
+            val = any_to_float(data)
+            if val is not None:
+                val = self._clamp(val)
+            dpg.set_value(self.uuid, val)
+            self.value = val
+        elif isinstance(data, bool):
+            val = 1.0 if data else 0.0
+            dpg.set_value(self.uuid, val)
+            self.value = val
+
+
+class DragFloat(FloatWidget):
+    def _draw_widget(self):
+        mn, mx = self._get_limits(-math.inf, math.inf)
+        dpg.add_drag_float(width=self.widget_width, clamped=True, label=self._label,
+                           tag=self.uuid, max_value=mx, min_value=mn, user_data=self.node,
+                           default_value=self.default_value, speed=self.speed)
+
+
+class SliderFloat(FloatWidget):
+    def _draw_widget(self):
+        mn, mx = self._get_limits(0.0, 100.0)
+        dpg.add_slider_float(label=self._label, width=self.widget_width, tag=self.uuid,
+                             user_data=self.node, default_value=self.default_value,
+                             min_value=mn, max_value=mx)
+
+
+class KnobFloat(FloatWidget):
+    def _draw_widget(self):
+        if self.min is None: self.min = 0
+        if self.max is None: self.max = 1.0
+        dpg.add_knob_float(label=self._label, width=self.widget_width, tag=self.uuid,
+                           user_data=self.node, default_value=self.default_value,
+                           min_value=self.min, max_value=self.max)
+
+    def set_format(self, format: str) -> None:
+        pass
+
+
+class InputFloat(FloatWidget):
+    def _draw_widget(self):
+        if self.min is None: self.min = sys.float_info.min
+        if self.max is None: self.max = sys.float_info.max
+        dpg.add_input_float(label=self._label, width=self.widget_width, tag=self.uuid,
+                            user_data=self.node, default_value=self.default_value,
+                            step=self.step, min_value=self.min, max_value=self.max)
+
+
+class IntWidget(NumericInteractionWidget):
+    def _get_zero_value(self):
+        return 0
+
+    def set_default_value(self, data):
+        self.default_value = any_to_int(data)
+
+    def _convert_and_set(self, data):
+        if is_number(data):
+            val = any_to_int(data)
+            if val is not None:
+                val = self._clamp(val)
+            dpg.set_value(self.uuid, val)
+            self.value = val
+        elif isinstance(data, bool):
+            val = 1 if data else 0
+            dpg.set_value(self.uuid, val)
+            self.value = val
+
+
+class DragInt(IntWidget):
+    def _draw_widget(self):
+        mn, mx = self._get_limits(-math.inf, math.inf)
+        dpg.add_drag_int(label=self._label, width=self.widget_width, tag=self.uuid,
+                         max_value=mx, min_value=mn, user_data=self.node,
+                         default_value=self.default_value)
+
+
+class SliderInt(IntWidget):
+    def _draw_widget(self):
+        # Original logic set default limits to 0-100 AND updated self.min/max
+        if self.min is None: self.min = 0
+        if self.max is None: self.max = 100
+        dpg.add_slider_int(label=self._label, width=self.widget_width, tag=self.uuid,
+                           user_data=self.node, default_value=self.default_value,
+                           min_value=self.min, max_value=self.max)
+
+
+class InputInt(IntWidget):
+    def _draw_widget(self):
+        if self.min is None: self.min = 0
+        if self.max is None: self.max = 2 ** 31 - 1
+        dpg.add_input_int(label=self._label, width=self.widget_width, tag=self.uuid,
+                          user_data=self.node, default_value=self.default_value,
+                          step=self.step, min_value=self.min, max_value=self.max)
+
+    def set_format(self, format: str) -> None:
+        pass
+
+class CheckboxWidget(BasePropertyWidget):
+    def _get_zero_value(self):
+        return False
+
+    def _draw_widget(self):
+        dpg.add_checkbox(label=self._label, tag=self.uuid,
+                         default_value=self.default_value, user_data=self)
+
+    def set_default_value(self, data):
+        self.default_value = any_to_bool(data)
+
+    def _convert_and_set(self, data):
+        if data == 'bang':
+            val = not self.value
+        else:
+            val = any_to_bool(data)
+        dpg.set_value(self.uuid, val)
+        self.value = val
+
+    def increment(self):  # Toggle
+        val = not dpg.get_value(self.uuid)
+        self.set(val)
+
+    def decrement(self):  # Toggle
+        self.increment()
+
+
+class StringWidget(BasePropertyWidget):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Combo items stored here
+        self.combo_items = []
+
+    def _get_zero_value(self):
+        return ""
+
+    def set_default_value(self, data):
+        self.default_value = any_to_string(data)
+
+    def _convert_and_set(self, data, strip=True):
+        # Specialized set handling
+        if isinstance(data, list) and len(data) > 0 and isinstance(data[0], list):
+            val = str(data)
+        elif isinstance(data, str) and data == '\n':
+            val = data
+        else:
+            val = any_to_string(data, strip_returns=strip)
+        dpg.set_value(self.uuid, val)
+        self.value = val
+
+
+class TextInput(StringWidget):
+    def _draw_widget(self):
+        dpg.add_input_text(label=self._label, width=self.widget_width, tag=self.uuid,
+                           user_data=self.node, default_value=self.default_value, on_enter=True)
+
+    def _convert_and_set(self, data):
+        super()._convert_and_set(data, strip=True)
+
+
+class TextEditor(StringWidget):
+    def _draw_widget(self):
+        dpg.add_input_text(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node,
+                           default_value=self.default_value, on_enter=False, multiline=True)
+
+    def _convert_and_set(self, data):
+        super()._convert_and_set(data, strip=False)
+
+
+class SelectorWidget(StringWidget):
+    """Base for Combos and Radio Groups."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.horizontal_layout = kwargs.get('horizontal', False)
+
+    def _convert_and_set(self, data):
+        val = any_to_string(data)
+        dpg.set_value(self.uuid, val)
+        self.value = val
+
+    def increment(self):
+        val = dpg.get_value(self.uuid)
+        try:
+            idx = self.combo_items.index(val)
+            if idx + 1 < len(self.combo_items):
+                self.set(self.combo_items[idx + 1])
+        except ValueError:
+            pass
+
+    def decrement(self):
+        val = dpg.get_value(self.uuid)
+        try:
+            idx = self.combo_items.index(val)
+            if idx - 1 >= 0:
+                self.set(self.combo_items[idx - 1])
+        except ValueError:
+            pass
+
+
+class Combo(SelectorWidget):
+    def _draw_widget(self):
+        dpg.add_combo(self.combo_items, label=self._label, width=self.widget_width,
+                      tag=self.uuid, user_data=self.node, default_value=self.default_value)
+
+
+class RadioGroup(SelectorWidget):
+    def _draw_widget(self):
+        dpg.add_radio_button(self.combo_items, label=self._label, tag=self.uuid,
+                             user_data=self.node, horizontal=self.horizontal_layout)
+
+
+class ListBox(SelectorWidget):
+    def _draw_widget(self):
+        dpg.add_listbox(label=self._label, width=self.widget_width, tag=self.uuid,
+                        user_data=self.node, num_items=8)
+
+
+class ColorPicker(BasePropertyWidget):
+    def _get_zero_value(self):
+        return (0, 0, 0, 255)
+
+    def set_default_value(self, data):
+        self.default_value = tuple(any_to_list(data))
+
+    def _draw_widget(self):
+        dpg.add_color_picker(label='color', width=self.widget_width, display_type=dpg.mvColorEdit_float,
+                             tag=self.uuid, picker_mode=dpg.mvColorPicker_wheel, no_side_preview=False,
+                             no_alpha=False, alpha_bar=True, alpha_preview=dpg.mvColorEdit_AlphaPreviewHalf,
+                             user_data=self.node, no_inputs=True, default_value=self.default_value)
+
+    def _convert_and_set(self, data):
+        if not isinstance(data, tuple):
+            val = tuple(any_to_array(data))
+        else:
+            val = data
+        dpg.set_value(self.uuid, val)
+        self.value = val
+
+
+class Button(BasePropertyWidget):
+    def _draw_widget(self):
+        btn = dpg.add_button(label=self._label, width=self.widget_width, tag=self.uuid, user_data=self.node)
+        if self.active_theme:
+            dpg.bind_item_theme(btn, self.active_theme)
+
+
+class Label(BasePropertyWidget):
+    def _draw_widget(self):
+        dpg.add_text(self._label, tag=self.uuid)
+
+    def _convert_and_set(self, data):
+        label_string = any_to_string(data)
+        dpg.set_value(self.uuid, label_string)
+
+
+class Spacer(BasePropertyWidget):
+    def _draw_widget(self):
+        dpg.add_spacer(label='', height=13)
+
+
+class TableWidget(BasePropertyWidget):
+    def __init__(self, *args, rows=1, columns=1, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.rows = rows
+        self.columns = columns
+
+    def _draw_widget(self):
+        with dpg.table(tag="table", header_row=False, width=300):
+            for i in range(self.columns):
+                dpg.add_table_column()
+            for i in range(self.rows):
+                with dpg.table_row():
+                    for j in range(self.columns):
+                        dpg.add_text('0', tag=f"cell_{i}_{j}")
+
+    def set_format(self, format: str) -> None:
+        dpg.configure_item(self.uuid, format=format)
+
+
+class DragFloatN(ScalarWidget):
+    def __init__(self, *args, columns=1, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.columns = columns
+        # Generate extra UUIDs
+        for _ in range(self.columns - 1):
+            self.uuids.append(dpg.generate_uuid())
+        self.speed = 0.01
+
+    def _force_horizontal(self):
+        return True
+
+    def _get_zero_value(self):
+        return [0.0] * self.columns
+
+    def _draw_widget(self):
+        mn, mx = self._get_limits(-math.inf, math.inf)
+        # Default value comes as list from init
+        for i in range(self.columns):
+            val = self.default_value[0] if self.default_value else 0.0
+            dpg.add_drag_float(width=self.widget_width, clamped=True, tag=self.uuids[i],
+                               max_value=mx, min_value=mn, user_data=self.node,
+                               default_value=val, speed=self.speed)
+
+    def _convert_and_set(self, data):
+        if isinstance(data, list):
+            if len(data) == 1 and is_number(data[0]):
+                self._apply_val_to_all(any_to_float(data[0]))
+                self.value = data
+            elif len(data) == self.columns:
+                vals = []
+                for index, datum in enumerate(data):
+                    if is_number(datum):
+                        val = self._clamp(any_to_float(datum))
+                        dpg.set_value(self.uuids[index], val)
+                        vals.append(val)
+                self.value = vals
+        elif is_number(data):
+            val = any_to_float(data)
+            self._apply_val_to_all(val)
+            self.value = data
+
+    def _apply_val_to_all(self, val):
+        clamped = self._clamp(val)
+        for uuid in self.uuids:
+            dpg.set_value(uuid, clamped)
+
+    def set_format(self, format: str) -> None:
+        for uuid in self.uuids:
+            dpg.configure_item(uuid, format=format)
+
+
+
+# --- 4. The Factory ---
+
+class WidgetFactory:
+    """
+    Replaces the monolithic __init__ dispatch.
+    Usage: widget = WidgetFactory.create('drag_float', label="My Float", node=self, ...)
+    """
+    _REGISTRY = {
+        'drag_float': DragFloat,
+        'slider_float': SliderFloat,
+        'knob_float': KnobFloat,
+        'input_float': InputFloat,
+        'drag_int': DragInt,
+        'slider_int': SliderInt,
+        'input_int': InputInt,
+        'checkbox': CheckboxWidget,
+        'text_input': TextInput,
+        'text_editor': TextEditor,
+        'combo': Combo,
+        'radio_group': RadioGroup,
+        'list_box': ListBox,
+        'color_picker': ColorPicker,
+        'button': Button,
+        'label': Label,
+        'spacer': Spacer,
+        'table': TableWidget,
+        'drag_float_n': DragFloatN
+    }
+
+    @staticmethod
+    def create(widget_type, label, **kwargs) -> BasePropertyWidget:
+        # Handle specific logic for kwargs that was in original init
+        # e.g., converting rows/columns from kwargs
+
+        widget_class = WidgetFactory._REGISTRY.get(widget_type)
+        if widget_class is None:
+            # Fallback or error handling. Returning base to avoid crash, though it won't draw much.
+            return BasePropertyWidget(label, widget_type=widget_type, **kwargs)
+
+        return widget_class(label, widget_type=widget_type, **kwargs)
+
+
+# --- Backwards Compatibility Wrapper (Optional) ---
+# If you don't want to change the code instantiation in Node class, use this:
+
+def PropertyWidget(label: str = "", uuid=None, node=None, widget_type=None, **kwargs):
+    return WidgetFactory.create(widget_type, label, uuid=uuid, node=node, **kwargs)
 
 
 class NodeInput:
@@ -961,7 +1275,7 @@ class NodeInput:
     _pin_active_bang_theme = None
     _pin_theme_created = False
 
-    def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None):
+    def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, **kwargs):
         if not self._pin_theme_created:
             self.create_pin_themes()
         self._label = label
@@ -992,7 +1306,7 @@ class NodeInput:
         self.widget_has_trigger = trigger_button
         self.trigger_widget = None
         if widget_type:
-            self.widget = PropertyWidget(label, uuid=widget_uuid, node=node, widget_type=widget_type, width=widget_width, triggers_execution=triggers_execution, trigger_button=trigger_button, default_value=default_value, min=min, max=max)
+            self.widget = PropertyWidget(label, uuid=widget_uuid, node=node, widget_type=widget_type, width=widget_width, triggers_execution=triggers_execution, trigger_button=trigger_button, default_value=default_value, min=min, max=max, **kwargs)
             self.widget.input = self
         self.callback = None
         self.trigger_callback = None
@@ -1147,6 +1461,10 @@ class NodeInput:
             self._parents.remove(parent)
 
     def receive_data(self, data: Any, orig_type: Optional[Type] = None) -> None:
+        # if Node.app.trace:
+        #     Node.app.increment_trace_indent()
+        #     print(Node.app.trace_indent, end='')
+        #     print('->', self.node.label + ':[' + self.get_label() + ']')
         if data is not None:
             if orig_type is None:
                 self.received_type = type(data)
@@ -1195,7 +1513,12 @@ class NodeInput:
                     self.callback()
                 self.received_bang = False
                 self.node.active_input = None
+        else:
+            self._data = data
+            self.fresh_input = True
         self.received_bang = False
+        # if Node.app.trace:
+        #     Node.app.decrement_trace_indent()
 
     def conform_to_accepted_types(self, data: Any) -> Any:
         if self.accepted_types:
@@ -1208,7 +1531,13 @@ class NodeInput:
     def trigger(self) -> None:
         if self.triggers_execution and not self.node.message_handled:
             self.node.active_input = self
+            if Node.app.trace:
+                Node.app.increment_trace_indent()
+                # print(Node.app.trace_indent, end='')
+                # print('>> ' + self.node.label + ':[' + self.get_label() + ']')
             self.node.execute()
+            if Node.app.trace:
+                Node.app.decrement_trace_indent()
             self.node.active_input = None
         else:
             self.node.message_handled = False
@@ -1241,6 +1570,8 @@ class NodeInput:
             else:
                 if self.widget is not None and self.widget.widget in ['text_input', 'combo', 'radio_group', 'text_editor']:
                     data = any_to_string(data)
+                elif self.widget is not None and self.widget.widget == 'drag_float_n':
+                    pass
                 else:
                     data = data[0]
         self._data = data
@@ -1526,6 +1857,7 @@ class Node:
         self.message_handlers = {}
         self.message_handlers['set_preset'] = self.set_preset_state
         self.message_handlers['get_preset'] = self.get_preset_state
+        self.message_handlers['options'] = self.show_options
         self.message_handled = False
 
         self.property_registery = {}
@@ -1547,6 +1879,7 @@ class Node:
         self.active_input = None
         self.in_loading_process = False
         self.show_options_check = None
+        self.help_file_name = None
         if Node.active_theme is None:
             self.create_button_themes()
 
@@ -1687,8 +2020,7 @@ class Node:
         pass
 
     def send_all(self) -> None:
-        for i in range(len(self.outputs)):
-            j = len(self.outputs) - i - 1
+        for j in reversed(range(len(self.outputs))):
             output = self.outputs[j]
             output.send_internal()  # should not always trigger!!! make flag to indicate trigger always or trigger on change...
 
@@ -1742,6 +2074,24 @@ class Node:
     def set_preset_state(self, preset):
         pass
 
+    def get_help(self):
+        if os.path.exists('dpg_system/help'):
+            if self.help_file_name is not None:
+                temp_path = 'dpg_system/help/' + self.help_file_name + '.json'
+            else:
+                temp_path = 'dpg_system/help/' + self.label + '_help.json'
+            if os.path.exists(temp_path):
+                # if patcher is already open?
+                tabs = Node.app.tabs
+                for tab in tabs:
+                    config = dpg.get_item_configuration(tab)
+                    if 'label' in config:
+                        title = config['label']
+                        if title == self.label + '_help':
+                            Node.app.select_tab(tab)
+                            return
+                Node.app.load_from_file(temp_path)
+
     def add_display(self, label: str = "", uuid=None, width=80, callback=None):
         new_display = NodeDisplay(label, uuid, self, width)
         self.displays.append(new_display)
@@ -1784,8 +2134,10 @@ class Node:
                  trigger_button: bool = False, default_value: Any = None,
                  min: Optional[float] = None, max: Optional[float] = None,
                  callback: Optional[Callable] = None,
-                 trigger_callback: Optional[Callable] = None) -> 'NodeInput':
-        new_input = NodeInput(label, uuid, self, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max)
+                 trigger_callback: Optional[Callable] = None,
+                 **kwargs) -> 'NodeInput':
+        # print('add_input()', kwargs)
+        new_input = NodeInput(label, uuid, self, widget_type, widget_uuid, widget_width, triggers_execution, trigger_button, default_value, min, max, **kwargs)
         self.install_input(new_input, callback=callback, trigger_callback=trigger_callback)
         return new_input
 
@@ -1924,16 +2276,21 @@ class Node:
 
     def add_handler_to_widgets(self):
         for input_ in self.inputs:
-            if input_.widget and input_.widget.widget not in['checkbox', 'button', 'combo', 'knob_float', 'knob_int', 'label']:
-                dpg.bind_item_handler_registry(input_.widget.uuid, "widget handler")
+            if input_.widget and input_.widget.widget not in['checkbox', 'button', 'combo', 'knob_float', 'label', 'table']:
+                for uuid in input_.widget.uuids:
+                    dpg.bind_item_handler_registry(uuid, "widget handler")
 
         for property_ in self.properties:
-            if property_.widget.widget not in ['checkbox', 'button', 'spacer', 'label']:
-                dpg.bind_item_handler_registry(property_.widget.uuid, "widget handler")
+            if property_.widget.widget not in ['checkbox', 'button', 'spacer', 'label', 'table']:
+                for uuid in property_.widget.uuids:
+                    dpg.bind_item_handler_registry(uuid, "widget handler")
+                # dpg.bind_item_handler_registry(property_.widget.uuid, "widget handler")
 
         for option in self.options:
-            if option.widget.widget not in ['checkbox', 'button', 'spacer', 'label']:
-                dpg.bind_item_handler_registry(option.widget.uuid, "widget handler")
+            if option.widget.widget not in ['checkbox', 'button', 'spacer', 'label', 'table']:
+                for uuid in option.widget.uuids:
+                    dpg.bind_item_handler_registry(uuid, "widget handler")
+                # dpg.bind_item_handler_registry(option.widget.uuid, "widget handler")
 
 
     def value_changed(self, widget_uuid, force=False):
@@ -1980,7 +2337,6 @@ class Node:
                 self.update_parsed_args()
             else:
                 self.custom_create(from_file)
-
         dpg.set_item_user_data(self.uuid, self)
         self.add_handler_to_widgets()
         for option_att in self.options:
@@ -2047,6 +2403,18 @@ class Node:
                     dpg.hide_item(option_att.uuid)
                     dpg.hide_item(option_att.widget.uuid)
 
+    def show_options(self, message, value) -> None:
+        if len(self.options) > 0:
+            value = any_to_int(value)
+            if value:
+                for option_att in self.options:
+                    dpg.show_item(option_att.uuid)
+                    dpg.show_item(option_att.widget.uuid)
+            else:
+                for option_att in self.options:
+                    dpg.hide_item(option_att.uuid)
+                    dpg.hide_item(option_att.widget.uuid)
+
     def check_for_messages(self, in_data: Union[str, List[Any]]) -> bool:
         self.message_handled = False
         if len(self.message_handlers) > 0:
@@ -2067,11 +2435,6 @@ class Node:
                 if message in self.message_handlers:
                     self.message_handlers[message](message, message_data)
                     self.message_handled = True
-                # else:  # maybe two words in message header
-                #     message = ' '.join(message.split('_'))
-                #     if message in self.message_handlers:
-                #         self.message_handlers[message](message, message_data)
-                #         handled = True
         return self.message_handled
 
     def save_custom(self, container: Dict[str, Any]):
@@ -2249,15 +2612,15 @@ class Node:
     def update_parameters_from_widgets(self) -> None:
         pass
 
-    def set_value(self, uuid: int, type: Any, input: Any) -> None:
-        if type in ['drag_float', 'input_float', 'slider_float', 'knob_float']:
-            dpg.set_value(uuid, any_to_float(input))
-        elif type in ['drag_int', 'input_int', 'slider_int', 'knob_int']:
-            dpg.set_value(uuid, any_to_int(input))
-        elif type in ['input_text']:
-            dpg.set_value(uuid, any_to_string(input))
-        elif type in ['toggle']:
-            dpg.set_value(uuid, any_to_bool(input))
+    # def set_value(self, uuid: int, type: Any, input: Any) -> None:
+    #     if type in ['drag_float', 'input_float', 'slider_float', 'knob_float']:
+    #         dpg.set_value(uuid, any_to_float(input))
+    #     elif type in ['drag_int', 'input_int', 'slider_int']:
+    #         dpg.set_value(uuid, any_to_int(input))
+    #     elif type in ['input_text']:
+    #         dpg.set_value(uuid, any_to_string(input))
+    #     elif type in ['toggle']:
+    #         dpg.set_value(uuid, any_to_bool(input))
 
     def parse_args(self) -> None:
         self.ordered_args = []
@@ -2450,10 +2813,8 @@ class PatcherNode(Node):
             s, t = decode_arg(args, 0)
             if t == str:
                 self.patcher_name = s
-                # print('patcher name', s)
         self.home_editor = self.app.get_current_editor()
         self.home_editor_index = self.app.current_node_editor
-        # print('init', self.patcher_name, self.home_editor)
         self.patch_editor = None
         text_size = dpg.get_text_size(text=self.patcher_name)
         if text_size is None:
@@ -2481,7 +2842,7 @@ class PatcherNode(Node):
         new_name = self.name_option()
         self.unparsed_args = [new_name]
         self.button.set_label(new_name)
-        size = dpg.get_text_size(new_name, font=self.app.default_font)
+        size = dpg.get_text_size(new_name, font=self.app.font_24)
         if size is not None:
             dpg.set_item_width(self.button.widget.uuid, int(size[0] * self.app.font_scale_variable() + 12))
 
@@ -2569,15 +2930,11 @@ class PatcherNode(Node):
 
     def custom_create(self, from_file: bool) -> None:
         if not from_file:
-            # hold_current_patcher = self.app.get_current_editor()
             self.patch_editor = self.app.add_node_editor()
             self.patch_editor.set_name(self.patcher_name)
             self.app.set_tab_title(len(self.app.node_editors) - 1, self.patcher_name)
 
-            # self.home_editor.add_subpatch(self.patch_editor)
             self.connect()
-            # self.app.current_node_editor = hold_current_patcher
-            # self.app.select_editor_tab(self.app.current_node_editor)
 
         # note that this happens before custom load setup... so 'self.subpatcher_loaded_uuid' is not yet valid
         # self.patch_editor = self.app.find_orphaned_subpatch(self.patcher_name, self.subpatcher_loaded_uuid)
@@ -2998,269 +3355,13 @@ class PlaceholderArgsNode(Node):
                 else:
                     Node.app.create_node_by_name(new_node_args[0], self, )
 
-# class PlaceholderNode(Node):
-#     node_list: List[str] = []
-#
-#     @staticmethod
-#     def factory(name: str, data: Any, args: Optional[List[str]] = None) -> 'PlaceholderNode':
-#         node = PlaceholderNode('New Node', data, args)
-#         return node
-#
-#     def __init__(self, label: str, data: Any, args: Optional[List[str]]) -> None:
-#         super().__init__(label, data, args)
-#         self.filtered_list: List[str] = []
-#         self.name_property = self.add_property(label='##node_name', widget_type='text_input', width=180)
-#         self.static_name = self.add_property(label='##static_name', widget_type='label', width=180)
-#         self.args_property = self.add_property(label='args', widget_type='text_input', width=180)
-#         if len(self.node_list) == 0:
-#             self.node_list = self.app.node_factory_container.get_node_list()
-#         self.variable_list = self.app.get_variable_list()
-#         self.patcher_list = self.app.patchers
-#         self.action_list = list(self.app.actions.keys())
-#         self.node_list_box = self.add_property('###options', widget_type='list_box', width=180)
-#         self.list_box_arrowed: bool = False
-#         self.current_name: str = ''
-#         self.arg_mode_width = 0
-#         self.arg_mode_width = 120
-#
-#     def custom_create(self, from_file: bool) -> None:
-#         dpg.configure_item(self.args_property.widget.uuid, show=False, on_enter=False)
-#         dpg.configure_item(self.static_name.widget.uuid, show=False)
-#         dpg.configure_item(self.node_list_box.widget.uuid, show=False)
-#
-#     def calc_fuzz(self, test: str, node_name: str) -> float:
-#         ratio = fuzz.partial_ratio(node_name.lower(), test.lower())
-#         full_ratio = fuzz.ratio(node_name.lower(), test.lower())
-#
-#         if ratio == 100:
-#             test_len = len(test)
-#             node_len = len(node_name)
-#             if test_len > node_len:
-#                 if node_name[:node_len] != test[:node_len]:
-#                     ratio = (full_ratio * 2 + ratio) / 3
-#             else:
-#                 if node_name[:test_len] != test[:test_len]:
-#                     ratio = (full_ratio * 2 + ratio) / 3
-#         len_ratio = len(test) / len(node_name)
-#
-#         if len_ratio < 1:
-#             len_ratio = pow(len_ratio, 4)
-#         len_ratio = len_ratio * .5 + 0.5
-#         final_ratio = (ratio * (1 - len_ratio) + full_ratio * len_ratio)
-#         return final_ratio
-#
-#     def fuzzy_score(self, test: str) -> None:
-#         scores: Dict[str, float] = {}
-#         for index, node_name in enumerate(self.node_list):
-#             final_ratio = self.calc_fuzz(test, node_name)
-#             scores[node_name] = final_ratio
-#
-#         for index, variable_name in enumerate(self.variable_list):
-#             final_ratio = self.calc_fuzz(test, variable_name)
-#             scores[variable_name] = final_ratio
-#
-#         for index, patcher_name in enumerate(self.patcher_list):
-#             final_ratio = self.calc_fuzz(test, patcher_name)
-#             scores[patcher_name] = final_ratio
-#
-#         for index, action_name in enumerate(self.action_list):
-#             final_ratio = self.calc_fuzz(test, action_name)
-#             scores[action_name] = final_ratio
-#
-#         sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-#         self.filtered_list = []
-#         for index, item in enumerate(sorted_scores):
-#             if item[1] == 100:
-#                 self.filtered_list.append(item[0])
-#             elif item[1] > 20 and len(self.filtered_list) < 10:
-#                 self.filtered_list.append(item[0])
-#
-#     def increment_widget(self, widget: PropertyWidget) -> None:
-#         filter_name = dpg.get_value(self.node_list_box.widget.uuid)
-#         if filter_name in self.filtered_list:
-#             index = self.filtered_list.index(filter_name)
-#             index -= 1
-#             if index >= 0:
-#                 self.list_box_arrowed = True
-#                 filter_name = self.filtered_list[index]
-#                 self.node_list_box.set(filter_name)
-#
-#     def decrement_widget(self, widget: PropertyWidget) -> None:
-#         filter_name = dpg.get_value(self.node_list_box.widget.uuid)
-#         if filter_name in self.filtered_list:
-#             index = self.filtered_list.index(filter_name)
-#             index += 1
-#             if index < len(self.filtered_list):
-#                 self.list_box_arrowed = True
-#                 filter_name = self.filtered_list[index]
-#                 self.node_list_box.set(filter_name)
-#
-#     def prompt_for_args(self) -> None:
-#         filter_name = dpg.get_value(self.name_property.widget.uuid)
-#         if len(filter_name) > 0:
-#             selection = filter_name
-#             dpg.focus_item(self.node_list_box.widget.uuid)
-#             dpg.configure_item(self.name_property.widget.uuid, enabled=False)
-#             dpg.configure_item(self.node_list_box.widget.uuid, items=[], show=False)
-#             dpg.set_item_width(self.node_list_box.widget.uuid, 0)
-#             dpg.configure_item(self.name_property.widget.uuid, show=False)
-#             dpg.set_item_width(self.name_property.widget.uuid, 0)
-#             dpg.configure_item(self.static_name.widget.uuid, show=True)
-#             dpg.configure_item(self.args_property.widget.uuid, show=True, on_enter=True)
-#             dpg.focus_item(self.args_property.widget.uuid)
-#             self.static_name.set(selection)
-#             self.add_frame_task()
-#
-#     def on_edit(self, widget: PropertyWidget) -> None:
-#         if widget == self.static_name:
-#             return
-#
-#         if widget == self.name_property.widget and len(self.node_list) > 0:
-#             self.list_box_arrowed = False
-#             self.filtered_list = []
-#             filter_name = dpg.get_value(self.name_property.widget.uuid)
-#
-#             if len(filter_name) > 0:
-#                 dpg.configure_item(self.node_list_box.widget.uuid, show=True)
-#             if len(filter_name) > 0 and filter_name[-1] == ' ':
-#                 selection = dpg.get_value(self.node_list_box.widget.uuid)
-#                 dpg.focus_item(self.node_list_box.widget.uuid)
-#                 dpg.configure_item(self.name_property.widget.uuid, enabled=False)
-#                 dpg.configure_item(self.name_property.widget.uuid, show=False)
-#
-#                 dpg.configure_item(self.node_list_box.widget.uuid, items=[], show=False)
-#                 dpg.configure_item(self.static_name.widget.uuid, show=True)
-#                 dpg.configure_item(self.args_property.widget.uuid, show=True, on_enter=True)
-#                 self.static_name.set(selection)
-#                 # Node.app.active_widget = self.args_property.widget.uuid
-#                 dpg.focus_item(self.args_property.widget.uuid)
-#             else:
-#                 f = filter_name.lower()
-#                 self.fuzzy_score(f)
-#                 dpg.configure_item(self.node_list_box.widget.uuid, items=self.filtered_list)
-#                 if len(self.filtered_list) > 0:
-#                     dpg.set_value(self.node_list_box.widget.uuid, self.filtered_list[0])
-#
-#         elif widget == self.node_list_box.widget:
-#             selection = dpg.get_value(self.node_list_box.widget.uuid)
-#             dpg.focus_item(self.node_list_box.widget.uuid)
-#             dpg.configure_item(self.name_property.widget.uuid, enabled=False)
-#             dpg.configure_item(self.static_name.widget.uuid, show=True)
-#             dpg.configure_item(self.args_property.widget.uuid, show=True, on_enter=True)
-#             self.static_name.set(selection)
-#             dpg.focus_item(self.args_property.widget.uuid)
-#             dpg.configure_item(self.node_list_box.widget.uuid, items=[], show=False)
-#             dpg.configure_item(self.name_property.widget.uuid, show=False)
-#
-#     def frame_task(self):
-#         name_width = dpg.get_item_width(self.static_name.widget.uuid)
-#         box_width = dpg.get_item_width(self.node_list_box.widget.uuid)
-#         arg_width = dpg.get_item_width(self.args_property.widget.uuid)
-#
-#
-#     def on_deactivate(self, widget: PropertyWidget) -> None:
-#         if widget in [self.args_property.widget, self.name_property.widget]:
-#             if dpg.is_item_hovered(self.node_list_box.widget.uuid) or dpg.is_item_clicked(self.node_list_box.widget.uuid):
-#                 pass
-#             else:
-#                 self.execute()
-#         elif widget == self.node_list_box.widget:
-#             self.execute()
-#
-#     def execute(self) -> None:
-#         self.remove_frame_tasks()
-#         if dpg.is_item_active(self.name_property.widget.uuid):
-#             print('execute', self.name_property())
-#         else:
-#             selection_name = dpg.get_value(self.node_list_box.widget.uuid)
-#             new_node_name = dpg.get_value(self.name_property.widget.uuid)
-#             arg_string = dpg.get_value(self.args_property.widget.uuid)
-#             new_node_args: List[str] = []
-#             if len(arg_string) > 0:
-#                 args = arg_string.split(' ')
-#                 new_node_args = [selection_name] + args
-#             else:
-#                 new_node_args = [selection_name]
-#             node_model = None
-#             found = False
-#             v = None
-#             action = False
-#             if new_node_args[0] in self.node_list:
-#                 found = True
-#             # elif selection_name in self.node_list:
-#             #     new_node_args[0] = selection_name
-#             #     found = True
-#             if found:
-#                 if len(new_node_args) > 1:
-#                     Node.app.create_node_by_name(new_node_args[0], self, new_node_args[1:])
-#                 else:
-#                     Node.app.create_node_by_name(new_node_args[0], self, )
-#                 return
-#             elif new_node_args[0] in self.variable_list:
-#                 v = self.app.find_variable(new_node_args[0])
-#                 if v is not None:
-#                     found = True
-#             elif selection_name in self.variable_list:
-#                 new_node_args[0] = selection_name
-#                 v = self.app.find_variable(new_node_args[0])
-#                 if v is not None:
-#                     found = True
-#             elif selection_name in self.action_list:
-#                 new_node_args[0] = selection_name
-#                 v = self.app.find_action(new_node_args[0])
-#                 if v is not None:
-#                     found = True
-#                     action = True
-#             if found:
-#                 additional = []
-#                 if len(new_node_args) > 1:
-#                     additional = new_node_args[1:]
-#                 found = False
-#
-#                 if not action:
-#                     t = type(v.value)
-#                     if t == int:
-#                         new_node_args = ['int', new_node_args[0]]
-#                         found = True
-#                     elif t == float:
-#                         new_node_args = ['float', new_node_args[0]]
-#                         found = True
-#                     elif t == str:
-#                         new_node_args = ['string', new_node_args[0]]
-#                         found = True
-#                     elif t == bool:
-#                         new_node_args = ['toggle', new_node_args[0]]
-#                         found = True
-#                     elif t == list:
-#                         new_node_args = ['message', new_node_args[0]]
-#                         found = True
-#                 else:
-#                     new_node_args = ['button', new_node_args[0]]
-#                     found = True
-#                 if found:
-#                     if len(additional) > 0:
-#                         new_node_args += additional
-#                     if len(new_node_args) > 1:
-#                         Node.app.create_node_by_name(new_node_args[0], self, new_node_args[1:])
-#                     else:
-#                         Node.app.create_node_by_name(new_node_args[0], self, )
-#             else:
-#                 if new_node_args[0] in self.patcher_list:
-#                     found = True
-#                 elif selection_name in self.patcher_list:
-#                     new_node_args[0] = selection_name
-#                     found = True
-#                 if found:
-#                     hold_node_editor_index = Node.app.current_node_editor
-#                     Node.app.create_node_by_name('patcher', self, new_node_args[:1])
-#                     Node.app.current_node_editor = len(Node.app.node_editors) - 1
-#                     Node.app.load_from_file('dpg_system/patch_library/' + new_node_args[0] + '.json')
-#                     Node.app.current_node_editor = hold_node_editor_index
-#                     return
 
 def dialog_cancel_callback(sender, app_data):
-    if sender is not None:
-        dpg.delete_item(sender)
+    try:
+        if sender is not None:
+            dpg.delete_item(sender)
+    except Exception as e:
+        print(e)
     Node.app.active_widget = -1
 
 class LoadDialog:
@@ -3276,13 +3377,16 @@ class LoadDialog:
                 dpg.add_file_extension(extension)
 
     def load_callback(self, sender, app_data):
-        if app_data is not None and 'file_path_name' in app_data:
-            load_path = app_data['file_path_name']
-            self.callback(load_path)
-        else:
-            print('no file chosen')
-        if sender is not None:
-            dpg.delete_item(sender)
+        try:
+            if app_data is not None and 'file_path_name' in app_data:
+                load_path = app_data['file_path_name']
+                self.callback(load_path)
+            else:
+                print('no file chosen')
+            if sender is not None:
+                dpg.delete_item(sender)
+        except Exception as e:
+            print(e)
         Node.app.active_widget = -1
 
 
@@ -3299,12 +3403,15 @@ class SaveDialog:
                 dpg.add_file_extension(extension)
 
     def save_callback(self, sender, app_data):
-        if app_data is not None and 'file_path_name' in app_data:
-            save_path = app_data['file_path_name']
-            self.callback(save_path)
-        else:
-            print('no file chosen')
-        if sender is not None:
-            dpg.delete_item(sender)
+        try:
+            if app_data is not None and 'file_path_name' in app_data:
+                save_path = app_data['file_path_name']
+                self.callback(save_path)
+            else:
+                print('no file chosen')
+            if sender is not None:
+                dpg.delete_item(sender)
+        except Exception as e:
+            print(e)
         Node.app.active_widget = -1
 

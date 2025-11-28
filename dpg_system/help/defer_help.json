@@ -1,0 +1,497 @@
+{
+    "height": 628,
+    "width": 1218,
+    "position": [
+        455,
+        231
+    ],
+    "id": 1896,
+    "name": "defer_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/defer_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 1923,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment defer - defer passing the input until the next main thread render cycle (60 fps)",
+            "name": "comment",
+            "id": 1949,
+            "position_x": 21,
+            "position_y": 13,
+            "width": 991,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "defer - defer passing the input until the next main thread render cycle (60 fps)",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "defer - defer passing the input until the next main thread render cycle (60 fps)"
+        },
+        "2": {
+            "name": "defer",
+            "id": 1976,
+            "position_x": 220,
+            "position_y": 141,
+            "width": 101,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "output only last",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "3": {
+            "name": "micro_metro",
+            "id": 2086,
+            "position_x": 38,
+            "position_y": 105,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "string"
+                }
+            }
+        },
+        "4": {
+            "name": "counter",
+            "id": 2162,
+            "position_x": 394,
+            "position_y": 114,
+            "width": 123,
+            "height": 94,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "count",
+                    "value": 255,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "step",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "5": {
+            "name": "int",
+            "id": 2272,
+            "position_x": 403,
+            "position_y": 221,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 82,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "6": {
+            "init": "comment send options 1 to reveal additional options",
+            "name": "comment",
+            "id": 2456,
+            "position_x": 42,
+            "position_y": 243,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "send options 1 to reveal additional options",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "send options 1 to reveal additional options"
+        },
+        "7": {
+            "name": "comment",
+            "id": 2475,
+            "position_x": 17,
+            "position_y": 71,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "fires on a separate thread",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "fires on a separate thread"
+        },
+        "8": {
+            "init": "comment buffers input and sends on main thread",
+            "name": "comment",
+            "id": 2494,
+            "position_x": 209,
+            "position_y": 75,
+            "width": 242,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "buffers input and sends on main thread",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "buffers input and sends on main thread"
+        },
+        "9": {
+            "init": "comment output only last buffers only the last received",
+            "name": "comment",
+            "id": 2513,
+            "position_x": 91,
+            "position_y": 189,
+            "width": 297,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "output only last buffers only the last received",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "output only last buffers only the last received"
+        },
+        "10": {
+            "init": "param_int options",
+            "name": "param_int",
+            "id": 2550,
+            "position_x": 142,
+            "position_y": 285,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "parameter name",
+                    "value": "options",
+                    "value_type": "string"
+                }
+            }
+        },
+        "11": {
+            "name": "toggle",
+            "id": 2618,
+            "position_x": 79,
+            "position_y": 285,
+            "width": 45,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                }
+            }
+        },
+        "12": {
+            "name": "load_bang",
+            "id": 2693,
+            "position_x": 40,
+            "position_y": 355,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "trigger",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "13": {
+            "name": "text_block",
+            "id": 2745,
+            "position_x": 546,
+            "position_y": 70,
+            "width": 672,
+            "height": 494,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "\nThe defer node delays the transmission of data until the next visual update frame.\n\nIt captures incoming data and places it into a queue, effectively moving execution\nto the main application loop. \n\nYou use this node to break feedback loops, synchronize data from background threads \nto the UI, or throttle rapid data streams.\n\nSYNTAX:\ndefer\n\nExample:\ndefer\n\nINPUTS and PARAMETERS:\n\ninput: \nThe data to be deferred. \nAnything received here is added to the internal queue immediately.\n\noutput only last:\nWhen checked, if multiple pieces of data arrive between frames, \nonly the most recent one is sent; the rest are discarded. \nWhen unchecked, every piece of data received is sent out in order during \nthe next frame.\n\nOUTPUTS: \n\ndeferred output:\nThe data released from the queue during the update frame.",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 664,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 478,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "\nThe defer node delays the transmission of data until the next visual update frame.\n\nIt captures incoming data and places it into a queue, effectively moving execution\nto the main application loop. \n\nYou use this node to break feedback loops, synchronize data from background threads \nto the UI, or throttle rapid data streams.\n\nSYNTAX:\ndefer\n\nExample:\ndefer\n\nINPUTS and PARAMETERS:\n\ninput: \nThe data to be deferred. \nAnything received here is added to the internal queue immediately.\n\noutput only last:\nWhen checked, if multiple pieces of data arrive between frames, \nonly the most recent one is sent; the rest are discarded. \nWhen unchecked, every piece of data received is sent out in order during \nthe next frame.\n\nOUTPUTS: \n\ndeferred output:\nThe data released from the queue during the update frame."
+        },
+        "14": {
+            "name": "close",
+            "id": 2770,
+            "position_x": 41,
+            "position_y": 497,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 1976,
+            "source_node_name": "defer",
+            "source_output_index": 0,
+            "source_output_name": "deferred output",
+            "dest_node": 2162,
+            "dest_node_name": "counter",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "1": {
+            "source_node": 2086,
+            "source_node_name": "micro_metro",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 1976,
+            "dest_node_name": "defer",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "2": {
+            "source_node": 2162,
+            "source_node_name": "counter",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 2272,
+            "dest_node_name": "int",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 2550,
+            "source_node_name": "param_int",
+            "source_output_index": 0,
+            "source_output_name": "options out",
+            "dest_node": 1976,
+            "dest_node_name": "defer",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "4": {
+            "source_node": 2618,
+            "source_node_name": "toggle",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 2550,
+            "dest_node_name": "param_int",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 2693,
+            "source_node_name": "load_bang",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 2618,
+            "dest_node_name": "toggle",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

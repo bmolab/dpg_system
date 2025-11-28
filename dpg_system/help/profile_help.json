@@ -1,0 +1,437 @@
+{
+    "height": 529,
+    "width": 819,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1087,
+    "name": "profile_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/profile_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 1114,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment arguments: list of menu items",
+            "name": "comment",
+            "id": 1132,
+            "position_x": 439,
+            "position_y": 163,
+            "width": 267,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "arguments: number of values in the profile",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "arguments: number of values in the profile"
+        },
+        "2": {
+            "init": "comment arguments: list of menu items",
+            "name": "comment",
+            "id": 1143,
+            "position_x": 438,
+            "position_y": 224,
+            "width": 316,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "output: value in profile corresponding to the indx",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "output: value in profile corresponding to the indx"
+        },
+        "3": {
+            "init": "comment menu",
+            "name": "comment",
+            "id": 1154,
+            "position_x": 19,
+            "position_y": 2,
+            "width": 537,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "profile - a graphical ui for a lookup table",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "profile - a graphical ui for a lookup table"
+        },
+        "4": {
+            "init": "comment input: any thing causes output of current selection",
+            "name": "comment",
+            "id": 1165,
+            "position_x": 439,
+            "position_y": 193,
+            "width": 236,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "input: float, int as index to profile",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "input: float, int as index to profile"
+        },
+        "5": {
+            "name": "close",
+            "id": 1176,
+            "position_x": 681,
+            "position_y": 410,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "6": {
+            "name": "profile",
+            "id": 1199,
+            "position_x": 28,
+            "position_y": 162,
+            "width": 308,
+            "height": 172,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "deep",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 16,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max x",
+                    "value": 16.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "color",
+                    "value": "deep",
+                    "value_type": "string"
+                },
+                "9": {
+                    "name": "continuous output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "data": [
+                [
+                    0.009259259328246117,
+                    0.23148147761821747,
+                    0.6111111044883728,
+                    0.8518518805503845,
+                    0.9259259104728699,
+                    0.8703703880310059,
+                    0.6018518805503845,
+                    0.3333333432674408,
+                    0.1944444477558136,
+                    0.1111111119389534,
+                    0.06481481343507767,
+                    0.09259258955717087,
+                    0.18518517911434174,
+                    0.3055555522441864,
+                    0.48148149251937866,
+                    1.0
+                ]
+            ]
+        },
+        "7": {
+            "init": "comment value in",
+            "name": "comment",
+            "id": 1280,
+            "position_x": 168,
+            "position_y": 61,
+            "width": 58,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "value in",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "value in"
+        },
+        "8": {
+            "init": "comment outputs value corresponding to the interpolated value of the profile at the index of the input",
+            "name": "comment",
+            "id": 1291,
+            "position_x": 34,
+            "position_y": 356,
+            "width": 586,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "outputs value corresponding to the interpolated value of the profile at the index of the input",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "outputs value corresponding to the interpolated value of the profile at the index of the input"
+        },
+        "9": {
+            "init": "comment drag mouse in profile to set",
+            "name": "comment",
+            "id": 1302,
+            "position_x": 119,
+            "position_y": 128,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag mouse in profile to set values",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "drag mouse in profile to set values"
+        },
+        "10": {
+            "name": "slider",
+            "id": 1313,
+            "position_x": 35,
+            "position_y": 401,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0.5774076581001282,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "power",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "11": {
+            "init": "slider 16.0",
+            "name": "slider",
+            "id": 1378,
+            "position_x": 30,
+            "position_y": 70,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 14.1850004196167,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 15.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "power",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 1199,
+            "source_node_name": "profile",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 1313,
+            "dest_node_name": "slider",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 1378,
+            "source_node_name": "slider",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 1199,
+            "dest_node_name": "profile",
+            "dest_input_index": 0,
+            "dest_input_name": "index into profile"
+        }
+    }
+}

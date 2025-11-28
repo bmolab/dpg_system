@@ -1,0 +1,578 @@
+{
+    "height": 681,
+    "width": 1335,
+    "position": [
+        100,
+        100
+    ],
+    "id": 197,
+    "name": "clamp_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/clamp_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 228,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment save - save the patcher containing this save node",
+            "name": "comment",
+            "id": 325,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 623,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "clamp - clamp the input values to a range and send",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "clamp - clamp the input values to a range and send"
+        },
+        "2": {
+            "name": "close",
+            "id": 343,
+            "position_x": 23,
+            "position_y": 555,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "3": {
+            "name": "text_block",
+            "id": 373,
+            "position_x": 569,
+            "position_y": 45,
+            "width": 760,
+            "height": 578,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The clamp node restricts numerical input values so that they stay within a defined range.\n\nIt compares the incoming data against a minimum and maximum limit. \nIf a value is lower than the minimum, it becomes the minimum; \nif it is higher than the maximum, it becomes the maximum. \n\nIt supports single numbers as well as complex data structures like lists, NumPy arrays, \nand PyTorch tensors. \n\nYou use this node to normalize control signals, prevent data from exceeding safety limits,\nor crop values to a specific window (e.g., keeping color values between 0.0 and 1.0).\n\nSYNTAX:\nclamp\n\nEXAMPLE:\nclamp\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be processed. \nReceiving data here triggers the calculation. It accepts integers, floats, lists, NumPy arrays, \nor PyTorch tensors.\n\nmin:\nThe lower limit. \n\nmax:\nThe upper limit. \n\nOUTPUTS: \n\nclamped output:\nThe result of the operation. \nThe output preserves the data structure and type of the input \n(e.g., if you put in a list, you get a list back).",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 752,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 562,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "The clamp node restricts numerical input values so that they stay within a defined range.\n\nIt compares the incoming data against a minimum and maximum limit. \nIf a value is lower than the minimum, it becomes the minimum; \nif it is higher than the maximum, it becomes the maximum. \n\nIt supports single numbers as well as complex data structures like lists, NumPy arrays, \nand PyTorch tensors. \n\nYou use this node to normalize control signals, prevent data from exceeding safety limits,\nor crop values to a specific window (e.g., keeping color values between 0.0 and 1.0).\n\nSYNTAX:\nclamp\n\nEXAMPLE:\nclamp\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be processed. \nReceiving data here triggers the calculation. It accepts integers, floats, lists, NumPy arrays, \nor PyTorch tensors.\n\nmin:\nThe lower limit. \n\nmax:\nThe upper limit. \n\nOUTPUTS: \n\nclamped output:\nThe result of the operation. \nThe output preserves the data structure and type of the input \n(e.g., if you put in a list, you get a list back)."
+        },
+        "4": {
+            "init": "clamp .1 .9",
+            "name": "clamp",
+            "id": 683,
+            "position_x": 194,
+            "position_y": 102,
+            "width": 111,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": -0.5,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 0.5,
+                    "value_type": "float"
+                }
+            }
+        },
+        "5": {
+            "name": "signal",
+            "id": 776,
+            "position_x": 36,
+            "position_y": 102,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "6": {
+            "name": "plot",
+            "id": 879,
+            "position_x": 339,
+            "position_y": 63,
+            "width": 208,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "7": {
+            "init": "np.rand 4 4",
+            "name": "np.rand",
+            "id": 977,
+            "position_x": 37,
+            "position_y": 221,
+            "width": 123,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "dim 0",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "dim 1",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                }
+            }
+        },
+        "8": {
+            "init": "clamp .3 .5",
+            "name": "clamp",
+            "id": 1087,
+            "position_x": 198,
+            "position_y": 234,
+            "width": 111,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": 0.30000001192092896,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 0.699999988079071,
+                    "value_type": "float"
+                }
+            }
+        },
+        "9": {
+            "name": "heat_map",
+            "id": 2632,
+            "position_x": 340,
+            "position_y": 257,
+            "width": 208,
+            "height": 148,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "10": {
+            "init": "t.rand 4 4",
+            "name": "t.rand",
+            "id": 2721,
+            "position_x": 35,
+            "position_y": 376,
+            "width": 163,
+            "height": 142,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "input",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "shape",
+                    "value": "[4, 4]",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "11": {
+            "name": "load_bang",
+            "id": 2900,
+            "position_x": 33,
+            "position_y": 49,
+            "width": 88,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "trigger",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "12": {
+            "init": "t 1",
+            "name": "t",
+            "id": 3032,
+            "position_x": 133,
+            "position_y": 53,
+            "width": 22,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "trigger 0",
+                    "value": "1",
+                    "value_type": "string"
+                }
+            }
+        },
+        "13": {
+            "init": "comment click the top button to send",
+            "name": "comment",
+            "id": 3088,
+            "position_x": 31,
+            "position_y": 181,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click the top button to send",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "click the top button to send"
+        },
+        "14": {
+            "init": "comment click the top button to send",
+            "name": "comment",
+            "id": 3099,
+            "position_x": 27,
+            "position_y": 342,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click the top button to send",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "click the top button to send"
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 683,
+            "source_node_name": "clamp",
+            "source_output_index": 0,
+            "source_output_name": "clamped output",
+            "dest_node": 879,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "1": {
+            "source_node": 776,
+            "source_node_name": "signal",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 683,
+            "dest_node_name": "clamp",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 977,
+            "source_node_name": "np.rand",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 1087,
+            "dest_node_name": "clamp",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 1087,
+            "source_node_name": "clamp",
+            "source_output_index": 0,
+            "source_output_name": "clamped output",
+            "dest_node": 2632,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 2721,
+            "source_node_name": "t.rand",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 1087,
+            "dest_node_name": "clamp",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 2900,
+            "source_node_name": "load_bang",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 3032,
+            "dest_node_name": "t",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 3032,
+            "source_node_name": "t",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 776,
+            "dest_node_name": "signal",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        }
+    }
+}
