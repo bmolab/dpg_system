@@ -12,6 +12,8 @@ from xml.etree.ElementTree import XML
 import scipy
 import copy
 import datetime
+import json
+
 #
 # print('before body_defs')
 # import body_defs
@@ -37,6 +39,7 @@ def register_motion_cap_nodes():
     Node.app.register_node('calibrate_pose', PoseCalibrateNode.factory)
     Node.app.register_node('limb_size', LimbSizingNode.factory)
     Node.app.register_node('quaternion_diff_and_axis', DiffQuaternionsNode.factory)
+    Node.app.register_node('check_burst', CheckBurstNode.factory)
 
 def find_process_id(process_name):
     try:
@@ -386,6 +389,8 @@ class OpenTakeNode(MoCapNode):
         self.play_pause_button.name_archive.append('pause')
         self.stop_button = self.add_input('stop', widget_type='button', callback=self.stop_button_clicked)
         self.loop_input = self.add_input('loop', widget_type='checkbox', default_value=True)
+        self.external_clock_enable_input = self.add_input('enable external clock', widget_type='checkbox', default_value=False)
+        self.external_clock_input = self.add_input('external clock', callback=self.external_play)
         self.add_spacer()
         self.frame_input = self.add_input('frame', widget_type='drag_int', callback=self.frame_widget_changed)
         self.length_property = self.add_input('length: 0', widget_type='label')
@@ -477,21 +482,21 @@ class OpenTakeNode(MoCapNode):
             self.last_frame_out = -1
             self.current_frame = self.speed() * -1.0
             print('play_button_clicked', self.current_frame)
-            self.add_frame_task()
+            self.start_playing()
             self.streaming = True
             self.play_pause_button.set_label('pause')
             self.play_pause_button.widget.set_active_theme(Node.active_theme_yellow)
         else:
             if self.streaming:
                 self.streaming = False
-                self.remove_frame_tasks()
+                self.stop_playing()
                 self.play_pause_button.set_label('play')
                 self.play_pause_button.widget.set_active_theme(Node.active_theme_green)
 
     def record_button_clicked(self):
         if self.streaming:
             self.streaming = False
-            self.remove_frame_tasks()
+            self.stop_playing()
             self.play_pause_button.set_label('play')
 
         if not self.recording:
@@ -608,7 +613,23 @@ class OpenTakeNode(MoCapNode):
     def dump_take(self):
         self.dump_out.send(self.take_dict)
 
+    def start_playing(self):
+        if not self.external_clock_enable_input():
+            self.add_frame_task()
+
+    def stop_playing(self):
+        if not self.external_clock_enable_input():
+            self.remove_frame_tasks()
+
     def frame_task(self):
+        self.step()
+
+    def external_play(self):
+        if self.external_clock_enable_input():
+            if self.streaming:
+                self.step()
+
+    def step(self):
         self.current_frame += self.speed()
         if int(self.current_frame) > self.last_frame_out:
             if self.current_frame > self.clip_end:
@@ -1181,6 +1202,85 @@ class DiffQuaternionsNode(Node):
         distances = quaternion.rotation_intrinsic_distance(q1__, q2__)
         return distances
 
+
+class CheckBurstNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = CheckBurstNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('diff array', triggers_execution=True)
+        self.input2 = self.add_input('previous frame array', callback=self.receive_prev)
+        self.frame_input = self.add_input('frame')
+        self.file_input = self.add_input('file')
+        self.threshold1_input = self.add_input('threshold 1', widget_type='drag_float', default_value=0.1, min=0.0, max=1.0)
+        self.threshold2_input = self.add_input('threshold 2 previous', widget_type='drag_float', default_value=0.01, min=0.0, max=1.0)
+        self.save_bottom = self.add_input('save burst files', widget_type='button', callback=self.save_result)
+        # add timestamp--node for date and time sting (Datetime node)
+        # chack burst date and timestamp begining num (file name, check burst Nov...)
+        # take dict: save a temp file--
+        # 'date_time'--combine object
+        self.save_path_input = self.add_input('save path', widget_type='text_input', default_value=f"/home/bmolab/Projects/AMASS_2/burst_files.json")
+        self.file_dict_out = self.add_output('file_dict')
+        self.file_dict = {}
+
+    def receive_prev(self):
+        pass
+
+    def execute(self):
+        diff_array = np.asarray(self.input())
+        prev_array = np.asarray(self.input2())
+
+        if self.frame_input() == 0:
+            return
+
+        self.detect_sudden_burst(diff_array, prev_array)
+        self.file_dict_out.send(self.file_dict)
+
+    def detect_sudden_burst(self, diff_array, prev_array):
+
+        mag_diff = np.linalg.norm(diff_array)
+
+        if mag_diff > self.threshold1_input():
+            diff_max = np.max(diff_array)
+            diff_max_i = np.argmax(diff_array)
+            prev_v = prev_array[diff_max_i]
+
+            if prev_v < self.threshold2_input():
+                print(self.file_input())
+                print('frame', self.frame_input())
+                print(diff_array)
+                print('prev array', prev_array)
+                print(mag_diff)
+                event = {'frame': self.frame_input(),
+                         'prev': prev_array,
+                         'diff array': diff_array,
+                         'mag_diff': mag_diff,
+                         'prev_v': prev_v}
+                self.file_dict.setdefault(self.file_input(), []).append(event)
+
+
+    def save_result(self):
+        path = self.save_path_input()
+
+        try:
+            with open(path, 'w', encoding='utf-8') as f:
+                json.dump(self.file_dict, f, indent=2, cls=NumpyEncoder)
+                print(f"Saved burst files to {path}")
+        except Exception as e:
+            print("Error saving burst files:", e)
+
+
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        if isinstance(obj, (np.floating, np.integer)):
+            return obj.item()
+        return super().default(obj)
 
 class SimpleMoCapGLBody(MoCapNode):
     @staticmethod
