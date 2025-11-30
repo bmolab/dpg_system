@@ -1,0 +1,499 @@
+{
+    "height": 756,
+    "width": 1240,
+    "position": [
+        100,
+        100
+    ],
+    "id": 197,
+    "name": "t_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 228,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment save - save the patcher containing this save node",
+            "name": "comment",
+            "id": 325,
+            "position_x": 26,
+            "position_y": 1,
+            "width": 783,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t - trigger the output of various values when input is received",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "t - trigger the output of various values when input is received"
+        },
+        "2": {
+            "name": "close",
+            "id": 343,
+            "position_x": 34,
+            "position_y": 525,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "3": {
+            "name": "text_block",
+            "id": 422,
+            "position_x": 510,
+            "position_y": 46,
+            "width": 858,
+            "height": 727,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The t node triggers specific outputs in a specific order.\n\nIt accepts an input signal and fires its outputs sequentially from right to left. \nIt is used to coordinate events, convert data types, or replace data with constants.\n\nSYNTAX:\n\nt <arg_1> <arg_2> ...\n\nKeywords:\nbang, int, float, string, list, array\n\nEXAMPLE:\n\ntrigger bang int 500\n\nThis creates 3 outputs. When triggered:\n1. The right-most output sends the number 500.\n2. The middle output sends the input converted to an integer.\n3. The left-most output sends a \"bang\".\n\nINPUTS AND PARAMETERS:\n\ninput: \nReceiving data here triggers the outputs. \nYou can also click the button on the node to force it to fire.\n\nOPTIONS: (select the t node and press 'o'\n\ntrigger n:\nAllows you to change the behavior of any specific output pin.\n\nOUTPUTS: \n\nout (variable):\nA series of outputs corresponding to the creation arguments. \nThey fire in reverse order (last argument fires first).\n\nOutput Behaviors:\nbang: Sends a \"bang\" signal.\nint / float / string / list / array: Converts the incoming data to the specified type.\nAny other value: Ignores input and outputs the constant value defined (e.g., 'hello').",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 850,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 647,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "The t node triggers specific outputs in a specific order.\n\nIt accepts an input signal and fires its outputs sequentially from right to left. \nIt is used to coordinate events, convert data types, or replace data with constants.\n\nSYNTAX:\n\nt <arg_1> <arg_2> ...\n\nKeywords:\nbang, int, float, string, list, array\n\nEXAMPLE:\n\ntrigger bang int 500\n\nThis creates 3 outputs. When triggered:\n1. The right-most output sends the number 500.\n2. The middle output sends the input converted to an integer.\n3. The left-most output sends a \"bang\".\n\nINPUTS AND PARAMETERS:\n\ninput: \nReceiving data here triggers the outputs. \nYou can also click the button on the node to force it to fire.\n\nOPTIONS: (select the t node and press 'o'\n\ntrigger n:\nAllows you to change the behavior of any specific output pin.\n\nOUTPUTS: \n\nout (variable):\nA series of outputs corresponding to the creation arguments. \nThey fire in reverse order (last argument fires first).\n\nOutput Behaviors:\nbang: Sends a \"bang\" signal.\nint / float / string / list / array: Converts the incoming data to the specified type.\nAny other value: Ignores input and outputs the constant value defined (e.g., 'hello')."
+        },
+        "4": {
+            "init": "t bang int float 5.0 computer",
+            "name": "t",
+            "id": 6471,
+            "position_x": 184,
+            "position_y": 101,
+            "width": 58,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "trigger 0",
+                    "value": "bang",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "trigger 1",
+                    "value": "int",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "trigger 2",
+                    "value": "float",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "trigger 3",
+                    "value": "5.0",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "trigger 4",
+                    "value": "computer",
+                    "value_type": "string"
+                }
+            }
+        },
+        "5": {
+            "name": "info",
+            "id": 6617,
+            "position_x": 270,
+            "position_y": 104,
+            "width": 229,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "info",
+                    "value": "bang",
+                    "value_type": "string"
+                }
+            }
+        },
+        "6": {
+            "name": "info",
+            "id": 6643,
+            "position_x": 270,
+            "position_y": 155,
+            "width": 229,
+            "height": 41,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "info",
+                    "value": "int 0",
+                    "value_type": "string"
+                }
+            }
+        },
+        "7": {
+            "name": "info",
+            "id": 6669,
+            "position_x": 270,
+            "position_y": 201,
+            "width": 229,
+            "height": 41,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "info",
+                    "value": "float 0.0",
+                    "value_type": "string"
+                }
+            }
+        },
+        "8": {
+            "name": "info",
+            "id": 6695,
+            "position_x": 270,
+            "position_y": 247,
+            "width": 229,
+            "height": 41,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "info",
+                    "value": "float 5.0",
+                    "value_type": "string"
+                }
+            }
+        },
+        "9": {
+            "name": "info",
+            "id": 6721,
+            "position_x": 270,
+            "position_y": 294,
+            "width": 229,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "info",
+                    "value": "string computer",
+                    "value_type": "string"
+                }
+            }
+        },
+        "10": {
+            "name": "int",
+            "id": 6752,
+            "position_x": 32,
+            "position_y": 101,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 20,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "11": {
+            "name": "float",
+            "id": 6819,
+            "position_x": 33,
+            "position_y": 154,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 6.869999885559082,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 0.009999999776482582,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "12": {
+            "name": "message",
+            "id": 6943,
+            "position_x": 31,
+            "position_y": 229,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "think",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "13": {
+            "init": "comment t bang int float 5.0 computer",
+            "name": "comment",
+            "id": 7012,
+            "position_x": 136,
+            "position_y": 60,
+            "width": 187,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t bang int float 5.0 computer",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "t bang int float 5.0 computer"
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 6471,
+            "source_node_name": "t",
+            "source_output_index": 0,
+            "source_output_name": "bang",
+            "dest_node": 6617,
+            "dest_node_name": "info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "1": {
+            "source_node": 6471,
+            "source_node_name": "t",
+            "source_output_index": 1,
+            "source_output_name": "int",
+            "dest_node": 6643,
+            "dest_node_name": "info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 6471,
+            "source_node_name": "t",
+            "source_output_index": 2,
+            "source_output_name": "float",
+            "dest_node": 6669,
+            "dest_node_name": "info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 6471,
+            "source_node_name": "t",
+            "source_output_index": 3,
+            "source_output_name": "5.0",
+            "dest_node": 6695,
+            "dest_node_name": "info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 6471,
+            "source_node_name": "t",
+            "source_output_index": 4,
+            "source_output_name": "computer",
+            "dest_node": 6721,
+            "dest_node_name": "info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 6752,
+            "source_node_name": "int",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 6471,
+            "dest_node_name": "t",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 6819,
+            "source_node_name": "float",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 6471,
+            "dest_node_name": "t",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "7": {
+            "source_node": 6943,
+            "source_node_name": "message",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 6471,
+            "dest_node_name": "t",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

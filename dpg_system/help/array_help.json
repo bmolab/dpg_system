@@ -1,0 +1,730 @@
+{
+    "height": 738,
+    "width": 1248,
+    "position": [
+        100,
+        100
+    ],
+    "id": 197,
+    "name": "array_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/array_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 228,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "name": "close",
+            "id": 325,
+            "position_x": 23,
+            "position_y": 543,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "2": {
+            "init": "comment concat - concatenate multiple lists into one",
+            "name": "comment",
+            "id": 355,
+            "position_x": 17,
+            "position_y": -5,
+            "width": 918,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "array - convert received data into a numpy array and optionally reshape it",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "array - convert received data into a numpy array and optionally reshape it"
+        },
+        "3": {
+            "name": "text_block",
+            "id": 861,
+            "position_x": 489,
+            "position_y": 42,
+            "width": 737,
+            "height": 519,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The array node converts incoming data into a Numpy array and optionally reshapes it.\n\nIt is useful for turning flat lists into matrices\n\nSYNTAX:\n\narray <dim_1> <dim_2> ...\n\nEXAMPLE:\n\narray\n(converts input into a Numpy array of the appropriate dimension\n\narray 3 3\n(Takes a list of 9 numbers and turns it into a 3x3 matrix)\n\nINPUTS AND PARAMETERS:\n\nin:\nThe data to be converted.\nAccepts lists, tuples, or other arrays.\n\nOPTIONS: (select the node and press 'o' to reveal)\n\nshape (Option):\nA text field defining the target dimensions (separated by spaces).\nIf provided, the node attempts to reshape the input to these dimensions.\nIf left empty, the array retains its original shape (or 1D for flat lists).\n\nOUTPUTS: \n\narray out:\nThe resulting Numpy array.",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 729,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 503,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "The array node converts incoming data into a Numpy array and optionally reshapes it.\n\nIt is useful for turning flat lists into matrices\n\nSYNTAX:\n\narray <dim_1> <dim_2> ...\n\nEXAMPLE:\n\narray\n(converts input into a Numpy array of the appropriate dimension\n\narray 3 3\n(Takes a list of 9 numbers and turns it into a 3x3 matrix)\n\nINPUTS AND PARAMETERS:\n\nin:\nThe data to be converted.\nAccepts lists, tuples, or other arrays.\n\nOPTIONS: (select the node and press 'o' to reveal)\n\nshape (Option):\nA text field defining the target dimensions (separated by spaces).\nIf provided, the node attempts to reshape the input to these dimensions.\nIf left empty, the array retains its original shape (or 1D for flat lists).\n\nOUTPUTS: \n\narray out:\nThe resulting Numpy array."
+        },
+        "4": {
+            "init": "np.rand 2 2",
+            "name": "np.rand",
+            "id": 942,
+            "position_x": 206,
+            "position_y": 190,
+            "width": 123,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "dim 0",
+                    "value": 2,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "dim 1",
+                    "value": 2,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                }
+            }
+        },
+        "5": {
+            "init": "t.rand 2 2",
+            "name": "t.rand",
+            "id": 1053,
+            "position_x": 26,
+            "position_y": 130,
+            "width": 163,
+            "height": 142,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "input",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "shape",
+                    "value": "[32, 32]",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "6": {
+            "name": "float",
+            "id": 1417,
+            "position_x": 180,
+            "position_y": 76,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0.33000001311302185,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 0.009999999776482582,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "7": {
+            "name": "int",
+            "id": 1483,
+            "position_x": 329,
+            "position_y": 76,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 16,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "8": {
+            "init": "comment click on the trigger buttons on these nodes to have the type displayed",
+            "name": "comment",
+            "id": 1617,
+            "position_x": 20,
+            "position_y": 44,
+            "width": 451,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click on the trigger buttons on these nodes to have the length displayed",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "click on the trigger buttons on these nodes to have the length displayed"
+        },
+        "9": {
+            "name": "array",
+            "id": 1889,
+            "position_x": 88,
+            "position_y": 329,
+            "width": 64,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "shape",
+                    "value": "",
+                    "value_type": "string"
+                }
+            }
+        },
+        "10": {
+            "name": "info",
+            "id": 1952,
+            "position_x": 168,
+            "position_y": 328,
+            "width": 229,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "info",
+                    "value": "array[2, 2] float32",
+                    "value_type": "string"
+                }
+            }
+        },
+        "11": {
+            "name": "list",
+            "id": 1979,
+            "position_x": 207,
+            "position_y": 134,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1.1 2.2 3.3 4.4",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "12": {
+            "name": "list",
+            "id": 2036,
+            "position_x": 26,
+            "position_y": 76,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1 2 3 4 5 6 7",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "13": {
+            "name": "list",
+            "id": 2093,
+            "position_x": 24,
+            "position_y": 421,
+            "width": 137,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1 2 3 4 5 6 7 8 9",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 110,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "14": {
+            "init": "array 3 3",
+            "name": "array",
+            "id": 2165,
+            "position_x": 181,
+            "position_y": 421,
+            "width": 64,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "shape",
+                    "value": "3 3",
+                    "value_type": "string"
+                }
+            }
+        },
+        "15": {
+            "name": "heat_map",
+            "id": 2220,
+            "position_x": 269,
+            "position_y": 394,
+            "width": 176,
+            "height": 141,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 168,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 93,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 3,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 10.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "16": {
+            "init": "comment array 3 3",
+            "name": "comment",
+            "id": 2301,
+            "position_x": 181,
+            "position_y": 388,
+            "width": 64,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "array 3 3",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "array 3 3"
+        },
+        "17": {
+            "init": "comment array",
+            "name": "comment",
+            "id": 2384,
+            "position_x": 276,
+            "position_y": 265,
+            "width": 39,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "array",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "array"
+        },
+        "18": {
+            "name": "info",
+            "id": 2403,
+            "position_x": 221,
+            "position_y": 543,
+            "width": 229,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "info",
+                    "value": "array[3, 3] int64",
+                    "value_type": "string"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 942,
+            "source_node_name": "np.rand",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 1889,
+            "dest_node_name": "array",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "1": {
+            "source_node": 1053,
+            "source_node_name": "t.rand",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 1889,
+            "dest_node_name": "array",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 1417,
+            "source_node_name": "float",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 1889,
+            "dest_node_name": "array",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 1483,
+            "source_node_name": "int",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 1889,
+            "dest_node_name": "array",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 1889,
+            "source_node_name": "array",
+            "source_output_index": 0,
+            "source_output_name": "array out",
+            "dest_node": 1952,
+            "dest_node_name": "info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 1979,
+            "source_node_name": "list",
+            "source_output_index": 0,
+            "source_output_name": "list out",
+            "dest_node": 1889,
+            "dest_node_name": "array",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "6": {
+            "source_node": 2036,
+            "source_node_name": "list",
+            "source_output_index": 0,
+            "source_output_name": "list out",
+            "dest_node": 1889,
+            "dest_node_name": "array",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "7": {
+            "source_node": 2093,
+            "source_node_name": "list",
+            "source_output_index": 0,
+            "source_output_name": "list out",
+            "dest_node": 2165,
+            "dest_node_name": "array",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "8": {
+            "source_node": 2165,
+            "source_node_name": "array",
+            "source_output_index": 0,
+            "source_output_name": "array out",
+            "dest_node": 2220,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "9": {
+            "source_node": 2165,
+            "source_node_name": "array",
+            "source_output_index": 0,
+            "source_output_name": "array out",
+            "dest_node": 2403,
+            "dest_node_name": "info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

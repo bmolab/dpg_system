@@ -1,0 +1,704 @@
+{
+    "height": 634,
+    "width": 1293,
+    "position": [
+        100,
+        100
+    ],
+    "id": 197,
+    "name": "bucket_brigade_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/bucket_brigade_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 228,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment save - save the patcher containing this save node",
+            "name": "comment",
+            "id": 325,
+            "position_x": 23,
+            "position_y": 7,
+            "width": 574,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "bucket_brigade - a delay line / shift register",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "bucket_brigade - a delay line / shift register"
+        },
+        "2": {
+            "name": "close",
+            "id": 343,
+            "position_x": 39,
+            "position_y": 503,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "3": {
+            "name": "text_block",
+            "id": 422,
+            "position_x": 660,
+            "position_y": 21,
+            "width": 858,
+            "height": 534,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The bucket brigade node acts as a shift register or a history buffer.\n\nIt creates a series of output pins that represent the last N values received. \nWhen a new value arrives at the input, it is sent to the first output. \nThe value that was previously at the first output shifts to the second, \nthe second shifts to the third, and so on. The oldest value falls off the end.\n\nSYNTAX:\n\nbucket_brigade <count: int>\n\nEXAMPLE:\n\nbucket_brigade 4\n\nINPUTS AND PARAMETERS:\n\nin: \nThe entry point for data. \nEvery time data is received here, it pushes the current values down the line \nand fills the first output slot with this new data.\n\ncount (argument): \nDefines how many \"buckets\" or outputs to create. Default is 8.\n\nOUTPUTS: \n\nout (series):\nA sequence of outputs corresponding to the history of inputs. \nOut 0 contains the most recently received value.\nOut 1 contains the value received one step ago.\nOut 2 contains the value received two steps ago, etc.\n...",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 850,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 518,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "The bucket brigade node acts as a shift register or a history buffer.\n\nIt creates a series of output pins that represent the last N values received. \nWhen a new value arrives at the input, it is sent to the first output. \nThe value that was previously at the first output shifts to the second, \nthe second shifts to the third, and so on. The oldest value falls off the end.\n\nSYNTAX:\n\nbucket_brigade <count: int>\n\nEXAMPLE:\n\nbucket_brigade 4\n\nINPUTS AND PARAMETERS:\n\nin: \nThe entry point for data. \nEvery time data is received here, it pushes the current values down the line \nand fills the first output slot with this new data.\n\ncount (argument): \nDefines how many \"buckets\" or outputs to create. Default is 8.\n\nOUTPUTS: \n\nout (series):\nA sequence of outputs corresponding to the history of inputs. \nOut 0 contains the most recently received value.\nOut 1 contains the value received one step ago.\nOut 2 contains the value received two steps ago, etc.\n..."
+        },
+        "4": {
+            "init": "bucket_brigade 8",
+            "name": "bucket_brigade",
+            "id": 529,
+            "position_x": 334,
+            "position_y": 149,
+            "width": 95,
+            "height": 158,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "5": {
+            "name": "counter",
+            "id": 720,
+            "position_x": 162,
+            "position_y": 146,
+            "width": 123,
+            "height": 94,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "count",
+                    "value": 255,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "step",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "6": {
+            "init": "metro 100",
+            "name": "metro",
+            "id": 845,
+            "position_x": 12,
+            "position_y": 146,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 1000.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "string"
+                }
+            }
+        },
+        "7": {
+            "name": "int",
+            "id": 914,
+            "position_x": 502,
+            "position_y": 160,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 223,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "8": {
+            "name": "int",
+            "id": 980,
+            "position_x": 502,
+            "position_y": 209,
+            "width": 127,
+            "height": 45,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 222,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "9": {
+            "name": "int",
+            "id": 1046,
+            "position_x": 502,
+            "position_y": 257,
+            "width": 127,
+            "height": 45,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "10": {
+            "name": "int",
+            "id": 1112,
+            "position_x": 502,
+            "position_y": 305,
+            "width": 127,
+            "height": 45,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 220,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "11": {
+            "name": "int",
+            "id": 1178,
+            "position_x": 502,
+            "position_y": 353,
+            "width": 127,
+            "height": 45,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 219,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "12": {
+            "name": "int",
+            "id": 1244,
+            "position_x": 502,
+            "position_y": 401,
+            "width": 127,
+            "height": 45,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 218,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "13": {
+            "name": "int",
+            "id": 1310,
+            "position_x": 502,
+            "position_y": 449,
+            "width": 127,
+            "height": 45,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 217,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "14": {
+            "name": "int",
+            "id": 1376,
+            "position_x": 502,
+            "position_y": 497,
+            "width": 127,
+            "height": 45,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 216,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 529,
+            "source_node_name": "bucket_brigade",
+            "source_output_index": 0,
+            "source_output_name": "out 0",
+            "dest_node": 914,
+            "dest_node_name": "int",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 529,
+            "source_node_name": "bucket_brigade",
+            "source_output_index": 1,
+            "source_output_name": "out 1",
+            "dest_node": 980,
+            "dest_node_name": "int",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 529,
+            "source_node_name": "bucket_brigade",
+            "source_output_index": 2,
+            "source_output_name": "out 2",
+            "dest_node": 1046,
+            "dest_node_name": "int",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 529,
+            "source_node_name": "bucket_brigade",
+            "source_output_index": 3,
+            "source_output_name": "out 3",
+            "dest_node": 1112,
+            "dest_node_name": "int",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 529,
+            "source_node_name": "bucket_brigade",
+            "source_output_index": 4,
+            "source_output_name": "out 4",
+            "dest_node": 1178,
+            "dest_node_name": "int",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 529,
+            "source_node_name": "bucket_brigade",
+            "source_output_index": 5,
+            "source_output_name": "out 5",
+            "dest_node": 1244,
+            "dest_node_name": "int",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 529,
+            "source_node_name": "bucket_brigade",
+            "source_output_index": 6,
+            "source_output_name": "out 6",
+            "dest_node": 1310,
+            "dest_node_name": "int",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "7": {
+            "source_node": 529,
+            "source_node_name": "bucket_brigade",
+            "source_output_index": 7,
+            "source_output_name": "out 7",
+            "dest_node": 1376,
+            "dest_node_name": "int",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "8": {
+            "source_node": 720,
+            "source_node_name": "counter",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 529,
+            "dest_node_name": "bucket_brigade",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "9": {
+            "source_node": 845,
+            "source_node_name": "metro",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 720,
+            "dest_node_name": "counter",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        }
+    }
+}

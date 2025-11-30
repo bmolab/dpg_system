@@ -1,0 +1,305 @@
+{
+    "height": 608,
+    "width": 1268,
+    "position": [
+        100,
+        100
+    ],
+    "id": 197,
+    "name": "delay_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/delay_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 228,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment save - save the patcher containing this save node",
+            "name": "comment",
+            "id": 325,
+            "position_x": 23,
+            "position_y": 7,
+            "width": 439,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "delay - delay any data for n frames",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "delay - delay any data for n frames"
+        },
+        "2": {
+            "name": "close",
+            "id": 343,
+            "position_x": 39,
+            "position_y": 503,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "3": {
+            "name": "text_block",
+            "id": 422,
+            "position_x": 470,
+            "position_y": 11,
+            "width": 858,
+            "height": 540,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The delay node holds data for a specific number of update frames before releasing it to the output.\n\nIt creates a time lag between the input and output. \nUnlike the metronome or timer nodes, this node operates on \"frames\" (application update cycles), \nmaking it useful for synchronizing events within the visual update loop. \n\nSYNTAX:\n\ndelay <frames: int>\n\nEXAMPLE:\n\ndelay 60\n\nINPUTS AND PARAMETERS:\n\nin: \nThe entry point for data. \nData received here is stored in a buffer and released after the specified number of frames.\n\ndelay: \nSets the length of the delay buffer in frames. \nFor example, if the application runs at 60fps, a delay of 60 equals 1 second. \nChanging this value dynamically resizes the internal buffer.\n\ncancel:\nWhen a signal is received here, the internal buffer is immediately cleared (filled with empty data). \nThis effectively stops any pending data from being output.\n\nOUTPUTS: \n\nout:\nThe delayed data. \nIf data was received at the input 'N' frames ago, it appears here now.",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 850,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 524,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "The delay node holds data for a specific number of update frames before releasing it to the output.\n\nIt creates a time lag between the input and output. \nUnlike the metronome or timer nodes, this node operates on \"frames\" (application update cycles), \nmaking it useful for synchronizing events within the visual update loop. \n\nSYNTAX:\n\ndelay <frames: int>\n\nEXAMPLE:\n\ndelay 60\n\nINPUTS AND PARAMETERS:\n\nin: \nThe entry point for data. \nData received here is stored in a buffer and released after the specified number of frames.\n\ndelay: \nSets the length of the delay buffer in frames. \nFor example, if the application runs at 60fps, a delay of 60 equals 1 second. \nChanging this value dynamically resizes the internal buffer.\n\ncancel:\nWhen a signal is received here, the internal buffer is immediately cleared (filled with empty data). \nThis effectively stops any pending data from being output.\n\nOUTPUTS: \n\nout:\nThe delayed data. \nIf data was received at the input 'N' frames ago, it appears here now."
+        },
+        "4": {
+            "init": "np.rand 4 4",
+            "name": "np.rand",
+            "id": 1468,
+            "position_x": 26,
+            "position_y": 74,
+            "width": 123,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "dim 0",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "dim 1",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                }
+            }
+        },
+        "5": {
+            "init": "delay 10",
+            "name": "delay",
+            "id": 1578,
+            "position_x": 214,
+            "position_y": 159,
+            "width": 123,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "delay",
+                    "value": 60,
+                    "value_type": "int"
+                }
+            }
+        },
+        "6": {
+            "name": "heat_map",
+            "id": 3316,
+            "position_x": 32,
+            "position_y": 307,
+            "width": 264,
+            "height": 176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "7": {
+            "name": "b",
+            "id": 3389,
+            "position_x": 168,
+            "position_y": 193,
+            "width": 22,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "message",
+                    "value": "bang",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "height",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "flash_duration",
+                    "value": 0.10000000149011612,
+                    "value_type": "float"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 1468,
+            "source_node_name": "np.rand",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 1578,
+            "dest_node_name": "delay",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "1": {
+            "source_node": 1578,
+            "source_node_name": "delay",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 3316,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 3389,
+            "source_node_name": "b",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 1578,
+            "dest_node_name": "delay",
+            "dest_input_index": 2,
+            "dest_input_name": "cancel"
+        }
+    }
+}

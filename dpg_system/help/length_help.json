@@ -1,0 +1,603 @@
+{
+    "height": 585,
+    "width": 1248,
+    "position": [
+        100,
+        100
+    ],
+    "id": 197,
+    "name": "length_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/length_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 228,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "name": "close",
+            "id": 325,
+            "position_x": 42,
+            "position_y": 462,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "2": {
+            "init": "comment concat - concatenate multiple lists into one",
+            "name": "comment",
+            "id": 355,
+            "position_x": 20,
+            "position_y": 6,
+            "width": 709,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "length - output the length (or size) of the received data",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "length - output the length (or size) of the received data"
+        },
+        "3": {
+            "name": "text_block",
+            "id": 861,
+            "position_x": 492,
+            "position_y": 65,
+            "width": 737,
+            "height": 398,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The length node counts the number of elements in a data structure.\n\nIt works on strings (character count), lists (item count), and multi-dimensional arrays or \ntensors (total element count).\n\nSYNTAX:\n\nlength\n\nEXAMPLE:\n\nlength\n\nINPUTS AND PARAMETERS:\n\ninput:\nThe data to be measured. \nAccepts strings, lists, tuples, numpy arrays, or torch tensors.\n\nOUTPUTS: \n\nlength:\nAn integer representing the total size of the input. \nIf the input is a single number (int/float), the result is 1.",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 729,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 382,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "The length node counts the number of elements in a data structure.\n\nIt works on strings (character count), lists (item count), and multi-dimensional arrays or \ntensors (total element count).\n\nSYNTAX:\n\nlength\n\nEXAMPLE:\n\nlength\n\nINPUTS AND PARAMETERS:\n\ninput:\nThe data to be measured. \nAccepts strings, lists, tuples, numpy arrays, or torch tensors.\n\nOUTPUTS: \n\nlength:\nAn integer representing the total size of the input. \nIf the input is a single number (int/float), the result is 1."
+        },
+        "4": {
+            "init": "np.rand 2 2",
+            "name": "np.rand",
+            "id": 942,
+            "position_x": 27,
+            "position_y": 355,
+            "width": 123,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "dim 0",
+                    "value": 2,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "dim 1",
+                    "value": 2,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                }
+            }
+        },
+        "5": {
+            "init": "t.rand 2 2",
+            "name": "t.rand",
+            "id": 1053,
+            "position_x": 29,
+            "position_y": 203,
+            "width": 163,
+            "height": 142,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "input",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "shape",
+                    "value": "[2, 2]",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "6": {
+            "name": "list",
+            "id": 1223,
+            "position_x": 26,
+            "position_y": 151,
+            "width": 162,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "tomato lettuce cheese",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 135,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "7": {
+            "name": "string",
+            "id": 1360,
+            "position_x": 26,
+            "position_y": 102,
+            "width": 168,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "Let's go to the party!",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 141,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "8": {
+            "name": "float",
+            "id": 1417,
+            "position_x": 215,
+            "position_y": 103,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0.07999999821186066,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 0.009999999776482582,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "9": {
+            "name": "int",
+            "id": 1483,
+            "position_x": 215,
+            "position_y": 155,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": -1,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "10": {
+            "name": "b",
+            "id": 1550,
+            "position_x": 213,
+            "position_y": 212,
+            "width": 22,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "message",
+                    "value": "bang",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "height",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "flash_duration",
+                    "value": 0.10000000149011612,
+                    "value_type": "float"
+                }
+            }
+        },
+        "11": {
+            "init": "comment click on the trigger buttons on these nodes to have the type displayed",
+            "name": "comment",
+            "id": 1617,
+            "position_x": 23,
+            "position_y": 66,
+            "width": 451,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click on the trigger buttons on these nodes to have the length displayed",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "click on the trigger buttons on these nodes to have the length displayed"
+        },
+        "12": {
+            "name": "int",
+            "id": 1681,
+            "position_x": 302,
+            "position_y": 347,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "13": {
+            "name": "length",
+            "id": 1828,
+            "position_x": 232,
+            "position_y": 346,
+            "width": 45,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 942,
+            "source_node_name": "np.rand",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 1828,
+            "dest_node_name": "length",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "1": {
+            "source_node": 1053,
+            "source_node_name": "t.rand",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 1828,
+            "dest_node_name": "length",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "2": {
+            "source_node": 1223,
+            "source_node_name": "list",
+            "source_output_index": 0,
+            "source_output_name": "list out",
+            "dest_node": 1828,
+            "dest_node_name": "length",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "3": {
+            "source_node": 1360,
+            "source_node_name": "string",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 1828,
+            "dest_node_name": "length",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "4": {
+            "source_node": 1417,
+            "source_node_name": "float",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 1828,
+            "dest_node_name": "length",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "5": {
+            "source_node": 1483,
+            "source_node_name": "int",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 1828,
+            "dest_node_name": "length",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "6": {
+            "source_node": 1550,
+            "source_node_name": "b",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 1828,
+            "dest_node_name": "length",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "7": {
+            "source_node": 1828,
+            "source_node_name": "length",
+            "source_output_index": 0,
+            "source_output_name": "length",
+            "dest_node": 1681,
+            "dest_node_name": "int",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

@@ -1,0 +1,487 @@
+{
+    "height": 645,
+    "width": 1228,
+    "position": [
+        100,
+        100
+    ],
+    "id": 197,
+    "name": "prepend_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/prepend_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 228,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "name": "close",
+            "id": 325,
+            "position_x": 21,
+            "position_y": 533,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "2": {
+            "init": "comment concat - concatenate multiple lists into one",
+            "name": "comment",
+            "id": 355,
+            "position_x": 17,
+            "position_y": -5,
+            "width": 721,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "prepend - prepend something to the received string or list",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "prepend - prepend something to the received string or list"
+        },
+        "3": {
+            "name": "text_block",
+            "id": 861,
+            "position_x": 489,
+            "position_y": 42,
+            "width": 737,
+            "height": 565,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The prepend node places a specific value (the prefix) at the beginning of the incoming data.\n\nIt is commonly used to add specific routing or command headers (like \"pos\" or \"color\") to \nvalues so they can be sorted by a Route node later. It merges the prefix with the input to \nform a new list or string.\n\nSYNTAX:\n\nprepend <prefix_value>\n\nEXAMPLE:\n\nprepend pos\n(If you send the list [10, 20] to this node, it outputs [\"pos\", 10, 20])\n\nINPUTS AND PARAMETERS:\n\nin:\nThe message body. \nData received here is attached to the end of the current prefix. When appending a string to\nanother string, a space is inserted between strings\n\nprefix:\nThe value to place at the start of the message.\nYou can define this when creating the node or change it dynamically via this input box.\n\nOPTIONS:\n\nalways output list:\nIf checked, then the output is always a list, with the first element being the prefix.\n\nOUTPUTS: \n\nout:\nThe combined data starting with the prefix.",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 729,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 549,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "The prepend node places a specific value (the prefix) at the beginning of the incoming data.\n\nIt is commonly used to add specific routing or command headers (like \"pos\" or \"color\") to \nvalues so they can be sorted by a Route node later. It merges the prefix with the input to \nform a new list or string.\n\nSYNTAX:\n\nprepend <prefix_value>\n\nEXAMPLE:\n\nprepend pos\n(If you send the list [10, 20] to this node, it outputs [\"pos\", 10, 20])\n\nINPUTS AND PARAMETERS:\n\nin:\nThe message body. \nData received here is attached to the end of the current prefix. When appending a string to\nanother string, a space is inserted between strings\n\nprefix:\nThe value to place at the start of the message.\nYou can define this when creating the node or change it dynamically via this input box.\n\nOPTIONS:\n\nalways output list:\nIf checked, then the output is always a list, with the first element being the prefix.\n\nOUTPUTS: \n\nout:\nThe combined data starting with the prefix."
+        },
+        "4": {
+            "init": "comment click on the trigger buttons on these nodes to have the type displayed",
+            "name": "comment",
+            "id": 1617,
+            "position_x": 20,
+            "position_y": 44,
+            "width": 414,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click on the trigger buttons on the input nodes to see the results",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "click on the trigger buttons on the input nodes to see the results"
+        },
+        "5": {
+            "init": "prepend prefix",
+            "name": "prepend",
+            "id": 2618,
+            "position_x": 167,
+            "position_y": 149,
+            "width": 129,
+            "height": 62,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "prefix",
+                    "value": "prefix",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "always output list",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "6": {
+            "name": "string",
+            "id": 2693,
+            "position_x": 315,
+            "position_y": 158,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "['prefix', 77]",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "7": {
+            "name": "string",
+            "id": 2831,
+            "position_x": 18,
+            "position_y": 155,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "body",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "8": {
+            "name": "info",
+            "id": 2896,
+            "position_x": 217,
+            "position_y": 237,
+            "width": 229,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "info",
+                    "value": "list[2]",
+                    "value_type": "string"
+                }
+            }
+        },
+        "9": {
+            "name": "int",
+            "id": 2923,
+            "position_x": 18,
+            "position_y": 92,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 77,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "10": {
+            "init": "prepend 40",
+            "name": "prepend",
+            "id": 3014,
+            "position_x": 187,
+            "position_y": 353,
+            "width": 129,
+            "height": 62,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "prefix",
+                    "value": "40",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "always output list",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "11": {
+            "name": "int",
+            "id": 3081,
+            "position_x": 30,
+            "position_y": 363,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 69,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "12": {
+            "name": "message",
+            "id": 3148,
+            "position_x": 338,
+            "position_y": 367,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "[40, 69]",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 2618,
+            "source_node_name": "prepend",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 2693,
+            "dest_node_name": "string",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "1": {
+            "source_node": 2618,
+            "source_node_name": "prepend",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 2896,
+            "dest_node_name": "info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 2831,
+            "source_node_name": "string",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 2618,
+            "dest_node_name": "prepend",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 2923,
+            "source_node_name": "int",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 2618,
+            "dest_node_name": "prepend",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 3014,
+            "source_node_name": "prepend",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 3148,
+            "dest_node_name": "message",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "5": {
+            "source_node": 3081,
+            "source_node_name": "int",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 3014,
+            "dest_node_name": "prepend",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}
