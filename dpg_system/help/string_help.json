@@ -1,0 +1,567 @@
+{
+    "height": 638,
+    "width": 1225,
+    "position": [
+        100,
+        100
+    ],
+    "id": 197,
+    "name": "string_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/string_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 228,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "name": "close",
+            "id": 325,
+            "position_x": 21,
+            "position_y": 533,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "2": {
+            "init": "comment concat - concatenate multiple lists into one",
+            "name": "comment",
+            "id": 355,
+            "position_x": 17,
+            "position_y": -5,
+            "width": 856,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "string - convert received data to a string or create a string to send",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "string - convert received data to a string or create a string to send"
+        },
+        "3": {
+            "name": "text_block",
+            "id": 861,
+            "position_x": 489,
+            "position_y": 42,
+            "width": 737,
+            "height": 561,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The string node converts any received input into a text string.\n\nIt is useful for casting numbers, lists, or objects into text format for display, \nlogging, or concatenation operations.\n\nSYNTAX:\n\nstring\n\nEXAMPLE:\n\nstring\n\nINPUTS AND PARAMETERS:\n\nin:\nThe data to be converted. \nAny data type received here (integers, floats, lists, arrays) is automatically cast to its \nstring representation immediately upon arrival.\n\nedit field:\nAny data you enter here is cast to a string and output.\n\ntrigger button:\nClicking on this button causes the string to be send out of the output again.\n\nOPTIONS:\nadapt_width: this determines how the string node adjusts to the length of the input string.\nThe options are: grow_to_fit, grow_or_shrink_to_fit, fixed width\n\nwidth: this sets the width of the text_field.\n\nOUTPUTS: \n\nstring out: The resulting text string.",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 729,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 545,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "The string node converts any received input into a text string.\n\nIt is useful for casting numbers, lists, or objects into text format for display, \nlogging, or concatenation operations.\n\nSYNTAX:\n\nstring\n\nEXAMPLE:\n\nstring\n\nINPUTS AND PARAMETERS:\n\nin:\nThe data to be converted. \nAny data type received here (integers, floats, lists, arrays) is automatically cast to its \nstring representation immediately upon arrival.\n\nedit field:\nAny data you enter here is cast to a string and output.\n\ntrigger button:\nClicking on this button causes the string to be send out of the output again.\n\nOPTIONS:\nadapt_width: this determines how the string node adjusts to the length of the input string.\nThe options are: grow_to_fit, grow_or_shrink_to_fit, fixed width\n\nwidth: this sets the width of the text_field.\n\nOUTPUTS: \n\nstring out: The resulting text string."
+        },
+        "4": {
+            "init": "np.rand 2 2",
+            "name": "np.rand",
+            "id": 942,
+            "position_x": 206,
+            "position_y": 190,
+            "width": 123,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "dim 0",
+                    "value": 2,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "dim 1",
+                    "value": 2,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                }
+            }
+        },
+        "5": {
+            "init": "t.rand 2 2",
+            "name": "t.rand",
+            "id": 1053,
+            "position_x": 26,
+            "position_y": 130,
+            "width": 163,
+            "height": 142,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "input",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "shape",
+                    "value": "[2, 2]",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "6": {
+            "name": "float",
+            "id": 1417,
+            "position_x": 180,
+            "position_y": 76,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0.47999998927116394,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 0.009999999776482582,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "7": {
+            "name": "int",
+            "id": 1483,
+            "position_x": 329,
+            "position_y": 76,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 119,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "8": {
+            "init": "comment click on the trigger buttons on these nodes to have the type displayed",
+            "name": "comment",
+            "id": 1617,
+            "position_x": 20,
+            "position_y": 44,
+            "width": 451,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click on the trigger buttons on these nodes to have the length displayed",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "click on the trigger buttons on these nodes to have the length displayed"
+        },
+        "9": {
+            "name": "info",
+            "id": 1952,
+            "position_x": 111,
+            "position_y": 443,
+            "width": 229,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "info",
+                    "value": "string [[0.121 0.133] [0.332 0.643]]",
+                    "value_type": "string"
+                }
+            }
+        },
+        "10": {
+            "name": "list",
+            "id": 1979,
+            "position_x": 207,
+            "position_y": 134,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1.1 2.2 3.3 4.4",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "11": {
+            "name": "list",
+            "id": 2036,
+            "position_x": 26,
+            "position_y": 76,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1 2 3 4 5 6 7",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "12": {
+            "init": "comment array",
+            "name": "comment",
+            "id": 2384,
+            "position_x": 276,
+            "position_y": 265,
+            "width": 39,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "array",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "array"
+        },
+        "13": {
+            "name": "string",
+            "id": 2440,
+            "position_x": 141,
+            "position_y": 341,
+            "width": 211,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "[[0.121 0.133] [0.332 0.643]]",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_or_shrink_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 184,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 942,
+            "source_node_name": "np.rand",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 2440,
+            "dest_node_name": "string",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "1": {
+            "source_node": 1053,
+            "source_node_name": "t.rand",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 2440,
+            "dest_node_name": "string",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "2": {
+            "source_node": 1417,
+            "source_node_name": "float",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 2440,
+            "dest_node_name": "string",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "3": {
+            "source_node": 1483,
+            "source_node_name": "int",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 2440,
+            "dest_node_name": "string",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "4": {
+            "source_node": 1979,
+            "source_node_name": "list",
+            "source_output_index": 0,
+            "source_output_name": "list out",
+            "dest_node": 2440,
+            "dest_node_name": "string",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "5": {
+            "source_node": 2036,
+            "source_node_name": "list",
+            "source_output_index": 0,
+            "source_output_name": "list out",
+            "dest_node": 2440,
+            "dest_node_name": "string",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "6": {
+            "source_node": 2440,
+            "source_node_name": "string",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 1952,
+            "dest_node_name": "info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

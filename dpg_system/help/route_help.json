@@ -1,0 +1,640 @@
+{
+    "height": 705,
+    "width": 1226,
+    "position": [
+        100,
+        100
+    ],
+    "id": 197,
+    "name": "route_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/route_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 228,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment save - save the patcher containing this save node",
+            "name": "comment",
+            "id": 325,
+            "position_x": 23,
+            "position_y": 7,
+            "width": 1028,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "route - deliver messages to different outputs depending on the address (first word)",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "route - deliver messages to different outputs depending on the address (first word)"
+        },
+        "2": {
+            "name": "close",
+            "id": 343,
+            "position_x": 34,
+            "position_y": 525,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "3": {
+            "name": "text_block",
+            "id": 422,
+            "position_x": 452,
+            "position_y": 55,
+            "width": 858,
+            "height": 597,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The route node directs messages to specific outputs based on a \"header\" or \"address tag.\"\n\nIt operates like a mail sorter. It checks the first element of an incoming list \n(or the first word of a string). If that element matches one of the node's arguments, \nthe element is removed, and the remaining data is sent out the corresponding output. \nIf no match is found, the entire original message is sent out the final \"unmatched\" output pin.\n\nSYNTAX:\n\nroute <address_1> <address_2> ...\n\nEXAMPLE:\n\nroute pos rot scale\n\nINPUTS AND PARAMETERS:\n\nin: \nThe message to be routed. \nThis accepts Lists (e.g., ['x', 100]) or Strings (e.g., \"x 100\", which are automatically split \nby spaces).\nNote: The input must contain at least two elements (an address and a value). \nIf a single element is received, it is treated as unmatched.\n\nOPTIONS:\n\nroute address:\nAllows you to change the routing key for a specific output pin.\n\nOUTPUTS: \n\nout (variable):\nA series of output pins corresponding to the creation arguments. \nWhen a match is found, the data (minus the address header) is sent here.\n\nunmatched:\nThe right-most output pin. \nAny input that does not match a defined address is sent out this pin exactly as it was received.",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 850,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 581,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "The route node directs messages to specific outputs based on a \"header\" or \"address tag.\"\n\nIt operates like a mail sorter. It checks the first element of an incoming list \n(or the first word of a string). If that element matches one of the node's arguments, \nthe element is removed, and the remaining data is sent out the corresponding output. \nIf no match is found, the entire original message is sent out the final \"unmatched\" output pin.\n\nSYNTAX:\n\nroute <address_1> <address_2> ...\n\nEXAMPLE:\n\nroute pos rot scale\n\nINPUTS AND PARAMETERS:\n\nin: \nThe message to be routed. \nThis accepts Lists (e.g., ['x', 100]) or Strings (e.g., \"x 100\", which are automatically split \nby spaces).\nNote: The input must contain at least two elements (an address and a value). \nIf a single element is received, it is treated as unmatched.\n\nOPTIONS:\n\nroute address:\nAllows you to change the routing key for a specific output pin.\n\nOUTPUTS: \n\nout (variable):\nA series of output pins corresponding to the creation arguments. \nWhen a match is found, the data (minus the address header) is sent here.\n\nunmatched:\nThe right-most output pin. \nAny input that does not match a defined address is sent out this pin exactly as it was received."
+        },
+        "4": {
+            "init": "route here there anywhere someplace",
+            "name": "route",
+            "id": 5747,
+            "position_x": 189,
+            "position_y": 155,
+            "width": 64,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "route address 0",
+                    "value": "here",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "route address 1",
+                    "value": "there",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "route address 2",
+                    "value": "anywhere",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "route address 3",
+                    "value": "someplace",
+                    "value_type": "string"
+                }
+            }
+        },
+        "5": {
+            "name": "message",
+            "id": 5882,
+            "position_x": 290,
+            "position_y": 94,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "6": {
+            "name": "message",
+            "id": 5939,
+            "position_x": 290,
+            "position_y": 141,
+            "width": 127,
+            "height": 41,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "7": {
+            "name": "message",
+            "id": 5995,
+            "position_x": 290,
+            "position_y": 183,
+            "width": 127,
+            "height": 41,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "8": {
+            "name": "message",
+            "id": 6051,
+            "position_x": 290,
+            "position_y": 226,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "9": {
+            "name": "message",
+            "id": 6111,
+            "position_x": 23,
+            "position_y": 132,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "here 1 2 3 4",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "10": {
+            "name": "message",
+            "id": 6167,
+            "position_x": 21,
+            "position_y": 176,
+            "width": 131,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "there I go again",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 104,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "11": {
+            "name": "message",
+            "id": 6223,
+            "position_x": 23,
+            "position_y": 220,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "anywhere 9.57",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "12": {
+            "name": "message",
+            "id": 6279,
+            "position_x": 23,
+            "position_y": 264,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "someplace else",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "13": {
+            "name": "message",
+            "id": 6339,
+            "position_x": 23,
+            "position_y": 309,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "nowhere",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "14": {
+            "name": "message",
+            "id": 6396,
+            "position_x": 292,
+            "position_y": 311,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 5747,
+            "source_node_name": "route",
+            "source_output_index": 0,
+            "source_output_name": "here",
+            "dest_node": 5882,
+            "dest_node_name": "message",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "1": {
+            "source_node": 5747,
+            "source_node_name": "route",
+            "source_output_index": 0,
+            "source_output_name": "here",
+            "dest_node": 5882,
+            "dest_node_name": "message",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "2": {
+            "source_node": 5747,
+            "source_node_name": "route",
+            "source_output_index": 1,
+            "source_output_name": "there",
+            "dest_node": 5939,
+            "dest_node_name": "message",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "3": {
+            "source_node": 5747,
+            "source_node_name": "route",
+            "source_output_index": 2,
+            "source_output_name": "anywhere",
+            "dest_node": 5995,
+            "dest_node_name": "message",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "4": {
+            "source_node": 5747,
+            "source_node_name": "route",
+            "source_output_index": 3,
+            "source_output_name": "someplace",
+            "dest_node": 6051,
+            "dest_node_name": "message",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "5": {
+            "source_node": 5747,
+            "source_node_name": "route",
+            "source_output_index": 4,
+            "source_output_name": "unmatched",
+            "dest_node": 6396,
+            "dest_node_name": "message",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "6": {
+            "source_node": 6111,
+            "source_node_name": "message",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 5747,
+            "dest_node_name": "route",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "7": {
+            "source_node": 6167,
+            "source_node_name": "message",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 5747,
+            "dest_node_name": "route",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "8": {
+            "source_node": 6223,
+            "source_node_name": "message",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 5747,
+            "dest_node_name": "route",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "9": {
+            "source_node": 6279,
+            "source_node_name": "message",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 5747,
+            "dest_node_name": "route",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "10": {
+            "source_node": 6339,
+            "source_node_name": "message",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 5747,
+            "dest_node_name": "route",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

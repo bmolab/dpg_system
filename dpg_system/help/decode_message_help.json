@@ -1,0 +1,483 @@
+{
+    "height": 690,
+    "width": 1109,
+    "position": [
+        100,
+        100
+    ],
+    "id": 7093,
+    "name": "decode_message_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/decode_message_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 7120,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment save - save the patcher containing this save node",
+            "name": "comment",
+            "id": 7138,
+            "position_x": 18,
+            "position_y": 4,
+            "width": 856,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "decode_message - lookup and send output in response to an input index",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "decode_message - lookup and send output in response to an input index"
+        },
+        "2": {
+            "name": "close",
+            "id": 7149,
+            "position_x": 26,
+            "position_y": 516,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "3": {
+            "name": "text_block",
+            "id": 7172,
+            "position_x": 381,
+            "position_y": 49,
+            "width": 858,
+            "height": 590,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The decode_message node functions as a lookup table or an index selector.\n\nIt accepts an integer input and outputs the specific value defined at that index.\nThe selected value is sent out of two places simultaneously: \nthe individual output pin corresponding to that index, and a shared combined output pin.\n\nSYNTAX:\n\ndecode_message <val_0> <val_1> ...\n\nEXAMPLE:\n\ndecode_message red green blue\n\nIf the input receives 0, the node outputs \"red\" on the first pin and the combined pin.\nIf the input receives 1, the node outputs \"green\" on the second pin and the combined pin.\n\nINPUTS AND PARAMETERS:\n\ndecode: \nThe integer index to select. \nIf the number is 0, it selects the first argument. If 1, the second, and so on.\nIf the input number is out of range, nothing happens.\n\nOPTIONS:\n\ntrigger n:\nAllows you to change the value stored at a specific index.\n\nOUTPUTS: \n\nout (variable):\nA series of outputs corresponding to the creation arguments. \nOnly the output matching the input index fires.\n\ncombined:\nThe last output pin. \nIt always sends the selected value, regardless of which index was chosen.",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 850,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 574,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "The decode_message node functions as a lookup table or an index selector.\n\nIt accepts an integer input and outputs the specific value defined at that index.\nThe selected value is sent out of two places simultaneously: \nthe individual output pin corresponding to that index, and a shared combined output pin.\n\nSYNTAX:\n\ndecode_message <val_0> <val_1> ...\n\nEXAMPLE:\n\ndecode_message red green blue\n\nIf the input receives 0, the node outputs \"red\" on the first pin and the combined pin.\nIf the input receives 1, the node outputs \"green\" on the second pin and the combined pin.\n\nINPUTS AND PARAMETERS:\n\ndecode: \nThe integer index to select. \nIf the number is 0, it selects the first argument. If 1, the second, and so on.\nIf the input number is out of range, nothing happens.\n\nOPTIONS:\n\ntrigger n:\nAllows you to change the value stored at a specific index.\n\nOUTPUTS: \n\nout (variable):\nA series of outputs corresponding to the creation arguments. \nOnly the output matching the input index fires.\n\ncombined:\nThe last output pin. \nIt always sends the selected value, regardless of which index was chosen."
+        },
+        "4": {
+            "init": "decode_message harry sally mary dave",
+            "name": "decode_message",
+            "id": 8200,
+            "position_x": 39,
+            "position_y": 168,
+            "width": 129,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "decode",
+                    "value": -1,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "trigger 0",
+                    "value": "harry",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "trigger 1",
+                    "value": "sally",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "trigger 2",
+                    "value": "mary",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "trigger 3",
+                    "value": "dave",
+                    "value_type": "string"
+                }
+            }
+        },
+        "5": {
+            "name": "message",
+            "id": 8335,
+            "position_x": 202,
+            "position_y": 101,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "6": {
+            "name": "message",
+            "id": 8392,
+            "position_x": 202,
+            "position_y": 155,
+            "width": 127,
+            "height": 41,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "7": {
+            "name": "message",
+            "id": 8448,
+            "position_x": 202,
+            "position_y": 205,
+            "width": 127,
+            "height": 41,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "8": {
+            "name": "message",
+            "id": 8504,
+            "position_x": 202,
+            "position_y": 255,
+            "width": 127,
+            "height": 41,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "9": {
+            "name": "message",
+            "id": 8560,
+            "position_x": 205,
+            "position_y": 368,
+            "width": 127,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "10": {
+            "name": "int",
+            "id": 8621,
+            "position_x": 35,
+            "position_y": 107,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": -1,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "11": {
+            "init": "comment decode_message harry sally mary dave",
+            "name": "comment",
+            "id": 8696,
+            "position_x": 44,
+            "position_y": 66,
+            "width": 230,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "decode_message harry sally mary dave",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "decode_message harry sally mary dave"
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 8200,
+            "source_node_name": "decode_message",
+            "source_output_index": 0,
+            "source_output_name": "harry",
+            "dest_node": 8335,
+            "dest_node_name": "message",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "1": {
+            "source_node": 8200,
+            "source_node_name": "decode_message",
+            "source_output_index": 1,
+            "source_output_name": "sally",
+            "dest_node": 8392,
+            "dest_node_name": "message",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "2": {
+            "source_node": 8200,
+            "source_node_name": "decode_message",
+            "source_output_index": 2,
+            "source_output_name": "mary",
+            "dest_node": 8448,
+            "dest_node_name": "message",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "3": {
+            "source_node": 8200,
+            "source_node_name": "decode_message",
+            "source_output_index": 3,
+            "source_output_name": "dave",
+            "dest_node": 8504,
+            "dest_node_name": "message",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "4": {
+            "source_node": 8200,
+            "source_node_name": "decode_message",
+            "source_output_index": 4,
+            "source_output_name": "combined",
+            "dest_node": 8560,
+            "dest_node_name": "message",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "5": {
+            "source_node": 8621,
+            "source_node_name": "int",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 8200,
+            "dest_node_name": "decode_message",
+            "dest_input_index": 0,
+            "dest_input_name": "decode"
+        }
+    }
+}

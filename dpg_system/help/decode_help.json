@@ -1,0 +1,694 @@
+{
+    "height": 625,
+    "width": 1231,
+    "position": [
+        100,
+        100
+    ],
+    "id": 197,
+    "name": "decode_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/decode_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 228,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment save - save the patcher containing this save node",
+            "name": "comment",
+            "id": 325,
+            "position_x": 23,
+            "position_y": 7,
+            "width": 721,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "decode - send triggers when specified numbers are received",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "decode - send triggers when specified numbers are received"
+        },
+        "2": {
+            "name": "close",
+            "id": 343,
+            "position_x": 26,
+            "position_y": 516,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "3": {
+            "name": "text_block",
+            "id": 422,
+            "position_x": 396,
+            "position_y": 53,
+            "width": 858,
+            "height": 524,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The decode node sends triggers based on the numeric input.\n\nWhen a number arrives at the input, the node checks if it matches any numbers in the defined range. \nIf a match is found, the corresponding output pin is activated. \n\nSYNTAX:\n\ndecode <range>\n\nEXAMPLE:\n\ndecode 16   (Creates 16 outputs corresponding to the integers 0-15)\n\nINPUTS AND PARAMETERS:\n\nin: \nThe value to be tested. \nThis triggers the comparison logic. You can send a single value or a list of values. \nIf a list is sent, the node checks every item in the list against the range\n\nOPTIONS: (select node and press 'o'\n\noutput_mode (Option):\nDetermines what kind of data is sent when a match occurs.\nbang (default): Sends a \"bang\" event when the input matches a selector.\nflag: Sends a 1 when the input matches, and a 0 when it stops matching. \nNote: In flag mode, outputs only send data when the state changes.\n\nOUTPUTS: \n\nout (variable):\nA series of output pins corresponding to the integers in the range.\nIf input matches a selector, the specific pin associated with that selector sends out a bang.",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 850,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 508,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "The decode node sends triggers based on the numeric input.\n\nWhen a number arrives at the input, the node checks if it matches any numbers in the defined range. \nIf a match is found, the corresponding output pin is activated. \n\nSYNTAX:\n\ndecode <range>\n\nEXAMPLE:\n\ndecode 16   (Creates 16 outputs corresponding to the integers 0-15)\n\nINPUTS AND PARAMETERS:\n\nin: \nThe value to be tested. \nThis triggers the comparison logic. You can send a single value or a list of values. \nIf a list is sent, the node checks every item in the list against the range\n\nOPTIONS: (select node and press 'o'\n\noutput_mode (Option):\nDetermines what kind of data is sent when a match occurs.\nbang (default): Sends a \"bang\" event when the input matches a selector.\nflag: Sends a 1 when the input matches, and a 0 when it stops matching. \nNote: In flag mode, outputs only send data when the state changes.\n\nOUTPUTS: \n\nout (variable):\nA series of output pins corresponding to the integers in the range.\nIf input matches a selector, the specific pin associated with that selector sends out a bang."
+        },
+        "4": {
+            "name": "counter",
+            "id": 4322,
+            "position_x": 36,
+            "position_y": 161,
+            "width": 123,
+            "height": 94,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "step",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "5": {
+            "name": "b",
+            "id": 4846,
+            "position_x": 324,
+            "position_y": 198,
+            "width": 22,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "message",
+                    "value": "bang",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "height",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "flash_duration",
+                    "value": 0.10000000149011612,
+                    "value_type": "float"
+                }
+            }
+        },
+        "6": {
+            "name": "b",
+            "id": 4904,
+            "position_x": 324,
+            "position_y": 245,
+            "width": 22,
+            "height": 43,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "message",
+                    "value": "bang",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "height",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "flash_duration",
+                    "value": 0.10000000149011612,
+                    "value_type": "float"
+                }
+            }
+        },
+        "7": {
+            "name": "b",
+            "id": 4962,
+            "position_x": 324,
+            "position_y": 289,
+            "width": 22,
+            "height": 43,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "message",
+                    "value": "bang",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "height",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "flash_duration",
+                    "value": 0.10000000149011612,
+                    "value_type": "float"
+                }
+            }
+        },
+        "8": {
+            "name": "b",
+            "id": 5020,
+            "position_x": 324,
+            "position_y": 333,
+            "width": 22,
+            "height": 43,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "message",
+                    "value": "bang",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "height",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "flash_duration",
+                    "value": 0.10000000149011612,
+                    "value_type": "float"
+                }
+            }
+        },
+        "9": {
+            "name": "b",
+            "id": 5078,
+            "position_x": 324,
+            "position_y": 378,
+            "width": 22,
+            "height": 43,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "message",
+                    "value": "bang",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "height",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "flash_duration",
+                    "value": 0.10000000149011612,
+                    "value_type": "float"
+                }
+            }
+        },
+        "10": {
+            "name": "b",
+            "id": 5136,
+            "position_x": 324,
+            "position_y": 422,
+            "width": 22,
+            "height": 43,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "message",
+                    "value": "bang",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "height",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "flash_duration",
+                    "value": 0.10000000149011612,
+                    "value_type": "float"
+                }
+            }
+        },
+        "11": {
+            "name": "b",
+            "id": 5194,
+            "position_x": 324,
+            "position_y": 466,
+            "width": 22,
+            "height": 43,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "message",
+                    "value": "bang",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "height",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "flash_duration",
+                    "value": 0.10000000149011612,
+                    "value_type": "float"
+                }
+            }
+        },
+        "12": {
+            "name": "b",
+            "id": 5252,
+            "position_x": 324,
+            "position_y": 511,
+            "width": 22,
+            "height": 43,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "message",
+                    "value": "bang",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "height",
+                    "value": 14,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "flash_duration",
+                    "value": 0.10000000149011612,
+                    "value_type": "float"
+                }
+            }
+        },
+        "13": {
+            "init": "decode 8",
+            "name": "decode",
+            "id": 5326,
+            "position_x": 221,
+            "position_y": 208,
+            "width": 45,
+            "height": 158,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "output_mode",
+                    "value": "bang",
+                    "value_type": "string"
+                }
+            }
+        },
+        "14": {
+            "init": "metro 100",
+            "name": "metro",
+            "id": 5537,
+            "position_x": 30,
+            "position_y": 73,
+            "width": 129,
+            "height": 78,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "string"
+                }
+            }
+        },
+        "15": {
+            "name": "int",
+            "id": 5605,
+            "position_x": 221,
+            "position_y": 135,
+            "width": 127,
+            "height": 46,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 7,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 4322,
+            "source_node_name": "counter",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 5326,
+            "dest_node_name": "decode",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "1": {
+            "source_node": 4322,
+            "source_node_name": "counter",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 5605,
+            "dest_node_name": "int",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 5326,
+            "source_node_name": "decode",
+            "source_output_index": 0,
+            "source_output_name": "0",
+            "dest_node": 4846,
+            "dest_node_name": "b",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 5326,
+            "source_node_name": "decode",
+            "source_output_index": 1,
+            "source_output_name": "1",
+            "dest_node": 4904,
+            "dest_node_name": "b",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 5326,
+            "source_node_name": "decode",
+            "source_output_index": 2,
+            "source_output_name": "2",
+            "dest_node": 4962,
+            "dest_node_name": "b",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 5326,
+            "source_node_name": "decode",
+            "source_output_index": 3,
+            "source_output_name": "3",
+            "dest_node": 5020,
+            "dest_node_name": "b",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 5326,
+            "source_node_name": "decode",
+            "source_output_index": 4,
+            "source_output_name": "4",
+            "dest_node": 5078,
+            "dest_node_name": "b",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "7": {
+            "source_node": 5326,
+            "source_node_name": "decode",
+            "source_output_index": 5,
+            "source_output_name": "5",
+            "dest_node": 5136,
+            "dest_node_name": "b",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "8": {
+            "source_node": 5326,
+            "source_node_name": "decode",
+            "source_output_index": 6,
+            "source_output_name": "6",
+            "dest_node": 5194,
+            "dest_node_name": "b",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "9": {
+            "source_node": 5326,
+            "source_node_name": "decode",
+            "source_output_index": 7,
+            "source_output_name": "7",
+            "dest_node": 5252,
+            "dest_node_name": "b",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "10": {
+            "source_node": 5537,
+            "source_node_name": "metro",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 4322,
+            "dest_node_name": "counter",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        }
+    }
+}
