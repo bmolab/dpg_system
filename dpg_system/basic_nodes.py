@@ -33,10 +33,10 @@ def register_basic_nodes():
     Node.app.register_node('dict', CollectionNode.factory)
     Node.app.register_node('construct_dict', ConstructDictNode.factory)
     Node.app.register_node('gather_to_dict', ConstructDictNode.factory)
-
     Node.app.register_node('dict_extract', DictExtractNode.factory)
     Node.app.register_node('unpack_dict', DictExtractNode.factory)
-    Node.app.register_node('pack_dict', PackDictNode.factory)
+    Node.app.register_node('dict_stream', DictStreamNode.factory)
+
     Node.app.register_node("concat", ConcatenateNode.factory)
 
     Node.app.register_node("delay", DelayNode.factory)
@@ -2060,7 +2060,6 @@ def print_info(input_):
 
     return type_string, value_string
 
-# HELP done to here ------
 
 class TypeNode(Node):
     @staticmethod
@@ -2381,29 +2380,147 @@ class DictExtractNode(Node):
             if type(arg) is str:
                 self.extract_keys.append(arg)
         self.output_count = len(self.extract_keys)
+        self.output_count_option = self.add_option('key count', widget_type='input_int', default_value=self.output_count, callback=self.output_count_changed)
+        self.include_key_in_output_option = self.add_option('include key in output', widget_type='checkbox', default_value=False)
+        self.extract_opt = []
+        for i in range(32):
+            if i < self.output_count:
+                self.extract_opt.append(self.add_option('key ' + str(i), widget_type='text_input', default_value=self.extract_keys[i], callback=self.key_changed))
+            else:
+                self.extract_opt.append(self.add_option('key ' + str(i), widget_type='text_input', default_value='', callback=self.key_changed))
+
+    def output_count_changed(self):
+        output_count = self.output_count_option()
+        self.output_count = output_count
+        self.key_changed()
 
     def custom_create(self, from_file):
+        for i in range(self.output_count):
+            if i < len(self.extract_keys):
+                key = self.extract_keys[i]
+            else:
+                key = ''
+            self.outputs[i].set_label(key)
+        print('output_count', self.output_count)
+        for i in range(self.output_count, 32):
+            dpg.hide_item(self.outputs[i].uuid)
+            print('hide_item', self.extract_opt[i].uuid)
+            dpg.hide_item(self.extract_opt[i].uuid)
+
+    def toggle_show_hide_options(self) -> None:
+        if len(self.options) > 0:
+            self.options_visible = not self.options_visible
+            if self.options_visible:
+                dpg.show_item(self.output_count_option.uuid)
+                dpg.show_item(self.output_count_option.widget.uuid)
+                dpg.show_item(self.include_key_in_output_option.uuid)
+                dpg.show_item(self.include_key_in_output_option.widget.uuid)
+
+                for index, option_att in enumerate(self.extract_opt):
+                    if index < self.output_count:
+                        dpg.show_item(option_att.uuid)
+                        dpg.show_item(option_att.widget.uuid)
+            else:
+                dpg.hide_item(self.output_count_option.uuid)
+                dpg.hide_item(self.output_count_option.widget.uuid)
+                dpg.hide_item(self.include_key_in_output_option.uuid)
+                dpg.hide_item(self.include_key_in_output_option.widget.uuid)
+
+                for index, option_att in enumerate(self.extract_opt):
+                    dpg.hide_item(option_att.uuid)
+                    dpg.hide_item(option_att.widget.uuid)
+
+    def key_changed(self):
+        for i in range(32):
+            key = self.extract_opt[i]()
+            if i < self.output_count:
+                if key != '':
+                    if len(self.extract_keys) > i:
+                        self.extract_keys[i] = key
+                    else:
+                        self.extract_keys.append(key)
+                else:
+                    if len(self.extract_keys) > i:
+                        self.extract_keys[i] = key
+                    else:
+                        self.extract_keys.append(key)
+                dpg.show_item(self.outputs[i].uuid)
+                dpg.show_item(self.extract_opt[i].uuid)
+                dpg.show_item(self.extract_opt[i].widget.uuid)
         for index, key in enumerate(self.extract_keys):
             self.outputs[index].set_label(key)
-        for i in range(len(self.extract_keys), 32):
+        for i in range(self.output_count, 32):
             dpg.hide_item(self.outputs[i].uuid)
+            dpg.hide_item(self.extract_opt[i].uuid)
+            dpg.hide_item(self.extract_opt[i].widget.uuid)
 
+    def adjust_keys(self, received_dict=None):
+        if received_dict is not None:
+            self.extract_keys = list(received_dict.keys())
+            self.output_count = len(received_dict.keys())
+            self.output_count_option.set(self.output_count)
+
+        for i in range(self.output_count):
+            if i < len(self.extract_keys):
+                key = self.extract_keys[i]
+                self.outputs[i].set_label(key)
+                self.outputs[i].send(received_dict[key])
+                self.extract_opt[i].set(key)
+                dpg.show_item(self.outputs[i].uuid)
+            else:
+                self.extract_keys.append('')
+                self.extract_opt[i].set('')
+                dpg.show_item(self.outputs[i].uuid)
+        for i in range(self.output_count, 32):
+            dpg.hide_item(self.outputs[i].uuid)
+            self.extract_opt[i].set('')
+        self.unparsed_args = self.extract_keys
 
     def execute(self):
         received_dict = self.input()
         if len(self.extract_keys) == 0:
-            keys = list(received_dict.keys())
-            for index, key in enumerate(keys):
-                self.outputs[index].set_label(key)
-                self.outputs[index].send(received_dict[key])
-                dpg.show_item(self.outputs[index].uuid)
-            for i in range(len(keys), 32):
-                dpg.hide_item(self.outputs[i].uuid)
-            self.unparsed_args = keys
-        else:
-            for index, key in enumerate(self.extract_keys):
-                if key in received_dict:
+            self.adjust_keys(received_dict)
+            # self.extract_keys = list(received_dict.keys())
+            # for i in range(self.output_count):
+            #     if i < len(self.extract_keys):
+            #         key = self.extract_keys[i]
+            #         self.outputs[i].set_label(key)
+            #         self.outputs[i].send(received_dict[key])
+            #         self.extract_opt[i].set(key)
+            #         dpg.show_item(self.outputs[i].uuid)
+            #     else:
+            #         self.extract_opt[i].set('')
+            #         dpg.show_item(self.outputs[i].uuid)
+            # for i in range(self.output_count, 32):
+            #     dpg.hide_item(self.outputs[i].uuid)
+            #     self.extract_opt[i].set('')
+            # self.unparsed_args = self.extract_keys
+        include_key = self.include_key_in_output_option()
+        for index, key in enumerate(self.extract_keys):
+            if key in received_dict:
+                if include_key:
+                    print('include key')
+                    self.outputs[index].send([key, received_dict[key]])
+                else:
                     self.outputs[index].send(received_dict[key])
+
+
+class DictStreamNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = DictStreamNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('dict in', triggers_execution=True)
+        self.output = self.add_output('key value lists out')
+
+    def execute(self):
+        received_dict = self.input()
+        keys = list(received_dict.keys())
+        for key in keys:
+            self.output.send([key, received_dict[key]])
 
 
 class ConstructDictNode(Node):
@@ -2444,34 +2561,34 @@ class ConstructDictNode(Node):
 
 # deprecated - use gather_to_dict
 
-class PackDictNode(Node):
-    @staticmethod
-    def factory(name, data, args=None):
-        node = PackDictNode(name, data, args)
-        return node
-
-    def __init__(self, label: str, data, args):
-        super().__init__(label, data, args)
-        self.input = self.add_input('send dict', widget_type='button', triggers_execution=True)
-        self.labels = []
-        if len(args) > 0:
-            self.labels = args
-
-        for label in self.labels:
-            self.data_input = self.add_input(label, callback=self.received_data)
-        self.dict_output = self.add_output('dict out')
-        self.input_keys = []
-        self.dict = {}
-
-    def received_data(self):
-        this_input = self.active_input
-        key = this_input.get_label()
-        incoming = this_input()
-        self.dict[key] = incoming
-
-    def execute(self):
-        self.dict_output.send(self.dict)
-        self.dict = {}
+# class PackDictNode(Node):
+#     @staticmethod
+#     def factory(name, data, args=None):
+#         node = PackDictNode(name, data, args)
+#         return node
+#
+#     def __init__(self, label: str, data, args):
+#         super().__init__(label, data, args)
+#         self.input = self.add_input('send dict', widget_type='button', triggers_execution=True)
+#         self.labels = []
+#         if len(args) > 0:
+#             self.labels = args
+#
+#         for label in self.labels:
+#             self.data_input = self.add_input(label, callback=self.received_data)
+#         self.dict_output = self.add_output('dict out')
+#         self.input_keys = []
+#         self.dict = {}
+#
+#     def received_data(self):
+#         this_input = self.active_input
+#         key = this_input.get_label()
+#         incoming = this_input()
+#         self.dict[key] = incoming
+#
+#     def execute(self):
+#         self.dict_output.send(self.dict)
+#         self.dict = {}
 
 
 class DictReplaceNode(Node):
@@ -2571,7 +2688,7 @@ class CollectionNode(Node):
 
         self.collection_name_input = self.add_input('name', widget_type='text_input', default_value=self.collection_name, callback=self.load_coll_by_name)
         self.clear_input = self.add_input('clear', widget_type='button', callback=self.clear)
-        self.input = self.add_input('send dict', widget_type='button', callback=self.send_dict)
+        self.send_input = self.add_input('send dict', widget_type='button', callback=self.send_dict)
         self.output = self.add_output("out")
         self.unmatched_output = self.add_output('unmatched')
         self.dict_out = self.add_output('dict out')
@@ -2643,6 +2760,7 @@ class CollectionNode(Node):
         if os.path.exists(path):
             with open(path, 'r') as f:
                 self.collection = json.load(f)
+
     def clear(self):
         self.collection = {}
         self.save_pointer = -1
@@ -2727,7 +2845,7 @@ class CollectionNode(Node):
                     elif t == tuple:
                         self.collection[index] = list(data[0])
                     else:
-                        self.collection[index] = data
+                        self.collection[index] = data[0]
                 else:
                     self.collection[index] = data
 
