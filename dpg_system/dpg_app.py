@@ -388,6 +388,15 @@ class App:
                     self.font_30 = dpg.add_font("Inconsolata-g.otf", 30)
                     self.font_48 = dpg.add_font("Inconsolata-g.otf", 48)
                     self.font_36 = dpg.add_font("Inconsolata-g.otf", 36)
+        else:
+            with dpg.font_registry():
+                if os.path.exists('Inconsolata-g.otf'):
+                    # self.font_24 = dpg.add_font("Inconsolata-g.otf", 12)
+                    # dpg.bind_font(self.font_24)
+                    dpg.set_global_font_scale(1.00)
+                    self.font_30 = dpg.add_font("Inconsolata-g.otf", 15)
+                    self.font_48 = dpg.add_font("Inconsolata-g.otf", 24)
+                    self.font_36 = dpg.add_font("Inconsolata-g.otf", 18)
         # handle other platforms...
         self.viewport = dpg.create_viewport()
         dpg.setup_dearpygui()
@@ -1143,7 +1152,10 @@ class App:
         # return dpg.is_key_down(dpg.mvKey_ModCtrl) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin)
 
     def alt_down(self):
-        return dpg.is_key_down(dpg.mvKey_LAlt) or dpg.is_key_down(dpg.mvKey_RAlt)
+        if hasattr(dpg, 'mvKey_LAlt'):
+            return dpg.is_key_down(dpg.mvKey_LAlt) or dpg.is_key_down(dpg.mvKey_RAlt)
+        else:
+            return dpg.is_key_down(dpg.mvKey_Alt)
 
     def X_handler(self):
         if self.control_or_command_down():
