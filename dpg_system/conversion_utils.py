@@ -6,7 +6,7 @@ from word2number import w2n
 from functools import singledispatch
 import numbers
 from collections.abc import Iterable
-
+import json
 torch_available = False
 try:
     import torch
@@ -130,7 +130,8 @@ def _(data, strip_returns=True):
 # --- 5. Dictionaries ---
 @any_to_string.register(dict)
 def _(data, strip_returns=True):
-    return str(data)
+    nice_string = json.dumps(data, indent=4, cls=NumpyTorchEncoder)
+    return nice_string
 
 # --- 6. Numpy Arrays ---
 @any_to_string.register(np.ndarray)
@@ -148,6 +149,26 @@ if torch_available:
         # Convert to numpy and recurse to the numpy handler
         data_np = data.detach().cpu().numpy()
         return any_to_string(data_np, strip_returns=strip_returns)
+
+
+class NumpyTorchEncoder(json.JSONEncoder):
+    def default(self, obj):
+        # Handle PyTorch Tensors
+        if isinstance(obj, torch.Tensor):
+            # .tolist() automatically moves to CPU and detaches if necessary
+            return obj.tolist()
+
+        # Handle NumPy Arrays
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+
+        # Handle NumPy Scalars (e.g., np.int64, np.float32)
+        # JSON cannot handle np.int64 directly, it needs a Python int
+        if isinstance(obj, np.generic):
+            return obj.item()
+
+        # Let the base class handle standard types
+        return super().default(obj)
 
 
 # def any_to_string(data, strip_returns=True):

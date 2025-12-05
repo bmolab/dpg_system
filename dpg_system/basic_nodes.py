@@ -2401,10 +2401,8 @@ class DictExtractNode(Node):
             else:
                 key = ''
             self.outputs[i].set_label(key)
-        print('output_count', self.output_count)
         for i in range(self.output_count, 32):
             dpg.hide_item(self.outputs[i].uuid)
-            print('hide_item', self.extract_opt[i].uuid)
             dpg.hide_item(self.extract_opt[i].uuid)
 
     def toggle_show_hide_options(self) -> None:
@@ -2499,7 +2497,6 @@ class DictExtractNode(Node):
         for index, key in enumerate(self.extract_keys):
             if key in received_dict:
                 if include_key:
-                    print('include key')
                     self.outputs[index].send([key, received_dict[key]])
                 else:
                     self.outputs[index].send(received_dict[key])
@@ -2686,7 +2683,9 @@ class CollectionNode(Node):
         self.input = self.add_input('retrieve by key', triggers_execution=True)
         self.store_input = self.add_input('store', triggers_execution=True)
 
-        self.collection_name_input = self.add_input('name', widget_type='text_input', default_value=self.collection_name, callback=self.load_coll_by_name)
+        self.load_dict_input = self.add_input('load', widget_type='button', callback=self.load_coll)
+        self.collection_name_input = self.add_property('name', widget_type='label', default_value=self.collection_name)
+        self.save_dict_input = self.add_property('save', widget_type='button', callback=self.save_coll)
         self.clear_input = self.add_input('clear', widget_type='button', callback=self.clear)
         self.send_input = self.add_input('send dict', widget_type='button', callback=self.send_dict)
         self.output = self.add_output("out")
@@ -2697,6 +2696,30 @@ class CollectionNode(Node):
         self.message_handlers['dump'] = self.dump
         self.message_handlers['save'] = self.save_message
         self.message_handlers['load'] = self.load_message
+        self.path = ''
+        self.file_name = ''
+
+    def save_coll(self):
+        path = self.save_dict_input()
+        if path is not None and path != '':
+            if self.save_data(path):
+                # self.path = path
+                # self.file_name = path.split('/')[-1]
+                # self.file_name = self.file_name.split('.')[0]
+                # self.collection_name_input.set(self.file_name)
+                return
+        self.save_dialog()
+
+    def load_coll(self):
+        path = self.load_dict_input()
+        if path is not None and path != '':
+            if self.load_data(path):
+                # self.path = path
+                # self.file_name = path.split('/')[-1]
+                # self.file_name = self.file_name.split('.')[0]
+                # self.collection_name_input.set(self.file_name)
+                return
+        self.load_dialog()
 
     def load_coll_by_name(self):
         try:
@@ -2714,7 +2737,7 @@ class CollectionNode(Node):
         self.dict_out.send(self.collection)
 
     def save_dialog(self):
-        SaveDialog(self, callback=self.save_coll_callback, extensions=['json'])
+        SaveDialog(self, callback=self.save_coll_callback, extensions=['.json'])
 
     def save_coll_callback(self, save_path):
         if save_path != '':
@@ -2724,7 +2747,11 @@ class CollectionNode(Node):
 
     def save_data(self, path):
         with open(path, 'w') as f:
-            json.dump(self.collection, f, indent=4)
+            json.dump(self.collection, f, indent=4, cls=NumpyTorchEncoder)
+        self.path = path
+        self.file_name = path.split('/')[-1]
+        self.file_name = self.file_name.split('.')[0]
+        self.collection_name_input.set(self.file_name)
 
     def save_message(self, message='', data=[]):
         if len(data) > 0:
@@ -2741,7 +2768,7 @@ class CollectionNode(Node):
             self.collection = container['collection']
 
     def load_dialog(self):
-        LoadDialog(self, callback=self.load_coll_callback, extensions=['json'])
+        LoadDialog(self, callback=self.load_coll_callback, extensions=['.json'])
 
     def load_coll_callback(self, load_path):
         if load_path != '':
@@ -2760,6 +2787,12 @@ class CollectionNode(Node):
         if os.path.exists(path):
             with open(path, 'r') as f:
                 self.collection = json.load(f)
+                self.path = path
+                self.file_name = path.split('/')[-1]
+                self.file_name = self.file_name.split('.')[0]
+                self.collection_name_input.set(self.file_name)
+                return True
+        return False
 
     def clear(self):
         self.collection = {}
