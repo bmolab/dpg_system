@@ -13,6 +13,7 @@ import platform as platform_
 import traceback
 import threading
 import _thread
+from pathlib import Path
 
 import dpg_system.basic_nodes as basic_nodes
 import dpg_system.math_nodes as math_nodes
@@ -405,8 +406,9 @@ class App:
         self.patchers.append(name)
 
     def register_patchers(self):
-        if os.path.exists('dpg_system/patch_library'):
-            for entry in os.scandir('dpg_system/patch_library'):
+        patch_library_path = Path('dpg_system') / 'patch_library'
+        if os.path.exists(patch_library_path):
+            for entry in os.scandir(patch_library_path):
                 if entry.is_file():
                     if entry.name[-5:] == '.json':
                         self.register_patcher(entry.name[:-5])
@@ -606,13 +608,15 @@ class App:
                 if save_path is not None and save_path != '':
                     with open(save_path, 'w') as f:
                         self.patches_path = save_path
-
-                        patch_name = save_path.split('/')[-1]
-                        if '.' in patch_name:
-                            parts = patch_name.split('.')
-                            if len(parts) == 2:
-                                if parts[1] == 'json':
-                                    patch_name = parts[0]
+                        sp = Path(save_path)
+                        patch_name = sp.stem
+                        patch_suffix = sp.suffix
+                        # patch_name = save_path.split('/')[-1]
+                        # if '.' in patch_name:
+                        #     parts = patch_name.split('.')
+                        #     if len(parts) == 2:
+                        #         if parts[1] == 'json':
+                        #             patch_name = parts[0]
 
                         self.patches_name = patch_name
                         current_editor.set_name(patch_name)
@@ -635,12 +639,15 @@ class App:
             with open(save_path, 'w') as f:
                 self.patches_path = save_path
 
-                patch_name = save_path.split('/')[-1]
-                if '.' in patch_name:
-                    parts = patch_name.split('.')
-                    if len(parts) == 2:
-                        if parts[1] == 'json':
-                            patch_name = parts[0]
+                sp = Path(save_path)
+                patch_name = sp.stem
+
+                # patch_name = save_path.split('/')[-1]
+                # if '.' in patch_name:
+                #     parts = patch_name.split('.')
+                #     if len(parts) == 2:
+                #         if parts[1] == 'json':
+                #             patch_name = parts[0]
 
                 self.patches_name = patch_name
 
@@ -1448,12 +1455,15 @@ class App:
         parent_tab = self.get_current_tab()
         try:
             with open(path, 'r') as f:
-                patch_name = path.split('/')[-1]
-                if '.' in patch_name:
-                    parts = patch_name.split('.')
-                    if len(parts) == 2:
-                        if parts[1] == 'json':
-                            patch_name = parts[0]
+                p = Path(path)
+                patch_name = p.stem
+                # patch_name = sp.stem
+                # patch_name = path.split('/')[-1]
+                # if '.' in patch_name:
+                #     parts = patch_name.split('.')
+                #     if len(parts) == 2:
+                #         if parts[1] == 'json':
+                #             patch_name = parts[0]
                 file_container = json.load(f)
 
                 patch_count = 0
@@ -1628,7 +1638,8 @@ class App:
         self.save('patches')
 
     def save_as_help(self):
-        self.save('dpg_system/help')
+        help_path = Path('dpg_system') / 'help'
+        self.save(str(help_path.resolve()))
 
     def save_internal(self, path):
         self.save_patch(path)
@@ -1637,11 +1648,12 @@ class App:
             self.saving_to_lib = False
 
     def save_to_library(self):
-        if not os.path.exists('dpg_system/patch_library'):
-            os.makedirs('dpg_system/patch_library')
-        if os.path.exists('dpg_system/patch_library'):
+        patch_path = Path('dpg_system') / 'patch_library'
+        if not os.path.exists(patch_path):
+            os.makedirs(patch_path)
+        if os.path.exists(patch_path):
             self.saving_to_lib = True
-            self.save('', default_directory='dpg_system/patch_library')
+            self.save('', default_directory=str(patch_path))
             self.patchers.append(self.patches_name)
 
     def save_nodes(self):

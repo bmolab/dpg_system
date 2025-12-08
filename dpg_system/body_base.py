@@ -14,7 +14,7 @@ from dpg_system.body_defs import *
 from dpg_system.joint import *
 from dpg_system.node import *
 from dpg_system.conversion_utils import *
-
+from pathlib import Path
 scale = 1.0
 
 joint_quats_np = None
@@ -743,8 +743,8 @@ class BodyDataBase:
                 name = JointTranslator.bmolab_joint_index_to_name[joint_index]
                 new_joint = Joint(self, name, joint_index)
                 self.joints.append(new_joint)
-
-        tree = ET.parse('dpg_system/definition.xml')
+        def_path = Path('dpg_system') / 'definition.xml'
+        tree = ET.parse(str(def_path.resolve()))
         root = tree.getroot()
         for node in root.iter('node'):
             if 'translate' in node.attrib:
@@ -1327,7 +1327,9 @@ class AlternateBodyData(BodyDataBase):
             new_joint = BaseJoint(self, name, joint_index)
             self.joints.append(new_joint)
 
-        tree = ET.parse('dpg_system/definition.xml')
+        def_path = Path('dpg_system') / 'definition.xml'
+        tree = ET.parse(str(def_path.resolve()))
+        # tree = ET.parse('dpg_system/definition.xml')
         root = tree.getroot()
         for node in root.iter('node'):
             if 'translate' in node.attrib:

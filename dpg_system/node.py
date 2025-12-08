@@ -8,6 +8,7 @@ from typing import List, Any, Callable, Union, Tuple, Optional, Dict, Set, Type,
 from fuzzywuzzy import fuzz
 import sys
 import os
+from pathlib import Path
 
 
 class NodeOutput:
@@ -2075,12 +2076,13 @@ class Node:
         pass
 
     def get_help(self):
-        if os.path.exists('dpg_system/help'):
+        help_path = Path('dpg_system') / 'help'
+        if os.path.exists(str(help_path.resolve())):
             if self.help_file_name is not None:
-                temp_path = 'dpg_system/help/' + self.help_file_name + '.json'
+                temp_path = help_path / (self.help_file_name + '_help.json')
             else:
-                temp_path = 'dpg_system/help/' + self.label + '_help.json'
-            if os.path.exists(temp_path):
+                temp_path = help_path / (self.label + '_help.json')
+            if temp_path.exists():
                 # if patcher is already open?
                 tabs = Node.app.tabs
                 for tab in tabs:
@@ -2090,7 +2092,7 @@ class Node:
                         if title == self.label + '_help':
                             Node.app.select_tab(tab)
                             return
-                Node.app.load_from_file(temp_path)
+                Node.app.load_from_file(str(temp_path.resolve()))
 
     def add_display(self, label: str = "", uuid=None, width=80, callback=None):
         new_display = NodeDisplay(label, uuid, self, width)
