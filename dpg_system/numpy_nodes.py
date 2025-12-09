@@ -1247,76 +1247,164 @@ class NumpySubtensorNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.dim_list = None
-        index_string = ''
-        for i in range(len(args)):
-            index_string += args[i]
-        if index_string == '':
-            index_string = ':'
+        self.slice_obj = (slice(None),)  # Default to [:]
+
+        # Initialize default string based on args or default to full slice
+        index_string = ''.join(args) if args else ':'
+
         self.input = self.add_input('tensor in', triggers_execution=True)
-        self.indices_input = self.add_input('', widget_type='text_input', widget_width=200, default_value=index_string,
-                                                  callback=self.dim_changed)
+        self.indices_input = self.add_input(
+            'Indices',
+            widget_type='text_input',
+            widget_width=200,
+            default_value=index_string,
+            callback=self.dim_changed
+        )
         self.output = self.add_output('output')
 
     def dim_changed(self):
+        """
+        Parses the input string (e.g., "0:5, -1, ::2") into a tuple
+        of slice objects and integers that Numpy can consume directly.
+        """
         dim_text = any_to_string(self.indices_input())
 
-        dim_split = dim_text.split(',')
-        dimmers = []
+        # Clean up brackets if the user added them
+        dim_text = dim_text.strip().strip("[]")
 
-        for i in range(len(dim_split)):
-            dimmer = dim_split[i]
-            dimmer = dimmer.split(':')
-            dim_nums = []
-            if len(dimmer) == 1:
-                dim_num = re.findall(r'[-+]?\d+', dimmer[0])
-                if len(dim_num) > 0:
-                    dim_num = string_to_int(dim_num[0])
-                    dim_nums.append([dim_num])
-                    dim_nums.append([dim_num + 1])
-            else:
-                for j in range(len(dimmer)):
-                    dim_num = re.findall(r'[-+]?\d+', dimmer[j])
-                    if len(dim_num) == 0:
-                        if j == 0:
-                            dim_nums.append([0])
-                        else:
-                            dim_nums.append([1000000])
+        if not dim_text:
+            self.slice_obj = (slice(None),)
+            self.execute()
+            return
+
+        # Split by comma for dimensions
+        parts = dim_text.split(',')
+        slices = []
+
+        for part in parts:
+            part = part.strip()
+
+            if part == '...':
+                slices.append(Ellipsis)
+            elif ':' in part:
+                # It is a slice (e.g., "1:10", "::-1", ":")
+                sub_parts = part.split(':')
+                slice_args = []
+                for sp in sub_parts:
+                    if sp.strip() == '':
+                        slice_args.append(None)  # Numpy treats None as start/end
                     else:
-                        dim_num = string_to_int(dim_num[0])
-                        dim_nums.append([dim_num])
-            dimmers.append(dim_nums)
+                        try:
+                            slice_args.append(int(sp))
+                        except ValueError:
+                            # Fallback if garbage is entered
+                            slice_args.append(None)
+                slices.append(slice(*slice_args))
+            else:
+                # It is a single index (e.g., "0", "-1")
+                try:
+                    slices.append(int(part))
+                except ValueError:
+                    # If conversion fails, default to full slice for safety
+                    slices.append(slice(None))
 
-        self.dim_list = dimmers
+        # Store as a tuple
+        self.slice_obj = tuple(slices)
         self.execute()
 
     def execute(self):
         input_array = any_to_array(self.input())
+
         if input_array is not None:
-            if self.dim_list is None:
-                self.dim_changed()
-            if len(input_array.shape) < len(self.dim_list) or len(self.dim_list) == 0:
-                self.output.send(input_array)
-            else:
-                dim_list_now = []
-                for i in range(len(self.dim_list)):
-                    dim_dim = self.dim_list[i]
-                    dim_list_now.append(dim_dim[0][0])
-                    if dim_dim[1][0] == 1000000:
-                        dim_list_now.append(input_array.shape[i])
-                    else:
-                        dim_list_now.append(dim_dim[1][0])
-                sub_tensor = input_array
-                if len(dim_list_now) == 2:
-                    sub_tensor = input_array[dim_list_now[0]:dim_list_now[1]]
-                elif len(dim_list_now) == 4:
-                    sub_tensor = input_array[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3]]
-                elif len(dim_list_now) == 6:
-                    sub_tensor = input_array[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3], dim_list_now[4]:dim_list_now[5]]
-                elif len(dim_list_now) == 8:
-                    sub_tensor = input_array[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3],
-                             dim_list_now[4]:dim_list_now[5], dim_list_now[6]:dim_list_now[7]]
+            try:
+                # Numpy does the magic here using the tuple of slice objects
+                # expected format: input_array[(slice(0,5), 1, slice(None))]
+                sub_tensor = input_array[self.slice_obj]
                 self.output.send(sub_tensor)
+            except Exception as e:
+                # Optional: print error to console if index is out of bounds
+                print(f"Subtensor Error: {e}")
+                # Pass original array on failure or handle gracefully
+                self.output.send(input_array)
+
+# class NumpySubtensorNode(Node):
+#     @staticmethod
+#     def factory(name, data, args=None):
+#         node = NumpySubtensorNode(name, data, args)
+#         return node
+#
+#     def __init__(self, label: str, data, args):
+#         super().__init__(label, data, args)
+#         self.dim_list = None
+#         index_string = ''
+#         for i in range(len(args)):
+#             index_string += args[i]
+#         if index_string == '':
+#             index_string = ':'
+#         self.input = self.add_input('tensor in', triggers_execution=True)
+#         self.indices_input = self.add_input('', widget_type='text_input', widget_width=200, default_value=index_string,
+#                                                   callback=self.dim_changed)
+#         self.output = self.add_output('output')
+#
+#     def dim_changed(self):
+#         dim_text = any_to_string(self.indices_input())
+#
+#         dim_split = dim_text.split(',')
+#         dimmers = []
+#
+#         for i in range(len(dim_split)):
+#             dimmer = dim_split[i]
+#             dimmer = dimmer.split(':')
+#             dim_nums = []
+#             if len(dimmer) == 1:
+#                 dim_num = re.findall(r'[-+]?\d+', dimmer[0])
+#                 if len(dim_num) > 0:
+#                     dim_num = string_to_int(dim_num[0])
+#                     dim_nums.append([dim_num])
+#                     dim_nums.append([dim_num + 1])
+#             else:
+#                 for j in range(len(dimmer)):
+#                     dim_num = re.findall(r'[-+]?\d+', dimmer[j])
+#                     if len(dim_num) == 0:
+#                         if j == 0:
+#                             dim_nums.append([0])
+#                         else:
+#                             dim_nums.append([1000000])
+#                     else:
+#                         dim_num = string_to_int(dim_num[0])
+#                         dim_nums.append([dim_num])
+#             dimmers.append(dim_nums)
+#
+#         self.dim_list = dimmers
+#         self.execute()
+#
+#     def execute(self):
+#         input_array = any_to_array(self.input())
+#         if input_array is not None:
+#             if self.dim_list is None:
+#                 self.dim_changed()
+#             if len(input_array.shape) < len(self.dim_list) or len(self.dim_list) == 0:
+#                 self.output.send(input_array)
+#             else:
+#                 dim_list_now = []
+#                 for i in range(len(self.dim_list)):
+#                     dim_dim = self.dim_list[i]
+#                     dim_list_now.append(dim_dim[0][0])
+#                     if dim_dim[1][0] == 1000000:
+#                         dim_list_now.append(input_array.shape[i])
+#                     else:
+#                         dim_list_now.append(dim_dim[1][0])
+#                 sub_tensor = input_array
+#                 if len(dim_list_now) == 2:
+#                     sub_tensor = input_array[dim_list_now[0]:dim_list_now[1]]
+#                 elif len(dim_list_now) == 4:
+#                     sub_tensor = input_array[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3]]
+#                 elif len(dim_list_now) == 6:
+#                     sub_tensor = input_array[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3], dim_list_now[4]:dim_list_now[5]]
+#                 elif len(dim_list_now) == 8:
+#                     sub_tensor = input_array[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3],
+#                              dim_list_now[4]:dim_list_now[5], dim_list_now[6]:dim_list_now[7]]
+#                 self.output.send(sub_tensor)
 
 
 class NumpyEditNode(Node):

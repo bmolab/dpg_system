@@ -88,6 +88,7 @@ def register_basic_nodes():
     Node.app.register_node('end_trace', EndTraceNode.factory)
 
     Node.app.register_node('dict_replace', DictReplaceNode.factory)
+    Node.app.register_node('sublist', SublistNode.factory)
 
 
 class SliceNode(Node):
@@ -3393,3 +3394,193 @@ class EndTraceNode(Node):
             Node.app.trace = False
             print('trace end')
         self.outputs[0].send(self.inputs[0]())
+
+
+class SublistNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = SublistNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.operations = []  # Stores integers and slice objects
+
+        # Join args or default to full slice
+        index_string = ''.join(args) if args else ':'
+
+        self.input = self.add_input('list in', triggers_execution=True)
+        self.indices_input = self.add_input(
+            'Indices',
+            widget_type='text_input',
+            widget_width=200,
+            default_value=index_string,
+            callback=self.indices_changed
+        )
+        self.output = self.add_output('output')
+
+    def indices_changed(self):
+        """
+        Parses input string into a list of operations.
+        Commas denote depth (nested lists).
+        Colons denote slices.
+        """
+        indices_text = any_to_string(self.indices_input())
+
+        # Clean brackets if user typed them
+        indices_text = indices_text.strip().strip("[]")
+
+        if not indices_text:
+            self.operations = [slice(None)]
+            self.execute()
+            return
+
+        parts = indices_text.split(',')
+        new_ops = []
+
+        for part in parts:
+            part = part.strip()
+            if ':' in part:
+                # Handle Slicing (e.g., "1:5", "::-1", ":")
+                slice_params = part.split(':')
+                args = []
+                for p in slice_params:
+                    if p.strip() == '':
+                        args.append(None)
+                    else:
+                        try:
+                            args.append(int(p))
+                        except ValueError:
+                            args.append(None)
+                new_ops.append(slice(*args))
+            else:
+                # Handle Single Index (e.g., "0", "-1")
+                try:
+                    new_ops.append(int(part))
+                except ValueError:
+                    # Fallback to keep structure valid
+                    new_ops.append(slice(None))
+
+        self.operations = new_ops
+        self.execute()
+
+    def execute(self):
+        data = any_to_list(self.input())
+
+        if data is None:
+            return
+
+        # If indices haven't been parsed yet
+        if not self.operations:
+            self.indices_changed()
+
+        try:
+            current_data = data
+
+            # Apply operations sequentially (Drill down into nested lists)
+            for op in self.operations:
+                # Check if we are trying to slice/index something valid
+                if hasattr(current_data, '__getitem__'):
+                    current_data = current_data[op]
+                else:
+                    # We tried to go deeper than the list allowed
+                    break
+
+            self.output.send(current_data)
+
+        except IndexError:
+            # Optional: Print error or send empty list/None
+            print(f"SublistNode: Index out of bounds.")
+            self.output.send(None)
+        except Exception as e:
+            print(f"SublistNode Error: {e}")
+            self.output.send(data)
+
+# class SublistNode(Node):
+#     @staticmethod
+#     def factory(name, data, args=None):
+#         node = SublistNode(name, data, args)
+#         return node
+#
+#     def __init__(self, label: str, data, args):
+#         super().__init__(label, data, args)
+#         self.indices_list = None
+#         index_string = ''
+#         for i in range(len(args)):
+#             index_string += args[i]
+#         if index_string == '':
+#             index_string = ':'
+#         self.input = self.add_input('tensor in', triggers_execution=True)
+#         self.indices_input = self.add_input('', widget_type='text_input', widget_width=200, default_value=index_string, callback=self.indices_changed)
+#         self.output = self.add_output('output')
+#
+#     def indices_changed(self):
+#         indices_text = any_to_string(self.indices_input())
+#
+#         index_split = indices_text.split(',')
+#         indices = []
+#
+#         for i in range(len(index_split)):
+#             dimmer = index_split[i]
+#             dimmer = dimmer.split(':')
+#             dim_nums = []
+#             if len(dimmer) == 1:
+#                 dim_num = re.findall(r'[-+]?\d+', dimmer[0])
+#                 if len(dim_num) > 0:
+#                     dim_num = string_to_int(dim_num[0])
+#                     dim_nums.append([dim_num])
+#                     # dim_nums.append([dim_num + 1])
+#             else:
+#                 for j in range(len(dimmer)):
+#                     dim_num = re.findall(r'[-+]?\d+', dimmer[j])
+#                     if len(dim_num) == 0:
+#                         if j == 0:
+#                             dim_nums.append([0])
+#                         else:
+#                             dim_nums.append([1000000])
+#                     else:
+#                         dim_num = string_to_int(dim_num[0])
+#                         dim_nums.append([dim_num])
+#             indices.append(dim_nums)
+#
+#         self.indices_list = indices
+#         self.execute()
+#
+#     def execute(self):
+#         input_list = any_to_list(self.input())
+#         if input_list is not None:
+#             if self.indices_list is None:
+#                 self.indices_changed()
+#
+#             if len(self.indices_list) == 0:
+#                 self.output.send(input_list)
+#             else:
+#                 index_list_now = []
+#                 for i in range(len(self.indices_list)):
+#                     dim_dim = self.indices_list[i]
+#                     index_list_now.append(any_to_int(dim_dim[0][0]))
+#                     if len(dim_dim) > 1:
+#                         if dim_dim[1][0] == 1000000:
+#                             index_list_now.append(len(input_list))
+#                         else:
+#                             index_list_now.append(any_to_int(dim_dim[1][0]))
+#                 # sub_list = input_list
+#                 if len(index_list_now) > 1:
+#                     sub_list = input_list[index_list_now[0]:index_list_now[1]]
+#                 else:
+#                     sub_list = input_list[index_list_now[0]]
+#                 # elif len(index_list_now) == 4:
+#                 #
+#                 #     sub_list = input_list[index_list_now[0]:index_list_now[1], index_list_now[2]:index_list_now[3]]
+#                 # elif len(index_list_now) == 6:
+#                 #     sub_list = input_list[index_list_now[0]:index_list_now[1], index_list_now[2]:index_list_now[3], index_list_now[4]:index_list_now[5]]
+#                 # elif len(index_list_now) == 8:
+#                 #     sub_list = input_list[index_list_now[0]:index_list_now[1], index_list_now[2]:index_list_now[3],
+#                 #              index_list_now[4]:index_list_now[5], index_list_now[6]:index_list_now[7]]
+#                 if isinstance(sub_list, list):
+#                     if len(sub_list) > 1:
+#                         self.output.send(sub_list)
+#                     else:
+#                         self.output.send(sub_list[0])
+#                 else:
+#                     self.output.send(sub_list)
