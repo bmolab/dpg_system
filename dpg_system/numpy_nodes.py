@@ -1247,9 +1247,11 @@ class NumpySubtensorNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.slice_obj = (slice(None),)  # Default to [:]
 
-        # Initialize default string based on args or default to full slice
+        # Initialize storage
+        self.slice_obj = (slice(None),)
+
+        # Default string
         index_string = ''.join(args) if args else ':'
 
         self.input = self.add_input('tensor in', triggers_execution=True)
@@ -1262,70 +1264,163 @@ class NumpySubtensorNode(Node):
         )
         self.output = self.add_output('output')
 
-    def dim_changed(self):
-        """
-        Parses the input string (e.g., "0:5, -1, ::2") into a tuple
-        of slice objects and integers that Numpy can consume directly.
-        """
-        dim_text = any_to_string(self.indices_input())
+        # Prime the slice_obj based on default value
+        self.dim_changed()
 
-        # Clean up brackets if the user added them
+    def dim_changed(self):
+        # 1. Update the Plan
+        raw_text = any_to_string(self.indices_input())
+        self.slice_obj = self.parse_slice_string(raw_text)
+
+        # 2. Attempt Execute
+        # If no data exists, execute() will simply return, producing no output.
+        self.execute()
+
+    def parse_slice_string(self, dim_text):
         dim_text = dim_text.strip().strip("[]")
 
         if not dim_text:
-            self.slice_obj = (slice(None),)
-            self.execute()
-            return
+            return (slice(None),)
 
-        # Split by comma for dimensions
         parts = dim_text.split(',')
         slices = []
 
         for part in parts:
             part = part.strip()
-
             if part == '...':
                 slices.append(Ellipsis)
             elif ':' in part:
-                # It is a slice (e.g., "1:10", "::-1", ":")
                 sub_parts = part.split(':')
                 slice_args = []
                 for sp in sub_parts:
                     if sp.strip() == '':
-                        slice_args.append(None)  # Numpy treats None as start/end
+                        slice_args.append(None)
                     else:
                         try:
                             slice_args.append(int(sp))
                         except ValueError:
-                            # Fallback if garbage is entered
                             slice_args.append(None)
                 slices.append(slice(*slice_args))
             else:
-                # It is a single index (e.g., "0", "-1")
                 try:
                     slices.append(int(part))
                 except ValueError:
-                    # If conversion fails, default to full slice for safety
                     slices.append(slice(None))
 
-        # Store as a tuple
-        self.slice_obj = tuple(slices)
-        self.execute()
+        return tuple(slices)
 
     def execute(self):
-        input_array = any_to_array(self.input())
+        input_data = self.input()
 
-        if input_array is not None:
-            try:
-                # Numpy does the magic here using the tuple of slice objects
-                # expected format: input_array[(slice(0,5), 1, slice(None))]
-                sub_tensor = input_array[self.slice_obj]
-                self.output.send(sub_tensor)
-            except Exception as e:
-                # Optional: print error to console if index is out of bounds
-                print(f"Subtensor Error: {e}")
-                # Pass original array on failure or handle gracefully
-                self.output.send(input_array)
+        # STOP if no input
+        if input_data is None:
+            return
+
+        input_array = any_to_array(input_data)
+        if input_array is None:
+            return
+
+        # Check Dimensions
+        required_dims = sum(1 for s in self.slice_obj if s is not Ellipsis)
+
+        # STOP if dimensions don't match (e.g., slicing 3D on a 1D array)
+        if input_array.ndim < required_dims:
+            return
+
+        try:
+            sub_tensor = input_array[self.slice_obj]
+            self.output.send(sub_tensor)
+        except Exception as e:
+            print(f"NumpySubtensorNode Error: {e}")
+
+
+# class NumpySubtensorNode(Node):
+#     @staticmethod
+#     def factory(name, data, args=None):
+#         node = NumpySubtensorNode(name, data, args)
+#         return node
+#
+#     def __init__(self, label: str, data, args):
+#         super().__init__(label, data, args)
+#         self.slice_obj = (slice(None),)  # Default to [:]
+#
+#         # Initialize default string based on args or default to full slice
+#         index_string = ''.join(args) if args else ':'
+#
+#         self.input = self.add_input('tensor in', triggers_execution=True)
+#         self.indices_input = self.add_input(
+#             'Indices',
+#             widget_type='text_input',
+#             widget_width=200,
+#             default_value=index_string,
+#             callback=self.dim_changed
+#         )
+#         self.output = self.add_output('output')
+#
+#     def dim_changed(self):
+#         """
+#         Parses the input string (e.g., "0:5, -1, ::2") into a tuple
+#         of slice objects and integers that Numpy can consume directly.
+#         """
+#         dim_text = any_to_string(self.indices_input())
+#
+#         # Clean up brackets if the user added them
+#         dim_text = dim_text.strip().strip("[]")
+#
+#         if not dim_text:
+#             self.slice_obj = (slice(None),)
+#             self.execute()
+#             return
+#
+#         # Split by comma for dimensions
+#         parts = dim_text.split(',')
+#         slices = []
+#
+#         for part in parts:
+#             part = part.strip()
+#
+#             if part == '...':
+#                 slices.append(Ellipsis)
+#             elif ':' in part:
+#                 # It is a slice (e.g., "1:10", "::-1", ":")
+#                 sub_parts = part.split(':')
+#                 slice_args = []
+#                 for sp in sub_parts:
+#                     if sp.strip() == '':
+#                         slice_args.append(None)  # Numpy treats None as start/end
+#                     else:
+#                         try:
+#                             slice_args.append(int(sp))
+#                         except ValueError:
+#                             # Fallback if garbage is entered
+#                             slice_args.append(None)
+#                 slices.append(slice(*slice_args))
+#             else:
+#                 # It is a single index (e.g., "0", "-1")
+#                 try:
+#                     slices.append(int(part))
+#                 except ValueError:
+#                     # If conversion fails, default to full slice for safety
+#                     slices.append(slice(None))
+#
+#         # Store as a tuple
+#         self.slice_obj = tuple(slices)
+#         self.execute()
+#
+#     def execute(self):
+#         input_array = any_to_array(self.input())
+#
+#         if input_array is not None:
+#             try:
+#                 # Numpy does the magic here using the tuple of slice objects
+#                 # expected format: input_array[(slice(0,5), 1, slice(None))]
+#                 sub_tensor = input_array[self.slice_obj]
+#                 self.output.send(sub_tensor)
+#             except Exception as e:
+#                 # Optional: print error to console if index is out of bounds
+#                 print(f"Subtensor Error: {e}")
+#                 # Pass original array on failure or handle gracefully
+#                 self.output.send(input_array)
 
 # class NumpySubtensorNode(Node):
 #     @staticmethod

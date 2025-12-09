@@ -1286,7 +1286,7 @@ class NodeInput:
             self.uuid = uuid
         self.label_uuid = None
         self._parents = []  # input attribute
-        self._data = 0
+        self._data = None  # (was zero)
         if default_value is not None:
             self._data = default_value
         self.executor = False

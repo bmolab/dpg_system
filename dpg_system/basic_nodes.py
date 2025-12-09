@@ -3404,9 +3404,7 @@ class SublistNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.operations = []  # Stores integers and slice objects
-
-        # Join args or default to full slice
+        self.operations = []
         index_string = ''.join(args) if args else ':'
 
         self.input = self.add_input('list in', triggers_execution=True)
@@ -3419,15 +3417,11 @@ class SublistNode(Node):
         )
         self.output = self.add_output('output')
 
-    def indices_changed(self):
-        """
-        Parses input string into a list of operations.
-        Commas denote depth (nested lists).
-        Colons denote slices.
-        """
-        indices_text = any_to_string(self.indices_input())
+        # Initialize
+        self.indices_changed()
 
-        # Clean brackets if user typed them
+    def indices_changed(self):
+        indices_text = any_to_string(self.indices_input())
         indices_text = indices_text.strip().strip("[]")
 
         if not indices_text:
@@ -3441,7 +3435,6 @@ class SublistNode(Node):
         for part in parts:
             part = part.strip()
             if ':' in part:
-                # Handle Slicing (e.g., "1:5", "::-1", ":")
                 slice_params = part.split(':')
                 args = []
                 for p in slice_params:
@@ -3454,47 +3447,64 @@ class SublistNode(Node):
                             args.append(None)
                 new_ops.append(slice(*args))
             else:
-                # Handle Single Index (e.g., "0", "-1")
                 try:
                     new_ops.append(int(part))
                 except ValueError:
-                    # Fallback to keep structure valid
                     new_ops.append(slice(None))
 
         self.operations = new_ops
         self.execute()
 
     def execute(self):
-        data = any_to_list(self.input())
+        raw_input = self.input()
 
-        if data is None:
+        # 1. No Connection / No Data -> Silent
+        if raw_input is None:
             return
 
-        # If indices haven't been parsed yet
-        if not self.operations:
-            self.indices_changed()
+        data = any_to_list(raw_input)
+
+        # 2. Conversion failed or returned None -> Silent
+        if data is None:
+            return
 
         try:
             current_data = data
 
-            # Apply operations sequentially (Drill down into nested lists)
-            for op in self.operations:
-                # Check if we are trying to slice/index something valid
-                if hasattr(current_data, '__getitem__'):
-                    current_data = current_data[op]
-                else:
-                    # We tried to go deeper than the list allowed
-                    break
+            for i, op in enumerate(self.operations):
+
+                # 3. Check if current_data is indexable (list, tuple, etc)
+                if not hasattr(current_data, '__getitem__') or isinstance(current_data, str):
+                    # We hit a "dead end" (e.g. an integer) but have more ops.
+                    # Error implies data mismatch.
+                    print(f"SublistNode Error: Cannot index item at depth {i} (Not a list).")
+                    self.output.send(None)
+                    return
+
+                # 4. Handle Integer Indexing Bounds
+                if isinstance(op, int):
+                    size = len(current_data)
+
+                    # --- CRITICAL FIX ---
+                    # If the list is empty, we assume data hasn't arrived/populated yet.
+                    # Return Silently.
+                    if size == 0:
+                        return
+
+                    # Now we know size > 0, so if index is bad, it's a real error.
+                    if op >= size or (op < 0 and abs(op) > size):
+                        print(f"SublistNode Error: Index {op} out of bounds for list of size {size}.")
+                        self.output.send(None)
+                        return
+
+                # Apply
+                current_data = current_data[op]
 
             self.output.send(current_data)
 
-        except IndexError:
-            # Optional: Print error or send empty list/None
-            print(f"SublistNode: Index out of bounds.")
-            self.output.send(None)
         except Exception as e:
             print(f"SublistNode Error: {e}")
-            self.output.send(data)
+            self.output.send(None)
 
 # class SublistNode(Node):
 #     @staticmethod
