@@ -557,75 +557,97 @@ class TorchSubtensorNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.dim_list = None
-        index_string = ''
-        for i in range(len(args)):
-            index_string += args[i]
-        if index_string == '':
-            index_string = ':'
+        self.slice_obj = (slice(None),)
+
+        # Determine default string
+        index_string = ''.join(args) if args else ':'
+
         self.input = self.add_input('tensor in', triggers_execution=True)
-        self.indices_input = self.add_input('', widget_type='text_input', widget_width=200, default_value=index_string,
-                                                  callback=self.dim_changed)
+        self.indices_input = self.add_input(
+            'indices',
+            widget_type='text_input',
+            widget_width=200,
+            default_value=index_string,
+            callback=self.dim_changed
+        )
         self.output = self.add_output('output')
 
+        # Parse the default string immediately
+        self.dim_changed()
+
     def dim_changed(self):
+        """
+        Parses the input string (e.g., "0:5, -1, ::2") into a tuple
+        of slice objects and integers that PyTorch can consume directly.
+        """
         dim_text = any_to_string(self.indices_input())
 
-        dim_split = dim_text.split(',')
-        dimmers = []
+        # Clean up brackets/whitespace
+        dim_text = dim_text.strip().strip("[]")
 
-        for i in range(len(dim_split)):
-            dimmer = dim_split[i]
-            dimmer = dimmer.split(':')
-            dim_nums = []
-            if len(dimmer) == 1:
-                dim_num = re.findall(r'[-+]?\d+', dimmer[0])
-                if len(dim_num) > 0:
-                    dim_num = string_to_int(dim_num[0])
-                    dim_nums.append([dim_num])
-                    dim_nums.append([dim_num + 1])
-            else:
-                for j in range(len(dimmer)):
-                    dim_num = re.findall(r'[-+]?\d+', dimmer[j])
-                    if len(dim_num) == 0:
-                        if j == 0:
-                            dim_nums.append([0])
-                        else:
-                            dim_nums.append([1000000])
+        if not dim_text:
+            self.slice_obj = (slice(None),)
+            self.execute()
+            return
+
+        parts = dim_text.split(',')
+        slices = []
+
+        for part in parts:
+            part = part.strip()
+
+            if part == '...':
+                slices.append(Ellipsis)
+            elif ':' in part:
+                # Handle slice notation
+                sub_parts = part.split(':')
+                slice_args = []
+                for sp in sub_parts:
+                    if sp.strip() == '':
+                        slice_args.append(None)  # None indicates start/end/step default
                     else:
-                        dim_num = string_to_int(dim_num[0])
-                        dim_nums.append([dim_num])
-            dimmers.append(dim_nums)
+                        try:
+                            slice_args.append(int(sp))
+                        except ValueError:
+                            slice_args.append(None)
+                slices.append(slice(*slice_args))
+            else:
+                # Handle single integer index
+                try:
+                    slices.append(int(part))
+                except ValueError:
+                    # Fallback for garbage input
+                    slices.append(slice(None))
 
-        self.dim_list = dimmers
+        self.slice_obj = tuple(slices)
+        self.execute()
 
     def execute(self):
+        # 1. Get Tensor (using parent class helper)
+        # Note: self.input_to_tensor() usually returns None if not connected
         input_tensor = self.input_to_tensor()
-        if input_tensor is not None:
-            if self.dim_list is None:
-                self.dim_changed()
-            if len(input_tensor.shape) < len(self.dim_list) or len(self.dim_list) == 0:
-                self.output.send(input_tensor)
-            else:
-                dim_list_now = []
-                for i in range(len(self.dim_list)):
-                    dim_dim = self.dim_list[i]
-                    dim_list_now.append(dim_dim[0][0])
-                    if dim_dim[1][0] == 1000000:
-                        dim_list_now.append(input_tensor.shape[i])
-                    else:
-                        dim_list_now.append(dim_dim[1][0])
-                sub_tensor = input_tensor
-                if len(dim_list_now) == 2:
-                    sub_tensor = input_tensor[dim_list_now[0]:dim_list_now[1]]
-                elif len(dim_list_now) == 4:
-                    sub_tensor = input_tensor[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3]]
-                elif len(dim_list_now) == 6:
-                    sub_tensor = input_tensor[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3], dim_list_now[4]:dim_list_now[5]]
-                elif len(dim_list_now) == 8:
-                    sub_tensor = input_tensor[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3],
-                             dim_list_now[4]:dim_list_now[5], dim_list_now[6]:dim_list_now[7]]
-                self.output.send(sub_tensor)
+
+        # 2. SILENT CHECK: No Input
+        if input_tensor is None:
+            return
+
+        # 3. SILENT CHECK: Dimension Mismatch (Waiting for real data)
+        # Calculate required dimensions (excluding Ellipsis which is wild)
+        required_dims = sum(1 for s in self.slice_obj if s is not Ellipsis)
+
+        # If the input tensor (e.g. 1D placeholder) is smaller than the requested
+        # slice depth (e.g. 3D), we assume the real data hasn't arrived yet.
+        if input_tensor.ndim < required_dims:
+            return
+
+        # 4. Apply Slice
+        try:
+            sub_tensor = input_tensor[self.slice_obj]
+            self.output.send(sub_tensor)
+        except Exception as e:
+            # If dimensions matched but something else was wrong (e.g. index out of bounds),
+            # we print the error to help debug.
+            print(f"TorchSubtensorNode Error: {e}")
 
 
 class TorchSelectNode(TorchNode):

@@ -1274,7 +1274,6 @@ class NodeInput:
     _pin_active_tensor_theme = None
     _pin_active_list_theme = None
     _pin_active_bang_theme = None
-    _pin_theme_created = False
 
     def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, **kwargs):
         if not self._pin_theme_created:
