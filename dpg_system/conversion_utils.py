@@ -261,6 +261,38 @@ if torch_available:
         return data.tolist()
 
 
+def any_to_int_list(data):
+    """
+    Helper: Converts Strings, Numpy Arrays, Tuples, or Lists
+    into a clean standard Python List of Integers.
+    """
+    try:
+        # 1. Handle Strings (e.g. "2, 2" or "[2 2]")
+        if isinstance(data, str):
+            # Regex to find all integer numbers in the string
+            # return [int(x) for x in re.findall(r'[-+]?\d+', data)]
+            nums = re.findall(r'[-+]?\d+', data)
+            return [int(x) for x in nums]
+
+        # 2. Handle Numpy Arrays (or tensors)
+        if hasattr(data, 'tolist'):
+            flat = data.flatten() if hasattr(data, 'flatten') else data
+            return [int(x) for x in flat.tolist()]
+
+        # 3. Handle Iterables (Lists/Tuples)
+        if isinstance(data, (list, tuple)):
+            return [int(x) for x in data]
+
+        # 4. Handle single integers
+        if isinstance(data, (int, float)):
+            return [int(data)]
+
+    except Exception:
+        pass  # Fail gracefully
+
+    return None
+
+
 # def any_to_list(data):
 #     t = type(data)
 #     if t == list:
