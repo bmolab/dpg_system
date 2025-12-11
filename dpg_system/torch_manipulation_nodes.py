@@ -965,13 +965,13 @@ class TorchScatterHoldNode(TorchNode):
 class TorchIndexSelectNode(TorchWithDimNode):
     @staticmethod
     def factory(name, data, args=None):
-        node = TorchIndexSelectNode(name, data, args)
-        return node
+        return TorchIndexSelectNode(name, data, args)
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+
         self.input = self.add_input('tensor in', triggers_execution=True)
-        self.index_input = self.add_input('indices in')
+        self.index_input = self.add_input('indices')
         if self.dim_specified:
             self.add_dim_input()
 
@@ -979,22 +979,44 @@ class TorchIndexSelectNode(TorchWithDimNode):
 
     def execute(self):
         input_tensor = self.input_to_tensor()
-        if input_tensor is not None:
-            data = self.index_input()
-            if data is not None:
-                index_tensor = self.data_to_tensor(data, device=input_tensor.device, requires_grad=input_tensor.requires_grad, dtype=torch.long)
-                if index_tensor is not None:
-                    if -1 - len(input_tensor.shape) < self.dim < len(input_tensor.shape):
-                        self.output.send(torch.index_select(input_tensor, self.dim, index_tensor))
-                    else:
-                        if self.app.verbose:
-                            print('t.index_select dim is invalid', self.dim)
-                else:
-                    if self.app.verbose:
-                        print('t.index_select no index tensor')
-            else:
+        if input_tensor is None:
+            return
+
+        index_data = self.index_input()
+        if index_data is None:
+            return
+
+        try:
+            # --- 1. Robust Conversion to Index Tensor ---
+            index_tensor = self.data_to_tensor(index_data, device=input_tensor.device, dtype=torch.long)
+
+            # --- 2. Shape Validation ---
+            if index_tensor.dim() != 1:
+                # Optional: Auto-flatten if user passed [[1, 2]], or error out.
+                # Here we strictly enforce 1D but provide a helpful error.
                 if self.app.verbose:
-                    print('t.index_select invalid input tensor')
+                    print(
+                        f"Node {self.label} Warning: Indices must be 1D. Got shape {index_tensor.shape}. Flattening...")
+                index_tensor = index_tensor.reshape(-1)
+
+            # --- 3. Dimension Validation ---
+            ndim = input_tensor.ndim
+            # self.dim comes from the TorchWithDimNode parent
+            if not (-ndim <= self.dim < ndim):
+                if self.app.verbose:
+                    print(f"Node {self.label} Error: Dim {self.dim} is out of bounds for {ndim}D tensor.")
+                return
+
+            # --- 4. Execution ---
+            selected = torch.index_select(input_tensor, self.dim, index_tensor)
+            self.output.send(selected)
+
+        except RuntimeError as e:
+            # Handles index out of bounds errors
+            print(f"Node {self.label}: Runtime Error (Index out of bounds?) - {e}")
+        except Exception as e:
+            traceback.print_exc()
+            print(f"Node {self.label}: Error - {e}")
 
 
 class TorchNarrowNode(TorchWithDimNode):
@@ -1006,26 +1028,68 @@ class TorchNarrowNode(TorchWithDimNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.input = self.add_input('tensor in', triggers_execution=True)
-        self.dim_specified = True
+
+        # Initialize state
         self.start = 0
         self.length = 1
+
+        # Setup specific to parent class logic
+        self.dim_specified = True
         self.add_dim_input()
-        self.start_input = self.add_input('start', widget_type='drag_int', default_value=self.start, callback=self.params_changed)
-        self.length_input = self.add_input('length', widget_type='drag_int', default_value=self.length, callback=self.params_changed)
+
+        # Widgets with callbacks
+        self.start_input = self.add_int_input('start', widget_type='drag_int', default_value=self.start,
+                                          callback=self.params_changed)
+        self.length_input = self.add_int_input('length', widget_type='drag_int', default_value=self.length,
+                                           callback=self.params_changed)
+
         self.output = self.add_output('tensor out')
 
     def params_changed(self):
+        # Update internal state
         self.start = self.start_input()
         self.length = self.length_input()
+        # IMPROVEMENT: Trigger execution immediately when widgets change
+        # self.execute()
 
     def execute(self):
         input_tensor = self.input_to_tensor()
-        if input_tensor is not None:
-            if self.dim < len(input_tensor.shape):
-                critical_dim = input_tensor.shape[self.dim]
-                if -critical_dim <= self.start < critical_dim and self.start + self.length <= critical_dim:
-                    output_tensor = torch.narrow(input_tensor, dim=self.dim, start=self.start, length=self.length)
-                    self.output.send(output_tensor)
+
+        if input_tensor is None:
+            return
+
+        # Validate Dimension
+        if self.dim >= len(input_tensor.shape) or self.dim < -len(input_tensor.shape):
+            print(f"Error: Dim {self.dim} out of bounds for shape {input_tensor.shape}")
+            return
+
+        dim_size = input_tensor.shape[self.dim]
+
+        # Handle negative indexing (Pythonic style)
+        actual_start = self.start
+        if actual_start < 0:
+            actual_start += dim_size
+
+        # Validate Start
+        if actual_start < 0 or actual_start >= dim_size:
+            print(
+                f"Error: Start index {self.start} results in {actual_start}, which is out of bounds for dim size {dim_size}")
+            return
+
+        # Validate Length (and safeguard against 0 or negative length if desired)
+        if self.length <= 0:
+            print("Error: Length must be positive")
+            return
+
+        if actual_start + self.length > dim_size:
+            print(f"Error: Slice ends at {actual_start + self.length}, but dim size is only {dim_size}")
+            return
+
+        try:
+            output_tensor = torch.narrow(input_tensor, dim=self.dim, start=actual_start, length=self.length)
+            self.output.send(output_tensor)
+        except Exception as e:
+            print(f"Torch Error: {e}")
 
 
 class TorchDiagNode(TorchNode):

@@ -12,6 +12,7 @@ import queue
 import html
 import string
 import itertools
+from typing import List, Any, Callable, Union, Tuple, Optional, Dict, Set, Type, TypeVar, cast
 
 from dpg_system.node import Node, SaveDialog, LoadDialog
 
@@ -89,7 +90,7 @@ def register_basic_nodes():
 
     Node.app.register_node('dict_replace', DictReplaceNode.factory)
     Node.app.register_node('sublist', SublistNode.factory)
-
+    Node.app.register_node('dict_search', DictNavigatorNode.factory)
 
 class SliceNode(Node):
     @staticmethod
@@ -2662,9 +2663,6 @@ class DictReplaceNode(Node):
         self.dict_out.send(self.dict)
 
 
-
-
-
 class CollectionNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -2697,6 +2695,7 @@ class CollectionNode(Node):
         self.message_handlers['dump'] = self.dump
         self.message_handlers['save'] = self.save_message
         self.message_handlers['load'] = self.load_message
+        self.message_handlers['search'] = self.search
         self.path = ''
         self.file_name = ''
 
@@ -2802,6 +2801,56 @@ class CollectionNode(Node):
     def clear_message(self, message='', data=[]):
         self.clear()
 
+    # def drill_down(self, dict_level, address_heirachy):
+    #     local_address = any_to_string(address_heirachy[0])
+    #     if local_address in dict_level:
+    #         if len(address_heirachy) > 1:
+    #             return self.drill_down(dict_level[local_address], address_heirachy[1:])
+    #         else:
+    #             return dict_level[local_address]
+    #     else:
+    #         return None
+
+    def search(self, message='', data=[]):
+        data = any_to_string(data)
+        data = data.replace('/', '/CONTENTS/')
+        results = find_keys_by_prefix(self.collection, any_to_string(data))
+        final_results = []
+        for result in results:
+            address = result[0]
+            stripped_address = address.replace('CONTENTS/', '')
+            final_results.append([stripped_address, address, result[1]])
+
+        self.output.send(final_results)
+
+        # def _recurse(current_data, current_path_stack):
+        #     # Handle Dictionaries
+        #     if isinstance(current_data, dict):
+        #         for key, value in current_data.items():
+        #             str_key = str(key)
+        #             # Build the current path
+        #             new_path_stack = current_path_stack + [str_key]
+        #
+        #             # Check for partial match
+        #             if str_key.startswith(prefix):
+        #                 path_str = "/".join(new_path_stack)
+        #                 results.append((path_str, value))
+        #
+        #             # Continue recursing if the value is a nested container
+        #             if isinstance(value, (dict, list)):
+        #                 _recurse(value, new_path_stack)
+        #
+        #     # Handle Lists (to maintain path integrity through arrays)
+        #     elif isinstance(current_data, list):
+        #         for index, item in enumerate(current_data):
+        #             new_path_stack = current_path_stack + [str(index)]
+        #
+        #             if isinstance(item, (dict, list)):
+        #                 _recurse(item, new_path_stack)
+        #
+        # _recurse(data, [])
+        # return results
+
     def execute(self):
         if self.active_input == self.input:
             data = self.input()
@@ -2818,10 +2867,13 @@ class CollectionNode(Node):
                 else:
                     self.unmatched_output.send(data)
             elif t == str:
-                if address in self.collection:
-                    self.output.send(self.collection[address])
+                address_hierarchy = address.split('/')
+                result = drill_down(self.collection, address_hierarchy)
+                if result is not None:
+                    self.output.send(result)
                 else:
                     self.unmatched_output.send(data)
+
             elif t in [list]:
                 index = any_to_string(data[0])
                 if index == 'delete':
@@ -2882,6 +2934,136 @@ class CollectionNode(Node):
                         self.collection[index] = data[0]
                 else:
                     self.collection[index] = data
+
+
+def drill_down(dict_level, address_heirarchy):
+    local_address = any_to_string(address_heirarchy[0])
+    if local_address in dict_level:
+        if len(address_heirarchy) > 1:
+            return drill_down(dict_level[local_address], address_heirarchy[1:])
+        else:
+            return dict_level[local_address]
+    else:
+        return None
+
+
+
+def find_keys_by_prefix(data, search_term):
+    """
+    Recursively searches a dictionary for keys starting with a specific prefix.
+
+    Args:
+        data (dict | list): The data structure to search.
+        prefix (str): The substring the key must start with.
+
+    Returns:
+        tuple: (list of values, list of paths)
+    """
+    # data = self.collection
+
+    results = []
+
+    search_parts = search_term.split('/')
+
+    def _is_match(current_stack):
+        """Helper to check if the current path tail matches the search parts."""
+        # The path can't match if it's shallower than the search term
+        if len(current_stack) < len(search_parts):
+            return False
+
+        # Get the 'tail' of the current path equal to the length of the search
+        # e.g., if path is a/b/c/d and search is c/d, we look at [c, d]
+        path_tail = current_stack[-len(search_parts):]
+
+        # 1. Check parent segments (must be exact matches)
+        # We iterate up to the last item
+        for i in range(len(search_parts) - 1):
+            if path_tail[i] != search_parts[i]:
+                return False
+
+        # 2. Check the final segment (prefix match)
+        last_path_key = path_tail[-1]
+        last_search_key = search_parts[-1]
+
+        return last_path_key.startswith(last_search_key)
+
+    def _recurse(current_data, current_path_stack):
+        # --- Handle Dictionary ---
+        if isinstance(current_data, dict):
+            for key, value in current_data.items():
+                str_key = str(key)
+                new_stack = current_path_stack + [str_key]
+
+                # Check if this specific key matches our path criteria
+                if _is_match(new_stack):
+                    results.append(("/".join(new_stack), value))
+
+                # Continue searching deeper
+                if isinstance(value, (dict, list)):
+                    _recurse(value, new_stack)
+
+        # --- Handle List ---
+        elif isinstance(current_data, list):
+            for index, item in enumerate(current_data):
+                str_key = str(index)
+                new_stack = current_path_stack + [str_key]
+
+                # Check if this list index matches (e.g. searching for 'items/0')
+                if _is_match(new_stack):
+                    results.append(("/".join(new_stack), item))
+
+                if isinstance(item, (dict, list)):
+                    _recurse(item, new_stack)
+
+    _recurse(data, [])
+    return results
+
+
+class DictNavigatorNode(Node):
+    @staticmethod
+    def factory(name: str, data: Any, args: Optional[List[str]] = None) -> 'DictNavigatorNode':
+        node = DictNavigatorNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data: Any, args: Optional[List[str]]) -> None:
+        super().__init__(label, data, args)
+        self.filtered_list: List[str] = []
+        self.input = self.add_input('dict in', triggers_execution=True)
+        self.search_property = self.add_input(label='##search_term', widget_type='text_input', widget_width=300)
+        self.node_list_box = self.add_property('###options', widget_type='list_box', width=300)
+        self.select_button = self.add_property('select', widget_type='button', callback=self.select)
+        self.dict = {}
+        self.output = self.add_output('results out')
+
+    def select(self):
+        selected_path = self.node_list_box()
+        selected_path = any_to_string(selected_path)
+        selected_path = 'CONTENTS/' + selected_path.replace('/', '/CONTENTS/')
+        path_list = selected_path.split('/')
+        result = drill_down(self.dict, path_list)
+        self.output.send(result)
+
+    def execute(self):
+        incoming = self.input()
+        if isinstance(incoming, dict):
+            self.dict = copy.deepcopy(incoming)
+
+    def on_edit(self, widget) -> None:
+        if widget == self.search_property.widget and len(self.dict) > 0:
+            self.filtered_list = []
+            search_name = dpg.get_value(self.search_property.widget.uuid)
+            search_name = any_to_string(search_name)
+            search_name = search_name.replace('/', '/CONTENTS/')
+            search_results = find_keys_by_prefix(self.dict, search_name)
+            for result in search_results:
+                data = any_to_string(result[0])
+                data = data.replace('CONTENTS/', '')
+                self.filtered_list.append(data)
+            dpg.configure_item(self.node_list_box.widget.uuid, items=self.filtered_list)
+            if len(self.filtered_list) > 0:
+                dpg.set_value(self.node_list_box.widget.uuid, self.filtered_list[0])
+
+                self.current_name = self.filtered_list[0][1]
 
 
 class RepeatNode(Node):

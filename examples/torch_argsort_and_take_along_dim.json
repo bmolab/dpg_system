@@ -5,20 +5,21 @@
         100,
         100
     ],
-    "id": 5003,
+    "id": 197,
     "name": "torch_argsort_and_take_along_dim",
-    "path": "/Users/drokeby/PycharmProjects/dpg_system/examples/torch_argsort_and_take_along_dim.json",
+    "path": "/Users/drokeby/dpg_system/examples/torch_argsort_and_take_along_dim.json",
     "nodes": {
         "0": {
             "name": "",
-            "id": 5024,
+            "id": 228,
             "position_x": 0,
             "position_y": 0,
             "width": 9,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
-            "presentation_state": "show_all",
+            "protected": true,
+            "presentation_state": "hidden",
             "properties": {
                 "0": {
                     "name": "",
@@ -30,17 +31,17 @@
         "1": {
             "init": "t.rand 8 8",
             "name": "t.rand",
-            "id": 5045,
+            "id": 327,
             "position_x": 32,
             "position_y": 35,
             "width": 163,
-            "height": 156,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "",
+                    "name": "input",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -50,112 +51,92 @@
                     "value_type": "string"
                 },
                 "2": {
-                    "name": "device",
-                    "value": "cpu",
-                    "value_type": "string"
-                },
-                "3": {
-                    "name": "dtype",
-                    "value": "float32",
-                    "value_type": "string"
-                },
-                "4": {
-                    "name": "requires_grad",
-                    "value": false,
-                    "value_type": "bool"
-                },
-                "5": {
                     "name": "min",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "6": {
+                "3": {
                     "name": "max",
                     "value": 1.0,
                     "value_type": "float"
+                },
+                "4": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
                 }
             }
         },
         "2": {
             "name": "heat_map",
-            "id": 5103,
+            "id": 496,
             "position_x": 237,
             "position_y": 24,
             "width": 136,
-            "height": 180,
+            "height": 172,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "style",
-                    "value": "heat_map",
-                    "value_type": "string"
-                },
-                "1": {
                     "name": "color",
                     "value": "viridis",
                     "value_type": "string"
                 },
-                "2": {
-                    "name": "sample count",
-                    "value": 256,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "array fills plot",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "4": {
+                "1": {
                     "name": "width",
                     "value": 128,
                     "value_type": "int"
                 },
-                "5": {
+                "2": {
                     "name": "height",
                     "value": 128,
                     "value_type": "int"
                 },
-                "6": {
-                    "name": "min x",
-                    "value": 0.0,
-                    "value_type": "float"
+                "3": {
+                    "name": "sample count",
+                    "value": 256,
+                    "value_type": "int"
                 },
-                "7": {
-                    "name": "max x",
-                    "value": 256.0,
-                    "value_type": "float"
-                },
-                "8": {
+                "4": {
                     "name": "min y",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "9": {
+                "5": {
                     "name": "max y",
                     "value": 1.0,
                     "value_type": "float"
                 },
-                "10": {
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
                     "name": "number format",
                     "value": "",
                     "value_type": "string"
-                },
-                "11": {
-                    "name": "continuous output",
-                    "value": false,
-                    "value_type": "bool"
                 }
             }
         },
         "3": {
             "name": "t.argsort",
-            "id": 5162,
-            "position_x": 337,
-            "position_y": 264,
-            "width": 88,
-            "height": 84,
+            "id": 568,
+            "position_x": 341,
+            "position_y": 262,
+            "width": 86,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -174,102 +155,82 @@
         },
         "4": {
             "name": "t.take_along_dim",
-            "id": 5189,
+            "id": 653,
             "position_x": 454,
             "position_y": 159,
             "width": 111,
-            "height": 84,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "dim",
-                    "value": -1,
+                    "value": 0,
                     "value_type": "int"
                 }
             }
         },
         "5": {
             "name": "heat_map",
-            "id": 5215,
-            "position_x": 854,
-            "position_y": 117,
+            "id": 738,
+            "position_x": 1006,
+            "position_y": 120,
             "width": 136,
-            "height": 180,
+            "height": 172,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "style",
-                    "value": "heat_map",
-                    "value_type": "string"
-                },
-                "1": {
                     "name": "color",
                     "value": "viridis",
                     "value_type": "string"
                 },
-                "2": {
-                    "name": "sample count",
-                    "value": 256,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "array fills plot",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "4": {
+                "1": {
                     "name": "width",
                     "value": 128,
                     "value_type": "int"
                 },
-                "5": {
+                "2": {
                     "name": "height",
                     "value": 128,
                     "value_type": "int"
                 },
-                "6": {
-                    "name": "min x",
-                    "value": 0.0,
-                    "value_type": "float"
+                "3": {
+                    "name": "sample count",
+                    "value": 256,
+                    "value_type": "int"
                 },
-                "7": {
-                    "name": "max x",
-                    "value": 256.0,
-                    "value_type": "float"
-                },
-                "8": {
+                "4": {
                     "name": "min y",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "9": {
+                "5": {
                     "name": "max y",
                     "value": 1.0,
                     "value_type": "float"
                 },
-                "10": {
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
                     "name": "number format",
                     "value": "",
                     "value_type": "string"
-                },
-                "11": {
-                    "name": "continuous output",
-                    "value": false,
-                    "value_type": "bool"
                 }
             }
         },
         "6": {
             "name": "t.flatten",
-            "id": 5274,
+            "id": 810,
             "position_x": 226,
             "position_y": 231,
             "width": 70,
-            "height": 48,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
@@ -277,99 +238,142 @@
         "7": {
             "init": "t.view 8 8",
             "name": "t.view",
-            "id": 5289,
-            "position_x": 609,
-            "position_y": 228,
-            "width": 208,
-            "height": 66,
+            "id": 853,
+            "position_x": 638,
+            "position_y": 236,
+            "width": 243,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "",
-                    "value": "256 256",
+                    "name": "shape",
+                    "value": "256, 256",
                     "value_type": "string"
                 }
             }
         },
         "8": {
             "name": "t.info",
-            "id": 5310,
-            "position_x": 605,
-            "position_y": 106,
+            "id": 917,
+            "position_x": 604,
+            "position_y": 54,
             "width": 88,
-            "height": 102,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "9": {
             "name": "load_bang",
-            "id": 5371,
+            "id": 1020,
             "position_x": 50,
             "position_y": 238,
-            "width": 64,
-            "height": 48,
+            "width": 88,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
-            "presentation_state": "show_all"
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "trigger",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
         }
     },
     "links": {
         "0": {
-            "source_node": 5045,
+            "source_node": 327,
+            "source_node_name": "t.rand",
             "source_output_index": 0,
-            "dest_node": 5103,
-            "dest_input_index": 0
+            "source_output_name": "random tensor",
+            "dest_node": 496,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
         },
         "1": {
-            "source_node": 5045,
+            "source_node": 327,
+            "source_node_name": "t.rand",
             "source_output_index": 0,
-            "dest_node": 5274,
-            "dest_input_index": 0
+            "source_output_name": "random tensor",
+            "dest_node": 810,
+            "dest_node_name": "t.flatten",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
         },
         "2": {
-            "source_node": 5162,
+            "source_node": 568,
+            "source_node_name": "t.argsort",
             "source_output_index": 0,
-            "dest_node": 5189,
-            "dest_input_index": 1
+            "source_output_name": "output",
+            "dest_node": 653,
+            "dest_node_name": "t.take_along_dim",
+            "dest_input_index": 1,
+            "dest_input_name": "indices in"
         },
         "3": {
-            "source_node": 5189,
+            "source_node": 653,
+            "source_node_name": "t.take_along_dim",
             "source_output_index": 0,
-            "dest_node": 5289,
-            "dest_input_index": 0
+            "source_output_name": "output",
+            "dest_node": 853,
+            "dest_node_name": "t.view",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
         },
         "4": {
-            "source_node": 5189,
+            "source_node": 653,
+            "source_node_name": "t.take_along_dim",
             "source_output_index": 0,
-            "dest_node": 5310,
-            "dest_input_index": 0
+            "source_output_name": "output",
+            "dest_node": 917,
+            "dest_node_name": "t.info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
         },
         "5": {
-            "source_node": 5274,
+            "source_node": 810,
+            "source_node_name": "t.flatten",
             "source_output_index": 0,
-            "dest_node": 5162,
-            "dest_input_index": 0
+            "source_output_name": "tensor out",
+            "dest_node": 568,
+            "dest_node_name": "t.argsort",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
         },
         "6": {
-            "source_node": 5274,
+            "source_node": 810,
+            "source_node_name": "t.flatten",
             "source_output_index": 0,
-            "dest_node": 5189,
-            "dest_input_index": 0
+            "source_output_name": "tensor out",
+            "dest_node": 653,
+            "dest_node_name": "t.take_along_dim",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
         },
         "7": {
-            "source_node": 5289,
+            "source_node": 853,
+            "source_node_name": "t.view",
             "source_output_index": 0,
-            "dest_node": 5215,
-            "dest_input_index": 0
+            "source_output_name": "output",
+            "dest_node": 738,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
         },
         "8": {
-            "source_node": 5371,
+            "source_node": 1020,
+            "source_node_name": "load_bang",
             "source_output_index": 0,
-            "dest_node": 5045,
-            "dest_input_index": 0
+            "source_output_name": "out",
+            "dest_node": 327,
+            "dest_node_name": "t.rand",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
         }
     }
 }

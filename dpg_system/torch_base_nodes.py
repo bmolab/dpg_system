@@ -30,6 +30,8 @@ class TorchNode(Node):
             requires_grad = match_tensor.requires_grad
         if type(input_tensor) != torch.Tensor:
             input_tensor = any_to_tensor(input_tensor, device, dtype, requires_grad)
+        else:
+            input_tensor = input_tensor.to(device, dtype, requires_grad)
         return input_tensor
 
     def data_to_torchvision_tensor(self, input_tensor):
