@@ -91,6 +91,7 @@ def register_basic_nodes():
     Node.app.register_node('dict_replace', DictReplaceNode.factory)
     Node.app.register_node('sublist', SublistNode.factory)
     Node.app.register_node('dict_search', DictNavigatorNode.factory)
+    Node.app.register_node('dict_keys', DictKeysNode.factory)
 
 class SliceNode(Node):
     @staticmethod
@@ -2589,6 +2590,23 @@ class ConstructDictNode(Node):
 #         self.dict_output.send(self.dict)
 #         self.dict = {}
 
+class DictKeysNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = DictKeysNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('dict in', triggers_execution=True)
+        self.output = self.add_output('keys out')
+
+    def execute(self):
+        in_dict = self.input()
+        if type(in_dict) is dict:
+            keys = list(in_dict.keys())
+            self.output.send(keys)
+
 
 class DictReplaceNode(Node):
     @staticmethod
@@ -2696,8 +2714,22 @@ class CollectionNode(Node):
         self.message_handlers['save'] = self.save_message
         self.message_handlers['load'] = self.load_message
         self.message_handlers['search'] = self.search
+        self.message_handlers['next'] = self.next
+        self.message_handlers['reset'] = self.reset_counter
         self.path = ''
         self.file_name = ''
+        self.key_pointer = -1
+
+    def reset_counter(self, message='', data=[]):
+        self.key_pointer = -1
+
+    def next(self, message='', data=[]):
+        self.key_pointer += 1
+        if self.key_pointer < len(self.collection):
+            keys = list(self.collection.keys())
+            value = self.collection[keys[self.key_pointer]]
+            out_dict = {keys[self.key_pointer]: value}
+            self.output.send(out_dict)
 
     def save_coll(self):
         path = self.save_dict_input()
@@ -2813,13 +2845,11 @@ class CollectionNode(Node):
 
     def search(self, message='', data=[]):
         data = any_to_string(data)
-        data = data.replace('/', '/CONTENTS/')
-        results = find_keys_by_prefix(self.collection, any_to_string(data))
+        results = find_keys_by_prefix(self.collection, data)
         final_results = []
         for result in results:
             address = result[0]
-            stripped_address = address.replace('CONTENTS/', '')
-            final_results.append([stripped_address, address, result[1]])
+            final_results.append([address, result[1]])
 
         self.output.send(final_results)
 
@@ -2946,8 +2976,6 @@ def drill_down(dict_level, address_heirarchy):
     else:
         return None
 
-
-
 def find_keys_by_prefix(data, search_term):
     """
     Recursively searches a dictionary for keys starting with a specific prefix.
@@ -2965,55 +2993,49 @@ def find_keys_by_prefix(data, search_term):
 
     search_parts = search_term.split('/')
 
-    def _is_match(current_stack):
-        """Helper to check if the current path tail matches the search parts."""
-        # The path can't match if it's shallower than the search term
-        if len(current_stack) < len(search_parts):
-            return False
+    def is_sublist_with_prefix(main_list, sub_list):
+        """
+        Checks if sub_list is inside main_list where:
+        1. All items except the last must be exact matches.
+        2. The last item of sub_list must be a prefix of the corresponding main_list item.
+        """
+        n = len(main_list)
+        m = len(sub_list)
 
-        # Get the 'tail' of the current path equal to the length of the search
-        # e.g., if path is a/b/c/d and search is c/d, we look at [c, d]
-        path_tail = current_stack[-len(search_parts):]
+        # Edge cases
+        if m == 0: return True
+        if m > n: return False
 
-        # 1. Check parent segments (must be exact matches)
-        # We iterate up to the last item
-        for i in range(len(search_parts) - 1):
-            if path_tail[i] != search_parts[i]:
-                return False
+        # Iterate through the main list
+        for i in range(n - m + 1):
+            # 1. Check the "Head" (all items except the last one)
+            # We compare the slice of main_list vs sub_list excluding the last item
+            # If sub_list is length 1, this compares [] == [], which is True.
+            head_matches = (main_list[i: i + m - 1] == sub_list[:-1])
 
-        # 2. Check the final segment (prefix match)
-        last_path_key = path_tail[-1]
-        last_search_key = search_parts[-1]
+            if head_matches:
+                # 2. Check the "Tail" (the last item)
+                # We convert to string to safely use .startswith()
+                main_tail_val = str(main_list[i + m - 1])
+                sub_tail_val = str(sub_list[-1])
 
-        return last_path_key.startswith(last_search_key)
+                if main_tail_val.startswith(sub_tail_val):
+                    return True
+
+        return False
 
     def _recurse(current_data, current_path_stack):
         # --- Handle Dictionary ---
         if isinstance(current_data, dict):
+            if is_sublist_with_prefix(current_path_stack, search_parts):
+                if current_path_stack[-1] != 'CONTENTS':
+                    results.append(("/".join(current_path_stack), current_data))
+
             for key, value in current_data.items():
                 str_key = str(key)
                 new_stack = current_path_stack + [str_key]
-
-                # Check if this specific key matches our path criteria
-                if _is_match(new_stack):
-                    results.append(("/".join(new_stack), value))
-
-                # Continue searching deeper
-                if isinstance(value, (dict, list)):
+                if isinstance(value, dict):
                     _recurse(value, new_stack)
-
-        # --- Handle List ---
-        elif isinstance(current_data, list):
-            for index, item in enumerate(current_data):
-                str_key = str(index)
-                new_stack = current_path_stack + [str_key]
-
-                # Check if this list index matches (e.g. searching for 'items/0')
-                if _is_match(new_stack):
-                    results.append(("/".join(new_stack), item))
-
-                if isinstance(item, (dict, list)):
-                    _recurse(item, new_stack)
 
     _recurse(data, [])
     return results
@@ -3029,19 +3051,24 @@ class DictNavigatorNode(Node):
         super().__init__(label, data, args)
         self.filtered_list: List[str] = []
         self.input = self.add_input('dict in', triggers_execution=True)
-        self.search_property = self.add_input(label='##search_term', widget_type='text_input', widget_width=300)
+        self.search_property = self.add_input(label='##search_term', widget_type='text_input', widget_width=300, callback=self.select)
         self.node_list_box = self.add_property('###options', widget_type='list_box', width=300)
         self.select_button = self.add_property('select', widget_type='button', callback=self.select)
         self.dict = {}
         self.output = self.add_output('results out')
 
     def select(self):
-        selected_path = self.node_list_box()
+        selected_path = dpg.get_value(self.node_list_box.widget.uuid)
         selected_path = any_to_string(selected_path)
         selected_path = 'CONTENTS/' + selected_path.replace('/', '/CONTENTS/')
-        path_list = selected_path.split('/')
-        result = drill_down(self.dict, path_list)
-        self.output.send(result)
+        results = find_keys_by_prefix(self.dict, any_to_string(selected_path))
+        final_results = []
+        for result in results:
+            address = result[0]
+            stripped_address = address.replace('CONTENTS/', '')
+            final_results.append([stripped_address, address, result[1]])
+
+        self.output.send(final_results)
 
     def execute(self):
         incoming = self.input()
@@ -3061,9 +3088,18 @@ class DictNavigatorNode(Node):
                 self.filtered_list.append(data)
             dpg.configure_item(self.node_list_box.widget.uuid, items=self.filtered_list)
             if len(self.filtered_list) > 0:
-                dpg.set_value(self.node_list_box.widget.uuid, self.filtered_list[0])
-
+                self.node_list_box.set(self.filtered_list[0])
+                # dpg.set_value(self.node_list_box.widget.uuid, self.filtered_list[0])
                 self.current_name = self.filtered_list[0][1]
+
+    def on_deactivate(self, widget):
+        if widget == self.search_property.widget:
+            if dpg.is_item_hovered(self.node_list_box.widget.uuid) or dpg.is_item_clicked(self.node_list_box.widget.uuid):
+                pass
+            else:
+                self.select()
+        elif widget == self.node_list_box.widget:
+            self.select()
 
 
 class RepeatNode(Node):
