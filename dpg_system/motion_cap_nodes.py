@@ -1211,52 +1211,88 @@ class CheckBurstNode(Node):
 
         self.input = self.add_input('diff array', triggers_execution=True)
         self.input2 = self.add_input('previous frame array', callback=self.receive_prev)
+        self.prev_diff_input = self.add_input('previous diff array', callback=self.receive_prev_diff)
         self.frame_input = self.add_input('frame')
         self.file_input = self.add_input('file')
         self.threshold1_input = self.add_input('threshold 1', widget_type='drag_float', default_value=0.1, min=0.0, max=1.0)
         self.threshold2_input = self.add_input('threshold 2 previous', widget_type='drag_float', default_value=0.01, min=0.0, max=1.0)
-        self.save_bottom = self.add_input('save burst files', widget_type='button', callback=self.save_result)
+        self.threshold_L_input = self.add_input('threshold low', widget_type='drag_float', default_value=0.01, min=0.0, max=1.0)
+        self.jerk_threshold = self.add_input('jerk threshold pct', widget_type='drag_float', default_value=0.5, min=0.0, max=5.0)
+        self.save_button = self.add_input('save burst files', widget_type='button', callback=self.save_result)
         # add timestamp--node for date and time sting (Datetime node)
         # chack burst date and timestamp begining num (file name, check burst Nov...)
         # take dict: save a temp file--
         # 'date_time'--combine object
-        self.save_path_input = self.add_input('save path', widget_type='text_input', default_value=f"/home/bmolab/Projects/AMASS_2/burst_files.json")
+        self.save_path_input = self.add_input('save path', widget_type='text_input', default_value='/home/bmolab/Projects/AMASS_2/burst_files.json')
         self.file_dict_out = self.add_output('file_dict')
         self.file_dict = {}
 
     def receive_prev(self):
         pass
 
+    def receive_prev_diff(self):
+        pass
+
     def execute(self):
-        diff_array = np.asarray(self.input())
-        prev_array = np.asarray(self.input2())
+        acc = np.asarray(self.input())
+        prev_vel = np.asarray(self.input2())
+        prev_acc = np.asarray(self.prev_diff_input())
 
         if self.frame_input() == 0:
             return
 
-        self.detect_sudden_burst(diff_array, prev_array)
+        self.detect_sudden_burst(acc, prev_vel, prev_acc)
         self.file_dict_out.send(self.file_dict)
 
-    def detect_sudden_burst(self, diff_array, prev_array):
+    def detect_sudden_burst(self, acc, prev_vel, prev_acc):
 
-        mag_diff = np.linalg.norm(diff_array)
+        mag_diff = np.linalg.norm(acc)
+        # mag_diff_prev = np.linalg.norm(prev_diff)
+        # diff_acceleration = np.abs(mag_diff - mag_diff_prev)
+        # avg_mag_diff = (mag_diff + mag_diff_prev) / 2
+        # jerk = diff_acceleration > self.jerk_threshold() * avg_mag_diff
+
+        # element-wise
+        acc_arr = np.asarray(acc).ravel()
+        prev_acc_arr = np.asarray(prev_acc).ravel()
+        jerk = np.abs(acc_arr - prev_acc_arr)
+        # threshold_arr = np.full(22, 0.2)
+        jerk_mask = (jerk > self.threshold_L_input()) & (jerk > self.jerk_threshold() * ((acc_arr + prev_acc_arr) / 2))
 
         if mag_diff > self.threshold1_input():
-            diff_max = np.max(diff_array)
-            diff_max_i = np.argmax(diff_array)
-            prev_v = prev_array[diff_max_i]
+            diff_max_i = np.argmax(acc)
+            prev_v = prev_vel[diff_max_i]
 
-            if prev_v < self.threshold2_input():
+            if prev_v < self.threshold2_input() or (self.frame_input() > 1 and jerk_mask.any()):
                 print(self.file_input())
                 print('frame', self.frame_input())
-                print(diff_array)
-                print('prev array', prev_array)
-                print(mag_diff)
+                print('acc', acc)
+                print('prev_vel', prev_vel)
+                print('prev_v', prev_v)
+                print('mag_diff_acc', mag_diff)
+                print('prev_acc', prev_acc)
+                print('jerk_mask', jerk_mask)
+
+                # jerk = jerk_mask > threshold_arr
+                i_jerk = np.where(jerk_mask)[0].tolist()
+                values = jerk[i_jerk].tolist()
+                print('indices', i_jerk)
+                print('values', values)
+
+                # print('mag_diff_prev', mag_diff_prev)
+                # print('avg_mag_diff', avg_mag_diff)
+                # print('diff_acceleration', diff_acceleration)
+
                 event = {'frame': self.frame_input(),
-                         'prev': prev_array,
-                         'diff array': diff_array,
+                         'prev_vel': prev_vel,
+                         'prev_v': prev_v,
+                         'acc': acc,
+                         'prev_acc': prev_acc,
+                         'jerk': float(jerk_mask.any()),
                          'mag_diff': mag_diff,
-                         'prev_v': prev_v}
+                         'jerk_indices': i_jerk,
+                         'jerk_values': values,
+                }
                 self.file_dict.setdefault(self.file_input(), []).append(event)
 
 
