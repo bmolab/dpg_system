@@ -13,6 +13,7 @@ import platform as platform_
 import traceback
 import threading
 import _thread
+from pathlib import Path
 
 import dpg_system.basic_nodes as basic_nodes
 import dpg_system.math_nodes as math_nodes
@@ -388,6 +389,15 @@ class App:
                     self.font_30 = dpg.add_font("Inconsolata-g.otf", 30)
                     self.font_48 = dpg.add_font("Inconsolata-g.otf", 48)
                     self.font_36 = dpg.add_font("Inconsolata-g.otf", 36)
+        else:
+            with dpg.font_registry():
+                if os.path.exists('Inconsolata-g.otf'):
+                    # self.font_24 = dpg.add_font("Inconsolata-g.otf", 12)
+                    # dpg.bind_font(self.font_24)
+                    dpg.set_global_font_scale(1.00)
+                    self.font_30 = dpg.add_font("Inconsolata-g.otf", 15)
+                    self.font_48 = dpg.add_font("Inconsolata-g.otf", 24)
+                    self.font_36 = dpg.add_font("Inconsolata-g.otf", 18)
         # handle other platforms...
         self.viewport = dpg.create_viewport()
         dpg.setup_dearpygui()
@@ -396,8 +406,9 @@ class App:
         self.patchers.append(name)
 
     def register_patchers(self):
-        if os.path.exists('dpg_system/patch_library'):
-            for entry in os.scandir('dpg_system/patch_library'):
+        patch_library_path = Path('dpg_system') / 'patch_library'
+        if os.path.exists(patch_library_path):
+            for entry in os.scandir(patch_library_path):
                 if entry.is_file():
                     if entry.name[-5:] == '.json':
                         self.register_patcher(entry.name[:-5])
@@ -597,13 +608,15 @@ class App:
                 if save_path is not None and save_path != '':
                     with open(save_path, 'w') as f:
                         self.patches_path = save_path
-
-                        patch_name = save_path.split('/')[-1]
-                        if '.' in patch_name:
-                            parts = patch_name.split('.')
-                            if len(parts) == 2:
-                                if parts[1] == 'json':
-                                    patch_name = parts[0]
+                        sp = Path(save_path)
+                        patch_name = sp.stem
+                        patch_suffix = sp.suffix
+                        # patch_name = save_path.split('/')[-1]
+                        # if '.' in patch_name:
+                        #     parts = patch_name.split('.')
+                        #     if len(parts) == 2:
+                        #         if parts[1] == 'json':
+                        #             patch_name = parts[0]
 
                         self.patches_name = patch_name
                         current_editor.set_name(patch_name)
@@ -626,12 +639,15 @@ class App:
             with open(save_path, 'w') as f:
                 self.patches_path = save_path
 
-                patch_name = save_path.split('/')[-1]
-                if '.' in patch_name:
-                    parts = patch_name.split('.')
-                    if len(parts) == 2:
-                        if parts[1] == 'json':
-                            patch_name = parts[0]
+                sp = Path(save_path)
+                patch_name = sp.stem
+
+                # patch_name = save_path.split('/')[-1]
+                # if '.' in patch_name:
+                #     parts = patch_name.split('.')
+                #     if len(parts) == 2:
+                #         if parts[1] == 'json':
+                #             patch_name = parts[0]
 
                 self.patches_name = patch_name
 
@@ -1143,7 +1159,10 @@ class App:
         # return dpg.is_key_down(dpg.mvKey_ModCtrl) or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin)
 
     def alt_down(self):
-        return dpg.is_key_down(dpg.mvKey_LAlt) or dpg.is_key_down(dpg.mvKey_RAlt)
+        if hasattr(dpg, 'mvKey_LAlt'):
+            return dpg.is_key_down(dpg.mvKey_LAlt) or dpg.is_key_down(dpg.mvKey_RAlt)
+        else:
+            return dpg.is_key_down(dpg.mvKey_Alt)
 
     def X_handler(self):
         if self.control_or_command_down():
@@ -1282,7 +1301,7 @@ class App:
                     handled = True
                     self.hovered_item.node.increment_widget(self.hovered_item)
                     if self.hovered_item.callback is not None:
-                        self.hovered_item.callback()
+                        self.hovered_item.callback_because_edit()
         if not handled and self.not_focussed_on_widget():
             if dpg.does_item_exist(self.active_widget):
                 widget = dpg.get_item_user_data(self.active_widget)
@@ -1290,7 +1309,7 @@ class App:
                     if widget.node is not None:
                         widget.node.increment_widget(widget)
                         if widget.callback is not None:
-                            widget.callback()
+                            widget.callback_because_edit()
 
     def create_gui(self):
         pass
@@ -1304,7 +1323,7 @@ class App:
                     handled = True
                     self.hovered_item.node.decrement_widget(self.hovered_item)
                     if self.hovered_item.callback is not None:
-                        self.hovered_item.callback()
+                        self.hovered_item.callback_because_edit()
         if not handled and self.not_focussed_on_widget():
             if dpg.does_item_exist(self.active_widget):
                 widget = dpg.get_item_user_data(self.active_widget)
@@ -1312,7 +1331,7 @@ class App:
                     if widget.node is not None:
                         widget.node.decrement_widget(widget)
                         if widget.callback is not None:
-                            widget.callback()
+                            widget.callback_because_edit()
 
 
     def new_handler(self, name=None):
@@ -1436,12 +1455,15 @@ class App:
         parent_tab = self.get_current_tab()
         try:
             with open(path, 'r') as f:
-                patch_name = path.split('/')[-1]
-                if '.' in patch_name:
-                    parts = patch_name.split('.')
-                    if len(parts) == 2:
-                        if parts[1] == 'json':
-                            patch_name = parts[0]
+                p = Path(path)
+                patch_name = p.stem
+                # patch_name = sp.stem
+                # patch_name = path.split('/')[-1]
+                # if '.' in patch_name:
+                #     parts = patch_name.split('.')
+                #     if len(parts) == 2:
+                #         if parts[1] == 'json':
+                #             patch_name = parts[0]
                 file_container = json.load(f)
 
                 patch_count = 0
@@ -1616,7 +1638,8 @@ class App:
         self.save('patches')
 
     def save_as_help(self):
-        self.save('dpg_system/help')
+        help_path = Path('dpg_system') / 'help'
+        self.save(str(help_path.resolve()))
 
     def save_internal(self, path):
         self.save_patch(path)
@@ -1625,11 +1648,12 @@ class App:
             self.saving_to_lib = False
 
     def save_to_library(self):
-        if not os.path.exists('dpg_system/patch_library'):
-            os.makedirs('dpg_system/patch_library')
-        if os.path.exists('dpg_system/patch_library'):
+        patch_path = Path('dpg_system') / 'patch_library'
+        if not os.path.exists(patch_path):
+            os.makedirs(patch_path)
+        if os.path.exists(patch_path):
             self.saving_to_lib = True
-            self.save('', default_directory='dpg_system/patch_library')
+            self.save('', default_directory=str(patch_path))
             self.patchers.append(self.patches_name)
 
     def save_nodes(self):

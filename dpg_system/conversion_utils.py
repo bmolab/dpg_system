@@ -6,7 +6,7 @@ from word2number import w2n
 from functools import singledispatch
 import numbers
 from collections.abc import Iterable
-
+import json
 torch_available = False
 try:
     import torch
@@ -130,7 +130,8 @@ def _(data, strip_returns=True):
 # --- 5. Dictionaries ---
 @any_to_string.register(dict)
 def _(data, strip_returns=True):
-    return str(data)
+    nice_string = json.dumps(data, indent=4, cls=NumpyTorchEncoder)
+    return nice_string
 
 # --- 6. Numpy Arrays ---
 @any_to_string.register(np.ndarray)
@@ -148,6 +149,26 @@ if torch_available:
         # Convert to numpy and recurse to the numpy handler
         data_np = data.detach().cpu().numpy()
         return any_to_string(data_np, strip_returns=strip_returns)
+
+
+class NumpyTorchEncoder(json.JSONEncoder):
+    def default(self, obj):
+        # Handle PyTorch Tensors
+        if isinstance(obj, torch.Tensor):
+            # .tolist() automatically moves to CPU and detaches if necessary
+            return obj.tolist()
+
+        # Handle NumPy Arrays
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+
+        # Handle NumPy Scalars (e.g., np.int64, np.float32)
+        # JSON cannot handle np.int64 directly, it needs a Python int
+        if isinstance(obj, np.generic):
+            return obj.item()
+
+        # Let the base class handle standard types
+        return super().default(obj)
 
 
 # def any_to_string(data, strip_returns=True):
@@ -238,6 +259,38 @@ if torch_available:
     @any_to_list.register(torch.Tensor)
     def _(data):
         return data.tolist()
+
+
+def any_to_int_list(data):
+    """
+    Helper: Converts Strings, Numpy Arrays, Tuples, or Lists
+    into a clean standard Python List of Integers.
+    """
+    try:
+        # 1. Handle Strings (e.g. "2, 2" or "[2 2]")
+        if isinstance(data, str):
+            # Regex to find all integer numbers in the string
+            # return [int(x) for x in re.findall(r'[-+]?\d+', data)]
+            nums = re.findall(r'[-+]?\d+', data)
+            return [int(x) for x in nums]
+
+        # 2. Handle Numpy Arrays (or tensors)
+        if hasattr(data, 'tolist'):
+            flat = data.flatten() if hasattr(data, 'flatten') else data
+            return [int(x) for x in flat.tolist()]
+
+        # 3. Handle Iterables (Lists/Tuples)
+        if isinstance(data, (list, tuple)):
+            return [int(x) for x in data]
+
+        # 4. Handle single integers
+        if isinstance(data, (int, float)):
+            return [int(data)]
+
+    except Exception:
+        pass  # Fail gracefully
+
+    return None
 
 
 # def any_to_list(data):

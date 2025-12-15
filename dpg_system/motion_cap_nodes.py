@@ -692,6 +692,7 @@ class OpenTakeNode(MoCapNode):
             for key in self.global_keys:
                 data = self.take_dict[key]
                 self.global_dict[key] = data
+            self.global_dict['length'] = sequence_length
             if len(self.global_dict) > 0:
                 self.global_params_out.send(self.global_dict)
 

@@ -8,6 +8,7 @@ from typing import List, Any, Callable, Union, Tuple, Optional, Dict, Set, Type,
 from fuzzywuzzy import fuzz
 import sys
 import os
+from pathlib import Path
 
 
 class NodeOutput:
@@ -418,6 +419,7 @@ class NodeProperty:
         self.node_attribute = None
         self.variable = None
         self.action = None
+        self.edited = False
         self.node = node
 
     def create(self, parent):
@@ -482,11 +484,11 @@ class NodeProperty:
         if self.widget:
             self.widget.set_label(new_name)
 
-    def set_and_callback(self, data, propagate=True):
-        self.set(data, propagate)
-        if self.callback is not None:
-            self.callback()
-
+    # def set_and_callback(self, data, propagate=True):
+    #     self.set(data, propagate)
+    #     if self.callback is not None:
+    #         self.callback()
+    #
     def value_changed(self, uuid, force=False):
         pass
 
@@ -533,7 +535,7 @@ class BasePropertyWidget:
         self.trigger_callback = None
         self.variable = None  # Attached variable
         self.action = None  # Attached action
-
+        self.edited = False
         # Theme
         self.active_theme = getattr(node, 'active_theme_base', None) if node else None
 
@@ -690,14 +692,22 @@ class BasePropertyWidget:
             self.action()
 
         if self.callback:
-            if self.node: self.node.active_input = self.input
-            self.callback()
-            if self.node: self.node.active_input = hold_active_input
+            if self.node:
+                self.node.active_input = self.input
+            self.callback_because_edit()
+            if self.node:
+                self.node.active_input = hold_active_input
 
         if self.triggers_execution and self.node and not self.node.in_loading_process:
             self.node.active_input = self.input
             self.node.execute()
             self.node.active_input = hold_active_input
+
+    def callback_because_edit(self):
+        self.edited = True
+        if self.callback:
+            self.callback()
+        self.edited = False
 
     def set(self, data: Any, propagate: bool = True) -> None:
         """Abstract set. Subclasses implement _convert_and_set."""
@@ -1273,7 +1283,6 @@ class NodeInput:
     _pin_active_tensor_theme = None
     _pin_active_list_theme = None
     _pin_active_bang_theme = None
-    _pin_theme_created = False
 
     def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, **kwargs):
         if not self._pin_theme_created:
@@ -1285,7 +1294,7 @@ class NodeInput:
             self.uuid = uuid
         self.label_uuid = None
         self._parents = []  # input attribute
-        self._data = 0
+        self._data = None  # (was zero)
         if default_value is not None:
             self._data = default_value
         self.executor = False
@@ -1337,6 +1346,17 @@ class NodeInput:
 
     def hide(self) -> None:
         dpg.hide_item(self.uuid)
+
+    def conform_to_int_list(self):
+        data = self()
+        int_list = None
+        if data is not None:
+            int_list = any_to_int_list(data)
+            if self.widget is not None:
+                if not self.widget.edited:
+                    display_str = str(int_list)[1:-1]
+                    self.set(display_str)
+        return int_list
 
     def set_visibility(self, visibility_state: str = 'show_all') -> None:
         if visibility_state == 'show_all':
@@ -2075,12 +2095,13 @@ class Node:
         pass
 
     def get_help(self):
-        if os.path.exists('dpg_system/help'):
+        help_path = Path('dpg_system') / 'help'
+        if os.path.exists(str(help_path.resolve())):
             if self.help_file_name is not None:
-                temp_path = 'dpg_system/help/' + self.help_file_name + '.json'
+                temp_path = help_path / (self.help_file_name + '_help.json')
             else:
-                temp_path = 'dpg_system/help/' + self.label + '_help.json'
-            if os.path.exists(temp_path):
+                temp_path = help_path / (self.label + '_help.json')
+            if temp_path.exists():
                 # if patcher is already open?
                 tabs = Node.app.tabs
                 for tab in tabs:
@@ -2090,7 +2111,7 @@ class Node:
                         if title == self.label + '_help':
                             Node.app.select_tab(tab)
                             return
-                Node.app.load_from_file(temp_path)
+                Node.app.load_from_file(str(temp_path.resolve()))
 
     def add_display(self, label: str = "", uuid=None, width=80, callback=None):
         new_display = NodeDisplay(label, uuid, self, width)
@@ -2459,7 +2480,9 @@ class Node:
             property.set(args)
         if property.widget is not None:
             if property.widget.callback is not None:
-                property.widget.callback()
+                property.widget.edited = True
+                property.widget.callback_because_edit()
+                property.widget.edited = False
 
     def copy_to_clipboard(self) -> Dict[str, Any]:
         node_container = {}
@@ -2652,7 +2675,7 @@ class Node:
                 property = self.property_registery[arg_name]
                 if property.widget is not None:
                     if property.widget.callback is not None:
-                        property.widget.callback()
+                        property.widget.callback_because_edit()
 
 
 def register_base_nodes():

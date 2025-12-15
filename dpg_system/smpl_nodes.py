@@ -373,6 +373,10 @@ def rotate_vector_rodrigues(v, k, theta):
 
     return term1 + term2 + term3
 
+
+# NOTE: Orientation of SMPL and Shadow are different
+# trans also needs to reflect this different orientation
+
 class ActiveToSMPLPoseNode(JointTranslator, Node):
     @staticmethod
     def factory(name, data, args=None):

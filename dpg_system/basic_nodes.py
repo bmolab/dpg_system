@@ -12,6 +12,7 @@ import queue
 import html
 import string
 import itertools
+from typing import List, Any, Callable, Union, Tuple, Optional, Dict, Set, Type, TypeVar, cast
 
 from dpg_system.node import Node, SaveDialog, LoadDialog
 
@@ -33,10 +34,10 @@ def register_basic_nodes():
     Node.app.register_node('dict', CollectionNode.factory)
     Node.app.register_node('construct_dict', ConstructDictNode.factory)
     Node.app.register_node('gather_to_dict', ConstructDictNode.factory)
-
     Node.app.register_node('dict_extract', DictExtractNode.factory)
     Node.app.register_node('unpack_dict', DictExtractNode.factory)
-    Node.app.register_node('pack_dict', PackDictNode.factory)
+    Node.app.register_node('dict_stream', DictStreamNode.factory)
+
     Node.app.register_node("concat", ConcatenateNode.factory)
 
     Node.app.register_node("delay", DelayNode.factory)
@@ -88,7 +89,9 @@ def register_basic_nodes():
     Node.app.register_node('end_trace', EndTraceNode.factory)
 
     Node.app.register_node('dict_replace', DictReplaceNode.factory)
-
+    Node.app.register_node('sublist', SublistNode.factory)
+    Node.app.register_node('dict_search', DictNavigatorNode.factory)
+    Node.app.register_node('dict_keys', DictKeysNode.factory)
 
 class SliceNode(Node):
     @staticmethod
@@ -2060,7 +2063,6 @@ def print_info(input_):
 
     return type_string, value_string
 
-# HELP done to here ------
 
 class TypeNode(Node):
     @staticmethod
@@ -2381,29 +2383,144 @@ class DictExtractNode(Node):
             if type(arg) is str:
                 self.extract_keys.append(arg)
         self.output_count = len(self.extract_keys)
+        self.output_count_option = self.add_option('key count', widget_type='input_int', default_value=self.output_count, callback=self.output_count_changed)
+        self.include_key_in_output_option = self.add_option('include key in output', widget_type='checkbox', default_value=False)
+        self.extract_opt = []
+        for i in range(32):
+            if i < self.output_count:
+                self.extract_opt.append(self.add_option('key ' + str(i), widget_type='text_input', default_value=self.extract_keys[i], callback=self.key_changed))
+            else:
+                self.extract_opt.append(self.add_option('key ' + str(i), widget_type='text_input', default_value='', callback=self.key_changed))
+
+    def output_count_changed(self):
+        output_count = self.output_count_option()
+        self.output_count = output_count
+        self.key_changed()
 
     def custom_create(self, from_file):
+        for i in range(self.output_count):
+            if i < len(self.extract_keys):
+                key = self.extract_keys[i]
+            else:
+                key = ''
+            self.outputs[i].set_label(key)
+        for i in range(self.output_count, 32):
+            dpg.hide_item(self.outputs[i].uuid)
+            dpg.hide_item(self.extract_opt[i].uuid)
+
+    def toggle_show_hide_options(self) -> None:
+        if len(self.options) > 0:
+            self.options_visible = not self.options_visible
+            if self.options_visible:
+                dpg.show_item(self.output_count_option.uuid)
+                dpg.show_item(self.output_count_option.widget.uuid)
+                dpg.show_item(self.include_key_in_output_option.uuid)
+                dpg.show_item(self.include_key_in_output_option.widget.uuid)
+
+                for index, option_att in enumerate(self.extract_opt):
+                    if index < self.output_count:
+                        dpg.show_item(option_att.uuid)
+                        dpg.show_item(option_att.widget.uuid)
+            else:
+                dpg.hide_item(self.output_count_option.uuid)
+                dpg.hide_item(self.output_count_option.widget.uuid)
+                dpg.hide_item(self.include_key_in_output_option.uuid)
+                dpg.hide_item(self.include_key_in_output_option.widget.uuid)
+
+                for index, option_att in enumerate(self.extract_opt):
+                    dpg.hide_item(option_att.uuid)
+                    dpg.hide_item(option_att.widget.uuid)
+
+    def key_changed(self):
+        for i in range(32):
+            key = self.extract_opt[i]()
+            if i < self.output_count:
+                if key != '':
+                    if len(self.extract_keys) > i:
+                        self.extract_keys[i] = key
+                    else:
+                        self.extract_keys.append(key)
+                else:
+                    if len(self.extract_keys) > i:
+                        self.extract_keys[i] = key
+                    else:
+                        self.extract_keys.append(key)
+                dpg.show_item(self.outputs[i].uuid)
+                dpg.show_item(self.extract_opt[i].uuid)
+                dpg.show_item(self.extract_opt[i].widget.uuid)
         for index, key in enumerate(self.extract_keys):
             self.outputs[index].set_label(key)
-        for i in range(len(self.extract_keys), 32):
+        for i in range(self.output_count, 32):
             dpg.hide_item(self.outputs[i].uuid)
+            dpg.hide_item(self.extract_opt[i].uuid)
+            dpg.hide_item(self.extract_opt[i].widget.uuid)
 
+    def adjust_keys(self, received_dict=None):
+        if received_dict is not None:
+            self.extract_keys = list(received_dict.keys())
+            self.output_count = len(received_dict.keys())
+            self.output_count_option.set(self.output_count)
+
+        for i in range(self.output_count):
+            if i < len(self.extract_keys):
+                key = self.extract_keys[i]
+                self.outputs[i].set_label(key)
+                self.outputs[i].send(received_dict[key])
+                self.extract_opt[i].set(key)
+                dpg.show_item(self.outputs[i].uuid)
+            else:
+                self.extract_keys.append('')
+                self.extract_opt[i].set('')
+                dpg.show_item(self.outputs[i].uuid)
+        for i in range(self.output_count, 32):
+            dpg.hide_item(self.outputs[i].uuid)
+            self.extract_opt[i].set('')
+        self.unparsed_args = self.extract_keys
 
     def execute(self):
         received_dict = self.input()
         if len(self.extract_keys) == 0:
-            keys = list(received_dict.keys())
-            for index, key in enumerate(keys):
-                self.outputs[index].set_label(key)
-                self.outputs[index].send(received_dict[key])
-                dpg.show_item(self.outputs[index].uuid)
-            for i in range(len(keys), 32):
-                dpg.hide_item(self.outputs[i].uuid)
-            self.unparsed_args = keys
-        else:
-            for index, key in enumerate(self.extract_keys):
-                if key in received_dict:
+            self.adjust_keys(received_dict)
+            # self.extract_keys = list(received_dict.keys())
+            # for i in range(self.output_count):
+            #     if i < len(self.extract_keys):
+            #         key = self.extract_keys[i]
+            #         self.outputs[i].set_label(key)
+            #         self.outputs[i].send(received_dict[key])
+            #         self.extract_opt[i].set(key)
+            #         dpg.show_item(self.outputs[i].uuid)
+            #     else:
+            #         self.extract_opt[i].set('')
+            #         dpg.show_item(self.outputs[i].uuid)
+            # for i in range(self.output_count, 32):
+            #     dpg.hide_item(self.outputs[i].uuid)
+            #     self.extract_opt[i].set('')
+            # self.unparsed_args = self.extract_keys
+        include_key = self.include_key_in_output_option()
+        for index, key in enumerate(self.extract_keys):
+            if key in received_dict:
+                if include_key:
+                    self.outputs[index].send([key, received_dict[key]])
+                else:
                     self.outputs[index].send(received_dict[key])
+
+
+class DictStreamNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = DictStreamNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('dict in', triggers_execution=True)
+        self.output = self.add_output('key value lists out')
+
+    def execute(self):
+        received_dict = self.input()
+        keys = list(received_dict.keys())
+        for key in keys:
+            self.output.send([key, received_dict[key]])
 
 
 class ConstructDictNode(Node):
@@ -2444,34 +2561,51 @@ class ConstructDictNode(Node):
 
 # deprecated - use gather_to_dict
 
-class PackDictNode(Node):
+# class PackDictNode(Node):
+#     @staticmethod
+#     def factory(name, data, args=None):
+#         node = PackDictNode(name, data, args)
+#         return node
+#
+#     def __init__(self, label: str, data, args):
+#         super().__init__(label, data, args)
+#         self.input = self.add_input('send dict', widget_type='button', triggers_execution=True)
+#         self.labels = []
+#         if len(args) > 0:
+#             self.labels = args
+#
+#         for label in self.labels:
+#             self.data_input = self.add_input(label, callback=self.received_data)
+#         self.dict_output = self.add_output('dict out')
+#         self.input_keys = []
+#         self.dict = {}
+#
+#     def received_data(self):
+#         this_input = self.active_input
+#         key = this_input.get_label()
+#         incoming = this_input()
+#         self.dict[key] = incoming
+#
+#     def execute(self):
+#         self.dict_output.send(self.dict)
+#         self.dict = {}
+
+class DictKeysNode(Node):
     @staticmethod
     def factory(name, data, args=None):
-        node = PackDictNode(name, data, args)
+        node = DictKeysNode(name, data, args)
         return node
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.input = self.add_input('send dict', widget_type='button', triggers_execution=True)
-        self.labels = []
-        if len(args) > 0:
-            self.labels = args
-
-        for label in self.labels:
-            self.data_input = self.add_input(label, callback=self.received_data)
-        self.dict_output = self.add_output('dict out')
-        self.input_keys = []
-        self.dict = {}
-
-    def received_data(self):
-        this_input = self.active_input
-        key = this_input.get_label()
-        incoming = this_input()
-        self.dict[key] = incoming
+        self.input = self.add_input('dict in', triggers_execution=True)
+        self.output = self.add_output('keys out')
 
     def execute(self):
-        self.dict_output.send(self.dict)
-        self.dict = {}
+        in_dict = self.input()
+        if type(in_dict) is dict:
+            keys = list(in_dict.keys())
+            self.output.send(keys)
 
 
 class DictReplaceNode(Node):
@@ -2547,9 +2681,6 @@ class DictReplaceNode(Node):
         self.dict_out.send(self.dict)
 
 
-
-
-
 class CollectionNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -2569,9 +2700,11 @@ class CollectionNode(Node):
         self.input = self.add_input('retrieve by key', triggers_execution=True)
         self.store_input = self.add_input('store', triggers_execution=True)
 
-        self.collection_name_input = self.add_input('name', widget_type='text_input', default_value=self.collection_name, callback=self.load_coll_by_name)
+        self.load_dict_input = self.add_input('load', widget_type='button', callback=self.load_coll)
+        self.collection_name_input = self.add_property('name', widget_type='label', default_value=self.collection_name)
+        self.save_dict_input = self.add_property('save', widget_type='button', callback=self.save_coll)
         self.clear_input = self.add_input('clear', widget_type='button', callback=self.clear)
-        self.input = self.add_input('send dict', widget_type='button', callback=self.send_dict)
+        self.send_input = self.add_input('send dict', widget_type='button', callback=self.send_dict)
         self.output = self.add_output("out")
         self.unmatched_output = self.add_output('unmatched')
         self.dict_out = self.add_output('dict out')
@@ -2580,6 +2713,45 @@ class CollectionNode(Node):
         self.message_handlers['dump'] = self.dump
         self.message_handlers['save'] = self.save_message
         self.message_handlers['load'] = self.load_message
+        self.message_handlers['search'] = self.search
+        self.message_handlers['next'] = self.next
+        self.message_handlers['reset'] = self.reset_counter
+        self.path = ''
+        self.file_name = ''
+        self.key_pointer = -1
+
+    def reset_counter(self, message='', data=[]):
+        self.key_pointer = -1
+
+    def next(self, message='', data=[]):
+        self.key_pointer += 1
+        if self.key_pointer < len(self.collection):
+            keys = list(self.collection.keys())
+            value = self.collection[keys[self.key_pointer]]
+            out_dict = {keys[self.key_pointer]: value}
+            self.output.send(out_dict)
+
+    def save_coll(self):
+        path = self.save_dict_input()
+        if path is not None and path != '':
+            if self.save_data(path):
+                # self.path = path
+                # self.file_name = path.split('/')[-1]
+                # self.file_name = self.file_name.split('.')[0]
+                # self.collection_name_input.set(self.file_name)
+                return
+        self.save_dialog()
+
+    def load_coll(self):
+        path = self.load_dict_input()
+        if path is not None and path != '':
+            if self.load_data(path):
+                # self.path = path
+                # self.file_name = path.split('/')[-1]
+                # self.file_name = self.file_name.split('.')[0]
+                # self.collection_name_input.set(self.file_name)
+                return
+        self.load_dialog()
 
     def load_coll_by_name(self):
         try:
@@ -2597,7 +2769,7 @@ class CollectionNode(Node):
         self.dict_out.send(self.collection)
 
     def save_dialog(self):
-        SaveDialog(self, callback=self.save_coll_callback, extensions=['json'])
+        SaveDialog(self, callback=self.save_coll_callback, extensions=['.json'])
 
     def save_coll_callback(self, save_path):
         if save_path != '':
@@ -2607,7 +2779,11 @@ class CollectionNode(Node):
 
     def save_data(self, path):
         with open(path, 'w') as f:
-            json.dump(self.collection, f, indent=4)
+            json.dump(self.collection, f, indent=4, cls=NumpyTorchEncoder)
+        self.path = path
+        self.file_name = path.split('/')[-1]
+        self.file_name = self.file_name.split('.')[0]
+        self.collection_name_input.set(self.file_name)
 
     def save_message(self, message='', data=[]):
         if len(data) > 0:
@@ -2624,7 +2800,7 @@ class CollectionNode(Node):
             self.collection = container['collection']
 
     def load_dialog(self):
-        LoadDialog(self, callback=self.load_coll_callback, extensions=['json'])
+        LoadDialog(self, callback=self.load_coll_callback, extensions=['.json'])
 
     def load_coll_callback(self, load_path):
         if load_path != '':
@@ -2643,12 +2819,67 @@ class CollectionNode(Node):
         if os.path.exists(path):
             with open(path, 'r') as f:
                 self.collection = json.load(f)
+                self.path = path
+                self.file_name = path.split('/')[-1]
+                self.file_name = self.file_name.split('.')[0]
+                self.collection_name_input.set(self.file_name)
+                return True
+        return False
+
     def clear(self):
         self.collection = {}
         self.save_pointer = -1
 
     def clear_message(self, message='', data=[]):
         self.clear()
+
+    # def drill_down(self, dict_level, address_heirachy):
+    #     local_address = any_to_string(address_heirachy[0])
+    #     if local_address in dict_level:
+    #         if len(address_heirachy) > 1:
+    #             return self.drill_down(dict_level[local_address], address_heirachy[1:])
+    #         else:
+    #             return dict_level[local_address]
+    #     else:
+    #         return None
+
+    def search(self, message='', data=[]):
+        data = any_to_string(data)
+        results = find_keys_by_prefix(self.collection, data)
+        final_results = []
+        for result in results:
+            address = result[0]
+            final_results.append([address, result[1]])
+
+        self.output.send(final_results)
+
+        # def _recurse(current_data, current_path_stack):
+        #     # Handle Dictionaries
+        #     if isinstance(current_data, dict):
+        #         for key, value in current_data.items():
+        #             str_key = str(key)
+        #             # Build the current path
+        #             new_path_stack = current_path_stack + [str_key]
+        #
+        #             # Check for partial match
+        #             if str_key.startswith(prefix):
+        #                 path_str = "/".join(new_path_stack)
+        #                 results.append((path_str, value))
+        #
+        #             # Continue recursing if the value is a nested container
+        #             if isinstance(value, (dict, list)):
+        #                 _recurse(value, new_path_stack)
+        #
+        #     # Handle Lists (to maintain path integrity through arrays)
+        #     elif isinstance(current_data, list):
+        #         for index, item in enumerate(current_data):
+        #             new_path_stack = current_path_stack + [str(index)]
+        #
+        #             if isinstance(item, (dict, list)):
+        #                 _recurse(item, new_path_stack)
+        #
+        # _recurse(data, [])
+        # return results
 
     def execute(self):
         if self.active_input == self.input:
@@ -2666,10 +2897,13 @@ class CollectionNode(Node):
                 else:
                     self.unmatched_output.send(data)
             elif t == str:
-                if address in self.collection:
-                    self.output.send(self.collection[address])
+                address_hierarchy = address.split('/')
+                result = drill_down(self.collection, address_hierarchy)
+                if result is not None:
+                    self.output.send(result)
                 else:
                     self.unmatched_output.send(data)
+
             elif t in [list]:
                 index = any_to_string(data[0])
                 if index == 'delete':
@@ -2727,9 +2961,145 @@ class CollectionNode(Node):
                     elif t == tuple:
                         self.collection[index] = list(data[0])
                     else:
-                        self.collection[index] = data
+                        self.collection[index] = data[0]
                 else:
                     self.collection[index] = data
+
+
+def drill_down(dict_level, address_heirarchy):
+    local_address = any_to_string(address_heirarchy[0])
+    if local_address in dict_level:
+        if len(address_heirarchy) > 1:
+            return drill_down(dict_level[local_address], address_heirarchy[1:])
+        else:
+            return dict_level[local_address]
+    else:
+        return None
+
+def find_keys_by_prefix(data, search_term):
+    """
+    Recursively searches a dictionary for keys starting with a specific prefix.
+
+    Args:
+        data (dict | list): The data structure to search.
+        prefix (str): The substring the key must start with.
+
+    Returns:
+        tuple: (list of values, list of paths)
+    """
+    # data = self.collection
+
+    results = []
+
+    search_parts = search_term.split('/')
+
+    def is_sublist_with_prefix(main_list, sub_list):
+        """
+        Checks if sub_list is inside main_list where:
+        1. All items except the last must be exact matches.
+        2. The last item of sub_list must be a prefix of the corresponding main_list item.
+        """
+        n = len(main_list)
+        m = len(sub_list)
+
+        # Edge cases
+        if m == 0: return True
+        if m > n: return False
+
+        # Iterate through the main list
+        for i in range(n - m + 1):
+            # 1. Check the "Head" (all items except the last one)
+            # We compare the slice of main_list vs sub_list excluding the last item
+            # If sub_list is length 1, this compares [] == [], which is True.
+            head_matches = (main_list[i: i + m - 1] == sub_list[:-1])
+
+            if head_matches:
+                # 2. Check the "Tail" (the last item)
+                # We convert to string to safely use .startswith()
+                main_tail_val = str(main_list[i + m - 1])
+                sub_tail_val = str(sub_list[-1])
+
+                if main_tail_val.startswith(sub_tail_val):
+                    return True
+
+        return False
+
+    def _recurse(current_data, current_path_stack):
+        # --- Handle Dictionary ---
+        if isinstance(current_data, dict):
+            if is_sublist_with_prefix(current_path_stack, search_parts):
+                if current_path_stack[-1] != 'CONTENTS':
+                    results.append(("/".join(current_path_stack), current_data))
+
+            for key, value in current_data.items():
+                str_key = str(key)
+                new_stack = current_path_stack + [str_key]
+                if isinstance(value, dict):
+                    _recurse(value, new_stack)
+
+    _recurse(data, [])
+    return results
+
+
+class DictNavigatorNode(Node):
+    @staticmethod
+    def factory(name: str, data: Any, args: Optional[List[str]] = None) -> 'DictNavigatorNode':
+        node = DictNavigatorNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data: Any, args: Optional[List[str]]) -> None:
+        super().__init__(label, data, args)
+        self.filtered_list: List[str] = []
+        self.input = self.add_input('dict in', triggers_execution=True)
+        self.search_property = self.add_input(label='##search_term', widget_type='text_input', widget_width=300, callback=self.select)
+        self.node_list_box = self.add_property('###options', widget_type='list_box', width=300)
+        self.select_button = self.add_property('select', widget_type='button', callback=self.select)
+        self.dict = {}
+        self.output = self.add_output('results out')
+
+    def select(self):
+        selected_path = dpg.get_value(self.node_list_box.widget.uuid)
+        selected_path = any_to_string(selected_path)
+        selected_path = 'CONTENTS/' + selected_path.replace('/', '/CONTENTS/')
+        results = find_keys_by_prefix(self.dict, any_to_string(selected_path))
+        final_results = []
+        for result in results:
+            address = result[0]
+            stripped_address = address.replace('CONTENTS/', '')
+            final_results.append([stripped_address, address, result[1]])
+
+        self.output.send(final_results)
+
+    def execute(self):
+        incoming = self.input()
+        if isinstance(incoming, dict):
+            self.dict = copy.deepcopy(incoming)
+
+    def on_edit(self, widget) -> None:
+        if widget == self.search_property.widget and len(self.dict) > 0:
+            self.filtered_list = []
+            search_name = dpg.get_value(self.search_property.widget.uuid)
+            search_name = any_to_string(search_name)
+            search_name = search_name.replace('/', '/CONTENTS/')
+            search_results = find_keys_by_prefix(self.dict, search_name)
+            for result in search_results:
+                data = any_to_string(result[0])
+                data = data.replace('CONTENTS/', '')
+                self.filtered_list.append(data)
+            dpg.configure_item(self.node_list_box.widget.uuid, items=self.filtered_list)
+            if len(self.filtered_list) > 0:
+                self.node_list_box.set(self.filtered_list[0])
+                # dpg.set_value(self.node_list_box.widget.uuid, self.filtered_list[0])
+                self.current_name = self.filtered_list[0][1]
+
+    def on_deactivate(self, widget):
+        if widget == self.search_property.widget:
+            if dpg.is_item_hovered(self.node_list_box.widget.uuid) or dpg.is_item_clicked(self.node_list_box.widget.uuid):
+                pass
+            else:
+                self.select()
+        elif widget == self.node_list_box.widget:
+            self.select()
 
 
 class RepeatNode(Node):
@@ -3242,3 +3612,203 @@ class EndTraceNode(Node):
             Node.app.trace = False
             print('trace end')
         self.outputs[0].send(self.inputs[0]())
+
+
+class SublistNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = SublistNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.operations = []
+        index_string = ''.join(args) if args else ':'
+
+        self.input = self.add_input('list in', triggers_execution=True)
+        self.indices_input = self.add_input(
+            'Indices',
+            widget_type='text_input',
+            widget_width=200,
+            default_value=index_string,
+            callback=self.indices_changed
+        )
+        self.output = self.add_output('output')
+
+        # Initialize
+        self.indices_changed()
+
+    def indices_changed(self):
+        indices_text = any_to_string(self.indices_input())
+        indices_text = indices_text.strip().strip("[]")
+
+        if not indices_text:
+            self.operations = [slice(None)]
+            self.execute()
+            return
+
+        parts = indices_text.split(',')
+        new_ops = []
+
+        for part in parts:
+            part = part.strip()
+            if ':' in part:
+                slice_params = part.split(':')
+                args = []
+                for p in slice_params:
+                    if p.strip() == '':
+                        args.append(None)
+                    else:
+                        try:
+                            args.append(int(p))
+                        except ValueError:
+                            args.append(None)
+                new_ops.append(slice(*args))
+            else:
+                try:
+                    new_ops.append(int(part))
+                except ValueError:
+                    new_ops.append(slice(None))
+
+        self.operations = new_ops
+        self.execute()
+
+    def execute(self):
+        raw_input = self.input()
+
+        # 1. No Connection / No Data -> Silent
+        if raw_input is None:
+            return
+
+        data = any_to_list(raw_input)
+
+        # 2. Conversion failed or returned None -> Silent
+        if data is None:
+            return
+
+        try:
+            current_data = data
+
+            for i, op in enumerate(self.operations):
+
+                # 3. Check if current_data is indexable (list, tuple, etc)
+                if not hasattr(current_data, '__getitem__') or isinstance(current_data, str):
+                    # We hit a "dead end" (e.g. an integer) but have more ops.
+                    # Error implies data mismatch.
+                    print(f"SublistNode Error: Cannot index item at depth {i} (Not a list).")
+                    self.output.send(None)
+                    return
+
+                # 4. Handle Integer Indexing Bounds
+                if isinstance(op, int):
+                    size = len(current_data)
+
+                    # --- CRITICAL FIX ---
+                    # If the list is empty, we assume data hasn't arrived/populated yet.
+                    # Return Silently.
+                    if size == 0:
+                        return
+
+                    # Now we know size > 0, so if index is bad, it's a real error.
+                    if op >= size or (op < 0 and abs(op) > size):
+                        print(f"SublistNode Error: Index {op} out of bounds for list of size {size}.")
+                        self.output.send(None)
+                        return
+
+                # Apply
+                current_data = current_data[op]
+
+            self.output.send(current_data)
+
+        except Exception as e:
+            print(f"SublistNode Error: {e}")
+            self.output.send(None)
+
+# class SublistNode(Node):
+#     @staticmethod
+#     def factory(name, data, args=None):
+#         node = SublistNode(name, data, args)
+#         return node
+#
+#     def __init__(self, label: str, data, args):
+#         super().__init__(label, data, args)
+#         self.indices_list = None
+#         index_string = ''
+#         for i in range(len(args)):
+#             index_string += args[i]
+#         if index_string == '':
+#             index_string = ':'
+#         self.input = self.add_input('tensor in', triggers_execution=True)
+#         self.indices_input = self.add_input('', widget_type='text_input', widget_width=200, default_value=index_string, callback=self.indices_changed)
+#         self.output = self.add_output('output')
+#
+#     def indices_changed(self):
+#         indices_text = any_to_string(self.indices_input())
+#
+#         index_split = indices_text.split(',')
+#         indices = []
+#
+#         for i in range(len(index_split)):
+#             dimmer = index_split[i]
+#             dimmer = dimmer.split(':')
+#             dim_nums = []
+#             if len(dimmer) == 1:
+#                 dim_num = re.findall(r'[-+]?\d+', dimmer[0])
+#                 if len(dim_num) > 0:
+#                     dim_num = string_to_int(dim_num[0])
+#                     dim_nums.append([dim_num])
+#                     # dim_nums.append([dim_num + 1])
+#             else:
+#                 for j in range(len(dimmer)):
+#                     dim_num = re.findall(r'[-+]?\d+', dimmer[j])
+#                     if len(dim_num) == 0:
+#                         if j == 0:
+#                             dim_nums.append([0])
+#                         else:
+#                             dim_nums.append([1000000])
+#                     else:
+#                         dim_num = string_to_int(dim_num[0])
+#                         dim_nums.append([dim_num])
+#             indices.append(dim_nums)
+#
+#         self.indices_list = indices
+#         self.execute()
+#
+#     def execute(self):
+#         input_list = any_to_list(self.input())
+#         if input_list is not None:
+#             if self.indices_list is None:
+#                 self.indices_changed()
+#
+#             if len(self.indices_list) == 0:
+#                 self.output.send(input_list)
+#             else:
+#                 index_list_now = []
+#                 for i in range(len(self.indices_list)):
+#                     dim_dim = self.indices_list[i]
+#                     index_list_now.append(any_to_int(dim_dim[0][0]))
+#                     if len(dim_dim) > 1:
+#                         if dim_dim[1][0] == 1000000:
+#                             index_list_now.append(len(input_list))
+#                         else:
+#                             index_list_now.append(any_to_int(dim_dim[1][0]))
+#                 # sub_list = input_list
+#                 if len(index_list_now) > 1:
+#                     sub_list = input_list[index_list_now[0]:index_list_now[1]]
+#                 else:
+#                     sub_list = input_list[index_list_now[0]]
+#                 # elif len(index_list_now) == 4:
+#                 #
+#                 #     sub_list = input_list[index_list_now[0]:index_list_now[1], index_list_now[2]:index_list_now[3]]
+#                 # elif len(index_list_now) == 6:
+#                 #     sub_list = input_list[index_list_now[0]:index_list_now[1], index_list_now[2]:index_list_now[3], index_list_now[4]:index_list_now[5]]
+#                 # elif len(index_list_now) == 8:
+#                 #     sub_list = input_list[index_list_now[0]:index_list_now[1], index_list_now[2]:index_list_now[3],
+#                 #              index_list_now[4]:index_list_now[5], index_list_now[6]:index_list_now[7]]
+#                 if isinstance(sub_list, list):
+#                     if len(sub_list) > 1:
+#                         self.output.send(sub_list)
+#                     else:
+#                         self.output.send(sub_list[0])
+#                 else:
+#                     self.output.send(sub_list)
