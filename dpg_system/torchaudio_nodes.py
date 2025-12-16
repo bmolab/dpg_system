@@ -1358,8 +1358,7 @@ class SamplerVoiceNode(Node):
         self.sample = None
         self.last_voice_idx = 0
 
-        # Ensure engine is initialized even if SamplerEngineNode isn't present,
-        # though usually one should exist for global control.
+        # Ensure engine is initialized even if SamplerEngineNode isn't present
         if SamplerEngineNode.engine is None:
             SamplerEngineNode.engine = SamplerEngine()
             SamplerEngineNode.engine.start()
@@ -1480,16 +1479,10 @@ class SamplerVoiceNode(Node):
             self.last_voice_idx = idx
 
     def stop_voice(self):
-        # SamplerEngine currently has set_voice_volume to 0, but no explicit stop_voice method exposed well?
-        # setting volume to 0 effectively mutes it, but doesn't deactivate it in the engine unless we add logic.
-        # Actually SamplerEngine does not have a 'stop_voice' method that sets active=False directly.
-        # But setting volume to 0 is a good proxy.
-        # Impl: set volume to 0.
         if SamplerEngineNode.engine:
             SamplerEngineNode.engine.set_voice_volume(self.last_voice_idx, 0.0)
 
     def execute(self):
-        # Support triggering via tensor input or signal if needed
         pass
 
 
@@ -1523,14 +1516,13 @@ class SamplerMultiVoiceNode(Node):
             })
 
         self.current_idx = 0
-        self.ignore_updates = False  # Flag to prevent callbacks during UI sync
+        self.ignore_updates = False
 
         # Ensure engine
         if SamplerEngineNode.engine is None:
             SamplerEngineNode.engine = SamplerEngine()
             SamplerEngineNode.engine.start()
         # Inputs
-        # Voice Index (Callback to switch context)
         self.voice_idx_input = self.add_input('voice index', widget_type='drag_int', default_value=0, min=0, max=127,
                                               callback=self.on_voice_idx_change)
 
@@ -1558,8 +1550,7 @@ class SamplerMultiVoiceNode(Node):
                                               callback=self.update_loop_params)
 
         self.pos_output = self.add_output('position')
-        # Initial sync
-        # self.sync_ui_to_state() # Do not sync here, wait for custom_create
+        self.voice_params_input = self.add_input('voice params', callback=self.on_voice_params_change)
 
     def custom_create(self, from_file):
         self.sync_ui_to_state()
@@ -1571,10 +1562,12 @@ class SamplerMultiVoiceNode(Node):
         self.path_input.set(path)
         self.load_file_with_path(path)
 
-    def load_file_with_path(self, filepath):
+    def load_file_with_path(self, filepath, voice_idx=None):
         if not os.path.exists(filepath):
             print(f"File not found: {filepath}")
             return
+
+        target_idx = voice_idx if voice_idx is not None else self.current_idx
         try:
             # torchaudio load
             waveform, sample_rate = torchaudio.load(filepath)
@@ -1585,30 +1578,27 @@ class SamplerMultiVoiceNode(Node):
             sample = Sample(arr)
 
             # Update state
-            state = self.voices_state[self.current_idx]
+            state = self.voices_state[target_idx]
             state["sample"] = sample
             state["path"] = filepath
-            state[
-                "loop_end"] = -1  # Reset loop end on new file load? Or keep? usually reset logic takes over in trigger
-            # User might expect loop end to persist if manually set, but if new file is shorter/longer?
-            # Let's reset loop points to default for new file for safety
+            state["loop_end"] = -1  # Reset loop end on new file load
             state["loop_start"] = 0
-            state["loop_end"] = -1
 
-            # Update labels
-            self.file_label.set(os.path.basename(filepath))
-            self.length_label.set(f"Length: {len(arr)} samples")
+            # Update labels if current
+            if target_idx == self.current_idx:
+                self.file_label.set(os.path.basename(filepath))
+                self.length_label.set(f"Length: {len(arr)} samples")
 
-            # Sync UI to show new defaults
-            # But we are in load_file which might be triggered by UI.
-            # We should update inputs.
-            self.ignore_updates = True
-            self.loop_start_input.set(0)
-            self.loop_end_input.set(-1)
-            self.ignore_updates = False
+                # Sync UI
+                self.ignore_updates = True
+                self.path_input.set(filepath)
+                self.loop_start_input.set(0)
+                self.loop_end_input.set(-1)
+                self.ignore_updates = False
 
+            # If playing, re-trigger?
             if state["playing"]:
-                self.trigger_voice(self.current_idx)
+                self.trigger_voice(target_idx)
 
         except Exception as e:
             print(f"Error loading file {filepath}: {e}")
@@ -1688,12 +1678,7 @@ class SamplerMultiVoiceNode(Node):
                 self.play_toggle.set(False)
                 self.ignore_updates = False
 
-                # Should we remove frame task?
-                # If we are just viewing this voice and it stops, we stop frame task.
                 self.remove_frame_tasks()
-            # If voice is not active and we are not playing, we should probably stop frame task
-            # BUT: frame_task is added based on UI state or trigger.
-            # If we are here, we are active.
 
     def update_params(self, *args):
         if self.ignore_updates: return
@@ -1705,8 +1690,7 @@ class SamplerMultiVoiceNode(Node):
         if SamplerEngineNode.engine:
             SamplerEngineNode.engine.set_voice_volume(self.current_idx, state["volume"])
             SamplerEngineNode.engine.set_voice_pitch(self.current_idx, state["pitch"])
-            # Check if volume change implies play? (User hint)
-            # If voice became active due to volume change (unlikely in this engine but per user note):
+            # Check if volume change implies play?
             if SamplerEngineNode.engine.voices[self.current_idx].active:
                 if not state["playing"]:
                     state["playing"] = True
@@ -1733,7 +1717,6 @@ class SamplerMultiVoiceNode(Node):
                                                            state["crossfade"])
 
     def toggle_play(self, *args):
-        # Handle input value
         try:
             val = self.play_toggle()
 
@@ -1741,24 +1724,19 @@ class SamplerMultiVoiceNode(Node):
             if isinstance(val, (list, tuple)):
                 if not SamplerEngineNode.engine: return
 
-                # Helper to process voice update
                 def update_voice(idx, vol):
                     if not (0 <= idx < 128): return
 
-                    # Update Engine
                     SamplerEngineNode.engine.set_voice_volume(idx, vol)
 
-                    # Update Internal State
                     self.voices_state[idx]["volume"] = vol
 
                     voice = SamplerEngineNode.engine.voices[idx]
 
-                    # Logic: If volume > 0 and not active, TRIGGER
                     if not voice.active and vol > 0:
                         self.trigger_voice(idx)
                         self.voices_state[idx]["playing"] = True
 
-                        # If this is the current voice visible in UI
                         if idx == self.current_idx:
                             self.ignore_updates = True
                             self.play_toggle.set(True)
@@ -1766,37 +1744,26 @@ class SamplerMultiVoiceNode(Node):
                             self.ignore_updates = False
                             self.add_frame_task()
 
-                    # Logic: If volume is 0, we let auto-stop handle it OR we assume it might stop?
-                    # But if we are adjusting volume of CURRENT voice, we must update UI widget
                     elif idx == self.current_idx:
                         self.ignore_updates = True
                         self.volume_input.set(vol)
                         self.ignore_updates = False
 
-                        # If it is active (even if we just set vol to 0, it takes 1s to stop)
-                        # Ensure frame task is running to catch the auto-stop event
                         if voice.active:
                             self.add_frame_task()
 
-                # Heuristic: List of lists or flat list?
-                # Check first element
                 if len(val) > 0:
                     first = val[0]
                     if isinstance(first, (list, tuple)):
-                        # Method 1: [[idx, vol], ...]
                         for item in val:
                             if len(item) >= 2:
                                 update_voice(int(item[0]), float(item[1]))
                     else:
-                        # Method 2: Flat list [vol0, vol1, ...]
                         for i, v_vol in enumerate(val):
                             update_voice(i, float(v_vol))
 
-                # Do not proceed with standard toggle logic if list received
                 return
-        except Exception as e:
-            # Not a list, or other error, proceed to standard logic
-            # print(f"Error in toggle_play: {e}")
+        except Exception:
             pass
 
         if self.ignore_updates: return
@@ -1829,6 +1796,60 @@ class SamplerMultiVoiceNode(Node):
 
                 SamplerEngineNode.engine.play_voice(idx, s, volume=state["volume"], pitch=state["pitch"])
 
+    def on_voice_params_change(self, *args):
+        try:
+            val = self.voice_params_input()
+            if isinstance(val, dict):
+                is_multi = False
+                if len(val) > 0:
+                    first_k = next(iter(val))
+                    if isinstance(first_k, int) or (isinstance(first_k, str) and first_k.isdigit()):
+                        is_multi = True
+
+                if is_multi:
+                    for k, v in val.items():
+                        try:
+                            idx = int(k)
+                            if isinstance(v, dict):
+                                self._apply_voice_params(idx, v)
+                        except ValueError:
+                            pass
+                else:
+                    idx = val.get("voice_index", self.current_idx)
+                    self._apply_voice_params(idx, val)
+
+        except Exception as e:
+            print(f"Error loading voice params: {e}")
+
+    def _apply_voice_params(self, idx, params):
+        if not (0 <= idx < 128): return
+
+        state = self.voices_state[idx]
+
+        if "path" in params:
+            p = params["path"]
+            if p != state["path"]:
+                self.load_file_with_path(p, idx)
+
+        if "volume" in params: state["volume"] = float(params["volume"])
+        if "pitch" in params: state["pitch"] = float(params["pitch"])
+        if "loop" in params: state["loop"] = bool(params["loop"])
+        if "loop_start" in params: state["loop_start"] = int(params["loop_start"])
+        if "loop_end" in params: state["loop_end"] = int(params["loop_end"])
+        if "crossfade" in params: state["crossfade"] = int(params["crossfade"])
+
+        if SamplerEngineNode.engine:
+            SamplerEngineNode.engine.set_voice_volume(idx, state["volume"])
+            SamplerEngineNode.engine.set_voice_pitch(idx, state["pitch"])
+
+            effective_end = state["loop_end"]
+            if effective_end < 0 and state["sample"]:
+                effective_end = len(state["sample"].data)
+
+            SamplerEngineNode.engine.set_voice_loop_window(idx, state["loop_start"], effective_end, state["crossfade"])
+
+        if idx == self.current_idx:
+            self.sync_ui_to_state()
+
     def execute(self):
-        # Frame task handles updates now
         pass
