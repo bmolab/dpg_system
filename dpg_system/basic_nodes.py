@@ -30,8 +30,7 @@ def register_basic_nodes():
     Node.app.register_node('array', ArrayNode.factory)
     Node.app.register_node("counter", CounterNode.factory)
     Node.app.register_node("range_counter", RangeCounterNode.factory)
-    Node.app.register_node('coll', CollectionNode.factory)
-    Node.app.register_node('dict', CollectionNode.factory)
+    Node.app.register_node('dict', DictNode.factory)
     Node.app.register_node('construct_dict', ConstructDictNode.factory)
     Node.app.register_node('gather_to_dict', ConstructDictNode.factory)
     Node.app.register_node('dict_extract', DictExtractNode.factory)
@@ -92,6 +91,8 @@ def register_basic_nodes():
     Node.app.register_node('sublist', SublistNode.factory)
     Node.app.register_node('dict_search', DictNavigatorNode.factory)
     Node.app.register_node('dict_keys', DictKeysNode.factory)
+    Node.app.register_node('list_box', ListBoxNode.factory)
+    Node.app.register_node('dict_retrieve', DictRetrieveNode.factory)
 
 class SliceNode(Node):
     @staticmethod
@@ -2505,6 +2506,33 @@ class DictExtractNode(Node):
                     self.outputs[index].send(received_dict[key])
 
 
+class DictRetrieveNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = DictRetrieveNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.dict = {}
+        self.key = ''
+        self.input = self.add_input('dict in', triggers_execution=True)
+        self.key_input = self.add_input('key', callback=self.key_changed)
+        self.output = self.add_output('value out')
+
+    def key_changed(self):
+        key = self.key_input()
+        self.key = key
+        if self.key in self.dict:
+            self.output.send(self.dict[self.key])
+
+    def execute(self):
+        received_dict = self.input()
+        self.dict = copy.deepcopy(received_dict)
+        if self.key in self.dict:
+            self.output.send(self.dict[self.key])
+
+
 class DictStreamNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -2681,10 +2709,10 @@ class DictReplaceNode(Node):
         self.dict_out.send(self.dict)
 
 
-class CollectionNode(Node):
+class DictNode(Node):
     @staticmethod
     def factory(name, data, args=None):
-        node = CollectionNode(name, data, args)
+        node = DictNode(name, data, args)
         return node
 
     def __init__(self, label: str, data, args):
@@ -2716,9 +2744,24 @@ class CollectionNode(Node):
         self.message_handlers['search'] = self.search
         self.message_handlers['next'] = self.next
         self.message_handlers['reset'] = self.reset_counter
+        self.message_handlers['keys'] = self.get_keys
+        self.message_handlers['random'] = self.random_retrieve
         self.path = ''
         self.file_name = ''
         self.key_pointer = -1
+
+    def random_retrieve(self, message='', data=[]):
+        key_list = list(self.collection.keys())
+        count = len(key_list)
+        random_index = random.randint(0, count - 1)
+        key = key_list[random_index]
+        value = self.collection[key]
+        out_dict = {key: value}
+        self.output.send(out_dict)
+
+    def get_keys(self, message='', data=[]):
+        keys = list(self.collection.keys())
+        self.output.send(keys)
 
     def reset_counter(self, message='', data=[]):
         self.key_pointer = -1
@@ -3056,6 +3099,20 @@ class DictNavigatorNode(Node):
         self.select_button = self.add_property('select', widget_type='button', callback=self.select)
         self.dict = {}
         self.output = self.add_output('results out')
+
+    # in process -
+    def search_received(self):
+        search = dpg.get_value(self.search_property.widget.uuid)
+        if isinstance(search, dict):
+            key_list = list(search.keys())
+            for key in key_list:
+                value = search[key]
+                expanded_key = key.replace('/', '/CONTENTS/')
+                search_results = find_keys_by_prefix(self.dict, expanded_key)
+                for result in search_results:
+                    if result[0] == key:
+                        pass
+
 
     def select(self):
         selected_path = dpg.get_value(self.node_list_box.widget.uuid)
@@ -3812,3 +3869,57 @@ class SublistNode(Node):
 #                         self.output.send(sub_list[0])
 #                 else:
 #                     self.output.send(sub_list)
+
+
+class ListBoxNode(Node):
+    @staticmethod
+    def factory(name: str, data: Any, args: Optional[List[str]] = None) -> 'ListBoxNode':
+        node = ListBoxNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data: Any, args: Optional[List[str]]) -> None:
+        super().__init__(label, data, args)
+        self.filtered_list: List[str] = []
+        self.input = self.add_input('list in', callback=self.list_received)
+        self.search_property = self.add_input(label='##search_term', widget_type='text_input', widget_width=300, callback=self.select)
+        self.node_list_box = self.add_property('###options', widget_type='list_box', width=300)
+        self.list = []
+        self.output = self.add_output('results out')
+
+    def list_received(self):
+        new_list = self.input()
+        self.list = any_to_list(new_list)
+        search_name = dpg.get_value(self.search_property.widget.uuid)
+        self.build_box_list(search_name)
+
+    def on_edit(self, widget) -> None:
+        if widget == self.search_property.widget and len(self.list) > 0:
+            search_name = dpg.get_value(self.search_property.widget.uuid)
+            search_name = any_to_string(search_name)
+            self.build_box_list(search_name)
+
+    def build_box_list(self, search_name):
+        self.filtered_list = []
+        for item in self.list:
+            if search_name in item or search_name == '':
+                self.filtered_list.append(item)
+        dpg.configure_item(self.node_list_box.widget.uuid, items=self.filtered_list)
+        if self.node_list_box() in self.filtered_list:
+            self.node_list_box.set(self.node_list_box())
+        elif len(self.filtered_list) > 0:
+            self.node_list_box.set(self.filtered_list[0])
+
+    def on_deactivate(self, widget):
+        if widget == self.search_property.widget:
+            if dpg.is_item_hovered(self.node_list_box.widget.uuid) or dpg.is_item_clicked(self.node_list_box.widget.uuid):
+                pass
+            else:
+                self.select()
+        elif widget == self.node_list_box.widget:
+            self.select()
+
+    def select(self):
+        selected_path = dpg.get_value(self.node_list_box.widget.uuid)
+        selected_path = any_to_string(selected_path)
+        self.node_list_box.set(selected_path)
+        self.output.send(selected_path)
