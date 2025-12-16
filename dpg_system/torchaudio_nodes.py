@@ -911,7 +911,8 @@ class Sample:
 
 
 class Voice:
-    def __init__(self):
+    def __init__(self, sample_rate=44100):
+        self.sample_rate = sample_rate
         self.active = False
         self.sample = None
         self.position = 0.0
@@ -922,6 +923,7 @@ class Voice:
         self.loop_end = 0
         self.crossfade_frames = 0
         self.pitch = 1.0
+        self.zero_vol_frames = 0
 
     def trigger(self, sample, volume=None, pitch=None):
         self.sample = sample
@@ -938,6 +940,7 @@ class Voice:
         # For a sampler, usually we want instant attack, but let's set current to target to snap.
         self.current_volume = start_vol
         self.active = True
+        self.zero_vol_frames = 0
 
         self.pitch = pitch if pitch is not None else sample.default_pitch
 
@@ -962,6 +965,15 @@ class Voice:
     def process(self, frames, channels):
         if not self.active or self.sample is None:
             return np.zeros((frames, channels), dtype=np.float32)
+        # Auto-stop on silence
+        # Threshold for silence
+        if self.target_volume <= 0.0001 and self.current_volume <= 0.0001:
+            self.zero_vol_frames += frames
+            if self.zero_vol_frames > self.sample_rate:  # 1 second
+                self.active = False
+                return np.zeros((frames, channels), dtype=np.float32)
+        else:
+            self.zero_vol_frames = 0
         output = np.zeros((frames, channels), dtype=np.float32)
         frames_processed = 0
 
@@ -1146,7 +1158,7 @@ class Voice:
                     # Assigning to raw_chunk[in_fade_mask] works.
                     raw_chunk[in_fade_mask] = mixed
             # Apply volume
-            # print(f'DEBUG: raw_chunk shape {raw_chunk.shape}, vol_curve type {type(vol_curve)}, vol_curve {vol_curve}')
+            # print(f"DEBUG: raw_chunk shape {raw_chunk.shape}, vol_curve type {type(vol_curve)}, vol_curve {vol_curve}")
             if isinstance(vol_curve, np.ndarray):
                 vol_chunk = vol_curve[frames_processed:frames_processed + chunk_len]
                 vol_chunk = vol_chunk[:, np.newaxis]  # Ensure (N, 1)
@@ -1171,7 +1183,7 @@ class SamplerEngine:
     def __init__(self, sample_rate=44100, channels=2):
         self.sample_rate = sample_rate
         self.channels = channels
-        self.voices = [Voice() for _ in range(128)]
+        self.voices = [Voice(sample_rate=sample_rate) for _ in range(128)]
         self.lock = threading.Lock()  # To protect voice state updates from main thread vs audio thread
         self.stream = None
         self.active = True  # Master active flag
@@ -1185,12 +1197,12 @@ class SamplerEngine:
             blocksize=512  # Low latency
         )
         self.stream.start()
-        print('Sampler Engine Started')
+        print("Sampler Engine Started")
 
     def stop(self):
         if self.stream:
             # Graceful fade out
-            print('Stopping engine with fade out...')
+            print("Stopping engine with fade out...")
             for i in range(50):
                 self.master_volume = 1.0 - ((i + 1) / 50.0)  # Reach 0.0
                 sd.sleep(10)  # 10ms * 50 = 500ms fade
@@ -1659,22 +1671,29 @@ class SamplerMultiVoiceNode(Node):
             # Update position
             self.pos_output.send(voice.position)
 
-            # Check for auto-stop (voice finished)
-            # We also check if we *thought* it was playing but it is not active.
-            if not voice.active:
-                # If we are tracking it as playing, update UI
-                if self.voices_state[self.current_idx]["playing"]:
-                    self.voices_state[self.current_idx]["playing"] = False
+            # Sync Toggle State with Voice Active State
+            ui_playing = self.voices_state[self.current_idx]["playing"]
 
-                    self.ignore_updates = True
-                    self.play_toggle.set(False)
-                    self.ignore_updates = False
+            if voice.active and not ui_playing:
+                # Voice started externally (e.g. via list trigger)
+                self.voices_state[self.current_idx]["playing"] = True
+                self.ignore_updates = True
+                self.play_toggle.set(True)
+                self.ignore_updates = False
 
-                    self.remove_frame_tasks()
-                else:
-                    # Should not be here if not playing?
-                    # But frame_task might run one last time.
-                    self.remove_frame_tasks()
+            elif not voice.active and ui_playing:
+                # Voice stopped (e.g. auto-stop or finished)
+                self.voices_state[self.current_idx]["playing"] = False
+                self.ignore_updates = True
+                self.play_toggle.set(False)
+                self.ignore_updates = False
+
+                # Should we remove frame task?
+                # If we are just viewing this voice and it stops, we stop frame task.
+                self.remove_frame_tasks()
+            # If voice is not active and we are not playing, we should probably stop frame task
+            # BUT: frame_task is added based on UI state or trigger.
+            # If we are here, we are active.
 
     def update_params(self, *args):
         if self.ignore_updates: return
@@ -1714,6 +1733,72 @@ class SamplerMultiVoiceNode(Node):
                                                            state["crossfade"])
 
     def toggle_play(self, *args):
+        # Handle input value
+        try:
+            val = self.play_toggle()
+
+            # Check for list input (Advanced Triggering)
+            if isinstance(val, (list, tuple)):
+                if not SamplerEngineNode.engine: return
+
+                # Helper to process voice update
+                def update_voice(idx, vol):
+                    if not (0 <= idx < 128): return
+
+                    # Update Engine
+                    SamplerEngineNode.engine.set_voice_volume(idx, vol)
+
+                    # Update Internal State
+                    self.voices_state[idx]["volume"] = vol
+
+                    voice = SamplerEngineNode.engine.voices[idx]
+
+                    # Logic: If volume > 0 and not active, TRIGGER
+                    if not voice.active and vol > 0:
+                        self.trigger_voice(idx)
+                        self.voices_state[idx]["playing"] = True
+
+                        # If this is the current voice visible in UI
+                        if idx == self.current_idx:
+                            self.ignore_updates = True
+                            self.play_toggle.set(True)
+                            self.volume_input.set(vol)
+                            self.ignore_updates = False
+                            self.add_frame_task()
+
+                    # Logic: If volume is 0, we let auto-stop handle it OR we assume it might stop?
+                    # But if we are adjusting volume of CURRENT voice, we must update UI widget
+                    elif idx == self.current_idx:
+                        self.ignore_updates = True
+                        self.volume_input.set(vol)
+                        self.ignore_updates = False
+
+                        # If it is active (even if we just set vol to 0, it takes 1s to stop)
+                        # Ensure frame task is running to catch the auto-stop event
+                        if voice.active:
+                            self.add_frame_task()
+
+                # Heuristic: List of lists or flat list?
+                # Check first element
+                if len(val) > 0:
+                    first = val[0]
+                    if isinstance(first, (list, tuple)):
+                        # Method 1: [[idx, vol], ...]
+                        for item in val:
+                            if len(item) >= 2:
+                                update_voice(int(item[0]), float(item[1]))
+                    else:
+                        # Method 2: Flat list [vol0, vol1, ...]
+                        for i, v_vol in enumerate(val):
+                            update_voice(i, float(v_vol))
+
+                # Do not proceed with standard toggle logic if list received
+                return
+        except Exception as e:
+            # Not a list, or other error, proceed to standard logic
+            # print(f"Error in toggle_play: {e}")
+            pass
+
         if self.ignore_updates: return
 
         state = self.voices_state[self.current_idx]
