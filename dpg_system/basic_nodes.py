@@ -1357,15 +1357,15 @@ class PackNode(Node):
                 triggers = True
             if self.in_types[i] in self.kinds:
                 if self.in_types[i] == str:
-                    self.add_string_input(in_names[i], triggers_execution=triggers)
+                    self.add_string_input(in_names[i], triggers_execution=triggers, default_value='')
                 elif self.in_types[i] == int:
-                    self.add_int_input(in_names[i], triggers_execution=triggers)
+                    self.add_int_input(in_names[i], triggers_execution=triggers, default_value=0)
                 elif self.in_types[i] == float:
-                    self.add_float_input(in_names[i], triggers_execution=triggers)
+                    self.add_float_input(in_names[i], triggers_execution=triggers, default_value=0.0)
                 elif self.in_types[i] == list:
-                    self.add_list_input(in_names[i], triggers_execution=triggers)
+                    self.add_list_input(in_names[i], triggers_execution=triggers, default_value=[])
                 elif self.in_types[i] == bool:
-                    self.add_bool_input(in_names[i], triggers_execution=triggers)
+                    self.add_bool_input(in_names[i], triggers_execution=triggers, default_value=False)
                 elif self.in_types[i] == np.ndarray:
                     self.add_array_input(in_names[i], triggers_execution=triggers)
                 elif torch_available and self.in_types[i] == torch.Tensor:
@@ -1380,8 +1380,13 @@ class PackNode(Node):
                     inp = self.add_float_input(in_names[i], triggers_execution=triggers,
                                                 default_value=self.in_types[i])
                 else:
-                    inp = self.add_input(in_names[i], triggers_execution=triggers,
+                    if self.in_types[i] == None:
+                        inp = self.add_input(in_names[i], triggers_execution=triggers,
+                                             default_value=0)
+                    else:
+                        inp = self.add_input(in_names[i], triggers_execution=triggers,
                                                default_value=self.in_types[i])
+
 
         self.output = self.add_output("out")
         self.output_preference_option = self.add_option('output pref', widget_type='combo', default_value='list')
@@ -1398,7 +1403,7 @@ class PackNode(Node):
             if output_option == 'list':
                 out_list = []
                 for i in range(self.num_ins):
-                    value = self.inputs[i].get_data()
+                    value = self.inputs[i]()
                     t = type(value)
                     if t in [list, tuple]:
                         out_list += [value]
@@ -1411,7 +1416,7 @@ class PackNode(Node):
             elif output_option == 'array':
                 out_list = []
                 all_array = False
-                first_data = self.inputs[0].get_data()
+                first_data = self.inputs[0]()
                 if type(first_data) is np.ndarray:
                     all_array = True
                     for i in range(self.num_ins):
@@ -1421,7 +1426,7 @@ class PackNode(Node):
 
                 if all_array:
                     for i in range(self.num_ins):
-                        out_list.append(self.inputs[i].get_data())
+                        out_list.append(self.inputs[i]())
                     try:
                         out_array = np.stack(out_list)
                         self.output.send(out_array)
@@ -1429,7 +1434,7 @@ class PackNode(Node):
                         self.output.send(out_list)
                 else:
                     for i in range(self.num_ins):
-                        value = self.inputs[i].get_data()
+                        value = self.inputs[i]()
                         t = type(value)
                         if t in [list, tuple]:
                             out_list += [value]
@@ -1448,7 +1453,7 @@ class PackNode(Node):
                         all_tensors = False
                         break
                 for i in range(self.num_ins):
-                    out_list.append(self.inputs[i].get_data())
+                    out_list.append(self.inputs[i]())
 
                 if all_tensors:
                     try:
@@ -1458,7 +1463,7 @@ class PackNode(Node):
                         self.output.send(out_list)
                 else:
                     for i in range(self.num_ins):
-                        value = self.inputs[i].get_data()
+                        value = self.inputs[i]()
                         t = type(value)
                         if t in [list, tuple]:
                             out_list += [value]

@@ -45,6 +45,7 @@ def register_torchaudio_nodes():
     Node.app.register_node('t.audio.overdrive', TorchAudioOverdriveNode.factory)
     Node.app.register_node('audio_mixer', AudioMixerNode.factory)
     Node.app.register_node('t.audio.multiplayer', TorchAudioMultiPlayerNode.factory)
+    
     Node.app.register_node('sampler_voice', SamplerVoiceNode.factory)
     Node.app.register_node('sampler_engine', SamplerEngineNode.factory)
     Node.app.register_node('multi_voice_sampler', SamplerMultiVoiceNode.factory)
@@ -1535,6 +1536,8 @@ class SamplerMultiVoiceNode(Node):
         self.file_label = self.add_label('')
         self.length_label = self.add_label('')
 
+        self.voice_params_input = self.add_input('voice params', callback=self.on_voice_params_change)
+
         self.volume_input = self.add_input('volume', widget_type='drag_float', default_value=1.0, min=0.0, max=2.0,
                                            callback=self.update_params)
         self.pitch_input = self.add_input('pitch', widget_type='drag_float', default_value=1.0, min=0.01, max=4.0,
@@ -1550,7 +1553,6 @@ class SamplerMultiVoiceNode(Node):
                                               callback=self.update_loop_params)
 
         self.pos_output = self.add_output('position')
-        self.voice_params_input = self.add_input('voice params', callback=self.on_voice_params_change)
 
     def custom_create(self, from_file):
         self.sync_ui_to_state()
@@ -1853,3 +1855,71 @@ class SamplerMultiVoiceNode(Node):
 
     def execute(self):
         pass
+
+    def save_custom(self, container):
+        voices_data = {}
+        for i, state in enumerate(self.voices_state):
+            # Save if it has data or non-default params
+            has_file = bool(state["path"])
+            if (has_file or
+                    state["volume"] != 1.0 or
+                    state["pitch"] != 1.0 or
+                    state["loop"] or
+                    state["loop_start"] != 0 or
+                    state["loop_end"] != -1 or
+                    state["crossfade"] != 0):
+                voices_data[str(i)] = {
+                    "path": state["path"],
+                    "volume": state["volume"],
+                    "pitch": state["pitch"],
+                    "loop": state["loop"],
+                    "loop_start": state["loop_start"],
+                    "loop_end": state["loop_end"],
+                    "crossfade": state["crossfade"]
+                }
+
+        container['voices'] = voices_data
+        container['current_idx'] = self.current_idx
+
+    def load_custom(self, container):
+        if 'current_idx' in container:
+            self.current_idx = int(container['current_idx'])
+
+        voices_data = container.get('voices', {})
+        for idx_str, data in voices_data.items():
+            try:
+                idx = int(idx_str)
+                if not (0 <= idx < 128): continue
+
+                state = self.voices_state[idx]
+
+                # Load file first if present
+                file_path = data.get("path", "")
+                if file_path and os.path.exists(file_path):
+                    self.load_file_with_path(file_path, idx)
+
+                # Apply params (overwriting defaults set by load_file)
+                if "volume" in data: state["volume"] = float(data["volume"])
+                if "pitch" in data: state["pitch"] = float(data["pitch"])
+                if "loop" in data: state["loop"] = bool(data["loop"])
+                if "loop_start" in data: state["loop_start"] = int(data["loop_start"])
+                if "loop_end" in data: state["loop_end"] = int(data["loop_end"])
+                if "crossfade" in data: state["crossfade"] = int(data["crossfade"])
+
+                # Update Engine
+                if SamplerEngineNode.engine:
+                    SamplerEngineNode.engine.set_voice_volume(idx, state["volume"])
+                    SamplerEngineNode.engine.set_voice_pitch(idx, state["pitch"])
+
+                    effective_end = state["loop_end"]
+                    if effective_end < 0 and state["sample"]:
+                        effective_end = len(state["sample"].data)
+
+                    SamplerEngineNode.engine.set_voice_loop_window(idx, state["loop_start"], effective_end,
+                                                                   state["crossfade"])
+
+            except Exception as e:
+                print(f"Error loading voice {idx_str}: {e}")
+
+        # Sync UI for the current index
+        self.sync_ui_to_state()
