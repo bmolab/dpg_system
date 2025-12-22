@@ -23,6 +23,7 @@ import dpg_system.quaternion_nodes as quaternion_nodes
 import dpg_system.numpy_nodes as numpy_nodes
 import dpg_system.matrix_nodes as matrix_nodes
 import dpg_system.osc_nodes as osc_nodes
+import dpg_system.sampler_nodes as sampler_nodes
 
 
 to_import = [
@@ -61,7 +62,8 @@ optional_import = [
     'digico_nodes',
     'monitor_nodes',
     'eos_nodes',
-    'orbbec_nodes'
+    'orbbec_nodes',
+    'sampler_nodes'
 ]
 
 imported = []

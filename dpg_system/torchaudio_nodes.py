@@ -46,9 +46,9 @@ def register_torchaudio_nodes():
     Node.app.register_node('audio_mixer', AudioMixerNode.factory)
     Node.app.register_node('t.audio.multiplayer', TorchAudioMultiPlayerNode.factory)
     
-    Node.app.register_node('sampler_voice', SamplerVoiceNode.factory)
-    Node.app.register_node('sampler_engine', SamplerEngineNode.factory)
-    Node.app.register_node('multi_voice_sampler', SamplerMultiVoiceNode.factory)
+    # Node.app.register_node('sampler_voice', SamplerVoiceNode.factory)
+    # Node.app.register_node('sampler_engine', SamplerEngineNode.factory)
+    # Node.app.register_node('multi_voice_sampler', SamplerMultiVoiceNode.factory)
 
     # Node.app.register_node('ta.vad', TorchAudioVADNode.factory) - does not seem to do anything
 
@@ -886,1129 +886,1129 @@ class AudioMixerNode(Node):
 import soundfile as sf
 
 
-class Sample:
-    def __init__(self, data, volume=1.0, loop=False, loop_start=0, loop_end=-1, crossfade_frames=0, pitch=1.0):
-        # Allow passing path or array
-        if isinstance(data, str):
-            # Load from file (placeholder if we had file IO, but user only used arrays so far in demos)
-            # implementation for future if needed:
-            # self.data, _ = sf.read(data, dtype='float32')
-            pass
-        else:
-            self.data = data
-
-        self.default_volume = volume
-        self.loop = loop
-        self.loop_start = loop_start
-
-        # If loop_end is -1 or greater than length, set to length
-        if loop_end < 0 or loop_end > len(self.data):
-            self.loop_end = len(self.data)
-        else:
-            self.loop_end = loop_end
-
-        self.crossfade_frames = min(crossfade_frames, self.loop_end - self.loop_start)
-        self.default_pitch = pitch
-
-
-class Voice:
-    def __init__(self, sample_rate=44100):
-        self.sample_rate = sample_rate
-        self.active = False
-        self.sample = None
-        self.position = 0.0
-        self.looping = False
-        self.current_volume = 0.0
-        self.target_volume = 0.0
-        self.loop_start = 0
-        self.loop_end = 0
-        self.crossfade_frames = 0
-        self.pitch = 1.0
-        self.zero_vol_frames = 0
-        self.attack_s = 0.0
-        self.decay_s = 0.0
-        self.decay_curve = 1.0
-
-        # New State
-        self.envelope_val = 0.0
-        self.target_envelope = 0.0
-        self.current_gain = 0.0
-        self.target_gain = 0.0
-
-    def trigger(self, sample, volume=None, pitch=None):
-        self.sample = sample
-        self.looping = sample.loop
-
-        target_vol = volume if volume is not None else sample.default_volume
-        self.target_gain = target_vol
-
-        # If not active or re-triggering with attack, reset envelope?
-        # Standard synth behavior:
-        # If attack > 0, we ramp up.
-        # If already playing, we can ramp from current envelope val (legato-ish) or reset to 0.
-        # Let's start from 0 if not active. If active, continue from current.
-        if not self.active:
-            self.current_gain = self.target_gain  # Snap gain? Or ramp gain?
-            # Ideally gain should be decoupled.
-            # Let's say gain controls the "Level Slider". That shouldn't click.
-            # But envelope is the Note On/Off.
-            self.envelope_val = 0.0 if self.attack_s > 0 else 1.0
-
-            # If we snap gain, we avoid a fade-in of gain if the slider was moved while silent.
-            # But if we change volume while playing, we want smoothing.
-            self.current_gain = self.target_gain
-
-        self.target_envelope = 1.0
-
-        self.active = True
-        self.zero_vol_frames = 0
-
-        self.pitch = pitch if pitch is not None else sample.default_pitch
-
-        self.loop_start = sample.loop_start
-        self.loop_end = sample.loop_end
-        self.crossfade_frames = sample.crossfade_frames
-
-        self.position = 0.0
-
-    def release(self):
-        self.target_envelope = 0.0
-
-    def set_volume(self, volume):
-        self.target_gain = volume
-
-    def set_pitch(self, pitch):
-        self.pitch = pitch
-
-    def set_loop_window(self, loop_start, loop_end, crossfade_frames):
-        self.loop_start = loop_start
-        self.loop_end = loop_end
-        self.crossfade_frames = crossfade_frames
-
-    def set_envelope(self, attack, decay, curve=1.0):
-        self.attack_s = attack
-        self.decay_s = decay
-        self.decay_curve = curve
-
-    def process(self, frames, channels):
-        if not self.active or self.sample is None:
-            return np.zeros((frames, channels), dtype=np.float32)
-        # 1. Update Gain (Linear Smoothing)
-        if self.current_gain != self.target_gain:
-            # Simple block ramp for gain
-            gain_curve = np.linspace(self.current_gain, self.target_gain, frames)
-            self.current_gain = self.target_gain
-        else:
-            gain_curve = self.current_gain
-        # 2. Update Envelope (Attack/Decay)
-        # We need to move envelope_val towards target_envelope
-        # Attack Rate
-        if self.target_envelope > self.envelope_val:
-            if self.attack_s > 0:
-                step = 1.0 / (self.attack_s * self.sample_rate)
-                steps = np.arange(1, frames + 1, dtype=np.float32) * step
-                env_curve = np.minimum(self.envelope_val + steps, 1.0)
-                self.envelope_val = env_curve[-1]
-            else:
-                env_curve = np.ones(frames, dtype=np.float32)
-                self.envelope_val = 1.0
-
-        # Decay Rate
-        elif self.target_envelope < self.envelope_val:
-            if self.decay_s > 0:
-                step = 1.0 / (self.decay_s * self.sample_rate)
-                steps = np.arange(1, frames + 1, dtype=np.float32) * step
-                env_curve = np.maximum(self.envelope_val - steps, 0.0)
-                self.envelope_val = env_curve[-1]
-            else:
-                env_curve = np.zeros(frames, dtype=np.float32)
-                self.envelope_val = 0.0
-        else:
-            env_curve = self.envelope_val
-        # 3. Apply Curve to Decay Phase?
-        # User asked for decay curve.
-        # If we just apply power to the envelope value always, it affects attack too (making it convex/concave).
-        # Usually linear attack is fine. But exponential decay is desired.
-        # If we use power > 1:
-        # 0->1 (Attack): Curve bends down (slow start, fast end). Not standard log attack.
-        # 1->0 (Decay): Curve bends down (fast start, slow end). This is "Natural" decay.
-        # So applying power curve to the 0-1 value works for Natural Decay.
-
-        if isinstance(env_curve, np.ndarray):
-            final_env = np.power(env_curve, self.decay_curve)
-        else:
-            final_env = float(env_curve) ** self.decay_curve
-
-        # Check active status
-        if self.target_envelope == 0.0 and self.envelope_val <= 0.0001:
-            self.active = False
-            # We might still process this block if it started non-zero
-            if isinstance(final_env, float) and final_env <= 0.0001:
-                return np.zeros((frames, channels), dtype=np.float32)
-        # ... Rendering Logic ...
-        output = np.zeros((frames, channels), dtype=np.float32)
-        frames_processed = 0
-        sample_data = self.sample.data
-        local_pitch = max(0.001, self.pitch)
-        while frames_processed < frames:
-            # ... (Rest of processing) ...
-            # Need to copy existing processing logic carefully
-            # To avoid huge replacement, I will try to keep the structure.
-            # But I need to output the full block efficiently.
-
-            remaining_frames = frames - frames_processed
-            effective_end = self.loop_end if self.looping else len(sample_data)
-
-            dist_samples = effective_end - self.position
-
-            if dist_samples <= 0:
-                if self.looping:
-                    self.position = float(self.loop_start) + (self.position - self.loop_end)
-                    if self.position >= effective_end: self.position = float(self.loop_start)
-                    dist_samples = effective_end - self.position
-                else:
-                    self.active = False
-                    break
-            chunk_len = int(dist_samples / local_pitch)
-
-            if chunk_len < 1:
-                if self.looping:
-                    self.position = float(self.loop_start) + (self.position - self.loop_end)
-                    if self.position >= effective_end: self.position = float(self.loop_start)
-                    continue
-                else:
-                    self.active = False
-                    break
-
-            chunk_len = min(remaining_frames, chunk_len)
-
-            out_indices = np.arange(chunk_len)
-            sample_indices_float = self.position + out_indices * local_pitch
-
-            idx_int = sample_indices_float.astype(int)
-            alpha = sample_indices_float - idx_int
-            if sample_data.ndim > 1: alpha = alpha[:, np.newaxis]
-
-            s0 = sample_data[idx_int]
-            idx_next = idx_int + 1
-
-            mask_over = idx_next >= len(sample_data)
-            if self.looping:
-                mask_loop = idx_next >= self.loop_end
-                idx_next[mask_loop] = self.loop_start
-            else:
-                idx_next[mask_over] = len(sample_data) - 1
-
-            s1 = sample_data[idx_next]
-            raw_chunk = s0 * (1.0 - alpha) + s1 * alpha
-
-            if self.looping and self.crossfade_frames > 0:
-                cf_start = self.loop_end - self.crossfade_frames
-                in_fade_mask = sample_indices_float >= cf_start
-                if np.any(in_fade_mask):
-                    indices_in_fade = sample_indices_float[in_fade_mask]
-                    fade_pos = indices_in_fade - cf_start
-                    cf_alpha = fade_pos / float(self.crossfade_frames)
-                    if sample_data.ndim > 1: cf_alpha = cf_alpha[:, np.newaxis]
-
-                    pos_b = self.loop_start + fade_pos
-                    idx_b_int = pos_b.astype(int)
-                    alpha_b = pos_b - idx_b_int
-                    if sample_data.ndim > 1: alpha_b = alpha_b[:, np.newaxis]
-
-                    sb0 = sample_data[idx_b_int]
-                    idx_b_next = idx_b_int + 1
-                    idx_b_next = np.minimum(idx_b_next, len(sample_data) - 1)
-                    sb1 = sample_data[idx_b_next]
-                    source_b = sb0 * (1.0 - alpha_b) + sb1 * alpha_b
-                    source_a = raw_chunk[in_fade_mask]
-                    mixed = (1.0 - cf_alpha) * source_a + cf_alpha * source_b
-                    raw_chunk[in_fade_mask] = mixed
-            # Apply volume
-            # Apply volume
-            combined_vol = final_env
-            if isinstance(gain_curve, np.ndarray):
-                gc = gain_curve[frames_processed:frames_processed + chunk_len]
-            else:
-                gc = gain_curve
-
-            if isinstance(final_env, np.ndarray):
-                fe = final_env[frames_processed:frames_processed + chunk_len]
-                combined_vol = fe * gc
-            else:
-                combined_vol = final_env * gc
-
-            # Broadcast
-            if isinstance(combined_vol, np.ndarray) and combined_vol.ndim == 1 and output.ndim == 2:
-                combined_vol = combined_vol[:, np.newaxis]
-
-            output[frames_processed:frames_processed + chunk_len] = raw_chunk * combined_vol
-
-            self.position += chunk_len * local_pitch
-            frames_processed += chunk_len
-
-            if self.looping and self.position >= self.loop_end:
-                self.position = float(self.loop_start) + (self.position - self.loop_end)
-            elif not self.looping and self.position >= effective_end:
-                self.active = False
-        return output
-
-
-class SamplerEngine:
-    def __init__(self, sample_rate=44100, channels=2):
-        self.sample_rate = sample_rate
-        self.channels = channels
-        self.voices = [Voice(sample_rate=sample_rate) for _ in range(128)]
-        self.lock = threading.Lock()
-        self.stream = None
-        self.active = True
-        self.master_volume = 1.0
-
-    def start(self):
-        self.stream = sd.OutputStream(
-            samplerate=self.sample_rate,
-            channels=self.channels,
-            callback=self.audio_callback,
-            blocksize=512
-        )
-        self.stream.start()
-
-    def stop(self):
-        if self.stream:
-            self.master_volume = 0.0
-            sd.sleep(100)
-            self.active = False
-            self.stream.stop()
-            self.stream.close()
-
-    def play_voice(self, voice_index, sample, volume=None, pitch=None):
-        if 0 <= voice_index < 128:
-            if sample.data.ndim == 1 and self.channels == 2:
-                # Assuming mono to stereo duplication handled if mixed, but handled in numpy broadcasting usually
-                pass
-            with self.lock:
-                self.voices[voice_index].trigger(sample, volume, pitch)
-
-    def set_voice_pitch(self, voice_index, pitch):
-        if 0 <= voice_index < 128:
-            self.voices[voice_index].set_pitch(pitch)
-
-    def set_voice_volume(self, voice_index, volume):
-        if 0 <= voice_index < 128:
-            self.voices[voice_index].set_volume(volume)
-
-    def set_voice_loop_window(self, voice_index, loop_start, loop_end, crossfade_frames):
-        if 0 <= voice_index < 128:
-            self.voices[voice_index].set_loop_window(loop_start, loop_end, crossfade_frames)
-
-    def set_voice_envelope(self, voice_index, attack, decay, curve=1.0):
-        if 0 <= voice_index < 128:
-            self.voices[voice_index].set_envelope(attack, decay, curve)
-
-    def stop_voice(self, voice_index):
-        if 0 <= voice_index < 128:
-            with self.lock:
-                self.voices[voice_index].release()
-
-    def stop_all(self):
-        with self.lock:
-            for v in self.voices:
-                v.release()
-
-    def audio_callback(self, outdata, frames, time, status):
-        outdata.fill(0)
-        mix = np.zeros((frames, self.channels), dtype=np.float32)
-
-        for v in self.voices:
-            if v.active:
-                voice_out = v.process(frames, self.channels)
-                mix += voice_out
-
-        mix *= self.master_volume
-        np.clip(mix, -1.0, 1.0, out=mix)
-
-        if not self.active: mix.fill(0)
-        outdata[:] = mix
-
-
-class SamplerEngineNode(Node):
-    """
-    Manages the global SamplerEngine instance.
-    Similar to AudioMixerNode, ensures only one engine runs.
-    """
-    engine = None
-
-    @staticmethod
-    def factory(name, data, args=None):
-        node = SamplerEngineNode(name, data, args)
-        return node
-
-    def __init__(self, label: str, data, args):
-        super().__init__(label, data, args)
-
-        # Initialize engine if not exists
-        if SamplerEngineNode.engine is None:
-            SamplerEngineNode.engine = SamplerEngine()
-            SamplerEngineNode.engine.start()
-
-        self.stop_input = self.add_input('stop engine', widget_type='button', callback=self.stop_engine)
-        self.restart_input = self.add_input('restart engine', widget_type='button', callback=self.restart_engine)
-
-    def stop_engine(self):
-        if SamplerEngineNode.engine:
-            SamplerEngineNode.engine.stop()
-
-    def restart_engine(self):
-        if SamplerEngineNode.engine:
-            if not SamplerEngineNode.engine.stream or not SamplerEngineNode.engine.stream.active:
-                SamplerEngineNode.engine.start()
-
-    def custom_cleanup(self):
-        if SamplerEngineNode.engine:
-            SamplerEngineNode.engine.stop()
-            SamplerEngineNode.engine = None
-        print("SamplerEngineNode cleaned up.")
-
-
-class SamplerVoiceNode(Node):
-    """
-    A node to control a single voice (or arbitrary voice) of the SamplerEngine.
-    """
-
-    @staticmethod
-    def factory(name, data, args=None):
-        node = SamplerVoiceNode(name, data, args)
-        return node
-
-    def __init__(self, label: str, data, args):
-        super().__init__(label, data, args)
-
-        self.sample = None
-        self.last_voice_idx = 0
-
-        # Ensure engine is initialized even if SamplerEngineNode isn't present
-        if SamplerEngineNode.engine is None:
-            SamplerEngineNode.engine = SamplerEngine()
-            SamplerEngineNode.engine.start()
-        # Inputs
-        self.play_toggle = self.add_input('play', widget_type='checkbox', default_value=False,
-                                          callback=self.toggle_play)
-
-        self.voice_idx_input = self.add_input('voice index', widget_type='drag_int', default_value=0, min=0, max=127)
-
-        self.path_input = self.add_input('path', callback=self.load_file)
-        self.load_btn = self.add_input('load', widget_type='button', callback=self.request_load_file)
-        self.file_label = self.add_label('')
-        self.length_label = self.add_label('')
-
-        self.volume_input = self.add_input('volume', widget_type='drag_float', default_value=1.0, min=0.0, max=2.0,
-                                           callback=self.update_params)
-        self.pitch_input = self.add_input('pitch', widget_type='drag_float', default_value=1.0, min=0.01, max=4.0,
-                                          callback=self.update_params)
-
-        self.loop_input = self.add_input('loop', widget_type='checkbox', default_value=False,
-                                         callback=self.update_loop_params)
-        self.loop_start_input = self.add_input('loop start', widget_type='drag_int', default_value=0, min=0,
-                                               callback=self.update_loop_params)
-        self.loop_end_input = self.add_input('loop end', widget_type='drag_int', default_value=-1,
-                                             callback=self.update_loop_params)
-        self.crossfade_input = self.add_input('crossfade frames', widget_type='drag_int', default_value=0, min=0,
-                                              callback=self.update_loop_params)
-
-    def request_load_file(self):
-        LoadDialog(self, self.load_file_callback, extensions=['.wav', '.mp3', '.aif', '.flac'])
-
-    def load_file_callback(self, path):
-        self.path_input.set(path)
-        self.load_file_with_path(path)
-
-    def load_file_with_path(self, filepath):
-        if not os.path.exists(filepath):
-            print(f"File not found: {filepath}")
-            return
-        try:
-            # torchaudio load
-            waveform, sample_rate = torchaudio.load(filepath)
-            if not waveform.is_cpu:
-                waveform = waveform.cpu()
-
-            # Convert (C, N) to (N, C) for SamplerEngine
-            arr = waveform.numpy().T
-
-            # Create Sample object
-            self.sample = Sample(arr)
-            # Update label
-            self.file_label.set(os.path.basename(filepath))
-            self.length_label.set(f"Length: {len(arr)} samples")
-
-        except Exception as e:
-            print(f"Error loading file {filepath}: {e}")
-
-    def load_file(self):
-        val = self.path_input()
-        if val == "bang":
-            self.request_load_file()
-        elif val:
-            self.load_file_with_path(val)
-
-    def update_params(self):
-        if SamplerEngineNode.engine:
-            # Update active voice params immediately
-            vol = float(self.volume_input())
-            pitch = float(self.pitch_input())
-            idx = int(self.voice_idx_input())
-
-            SamplerEngineNode.engine.set_voice_volume(idx, vol)
-            SamplerEngineNode.engine.set_voice_pitch(idx, pitch)
-
-    def update_loop_params(self):
-        if self.sample and SamplerEngineNode.engine:
-            l_start = int(self.loop_start_input())
-            l_end = int(self.loop_end_input())
-            xf = int(self.crossfade_input())
-            idx = int(self.voice_idx_input())
-
-            # Handle default loop_end (-1)
-            if l_end < 0:
-                l_end = len(self.sample.data)
-
-            SamplerEngineNode.engine.set_voice_loop_window(idx, l_start, l_end, xf)
-
-    def toggle_play(self):
-        is_playing = bool(self.play_toggle())
-        if is_playing:
-            self.play()
-        else:
-            self.stop_voice()
-
-    def play(self):
-        if self.sample and SamplerEngineNode.engine:
-            # Gather params
-            idx = int(self.voice_idx_input())
-            vol = float(self.volume_input())
-            pitch = float(self.pitch_input())
-            loop = bool(self.loop_input())
-            l_start = int(self.loop_start_input())
-            l_end = int(self.loop_end_input())
-            xf = int(self.crossfade_input())
-
-            # Handle default loop_end (-1)
-            if l_end < 0:
-                l_end = len(self.sample.data)
-
-            self.sample.default_volume = vol
-            self.sample.default_pitch = pitch
-            self.sample.loop = loop
-            self.sample.loop_start = l_start
-            self.sample.loop_end = l_end
-            self.sample.crossfade_frames = xf
-
-            SamplerEngineNode.engine.play_voice(idx, self.sample, volume=vol, pitch=pitch)
-            self.last_voice_idx = idx
-
-    def stop_voice(self):
-        if SamplerEngineNode.engine:
-            SamplerEngineNode.engine.set_voice_volume(self.last_voice_idx, 0.0)
-
-    def execute(self):
-        pass
-
-
-class SamplerMultiVoiceNode(Node):
-    """
-    A node to control ALL voices of the SamplerEngine.
-    Maintains state for each voice and updates UI based on selected voice index.
-    """
-
-    @staticmethod
-    def factory(name, data, args=None):
-        node = SamplerMultiVoiceNode(name, data, args)
-        return node
-
-    def __init__(self, label: str, data, args):
-        super().__init__(label, data, args)
-
-        # Initialize state for 128 voices
-        self.voices_state = []
-        for i in range(128):
-            self.voices_state.append({
-                "sample": None,
-                "path": "",
-                "volume": 1.0,
-                "pitch": 1.0,
-                "loop": False,
-                "loop_start": 0,
-                "loop_end": -1,
-                "crossfade": 0,
-                "attack": 0.0,
-                "decay": 0.0,
-                "attack": 0.0,
-                "decay": 0.0,
-                "decay_curve": 1.0,
-                "playing": False
-            })
-
-        self.current_idx = 0
-        self.ignore_updates = False
-
-        # Ensure engine
-        if SamplerEngineNode.engine is None:
-            SamplerEngineNode.engine = SamplerEngine()
-            SamplerEngineNode.engine.start()
-        # Inputs
-        self.voice_idx_input = self.add_input('voice index', widget_type='drag_int', default_value=0, min=0, max=127,
-                                              callback=self.on_voice_idx_change)
-
-        self.play_toggle = self.add_input('play', widget_type='checkbox', default_value=False,
-                                          callback=self.toggle_play)
-
-        self.path_input = self.add_input('path', callback=self.load_file)
-        self.load_btn = self.add_input('load', widget_type='button', callback=self.request_load_file)
-
-        self.file_label = self.add_label('')
-        self.length_label = self.add_label('')
-
-        self.voice_params_input = self.add_input('voice params', callback=self.on_voice_params_change)
-
-        self.volume_input = self.add_input('volume', widget_type='drag_float', default_value=1.0, min=0.0, max=2.0,
-                                           callback=self.update_params)
-        self.pitch_input = self.add_input('pitch', widget_type='drag_float', default_value=1.0, min=0.01, max=4.0,
-                                          callback=self.update_params)
-
-        self.attack_input = self.add_input('attack (s)', widget_type='drag_float', default_value=0.0, min=0.0, max=10.0,
-                                           callback=self.update_params)
-        self.decay_input = self.add_input('decay (s)', widget_type='drag_float', default_value=0.0, min=0.0, max=10.0,
-                                          callback=self.update_params)
-        self.decay_curve_input = self.add_input('decay curve', widget_type='drag_float', default_value=1.0, min=0.1,
-                                                max=10.0, callback=self.update_params)
-
-        self.loop_input = self.add_input('loop', widget_type='checkbox', default_value=False,
-                                         callback=self.update_loop_params)
-        self.loop_start_input = self.add_input('loop start', widget_type='drag_int', default_value=0, min=0,
-                                               callback=self.update_loop_params)
-        self.loop_end_input = self.add_input('loop end', widget_type='drag_int', default_value=-1,
-                                             callback=self.update_loop_params)
-        self.crossfade_input = self.add_input('crossfade frames', widget_type='drag_int', default_value=0, min=0,
-                                              callback=self.update_loop_params)
-
-        self.pos_output = self.add_output('position')
-
-        if not hasattr(self, 'message_handlers'):
-            self.message_handlers = {}
-        if not hasattr(self, 'message_handlers'):
-            self.message_handlers = {}
-        self.message_handlers['trigger'] = self.trigger_from_message
-        self.message_handlers['stop'] = self.stop_from_message
-
-    def stop_from_message(self, message='', message_data=[]):
-        data = message_data
-
-        # If empty data or just stop string, stop all
-        if not data or (isinstance(data, (list, tuple)) and len(data) == 0):
-            if SamplerEngineNode.engine:
-                SamplerEngineNode.engine.stop_all()
-            # Update all UI states
-            for state in self.voices_state:
-                state["playing"] = False
-        else:
-            # Stop specific indices
-            if isinstance(data, (list, tuple)):
-                indices = data
-            else:
-                indices = [data]  # Fallback if single value
-
-            for item in indices:
-                try:
-                    idx = int(item)
-                    if 0 <= idx < 128:
-                        if SamplerEngineNode.engine:
-                            SamplerEngineNode.engine.stop_voice(idx)
-                        self.voices_state[idx]["playing"] = False
-                except:
-                    pass
-
-        # Sync UI if current voice affected
-        if not self.voices_state[self.current_idx]["playing"]:
-            self.add_frame_task()  # Trigger UI update check
-            # But frame_task checks active status. If release is triggered, voice is ACTIVE but decaying.
-            # So UI should stay "playing" until fully silent.
-            # My logic in frame_task handles "active state from engine".
-            # So I don't necessarily need to force playing=False here immediately if I want to show decay.
-            # But the toggle usually indicates "Gate" status?
-            # If I uncheck toggle, release starts.
-            # Here "stop" message mimics release trigger.
-            # So setting playing=False in state matches "Gate Off".
-            if not self.voices_state[self.current_idx]["playing"]:
-                self.sync_ui_to_state()
-
-    def trigger_from_message(self, message='', message_data=[]):
-        data = message_data
-        if not isinstance(data, (list, tuple)) or len(data) == 0: return
-        try:
-            # Parse voice index
-            idx = int(data[0])
-            if not (0 <= idx < 128): return
-            state = self.voices_state[idx]
-
-            # Volume
-            if len(data) > 1 and data[1] is not None:
-                vol = float(data[1])
-                state["volume"] = vol
-                # Engine update handled by trigger_voice generally, but set it for consistency
-                if SamplerEngineNode.engine:
-                    SamplerEngineNode.engine.set_voice_volume(idx, vol)
-            # Pitch
-            if len(data) > 2 and data[2] is not None:
-                pitch = float(data[2])
-                state["pitch"] = pitch
-                if SamplerEngineNode.engine:
-                    SamplerEngineNode.engine.set_voice_pitch(idx, pitch)
-
-            # Trigger
-            self.trigger_voice(idx)
-            state["playing"] = True
-
-            # Sync UI if current voice
-            if idx == self.current_idx:
-                self.sync_ui_to_state()
-                self.add_frame_task()
-
-        except Exception as e:
-            print(f"Trigger message error: {e}")
-
-    def custom_create(self, from_file):
-        self.sync_ui_to_state()
-
-    def request_load_file(self, *args):
-        LoadDialog(self, self.load_file_callback, extensions=['.wav', '.mp3', '.aif', '.flac'])
-
-    def load_file_callback(self, path):
-        self.path_input.set(path)
-        self.load_file_with_path(path)
-
-    def load_file_with_path(self, filepath, voice_idx=None):
-        if not os.path.exists(filepath):
-            print(f"File not found: {filepath}")
-            return
-
-        target_idx = voice_idx if voice_idx is not None else self.current_idx
-        try:
-            # torchaudio load
-            waveform, sample_rate = torchaudio.load(filepath)
-            if not waveform.is_cpu:
-                waveform = waveform.cpu()
-
-            arr = waveform.numpy().T
-            sample = Sample(arr)
-
-            # Update state
-            state = self.voices_state[target_idx]
-            state["sample"] = sample
-            state["path"] = filepath
-            state["loop_end"] = -1  # Reset loop end on new file load
-            state["loop_start"] = 0
-
-            # Update labels if current
-            if target_idx == self.current_idx:
-                self.file_label.set(os.path.basename(filepath))
-                self.length_label.set(f"Length: {len(arr)} samples")
-
-                # Sync UI
-                self.ignore_updates = True
-                self.path_input.set(filepath)
-                self.loop_start_input.set(0)
-                self.loop_end_input.set(-1)
-                self.ignore_updates = False
-
-            # If playing, re-trigger?
-            if state["playing"]:
-                self.trigger_voice(target_idx)
-
-        except Exception as e:
-            print(f"Error loading file {filepath}: {e}")
-
-    def load_file(self, *args):
-        val = self.path_input()
-        if val == "bang":
-            self.request_load_file()
-        elif val:
-            self.load_file_with_path(val)
-
-    def on_voice_idx_change(self, *args):
-        try:
-            val = self.voice_idx_input()
-            idx = int(val)
-            if 0 <= idx < 128:
-                self.current_idx = idx
-                self.sync_ui_to_state()
-        except Exception as e:
-            print(f"Error changing voice index: {e}")
-
-    def sync_ui_to_state(self):
-        self.ignore_updates = True
-        state = self.voices_state[self.current_idx]
-
-        # Sync playing state from Engine truth
-        if SamplerEngineNode.engine:
-            start_active = SamplerEngineNode.engine.voices[self.current_idx].active
-            state["playing"] = start_active
-            if start_active:
-                self.add_frame_task()
-            else:
-                self.remove_frame_tasks()
-
-        self.path_input.set(state["path"])
-        if state["path"]:
-            self.file_label.set(os.path.basename(state["path"]))
-            if state["sample"]:
-                self.length_label.set(f"Length: {len(state['sample'].data)} samples")
-            else:
-                self.length_label.set("")
-        else:
-            self.file_label.set("No File")
-            self.length_label.set("")
-
-        self.play_toggle.set(state["playing"])
-        self.volume_input.set(state["volume"])
-        self.pitch_input.set(state["pitch"])
-        self.attack_input.set(state.get("attack", 0.0))
-        self.decay_input.set(state.get("decay", 0.0))
-        self.decay_curve_input.set(state.get("decay_curve", 1.0))
-        self.loop_input.set(state["loop"])
-        self.loop_start_input.set(state["loop_start"])
-        self.loop_end_input.set(state["loop_end"])
-        self.crossfade_input.set(state["crossfade"])
-
-        self.ignore_updates = False
-
-    def frame_task(self):
-        if SamplerEngineNode.engine:
-            voice = SamplerEngineNode.engine.voices[self.current_idx]
-
-            # Update position
-            self.pos_output.send(voice.position)
-
-            # Sync Toggle State with Voice Active State
-            ui_playing = self.voices_state[self.current_idx]["playing"]
-
-            if voice.active and not ui_playing:
-                # Voice active but UI off.
-                # This could be:
-                # 1. External Trigger (we want UI On)
-                # 2. decaying after Stop (we want UI Off)
-
-                # We need to distinguish.
-                # If we assume External Trigger always sets UI state in `trigger_from_message` or `toggle_play` list handling...
-                # Then we might not need this auto-sync here?
-                # But what if triggered from another node/script directly?
-
-                # As a heuristic: If we are simply decaying, we probably shouldn't force UI on.
-                # But we don't know if we are decaying.
-
-                # Let's disable this auto-on for now if we can ensure all triggers set UI.
-                # All internal triggers do set UI.
-                # Checks: `toggle_play` (sets UI), `trigger_from_message` (sets UI).
-                # So we can probably remove this block or restrict it.
-                pass
-
-            elif not voice.active and ui_playing:
-                # Voice stopped (e.g. auto-stop or finished)
-                self.voices_state[self.current_idx]["playing"] = False
-                self.ignore_updates = True
-                self.play_toggle.set(False)
-                self.ignore_updates = False
-
-                self.remove_frame_tasks()
-
-    def update_params(self, *args):
-        if self.ignore_updates: return
-
-        vol = float(self.volume_input())
-        pitch = float(self.pitch_input())
-        attack = float(self.attack_input())
-        decay = float(self.decay_input())
-        curve = float(self.decay_curve_input())
-
-        state = self.voices_state[self.current_idx]
-        state["volume"] = vol
-        state["pitch"] = pitch
-        state["attack"] = attack
-        state["decay"] = decay
-        state["decay_curve"] = curve
-
-        if SamplerEngineNode.engine:
-            SamplerEngineNode.engine.set_voice_volume(self.current_idx, vol)
-            SamplerEngineNode.engine.set_voice_pitch(self.current_idx, pitch)
-            SamplerEngineNode.engine.set_voice_envelope(self.current_idx, attack, decay, curve)
-
-    def update_loop_params(self, *args):
-        if self.ignore_updates: return
-
-        state = self.voices_state[self.current_idx]
-        state["loop"] = bool(self.loop_input())
-        state["loop_start"] = int(self.loop_start_input())
-        state["loop_end"] = int(self.loop_end_input())
-        state["crossfade"] = int(self.crossfade_input())
-
-        effective_end = state["loop_end"]
-        if effective_end < 0 and state["sample"]:
-            effective_end = len(state["sample"].data)
-
-        if SamplerEngineNode.engine and state["sample"]:
-            SamplerEngineNode.engine.set_voice_loop_window(self.current_idx, state["loop_start"], effective_end,
-                                                           state["crossfade"])
-
-    def toggle_play(self, *args):
-        try:
-            val = self.play_toggle()
-
-            # Check for list input (Advanced Triggering)
-            if isinstance(val, (list, tuple)):
-                if not SamplerEngineNode.engine: return
-
-                def update_voice(idx, vol):
-                    if not (0 <= idx < 128): return
-
-                    # Bypass envelope for user list control - ensure immediate response
-                    SamplerEngineNode.engine.set_voice_envelope(idx, 0.0, 0.0, 1.0)
-                    SamplerEngineNode.engine.set_voice_volume(idx, vol)
-
-                    self.voices_state[idx]["volume"] = vol
-
-                    voice = SamplerEngineNode.engine.voices[idx]
-
-                    if not voice.active and vol > 0:
-                        # Trigger with zero envelope to ensure immediate start
-                        self.trigger_voice(idx, attack=0.0, decay=0.0, decay_curve=1.0)
-                        self.voices_state[idx]["playing"] = True
-
-                        if idx == self.current_idx:
-                            self.ignore_updates = True
-                            self.play_toggle.set(True)
-                            self.volume_input.set(vol)
-                            self.ignore_updates = False
-                            self.add_frame_task()
-
-                    elif idx == self.current_idx:
-                        self.ignore_updates = True
-                        self.volume_input.set(vol)
-                        self.ignore_updates = False
-
-                        if voice.active:
-                            self.add_frame_task()
-
-                if len(val) > 0:
-                    first = val[0]
-                    if isinstance(first, (list, tuple)):
-                        for item in val:
-                            if len(item) >= 2:
-                                update_voice(int(item[0]), float(item[1]))
-                    else:
-                        for i, v_vol in enumerate(val):
-                            update_voice(i, float(v_vol))
-
-                return
-        except Exception:
-            pass
-
-        if self.ignore_updates: return
-
-        state = self.voices_state[self.current_idx]
-        is_playing = bool(self.play_toggle())
-        state["playing"] = is_playing
-
-        if is_playing:
-            self.trigger_voice(self.current_idx)
-            self.add_frame_task()
-        else:
-            if SamplerEngineNode.engine:
-                SamplerEngineNode.engine.stop_voice(self.current_idx)
-            # Don't immediately remove frame tasks, let it play out decay?
-            # If we remove frame task, we lose the position update and the "auto-off" when decay finishes.
-            # But if we unchecked `play`, we expect it to stop eventually.
-            # If we keep frame task, `sync_ui_to_state` mechanics might be needed.
-            # In `frame_task`: if voice.active and not ui_playing -> sets ui_playing=True (bad if we just stopped)
-            # Wait, `frame_task` logic:
-            # if voice.active and not ui_playing:
-            #    voice started externally -> set ui=True.
-            # This conflicts with "Voice stopping (decaying) and ui=False".
-            # We need to distinguish "Decaying" from "Started Externally".
-            # But `Voice.active` is true for both.
-            # Maybe we rely on the fact that if we just set ui_playing=False, we know we initiated a stop.
-            # But `frame_task` runs on next frame.
-
-            # We can perform a check: if we just clicked stop, we shouldn't re-enable.
-            # But how does frame_task know?
-
-            # Maybe `frame_task` shouldn't auto-set UI to True unless it detects a *fresh* trigger?
-            # Or maybe we just accept that the toggle represents "Active Sound" and not "Gate"?
-            # User said: "When I stop playing by clicking on the play toggle to set it false, the playback stops immediately." -> They want decay.
-            # If toggle=False means "Release", then visual state of toggle should stay False while decaying.
-            # So `frame_task` must NOT flip it back to True if it's decaying.
-
-            pass
-
-    def trigger_voice(self, idx, attack=None, decay=None, decay_curve=None):
-        if SamplerEngineNode.engine:
-            state = self.voices_state[idx]
-            if state["sample"]:
-                s = state["sample"]
-                s.default_volume = state["volume"]
-                s.default_pitch = state["pitch"]
-                s.loop = state["loop"]
-                s.loop_start = state["loop_start"]
-                le = state["loop_end"]
-                if le < 0: le = len(s.data)
-                s.loop_end = le
-                s.crossfade_frames = state["crossfade"]
-
-                # Use provided overrides or state values
-                a = attack if attack is not None else state.get("attack", 0.0)
-                d = decay if decay is not None else state.get("decay", 0.0)
-                c = decay_curve if decay_curve is not None else state.get("decay_curve", 1.0)
-
-                SamplerEngineNode.engine.set_voice_envelope(idx, a, d, c)
-
-                SamplerEngineNode.engine.play_voice(idx, s, volume=state["volume"], pitch=state["pitch"])
-
-    def on_voice_params_change(self, *args):
-        try:
-            val = self.voice_params_input()
-            if isinstance(val, dict):
-                is_multi = False
-                if len(val) > 0:
-                    first_k = next(iter(val))
-                    if isinstance(first_k, int) or (isinstance(first_k, str) and first_k.isdigit()):
-                        is_multi = True
-
-                if is_multi:
-                    for k, v in val.items():
-                        try:
-                            idx = int(k)
-                            if isinstance(v, dict):
-                                self._apply_voice_params(idx, v)
-                        except ValueError:
-                            pass
-                else:
-                    idx = val.get("voice_index", self.current_idx)
-                    self._apply_voice_params(idx, val)
-
-        except Exception as e:
-            print(f"Error loading voice params: {e}")
-
-    def _apply_voice_params(self, idx, params):
-        if not (0 <= idx < 128): return
-
-        state = self.voices_state[idx]
-
-        if "path" in params:
-            p = params["path"]
-            if p != state["path"]:
-                self.load_file_with_path(p, idx)
-
-        if "volume" in params: state["volume"] = float(params["volume"])
-        if "pitch" in params: state["pitch"] = float(params["pitch"])
-        if "attack" in params: state["attack"] = float(params["attack"])
-        if "decay" in params: state["decay"] = float(params["decay"])
-        if "decay_curve" in params: state["decay_curve"] = float(params["decay_curve"])
-        if "loop" in params: state["loop"] = bool(params["loop"])
-        if "loop_start" in params: state["loop_start"] = int(params["loop_start"])
-        if "loop_end" in params: state["loop_end"] = int(params["loop_end"])
-        if "crossfade" in params: state["crossfade"] = int(params["crossfade"])
-
-        if SamplerEngineNode.engine:
-            SamplerEngineNode.engine.set_voice_volume(idx, state["volume"])
-            SamplerEngineNode.engine.set_voice_pitch(idx, state["pitch"])
-            SamplerEngineNode.engine.set_voice_envelope(idx, state.get("attack", 0.0), state.get("decay", 0.0),
-                                                        state.get("decay_curve", 1.0))
-
-            effective_end = state["loop_end"]
-            if effective_end < 0 and state["sample"]:
-                effective_end = len(state["sample"].data)
-
-            SamplerEngineNode.engine.set_voice_loop_window(idx, state["loop_start"], effective_end, state["crossfade"])
-
-        if idx == self.current_idx:
-            self.sync_ui_to_state()
-
-    def execute(self):
-        pass
-
-    def save_custom(self, container):
-        voices_data = {}
-        for i, state in enumerate(self.voices_state):
-            # Save if it has data or non-default params
-            has_file = bool(state["path"])
-            if (has_file or
-                    state["volume"] != 1.0 or
-                    state["pitch"] != 1.0 or
-                    state.get("attack", 0.0) != 0.0 or
-                    state.get("decay", 0.0) != 0.0 or
-                    state.get("decay_curve", 1.0) != 1.0 or
-                    state["loop"] or
-                    state["loop_start"] != 0 or
-                    state["loop_end"] != -1 or
-                    state["crossfade"] != 0):
-                voices_data[str(i)] = {
-                    "path": state["path"],
-                    "volume": state["volume"],
-                    "pitch": state["pitch"],
-                    "attack": state.get("attack", 0.0),
-                    "decay": state.get("decay", 0.0),
-                    "decay_curve": state.get("decay_curve", 1.0),
-                    "loop": state["loop"],
-                    "loop_start": state["loop_start"],
-                    "loop_end": state["loop_end"],
-                    "crossfade": state["crossfade"]
-                }
-
-        container['voices'] = voices_data
-        container['current_idx'] = self.current_idx
-
-    def load_custom(self, container):
-        if 'current_idx' in container:
-            self.current_idx = int(container['current_idx'])
-
-        voices_data = container.get('voices', {})
-        for idx_str, data in voices_data.items():
-            try:
-                idx = int(idx_str)
-                if not (0 <= idx < 128): continue
-
-                state = self.voices_state[idx]
-
-                # Load file first if present
-                file_path = data.get("path", "")
-                if file_path and os.path.exists(file_path):
-                    self.load_file_with_path(file_path, idx)
-
-                # Apply params (overwriting defaults set by load_file)
-                if "volume" in data: state["volume"] = float(data["volume"])
-                if "pitch" in data: state["pitch"] = float(data["pitch"])
-                if "attack" in data: state["attack"] = float(data["attack"])
-                if "decay" in data: state["decay"] = float(data["decay"])
-                if "decay_curve" in data: state["decay_curve"] = float(data["decay_curve"])
-                if "loop" in data: state["loop"] = bool(data["loop"])
-                if "loop_start" in data: state["loop_start"] = int(data["loop_start"])
-                if "loop_end" in data: state["loop_end"] = int(data["loop_end"])
-                if "crossfade" in data: state["crossfade"] = int(data["crossfade"])
-
-                # Update Engine
-                if SamplerEngineNode.engine:
-                    SamplerEngineNode.engine.set_voice_volume(idx, state["volume"])
-                    SamplerEngineNode.engine.set_voice_pitch(idx, state["pitch"])
-                    SamplerEngineNode.engine.set_voice_envelope(idx, state.get("attack", 0.0), state.get("decay", 0.0),
-                                                                state.get("decay_curve", 1.0))
-
-                    effective_end = state["loop_end"]
-                    if effective_end < 0 and state["sample"]:
-                        effective_end = len(state["sample"].data)
-
-                    SamplerEngineNode.engine.set_voice_loop_window(idx, state["loop_start"], effective_end,
-                                                                   state["crossfade"])
-
-            except Exception as e:
-                print(f"Error loading voice {idx_str}: {e}")
-
-        # Sync UI for the current index
-        self.sync_ui_to_state()
+# class Sample:
+#     def __init__(self, data, volume=1.0, loop=False, loop_start=0, loop_end=-1, crossfade_frames=0, pitch=1.0):
+#         # Allow passing path or array
+#         if isinstance(data, str):
+#             # Load from file (placeholder if we had file IO, but user only used arrays so far in demos)
+#             # implementation for future if needed:
+#             # self.data, _ = sf.read(data, dtype='float32')
+#             pass
+#         else:
+#             self.data = data
+#
+#         self.default_volume = volume
+#         self.loop = loop
+#         self.loop_start = loop_start
+#
+#         # If loop_end is -1 or greater than length, set to length
+#         if loop_end < 0 or loop_end > len(self.data):
+#             self.loop_end = len(self.data)
+#         else:
+#             self.loop_end = loop_end
+#
+#         self.crossfade_frames = min(crossfade_frames, self.loop_end - self.loop_start)
+#         self.default_pitch = pitch
+#
+#
+# class Voice:
+#     def __init__(self, sample_rate=44100):
+#         self.sample_rate = sample_rate
+#         self.active = False
+#         self.sample = None
+#         self.position = 0.0
+#         self.looping = False
+#         self.current_volume = 0.0
+#         self.target_volume = 0.0
+#         self.loop_start = 0
+#         self.loop_end = 0
+#         self.crossfade_frames = 0
+#         self.pitch = 1.0
+#         self.zero_vol_frames = 0
+#         self.attack_s = 0.0
+#         self.decay_s = 0.0
+#         self.decay_curve = 1.0
+#
+#         # New State
+#         self.envelope_val = 0.0
+#         self.target_envelope = 0.0
+#         self.current_gain = 0.0
+#         self.target_gain = 0.0
+#
+#     def trigger(self, sample, volume=None, pitch=None):
+#         self.sample = sample
+#         self.looping = sample.loop
+#
+#         target_vol = volume if volume is not None else sample.default_volume
+#         self.target_gain = target_vol
+#
+#         # If not active or re-triggering with attack, reset envelope?
+#         # Standard synth behavior:
+#         # If attack > 0, we ramp up.
+#         # If already playing, we can ramp from current envelope val (legato-ish) or reset to 0.
+#         # Let's start from 0 if not active. If active, continue from current.
+#         if not self.active:
+#             self.current_gain = self.target_gain  # Snap gain? Or ramp gain?
+#             # Ideally gain should be decoupled.
+#             # Let's say gain controls the "Level Slider". That shouldn't click.
+#             # But envelope is the Note On/Off.
+#             self.envelope_val = 0.0 if self.attack_s > 0 else 1.0
+#
+#             # If we snap gain, we avoid a fade-in of gain if the slider was moved while silent.
+#             # But if we change volume while playing, we want smoothing.
+#             self.current_gain = self.target_gain
+#
+#         self.target_envelope = 1.0
+#
+#         self.active = True
+#         self.zero_vol_frames = 0
+#
+#         self.pitch = pitch if pitch is not None else sample.default_pitch
+#
+#         self.loop_start = sample.loop_start
+#         self.loop_end = sample.loop_end
+#         self.crossfade_frames = sample.crossfade_frames
+#
+#         self.position = 0.0
+#
+#     def release(self):
+#         self.target_envelope = 0.0
+#
+#     def set_volume(self, volume):
+#         self.target_gain = volume
+#
+#     def set_pitch(self, pitch):
+#         self.pitch = pitch
+#
+#     def set_loop_window(self, loop_start, loop_end, crossfade_frames):
+#         self.loop_start = loop_start
+#         self.loop_end = loop_end
+#         self.crossfade_frames = crossfade_frames
+#
+#     def set_envelope(self, attack, decay, curve=1.0):
+#         self.attack_s = attack
+#         self.decay_s = decay
+#         self.decay_curve = curve
+#
+#     def process(self, frames, channels):
+#         if not self.active or self.sample is None:
+#             return np.zeros((frames, channels), dtype=np.float32)
+#         # 1. Update Gain (Linear Smoothing)
+#         if self.current_gain != self.target_gain:
+#             # Simple block ramp for gain
+#             gain_curve = np.linspace(self.current_gain, self.target_gain, frames)
+#             self.current_gain = self.target_gain
+#         else:
+#             gain_curve = self.current_gain
+#         # 2. Update Envelope (Attack/Decay)
+#         # We need to move envelope_val towards target_envelope
+#         # Attack Rate
+#         if self.target_envelope > self.envelope_val:
+#             if self.attack_s > 0:
+#                 step = 1.0 / (self.attack_s * self.sample_rate)
+#                 steps = np.arange(1, frames + 1, dtype=np.float32) * step
+#                 env_curve = np.minimum(self.envelope_val + steps, 1.0)
+#                 self.envelope_val = env_curve[-1]
+#             else:
+#                 env_curve = np.ones(frames, dtype=np.float32)
+#                 self.envelope_val = 1.0
+#
+#         # Decay Rate
+#         elif self.target_envelope < self.envelope_val:
+#             if self.decay_s > 0:
+#                 step = 1.0 / (self.decay_s * self.sample_rate)
+#                 steps = np.arange(1, frames + 1, dtype=np.float32) * step
+#                 env_curve = np.maximum(self.envelope_val - steps, 0.0)
+#                 self.envelope_val = env_curve[-1]
+#             else:
+#                 env_curve = np.zeros(frames, dtype=np.float32)
+#                 self.envelope_val = 0.0
+#         else:
+#             env_curve = self.envelope_val
+#         # 3. Apply Curve to Decay Phase?
+#         # User asked for decay curve.
+#         # If we just apply power to the envelope value always, it affects attack too (making it convex/concave).
+#         # Usually linear attack is fine. But exponential decay is desired.
+#         # If we use power > 1:
+#         # 0->1 (Attack): Curve bends down (slow start, fast end). Not standard log attack.
+#         # 1->0 (Decay): Curve bends down (fast start, slow end). This is "Natural" decay.
+#         # So applying power curve to the 0-1 value works for Natural Decay.
+#
+#         if isinstance(env_curve, np.ndarray):
+#             final_env = np.power(env_curve, self.decay_curve)
+#         else:
+#             final_env = float(env_curve) ** self.decay_curve
+#
+#         # Check active status
+#         if self.target_envelope == 0.0 and self.envelope_val <= 0.0001:
+#             self.active = False
+#             # We might still process this block if it started non-zero
+#             if isinstance(final_env, float) and final_env <= 0.0001:
+#                 return np.zeros((frames, channels), dtype=np.float32)
+#         # ... Rendering Logic ...
+#         output = np.zeros((frames, channels), dtype=np.float32)
+#         frames_processed = 0
+#         sample_data = self.sample.data
+#         local_pitch = max(0.001, self.pitch)
+#         while frames_processed < frames:
+#             # ... (Rest of processing) ...
+#             # Need to copy existing processing logic carefully
+#             # To avoid huge replacement, I will try to keep the structure.
+#             # But I need to output the full block efficiently.
+#
+#             remaining_frames = frames - frames_processed
+#             effective_end = self.loop_end if self.looping else len(sample_data)
+#
+#             dist_samples = effective_end - self.position
+#
+#             if dist_samples <= 0:
+#                 if self.looping:
+#                     self.position = float(self.loop_start) + (self.position - self.loop_end)
+#                     if self.position >= effective_end: self.position = float(self.loop_start)
+#                     dist_samples = effective_end - self.position
+#                 else:
+#                     self.active = False
+#                     break
+#             chunk_len = int(dist_samples / local_pitch)
+#
+#             if chunk_len < 1:
+#                 if self.looping:
+#                     self.position = float(self.loop_start) + (self.position - self.loop_end)
+#                     if self.position >= effective_end: self.position = float(self.loop_start)
+#                     continue
+#                 else:
+#                     self.active = False
+#                     break
+#
+#             chunk_len = min(remaining_frames, chunk_len)
+#
+#             out_indices = np.arange(chunk_len)
+#             sample_indices_float = self.position + out_indices * local_pitch
+#
+#             idx_int = sample_indices_float.astype(int)
+#             alpha = sample_indices_float - idx_int
+#             if sample_data.ndim > 1: alpha = alpha[:, np.newaxis]
+#
+#             s0 = sample_data[idx_int]
+#             idx_next = idx_int + 1
+#
+#             mask_over = idx_next >= len(sample_data)
+#             if self.looping:
+#                 mask_loop = idx_next >= self.loop_end
+#                 idx_next[mask_loop] = self.loop_start
+#             else:
+#                 idx_next[mask_over] = len(sample_data) - 1
+#
+#             s1 = sample_data[idx_next]
+#             raw_chunk = s0 * (1.0 - alpha) + s1 * alpha
+#
+#             if self.looping and self.crossfade_frames > 0:
+#                 cf_start = self.loop_end - self.crossfade_frames
+#                 in_fade_mask = sample_indices_float >= cf_start
+#                 if np.any(in_fade_mask):
+#                     indices_in_fade = sample_indices_float[in_fade_mask]
+#                     fade_pos = indices_in_fade - cf_start
+#                     cf_alpha = fade_pos / float(self.crossfade_frames)
+#                     if sample_data.ndim > 1: cf_alpha = cf_alpha[:, np.newaxis]
+#
+#                     pos_b = self.loop_start + fade_pos
+#                     idx_b_int = pos_b.astype(int)
+#                     alpha_b = pos_b - idx_b_int
+#                     if sample_data.ndim > 1: alpha_b = alpha_b[:, np.newaxis]
+#
+#                     sb0 = sample_data[idx_b_int]
+#                     idx_b_next = idx_b_int + 1
+#                     idx_b_next = np.minimum(idx_b_next, len(sample_data) - 1)
+#                     sb1 = sample_data[idx_b_next]
+#                     source_b = sb0 * (1.0 - alpha_b) + sb1 * alpha_b
+#                     source_a = raw_chunk[in_fade_mask]
+#                     mixed = (1.0 - cf_alpha) * source_a + cf_alpha * source_b
+#                     raw_chunk[in_fade_mask] = mixed
+#             # Apply volume
+#             # Apply volume
+#             combined_vol = final_env
+#             if isinstance(gain_curve, np.ndarray):
+#                 gc = gain_curve[frames_processed:frames_processed + chunk_len]
+#             else:
+#                 gc = gain_curve
+#
+#             if isinstance(final_env, np.ndarray):
+#                 fe = final_env[frames_processed:frames_processed + chunk_len]
+#                 combined_vol = fe * gc
+#             else:
+#                 combined_vol = final_env * gc
+#
+#             # Broadcast
+#             if isinstance(combined_vol, np.ndarray) and combined_vol.ndim == 1 and output.ndim == 2:
+#                 combined_vol = combined_vol[:, np.newaxis]
+#
+#             output[frames_processed:frames_processed + chunk_len] = raw_chunk * combined_vol
+#
+#             self.position += chunk_len * local_pitch
+#             frames_processed += chunk_len
+#
+#             if self.looping and self.position >= self.loop_end:
+#                 self.position = float(self.loop_start) + (self.position - self.loop_end)
+#             elif not self.looping and self.position >= effective_end:
+#                 self.active = False
+#         return output
+#
+#
+# class SamplerEngine:
+#     def __init__(self, sample_rate=44100, channels=2):
+#         self.sample_rate = sample_rate
+#         self.channels = channels
+#         self.voices = [Voice(sample_rate=sample_rate) for _ in range(128)]
+#         self.lock = threading.Lock()
+#         self.stream = None
+#         self.active = True
+#         self.master_volume = 1.0
+#
+#     def start(self):
+#         self.stream = sd.OutputStream(
+#             samplerate=self.sample_rate,
+#             channels=self.channels,
+#             callback=self.audio_callback,
+#             blocksize=512
+#         )
+#         self.stream.start()
+#
+#     def stop(self):
+#         if self.stream:
+#             self.master_volume = 0.0
+#             sd.sleep(100)
+#             self.active = False
+#             self.stream.stop()
+#             self.stream.close()
+#
+#     def play_voice(self, voice_index, sample, volume=None, pitch=None):
+#         if 0 <= voice_index < 128:
+#             if sample.data.ndim == 1 and self.channels == 2:
+#                 # Assuming mono to stereo duplication handled if mixed, but handled in numpy broadcasting usually
+#                 pass
+#             with self.lock:
+#                 self.voices[voice_index].trigger(sample, volume, pitch)
+#
+#     def set_voice_pitch(self, voice_index, pitch):
+#         if 0 <= voice_index < 128:
+#             self.voices[voice_index].set_pitch(pitch)
+#
+#     def set_voice_volume(self, voice_index, volume):
+#         if 0 <= voice_index < 128:
+#             self.voices[voice_index].set_volume(volume)
+#
+#     def set_voice_loop_window(self, voice_index, loop_start, loop_end, crossfade_frames):
+#         if 0 <= voice_index < 128:
+#             self.voices[voice_index].set_loop_window(loop_start, loop_end, crossfade_frames)
+#
+#     def set_voice_envelope(self, voice_index, attack, decay, curve=1.0):
+#         if 0 <= voice_index < 128:
+#             self.voices[voice_index].set_envelope(attack, decay, curve)
+#
+#     def stop_voice(self, voice_index):
+#         if 0 <= voice_index < 128:
+#             with self.lock:
+#                 self.voices[voice_index].release()
+#
+#     def stop_all(self):
+#         with self.lock:
+#             for v in self.voices:
+#                 v.release()
+#
+#     def audio_callback(self, outdata, frames, time, status):
+#         outdata.fill(0)
+#         mix = np.zeros((frames, self.channels), dtype=np.float32)
+#
+#         for v in self.voices:
+#             if v.active:
+#                 voice_out = v.process(frames, self.channels)
+#                 mix += voice_out
+#
+#         mix *= self.master_volume
+#         np.clip(mix, -1.0, 1.0, out=mix)
+#
+#         if not self.active: mix.fill(0)
+#         outdata[:] = mix
+#
+#
+# class SamplerEngineNode(Node):
+#     """
+#     Manages the global SamplerEngine instance.
+#     Similar to AudioMixerNode, ensures only one engine runs.
+#     """
+#     engine = None
+#
+#     @staticmethod
+#     def factory(name, data, args=None):
+#         node = SamplerEngineNode(name, data, args)
+#         return node
+#
+#     def __init__(self, label: str, data, args):
+#         super().__init__(label, data, args)
+#
+#         # Initialize engine if not exists
+#         if SamplerEngineNode.engine is None:
+#             SamplerEngineNode.engine = SamplerEngine()
+#             SamplerEngineNode.engine.start()
+#
+#         self.stop_input = self.add_input('stop engine', widget_type='button', callback=self.stop_engine)
+#         self.restart_input = self.add_input('restart engine', widget_type='button', callback=self.restart_engine)
+#
+#     def stop_engine(self):
+#         if SamplerEngineNode.engine:
+#             SamplerEngineNode.engine.stop()
+#
+#     def restart_engine(self):
+#         if SamplerEngineNode.engine:
+#             if not SamplerEngineNode.engine.stream or not SamplerEngineNode.engine.stream.active:
+#                 SamplerEngineNode.engine.start()
+#
+#     def custom_cleanup(self):
+#         if SamplerEngineNode.engine:
+#             SamplerEngineNode.engine.stop()
+#             SamplerEngineNode.engine = None
+#         print("SamplerEngineNode cleaned up.")
+#
+#
+# class SamplerVoiceNode(Node):
+#     """
+#     A node to control a single voice (or arbitrary voice) of the SamplerEngine.
+#     """
+#
+#     @staticmethod
+#     def factory(name, data, args=None):
+#         node = SamplerVoiceNode(name, data, args)
+#         return node
+#
+#     def __init__(self, label: str, data, args):
+#         super().__init__(label, data, args)
+#
+#         self.sample = None
+#         self.last_voice_idx = 0
+#
+#         # Ensure engine is initialized even if SamplerEngineNode isn't present
+#         if SamplerEngineNode.engine is None:
+#             SamplerEngineNode.engine = SamplerEngine()
+#             SamplerEngineNode.engine.start()
+#         # Inputs
+#         self.play_toggle = self.add_input('play', widget_type='checkbox', default_value=False,
+#                                           callback=self.toggle_play)
+#
+#         self.voice_idx_input = self.add_input('voice index', widget_type='drag_int', default_value=0, min=0, max=127)
+#
+#         self.path_input = self.add_input('path', callback=self.load_file)
+#         self.load_btn = self.add_input('load', widget_type='button', callback=self.request_load_file)
+#         self.file_label = self.add_label('')
+#         self.length_label = self.add_label('')
+#
+#         self.volume_input = self.add_input('volume', widget_type='drag_float', default_value=1.0, min=0.0, max=2.0,
+#                                            callback=self.update_params)
+#         self.pitch_input = self.add_input('pitch', widget_type='drag_float', default_value=1.0, min=0.01, max=4.0,
+#                                           callback=self.update_params)
+#
+#         self.loop_input = self.add_input('loop', widget_type='checkbox', default_value=False,
+#                                          callback=self.update_loop_params)
+#         self.loop_start_input = self.add_input('loop start', widget_type='drag_int', default_value=0, min=0,
+#                                                callback=self.update_loop_params)
+#         self.loop_end_input = self.add_input('loop end', widget_type='drag_int', default_value=-1,
+#                                              callback=self.update_loop_params)
+#         self.crossfade_input = self.add_input('crossfade frames', widget_type='drag_int', default_value=0, min=0,
+#                                               callback=self.update_loop_params)
+#
+#     def request_load_file(self):
+#         LoadDialog(self, self.load_file_callback, extensions=['.wav', '.mp3', '.aif', '.flac'])
+#
+#     def load_file_callback(self, path):
+#         self.path_input.set(path)
+#         self.load_file_with_path(path)
+#
+#     def load_file_with_path(self, filepath):
+#         if not os.path.exists(filepath):
+#             print(f"File not found: {filepath}")
+#             return
+#         try:
+#             # torchaudio load
+#             waveform, sample_rate = torchaudio.load(filepath)
+#             if not waveform.is_cpu:
+#                 waveform = waveform.cpu()
+#
+#             # Convert (C, N) to (N, C) for SamplerEngine
+#             arr = waveform.numpy().T
+#
+#             # Create Sample object
+#             self.sample = Sample(arr)
+#             # Update label
+#             self.file_label.set(os.path.basename(filepath))
+#             self.length_label.set(f"Length: {len(arr)} samples")
+#
+#         except Exception as e:
+#             print(f"Error loading file {filepath}: {e}")
+#
+#     def load_file(self):
+#         val = self.path_input()
+#         if val == "bang":
+#             self.request_load_file()
+#         elif val:
+#             self.load_file_with_path(val)
+#
+#     def update_params(self):
+#         if SamplerEngineNode.engine:
+#             # Update active voice params immediately
+#             vol = float(self.volume_input())
+#             pitch = float(self.pitch_input())
+#             idx = int(self.voice_idx_input())
+#
+#             SamplerEngineNode.engine.set_voice_volume(idx, vol)
+#             SamplerEngineNode.engine.set_voice_pitch(idx, pitch)
+#
+#     def update_loop_params(self):
+#         if self.sample and SamplerEngineNode.engine:
+#             l_start = int(self.loop_start_input())
+#             l_end = int(self.loop_end_input())
+#             xf = int(self.crossfade_input())
+#             idx = int(self.voice_idx_input())
+#
+#             # Handle default loop_end (-1)
+#             if l_end < 0:
+#                 l_end = len(self.sample.data)
+#
+#             SamplerEngineNode.engine.set_voice_loop_window(idx, l_start, l_end, xf)
+#
+#     def toggle_play(self):
+#         is_playing = bool(self.play_toggle())
+#         if is_playing:
+#             self.play()
+#         else:
+#             self.stop_voice()
+#
+#     def play(self):
+#         if self.sample and SamplerEngineNode.engine:
+#             # Gather params
+#             idx = int(self.voice_idx_input())
+#             vol = float(self.volume_input())
+#             pitch = float(self.pitch_input())
+#             loop = bool(self.loop_input())
+#             l_start = int(self.loop_start_input())
+#             l_end = int(self.loop_end_input())
+#             xf = int(self.crossfade_input())
+#
+#             # Handle default loop_end (-1)
+#             if l_end < 0:
+#                 l_end = len(self.sample.data)
+#
+#             self.sample.default_volume = vol
+#             self.sample.default_pitch = pitch
+#             self.sample.loop = loop
+#             self.sample.loop_start = l_start
+#             self.sample.loop_end = l_end
+#             self.sample.crossfade_frames = xf
+#
+#             SamplerEngineNode.engine.play_voice(idx, self.sample, volume=vol, pitch=pitch)
+#             self.last_voice_idx = idx
+#
+#     def stop_voice(self):
+#         if SamplerEngineNode.engine:
+#             SamplerEngineNode.engine.set_voice_volume(self.last_voice_idx, 0.0)
+#
+#     def execute(self):
+#         pass
+#
+#
+# class SamplerMultiVoiceNode(Node):
+#     """
+#     A node to control ALL voices of the SamplerEngine.
+#     Maintains state for each voice and updates UI based on selected voice index.
+#     """
+#
+#     @staticmethod
+#     def factory(name, data, args=None):
+#         node = SamplerMultiVoiceNode(name, data, args)
+#         return node
+#
+#     def __init__(self, label: str, data, args):
+#         super().__init__(label, data, args)
+#
+#         # Initialize state for 128 voices
+#         self.voices_state = []
+#         for i in range(128):
+#             self.voices_state.append({
+#                 "sample": None,
+#                 "path": "",
+#                 "volume": 1.0,
+#                 "pitch": 1.0,
+#                 "loop": False,
+#                 "loop_start": 0,
+#                 "loop_end": -1,
+#                 "crossfade": 0,
+#                 "attack": 0.0,
+#                 "decay": 0.0,
+#                 "attack": 0.0,
+#                 "decay": 0.0,
+#                 "decay_curve": 1.0,
+#                 "playing": False
+#             })
+#
+#         self.current_idx = 0
+#         self.ignore_updates = False
+#
+#         # Ensure engine
+#         if SamplerEngineNode.engine is None:
+#             SamplerEngineNode.engine = SamplerEngine()
+#             SamplerEngineNode.engine.start()
+#         # Inputs
+#         self.voice_idx_input = self.add_input('voice index', widget_type='drag_int', default_value=0, min=0, max=127,
+#                                               callback=self.on_voice_idx_change)
+#
+#         self.play_toggle = self.add_input('play', widget_type='checkbox', default_value=False,
+#                                           callback=self.toggle_play)
+#
+#         self.path_input = self.add_input('path', callback=self.load_file)
+#         self.load_btn = self.add_input('load', widget_type='button', callback=self.request_load_file)
+#
+#         self.file_label = self.add_label('')
+#         self.length_label = self.add_label('')
+#
+#         self.voice_params_input = self.add_input('voice params', callback=self.on_voice_params_change)
+#
+#         self.volume_input = self.add_input('volume', widget_type='drag_float', default_value=1.0, min=0.0, max=2.0,
+#                                            callback=self.update_params)
+#         self.pitch_input = self.add_input('pitch', widget_type='drag_float', default_value=1.0, min=0.01, max=4.0,
+#                                           callback=self.update_params)
+#
+#         self.attack_input = self.add_input('attack (s)', widget_type='drag_float', default_value=0.0, min=0.0, max=10.0,
+#                                            callback=self.update_params)
+#         self.decay_input = self.add_input('decay (s)', widget_type='drag_float', default_value=0.0, min=0.0, max=10.0,
+#                                           callback=self.update_params)
+#         self.decay_curve_input = self.add_input('decay curve', widget_type='drag_float', default_value=1.0, min=0.1,
+#                                                 max=10.0, callback=self.update_params)
+#
+#         self.loop_input = self.add_input('loop', widget_type='checkbox', default_value=False,
+#                                          callback=self.update_loop_params)
+#         self.loop_start_input = self.add_input('loop start', widget_type='drag_int', default_value=0, min=0,
+#                                                callback=self.update_loop_params)
+#         self.loop_end_input = self.add_input('loop end', widget_type='drag_int', default_value=-1,
+#                                              callback=self.update_loop_params)
+#         self.crossfade_input = self.add_input('crossfade frames', widget_type='drag_int', default_value=0, min=0,
+#                                               callback=self.update_loop_params)
+#
+#         self.pos_output = self.add_output('position')
+#
+#         if not hasattr(self, 'message_handlers'):
+#             self.message_handlers = {}
+#         if not hasattr(self, 'message_handlers'):
+#             self.message_handlers = {}
+#         self.message_handlers['trigger'] = self.trigger_from_message
+#         self.message_handlers['stop'] = self.stop_from_message
+#
+#     def stop_from_message(self, message='', message_data=[]):
+#         data = message_data
+#
+#         # If empty data or just stop string, stop all
+#         if not data or (isinstance(data, (list, tuple)) and len(data) == 0):
+#             if SamplerEngineNode.engine:
+#                 SamplerEngineNode.engine.stop_all()
+#             # Update all UI states
+#             for state in self.voices_state:
+#                 state["playing"] = False
+#         else:
+#             # Stop specific indices
+#             if isinstance(data, (list, tuple)):
+#                 indices = data
+#             else:
+#                 indices = [data]  # Fallback if single value
+#
+#             for item in indices:
+#                 try:
+#                     idx = int(item)
+#                     if 0 <= idx < 128:
+#                         if SamplerEngineNode.engine:
+#                             SamplerEngineNode.engine.stop_voice(idx)
+#                         self.voices_state[idx]["playing"] = False
+#                 except:
+#                     pass
+#
+#         # Sync UI if current voice affected
+#         if not self.voices_state[self.current_idx]["playing"]:
+#             self.add_frame_task()  # Trigger UI update check
+#             # But frame_task checks active status. If release is triggered, voice is ACTIVE but decaying.
+#             # So UI should stay "playing" until fully silent.
+#             # My logic in frame_task handles "active state from engine".
+#             # So I don't necessarily need to force playing=False here immediately if I want to show decay.
+#             # But the toggle usually indicates "Gate" status?
+#             # If I uncheck toggle, release starts.
+#             # Here "stop" message mimics release trigger.
+#             # So setting playing=False in state matches "Gate Off".
+#             if not self.voices_state[self.current_idx]["playing"]:
+#                 self.sync_ui_to_state()
+#
+#     def trigger_from_message(self, message='', message_data=[]):
+#         data = message_data
+#         if not isinstance(data, (list, tuple)) or len(data) == 0: return
+#         try:
+#             # Parse voice index
+#             idx = int(data[0])
+#             if not (0 <= idx < 128): return
+#             state = self.voices_state[idx]
+#
+#             # Volume
+#             if len(data) > 1 and data[1] is not None:
+#                 vol = float(data[1])
+#                 state["volume"] = vol
+#                 # Engine update handled by trigger_voice generally, but set it for consistency
+#                 if SamplerEngineNode.engine:
+#                     SamplerEngineNode.engine.set_voice_volume(idx, vol)
+#             # Pitch
+#             if len(data) > 2 and data[2] is not None:
+#                 pitch = float(data[2])
+#                 state["pitch"] = pitch
+#                 if SamplerEngineNode.engine:
+#                     SamplerEngineNode.engine.set_voice_pitch(idx, pitch)
+#
+#             # Trigger
+#             self.trigger_voice(idx)
+#             state["playing"] = True
+#
+#             # Sync UI if current voice
+#             if idx == self.current_idx:
+#                 self.sync_ui_to_state()
+#                 self.add_frame_task()
+#
+#         except Exception as e:
+#             print(f"Trigger message error: {e}")
+#
+#     def custom_create(self, from_file):
+#         self.sync_ui_to_state()
+#
+#     def request_load_file(self, *args):
+#         LoadDialog(self, self.load_file_callback, extensions=['.wav', '.mp3', '.aif', '.flac'])
+#
+#     def load_file_callback(self, path):
+#         self.path_input.set(path)
+#         self.load_file_with_path(path)
+#
+#     def load_file_with_path(self, filepath, voice_idx=None):
+#         if not os.path.exists(filepath):
+#             print(f"File not found: {filepath}")
+#             return
+#
+#         target_idx = voice_idx if voice_idx is not None else self.current_idx
+#         try:
+#             # torchaudio load
+#             waveform, sample_rate = torchaudio.load(filepath)
+#             if not waveform.is_cpu:
+#                 waveform = waveform.cpu()
+#
+#             arr = waveform.numpy().T
+#             sample = Sample(arr)
+#
+#             # Update state
+#             state = self.voices_state[target_idx]
+#             state["sample"] = sample
+#             state["path"] = filepath
+#             state["loop_end"] = -1  # Reset loop end on new file load
+#             state["loop_start"] = 0
+#
+#             # Update labels if current
+#             if target_idx == self.current_idx:
+#                 self.file_label.set(os.path.basename(filepath))
+#                 self.length_label.set(f"Length: {len(arr)} samples")
+#
+#                 # Sync UI
+#                 self.ignore_updates = True
+#                 self.path_input.set(filepath)
+#                 self.loop_start_input.set(0)
+#                 self.loop_end_input.set(-1)
+#                 self.ignore_updates = False
+#
+#             # If playing, re-trigger?
+#             if state["playing"]:
+#                 self.trigger_voice(target_idx)
+#
+#         except Exception as e:
+#             print(f"Error loading file {filepath}: {e}")
+#
+#     def load_file(self, *args):
+#         val = self.path_input()
+#         if val == "bang":
+#             self.request_load_file()
+#         elif val:
+#             self.load_file_with_path(val)
+#
+#     def on_voice_idx_change(self, *args):
+#         try:
+#             val = self.voice_idx_input()
+#             idx = int(val)
+#             if 0 <= idx < 128:
+#                 self.current_idx = idx
+#                 self.sync_ui_to_state()
+#         except Exception as e:
+#             print(f"Error changing voice index: {e}")
+#
+#     def sync_ui_to_state(self):
+#         self.ignore_updates = True
+#         state = self.voices_state[self.current_idx]
+#
+#         # Sync playing state from Engine truth
+#         if SamplerEngineNode.engine:
+#             start_active = SamplerEngineNode.engine.voices[self.current_idx].active
+#             state["playing"] = start_active
+#             if start_active:
+#                 self.add_frame_task()
+#             else:
+#                 self.remove_frame_tasks()
+#
+#         self.path_input.set(state["path"])
+#         if state["path"]:
+#             self.file_label.set(os.path.basename(state["path"]))
+#             if state["sample"]:
+#                 self.length_label.set(f"Length: {len(state['sample'].data)} samples")
+#             else:
+#                 self.length_label.set("")
+#         else:
+#             self.file_label.set("No File")
+#             self.length_label.set("")
+#
+#         self.play_toggle.set(state["playing"])
+#         self.volume_input.set(state["volume"])
+#         self.pitch_input.set(state["pitch"])
+#         self.attack_input.set(state.get("attack", 0.0))
+#         self.decay_input.set(state.get("decay", 0.0))
+#         self.decay_curve_input.set(state.get("decay_curve", 1.0))
+#         self.loop_input.set(state["loop"])
+#         self.loop_start_input.set(state["loop_start"])
+#         self.loop_end_input.set(state["loop_end"])
+#         self.crossfade_input.set(state["crossfade"])
+#
+#         self.ignore_updates = False
+#
+#     def frame_task(self):
+#         if SamplerEngineNode.engine:
+#             voice = SamplerEngineNode.engine.voices[self.current_idx]
+#
+#             # Update position
+#             self.pos_output.send(voice.position)
+#
+#             # Sync Toggle State with Voice Active State
+#             ui_playing = self.voices_state[self.current_idx]["playing"]
+#
+#             if voice.active and not ui_playing:
+#                 # Voice active but UI off.
+#                 # This could be:
+#                 # 1. External Trigger (we want UI On)
+#                 # 2. decaying after Stop (we want UI Off)
+#
+#                 # We need to distinguish.
+#                 # If we assume External Trigger always sets UI state in `trigger_from_message` or `toggle_play` list handling...
+#                 # Then we might not need this auto-sync here?
+#                 # But what if triggered from another node/script directly?
+#
+#                 # As a heuristic: If we are simply decaying, we probably shouldn't force UI on.
+#                 # But we don't know if we are decaying.
+#
+#                 # Let's disable this auto-on for now if we can ensure all triggers set UI.
+#                 # All internal triggers do set UI.
+#                 # Checks: `toggle_play` (sets UI), `trigger_from_message` (sets UI).
+#                 # So we can probably remove this block or restrict it.
+#                 pass
+#
+#             elif not voice.active and ui_playing:
+#                 # Voice stopped (e.g. auto-stop or finished)
+#                 self.voices_state[self.current_idx]["playing"] = False
+#                 self.ignore_updates = True
+#                 self.play_toggle.set(False)
+#                 self.ignore_updates = False
+#
+#                 self.remove_frame_tasks()
+#
+#     def update_params(self, *args):
+#         if self.ignore_updates: return
+#
+#         vol = float(self.volume_input())
+#         pitch = float(self.pitch_input())
+#         attack = float(self.attack_input())
+#         decay = float(self.decay_input())
+#         curve = float(self.decay_curve_input())
+#
+#         state = self.voices_state[self.current_idx]
+#         state["volume"] = vol
+#         state["pitch"] = pitch
+#         state["attack"] = attack
+#         state["decay"] = decay
+#         state["decay_curve"] = curve
+#
+#         if SamplerEngineNode.engine:
+#             SamplerEngineNode.engine.set_voice_volume(self.current_idx, vol)
+#             SamplerEngineNode.engine.set_voice_pitch(self.current_idx, pitch)
+#             SamplerEngineNode.engine.set_voice_envelope(self.current_idx, attack, decay, curve)
+#
+#     def update_loop_params(self, *args):
+#         if self.ignore_updates: return
+#
+#         state = self.voices_state[self.current_idx]
+#         state["loop"] = bool(self.loop_input())
+#         state["loop_start"] = int(self.loop_start_input())
+#         state["loop_end"] = int(self.loop_end_input())
+#         state["crossfade"] = int(self.crossfade_input())
+#
+#         effective_end = state["loop_end"]
+#         if effective_end < 0 and state["sample"]:
+#             effective_end = len(state["sample"].data)
+#
+#         if SamplerEngineNode.engine and state["sample"]:
+#             SamplerEngineNode.engine.set_voice_loop_window(self.current_idx, state["loop_start"], effective_end,
+#                                                            state["crossfade"])
+#
+#     def toggle_play(self, *args):
+#         try:
+#             val = self.play_toggle()
+#
+#             # Check for list input (Advanced Triggering)
+#             if isinstance(val, (list, tuple)):
+#                 if not SamplerEngineNode.engine: return
+#
+#                 def update_voice(idx, vol):
+#                     if not (0 <= idx < 128): return
+#
+#                     # Bypass envelope for user list control - ensure immediate response
+#                     SamplerEngineNode.engine.set_voice_envelope(idx, 0.0, 0.0, 1.0)
+#                     SamplerEngineNode.engine.set_voice_volume(idx, vol)
+#
+#                     self.voices_state[idx]["volume"] = vol
+#
+#                     voice = SamplerEngineNode.engine.voices[idx]
+#
+#                     if not voice.active and vol > 0:
+#                         # Trigger with zero envelope to ensure immediate start
+#                         self.trigger_voice(idx, attack=0.0, decay=0.0, decay_curve=1.0)
+#                         self.voices_state[idx]["playing"] = True
+#
+#                         if idx == self.current_idx:
+#                             self.ignore_updates = True
+#                             self.play_toggle.set(True)
+#                             self.volume_input.set(vol)
+#                             self.ignore_updates = False
+#                             self.add_frame_task()
+#
+#                     elif idx == self.current_idx:
+#                         self.ignore_updates = True
+#                         self.volume_input.set(vol)
+#                         self.ignore_updates = False
+#
+#                         if voice.active:
+#                             self.add_frame_task()
+#
+#                 if len(val) > 0:
+#                     first = val[0]
+#                     if isinstance(first, (list, tuple)):
+#                         for item in val:
+#                             if len(item) >= 2:
+#                                 update_voice(int(item[0]), float(item[1]))
+#                     else:
+#                         for i, v_vol in enumerate(val):
+#                             update_voice(i, float(v_vol))
+#
+#                 return
+#         except Exception:
+#             pass
+#
+#         if self.ignore_updates: return
+#
+#         state = self.voices_state[self.current_idx]
+#         is_playing = bool(self.play_toggle())
+#         state["playing"] = is_playing
+#
+#         if is_playing:
+#             self.trigger_voice(self.current_idx)
+#             self.add_frame_task()
+#         else:
+#             if SamplerEngineNode.engine:
+#                 SamplerEngineNode.engine.stop_voice(self.current_idx)
+#             # Don't immediately remove frame tasks, let it play out decay?
+#             # If we remove frame task, we lose the position update and the "auto-off" when decay finishes.
+#             # But if we unchecked `play`, we expect it to stop eventually.
+#             # If we keep frame task, `sync_ui_to_state` mechanics might be needed.
+#             # In `frame_task`: if voice.active and not ui_playing -> sets ui_playing=True (bad if we just stopped)
+#             # Wait, `frame_task` logic:
+#             # if voice.active and not ui_playing:
+#             #    voice started externally -> set ui=True.
+#             # This conflicts with "Voice stopping (decaying) and ui=False".
+#             # We need to distinguish "Decaying" from "Started Externally".
+#             # But `Voice.active` is true for both.
+#             # Maybe we rely on the fact that if we just set ui_playing=False, we know we initiated a stop.
+#             # But `frame_task` runs on next frame.
+#
+#             # We can perform a check: if we just clicked stop, we shouldn't re-enable.
+#             # But how does frame_task know?
+#
+#             # Maybe `frame_task` shouldn't auto-set UI to True unless it detects a *fresh* trigger?
+#             # Or maybe we just accept that the toggle represents "Active Sound" and not "Gate"?
+#             # User said: "When I stop playing by clicking on the play toggle to set it false, the playback stops immediately." -> They want decay.
+#             # If toggle=False means "Release", then visual state of toggle should stay False while decaying.
+#             # So `frame_task` must NOT flip it back to True if it's decaying.
+#
+#             pass
+#
+#     def trigger_voice(self, idx, attack=None, decay=None, decay_curve=None):
+#         if SamplerEngineNode.engine:
+#             state = self.voices_state[idx]
+#             if state["sample"]:
+#                 s = state["sample"]
+#                 s.default_volume = state["volume"]
+#                 s.default_pitch = state["pitch"]
+#                 s.loop = state["loop"]
+#                 s.loop_start = state["loop_start"]
+#                 le = state["loop_end"]
+#                 if le < 0: le = len(s.data)
+#                 s.loop_end = le
+#                 s.crossfade_frames = state["crossfade"]
+#
+#                 # Use provided overrides or state values
+#                 a = attack if attack is not None else state.get("attack", 0.0)
+#                 d = decay if decay is not None else state.get("decay", 0.0)
+#                 c = decay_curve if decay_curve is not None else state.get("decay_curve", 1.0)
+#
+#                 SamplerEngineNode.engine.set_voice_envelope(idx, a, d, c)
+#
+#                 SamplerEngineNode.engine.play_voice(idx, s, volume=state["volume"], pitch=state["pitch"])
+#
+#     def on_voice_params_change(self, *args):
+#         try:
+#             val = self.voice_params_input()
+#             if isinstance(val, dict):
+#                 is_multi = False
+#                 if len(val) > 0:
+#                     first_k = next(iter(val))
+#                     if isinstance(first_k, int) or (isinstance(first_k, str) and first_k.isdigit()):
+#                         is_multi = True
+#
+#                 if is_multi:
+#                     for k, v in val.items():
+#                         try:
+#                             idx = int(k)
+#                             if isinstance(v, dict):
+#                                 self._apply_voice_params(idx, v)
+#                         except ValueError:
+#                             pass
+#                 else:
+#                     idx = val.get("voice_index", self.current_idx)
+#                     self._apply_voice_params(idx, val)
+#
+#         except Exception as e:
+#             print(f"Error loading voice params: {e}")
+#
+#     def _apply_voice_params(self, idx, params):
+#         if not (0 <= idx < 128): return
+#
+#         state = self.voices_state[idx]
+#
+#         if "path" in params:
+#             p = params["path"]
+#             if p != state["path"]:
+#                 self.load_file_with_path(p, idx)
+#
+#         if "volume" in params: state["volume"] = float(params["volume"])
+#         if "pitch" in params: state["pitch"] = float(params["pitch"])
+#         if "attack" in params: state["attack"] = float(params["attack"])
+#         if "decay" in params: state["decay"] = float(params["decay"])
+#         if "decay_curve" in params: state["decay_curve"] = float(params["decay_curve"])
+#         if "loop" in params: state["loop"] = bool(params["loop"])
+#         if "loop_start" in params: state["loop_start"] = int(params["loop_start"])
+#         if "loop_end" in params: state["loop_end"] = int(params["loop_end"])
+#         if "crossfade" in params: state["crossfade"] = int(params["crossfade"])
+#
+#         if SamplerEngineNode.engine:
+#             SamplerEngineNode.engine.set_voice_volume(idx, state["volume"])
+#             SamplerEngineNode.engine.set_voice_pitch(idx, state["pitch"])
+#             SamplerEngineNode.engine.set_voice_envelope(idx, state.get("attack", 0.0), state.get("decay", 0.0),
+#                                                         state.get("decay_curve", 1.0))
+#
+#             effective_end = state["loop_end"]
+#             if effective_end < 0 and state["sample"]:
+#                 effective_end = len(state["sample"].data)
+#
+#             SamplerEngineNode.engine.set_voice_loop_window(idx, state["loop_start"], effective_end, state["crossfade"])
+#
+#         if idx == self.current_idx:
+#             self.sync_ui_to_state()
+#
+#     def execute(self):
+#         pass
+#
+#     def save_custom(self, container):
+#         voices_data = {}
+#         for i, state in enumerate(self.voices_state):
+#             # Save if it has data or non-default params
+#             has_file = bool(state["path"])
+#             if (has_file or
+#                     state["volume"] != 1.0 or
+#                     state["pitch"] != 1.0 or
+#                     state.get("attack", 0.0) != 0.0 or
+#                     state.get("decay", 0.0) != 0.0 or
+#                     state.get("decay_curve", 1.0) != 1.0 or
+#                     state["loop"] or
+#                     state["loop_start"] != 0 or
+#                     state["loop_end"] != -1 or
+#                     state["crossfade"] != 0):
+#                 voices_data[str(i)] = {
+#                     "path": state["path"],
+#                     "volume": state["volume"],
+#                     "pitch": state["pitch"],
+#                     "attack": state.get("attack", 0.0),
+#                     "decay": state.get("decay", 0.0),
+#                     "decay_curve": state.get("decay_curve", 1.0),
+#                     "loop": state["loop"],
+#                     "loop_start": state["loop_start"],
+#                     "loop_end": state["loop_end"],
+#                     "crossfade": state["crossfade"]
+#                 }
+#
+#         container['voices'] = voices_data
+#         container['current_idx'] = self.current_idx
+#
+#     def load_custom(self, container):
+#         if 'current_idx' in container:
+#             self.current_idx = int(container['current_idx'])
+#
+#         voices_data = container.get('voices', {})
+#         for idx_str, data in voices_data.items():
+#             try:
+#                 idx = int(idx_str)
+#                 if not (0 <= idx < 128): continue
+#
+#                 state = self.voices_state[idx]
+#
+#                 # Load file first if present
+#                 file_path = data.get("path", "")
+#                 if file_path and os.path.exists(file_path):
+#                     self.load_file_with_path(file_path, idx)
+#
+#                 # Apply params (overwriting defaults set by load_file)
+#                 if "volume" in data: state["volume"] = float(data["volume"])
+#                 if "pitch" in data: state["pitch"] = float(data["pitch"])
+#                 if "attack" in data: state["attack"] = float(data["attack"])
+#                 if "decay" in data: state["decay"] = float(data["decay"])
+#                 if "decay_curve" in data: state["decay_curve"] = float(data["decay_curve"])
+#                 if "loop" in data: state["loop"] = bool(data["loop"])
+#                 if "loop_start" in data: state["loop_start"] = int(data["loop_start"])
+#                 if "loop_end" in data: state["loop_end"] = int(data["loop_end"])
+#                 if "crossfade" in data: state["crossfade"] = int(data["crossfade"])
+#
+#                 # Update Engine
+#                 if SamplerEngineNode.engine:
+#                     SamplerEngineNode.engine.set_voice_volume(idx, state["volume"])
+#                     SamplerEngineNode.engine.set_voice_pitch(idx, state["pitch"])
+#                     SamplerEngineNode.engine.set_voice_envelope(idx, state.get("attack", 0.0), state.get("decay", 0.0),
+#                                                                 state.get("decay_curve", 1.0))
+#
+#                     effective_end = state["loop_end"]
+#                     if effective_end < 0 and state["sample"]:
+#                         effective_end = len(state["sample"].data)
+#
+#                     SamplerEngineNode.engine.set_voice_loop_window(idx, state["loop_start"], effective_end,
+#                                                                    state["crossfade"])
+#
+#             except Exception as e:
+#                 print(f"Error loading voice {idx_str}: {e}")
+#
+#         # Sync UI for the current index
+#         self.sync_ui_to_state()
