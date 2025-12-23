@@ -257,7 +257,7 @@ class SamplerMultiVoiceNode(Node):
         self.decay_input = self.add_input('decay (s)', widget_type='drag_float', default_value=0.0, min=0.0, max=10.0,
                                           callback=self.update_params)
         self.decay_curve_input = self.add_input('decay curve', widget_type='drag_float', default_value=1.0, min=0.1,
-                                                max=10.0, callback=self.update_params)
+                                                max=20.0, callback=self.update_params)
         self.loop_input = self.add_input('loop', widget_type='checkbox', default_value=False,
                                          callback=self.update_loop_params)
         self.loop_start_input = self.add_input('loop start', widget_type='drag_int', default_value=0, min=0,
@@ -308,6 +308,11 @@ class SamplerMultiVoiceNode(Node):
                     # Update engine with combined volume
                     eff_vol = state["sample_volume"] * fade
                     SamplerEngineNode.engine.set_voice_volume(idx, eff_vol)
+            else:
+                state["fade"] = 1.0
+                if SamplerEngineNode.engine:
+                     eff_vol = state["sample_volume"]
+                     SamplerEngineNode.engine.set_voice_volume(idx, eff_vol)
                     
             if len(data) > 2 and data[2] is not None:
                 i_pitch = float(data[2])
@@ -318,6 +323,7 @@ class SamplerMultiVoiceNode(Node):
 
             self.trigger_voice(idx)
             state["playing"] = True
+            state["fade_zero_since"] = None
             if idx == self.current_idx:
                 self.sync_ui_to_state()
                 self.add_frame_task()
@@ -576,7 +582,7 @@ class SamplerMultiVoiceNode(Node):
                 if isinstance(first, (list, tuple)):
                     # Format: [[idx, vol], [idx, vol]] OR [[idx, vol, pitch]]
                     for item in val:
-                        if len(item) >= 2:
+                        if isinstance(item, (list, tuple)) and len(item) >= 2:
                             i_p = float(item[2]) if len(item) > 2 else None
                             try:
                                 update_voice(int(item[0]), float(item[1]), i_p)
@@ -605,6 +611,11 @@ class SamplerMultiVoiceNode(Node):
         state["playing"] = is_playing
 
         if is_playing:
+            # Force fade to 1.0
+            state["fade"] = 1.0
+            state["fade_zero_since"] = None
+            self.fade_input.set(1.0)
+            
             self.trigger_voice(self.current_idx)
             self.add_frame_task()
         else:
