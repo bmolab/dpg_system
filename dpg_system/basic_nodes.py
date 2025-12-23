@@ -1520,6 +1520,7 @@ class DelayNode(Node):
         self.buffer_position = 0
 
         self.input = self.add_input("in")
+        self.input.bang_repeats_previous = False
         self.delay_input = self.add_int_input('delay', widget_type='drag_int', default_value=self.delay, min=0, max=4000, callback=self.delay_changed)
         self.cancel_input = self.add_input('cancel', callback=self.delay_cancelled)
         self.output = self.add_output("out")
@@ -1543,7 +1544,7 @@ class DelayNode(Node):
             self.output.send(out_data)
 
         if self.input.fresh_input:
-            self.buffer[self.buffer_position] = self.input.get_data()
+            self.buffer[self.buffer_position] = self.input()
         else:
             self.buffer[self.buffer_position] = None
         self.buffer_position += 1
