@@ -108,9 +108,10 @@ class Voice:
             "curve": curve
         })
 
-    def set_loop_window(self, loop_start, loop_end, crossfade_frames):
+    def set_loop_window(self, loop, loop_start, loop_end, crossfade_frames):
         self._command_queue.put({
             "type": "set_loop",
+            "loop": loop,
             "start": loop_start,
             "end": loop_end,
             "crossfade": crossfade_frames
@@ -170,6 +171,7 @@ class Voice:
                 self.decay_curve = cmd["curve"]
                 
             elif t == "set_loop":
+                self.looping = cmd["loop"]
                 self.loop_start = cmd["start"]
                 self.loop_end = cmd["end"]
                 self.crossfade_frames = cmd["crossfade"]
@@ -479,9 +481,9 @@ class SamplerEngine:
         if 0 <= voice_index < 128:
             self.voices[voice_index].set_volume(volume)
 
-    def set_voice_loop_window(self, voice_index, loop_start, loop_end, crossfade_frames):
+    def set_voice_loop_window(self, voice_index, loop, loop_start, loop_end, crossfade_frames):
         if 0 <= voice_index < 128:
-            self.voices[voice_index].set_loop_window(loop_start, loop_end, crossfade_frames)
+            self.voices[voice_index].set_loop_window(loop, loop_start, loop_end, crossfade_frames)
 
     def set_voice_envelope(self, voice_index, attack, decay, curve=1.0):
         if 0 <= voice_index < 128:
