@@ -1420,8 +1420,6 @@ class NodeInput:
                 self.widget.user_data = self.user_data
                 self.widget.create()
 
-
-
     def set_default_value(self, data: Any) -> None:
         if self.widget is not None:
             self.widget.set_default_value(data)
