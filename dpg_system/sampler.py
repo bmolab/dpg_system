@@ -118,6 +118,8 @@ class Voice:
         self.scratch_max_vel = 1.0
         self.scratch_accel = 1.0
         self.scratch_mode = False
+        self.scratch_threshold = 0.15
+        self.scratch_exponent = 2.0
     
     # --- Public API (Main Thread) ---
     
@@ -184,6 +186,9 @@ class Voice:
     def set_scratch_params(self, max_vel, accel):
         self._command_queue.put({"type": "set_scratch_params", "max_vel": max_vel, "accel": accel})
         
+    def set_scratch_tuning(self, threshold, exponent):
+        self._command_queue.put({"type": "set_scratch_tuning", "threshold": threshold, "exponent": exponent})
+        
     def set_mode(self, mode):
         # mode: 'normal' or 'granular'
         self._command_queue.put({"type": "set_mode", "mode": mode})
@@ -200,6 +205,15 @@ class Voice:
                 break
             # print(f"DEBUG: Got command {cmd['type']}", flush=True)
             t = cmd["type"]
+            
+            if t == "set_scratch_target":
+                self.scratch_target = cmd["pos"]
+            elif t == "set_scratch_params":
+                self.scratch_max_vel = cmd["max_vel"]
+                self.scratch_accel = cmd["accel"]
+            elif t == "set_scratch_tuning":
+                self.scratch_threshold = cmd["threshold"]
+                self.scratch_exponent = cmd["exponent"]
             
             if t == "trigger":
                 if "mode" in cmd and cmd["mode"] is not None:
@@ -585,25 +599,49 @@ class Voice:
             return self._process_granular(frames, channels)
 
         if self.scratch_mode and self.active:
-            # Scratch Physics
+            # Non-linear Adaptive Stiffness (Quadratic Curve)
+            # Goals: 
+            # 1. Extreme smoothness for small errors (jitter filtering)
+            # 2. Rapid response for large errors (snap)
+            
+            base_omega = max(0.1, self.scratch_accel)
+            
             dist_s = (self.scratch_target - self.position) / self.sample_rate
-            sign = 1.0 if dist_s >= 0 else -1.0
             abs_dist = abs(dist_s)
             
-            v_allow = np.sqrt(2 * self.scratch_accel * abs_dist)
-            target_v = min(v_allow, self.scratch_max_vel) * sign
+            # Threshold for "large" movement (seconds)
+            threshold = self.scratch_threshold
             
-            # Use current_pitch as start velocity (state from end of last block)
+            # Normalized error ratio
+            ratio = abs_dist / max(0.001, threshold)
+            
+            # Non-linear Response
+            # Small ratio -> Very small scale
+            # Large ratio -> Scale ramps up fast
+            scale = pow(ratio, self.scratch_exponent)
+            
+            # Clamp scale
+            # Min: 0.05 (Very loose/smooth)
+            # Max: 1.5 (Boosted responsiveness for large jumps)
+            scale = np.clip(scale, 0.05, 1.5)
+            
+            omega_n = base_omega * scale
+            
+            k = omega_n * omega_n
+            c = 2 * omega_n
+            
+            # Current velocity (pitch)
             current_v = self.current_pitch
             
-            dt = frames / self.sample_rate
-            max_change = self.scratch_accel * dt
+            # Spring Force
+            accel = k * dist_s - c * current_v
             
-            if current_v < target_v:
-                new_v = min(current_v + max_change, target_v)
-            else:
-                new_v = max(current_v - max_change, target_v)
-                
+            dt = frames / self.sample_rate
+            new_v = current_v + accel * dt
+            
+            # Clamp velocity
+            new_v = np.clip(new_v, -self.scratch_max_vel, self.scratch_max_vel)
+            
             self.target_pitch = new_v
         
         # ... existing code ...
@@ -617,7 +655,7 @@ class Voice:
 
         # Auto-Release Check
         # If not looping and we are active (not already releasing)
-        if not self.looping and self.target_envelope > 0.0:
+        if not self.looping and not self.scratch_mode and self.target_envelope > 0.0:
             remaining_frames = self.play_end - self.position
             # Account for pitch?
             # If pitch > 1.0, we traverse samples faster, so we need "more" remaining frames?
@@ -773,6 +811,7 @@ class Voice:
             effective_start = self.loop_start if self.looping else start_limit
             
             dist = 0
+            forced_indices = False
             
             if p > 0:
                 dist = effective_end - current_pos
@@ -785,14 +824,8 @@ class Voice:
                      elif self.scratch_mode:
                          # Park at end
                          current_pos = float(effective_end - 0.001)
-                         dist = 0.0 # Force re-eval or wait?
-                         # If p > 0 and we are at end, we can't move.
-                         # We must render constant?
-                         # Just set chunk len?
-                         # If dist <= 0, we can't play forward.
-                         # We just fill output with last sample?
-                         # Or just break loop if not changing?
-                         pass
+                         chunk_len = frames - processed
+                         forced_indices = True
                      else:
                          self.active = False
                          break
@@ -808,37 +841,36 @@ class Voice:
                      elif self.scratch_mode:
                          # Park at start
                          current_pos = float(effective_start)
+                         chunk_len = frames - processed
+                         forced_indices = True
                      else:
                          self.active = False
                          break
             
             # How many frames fit in this dist?
-            # frames * |p| = samples
-            
-            if abs(p) < 0.0001:
-                # p is nearly 0. We hold position.
-                chunk_len = frames - processed
-            else:
-                # If scratch parked at bound, dist might be <= 0 still.
-                if self.scratch_mode and dist <= 0.001:
-                     chunk_len = frames - processed
-                     # We force indices to current_pos
+            if not forced_indices:
+                if abs(p) < 0.0001:
+                    # p is nearly 0. We hold position.
+                    chunk_len = frames - processed
                 else:
-                    chunk_len = int(abs(dist) / abs(p))
-            
-            chunk_len = max(1, chunk_len)
-            chunk_len = min(frames - processed, chunk_len)
-            
-            # Normalize p_slice logic for bidirectional
-            # p_slice is signed.
-            p_slice = pitch_curve[processed : processed + chunk_len]
-            
-            # valid_indices calculation
-            # cumsum works for negative p too.
-            valid_indices = np.concatenate(([0.0], np.cumsum(p_slice)[:-1])) + current_pos
+                    if self.scratch_mode and dist <= 0.001:
+                         chunk_len = frames - processed
+                    else:
+                        chunk_len = int(abs(dist) / abs(p))
+                
+                chunk_len = max(1, chunk_len)
+                chunk_len = min(frames - processed, chunk_len)
+                
+                # Normal calculation
+                p_slice = pitch_curve[processed : processed + chunk_len]
+                valid_indices = np.concatenate(([0.0], np.cumsum(p_slice)[:-1])) + current_pos
+            else:
+                # Forced constant indices (Parked)
+                valid_indices = np.full(chunk_len, current_pos)
+                p_slice = np.zeros(chunk_len)
             
             # Check bounds for safety (overshoot prevention)
-            if p > 0:
+            if not forced_indices and p > 0:
                 overshoot = valid_indices >= effective_end
                 if np.any(overshoot):
                     cut = np.argmax(overshoot)
@@ -846,15 +878,8 @@ class Voice:
                         if self.scratch_mode:
                              chunk_len = frames - processed
                              valid_indices = np.full(chunk_len, effective_end - 0.001)
-                             idx_int = valid_indices.astype(int)
-                             alpha = valid_indices - idx_int
-                             # Skip interpolation calc
-                             s0 = sample_data[idx_int]
-                             chunk_out = s0 # Hold value
-                             # ... buffer copy ...
-                             # We need to restructure render block to handle this "hold" case cleanly
-                             # Or just clamp valid_indices?
-                             valid_indices = np.minimum(valid_indices, effective_end - 1.0)
+                             # Adjust p_slice to be consistent? Not strictly needed for render
+                             p_slice = np.zeros(chunk_len)
                         else:
                              chunk_len = 0 # Force wrap logic next time
                              valid_indices = valid_indices[:0]
@@ -863,13 +888,15 @@ class Voice:
                         valid_indices = valid_indices[:cut]
                         p_slice = p_slice[:cut]
 
-            else: # p <= 0
+            elif not forced_indices and p <= 0:
                 overshoot = valid_indices < effective_start
                 if np.any(overshoot):
                     cut = np.argmax(overshoot)
                     if cut == 0:
                         if self.scratch_mode:
-                             valid_indices = np.maximum(valid_indices, effective_start)
+                             chunk_len = frames - processed
+                             valid_indices = np.full(chunk_len, effective_start)
+                             p_slice = np.zeros(chunk_len)
                         else:
                              chunk_len = 0
                              valid_indices = valid_indices[:0]
@@ -1031,6 +1058,10 @@ class SamplerEngine:
     def set_voice_scratch_params(self, voice_index, max_vel, accel):
         if 0 <= voice_index < 128:
             self.voices[voice_index].set_scratch_params(max_vel, accel)
+            
+    def set_voice_scratch_tuning(self, voice_index, threshold, exponent):
+        if 0 <= voice_index < 128:
+            self.voices[voice_index].set_scratch_tuning(threshold, exponent)
 
     def set_voice_mode(self, voice_index, mode):
         if 0 <= voice_index < 128:

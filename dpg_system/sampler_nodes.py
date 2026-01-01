@@ -1006,6 +1006,10 @@ class PolyphonicSamplerNode(Node):
         
         self.add_additional_parameters()
         
+        # MIDI Support
+        self.midi_input = self.add_input('midi', callback=self.on_midi)
+        self.base_note_input = self.add_input('base_note', widget_type='drag_int', default_value=60, min=0, max=127)
+
         # Output
         self.active_out = self.add_output('active_voices')
 
@@ -1323,19 +1327,99 @@ class PolyphonicSamplerNode(Node):
                  e.set_voice_envelope(idx, voice_params["attack"], voice_params["decay"], voice_params["decay_curve"])
                  e.play_voice(idx, snd.sample, eff_vol, eff_pitch)
                  
-                 # Record allocation (for note off)
-                 # We track by (sid, pitch_mult) to allow releasing specific note?
-                 # Or just generic handle?
+                 # Record allocation
                  self.active_allocations.append({
                      "idx": idx,
                      "sid": sid,
                      "pitch": pitch_mult,
+                     "midi_note": None,
                      "time": time.time()
                  })
 
-                 
                  # Add frame task for cleanup
                  self.add_frame_task()
+
+    def on_midi(self):
+        data = self.midi_input()
+        if not isinstance(data, list) or len(data) < 2:
+            return
+            
+        sid = None
+        note = 0
+        vel = 0
+        
+        try:
+            if len(data) == 3:
+                sid = int(data[0])
+                note = int(data[1])
+                vel = int(data[2])
+            else:
+                note = int(data[0])
+                vel = int(data[1])
+        except:
+            return
+            
+        base_note = self.base_note_input()
+        
+        if vel > 0:
+            # Note On
+            if sid is None:
+                # determine from inspect
+                sid = self.current_inspect_id
+                if sid is None:
+                    if len(self.sounds) > 0:
+                        sid = next(iter(self.sounds))
+                    else:
+                        return
+                        
+            if sid not in self.sounds:
+                return
+                
+            snd = self.sounds[sid]
+            
+            # Calculate pitch
+            # 1.0 at base_note
+            # pitch = 2 ** ((note - base) / 12)
+            pitch_ratio = 2 ** ((note - base_note) / 12.0)
+            
+            voice_params = snd.params
+            eff_pitch = voice_params["pitch"] * pitch_ratio
+            eff_vol = voice_params["volume"] * (vel / 127.0)
+            
+            idx = self.find_free_voice()
+            if idx is not None:
+                e = SamplerEngineNode.engine
+                if e:
+                    e.set_voice_envelope(idx, voice_params["attack"], voice_params["decay"], voice_params["decay_curve"])
+                    e.play_voice(idx, snd.sample, eff_vol, eff_pitch)
+                    
+                    self.active_allocations.append({
+                        "idx": idx,
+                        "sid": sid,
+                        "pitch": pitch_ratio,
+                        "midi_note": note,
+                        "time": time.time()
+                    })
+                    self.add_frame_task()
+        else:
+            # Note Off (vel == 0)
+            # Find voices with this midi note
+            to_release = []
+            for alloc in self.active_allocations:
+                if alloc.get("midi_note") == note:
+                    if sid is not None:
+                        # If a specific SID was targeted, only release that sound
+                        # Note: if data was 2-element, sid is None here, so we release all matching note
+                        if alloc["sid"] == sid:
+                            to_release.append(alloc)
+                    else:
+                        # Legacy behavior: release any voice playing this note
+                        to_release.append(alloc)
+            
+            for alloc in to_release:
+                if SamplerEngineNode.engine:
+                    SamplerEngineNode.engine.stop_voice(alloc["idx"])
+                    # We rely on frame task to remove from active_allocations when it actually finishes
 
     def handle_fader_list(self, data):
         # Data: [[sid, fade], [sid, fade], ...]
@@ -1397,16 +1481,14 @@ class PolyphonicSamplerNode(Node):
                         SamplerEngineNode.engine.set_voice_envelope(idx, 0.0, voice_params["decay"], voice_params["decay_curve"])
                         SamplerEngineNode.engine.play_voice(idx, snd.sample, eff_vol, eff_pitch)
                         
-                        SamplerEngineNode.engine.set_voice_envelope(idx, 0.0, voice_params["decay"], voice_params["decay_curve"])
-                        SamplerEngineNode.engine.play_voice(idx, snd.sample, eff_vol, eff_pitch)
-                        
                         alloc_record = {
                             "idx": idx,
                             "sid": sid,
                             "pitch": 1.0, 
                             "time": time.time(),
                             "fade": fade,
-                            "fade_zero_since": None
+                            "fade_zero_since": None,
+                            "midi_note": None
                         }
                         self.active_allocations.append(alloc_record)
                         self.add_frame_task()
@@ -1432,6 +1514,10 @@ class PolyphonicSamplerNode(Node):
         # We will iterate and release those not in desired_state.
         
         for alloc in self.active_allocations:
+            # Only stop voices that were involved in fader logic (have 'fade' key?)
+            # Or just blindly stop? User said "currently playing sounds whose id is not in the list".
+            # Safest is to only stop those that match our active sounds logic.
+            # But let's assume this node is exclusive for these sounds if using fader mode.
             if alloc["sid"] not in desired_state:
                 # Stop it
                 if SamplerEngineNode.engine:
@@ -1622,7 +1708,7 @@ class GranularSamplerNode(PolyphonicSamplerNode):
         self.g_dur = self.add_input('grain_size (s)', widget_type='drag_float', default_value=0.1, min=0.001, max=1.0, callback=self.on_granular_edit)
         
         # New: Grain Position Slider (Mod Input)
-        self.pos_mod_input = self.add_input('grain position', widget_type='slider_float', default_value=0.0, min=0.0, max=1.0, callback=self.on_pos_change)
+        self.pos_mod_input = self.add_input('grain position', widget_type='slider_float', default_value=0.0, min=0.0, max=1.0, callback=self.on_pos_change, widget_width=240)
 
         self.g_jit_pos = self.add_input('jitter pos', widget_type='drag_float', default_value=0.05, min=0.0, max=1.0, callback=self.on_granular_edit)
         self.g_jit_pitch = self.add_input('jitter pitch', widget_type='drag_float', default_value=0.0, min=0.0, max=1.0, callback=self.on_granular_edit)
@@ -2059,9 +2145,11 @@ class ScratchSamplerNode(PolyphonicSamplerNode):
         
     def add_additional_parameters(self):
         self.add_label("Scratch Params")
-        self.pos_input = self.add_input('position', widget_type='slider_float', default_value=0.0, min=0.0, max=1.0, callback=self.on_pos_change)
-        self.max_vel_input = self.add_input('max velocity', widget_type='drag_float', default_value=2.0, min=0.1, max=10.0, callback=self.on_param_change)
+        self.pos_input = self.add_input('position', widget_type='slider_float', default_value=0.0, min=0.0, max=1.0, callback=self.on_pos_change, widget_width=240)
+        self.max_vel_input = self.add_input('max velocity', widget_type='drag_float', default_value=2.0, min=0.1, max=32.0, callback=self.on_param_change)
         self.accel_input = self.add_input('acceleration', widget_type='drag_float', default_value=1.0, min=0.1, max=50.0, callback=self.on_param_change)
+        self.thresh_input = self.add_input('damp zone', widget_type='drag_float', default_value=0.15, min=0.001, max=1.0, callback=self.on_param_change)
+        self.curve_input = self.add_input('response curve', widget_type='drag_float', default_value=2.0, min=1.0, max=5.0, callback=self.on_param_change)
         
     def create_loop_widgets(self):
         # Disable loop widgets
@@ -2087,11 +2175,14 @@ class ScratchSamplerNode(PolyphonicSamplerNode):
     def on_param_change(self):
         mv = float(self.max_vel_input())
         acc = float(self.accel_input())
+        th = float(self.thresh_input())
+        ex = float(self.curve_input())
         
         # Update active voices
         if SamplerEngineNode.engine:
             for alloc in self.active_allocations:
                  SamplerEngineNode.engine.set_voice_scratch_params(alloc["idx"], mv, acc)
+                 SamplerEngineNode.engine.set_voice_scratch_tuning(alloc["idx"], th, ex)
                  
         # Update current sound params (if inspecting)
         sid = self.current_inspect_id
@@ -2099,6 +2190,8 @@ class ScratchSamplerNode(PolyphonicSamplerNode):
             snd = self.sounds[sid]
             snd.params["scratch_max_vel"] = mv
             snd.params["scratch_accel"] = acc
+            snd.params["scratch_thresh"] = th
+            snd.params["scratch_curve"] = ex
 
     def sync_ui_to_sound(self, sid):
         super().sync_ui_to_sound(sid)
@@ -2107,6 +2200,8 @@ class ScratchSamplerNode(PolyphonicSamplerNode):
             vp = snd.params
             self.max_vel_input.set(vp.get("scratch_max_vel", 2.0))
             self.accel_input.set(vp.get("scratch_accel", 1.0))
+            self.thresh_input.set(vp.get("scratch_thresh", 0.15))
+            self.curve_input.set(vp.get("scratch_curve", 2.0))
             
     def on_trigger(self):
         data = self.trigger_input()
@@ -2136,8 +2231,13 @@ class ScratchSamplerNode(PolyphonicSamplerNode):
              # Capture current UI params to sound
              mv = float(self.max_vel_input())
              acc = float(self.accel_input())
+             th = float(self.thresh_input())
+             ex = float(self.curve_input())
+             
              vp["scratch_max_vel"] = mv
              vp["scratch_accel"] = acc
+             vp["scratch_thresh"] = th
+             vp["scratch_curve"] = ex
              
              eff_vol = vp["volume"] * vol_mult
              
@@ -2146,6 +2246,7 @@ class ScratchSamplerNode(PolyphonicSamplerNode):
                  e.set_voice_envelope(idx, vp["attack"], vp["decay"], vp["decay_curve"])
                  e.set_voice_mode(idx, 'scratch')
                  e.set_voice_scratch_params(idx, mv, acc)
+                 e.set_voice_scratch_tuning(idx, th, ex)
                  
                  # Set Initial Target from Slider
                  pos_val = float(self.pos_input())
@@ -2223,8 +2324,11 @@ class ScratchSamplerNode(PolyphonicSamplerNode):
                             # Params
                             mv = float(self.max_vel_input())
                             acc = float(self.accel_input())
+                            th = float(self.thresh_input())
+                            ex = float(self.curve_input())
                             
                             SamplerEngineNode.engine.set_voice_scratch_params(idx, mv, acc)
+                            SamplerEngineNode.engine.set_voice_scratch_tuning(idx, th, ex)
                             SamplerEngineNode.engine.set_voice_scratch_target(idx, target_samples)
                             
                             SamplerEngineNode.engine.set_voice_envelope(idx, 0.0, vp["decay"], vp["decay_curve"])
