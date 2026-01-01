@@ -2047,6 +2047,77 @@ class GranularSamplerNode(PolyphonicSamplerNode):
                 if SamplerEngineNode.engine:
                     SamplerEngineNode.engine.stop_voice(alloc["idx"])
 
+    def on_midi(self):
+        data = self.midi_input()
+        if not isinstance(data, list) or len(data) < 2:
+            return
+            
+        sid = None
+        note = 0
+        vel = 0
+        
+        try:
+            if len(data) == 3:
+                sid = int(data[0])
+                note = int(data[1])
+                vel = int(data[2])
+            else:
+                note = int(data[0])
+                vel = int(data[1])
+        except:
+            return
+            
+        if vel > 0:
+            # Note On
+            if sid is None:
+                sid = self.current_inspect_id
+                if sid is None:
+                    if len(self.sounds) > 0:
+                        sid = next(iter(self.sounds))
+                    else:
+                        return
+            
+            if sid not in self.sounds:
+                return
+                
+            snd = self.sounds[sid]
+            vol_mult = vel / 127.0
+            
+            idx = self.find_free_voice()
+            if idx is not None:
+                vp = snd.params
+                
+                eff_vol = vp["volume"] * vol_mult
+                eff_pitch = vp["pitch"] # Use sound pitch, ignore MIDI note pitch
+                
+                # Granular Params
+                d = vp.get("density", 20.0)
+                dur_s = vp.get("grain_dur", 0.1)
+                jp = vp.get("jitter_pos", 0.05)
+                jpi = vp.get("jitter_pitch", 0.0)
+                jd = vp.get("jitter_dur", 0.0)
+                
+                if SamplerEngineNode.engine:
+                    SamplerEngineNode.engine.set_voice_granular_params(idx, d, dur_s, jp, jpi, jd)
+                    
+                    # Ensure position is set
+                    pos_val = any_to_float(self.pos_mod_input())
+                    SamplerEngineNode.engine.set_voice_grain_position(idx, pos_val)
+
+                    SamplerEngineNode.engine.set_voice_envelope(idx, vp["attack"], vp["decay"], vp["decay_curve"])
+                    SamplerEngineNode.engine.play_voice(idx, snd.sample, eff_vol, eff_pitch, mode='granular')
+                    
+                    self.active_allocations.append({
+                        "idx": idx,
+                        "sid": sid,
+                        "pitch": 1.0,
+                        "midi_note": note,
+                        "time": time.time()
+                    })
+                    self.add_frame_task()
+        else:
+             super().on_midi()
+
     def on_trigger(self):
         data = self.trigger_input()
         
@@ -2202,6 +2273,91 @@ class ScratchSamplerNode(PolyphonicSamplerNode):
             self.accel_input.set(vp.get("scratch_accel", 1.0))
             self.thresh_input.set(vp.get("scratch_thresh", 0.15))
             self.curve_input.set(vp.get("scratch_curve", 2.0))
+
+    def on_midi(self):
+        data = self.midi_input()
+        if not isinstance(data, list) or len(data) < 2:
+            return
+            
+        sid = None
+        note = 0
+        vel = 0
+        
+        try:
+            if len(data) == 3:
+                sid = int(data[0])
+                note = int(data[1])
+                vel = int(data[2])
+            else:
+                note = int(data[0])
+                vel = int(data[1])
+        except:
+            return
+            
+        if vel > 0:
+            # Note On
+            if sid is None:
+                sid = self.current_inspect_id
+                if sid is None:
+                    if len(self.sounds) > 0:
+                        sid = next(iter(self.sounds))
+                    else:
+                        return
+            
+            if sid not in self.sounds:
+                return
+                
+            snd = self.sounds[sid]
+            
+            # Use velocity for volume, ignore pitch (Scratch uses position)
+            # Or should we allow pitch? User said "behave the same as [id, volume]".
+            # Trigger input ignores pitch arg in ScratchSampler (it parses checks > 2, but scratch mode usually 
+            # ignores it? Wait, scratch mode uses `play_voice` with 0.0 velocity/pitch?
+            # on_trigger: `e.play_voice(..., mode='scratch')`. Pitch is 0.0 passed to play_voice.
+            # So scratch ignores pitch.
+            
+            vol_mult = vel / 127.0
+            
+            idx = self.find_free_voice()
+            if idx is not None:
+                vp = snd.params
+                # Capture current UI params (or from sound if stored?)
+                # trigger logic uses current UI input if sound is inspected? or always?
+                # on_trigger uses input widgets: `mv = float(self.max_vel_input())`
+                # We should do the same to match "trigger input" behavior
+                
+                mv = float(self.max_vel_input())
+                acc = float(self.accel_input())
+                th = float(self.thresh_input())
+                ex = float(self.curve_input())
+                
+                eff_vol = vp["volume"] * vol_mult
+                
+                e = SamplerEngineNode.engine
+                if e:
+                    e.set_voice_envelope(idx, vp["attack"], vp["decay"], vp["decay_curve"])
+                    e.set_voice_mode(idx, 'scratch')
+                    e.set_voice_scratch_params(idx, mv, acc)
+                    e.set_voice_scratch_tuning(idx, th, ex)
+                    
+                    pos_val = float(self.pos_input())
+                    target = pos_val * len(snd.sample.data)
+                    e.set_voice_scratch_target(idx, target)
+                    
+                    # Play
+                    e.play_voice(idx, snd.sample, eff_vol, 0.0, mode='scratch')
+                    
+                    self.active_allocations.append({
+                        "idx": idx,
+                        "sid": sid,
+                        "pitch": 1.0,
+                        "midi_note": note,
+                        "time": time.time()
+                    })
+                    self.add_frame_task()
+        else:
+             # Note Off (release)
+             super().on_midi() # Use base implementation for Note Off logic
             
     def on_trigger(self):
         data = self.trigger_input()
