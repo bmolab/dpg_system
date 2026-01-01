@@ -112,6 +112,12 @@ class Voice:
         self.grain_jitter_pitch = 0.0
         self.grain_jitter_dur = 0.0
         self.grain_env_shape = "hann"
+        
+        # Scratch Params
+        self.scratch_target = 0.0
+        self.scratch_max_vel = 1.0
+        self.scratch_accel = 1.0
+        self.scratch_mode = False
     
     # --- Public API (Main Thread) ---
     
@@ -171,6 +177,12 @@ class Voice:
 
     def set_grain_position(self, pos):
         self._command_queue.put({"type": "set_grain_pos", "pos": pos})
+
+    def set_scratch_target(self, pos):
+        self._command_queue.put({"type": "set_scratch_target", "pos": pos})
+
+    def set_scratch_params(self, max_vel, accel):
+        self._command_queue.put({"type": "set_scratch_params", "max_vel": max_vel, "accel": accel})
         
     def set_mode(self, mode):
         # mode: 'normal' or 'granular'
@@ -192,6 +204,7 @@ class Voice:
             if t == "trigger":
                 if "mode" in cmd and cmd["mode"] is not None:
                      self.granular_mode = (cmd["mode"] == "granular")
+                     self.scratch_mode = (cmd["mode"] == "scratch")
 
                 sample = cmd["sample"]
                 self.sample = sample
@@ -212,6 +225,7 @@ class Voice:
                 self.target_pitch = p
                 # Snap pitch on trigger? Or glide? usually snap
                 self.current_pitch = p 
+                self.prev_pitch = p 
                 
                 self.loop_start = sample.loop_start
                 self.loop_end = sample.loop_end
@@ -300,9 +314,17 @@ class Voice:
                 
             elif t == "set_grain_pos":
                 self.grain_pos = cmd["pos"]
+
+            elif t == "set_scratch_target":
+                self.scratch_target = cmd["pos"]
+
+            elif t == "set_scratch_params":
+                self.scratch_max_vel = cmd["max_vel"]
+                self.scratch_accel = cmd["accel"]
                 
             elif t == "set_mode":
                 self.granular_mode = (cmd["mode"] == "granular")
+                self.scratch_mode = (cmd["mode"] == "scratch")
     
     def _process_granular(self, frames, channels):
         if self.sample is None: 
@@ -561,6 +583,28 @@ class Voice:
         
         if self.granular_mode:
             return self._process_granular(frames, channels)
+
+        if self.scratch_mode and self.active:
+            # Scratch Physics
+            dist_s = (self.scratch_target - self.position) / self.sample_rate
+            sign = 1.0 if dist_s >= 0 else -1.0
+            abs_dist = abs(dist_s)
+            
+            v_allow = np.sqrt(2 * self.scratch_accel * abs_dist)
+            target_v = min(v_allow, self.scratch_max_vel) * sign
+            
+            # Use current_pitch as start velocity (state from end of last block)
+            current_v = self.current_pitch
+            
+            dt = frames / self.sample_rate
+            max_change = self.scratch_accel * dt
+            
+            if current_v < target_v:
+                new_v = min(current_v + max_change, target_v)
+            else:
+                new_v = max(current_v - max_change, target_v)
+                
+            self.target_pitch = new_v
         
         # ... existing code ...
         
@@ -710,156 +754,207 @@ class Voice:
             # Determine pitch for this segment (use average or start?)
 
 
-            # Determine pitch for this segment (use average or start?)
+            # Determines pitch for this segment
             # If we are ramping, pitch is `pitch_curve[processed]`.
-            # To avoid complexity, let's assume valid pitch is > 0
             
-            p = max(0.001, pitch_curve[processed]) # Use start of chunk pitch
+            p = pitch_curve[processed]
+            # Avoid division by zero
+            if abs(p) < 0.0001: p = 0.0001 # Or handle 0 explicitly?
             
             # Determine effective end for this segment
-            # If looping, we loop at loop_end.
-            # If not looping, we stop at play_end.
-            # AND: If looping, we must also respect play_end if it is "inside" the loop? 
-            # Usually play_end overrides everything if it's absolute limit.
-            # Standard interaction: Loop is usually WITHIN play range.
-            # If loop extends beyond play range, that's a user setting conflict.
-            # We will assume play_end is the HARD limit for non-looping.
-            # For looping, loop_end is the wrap point.
-            
             limit = self.play_end
+            start_limit = self.play_start
+            
             if self.looping:
-                 # If looping, we wrap at loop_end. 
-                 # But we also shouldn't read past sample limit.
-                 limit = len(sample_data) # Absolute limit for wrapping safety
+                 # If looping, we wrap at loop_end / loop_start
+                 limit = len(sample_data) 
             
             effective_end = self.loop_end if self.looping else limit
+            effective_start = self.loop_start if self.looping else start_limit
             
-            # Dist to end
-            dist = effective_end - current_pos
+            dist = 0
             
-            if dist <= 0:
-                if self.looping:
-                    # Looping wrap
-                    current_pos = float(self.loop_start) + (current_pos - self.loop_end)
-                    # Safety clamp
-                    if current_pos >= effective_end: current_pos = float(self.loop_start)
-                    dist = effective_end - current_pos
-                else:
-                    self.active = False
-                    break # Finish
+            if p > 0:
+                dist = effective_end - current_pos
+                if dist <= 0:
+                     if self.looping:
+                         # Wrap
+                         current_pos = float(self.loop_start) + (current_pos - self.loop_end)
+                         current_pos = max(float(self.loop_start), min(current_pos, float(self.loop_end)-0.001))
+                         dist = effective_end - current_pos
+                     elif self.scratch_mode:
+                         # Park at end
+                         current_pos = float(effective_end - 0.001)
+                         dist = 0.0 # Force re-eval or wait?
+                         # If p > 0 and we are at end, we can't move.
+                         # We must render constant?
+                         # Just set chunk len?
+                         # If dist <= 0, we can't play forward.
+                         # We just fill output with last sample?
+                         # Or just break loop if not changing?
+                         pass
+                     else:
+                         self.active = False
+                         break
+            else:
+                # Playing backwards
+                dist = current_pos - effective_start
+                if dist <= 0:
+                     if self.looping:
+                         # Wrap (backwards passes start -> goes to end)
+                         current_pos = float(self.loop_end) - (self.loop_start - current_pos)
+                         current_pos = max(float(self.loop_start), min(current_pos, float(self.loop_end)-0.001))
+                         dist = current_pos - effective_start
+                     elif self.scratch_mode:
+                         # Park at start
+                         current_pos = float(effective_start)
+                     else:
+                         self.active = False
+                         break
             
             # How many frames fit in this dist?
-            # frames * p = samples
-            # frames = samples / p
+            # frames * |p| = samples
             
-            chunk_len = int(dist / p)
+            if abs(p) < 0.0001:
+                # p is nearly 0. We hold position.
+                chunk_len = frames - processed
+            else:
+                # If scratch parked at bound, dist might be <= 0 still.
+                if self.scratch_mode and dist <= 0.001:
+                     chunk_len = frames - processed
+                     # We force indices to current_pos
+                else:
+                    chunk_len = int(abs(dist) / abs(p))
+            
             chunk_len = max(1, chunk_len)
             chunk_len = min(frames - processed, chunk_len)
             
-            # Now render this chunk
-            idx_range = np.arange(chunk_len)
-            # if pitch is varying significantly, this linear approx `current_pos + idx * p` might slightly drift from `cumsum`
-            # but it is usually acceptable for standard pitch bends.
-            # ideally we use the slice of `pitch_curve`
-            
+            # Normalize p_slice logic for bidirectional
+            # p_slice is signed.
             p_slice = pitch_curve[processed : processed + chunk_len]
-            p_cumsum = np.cumsum(p_slice)
-            # Adjust so first sample is `current_pos + p[0]`? No, `current_pos` is state before first sample.
-            # Sample 0 is at `current_pos + p[0]`? Or `current_pos` is Sample 0?
-            # Usually: Sample[t] = Sample[t-1] + pitch.
-            # So Sample[0] = current_pos (if we assume current_pos is the sampling point)
-            # But usually we advance then sample? or sample then advance?
-            # Let's say: current_pos is the float index we want to sample NOW.
-            # Then next is current_pos + p.
             
-            # If so:
-            indices = current_pos + (p_cumsum - p_slice[0]) # This starts at current_pos? 
-            # No. cumsum starts at p_slice[0].
-            # We want [0, p0, p0+p1, ...] or [0, 1, 2] * p?
-            # Let's use simple linear interpolation if random access.
-            
-            # Accurate:
-            # indices[0] = current_pos
-            # indices[1] = current_pos + p_slice[0]
-            # ...
-            # This means we sample at current_pos, then advance.
-            
+            # valid_indices calculation
+            # cumsum works for negative p too.
             valid_indices = np.concatenate(([0.0], np.cumsum(p_slice)[:-1])) + current_pos
             
-            # Robustness: Check if varying pitch caused overshoot of effective_end
-            if np.any(valid_indices >= effective_end):
-                 # Find first overshoot index
-                 cut = np.argmax(valid_indices >= effective_end)
-                 if cut == 0:
-                     # Should not happen given dist check, but if it does:
-                     # Force trigger wrap in next iteration
-                     chunk_len = 0
-                     p_slice = p_slice[:0] # Empty
-                     valid_indices = valid_indices[:0]
-                 else:
-                     chunk_len = cut
-                     valid_indices = valid_indices[:cut]
-                     p_slice = p_slice[:cut]
-            
-            # Interpolation
+            # Check bounds for safety (overshoot prevention)
+            if p > 0:
+                overshoot = valid_indices >= effective_end
+                if np.any(overshoot):
+                    cut = np.argmax(overshoot)
+                    if cut == 0:
+                        if self.scratch_mode:
+                             chunk_len = frames - processed
+                             valid_indices = np.full(chunk_len, effective_end - 0.001)
+                             idx_int = valid_indices.astype(int)
+                             alpha = valid_indices - idx_int
+                             # Skip interpolation calc
+                             s0 = sample_data[idx_int]
+                             chunk_out = s0 # Hold value
+                             # ... buffer copy ...
+                             # We need to restructure render block to handle this "hold" case cleanly
+                             # Or just clamp valid_indices?
+                             valid_indices = np.minimum(valid_indices, effective_end - 1.0)
+                        else:
+                             chunk_len = 0 # Force wrap logic next time
+                             valid_indices = valid_indices[:0]
+                    else:
+                        chunk_len = cut
+                        valid_indices = valid_indices[:cut]
+                        p_slice = p_slice[:cut]
+
+            else: # p <= 0
+                overshoot = valid_indices < effective_start
+                if np.any(overshoot):
+                    cut = np.argmax(overshoot)
+                    if cut == 0:
+                        if self.scratch_mode:
+                             valid_indices = np.maximum(valid_indices, effective_start)
+                        else:
+                             chunk_len = 0
+                             valid_indices = valid_indices[:0]
+                    else:
+                        chunk_len = cut
+                        valid_indices = valid_indices[:cut]
+                        p_slice = p_slice[:cut]
+
             idx_int = valid_indices.astype(int)
+             
+            # ... interpolation logic needs to handle idx+1 for bounds
+            # If p<0, idx can go down. S0 is correct.
+            # Interpolation: s0*(1-alpha) + s1*alpha
+            # If p<0, we are moving from idx down.
+            # alpha is negative? No, alpha = val - int(val). Always [0, 1).
+            # e.g. val=10.5. int=10. alpha=0.5.
+            # val=10.4. int=10. alpha=0.4.
+            # val=9.9. int=9. alpha=0.9.
+            # Interpolation uses S0 and S1 (idx+1).
+            # If val=9.9, we want between S9 and S10. Correct.
+            
+            # Boundary handling for S1 (idx+1)
+            # If idx=len-1, idx+1 is out.
+            
+            # Bounds check clamp
+            # If scratch mode, we clamped to limits.
+            
+            idx_int = np.clip(idx_int, 0, len(sample_data)-1)
+            
             alpha = valid_indices - idx_int
             if sample_data.ndim > 1: alpha = alpha[:, np.newaxis]
+
+            s0 = sample_data[idx_int]
             
-            # Bounds check (safe due to chunk calc, but careful with +1)
-            # We know valid_indices are < effective_end (mostly).
-            # But s1 might be at effective_end.
-            
-            s0 = sample_data[idx_int] # Should be safe
-            
-            # Wrapper for s1
             idx_next = idx_int + 1
-            
-            # Handle wrapping for S1
-            # If we are at the very end of loop, S1 should be loop_start
-            mask_over = idx_next >= len(sample_data) # Global end
             if self.looping:
-                 # If idx_next hits loop_end, it should wrap to loop_start
                  mask_loop = idx_next >= self.loop_end
                  idx_next[mask_loop] = self.loop_start
             else:
-                 idx_next[mask_over] = len(sample_data) - 1
+                 idx_next = np.minimum(idx_next, len(sample_data)-1)
             
             s1 = sample_data[idx_next]
             
             chunk_out = s0 * (1.0 - alpha) + s1 * alpha
             
-            # Crossfade Logic (Keeping it conditional for perf)
-            # ... (Simplified for brevity, but should copy original logic if needed)
+            # Crossfade Logic
             if self.looping and self.crossfade_frames > 0:
                  cf_start = self.loop_end - self.crossfade_frames
                  in_fade_mask = valid_indices >= cf_start
                  if np.any(in_fade_mask):
-                     # Calculate fade pos
-                     fade_pos = valid_indices[in_fade_mask] - cf_start
-                     cf_alpha = fade_pos / float(self.crossfade_frames)
-                     if sample_data.ndim > 1: cf_alpha = cf_alpha[:, np.newaxis]
+                     loop_len = self.loop_end - self.loop_start
+                     fade_indices = valid_indices[in_fade_mask]
                      
-                     # Sample B (Wrap)
-                     pos_b = self.loop_start + fade_pos
-                     idx_b = pos_b.astype(int)
-                     alph_b = pos_b - idx_b
-                     if sample_data.ndim > 1: alph_b = alph_b[:, np.newaxis]
+                     fade_alpha = (fade_indices - cf_start) / self.crossfade_frames
+                     fade_alpha = np.clip(fade_alpha, 0.0, 1.0)
+                     if sample_data.ndim > 1: fade_alpha = fade_alpha[:, np.newaxis]
                      
-                     sb0 = sample_data[idx_b]
-                     sb1 = sample_data[np.minimum(idx_b + 1, len(sample_data)-1)]
-                     src_b = sb0 * (1.0 - alph_b) + sb1 * alph_b
+                     wrap_indices = fade_indices - loop_len
+                     w_idx_int = wrap_indices.astype(int)
+                     w_alpha = wrap_indices - w_idx_int
+                     if sample_data.ndim > 1: w_alpha = w_alpha[:, np.newaxis]
                      
-                     src_a = chunk_out[in_fade_mask]
-                     chunk_out[in_fade_mask] = src_a * (1.0 - cf_alpha) + src_b * cf_alpha
+                     ws0 = sample_data[np.clip(w_idx_int, 0, len(sample_data)-1)]
+                     ws1 = sample_data[np.clip(w_idx_int+1, 0, len(sample_data)-1)]
+                     w_sample = ws0 * (1.0 - w_alpha) + ws1 * w_alpha
+                     
+                     c_out = chunk_out[in_fade_mask]
+                     mixed = c_out * (1.0 - fade_alpha) + w_sample * fade_alpha
+                     chunk_out[in_fade_mask] = mixed
 
-            out_buf[processed : processed + chunk_len] = chunk_out
+            # Mix accumulation
+            if channels == 1 and out_buf.shape[1] > 1:
+                out_buf[processed:processed+chunk_len] += chunk_out[:, np.newaxis]
+            else:
+                out_buf[processed:processed+chunk_len] += chunk_out
             
-            # Update loop state
+            # Update state
             processed += chunk_len
-            # Update current_pos to be where the NEXT chunk would start
-            # i.e. last sample pos + last pitch
-            current_pos = valid_indices[-1] + p_slice[-1]
+            if chunk_len > 0:
+                 current_pos = valid_indices[-1] + p_slice[-1]
+            else:
+                 # Force wrap trigger if Stuck
+                 # If scratch mode, we stay stuck (parked)
+                 pass
+
             
         self.position = current_pos
         
@@ -928,6 +1023,14 @@ class SamplerEngine:
     def set_voice_envelope(self, voice_index, attack, decay, curve=1.0):
         if 0 <= voice_index < 128:
             self.voices[voice_index].set_envelope(attack, decay, curve)
+
+    def set_voice_scratch_target(self, voice_index, pos):
+        if 0 <= voice_index < 128:
+            self.voices[voice_index].set_scratch_target(pos)
+
+    def set_voice_scratch_params(self, voice_index, max_vel, accel):
+        if 0 <= voice_index < 128:
+            self.voices[voice_index].set_scratch_params(max_vel, accel)
 
     def set_voice_mode(self, voice_index, mode):
         if 0 <= voice_index < 128:

@@ -24,6 +24,7 @@ def register_sampler_nodes():
     Node.app.register_node('multi_voice_sampler', SamplerMultiVoiceNode.factory)
     Node.app.register_node('polyphonic_sampler', PolyphonicSamplerNode.factory)
     Node.app.register_node('granular_sampler', GranularSamplerNode.factory)
+    Node.app.register_node('scratch_sampler', ScratchSamplerNode.factory)
 
 
 class SamplerEngineNode(Node):
@@ -1381,7 +1382,7 @@ class PolyphonicSamplerNode(Node):
             else:
                 # Start new voice (if fade > 0)
                 if fade > 0.0:
-                    print('trigger', sid, fade)
+
                     idx = self.find_free_voice()
                     if idx is not None and SamplerEngineNode.engine:
                         snd = self.sounds[sid]
@@ -2045,4 +2046,198 @@ class GranularSamplerNode(PolyphonicSamplerNode):
                      "fade_zero_since": None
                  })
                  self.add_frame_task()
+
+
+class ScratchSamplerNode(PolyphonicSamplerNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ScratchSamplerNode(name, data, args)
+        return node
+        
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        
+    def add_additional_parameters(self):
+        self.add_label("Scratch Params")
+        self.pos_input = self.add_input('position', widget_type='slider_float', default_value=0.0, min=0.0, max=1.0, callback=self.on_pos_change)
+        self.max_vel_input = self.add_input('max velocity', widget_type='drag_float', default_value=2.0, min=0.1, max=10.0, callback=self.on_param_change)
+        self.accel_input = self.add_input('acceleration', widget_type='drag_float', default_value=1.0, min=0.1, max=50.0, callback=self.on_param_change)
+        
+    def create_loop_widgets(self):
+        # Disable loop widgets
+        class DummyWidget:
+            def __call__(self): return 0
+            def set(self, val): pass
+        self.edit_loop = DummyWidget()
+        self.edit_loop_start = DummyWidget()
+        self.edit_loop_end = DummyWidget()
+        self.edit_cross = DummyWidget()
+
+    def on_pos_change(self):
+        val = float(self.pos_input())
+        # Update active voices
+        if SamplerEngineNode.engine:
+            for alloc in self.active_allocations:
+                sid = alloc["sid"]
+                if sid in self.sounds:
+                    snd = self.sounds[sid]
+                    target = val * len(snd.sample.data)
+                    SamplerEngineNode.engine.set_voice_scratch_target(alloc["idx"], target)
+                    
+    def on_param_change(self):
+        mv = float(self.max_vel_input())
+        acc = float(self.accel_input())
+        
+        # Update active voices
+        if SamplerEngineNode.engine:
+            for alloc in self.active_allocations:
+                 SamplerEngineNode.engine.set_voice_scratch_params(alloc["idx"], mv, acc)
+                 
+        # Update current sound params (if inspecting)
+        sid = self.current_inspect_id
+        if sid is not None and sid in self.sounds:
+            snd = self.sounds[sid]
+            snd.params["scratch_max_vel"] = mv
+            snd.params["scratch_accel"] = acc
+
+    def sync_ui_to_sound(self, sid):
+        super().sync_ui_to_sound(sid)
+        if sid in self.sounds:
+            snd = self.sounds[sid]
+            vp = snd.params
+            self.max_vel_input.set(vp.get("scratch_max_vel", 2.0))
+            self.accel_input.set(vp.get("scratch_accel", 1.0))
+            
+    def on_trigger(self):
+        data = self.trigger_input()
+        
+        if isinstance(data, list) and len(data) > 0 and isinstance(data[0], list):
+             self.handle_fader_list(data)
+             return
+             
+        if isinstance(data, (int, float, str)): data = [data]
+        if not data: return
+        
+        try:
+            sid = int(data[0])
+        except:
+            return
+            
+        if sid not in self.sounds: return
+        snd = self.sounds[sid]
+        
+        # Parse multipliers
+        vol_mult = 1.0
+        if len(data) > 2: vol_mult = float(data[2])
+        
+        idx = self.find_free_voice()
+        if idx is not None:
+             vp = snd.params
+             # Capture current UI params to sound
+             mv = float(self.max_vel_input())
+             acc = float(self.accel_input())
+             vp["scratch_max_vel"] = mv
+             vp["scratch_accel"] = acc
+             
+             eff_vol = vp["volume"] * vol_mult
+             
+             e = SamplerEngineNode.engine
+             if e:
+                 e.set_voice_envelope(idx, vp["attack"], vp["decay"], vp["decay_curve"])
+                 e.set_voice_mode(idx, 'scratch')
+                 e.set_voice_scratch_params(idx, mv, acc)
+                 
+                 # Set Initial Target from Slider
+                 pos_val = float(self.pos_input())
+                 target = pos_val * len(snd.sample.data)
+                 e.set_voice_scratch_target(idx, target)
+                 
+                 # Play (Start at 0 velocity)
+                 e.play_voice(idx, snd.sample, eff_vol, 0.0, mode='scratch')
+                 
+                 alloc_record = {
+                     "idx": idx,
+                     "sid": sid,
+                     "pitch": 1.0,
+                     "time": time.time(),
+                     "fade": 1.0,
+                     "fade_zero_since": None
+                 }
+                 self.active_allocations.append(alloc_record)
+                 self.add_frame_task()
+
+    def handle_fader_list(self, data):
+        # Data: [[id, vol, pos], ...]
+        desired_state = {}
+        for item in data:
+            if len(item) >= 2:
+                try:
+                    sid = int(item[0])
+                    vol = float(item[1])
+                    pos = float(item[2]) if len(item) > 2 else 0.0
+                    desired_state[sid] = {"vol": vol, "pos": pos}
+                except:
+                    pass
+
+        active_sids = set()
+        for alloc in self.active_allocations:
+            active_sids.add(alloc["sid"])
+        
+        busy_indices = {alloc["idx"] for alloc in self.active_allocations}
+        
+        for sid, state in desired_state.items():
+            vol = state["vol"]
+            pos = state["pos"]
+            
+            if sid not in self.sounds: continue
+            snd = self.sounds[sid]
+            target_samples = pos * len(snd.sample.data)
+            
+            if sid in active_sids:
+                # Update existing
+                for alloc in self.active_allocations:
+                    if alloc["sid"] == sid:
+                        idx = alloc["idx"]
+                        alloc["fade"] = vol
+                        
+                        if vol <= 0.001:
+                            if alloc.get("fade_zero_since") is None:
+                                alloc["fade_zero_since"] = time.time()
+                        else:
+                            alloc["fade_zero_since"] = None
+                        
+                        eff_vol = snd.params["volume"] * vol
+                        
+                        if SamplerEngineNode.engine:
+                            SamplerEngineNode.engine.set_voice_volume(idx, eff_vol)
+                            SamplerEngineNode.engine.set_voice_scratch_target(idx, target_samples)
+            else:
+                # Start new
+                if vol > 0.0:
+                    idx = self.find_free_voice()
+                    if idx is not None and idx not in busy_indices:
+                        if SamplerEngineNode.engine:
+                            vp = snd.params
+                            
+                            eff_vol = vp["volume"] * vol
+                            # Params
+                            mv = float(self.max_vel_input())
+                            acc = float(self.accel_input())
+                            
+                            SamplerEngineNode.engine.set_voice_scratch_params(idx, mv, acc)
+                            SamplerEngineNode.engine.set_voice_scratch_target(idx, target_samples)
+                            
+                            SamplerEngineNode.engine.set_voice_envelope(idx, 0.0, vp["decay"], vp["decay_curve"])
+                            SamplerEngineNode.engine.play_voice(idx, snd.sample, eff_vol, 0.0, mode='scratch')
+                            
+                            alloc_record = {
+                                "idx": idx,
+                                "sid": sid,
+                                "pitch": 1.0, 
+                                "time": time.time(),
+                                "fade": vol,
+                                "fade_zero_since": None
+                            }
+                            self.active_allocations.append(alloc_record)
+                            self.add_frame_task()
 
