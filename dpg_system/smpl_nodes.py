@@ -10,6 +10,8 @@ from scipy import signal
 from dpg_system.node import Node
 import pickle
 from dpg_system.conversion_utils import *
+from dpg_system.smpl_dynamics import SMPLDynamicsModel
+from dpg_system.smpl_processor import SMPLProcessor
 import pickle
 import chumpy as ch
 from chumpy.ch import MatVecMult
@@ -42,6 +44,8 @@ def register_smpl_nodes():
     Node.app.register_node("smpl_to_quats", SMPLToQuaternionsNode.factory)
     Node.app.register_node("active_to_smpl", ActiveToSMPLPoseNode.factory)
     Node.app.register_node("quats_flip_y_z", QuatFlipYZAxesNode.factory)
+    Node.app.register_node("smpl_dynamics", SMPLDynamicsNode.factory)
+    Node.app.register_node("smpl_torque", SMPLTorqueNode.factory)
 
 
 class SMPLNode(Node):
@@ -201,6 +205,36 @@ class SMPLNode(Node):
 #     def __init__(self, label, data, args):
 #         pass
 
+def quaternion_multiply_scalar_first(q1: np.ndarray, q2: np.ndarray) -> np.ndarray:
+    """
+    Multiplies two quaternions in [w, x, y, z] format.
+    This function is vectorized and can handle arrays of quaternions.
+
+    Args:
+        q1 (np.ndarray): The first quaternion or batch of quaternions.
+                         Shape can be (4,) for a single quaternion or
+                         (N, 4) for a batch of N quaternions.
+        q2 (np.ndarray): The second quaternion or batch of quaternions.
+                         Must be compatible for broadcasting with q1.
+
+    Returns:
+        np.ndarray: The resulting quaternion product, with the same shape as the inputs.
+    """
+    # Extract components using vectorized slicing for efficiency
+    # The ellipsis (...) allows this to work for both single (4,) and batch (N, 4) arrays
+    w1, x1, y1, z1 = q1[..., 0], q1[..., 1], q1[..., 2], q1[..., 3]
+    w2, x2, y2, z2 = q2[..., 0], q2[..., 1], q2[..., 2], q2[..., 3]
+
+    # Apply the standard quaternion multiplication formula
+    w = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2
+    x = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2
+    y = w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2
+    z = w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2
+
+    # Stack the results back into a new array along the last axis
+    return np.stack((w, x, y, z), axis=-1)
+
+
 class SMPLToActivePoseNode(JointTranslator, Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -218,34 +252,34 @@ class SMPLToActivePoseNode(JointTranslator, Node):
         self.output = self.add_output('active pose')
         self.y_up = np.array([0.7071067811865475, -0.7071067811865475, 0.0, 0.0])
 
-    def quaternion_multiply_scalar_first(self, q1: np.ndarray, q2: np.ndarray) -> np.ndarray:
-        """
-        Multiplies two quaternions in [w, x, y, z] format.
-        This function is vectorized and can handle arrays of quaternions.
-
-        Args:
-            q1 (np.ndarray): The first quaternion or batch of quaternions.
-                             Shape can be (4,) for a single quaternion or
-                             (N, 4) for a batch of N quaternions.
-            q2 (np.ndarray): The second quaternion or batch of quaternions.
-                             Must be compatible for broadcasting with q1.
-
-        Returns:
-            np.ndarray: The resulting quaternion product, with the same shape as the inputs.
-        """
-        # Extract components using vectorized slicing for efficiency
-        # The ellipsis (...) allows this to work for both single (4,) and batch (N, 4) arrays
-        w1, x1, y1, z1 = q1[..., 0], q1[..., 1], q1[..., 2], q1[..., 3]
-        w2, x2, y2, z2 = q2[..., 0], q2[..., 1], q2[..., 2], q2[..., 3]
-
-        # Apply the standard quaternion multiplication formula
-        w = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2
-        x = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2
-        y = w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2
-        z = w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2
-
-        # Stack the results back into a new array along the last axis
-        return np.stack((w, x, y, z), axis=-1)
+    # def quaternion_multiply_scalar_first(self, q1: np.ndarray, q2: np.ndarray) -> np.ndarray:
+    #     """
+    #     Multiplies two quaternions in [w, x, y, z] format.
+    #     This function is vectorized and can handle arrays of quaternions.
+    #
+    #     Args:
+    #         q1 (np.ndarray): The first quaternion or batch of quaternions.
+    #                          Shape can be (4,) for a single quaternion or
+    #                          (N, 4) for a batch of N quaternions.
+    #         q2 (np.ndarray): The second quaternion or batch of quaternions.
+    #                          Must be compatible for broadcasting with q1.
+    #
+    #     Returns:
+    #         np.ndarray: The resulting quaternion product, with the same shape as the inputs.
+    #     """
+    #     # Extract components using vectorized slicing for efficiency
+    #     # The ellipsis (...) allows this to work for both single (4,) and batch (N, 4) arrays
+    #     w1, x1, y1, z1 = q1[..., 0], q1[..., 1], q1[..., 2], q1[..., 3]
+    #     w2, x2, y2, z2 = q2[..., 0], q2[..., 1], q2[..., 2], q2[..., 3]
+    #
+    #     # Apply the standard quaternion multiplication formula
+    #     w = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2
+    #     x = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2
+    #     y = w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2
+    #     z = w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2
+    #
+    #     # Stack the results back into a new array along the last axis
+    #     return np.stack((w, x, y, z), axis=-1)
 
     def swap_yz_axis_angle(self, axis_angle: np.ndarray) -> np.ndarray:
         """
@@ -273,18 +307,22 @@ class SMPLToActivePoseNode(JointTranslator, Node):
 
     def execute(self):
         smpl_pose = self.input()
-        smpl_pose = any_to_array(smpl_pose)
+        smpl_pose = any_to_array(smpl_pose).copy()
         if len(smpl_pose.shape) == 1:
-            smpl_pose = np.reshape(smpl_pose, (-1, 3))
+            if smpl_pose.shape[0] < 30:
+                smpl_pose = np.expand_dims(smpl_pose, axis=1)
+            else:
+                smpl_pose = np.reshape(smpl_pose, (-1, 3))
+        joint_count = smpl_pose.shape[0]
         if self.output_format_in() == 'quaternions':
-            active_pose = np.zeros((22, 4))
+            active_pose = np.zeros((joint_count, 4))
             active_pose[:, 0] = 1.0
         elif self.output_format_in() == 'rotation_vectors':
-            active_pose = np.zeros((22, 3))
+            active_pose = np.zeros((joint_count, 3))
         else:
             if len(smpl_pose.shape) == 1:
                 smpl_pose = np.expand_dims(smpl_pose, axis=1)
-            active_pose = np.zeros((22, smpl_pose.shape[-1]))
+            active_pose = np.zeros((joint_count, smpl_pose.shape[-1]))
 
         # NOTE: smpl seems to assume z is up vector which messes up axes of root rotation
         # we should force root rotation to rotate -90 around x axis
@@ -298,12 +336,12 @@ class SMPLToActivePoseNode(JointTranslator, Node):
                     rot = scipy.spatial.transform.Rotation.from_rotvec(active_pose)
                     active_pose = rot.as_quat(scalar_first=True)
                     if self.y_is_up():
-                        active_pose[5] = self.quaternion_multiply_scalar_first(self.y_up, active_pose[5])
+                        active_pose[5] = quaternion_multiply_scalar_first(self.y_up, active_pose[5])
                 else:
                     if self.y_is_up():
                         rot = scipy.spatial.transform.Rotation.from_rotvec(active_pose[5])
                         root_rot = rot.as_quat(scalar_first=True)
-                        root_rot = self.quaternion_multiply_scalar_first(self.y_up, root_rot)
+                        root_rot = quaternion_multiply_scalar_first(self.y_up, root_rot)
                         rot = scipy.spatial.transform.Rotation.from_quat(root_rot, scalar_first=True)
                         active_pose[5] = rot.as_rotvec()
 
@@ -313,7 +351,7 @@ class SMPLToActivePoseNode(JointTranslator, Node):
                     rot = scipy.spatial.transform.Rotation.from_quat(active_pose, scalar_first=True)
                     active_pose = rot.as_rotvec()
                 elif self.y_is_up():
-                    active_pose[5] = self.quaternion_multiply_scalar_first(self.y_up, active_pose[5])
+                    active_pose[5] = quaternion_multiply_scalar_first(self.y_up, active_pose[5])
             else:
                 active_pose = JointTranslator.translate_from_smpl_to_bmolab_active(smpl_pose)
 
@@ -331,6 +369,8 @@ class SMPLToQuaternionsNode(JointTranslator, Node):
         Node.__init__(self, label, data, args)
 
         self.input = self.add_input('smpl pose', triggers_execution=True)
+        self.y_is_up = self.add_property('y is up', widget_type='checkbox')
+        self.y_up = np.array([0.7071067811865475, -0.7071067811865475, 0.0, 0.0])
         self.output = self.add_output('smpl pose as quaternions')
 
     def execute(self):
@@ -345,6 +385,9 @@ class SMPLToQuaternionsNode(JointTranslator, Node):
                 # active_pose = JointTranslator.translate_from_smpl_to_bmolab_active(smpl_pose)
                 rot = scipy.spatial.transform.Rotation.from_rotvec(active_smpl_pose)
                 active_smpl_pose = rot.as_quat(scalar_first=True)
+                if self.y_is_up():
+                    active_smpl_pose[0] = quaternion_multiply_scalar_first(self.y_up, active_smpl_pose[0])
+
                 self.output.send(active_smpl_pose)
 
 
@@ -1305,3 +1348,482 @@ class QuatFlipYZAxesNode(Node):
         # Convert the resulting Rotation object back to a quaternion numpy array
         original_quats[self.rotate_joint] = new_rot.as_quat(scalar_first=True)
         self.quats_output.send(original_quats)
+
+class SMPLDynamicsNode(SMPLNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = SMPLDynamicsNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.pose_input = self.add_input('pose in', triggers_execution=True)
+        self.trans_input = self.add_input('trans in')
+        self.metadata_input = self.add_input('metadata')
+        
+        self.torques_output = self.add_output('torques out')
+        self.metrics_output = self.add_output('metrics out')
+        
+        self.gender = self.add_property('gender', widget_type='combo', default_value='neutral', callback=self.params_changed)
+        self.gender.widget.combo_items = ['male', 'female', 'neutral']
+        
+        self.total_mass = self.add_property('total_mass', widget_type='drag_float', default_value=75.0, callback=self.params_changed)
+        self.model_path = self.add_property('model_path', widget_type='text_input', default_value='', callback=self.params_changed)
+        
+        self.input_smoothing = self.add_property('input_smoothing', widget_type='drag_float', default_value=0.0)
+        self.calibrate_pose = self.add_property('calibrate_pose', widget_type='button', callback=self.calibrate_callback)
+        self.up_axis = self.add_property('input_up_axis', widget_type='combo', default_value='Y-up', callback=self.params_changed)
+        self.up_axis.widget.combo_items = ['Y-up', 'Z-up']
+
+        self.calibrate_trigger = self.add_input('calibrate', triggers_execution=True)
+        self.smoothing_input = self.add_input('smoothing')
+        self.mass_input = self.add_input('mass')
+        
+        self.current_betas = None
+        self.current_dt = 1.0/60.0
+        self.model = None
+
+    def custom_create(self, from_file):
+        self._initialize_model()
+
+    def calibrate_callback(self):
+        if self.model:
+            self.model.calibrate_balance()
+
+    def params_changed(self):
+        self._initialize_model()
+
+    def _initialize_model(self):
+        gender = self.gender()
+        mass = self.total_mass()
+        path = self.model_path()
+        # Pass betas if we have them
+        self.model = SMPLDynamicsModel(total_mass=mass, gender=gender, betas=self.current_betas, model_path=path)
+
+    def execute(self):
+        # Handle Metadata Input
+        if self.metadata_input.fresh_input:
+            meta = self.metadata_input()
+            if isinstance(meta, dict):
+                needs_reinit = False
+                
+                # Framerate -> DT
+                if 'mocap_framerate' in meta:
+                    try:
+                        fps = float(meta['mocap_framerate'])
+                        if fps > 0:
+                            self.current_dt = 1.0 / fps
+                    except:
+                        pass
+                        
+                # Gender
+                if 'gender' in meta:
+                    new_gender = str(meta['gender'])
+                    if new_gender != self.gender():
+                        self.gender.set(new_gender)
+                        needs_reinit = True # Mass ratios change
+                        
+                # Total Mass
+                if 'total_mass' in meta:
+                    try:
+                        new_mass = float(meta['total_mass'])
+                        if abs(new_mass - self.total_mass()) > 0.001:
+                            self.total_mass.set(new_mass)
+                            needs_reinit = True
+                    except:
+                        pass
+                        
+                # Betas (Shape)
+                if 'betas' in meta:
+                    new_betas = meta['betas']
+                    # Check if changed (using numpy array comparison if needed, or just assuming diff)
+                    # Simple equality check might fail for arrays
+                    if self.current_betas is None or not np.array_equal(self.current_betas, new_betas):
+                         self.current_betas = new_betas
+                         needs_reinit = True
+                         
+                if needs_reinit:
+                    self._initialize_model()
+
+        if self.pose_input.fresh_input:
+            pose = self.pose_input()
+            trans = self.trans_input()
+            
+            # Handle formats
+            # Pose: Expect (22, 3) or (66,)
+            pose = any_to_array(pose).copy()
+            if trans is None:
+                trans = np.zeros(3)
+            else:
+                trans = any_to_array(trans).copy()
+                
+            if pose is not None and self.model is not None:
+                dt = self.current_dt
+                
+                # Coordinate System Conversion & Format Handling
+                # Physics Model is Z-up. 
+                # Inputs can be (22, 3) Axis-Angle OR (22, 4) Quaternions.
+                
+                up_axis_mode = self.up_axis()
+                from scipy.spatial.transform import Rotation
+                
+                # Check for Quaternions (Last dim 4)
+                is_quaternion = (pose.shape[-1] == 4)
+                
+                # 1. Apply Y-up -> Z-up Correction (if needed)
+                if up_axis_mode == 'Y-up':
+                     # Rotation Matrix for -90 deg X
+                     R_fix = Rotation.from_euler('x', -90, degrees=True).as_matrix()
+                     
+                     # 1a. Fix Translation
+                     # v_new = R @ v_old
+                     trans = R_fix @ trans
+                     
+                     # 1b. Fix Root Orientation
+                     if is_quaternion:
+                         # Root is pose[0] (4,)
+                         root_quat = pose[0] # (x, y, z, w) usually from scipy
+                         root_r = Rotation.from_quat(root_quat)
+                         
+                         # R_new = R_fix @ R_root
+                         new_root_r = Rotation.from_matrix(R_fix @ root_r.as_matrix())
+                         pose[0] = new_root_r.as_quat()
+                     else:
+                         # Axis-Angle
+                         root_rotvec = pose[0]
+                         root_mat = Rotation.from_rotvec(root_rotvec).as_matrix()
+                         new_root_mat = R_fix @ root_mat
+                         pose[0] = Rotation.from_matrix(new_root_mat).as_rotvec()
+                
+                # 2. Convert to Axis-Angle (if Quaternion)
+                # SMPLDynamicsModel expects (22, 3) Axis-Angle
+                if is_quaternion:
+                    # Convert (22, 4) -> (22, 3)
+                    # We can batch convert if shape is (22, 4)
+                    if pose.ndim == 2:
+                        # scipy Rotation can take (N, 4)
+                        # Note: scipy expects (x, y, z, w). Ensure upstream provides this.
+                        # Assuming DPG standard is consistent with scipy? Usually yes.
+                        r_objs = Rotation.from_quat(pose)
+                        pose = r_objs.as_rotvec() # (22, 3)
+                    else:
+                        # Maybe flattened (88,)? Handle if needed, but any_to_array usually preserves shape?
+                        # If simple flat array, reshape first?
+                        # For now assume (22, 4)
+                        pass
+
+                # Calibration Input
+
+                # Calibration Input
+                if self.calibrate_trigger.fresh_input:
+                    if self.model:
+                        self.model.calibrate_balance()
+
+                # Calibration Button (Handled by callback, but check purely for legacy/safety if needed? No, callback is better)
+                if self.calibrate_pose():
+                     # This might return True if clicked? dpg_system button properties return True on click frame.
+                     # But we added a callback, so we might double-trigger if we check here too.
+                     # Remove this check if callback handles it.
+                     pass 
+                
+                smoothing = self.input_smoothing()
+                if self.smoothing_input.fresh_input:
+                    s_val = self.smoothing_input()
+                    if s_val is not None:
+                        smoothing = float(s_val)
+                        self.input_smoothing.set(smoothing)
+                
+                if smoothing < 0: smoothing = 0.0
+
+                # Mass Input processing (should be rare)
+                if self.mass_input.fresh_input:
+                    m_val = self.mass_input()
+                    if m_val is not None:
+                         m_float = float(m_val)
+                         if abs(m_float - self.total_mass()) > 0.001:
+                             self.total_mass.set(m_float)
+                             self._initialize_model()
+                
+                try:
+                    torques, metrics = self.model.update_frame(trans, pose, dt, smoothing_sigma=smoothing)
+                    
+                    # Convert torques dict to (22, 3) numpy array
+                    torque_array = np.zeros((22, 3))
+                    from dpg_system.smpl_dynamics import SMPL_JOINT_NAMES
+                    
+                    for i, name in enumerate(SMPL_JOINT_NAMES):
+                        if name in torques:
+                            torque_array[i] = torques[name]
+                    
+                    self.torques_output.send(torque_array)
+                    self.metrics_output.send(metrics)
+                    
+                except Exception as e:
+                    # On first frames history might be insufficient? 
+                    # update_frame handles it gracefully (returns 0s)
+                    pass
+
+
+class SMPLTorqueNode(SMPLNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = SMPLTorqueNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.pose_input = self.add_input('pose', triggers_execution=True)
+        self.trans_input = self.add_input('trans')
+        self.config_input = self.add_input('config') # gender, betas, framerate
+        
+        self.torques_output = self.add_output('torques')
+        self.inertia_output = self.add_output('inertia')
+        self.effort_output = self.add_output('effort')
+        self.gravity_effort_output = self.add_output('gravity_effort')
+        self.combined_effort_output = self.add_output('combined_effort')
+        self.output_contact = self.add_output('floor_contact')
+        self.output_root = self.add_output('root_torque')
+        
+        self.message_handlers['set_max_torque'] = self.set_max_torque_handler
+        
+        self.torque_vec_output = self.add_output('torque_vectors')
+        self.gravity_torque_vec_output = self.add_output('gravity_torque_vectors')
+        
+        self.smoothing_input = self.add_input('smoothing', widget_type='drag_float', default_value=0.0)
+        self.zero_root_torque = self.add_property('zero_root_torque', widget_type='checkbox', default_value=True)
+        self.add_gravity_prop = self.add_property('add_gravity', widget_type='checkbox', default_value=False)
+        self.up_axis_prop = self.add_property('up_axis', widget_type='combo', default_value='Y')
+        self.up_axis_prop.widget.combo_items = ['Y', 'Z']
+        self.quat_format_prop = self.add_property('quat_format', widget_type='combo', default_value='xyzw')
+        self.quat_format_prop.widget.combo_items = ['xyzw', 'wxyz']
+        
+        self.enable_passive_limits = self.add_property('enable_passive_limits', widget_type='checkbox', default_value=False)
+        
+        self.min_cutoff_prop = self.add_property('one_euro_min_cutoff', widget_type='drag_float', default_value=1.0)
+        self.beta_prop = self.add_property('one_euro_beta', widget_type='drag_float', default_value=0.05)
+        
+        self.accel_clamp_prop = self.add_property('accel_clamp', widget_type='drag_float', default_value=0.0)
+        self.spike_thresh_prop = self.add_property('effort_spike_threshold', widget_type='drag_float', default_value=0.0) # Output (Effort)
+        self.input_spike_prop = self.add_property('input_spike_threshold', widget_type='drag_float', default_value=0.0) # Input (Pose Degrees)
+        self.accel_spike_prop = self.add_property('accel_spike_threshold', widget_type='drag_float', default_value=0.0) # Input Accel (Deg/Frame^2)
+        self.jerk_prop = self.add_property('jerk_threshold', widget_type='drag_float', default_value=0.0) # Input Jerk (Deg/Frame^3)
+        self.floor_enable_prop = self.add_property('floor_contact_enable', widget_type='checkbox', default_value=False)
+        self.floor_height_prop = self.add_property('floor_height', widget_type='drag_float', default_value=0.0)
+        self.floor_tol_prop = self.add_property('floor_tolerance', widget_type='drag_float', default_value=0.15)
+
+        self.processor = None
+        # Default config
+        self.framerate = 60.0
+        self.gender = 'neutral'
+        self.betas = None
+        self.total_mass = 75.0
+        
+    def _to_array(self, d):
+        d = any_to_array(d)
+        return d
+
+    def execute(self):
+        # 1. Handle Config
+        if self.config_input.fresh_input:
+            cfg = self.config_input()
+            if isinstance(cfg, dict):
+                changed = False
+                
+                if 'motioncapture_framerate' in cfg:
+                    fr = float(cfg['motioncapture_framerate'])
+                    if fr != self.framerate:
+                        self.framerate = fr
+                        changed = True
+                        
+                if 'gender' in cfg:
+                    g = str(cfg['gender'])
+                    if g != self.gender:
+                        self.gender = g
+                        changed = True
+                        
+                if 'betas' in cfg:
+                    b = self._to_array(cfg['betas'])
+                    # Simple check
+                    if self.betas is None or not np.array_equal(self.betas, b):
+                        self.betas = b
+                        changed = True
+                
+                # Re-init processor if needed
+                if changed or self.processor is None:
+                    self.processor = SMPLProcessor(
+                        framerate=self.framerate,
+                        betas=self.betas,
+                        gender=self.gender,
+                        total_mass_kg=self.total_mass
+                    )
+        
+        # Ensure processor exists
+        if self.processor is None:
+             self.processor = SMPLProcessor(
+                framerate=self.framerate,
+                betas=self.betas,
+                gender=self.gender,
+                total_mass_kg=self.total_mass
+            )
+
+        # 2. Process Data
+        if self.pose_input.fresh_input:
+            pose = self._to_array(self.pose_input())
+            trans = self.trans_input()
+            if trans is None:
+                trans = np.zeros(3)
+            else:
+                trans = self._to_array(trans)
+                
+            # Input format handling
+            # SMPLProcessor expects (F, 24, 3) or (F, 24, 4) or flattened
+            # DPG pose might be (22, 3) or (24, 3) or flattened
+            
+            # Helper to reshape if flattened [22*3] or [24*3]
+            if pose.ndim == 1:
+                if pose.size == 72: # 24*3
+                    pose = pose.reshape(1, 24, 3)
+                elif pose.size == 66: # 22*3 (missing hands?)
+                    # SMPLProcessor expects 24 generally but we can PAD?
+                    # Or maybe it handles it? The processor reshapes based on 72.
+                    # If input is 22 joints, we need to map to 24.
+                    # 22 joints usually implies missing hands (22, 23).
+                    # Let's pad with identity/zeros.
+                    p24 = np.zeros((1, 24, 3))
+                    p24[0, :22, :] = pose.reshape(22, 3)
+                    pose = p24
+                elif pose.size == 88: # 22*4 quats
+                    # Pad to 24*4
+                    p24 = np.zeros((1, 24, 4))
+                    p24[:, :, 0] = 1.0 # Identity w=1
+                    p24[0, :22, :] = pose.reshape(22, 4)
+                    pose = p24
+                elif pose.size == 96: # 24*4
+                    pose = pose.reshape(1, 24, 4)
+            elif pose.ndim == 2:
+                # (22, 3), (24, 3), (22, 4), (24, 4)
+                if pose.shape[0] == 22:
+                    # Pad to 24 for processor comfort (it extracts 22 anyway, but hierarchy FK needs 24 indices)
+                    if pose.shape[1] == 3:
+                        p24 = np.zeros((1, 24, 3))
+                        p24[0, :22, :] = pose
+                        pose = p24
+                    elif pose.shape[1] == 4:
+                        p24 = np.zeros((1, 24, 4))
+                        p24[:, :, 0] = 1.0
+                        p24[0, :22, :] = pose
+                        pose = p24
+                elif pose.shape[0] == 24:
+                    pose = pose[np.newaxis, ...] # Add F dim
+            
+            # Determine input type
+            # Shape is now (F, 24, C)
+            input_type = 'axis_angle'
+            if pose.shape[-1] == 4:
+                input_type = 'quat'
+            
+            # Smoothing from input
+            smoothing = self.smoothing_input()
+            if smoothing is None: smoothing = 0.0
+            
+            # Process
+            try:
+                res = self.processor.process_frame(
+                    pose, trans, input_type=input_type, return_quats=True, 
+                    smoothing=float(smoothing), 
+                    add_gravity=self.add_gravity_prop(),
+                    input_up_axis=self.up_axis_prop(),
+                    quat_format=self.quat_format_prop(),
+                    enable_passive_limits=self.enable_passive_limits(),
+                    filter_min_cutoff=self.min_cutoff_prop() if hasattr(self, 'min_cutoff_prop') else 1.0,
+                    filter_beta=self.beta_prop() if hasattr(self, 'beta_prop') else 0.05,
+                    accel_clamp=self.accel_clamp_prop() if hasattr(self, 'accel_clamp_prop') else 0.0,
+                    spike_threshold=self.spike_thresh_prop() if hasattr(self, 'spike_thresh_prop') else 0.0,
+                    input_spike_threshold=self.input_spike_prop() if hasattr(self, 'input_spike_prop') else 0.0,
+                    accel_spike_threshold=self.accel_spike_prop() if hasattr(self, 'accel_spike_prop') else 0.0,
+                    jerk_threshold=self.jerk_prop() if hasattr(self, 'jerk_prop') else 0.0,
+                    floor_enable=self.floor_enable_prop() if hasattr(self, 'floor_enable_prop') else False,
+                    floor_height=self.floor_height_prop() if hasattr(self, 'floor_height_prop') else 0.0,
+                    floor_tolerance=self.floor_tol_prop() if hasattr(self, 'floor_tol_prop') else 0.15
+                )
+                
+                # Output Torques: (F, 22) -> (22) if F=1
+                # Output Inertias: (22,)
+                
+                torques = res['torques']
+                inertias = res['inertias']
+                efforts_dyn = res.get('efforts_dyn', np.zeros_like(torques)) 
+                efforts_grav = res.get('efforts_grav', np.zeros_like(torques))
+                efforts_net = res.get('efforts_net', np.zeros_like(torques))
+                
+                # Vectors
+                # If key missing in older processor versions (shouldn't happen), fallback to zeros
+                torques_vec = res.get('torques_vec', np.zeros((torques.shape[0], 24, 3)))
+                torques_grav_vec = res.get('torques_grav_vec', np.zeros((torques.shape[0], 24, 3)))
+                
+                if torques.shape[0] == 1:
+                    torques = torques[0] # (22,)
+                    efforts_dyn = efforts_dyn[0]
+                    efforts_grav = efforts_grav[0]
+                    efforts_net = efforts_net[0]
+                    inertias = inertias[0]
+                    torques_vec = torques_vec[0] # (24, 3)
+                    torques_grav_vec = torques_grav_vec[0]
+                    
+                # Zero Root Torque if requested
+                if self.zero_root_torque():
+                    # Split Root (index 0) and Joints (1-21)
+                    t_root = torques[0]
+                    t_joints = torques[1:]
+                    self.torques_output.send(t_joints)
+                    self.output_root.send(t_root)
+                else:
+                    self.torques_output.send(torques)
+                
+                # Send Floor Contact
+                if 'floor_contact' in res:
+                     self.output_contact.send(res['floor_contact'][0]) # (24,) float array
+                
+                self.torques_output.send(torques)
+                self.inertia_output.send(inertias)
+                self.effort_output.send(efforts_dyn)
+                self.gravity_effort_output.send(efforts_grav)
+                self.combined_effort_output.send(efforts_net)
+                
+                self.torque_vec_output.send(torques_vec)
+                self.gravity_torque_vec_output.send(torques_grav_vec)
+            
+            except Exception as e:
+                # Catch processing errors (e.g. shape mismatch on first frame)
+                print(f"SMPLTorqueNode Error: {e}")
+                import traceback
+                traceback.print_exc()
+                pass
+
+    def set_max_torque_handler(self, message='', args=[]):
+        """
+        Handler for 'set_max_torque' message.
+        Expected args: [joint_name_filter, max_torque_value]
+        Example: ['neck', 50.0]
+        """
+        if self.processor is None:
+            return
+            
+        if len(args) >= 2:
+            joint_filter = str(args[0])
+            try:
+                val = float(args[1])
+                count = self.processor.set_max_torque(joint_filter, val)
+                if count > 0:
+                    print(f"SMPLTorqueNode: Updated max torque for {count} joints matching '{joint_filter}' to {val}")
+                else:
+                    print(f"SMPLTorqueNode: No joints found matching '{joint_filter}'")
+            except ValueError:
+                print(f"SMPLTorqueNode: Invalid torque value '{args[1]}'")
+                
+            except Exception as e:
+                # logging.error(f"Error in SMPLTorqueNode: {e}")
+                print(f"Error in SMPLTorqueNode: {e}")
+                pass

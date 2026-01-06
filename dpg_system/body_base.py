@@ -150,9 +150,9 @@ def quaternion_to_matrix(q):
 
 
 # input shape is [num_bodies, num_joints, 4]
-def quaternions_to_R3_rotation(qs):
+def quaternions_to_R3_rotation(qs, num_bodies):
     qs = any_to_array(qs)
-    qs = np.reshape(qs, (-1, 20, 4))
+    qs = np.reshape(qs, (num_bodies, -1, 4))
     quats_squared = qs * qs         #   x^2 y^2 z^2 w^2
 
     xs = qs[:, :, 0]                #   x
@@ -441,8 +441,11 @@ class BodyDataBase:
         else:
             self.quaternions_np = np.expand_dims(quats, axis=0)
             self.num_bodies = 1
-        self.joint_matrices = quaternions_to_R3_rotation(self.quaternions_np)
+        self.joint_matrices = quaternions_to_R3_rotation(self.quaternions_np, self.num_bodies)
         self.joint_quats = self.quaternions_np.copy()
+
+
+    # N.B. should include an optional terminal 'joint' callback for toe tips, finger tips and top of head?
 
     def move_to(self, jointIndex, orientation=False, show_disks=False):
         if jointIndex != t_NoJoint:
@@ -546,9 +549,9 @@ class BodyDataBase:
 
         joint_data.translate_along_bone()  # move to far end of limb
 
-        if orientation_before_rotation and joint_data.do_draw:
+        if orientation_before_rotation:
             if orientation:  # we do a separate run to draw orientation, so this function gets called twice if we are showing orientation
-                if show_disks:
+                if show_disks and joint_data.do_draw:
                     self.show_orientation(
                         joint_index)  # joint index is not used... use info from joint at start of this limb
                 else:
@@ -558,13 +561,12 @@ class BodyDataBase:
         glMultMatrixf(transform)  # apply actual current rotation to the bone...
 
         # might it make more sense to show orientation here?
-        if not orientation_before_rotation and joint_data.do_draw:
+        if not orientation_before_rotation:
             if orientation:  # we do a separate run to draw orientation, so this function gets called twice if we are showing orientation
-                if show_disks:
+                if show_disks and joint_data.do_draw:
                     self.show_orientation(joint_index)  # joint index is not used... use info from joint at start of this limb
                 else:
                     self.node.joint_callback(joint_index)  # joint index is not used... use info from joint at start of this limb
-
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, self.base_material)
 
     def draw_block(self, joint_index, joint_data):  # draw_block could include colours for each end of the block to reflect

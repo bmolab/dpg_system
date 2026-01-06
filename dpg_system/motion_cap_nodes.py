@@ -990,43 +990,55 @@ class MoCapGLBody(MoCapNode):
         self.limb_sizes_out.send(limb_sizes)
 
     def joint_callback(self, joint_index):
-        if joint_index >= t_ActiveJointCount:
+        local_index = joint_index
+        if joint_index == 20:
             return
-        if joint_index < 0:
+        if joint_index == 21:
+            return
+        if joint_index == 22:
+            local_index = 20  # handle left foot
+        elif joint_index == 24:
+            local_index = 21  # handle right foot
+
+        # if joint_index >= t_ActiveJointCount:
+        #     return
+        if local_index < 0:
             return
 
         glPushMatrix()
 
         mode = self.joint_data_selection()
         # joint_name = joint_index_to_name[joint_index]
-        self.current_joint_output.send(joint_index)
+        self.current_joint_output.send(local_index)
         if self.external_joint_data is not None:
             # in all cases, what if incoming data.shape[0] is 22
             # then we need to remap the joint data from smpl to active
             if type(self.external_joint_data) is np.ndarray:
-                if self.external_joint_data.shape[0] == 20:
-                    if joint_index < t_ActiveJointCount:
-                        self.current_joint_data_output.send(self.external_joint_data[joint_index])
+                if self.external_joint_data.shape[0] >= 20:
+                    if local_index < self.external_joint_data.shape[0]:
+                        self.current_joint_data_output.send(self.external_joint_data[local_index])
                 elif self.external_joint_data.shape[0] == 1:
-                    if self.external_joint_data.shape[1] == 20:
-                        if joint_index < t_ActiveJointCount:
-                            self.current_joint_data_output.send(self.external_joint_data[0][joint_index])
+                    if self.external_joint_data.shape[1] >= 20:
+                        if local_index < self.external_joint_data.shape[0]:
+                            self.current_joint_data_output.send(self.external_joint_data[0][local_index])
             elif type(self.external_joint_data) is torch.Tensor:
-                if self.external_joint_data.shape[0] == 20:
-                    if joint_index < t_ActiveJointCount:
-                        self.current_joint_data_output.send(self.external_joint_data[joint_index])
+                if self.external_joint_data.shape[0] >= 20:
+                    if local_index < self.external_joint_data.shape[0]:
+                        self.current_joint_data_output.send(self.external_joint_data[local_index])
                 elif self.external_joint_data.shape[0] == 1:
-                    if self.external_joint_data.shape[1] == 20:
-                        if joint_index < t_ActiveJointCount:
-                            self.current_joint_data_output.send(self.external_joint_data[0][joint_index])
+                    if self.external_joint_data.shape[1] >= 20:
+                        if local_index < self.external_joint_data.shape[0]:
+                            self.current_joint_data_output.send(self.external_joint_data[0][local_index])
             elif type(self.external_joint_data) is list:
-                if len(self.external_joint_data) == 20:
-                    if joint_index < t_ActiveJointCount:
-                        self.current_joint_data_output.send(self.external_joint_data[joint_index])
+                if len(self.external_joint_data) >= 20:
+                    if local_index < self.external_joint_data.shape[0]:
+                        print('callback', local_index)
+                        self.current_joint_data_output.send(self.external_joint_data[local_index])
                 elif len(self.external_joint_data) == 1:
-                    if len(self.external_joint_data[0]) == 20:
-                        if joint_index < t_ActiveJointCount:
-                            self.current_joint_data_output.send(self.external_joint_data[0][joint_index])
+                    if len(self.external_joint_data[0]) >= 20:
+                        if local_index < self.external_joint_data.shape[0]:
+                            print('callback', local_index)
+                            self.current_joint_data_output.send(self.external_joint_data[0][local_index])
         elif mode == 'diff_axis-angle':
             if self.body.normalized_axes is not None:
                 current_axis = self.body.normalized_axes[0, joint_index]
