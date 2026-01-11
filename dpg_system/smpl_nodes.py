@@ -8,10 +8,11 @@ import os
 import scipy
 from scipy import signal
 from dpg_system.node import Node
+from dpg_system.interface_nodes import Vector2DNode
 import pickle
 from dpg_system.conversion_utils import *
 from dpg_system.smpl_dynamics import SMPLDynamicsModel
-from dpg_system.smpl_processor import SMPLProcessor
+from dpg_system.smpl_processor import SMPLProcessor, SMPLProcessingOptions
 import pickle
 import chumpy as ch
 from chumpy.ch import MatVecMult
@@ -37,6 +38,7 @@ def register_smpl_nodes():
     Node.app.register_node("smpl_take", SMPLTakeNode.factory)
     Node.app.register_node("smpl_pose_to_joints", SMPLPoseToJointsNode.factory)
     Node.app.register_node("smpl_body", SMPLBodyNode.factory)
+    Node.app.register_node("smpl_pose", SMPLPoseNode.factory)
 
     Node.app.register_node("smpl_quats_to_joints", SMPLPoseQuatsToJointsNode.factory)
 
@@ -45,7 +47,7 @@ def register_smpl_nodes():
     Node.app.register_node("active_to_smpl", ActiveToSMPLPoseNode.factory)
     Node.app.register_node("quats_flip_y_z", QuatFlipYZAxesNode.factory)
     Node.app.register_node("smpl_dynamics", SMPLDynamicsNode.factory)
-    Node.app.register_node("smpl_torque", SMPLTorqueNode.factory)
+    Node.app.register_node("smpl_torque", SMPLTorqueNode.factory)\
 
 
 class SMPLNode(Node):
@@ -94,6 +96,54 @@ class SMPLNode(Node):
             print('load_SMPL_R_model_file failed', e)
             return None
         return None
+
+
+class SMPLPoseNode(Vector2DNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = SMPLPoseNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        Vector2DNode.__init__(self, label, data, ['22', '4'])
+
+    def custom_create(self, from_file):
+        Vector2DNode.custom_create(self, from_file)
+        self.zero_input.set_label('reset')
+        for i in range(1, 23):
+            input = self.inputs[i]
+
+            dpg.configure_item(input.widget.uuids[3], label=SMPLNode.joint_names[i - 1])
+            for id in input.widget.uuids:
+                dpg.configure_item(id, width=45)
+            input.set([1.0, 0.0, 0.0, 0.0])
+            self.output_vector[i - 1, 0] = 1.0
+
+    def zero(self):
+        not_zeroed = True
+        if self.vector_format_input() == 'numpy':
+            if self.current_dims[0] == self.output_vector.shape[0]:
+                if self.current_dims[1] == 1 and len(self.output_vector.shape) == 1:
+                    self.output_vector = np.zeros(self.current_dims[0])
+                    self.output_vector[:, 0] = 1.0
+                    not_zeroed = False
+            if not_zeroed:
+                self.output_vector = np.zeros(self.current_dims)
+                self.output_vector[:, 0] = 1.0
+
+        elif self.vector_format_input() == 'torch':
+            if self.current_dims[0] == self.output_vector.shape[0]:
+                if self.current_dims[1] == 1 and len(self.output_vector.shape) == 1:
+                    self.output_vector = torch.zeros(self.current_dims[0])
+                    self.output_vector[:, 0] = 1.0
+                    not_zeroed = False
+            if not_zeroed:
+                self.output_vector = torch.zeros(self.current_dims)
+                self.output_vector[:, 0] = 1.0
+        else:
+            self.output_vector = [[1.0, 0.0, 0.0, 0.0] * self.current_dims[0]]
+        self.execute()
+
 
 
 # class JointTranslator():
@@ -1358,6 +1408,7 @@ class SMPLDynamicsNode(SMPLNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
+
         self.pose_input = self.add_input('pose in', triggers_execution=True)
         self.trans_input = self.add_input('trans in')
         self.metadata_input = self.add_input('metadata')
@@ -1383,6 +1434,7 @@ class SMPLDynamicsNode(SMPLNode):
         self.current_betas = None
         self.current_dt = 1.0/60.0
         self.model = None
+
 
     def custom_create(self, from_file):
         self._initialize_model()
@@ -1573,7 +1625,6 @@ class SMPLTorqueNode(SMPLNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-
         self.pose_input = self.add_input('pose', triggers_execution=True)
         self.trans_input = self.add_input('trans')
         self.config_input = self.add_input('config') # gender, betas, framerate
@@ -1584,6 +1635,7 @@ class SMPLTorqueNode(SMPLNode):
         self.gravity_effort_output = self.add_output('gravity_effort')
         self.combined_effort_output = self.add_output('combined_effort')
         self.output_contact = self.add_output('floor_contact')
+        self.output_positions = self.add_output('joint_positions')
         self.output_root = self.add_output('root_torque')
         
         self.message_handlers['set_max_torque'] = self.set_max_torque_handler
@@ -1591,27 +1643,33 @@ class SMPLTorqueNode(SMPLNode):
         self.torque_vec_output = self.add_output('torque_vectors')
         self.gravity_torque_vec_output = self.add_output('gravity_torque_vectors')
         
-        self.smoothing_input = self.add_input('smoothing', widget_type='drag_float', default_value=0.0)
+
         self.zero_root_torque = self.add_property('zero_root_torque', widget_type='checkbox', default_value=True)
-        self.add_gravity_prop = self.add_property('add_gravity', widget_type='checkbox', default_value=False)
+        self.add_gravity_prop = self.add_property('add_gravity', widget_type='checkbox', default_value=True)
         self.up_axis_prop = self.add_property('up_axis', widget_type='combo', default_value='Y')
         self.up_axis_prop.widget.combo_items = ['Y', 'Z']
-        self.quat_format_prop = self.add_property('quat_format', widget_type='combo', default_value='xyzw')
+        self.axis_perm_prop = self.add_property('axis_permutation', widget_type='text_input', default_value='x, z, -y', callback=self._on_axis_perm_changed)
+        self.quat_format_prop = self.add_property('quat_format', widget_type='combo', default_value='wxyz')
         self.quat_format_prop.widget.combo_items = ['xyzw', 'wxyz']
         
-        self.enable_passive_limits = self.add_property('enable_passive_limits', widget_type='checkbox', default_value=False)
+        self.enable_passive_limits = self.add_property('enable_passive_limits', widget_type='checkbox', default_value=True)
         
+        self.enable_one_euro_prop = self.add_property('enable_one_euro_filter', widget_type='checkbox', default_value=True)
         self.min_cutoff_prop = self.add_property('one_euro_min_cutoff', widget_type='drag_float', default_value=1.0)
         self.beta_prop = self.add_property('one_euro_beta', widget_type='drag_float', default_value=0.05)
         
-        self.accel_clamp_prop = self.add_property('accel_clamp', widget_type='drag_float', default_value=0.0)
         self.spike_thresh_prop = self.add_property('effort_spike_threshold', widget_type='drag_float', default_value=0.0) # Output (Effort)
         self.input_spike_prop = self.add_property('input_spike_threshold', widget_type='drag_float', default_value=0.0) # Input (Pose Degrees)
-        self.accel_spike_prop = self.add_property('accel_spike_threshold', widget_type='drag_float', default_value=0.0) # Input Accel (Deg/Frame^2)
         self.jerk_prop = self.add_property('jerk_threshold', widget_type='drag_float', default_value=0.0) # Input Jerk (Deg/Frame^3)
-        self.floor_enable_prop = self.add_property('floor_contact_enable', widget_type='checkbox', default_value=False)
+        self.floor_enable_prop = self.add_property('floor_contact_enable', widget_type='checkbox', default_value=True)
         self.floor_height_prop = self.add_property('floor_height', widget_type='drag_float', default_value=0.0)
         self.floor_tol_prop = self.add_property('floor_tolerance', widget_type='drag_float', default_value=0.15)
+        
+        # Bias: Negative = Toe Preference, Positive = Heel Preference
+        self.heel_toe_bias_prop = self.add_property('heel_toe_bias', widget_type='drag_float', default_value=0.02)
+        
+        # Calibrated default for Subject_81: [0.0, -0.14, 0.05]
+
 
         self.processor = None
         # Default config
@@ -1624,8 +1682,13 @@ class SMPLTorqueNode(SMPLNode):
         d = any_to_array(d)
         return d
 
+    def _on_axis_perm_changed(self):
+        if self.processor:
+            self.processor.set_axis_permutation(self.axis_perm_prop())
+
     def execute(self):
         # 1. Handle Config
+
         if self.config_input.fresh_input:
             cfg = self.config_input()
             if isinstance(cfg, dict):
@@ -1658,6 +1721,7 @@ class SMPLTorqueNode(SMPLNode):
                         gender=self.gender,
                         total_mass_kg=self.total_mass
                     )
+                    self._on_axis_perm_changed()
         
         # Ensure processor exists
         if self.processor is None:
@@ -1667,6 +1731,7 @@ class SMPLTorqueNode(SMPLNode):
                 gender=self.gender,
                 total_mass_kg=self.total_mass
             )
+             self._on_axis_perm_changed()
 
         # 2. Process Data
         if self.pose_input.fresh_input:
@@ -1724,31 +1789,44 @@ class SMPLTorqueNode(SMPLNode):
             if pose.shape[-1] == 4:
                 input_type = 'quat'
             
-            # Smoothing from input
-            smoothing = self.smoothing_input()
-            if smoothing is None: smoothing = 0.0
+
+            
+            # Process
+            # Prepare Config
+            options = SMPLProcessingOptions(
+                input_type=input_type,
+                return_quats=True,
+                
+                # Coordinates
+                input_up_axis=self.up_axis_prop(),
+                axis_permutation=self.processor.axis_permutation if hasattr(self.processor, 'axis_permutation') else None,
+                quat_format=self.quat_format_prop(),
+                
+                # Physics
+                dt=1.0/max(self.framerate, 1.0),
+                add_gravity=self.add_gravity_prop(),
+                enable_passive_limits=self.enable_passive_limits(),
+                
+                # Filtering
+                enable_one_euro_filter=self.enable_one_euro_prop(),
+                filter_min_cutoff=self.min_cutoff_prop() if hasattr(self, 'min_cutoff_prop') else 1.0,
+                filter_beta=self.beta_prop() if hasattr(self, 'beta_prop') else 0.05,
+                
+                # Spikes / Clamping
+                spike_threshold=self.spike_thresh_prop() if hasattr(self, 'spike_thresh_prop') else 0.0,
+                input_spike_threshold=self.input_spike_prop() if hasattr(self, 'input_spike_prop') else 0.0,
+                jerk_threshold=self.jerk_prop() if hasattr(self, 'jerk_prop') else 0.0,
+                
+                # Floor
+                floor_enable=self.floor_enable_prop(),
+                floor_height=self.floor_height_prop() if hasattr(self, 'floor_height_prop') else 0.0,
+                floor_tolerance=self.floor_tol_prop() if hasattr(self, 'floor_tol_prop') else 0.15,
+                heel_toe_bias=self.heel_toe_bias_prop() if hasattr(self, 'heel_toe_bias_prop') else 0.0
+            )
             
             # Process
             try:
-                res = self.processor.process_frame(
-                    pose, trans, input_type=input_type, return_quats=True, 
-                    smoothing=float(smoothing), 
-                    add_gravity=self.add_gravity_prop(),
-                    input_up_axis=self.up_axis_prop(),
-                    quat_format=self.quat_format_prop(),
-                    enable_passive_limits=self.enable_passive_limits(),
-                    filter_min_cutoff=self.min_cutoff_prop() if hasattr(self, 'min_cutoff_prop') else 1.0,
-                    filter_beta=self.beta_prop() if hasattr(self, 'beta_prop') else 0.05,
-                    accel_clamp=self.accel_clamp_prop() if hasattr(self, 'accel_clamp_prop') else 0.0,
-                    spike_threshold=self.spike_thresh_prop() if hasattr(self, 'spike_thresh_prop') else 0.0,
-                    input_spike_threshold=self.input_spike_prop() if hasattr(self, 'input_spike_prop') else 0.0,
-                    accel_spike_threshold=self.accel_spike_prop() if hasattr(self, 'accel_spike_prop') else 0.0,
-                    jerk_threshold=self.jerk_prop() if hasattr(self, 'jerk_prop') else 0.0,
-                    floor_enable=self.floor_enable_prop() if hasattr(self, 'floor_enable_prop') else False,
-                    floor_height=self.floor_height_prop() if hasattr(self, 'floor_height_prop') else 0.0,
-                    floor_tolerance=self.floor_tol_prop() if hasattr(self, 'floor_tol_prop') else 0.15
-                )
-                
+                res = self.processor.process_frame(pose, trans, options)
                 # Output Torques: (F, 22) -> (22) if F=1
                 # Output Inertias: (22,)
                 
@@ -1774,18 +1852,38 @@ class SMPLTorqueNode(SMPLNode):
                     
                 # Zero Root Torque if requested
                 if self.zero_root_torque():
-                    # Split Root (index 0) and Joints (1-21)
-                    t_root = torques[0]
-                    t_joints = torques[1:]
-                    self.torques_output.send(t_joints)
-                    self.output_root.send(t_root)
-                else:
-                    self.torques_output.send(torques)
-                
-                # Send Floor Contact
-                if 'floor_contact' in res:
-                     self.output_contact.send(res['floor_contact'][0]) # (24,) float array
-                
+                    # Preserve shape (22,), but Zero out Root (Index 0)
+                    # We send the Original Root Torque to the dedicated output
+                    self.output_root.send(torques[0])
+                    
+                    # Zero out index 0 in place (or on copy)
+                    # Note: These are references to the arrays in 'res'. 
+                    # If we modify them, it might affect 'res' for verification, but that's fine here.
+                    
+                    # Make copies to be safe against side effects if 'res' is reused? 
+                    # 'res' is created fresh in process_frame.
+                    
+                    torques = torques.copy()
+                    torques[0] = 0.0
+                    
+                    inertias = inertias.copy()
+                    inertias[0] = 0.0
+                    
+                    efforts_dyn = efforts_dyn.copy()
+                    efforts_dyn[0] = 0.0
+                    
+                    efforts_grav = efforts_grav.copy()
+                    efforts_grav[0] = 0.0
+                    
+                    efforts_net = efforts_net.copy()
+                    efforts_net[0] = 0.0
+                    
+                    torques_vec = torques_vec.copy()
+                    torques_vec[0] = np.zeros(3)
+                    
+                    torques_grav_vec = torques_grav_vec.copy()
+                    torques_grav_vec[0] = np.zeros(3)
+
                 self.torques_output.send(torques)
                 self.inertia_output.send(inertias)
                 self.effort_output.send(efforts_dyn)
@@ -1794,6 +1892,16 @@ class SMPLTorqueNode(SMPLNode):
                 
                 self.torque_vec_output.send(torques_vec)
                 self.gravity_torque_vec_output.send(torques_grav_vec)
+
+                # Send Floor Contact
+                if 'floor_contact' in res:
+                     self.output_contact.send(res['floor_contact'][0]) # (24,) float array
+                
+                if 'positions' in res:
+                     pos = res['positions']
+                     if pos.shape[0] == 1:
+                         pos = pos[0] # (24, 3)
+                     self.output_positions.send(pos)
             
             except Exception as e:
                 # Catch processing errors (e.g. shape mismatch on first frame)

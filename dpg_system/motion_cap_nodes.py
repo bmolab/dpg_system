@@ -758,12 +758,12 @@ class PoseNode(MoCapNode):
             self.shadow = True
             for key in self.joint_map:
                 stripped_key = key.replace('_', ' ')
-                input_ = self.add_input(stripped_key, triggers_execution=True)
+                input_ = self.add_input(stripped_key, triggers_execution=True, default_value=[1.0, 0.0, 0.0, 0.0])
                 self.joint_inputs.append(input_)
         else:
             for key in self.active_joint_map:
                 stripped_key = key.replace('_', ' ')
-                input_ = self.add_input(stripped_key, triggers_execution=True)
+                input_ = self.add_input(stripped_key, triggers_execution=True, default_value=[1.0, 0.0, 0.0, 0.0])
                 self.joint_inputs.append(input_)
 
         self.output = self.add_output('pose out')
@@ -910,6 +910,8 @@ class MoCapGLBody(MoCapNode):
         self.capture_pose_input = self.add_input('capture pose', widget_type='button', callback=self.capture_pose)
         self.joint_data_input = self.add_input('joint data', callback=self.receive_joint_data)
         self.clear_joint_data_input = self.add_input('clear joint data', widget_type='button', callback=self.clear_joint_data)
+        # y-up
+        # transl
         self.current_joint_output = self.add_output('current_joint_name')
         self.current_joint_data_output = self.add_output('current_joint_data')
         self.current_joint_gl_output = self.add_output('current_joint_gl_chain')
@@ -917,6 +919,7 @@ class MoCapGLBody(MoCapNode):
         self.absolute_quats_input = self.add_option('absolute quats', widget_type='checkbox')
         self.calc_diff_quats = self.add_option('calc_diff_quats', widget_type='checkbox', default_value=False, callback=self.set_calc_diff)
         self.skeleton_only = self.add_option('skeleton_only', widget_type='checkbox', default_value=False)
+        self.z_up_option = self.add_option('z_up', widget_type='checkbox', default_value=False)
         self.joint_axes = self.add_option('joint_axes', widget_type='checkbox', default_value=False)
         self.show_joint_spheres = self.add_option('show joint motion', widget_type='checkbox', default_value=self.show_joint_activity)
         self.joint_indicator = self.add_option('joint indicator', widget_type='combo', default_value='sphere')
@@ -991,14 +994,16 @@ class MoCapGLBody(MoCapNode):
 
     def joint_callback(self, joint_index):
         local_index = joint_index
-        if joint_index == 20:
-            return
-        if joint_index == 21:
+        if joint_index in [20, 21, 23]:
             return
         if joint_index == 22:
             local_index = 20  # handle left foot
         elif joint_index == 24:
             local_index = 21  # handle right foot
+        elif joint_index == 26:
+            local_index = 22
+        elif joint_index == 28:
+            local_index = 23
 
         # if joint_index >= t_ActiveJointCount:
         #     return
@@ -1032,12 +1037,10 @@ class MoCapGLBody(MoCapNode):
             elif type(self.external_joint_data) is list:
                 if len(self.external_joint_data) >= 20:
                     if local_index < self.external_joint_data.shape[0]:
-                        print('callback', local_index)
                         self.current_joint_data_output.send(self.external_joint_data[local_index])
                 elif len(self.external_joint_data) == 1:
                     if len(self.external_joint_data[0]) >= 20:
                         if local_index < self.external_joint_data.shape[0]:
-                            print('callback', local_index)
                             self.current_joint_data_output.send(self.external_joint_data[0][local_index])
         elif mode == 'diff_axis-angle':
             if self.body.normalized_axes is not None:
@@ -1074,22 +1077,22 @@ class MoCapGLBody(MoCapNode):
             t = np.ndarray
         if t == np.ndarray:
             if incoming.shape[0] == 80:
-                self.body.update_quats(np.reshape(incoming, [20, 4]))
+                self.body.update_quats(np.reshape(incoming, [20, 4]), self.z_up_option())
             elif incoming.shape[0] == 20:
                 if incoming.shape[1] == 4:
-                    self.body.update_quats(incoming)
+                    self.body.update_quats(incoming, self.z_up_option())
             elif incoming.shape[0] == 22:
                 if incoming.shape[1] == 4:
                     # smpl joint order
                     converted_joints = JointTranslator.translate_from_smpl_to_bmolab_active(incoming)
-                    self.body.update_quats(converted_joints)
+                    self.body.update_quats(converted_joints, self.z_up_option())
             elif incoming.shape[0] == 37:
                 active_joints = incoming[self.active_to_shadow_map]
-                self.body.update_quats(active_joints)
+                self.body.update_quats(active_joints, self.z_up_option())
             elif incoming.shape[0] == 148:
                 incoming = np.reshape(incoming, [37, 4])
                 active_joints = incoming[self.active_to_shadow_map]
-                self.body.update_quats(active_joints)
+                self.body.update_quats(active_joints, self.z_up_option())
         elif t in [list, str]:
             if t == str:
                 incoming = [incoming]

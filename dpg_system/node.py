@@ -546,7 +546,6 @@ class BasePropertyWidget:
 
         # 2. Initialize Value
         self._init_default_value()
-
         # 3. Draw
         with dpg.group(horizontal=horizontal):
             self._draw_widget()
@@ -2348,7 +2347,6 @@ class Node:
         with dpg.node(parent=parent, label=self.label, tag=self.uuid, pos=pos):
             dpg.set_item_pos(self.uuid, pos)
             self.handle_parsed_args()
-
             if len(self.ordered_elements) > 0:
                 for attribute in self.ordered_elements:
                     attribute.create(self.uuid)

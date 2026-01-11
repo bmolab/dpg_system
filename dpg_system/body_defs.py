@@ -110,7 +110,7 @@ class JointTranslator():
         'right_ankle': 8, 'spine3': 9, 'left_foot': 10, 'right_foot': 11,
         'neck': 12, 'left_collar': 13, 'right_collar': 14, 'head': 15,
         'left_shoulder': 16, 'right_shoulder': 17, 'left_elbow': 18, 'right_elbow': 19,
-        'left_wrist': 20, 'right_wrist': 21
+        'left_wrist': 20, 'right_wrist': 21, 'left_hand': 22, 'right_hand': 23
     }
 
     bmolab_active_joints = {
@@ -119,7 +119,7 @@ class JointTranslator():
         'left_ankle': 8, 'right_hip': 9, 'right_knee': 10, 'right_ankle': 11,
         'left_shoulder_blade': 12, 'left_shoulder': 13, 'left_elbow': 14, 'left_wrist': 15,
         'right_shoulder_blade': 16, 'right_shoulder': 17, 'right_elbow': 18, 'right_wrist': 19,
-        'left_foot': 20, 'right_foot': 21
+        'left_foot': 20, 'right_foot': 21, 'left_hand': 22, 'right_hand': 23
     }
 
     joints_to_input_vector = [-1, 2, 0, -1, 5, 13, -1, -1, 8, 14, 15, -1, 7, 12, 6, -1, -1, 1, -1, 17, -1, -1, 11, 18,
@@ -147,7 +147,9 @@ class JointTranslator():
         'right_elbow': 'right_elbow',
         'right_wrist': 'right_wrist',
         'left_foot': 'left_foot',
-        'right_foot': 'right_foot'
+        'right_foot': 'right_foot',
+        'left_hand': 'left_hand',
+        'right_hand': 'right_hand'
     }
 
     smpl_to_smpl_active_joint_map = {
@@ -475,7 +477,8 @@ class JointTranslator():
             smpl_index = JointTranslator.smpl_joints[smpl_joint]
             active_joint = JointTranslator.smpl_to_bmolab_active_joint_map[smpl_joint]
             active_index = JointTranslator.bmolab_active_joints[active_joint]
-            active_pose[active_index] = smpl_pose[smpl_index]
+            if smpl_index < smpl_pose.shape[0]:
+                active_pose[active_index] = smpl_pose[smpl_index]
         return active_pose
 
     @staticmethod
