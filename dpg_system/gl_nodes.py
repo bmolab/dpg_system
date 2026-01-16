@@ -1168,7 +1168,7 @@ class GLTransformNode(GLNode):
         self.values[2] = self.arg_as_float(index=2, default_value=0.0)
 
         # self.gl_input = self.add_input('gl chain in', triggers_execution=True)
-        self.x = self.add_input('x', widget_type='drag_float', default_value=self.values[0])
+        self.x = self.add_input('x', widget_type='drag_float', default_value=self.values[0], callback=self.receive_value)
         self.y = self.add_input('y', widget_type='drag_float', default_value=self.values[1])
         self.z = self.add_input('z', widget_type='drag_float', default_value=self.values[2])
         if self.label == 'gl_rotate':
@@ -1177,6 +1177,29 @@ class GLTransformNode(GLNode):
             self.z.widget.speed = 1
         self.reset_button = self.add_property('reset', widget_type='button', callback=self.reset)
         # self.gl_output = self.add_output('gl chain out')
+
+    def receive_value(self):
+        value = self.x()
+        if not isscalar(value):
+            if isinstance(value, np.ndarray):
+                if value.size > 1:
+                    value = value.flatten()
+                    if value.shape[0] == 3:
+                        self.x.set(value[0])
+                        self.y.set(value[1])
+                        self.z.set(value[2])
+            elif isinstance(value, list):
+                if len(value) == 3:
+                    self.x.set(value[0])
+                    self.y.set(value[1])
+                    self.z.set(value[2])
+            elif self.app.torch_available and isinstance(value, torch.Tensor):
+                value = value.flatten().cpu()
+                if value.shape[0] == 3:
+                    self.x.set(float(value[0]))
+                    self.y.set(float(value[1]))
+                    self.z.set(float(value[2]))
+
 
     def reset(self):
         if self.label in ['gl_translate', 'gl_rotate']:
@@ -3428,6 +3451,7 @@ class GLVertexBufferNode(GLNode):
         self.draw_mode = gl.GL_POINTS  # default draw mode
         self.buffer_usage = gl.GL_STREAM_DRAW  # default usage pattern
         self.vbo = None
+        self.hold_point_size = 1
 
     def initialize(self, args):
         super().initialize(args)
@@ -3447,6 +3471,7 @@ class GLVertexBufferNode(GLNode):
         self.draw_mode_input = self.add_input("draw_mode", widget_type="combo", callback=self.draw_mode_changed)
         self.size_input = self.add_input("size", widget_type='drag_float', default_value=1, min=0.1)
         self.draw_mode_input.widget.combo_items = list(self.mode_dict.keys())
+        self.refresh = True
 
     def update_buffer_data(self):
         """
@@ -3456,31 +3481,30 @@ class GLVertexBufferNode(GLNode):
             vertex_data: numpy.ndarray - The vertex data to upload to GPU
         """
         if self.vertex_data_input.fresh_input:
-            self.vertex_data = any_to_array(self.vertex_data_input()).copy()
-
-        if self.vbo is not None:
-
-            # Ensure data is contiguous and in correct format
+            self.vertex_data = any_to_array(self.vertex_data_input()).copy().astype(np.float32)
             if not self.vertex_data.flags['C_CONTIGUOUS']:
                 self.vertex_data = np.ascontiguousarray(self.vertex_data, dtype=np.float32)
 
             self.vertex_count = self.vertex_data.shape[0]
+
+            self.refresh = True
+
+    def refresh_buffer(self ):
+        if self.vbo is not None:
+
+            # # Ensure data is contiguous and in correct format
+            # if not self.vertex_data.flags['C_CONTIGUOUS']:
+            #     self.vertex_data = np.ascontiguousarray(self.vertex_data, dtype=np.float32)
+            #
+            # self.vertex_count = self.vertex_data.shape[0]
+            # print('vertex_count', self.vertex_count)
             # self.vertex_size = self.vertex_data.shape[1] if len(self.vertex_data.shape) > 1 else 1
             # self.data_type = gl.GL_FLOAT
 
             # Bind and upload data
             self.vbo.bind()
-            # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo_id)
-            self.vbo.set_array(self.vertex_data, None)
-            # gl.glBufferData(gl.GL_ARRAY_BUFFER,
-            #                 self.vertex_data.nbytes,
-            #                 self.vertex_data,
-            #                 self.buffer_usage)
-            # buffer = gl.glMapBuffer(gl.GL_ARRAY_BUFFER, GL_WRITE_ONLY)
-            # map_array = (GLfloat * self.vertex_count * self.vertex_size).from_address(buffer)
-            # ctypes.memmove(map_array, self.vertex_data.ctypes.data, self.vertex_data.nbytes)
-            self.vbo.unbind()
-            # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0)
+            self.vbo.set_array(self.vertex_data, self.vertex_data.nbytes)
+            # self.vbo.unbind()
 
     def draw_mode_changed(self):
         mode = self.draw_mode_input()
@@ -3489,22 +3513,28 @@ class GLVertexBufferNode(GLNode):
 
     def remember_state(self):
         super().remember_state()
+        self.hold_point_size = 1
+        pointSize_array = (ctypes.c_float * 1)()
+        gl.glGetFloatv(GL_POINT_SIZE, pointSize_array)
+        self.hold_point_size = pointSize_array[0]
         # No additional state to remember for VBOs
 
     def restore_state(self):
         super().restore_state()
+        gl.glPointSize(self.hold_point_size)
         # No additional state to restore for VBOs
 
     def draw(self):
         if self.vbo is None:
-            print('create vbo')
             self.vbo = vbo.VBO(self.vertex_data)
             # self.update_buffer_data()
-            print('created vbo')
             return
 
-        self.vbo.bind()
-        # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo_id)
+        if self.refresh:
+            self.refresh_buffer()
+            self.refresh = False
+        else:
+            self.vbo.bind()
 
         # Enable vertex arrays
         gl.glEnableClientState(gl.GL_VERTEX_ARRAY)

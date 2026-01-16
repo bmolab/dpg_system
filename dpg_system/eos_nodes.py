@@ -20,7 +20,7 @@ class EOSConsoleNode(OSCDeviceNode):
         self.target_ip_property.set_default_value('10.1.3.11')
         self.target_port_property.set_default_value('1101')
         self.source_port_property.set_default_value('1102')
-        self.name_property.set_default_value('eos')
+        self.target_name_property.set_default_value('eos')
 
     def custom_create(self, from_file):
         self.target_changed()
@@ -143,7 +143,7 @@ class ColorSourceNode(OSCSender, Node):
 
 
 
-class OSCSendEOSNode(OSCSender, Node):
+class OSCSendEOSNode(Node, OSCBase, OSCSender, OSCRegistrableMixin):
     @staticmethod
     def factory(name, data, args=None):
         node = OSCSendEOSNode(name, data, args)
@@ -153,6 +153,7 @@ class OSCSendEOSNode(OSCSender, Node):
         super().__init__(label, data, args)
 
         self.channel = 1
+        self.address = 'empty'
 
         if len(args) > 0:
             if is_number(args[0]):
@@ -213,3 +214,36 @@ class OSCSendEOSNode(OSCSender, Node):
 
     def execute(self):
         self.change_in_value()
+
+    def address_changed(self):
+        """
+        Handles changes to the node's OSC address, ensuring the registry is
+        updated correctly.
+        """
+        address_property = None
+        if hasattr(self, 'target_address_property'):
+            address_property = self.target_address_property
+
+        if address_property is None:
+            return
+
+        new_address = any_to_string(address_property())
+
+        if new_address != self.address:
+            # 1. CAPTURE the old path components BEFORE changing the state.
+            old_path_components = self._get_registry_path_components()
+
+            # 2. CHANGE the internal state.
+            # This is the logic that was in the base OSCReceiver/OSCSender.
+            if self.target is not None:
+                self.target.unregister_send_node(self)  # For senders
+
+            self.address = new_address
+
+            # Re-register with the source/target under the new address
+            if self.target is not None:
+                self.target.register_send_node(self)
+
+            # 3. UPDATE the registry, passing in the captured old path.
+            self._update_registration(old_path_components=old_path_components)
+

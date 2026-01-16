@@ -994,16 +994,24 @@ class MoCapGLBody(MoCapNode):
 
     def joint_callback(self, joint_index):
         local_index = joint_index
-        if joint_index in [20, 21, 23]:
+        if joint_index in [20]:
             return
-        if joint_index == 22:
+        if joint_index == 21:
             local_index = 20  # handle left foot
-        elif joint_index == 24:
+        elif joint_index == 23:
             local_index = 21  # handle right foot
+        elif joint_index == 25:
+            local_index = 22 # handle left hand
+        elif joint_index == 27:
+            local_index = 23 # handle right hand
+        elif joint_index == 22:
+            local_index = 24
+        elif joint_index == 24:
+            local_index = 25
         elif joint_index == 26:
-            local_index = 22
+            local_index = 26
         elif joint_index == 28:
-            local_index = 23
+            local_index = 27
 
         # if joint_index >= t_ActiveJointCount:
         #     return

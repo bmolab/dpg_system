@@ -6,6 +6,14 @@ from dataclasses import dataclass
 import logging
 from dpg_system.one_euro_filter import OneEuroFilter
 
+try:
+    import torch
+    import smplx
+    SMPLX_AVAILABLE = True
+except ImportError:
+    SMPLX_AVAILABLE = False
+    print("Warning: smplx or torch not found. Dynamic anthropometry will use approximate heuristics.")
+
 @dataclass
 class SMPLProcessingOptions:
     # --- Input / Coordinates ---
@@ -103,12 +111,209 @@ class SMPLProcessor:
         self.perm_basis_rot = None
         self.reset_physics_state()
 
+    def _compute_limb_properties_from_model(self):
+        """
+        Attempts to load SMPL model via smplx and calculate exact limb lengths from betas.
+        Returns:
+            lengths (dict): Dictionary of limb lengths if successful, else None.
+        """
+        if not SMPLX_AVAILABLE:
+            return None
+            
+        # User has smplh models in CWD/smplh/SMPLH_{GENDER}.pkl
+        # smplx.create(model_path='.', model_type='smplh') expects exactly this structure.
+        model_path = '.' 
+        if hasattr(self, 'model_path') and self.model_path:
+             model_path = self.model_path
+             
+        # Map gender. Default to MALE if neutral requested but likely only M/F exist for SMPLH
+        gender_map = {'male': 'MALE', 'female': 'FEMALE'}
+        g_tag = gender_map.get(self.gender, 'MALE') # Fallback to MALE for neutral
+        
+        try:
+            # Create Model
+            # use_pca=False is safer for just shape exploration? No, defaults are fine.
+            model = smplx.create(model_path=model_path, 
+                                 model_type='smplh',
+                                 gender=g_tag, 
+                                 num_betas=10, 
+                                 ext='pkl')
+                                 
+            betas_tensor = torch.zeros(1, 10)
+            if self.betas is not None:
+                b = torch.tensor(self.betas, dtype=torch.float32)
+                if b.numel() > 10: b = b[:10]
+                betas_tensor[0, :b.numel()] = b
+                
+            output = model(betas=betas_tensor)
+            
+            # SMPLH has 52 joints (includes hands). First 24 are body joints.
+            # We only care about the first 24 for our skeleton.
+            joints = output.joints[0].detach().cpu().numpy() # (52, 3)
+            # joints = joints[:24, :] # DO NOT SLICE YET! We need >24 check later.
+            
+            # Calculate Lengths
+            # Indices:
+            # 0: Pelvis
+            # 1: L_Hip, 2: R_Hip
+            # 3: Spine1
+            # 4: L_Knee, 5: R_Knee
+            # 6: Spine2
+            # 7: L_Ankle, 8: R_Ankle
+            # 9: Spine3
+            # 10: L_Foot, 11: R_Foot
+            # 12: Neck
+            # 13: L_Collar, 14: R_Collar
+            # 15: Head
+            # 16: L_Shoulder, 17: R_Shoulder
+            # 18: L_Elbow, 19: R_Elbow
+            # 20: L_Wrist, 21: R_Wrist
+            # 22: L_Hand, 23: R_Hand
+            
+            def dist(i, j):
+                return float(np.linalg.norm(joints[i] - joints[j]))
+                
+            lengths = {}
+            lengths['pelvis_width'] = dist(1, 2)
+            lengths['upper_leg'] = (dist(1, 4) + dist(2, 5)) / 2.0
+            lengths['lower_leg'] = (dist(4, 7) + dist(5, 8)) / 2.0
+            
+            # Compute Exact Offsets (24, 3) relative to parents
+            # Parent indices (standard SMPL):
+            # 0: -1 (Root)
+            # 1: 0, 2: 0
+            # 3: 0
+            # 4: 1, 5: 2
+            # 6: 3
+            # 7: 4, 8: 5
+            # 9: 6
+            # 10: 7, 11: 8
+            # 12: 9
+            # 13: 9, 14: 9
+            # 15: 12
+            # 16: 13, 17: 14
+            # 18: 16, 19: 17
+            # 20: 18, 21: 19
+            # 22: 20, 23: 21
+            # Virtual End Effectors:
+            # 24: L_Toe (Child of 10)
+            # 25: R_Toe (Child of 11)
+            # 26: L_Fingertip (Child of 22/L_Hand)
+            # 27: R_Fingertip (Child of 37/R_Hand)
+            parents = [-1, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9, 12, 13, 14, 16, 17, 18, 19, 20, 21, 10, 11, 22, 37]
+            
+            # Note: We need 28 offsets now
+            model_offsets = np.zeros((28, 3))
+            
+            # Use joints directly (World/Rest Pose).
+            # Assume Root is at origin or doesn't matter for relative offsets.
+            # But Root offset (0) is usually 0,0,0 or position relative to world origin? 
+            # In our system, root translation is separate. 
+            # Offsets[0] is usually 0. Or hip center rel to pelvis? 
+            # Usually Offsets[0] is 0,0,0.
+            
+            for i in range(1, 24):
+                p = parents[i]
+                
+                # Handle Hand Override for SMPL-H
+                if joints.shape[0] > 24:
+                    child_idx = i
+                    if i == 22: child_idx = 22 # Left Hand Base
+                    if i == 23: child_idx = 37 # Right Hand Base (remapped)
+                    
+                    # Store vector: Child - Parent
+                    # Parent is standard index.
+                    offset_vec = joints[child_idx] - joints[parents[i]]
+                    model_offsets[i] = offset_vec
+                else:
+                    offset_vec = joints[i] - joints[parents[i]]
+                    model_offsets[i] = offset_vec
+
+            # --- Virtual Extensions (Indices 24-27) ---
+            # Toes (24, 25): Child of 10, 11
+            # User feedback: "Toe tip positions seem to be directly below foot position in rest pose."
+            # This implies the previous (0, -1, 0) offset was visually wrong (vertical).
+            # The Mesh Foot likely points FORWARD (Local Z) relative to the Ankle joint frame.
+            # Updated to Z-forward offset.
+            foot_vec = np.array([0.0, 0.0, 1.0]) 
+            foot_len = 0.15 # Approx toe length extension from ankle
+            model_offsets[24] = foot_vec * foot_len # L_Toe
+            model_offsets[25] = foot_vec * foot_len # R_Toe
+            
+            # Fingertips (26, 27): Child of Hand (22, 37)
+            # Extrapolate direction from Wrist->Hand.
+            # L_Hand (22) Parent is 20 (Wrist).
+            # R_Hand (37) Parent is 21 (Wrist).
+            # Vector 20->22 is Wrist->Knuckle.
+            # Fingertip should continue this vector.
+            # If 20->22 is present in model_offsets[22].
+            l_knuckle_vec = model_offsets[22]
+            if np.linalg.norm(l_knuckle_vec) > 1e-4:
+                l_dir = l_knuckle_vec / np.linalg.norm(l_knuckle_vec)
+            else:
+                l_dir = np.array([1.0, 0.0, 0.0])
+                
+            # If SMPL-H, Right offset is at 23 (but using 37 data).
+            r_knuckle_vec = model_offsets[23] 
+            if np.linalg.norm(r_knuckle_vec) > 1e-4:
+                r_dir = r_knuckle_vec / np.linalg.norm(r_knuckle_vec)
+            else:
+                r_dir = np.array([-1.0, 0.0, 0.0])
+                
+            finger_len = 0.08 # Approx 8cm from Knuckle to Tip
+            
+            model_offsets[26] = l_dir * finger_len
+            model_offsets[27] = r_dir * finger_len
+            
+            # Fix for SMPL-H (52 joints) vs SMPL (24 joints)
+            # SMPL: 20->22 (L_Hand), 21->23 (R_Hand)
+            # SMPL-H: 22 and 23 are Left Fingers. Right Fingers start around 37.
+            if joints.shape[0] > 24:
+                # SMPL-H Logic
+                l_hand_len = dist(20, 22)
+                r_hand_len = dist(21, 37)
+                lengths['foot'] = (dist(7, 10) + dist(8, 11)) / 2.0 
+            else:
+                # Standard SMPL Logic
+                l_hand_len = dist(20, 22)
+                r_hand_len = dist(21, 23)
+                lengths['foot'] = (dist(7, 10) + dist(8, 11)) / 2.0
+                
+            lengths['hand'] = (l_hand_len + r_hand_len) / 2.0
+            
+            lengths['spine_segment'] = (dist(0, 3) + dist(3, 6) + dist(6, 9)) / 3.0
+            lengths['neck'] = dist(12, 15) # Neck -> Head
+            lengths['head'] = 0.20 
+            
+            lengths['shoulder_width'] = dist(16, 17) 
+            lengths['collar'] = (dist(13, 16) + dist(14, 17)) / 2.0
+            
+            lengths['upper_arm'] = (dist(16, 18) + dist(17, 19)) / 2.0
+            lengths['lower_arm'] = (dist(18, 20) + dist(19, 21)) / 2.0
+            lengths['hand'] = (dist(20, 22) + dist(21, 23)) / 2.0
+            
+            # Extend Lengths keys?
+            # Or reliance on offsets is enough?
+            # User wants "output as index 24 and 25 of both limb length and joint positions"
+            # So 'limb_lengths' array must be 28.
+            # The node calculates it from offsets.
+            
+            # Message only once? Or standard print
+            print(f"Loaded SMPL-H model ({g_tag}) for accurate anthropometry.")
+            return {'lengths': lengths, 'offsets': model_offsets}
+            
+        except Exception as e:
+            # Only print warning once per session ideally, but for now simple print
+            print(f"Failed to load SMPL-H model: {e}. Falling back to heuristics.")
+            print(f"DEBUG: Ensure 'smplh' folder is in {os.path.abspath(model_path)} and contains SMPLH_{g_tag}.pkl")
+            return None
+
     def _compute_limb_properties(self):
         """
         Approximates limb lengths and masses.
-        If a model is loaded, we could be more precise. 
-        Without a model, we use anthropometric tables scaled by height/gender assumptions.
         """
+        model_lengths = self._compute_limb_properties_from_model()
+
         
         # Anthropometric data (de Leva 1996) - approximate segment mass fractions
         # These sums usually add up to ~1.0. 
@@ -128,32 +333,60 @@ class SMPLProcessor:
             'hand': 0.006
         }
         
-        # Approximate lengths (in meters) for a standard ~1.7m human.
-        # We can try to adjust this based on betas[0] (height correlation) lightly if we want.
-        # Beta[0] is roughly height/scaling. +1 sigma is taller.
-        # A very rough approximation: scale = 1.0 + (beta[0] * 0.02)
-        scale_factor = 1.0
-        if self.betas is not None and len(self.betas) > 0:
-            scale_factor += self.betas[0] * 0.02
+        model_data = self._compute_limb_properties_from_model()
         
-        defaults = {
-            'pelvis_width': 0.25,
-            'upper_leg': 0.45,
-            'lower_leg': 0.42,
-            'foot': 0.20, # length
-            'spine_segment': 0.12, # approx per spine joint
-            'neck': 0.10,
-            'head': 0.20,
-            'shoulder_width': 0.40,
-            'upper_arm': 0.30,
-            'lower_arm': 0.28,
-            'hand': 0.18
-        }
-        
-        lengths = {k: v * scale_factor for k, v in defaults.items()}
-        
+        offsets = None
+        if model_data is not None:
+             if 'lengths' in model_data:
+                 lengths = model_data['lengths']
+                 offsets = model_data.get('offsets')
+             else:
+                 # Legacy fallback if I missed something (unlikely)
+                 lengths = model_data
+        else:
+            # Approximate lengths (in meters) for a standard ~1.7m human.
+            # We can try to adjust this based on betas[0] (height correlation) lightly if we want.
+            # Beta[0] is roughly height/scaling. +1 sigma is taller.
+            # A very rough approximation: scale = 1.0 + (beta[0] * 0.06)
+            scale_factor = 1.0
+            if self.betas is not None and len(self.betas) > 0:
+                scale_factor += self.betas[0] * 0.06
+                
+            if self.gender == 'female':
+                scale_factor *= 0.92
+            
+            defaults = {
+                'pelvis_width': 0.25,
+                'upper_leg': 0.45,
+                'lower_leg': 0.42,
+                'foot': 0.20, # length
+                'spine_segment': 0.12, # approx per spine joint
+                'neck': 0.10,
+                'head': 0.20,
+                'shoulder_width': 0.40,
+                'collar': 0.15,
+                'upper_arm': 0.30,
+                'lower_arm': 0.28,
+                'hand': 0.18
+            }
+            lengths = {k: v * scale_factor for k, v in defaults.items()}
+            
         # Masses
-        m = self.total_mass_kg
+        # Base Mass (Neutral)
+        m_base = self.total_mass_kg
+        
+        # Adjust for Shape (Betas)
+        # Beta[0]: Stature (Height/Size). +1 sigma ~ +8% mass.
+        # Beta[1]: Girth (BMI/Fat). +1 sigma ~ +20% mass (Volume scalling).
+        scale_mass = 1.0
+        if self.betas is not None and len(self.betas) > 1:
+            scale_mass += self.betas[0] * 0.08
+            scale_mass += self.betas[1] * 0.20
+            
+        m = m_base * max(0.4, scale_mass) # Safety clip (min 40% of base)
+        
+        print(f"Computed Total Mass: {m:.2f} kg (Base: {m_base}, Betas: {self.betas[:2] if self.betas is not None else 'None'})")
+
         masses = {
             'pelvis': m * mass_fractions['pelvis'],
             'spine': m * mass_fractions['spine'] / 3.0, # split across 3 spine joints
@@ -169,7 +402,10 @@ class SMPLProcessor:
         # Weights for segment mass distribution (approximate)
         self.mass_fractions = mass_fractions # Store for later use
         
-        return {'lengths': lengths, 'masses': masses}
+        result = {'lengths': lengths, 'masses': masses}
+        if offsets is not None:
+             result['offsets'] = offsets
+        return result
 
     def _compute_skeleton_offsets(self):
         """
@@ -177,10 +413,19 @@ class SMPLProcessor:
         Returns:
             offsets (np.array): (24, 3) Local position vectors for each joint in parent frame.
         """
-        offsets = np.zeros((24, 3))
+        # If we have exact model offsets, use them!
+        if isinstance(self.limb_data, dict) and 'offsets' in self.limb_data:
+            return self.limb_data['offsets']
         
-        for i in range(24):
-            node_name = self.joint_names[i]
+        # Fallback to heuristic reconstruction
+        offsets = np.zeros((28, 3))
+        
+        for i in range(28):
+            if i < 24:
+                node_name = self.joint_names[i]
+            else:
+                extra_names = ['l_toe', 'r_toe', 'l_fingertip', 'r_fingertip']
+                node_name = extra_names[i-24]
             
             # Default logic
             length = 0.1
@@ -192,6 +437,10 @@ class SMPLProcessor:
             elif 'hand' in node_name: length = self.limb_data['lengths']['hand']
             elif 'spine' in node_name: length = self.limb_data['lengths']['spine_segment']
             elif 'neck' in node_name or 'head' in node_name: length = self.limb_data['lengths']['neck']
+            
+            # Virtual Extensions
+            elif 'toe' in node_name: length = 0.15
+            elif 'fingertip' in node_name: length = 0.08
 
             # Define Base Local Position (unrotated)
             lx, ly, lz = 0.0, -1.0, 0.0 # Down
@@ -209,9 +458,11 @@ class SMPLProcessor:
                  
             elif 'shoulder' in node_name or 'collar' in node_name: 
                 if 'collar' in node_name:
-                    length = 0.05
+                    # Spine->Collar Offset (Base of Neck to Clavicle Start)
+                    length = self.limb_data['lengths']['collar'] * 0.33
                 else:
-                    length = 0.15
+                    # Collar->Shoulder Offset (Clavicle Length)
+                    length = self.limb_data['lengths']['collar']
                 dir_x = 1.0 if 'left' in node_name else -1.0
                 lx = dir_x
                 ly = 0.0
@@ -222,14 +473,14 @@ class SMPLProcessor:
                 lx, ly, lz = dir_x, 0.0, 0.0
                 
             elif 'hand' in node_name:
-                length = 0.08 
+                length = self.limb_data['lengths']['hand']
                 dir_x = 1.0 if 'left' in node_name else -1.0
                 lx, ly, lz = dir_x, 0.0, 0.0
                 
             elif 'foot' in node_name:
-                length = 0.15 
-                # Tuning V3.5
-                lx, ly, lz = 0.0, 0.5, 0.8
+                length = self.limb_data['lengths']['foot']
+                # Corrected: Point Forward (+Z) and slightly Down (-Y)
+                lx, ly, lz = 0.0, -0.2, 1.0
             
             base_vec = np.array([lx, ly, lz])
             if 'hip' in node_name:
@@ -243,6 +494,360 @@ class SMPLProcessor:
             offsets[i] = local_pos
             
         return offsets
+
+    def _compute_probabilistic_contacts(self, world_pos, pose_data_aa, options):
+        """
+        Estimates contact probability P(C) for each joint [0..1].
+        P(C) = P_prox * P_kin * P_load * P_geo
+        """
+        if not options.floor_enable:
+             return np.zeros((world_pos.shape[0], world_pos.shape[1]), dtype=np.float32)
+             
+        F = world_pos.shape[0]
+        J = world_pos.shape[1] # 24 or 28
+        floor_height = options.floor_height
+        dt = options.dt
+        # Use tracked internal dimension
+        y_dim = getattr(self, 'internal_y_dim', 1) # Internal physics is always Y-up
+        
+        # State Initialization / Resizing
+        if not hasattr(self, 'prob_contact_probs') or self.prob_contact_probs is None or self.prob_contact_probs.shape[0] != J:
+             self.prob_contact_probs = np.zeros(J, dtype=np.float32)
+             
+        if not hasattr(self, 'prob_smoothed_vel') or self.prob_smoothed_vel is None or self.prob_smoothed_vel.shape[0] != J:
+             # Explicitly (J, 3) for F=1 state
+             self.prob_smoothed_vel = np.zeros((J, 3), dtype=np.float32)
+             # Also reset prev_world_pos if size changes to avoid mismatch
+             self.prob_prev_world_pos = None
+
+        # Velocities
+        if not hasattr(self, 'prob_prev_world_pos') or self.prob_prev_world_pos is None:
+             lin_vel = np.zeros_like(world_pos)
+             self.prob_prev_world_pos = world_pos[0].copy() if world_pos.ndim == 3 else world_pos.copy()
+        elif F > 1:
+             # Batch mode approximation
+             lin_vel = np.zeros_like(world_pos)
+             lin_vel[1:] = (world_pos[1:] - world_pos[:-1]) / dt
+             self.prob_prev_world_pos = world_pos[-1].copy()
+        else:
+             lin_vel = (world_pos - self.prob_prev_world_pos) / dt
+             self.prob_prev_world_pos = world_pos.copy()
+             
+        # Temporal Smoothing for Velocity (Trend Analysis)
+        # alpha_v = 0.3 means history dominates (0.7).
+        # Helps filter out inter-frame jitter.
+        alpha_v = 0.3
+        
+        if F == 1:
+             # lin_vel is (1, J, 3). We want (J, 3) for storage.
+             current_vel = lin_vel[0] # (J, 3)
+             self.prob_smoothed_vel = self.prob_smoothed_vel * (1.0 - alpha_v) + current_vel * alpha_v
+             # Broadcast back to (1, J, 3)
+             lin_vel = self.prob_smoothed_vel[np.newaxis, ...] # (1, J, 3)
+        else:
+             # Batch mode: No state smoothing possible across frames in one call easily
+             pass
+
+             
+        vel_y = lin_vel[..., y_dim]
+        vel_h_vec = lin_vel.copy()
+        vel_h_vec[..., y_dim] = 0.0
+        vel_h = np.linalg.norm(vel_h_vec, axis=-1)
+        
+        # --- Factors ---
+        frame_probs = np.zeros((F, J), dtype=np.float32)
+        
+        # Tips Access
+        tips_available = hasattr(self, 'temp_tips') and self.temp_tips is not None
+        
+        for f in range(F):
+            # 1. ZMP Load Prior (Balance)
+            # Use current CoM/ZMP state
+            # Slice world_pos to 24 for CoM calc if necessary, but _compute_full_body_com usually handles slicing internal?
+            # Actually _compute_full_body_com calculates mass weighted average.
+            # If we pass 28 joints to it, and masses are 24, it might crash there too?
+            # Let's check com calc safely.
+            # But here we use 'self.current_com' which is typically pre-calced (on 24 e.g.).
+            if self.current_com is not None:
+                com = self.current_com # (F, 3) 
+                # (Assuming F=1 or current_com matches F)
+                if com.ndim == 2: c = com[f]
+                else: c = com
+            else:
+            # Fallback: slice to 24 for safety
+                c = self._compute_full_body_com(world_pos[f:f+1, :24, :])[0]
+
+            # --- Dynamic ZMP Calculation ---
+            # ZMP = CoM_proj - (h/g) * a_horz
+            # Requires acceleration tracking.
+
+            # 1. State Initialization
+            if not hasattr(self, 'prob_prev_com') or self.prob_prev_com is None:
+                self.prob_prev_com = c.copy()
+                self.prob_prev_com_vel = np.zeros_like(c)
+                self.prob_prev_com_acc = np.zeros_like(c)
+                com_vel = np.zeros_like(c)
+                com_acc = np.zeros_like(c)
+            else:
+                # 2. Kinematics
+                if F > 1:
+                     # Batch mode approximation (less accurate per frame if gap)
+                     # For now, treat as step
+                     com_vel = (c - self.prob_prev_com) / dt
+                else:
+                     com_vel = (c - self.prob_prev_com) / dt
+                     
+                # 3. Acceleration & Smoothing (EMA)
+                # Raw Acc
+                # Handle startup first frame
+                raw_acc = (com_vel - self.prob_prev_com_vel) / dt
+                
+                # Heavy smoothing to reject noise (Alpha ~ 0.05)
+                # Previous 0.2 was too jittery.
+                alpha_acc = 0.05
+                com_acc = self.prob_prev_com_acc * (1.0 - alpha_acc) + raw_acc * alpha_acc
+                
+                # Update State
+                self.prob_prev_com = c.copy()
+                self.prob_prev_com_vel = com_vel.copy()
+                self.prob_prev_com_acc = com_acc.copy()
+                
+            # 4. Calculate Offset
+            plane_dims = [d for d in [0, 1, 2] if d != y_dim]
+            
+            # h = CoM Height relative to floor
+            com_h = c[y_dim] - floor_height
+            g = 9.81
+            
+            # Offset = - (h/g) * a
+            # We only care about horizontal acceleration for ZMP shift
+            acc_horz = com_acc[plane_dims] # 2D
+            zmp_offset = - (com_h / g) * acc_horz
+            
+            # Static Projection
+            p_zmp_static = c[plane_dims]
+            p_zmp = p_zmp_static + zmp_offset
+            
+            # Store 3D ZMP for Output (Projected to Floor)
+            if not hasattr(self, 'current_zmp') or self.current_zmp is None:
+                 # Use 'c' which is guaranteed to be the CoM
+                 if c.ndim == 1: shape = (3,)
+                 elif c.ndim == 2: shape = (c.shape[0], 3)
+                 else: shape = (3,)
+                 self.current_zmp = np.zeros(shape)
+            
+            # Pack back into 3D (assuming floor height Y)
+            if self.current_zmp.ndim == 1:
+                self.current_zmp[plane_dims] = p_zmp
+                self.current_zmp[y_dim] = floor_height
+            else:
+                self.current_zmp[f, plane_dims] = p_zmp
+                self.current_zmp[f, y_dim] = floor_height
+            
+            # --- Stability Heuristic (Feet Balance) ---
+            # Check how well feet support the CoM. If balanced, dampen hand sensitivity.
+            # If failing (unstable), increase hand sensitivity (allow catch).
+            feet_indices = [7, 8, 10, 11]
+            min_foot_dist = 100.0
+            
+            # Helper to get Hz Pos of any joint
+            def get_hz_pos(idx):
+                 if tips_available and idx in self.temp_tips: p = self.temp_tips[idx][f]
+                 else: p = world_pos[f, idx]
+                 return p[plane_dims]
+                 
+            for f_idx in feet_indices:
+                d = np.linalg.norm(get_hz_pos(f_idx) - p_zmp)
+                if d < min_foot_dist: min_foot_dist = d
+                
+            # Score 1.0 (Stable) -> 0.0 (Unstable). Threshold ~0.25m.
+            stability_score = np.exp(- (min_foot_dist / 0.25)**2)
+            
+            # Hand Sigma: 0.05 (Stable) -> 0.10 (Unstable)
+            sigma_hand_dynamic = 0.05 + 0.05 * (1.0 - stability_score)
+            
+            # 2. Joint Loop
+            current_p = np.zeros(J)
+            for j in range(J):
+                # Pos
+                if tips_available and j in self.temp_tips:
+                    pos = self.temp_tips[j][f]
+                else:
+                    pos = world_pos[f, j]
+                
+                h = pos[y_dim] - floor_height
+                
+                # Apply Virtual Heel Offset if Ankle (7, 8) or Wrist (20, 21)
+                # Note: Hands (22, 23) do NOT get bias, allowing fingertips to touch accurately.
+                if j in [7, 8, 20, 21]:
+                    h -= options.heel_toe_bias
+                
+                vy = vel_y[f, j] if vel_y.ndim > 1 else vel_y[j]
+                vh = vel_h[f, j] if vel_h.ndim > 1 else vel_h[j]
+                
+                # A. Proximity P(h)
+                # Gaussian falloff
+                # Default Sigma 0.10m
+                sigma_h = 0.10
+                
+                # Use Dynamic Sigma for Hands
+                if j in [20, 21, 22, 23]:
+                    sigma_h = sigma_hand_dynamic
+                
+                if h <= 0:
+                    p_prox = 1.0
+                else:
+                    p_prox = np.exp(-0.5 * (h / sigma_h)**2)
+                
+                # Clip for large distances (optimization)
+                if h > 0.20: p_prox = 0.0
+                
+                # B. Kinematics P(v)
+                # Issue: During swing (arc), Vy or Vh might dip individually while V_total is high.
+                # Component-wise checks allow False Positives.
+                # Solution: Use Velocity Magnitude Gating.
+                
+                v_total_mag = np.sqrt(vy**2 + vh**2)
+                
+                v_safe = 0.20 # Relaxed from 0.15
+                v_cut = 0.50  # Relaxed from 0.30
+                
+                # Note: We apply Velocity Gating EVEN if Underground (h <= 0).
+                # Why? Mocap errors or interpolation sometimes cause feet to "clip" 
+                # through the floor during a fast swing.
+                # If we forced Contact=1.0 just because h<0, we'd get a false positive slam.
+                # Real contact (standing/pushing) implies low velocity relative to the planted foot.
+                
+                if v_total_mag < v_safe:
+                    p_vel = 1.0
+                elif v_total_mag > v_cut:
+                    p_vel = 0.0
+                else:
+                    # Smooth Decay
+                    t = (v_total_mag - v_safe) / (v_cut - v_safe)
+                    p_vel = np.exp(-5.0 * t**2) # Sharp decay
+                
+                # Asymmetric Lift Logic (Strict Separation)
+                # If lifting fast, break contact immediately even if V_total is low-ish?
+                # V_total covers it usually, but let's be safe.
+                if vy > 0.20: # Distinct lift (Relaxed from 0.10)
+                    p_vel = 0.0
+                    
+                p_contact_j = p_prox * p_vel
+                
+                # Use p_contact_j for subsequent logic assignments...
+                # Note: original code assigned p_vy and p_slip separately.
+                # We unify them into p_vel.
+                
+                # Combine
+                current_p[j] = p_contact_j
+                
+                frame_probs[f, j] = p_contact_j
+            
+            # 3. Heel/Toe Geometry Override (Specific to Feet)
+            # Apply the 5cm band logic as a Probability Mask
+            for (heel, toe) in [(7, 10), (8, 11)]:
+                 # Get P_raw
+                 p_h = current_p[heel]
+                 p_t = current_p[toe]
+                 
+                 # Heights
+                 if tips_available and heel in self.temp_tips: h_h = self.temp_tips[heel][f, y_dim]
+                 else: h_h = world_pos[f, heel, y_dim]
+                 if tips_available and toe in self.temp_tips: h_t = self.temp_tips[toe][f, y_dim]
+                 else: h_t = world_pos[f, toe, y_dim]
+                 
+                 # Apply Virtual Heel Offset
+                 h_h -= options.heel_toe_bias
+                 
+                 diff = h_h - h_t
+                 band = 0.10 # Relaxed to 10cm to prevent dropout on pitched feet
+                 
+                 # Mask [0..1]
+                 mask_heel = 1.0
+                 mask_toe = 1.0
+                 
+                 if diff > band: # Heel High
+                      mask_heel = 0.0
+                 elif diff < -band: # Toe High
+                      mask_toe = 0.0
+                 else:
+                      # Inside the band (-10cm to +10cm), consider both valid.
+                      # This solves the issue where Ankle depth breaks Toe contact.
+                      pass
+                      
+                 current_p[heel] *= mask_heel
+                 current_p[toe] *= mask_toe
+                 
+            # 4. Temporal Smoothing (Bayesian Update)
+            # P_new = alpha * P_obs + (1-alpha) * P_old
+            if f == 0:
+                 self.prob_contact_probs = current_p # Initialize
+            else:
+                 # Alpha = Learning Rate. 
+                 # 0.5 = Faster response (User requested less "persistence")
+                 alpha = 0.5
+                 self.prob_contact_probs = self.prob_contact_probs * (1.0 - alpha) + current_p * alpha
+            frame_probs[f] = self.prob_contact_probs
+            
+            # --- 5. Contact Pressure (Load Distribution) ---
+            # Distinguish "Touching" from "Load Bearing" using ZMP proximity.
+            # Pressure ~ P_contact * (1 / distance_to_zmp^2)
+            if not hasattr(self, 'contact_pressure') or self.contact_pressure is None or self.contact_pressure.shape != frame_probs.shape:
+                 self.contact_pressure = np.zeros_like(frame_probs)
+            
+            # Grounded Set: Ankles(7,8), Toes(10,11 - Wait 10,11 are Feet, 24,25 are Toes)
+            # We use all joints that have contact > 0
+            # Get ZMP for this frame
+            zmp_f = self.current_zmp[f] if self.current_zmp.ndim > 1 else self.current_zmp # (3,)
+            zmp_hz = zmp_f[plane_dims] # 2D
+            
+            # Accumulate weights
+            total_weight = 0.0
+            weights = np.zeros(J)
+            
+            for j in range(J):
+                p = self.prob_contact_probs[j]
+                if p < 0.01: continue
+                
+                # Get Joint Horizontal Pos
+                if tips_available and j in self.temp_tips: 
+                    pos = self.temp_tips[j][f]
+                else: 
+                    pos = world_pos[f, j]
+                pos_hz = pos[plane_dims]
+                
+                dist_sq = np.sum((pos_hz - zmp_hz)**2)
+                
+                # Weight: P / (d^2 + epsilon)
+                # Epsilon 0.005 = ~7cm radius "hotspot"
+                w = p / (dist_sq + 0.005)
+                
+                weights[j] = w
+                total_weight += w
+            
+            # Normalize
+            # Normalize
+            if total_weight > 1e-6:
+                self.contact_pressure[f] = weights / total_weight
+                
+                # --- 6. Dynamic GRF Scaling ---
+                # Scale Pressure by Vertical Acceleration (F = m * (g + a))
+                # If jumping (pushing off), a_y > 0 -> Pressure > 1.0 (High Effort)
+                # If falling (airborne), a_y ~ -g -> Pressure ~ 0.0
+                # If landing, a_y >> 0 -> Pressure >> 1.0 (Impact)
+                
+                acc_vert = com_acc[y_dim]
+                # Factor = (g + a) / g
+                # Clip lower bound to 0 (can't have negative pressure)
+                grf_factor = max(0.0, (g + acc_vert) / g)
+                
+                self.contact_pressure[f] *= grf_factor
+                
+            else:
+                self.contact_pressure[f] = 0.0 # No pressure if no contact
+                 
+        return frame_probs
 
     def _compute_max_torque_profile(self):
         """
@@ -264,8 +869,8 @@ class SMPLProcessor:
             'knee': 250.0, # Quadriceps are strong (ext)
             'ankle': 150.0, # Adjusted for Weight Bearing (Plantarflexion is strong)
             'foot': 40.0,
-            'neck': 50.0, # Adjusted up from 30 (User felt effort was too high)
-            'head': 15.0,
+            'neck': 100.0, # Increased (50->100) to lower gravity effort
+            'head': 30.0,  # Increased (15->30) to lower gravity effort
             'collar': 500.0, # High capability (structural support) to reduce resting effort
             'shoulder': 120.0,
             'elbow': 80.0,
@@ -360,6 +965,11 @@ class SMPLProcessor:
         
         # Pitch History for Velocity Calculation
         self.prev_foot_pitch_arr = {10: 0.0, 11: 0.0} 
+        
+        # Probabilistic Contact State
+        self.prob_prev_world_pos = None
+        self.prob_contact_probs = None
+        self.prob_smoothed_vel = None 
 
 
     def _get_hierarchy(self):
@@ -369,7 +979,8 @@ class SMPLProcessor:
         parents = [-1,  0,  0,  0,  1,  2, 
                     3,  4,  5,  6,  7,  8, 
                     9,  9,  9, 12, 13, 14, # Shoulders (16,17) parented to Collars (13,14)
-                   16, 17, 18, 19, 20, 21]
+                   16, 17, 18, 19, 20, 21,
+                   10, 11, 22, 23] # Virtual: L_Toe, R_Toe, L_Tip, R_Tip
                    
         # Note: Collars (13, 14) are still children of Spine3 (9).
         # But Shoulders (16, 17) now bypass them physically for mass load calculation.
@@ -677,13 +1288,15 @@ class SMPLProcessor:
             return weighted_pos_sum / total_mass
         else:
             return world_positions[..., 0, :] # Fallback to Pelvis
-    def _compute_gravity_torques(self, world_pos, options):
+    def _compute_gravity_torques(self, world_pos, options, global_rots=None, tips=None):
         """
         Compute gravity torque vectors for all joints.
         
         Args:
             world_pos (np.array): (F, 24, 3) World positions of joints.
             options (SMPLProcessingOptions): Usage: add_gravity, input_up_axis.
+            global_rots (list[R] or F,24,4): Optional rotations for accurate leaf CoM.
+            tips (dict): Optional virtual tip positions.
             
         Returns:
             t_grav_vecs (np.array): (F, 24, 3) Gravity torque vectors.
@@ -694,12 +1307,21 @@ class SMPLProcessor:
         if not options.add_gravity:
             return t_grav_vecs
             
+        # Optimization: Gravity only applies to the main 24 body joints.
+        # Virtual end-effectors (24-27) have zero mass and no torque.
+        # Slice world_pos to ensure shape consistency with mass arrays.
+        world_pos_full = world_pos
+        world_pos = world_pos_full[:, :24, :]
+            
         # Determine Gravity Vector
         g_mag = 9.81
-        if options.input_up_axis == 'Z':
-            g_vec = np.array([0.0, 0.0, -g_mag])
-        else: 
-            g_vec = np.array([0.0, -g_mag, 0.0])
+        
+        # Gravity should align with the INTERNAL simulation frame (usually Y-Up).
+        # We respect 'internal_y_dim' if set, otherwise assume Y (1).
+        y_dim = getattr(self, 'internal_y_dim', 1)
+        
+        g_vec = np.zeros(3)
+        g_vec[y_dim] = -g_mag
             
         parents = self._get_hierarchy()
         limb_masses = self.limb_data['masses']
@@ -739,19 +1361,12 @@ class SMPLProcessor:
             if m <= 0: continue
             
             # Segment CoM: Midpoint between Joint and Mean(Children)
-            # If no children (Leaf), assume Joint Position? Or project along bone?
-            # Current logic in _compute_subtree_com uses Mean(Children).
             
             child_nodes = [c for c, p in enumerate(parents) if p == idx]
             
             joint_pos = world_pos[:, idx, :]
             if len(child_nodes) > 0:
                 # Vectorized Mean of Children
-                # Optimization: Pre-compute child lists? 
-                # For 24 joints, list comp is fast enough per frame?
-                # Creating list 24 times * F? No, iterate idx, handle all F.
-                
-                # Using 'sum' + divide is faster than mean logic manually?
                 child_pos_sum = np.zeros((F, 3))
                 for c in child_nodes:
                     child_pos_sum += world_pos[:, c, :]
@@ -759,9 +1374,69 @@ class SMPLProcessor:
                 end_pos = child_pos_sum / len(child_nodes)
                 seg_com = (joint_pos + end_pos) * 0.5
             else:
-                # Leaf Logic (e.g. Wrist) -> End Effectors might be handled elsewhere or just use joint
-                # In old logic: "end_pos" wasn't defined if no children, so com_pos = world_pos
-                seg_com = joint_pos
+                # Leaf Logic (Head, Hands, Feet)
+                # To create a non-zero lever arm for gravity, we must estimate where the
+                # mass is relative to the joint pivot.
+                
+                seg_com = joint_pos.copy() # Default
+                
+                # Priority 1: Virtual Tip (Best for Hands/Feet)
+                if tips is not None and idx in tips:
+                    # tip is (F, 3)
+                    tip_pos = tips[idx] # Might need broadcasting if F mismatch?
+                    if tip_pos.shape[0] == F:
+                         seg_com = (joint_pos + tip_pos) * 0.5
+                    
+                # Priority 2: Joint Rotation (Best for Head / Leaves without tips)
+                elif global_rots is not None:
+                      # global_rots is List[R] or (F, 24, 4)?
+                      # _compute_forward_kinematics returns 'quats' (F,24,4) usually if we check signature?
+                      # But docstring says List[R]. 
+                      # Let's handle list of R objects.
+                      
+                      # Identify extension length
+                      name = self.joint_names[idx]
+                      ext_len = 0.0
+                      if 'head' in name: ext_len = limb_lengths.get('head', 0.20)
+                      elif 'hand' in name: ext_len = limb_lengths.get('hand', 0.18)
+                      elif 'foot' in name: ext_len = limb_lengths.get('foot', 0.20)
+                      
+                      if ext_len > 0:
+                          # Project along LOCAL Y-axis (Standard Bone Axis)
+                          local_axis = np.array([0.0, 1.0, 0.0]) # Shape (3,)
+                          
+                          # Rotate to World
+                          # If global_rots is list of R
+                          if isinstance(global_rots, list):
+                               r_obj = global_rots[idx] # (F,) rotation object
+                               axis_world = r_obj.apply(local_axis) # (F, 3)
+                               seg_com = joint_pos + axis_world * (ext_len * 0.5)
+                          elif hasattr(global_rots, 'shape') and global_rots.ndim == 3 and global_rots.shape[-1] == 4:
+                               # Quats (T, J, 4) -> (F, 4)
+                               # Just in case caller passed raw quats
+                               r_obj = R.from_quat(global_rots[:, idx, :])
+                               axis_world = r_obj.apply(local_axis)
+                               seg_com = joint_pos + axis_world * (ext_len * 0.5)
+
+                # Priority 3: Fallback to Parent Vector (Better than nothing)
+                else: 
+                     parent_idx = parents[idx]
+                     if parent_idx >= 0:
+                         parent_pos = world_pos[:, parent_idx, :]
+                         bone_vec = joint_pos - parent_pos
+                         norm = np.linalg.norm(bone_vec, axis=-1, keepdims=True)
+                         
+                         valid_norm = norm > 1e-6
+                         direction = np.zeros_like(bone_vec)
+                         np.divide(bone_vec, norm, out=direction, where=valid_norm)
+                         
+                         name = self.joint_names[idx]
+                         ext_len = 0.0
+                         if 'head' in name: ext_len = limb_lengths.get('head', 0.20)
+                         elif 'hand' in name: ext_len = limb_lengths.get('hand', 0.18)
+                         elif 'foot' in name: ext_len = limb_lengths.get('foot', 0.20)
+                         
+                         seg_com = joint_pos + direction * (ext_len * 0.5)
                 
             node_masses[:, idx] = m
             node_weighted_com[:, idx, :] = seg_com * m
@@ -808,408 +1483,469 @@ class SMPLProcessor:
         self.current_com = subtree_com[:, 0, :] # (F, 3)
         self.current_total_mass = subtree_masses[:, 0] # (F,)
         
+        # --- 4. Standing Correction (Ground Reaction Gravity) ---
+        # Standard gravity calc treats Hips as "Roots" of the Legs (calculating lift torque).
+        # When Standing, Hips support the Upper Body (calculating load torque).
+        # We blend between these models based on Foot Contact Probability.
+        
+        if hasattr(self, 'contact_pressure') and self.contact_pressure is not None:
+             # Use Pressure (Load Bearing) instead of Raw Contact Probability
+             pressures = self.contact_pressure # (F, J)
+             if pressures.ndim == 1:
+                 pressures = pressures[np.newaxis, :]
+             
+             J_probs = pressures.shape[1]
+             
+             # Left Chain: Hip(1), Knee(4), Ankle(7), Foot(10), Toe(24 if exists)
+             # Right Chain: Hip(2), Knee(5), Ankle(8), Foot(11), Toe(25 if exists)
+             
+             def sum_pressure(indices):
+                 total = np.zeros(pressures.shape[0])
+                 for idx in indices:
+                     if idx < J_probs: total += pressures[:, idx]
+                 return total
+                 
+             # Aggregate Ground Support via Summation of Normalized Pressures
+             p_L = sum_pressure([7, 10, 24]) # L_Ankle, L_Foot, L_Toe
+             p_R = sum_pressure([8, 11, 25]) # R_Ankle, R_Foot, R_Toe
+             
+             # --- Arm Support (Universal Gravity) ---
+             # Left Hand: Wrist(20), Hand(22), Tip(26)
+             # Right Hand: Wrist(21), Hand(23), Tip(27)
+             p_L_hand = sum_pressure([20, 22, 26])
+             p_R_hand = sum_pressure([21, 23, 27])
+             
+             # Total Weight Force (F, 3)
+             m_total = self.current_total_mass # (F,)
+             f_body_vec = m_total[:, np.newaxis] * g_vec[np.newaxis, :] # (F, 3)
+             
+             # Load is directly proportional to Pressure (which sums to ~1.0 if grounded)
+             load_L = f_body_vec * p_L[:, np.newaxis]
+             load_R = f_body_vec * p_R[:, np.newaxis]
+             
+             load_L_hand = f_body_vec * p_L_hand[:, np.newaxis]
+             load_R_hand = f_body_vec * p_R_hand[:, np.newaxis]
+             
+             # Apply to Leg Chains
+             # We assume Whole Body CoM is the pivot source for the load
+             com_pos = self.current_com # (F, 3)
+             
+             # --- Resting Logic (Core Damping) ---
+             # If the Pelvis/Spine/Head supports the body, Gravity Torque on Root/Spine should be zero.
+             # Indices: 0(Pelvis), 3,6,9(Spine), 12,15(Neck/Head)
+             p_core = sum_pressure([0, 3, 6, 9, 12, 15])
+             
+             # Apply Damping to Root (0) & Spine if grounded
+             # We dampen the *entire* gravity torque vector for these joints
+             # because the floor is holding them up directly.
+             core_damping = 1.0 - np.clip(p_core[:, np.newaxis], 0.0, 1.0)
+             
+             # Apply to Core Joints
+             for cj in [0, 3, 6, 9, 12, 15]:
+                 if cj < t_grav_vecs.shape[1]:
+                    t_grav_vecs[:, cj, :] *= core_damping
+             
+             def apply_standing_torque(indices, load_vec, p_ground):
+                 for j in indices:
+                     # Calculate Torque: (CoM - Joint) x Load
+                     # Note: This ignores the mass of the leg itself "subtractively" (leg is BELOW hip),
+                     # but as an approximation of "Whole Body Load", using Global CoM is robust.
+                     
+                     joint_p = world_pos[:, j, :]
+                     r = com_pos - joint_p
+                     
+                     # Calculate Full Torque first
+                     t_standing = np.cross(r, load_vec)
+                     
+                     # --- Vertical Clearance Efficiency (Lying vs Standing) ---
+                     # If the Joint is at the SAME height as the CoM (Lying Down),
+                     # the muscles do NOT need to generate huge torque to "hold the body up" 
+                     # because the body is resting on the floor.
+                     # "Standing Torque" implies lifting against gravity.
+                     
+                     h_rel = com_pos[..., y_dim] - joint_p[..., y_dim] # (F,)
+                     
+                     # Efficiency: 0 if h_rel <= 0 (Lying/Inverted?), 1 if h_rel > 0.30m (Standing)
+                     # Sigmoid-like ramp
+                     eff = np.clip(h_rel / 0.30, 0.0, 1.0)
+                     eff = eff[:, np.newaxis] # (F, 1)
+                     
+                     t_standing *= eff
+                     
+                     # --- Sagittal Plane Dominance (Roll Attenuation) ---
+                     # Even in a normal "straight down" stance, the feet are laterally offset 
+                     # from the central Body CoM (hips width). 
+                     # This creates a constant "Roll" torque (Z-axis) if we assume vertical gravity.
+                     # In reality, Ground Reaction Forces angle inward to support this passively.
+                     # To match expected "Low Effort" in rest pose, we strongly attenuate this lateral component,
+                     # focusing purely on Sagittal (Pitch) balance (e.g. leaning forward/backward).
+                     
+                     # Attenuate Roll Torque (Index 2 for Z-axis)
+                     # 0.2 factor allows slight sensitivity to lateral leaning without penalizing stance width.
+                     t_standing[..., 2] *= 0.2
+                     
+                     # Blend:
+                     # T_final = T_lift * (1 - P) + T_standing * P
+                     # P = p_ground
+                     
+                     p_blend = p_ground[:, np.newaxis]
+                     t_grav_vecs[:, j, :] = t_grav_vecs[:, j, :] * (1.0 - p_blend) + t_standing * p_blend
+             
+             # Apply Legs (Hip, Knee, Ankle)
+             apply_standing_torque([1, 4, 7], load_L, p_L)
+             apply_standing_torque([2, 5, 8], load_R, p_R)
+             
+             # Apply Arms (Collar(13/14), Shoulder(16/17), Elbow(18/19))
+             # Note: Wrist(20/21) is the contact point, so torque is applied up to Elbow.
+             apply_standing_torque([13, 16, 18], load_L_hand, p_L_hand)
+             apply_standing_torque([14, 17, 19], load_R_hand, p_R_hand)
+             
+             # Apply Pelvis (0)?
+             # Standard Pelvis Torque is (CoM - Pelvis) x Weight.
+             # This is ALREADY "Whole Body Load".
+             # So Pelvis needs no correction, it acts as the Root.
+             # BUT user said "Does not apply any gravity torque to pelvis".
+             # If Pelvis is Fixed Root, it sees full torque.
+             # If Pelvis is Free Body, gravity on CoM creates Linear Force, not Torque *on itself*?
+             # But our output is "Effort" to *hold* that posture.
+             # So Pelvis Torque is correct.
+             pass
+        
         return t_grav_vecs
 
     def _compute_floor_contacts(self, world_pos, pose_data_aa, options):
         """
-        Compute floor contact masses (pressure) based on position, velocity, and dynamics.
-        Factors in:
-        - Base Proximity
-        - Velocity Guards (Up/Down/Horizontal)
-        - CoM / ZMP Stability
-        - Tip Contacts (Toes/Heels/Hands)
-        - Geometric Biases (Heel-Toe)
+        Simplified Floor Contact Logic (State-based).
+        
+        Rules:
+        1. Entry: Height < Tolerance AND Velocity_Down approx 0 (Stopped).
+        2. Exit: Height > Exit_Tolerance OR Velocity_Horiz > Slip_Limit.
+        3. Distribution: ZMP-based Gaussian weighting.
+        4. Geometry: Heel/Toe priority band.
         """
         F = world_pos.shape[0]
-        
         if not options.floor_enable:
              return np.zeros((F, 24), dtype=np.float32)
              
-        y_dim = 2 if options.input_up_axis == 'Z' else 1
-        
-        # Aliases
+        # Use tracked internal dimension (defaults to 1, but 2 if unrotated Z-up)
+        y_dim = getattr(self, 'internal_y_dim', 1)
         dt = options.dt
         floor_height = options.floor_height
-        floor_tolerance = options.floor_tolerance
-        heel_toe_bias = options.heel_toe_bias
+        tol_enter = options.floor_tolerance
+        tol_exit = tol_enter * 1.5 # Hysteresis
         
-        # 1. Base Joint Contact Quality (Vectorized Default)
-        dist_to_floor = world_pos[..., y_dim] - floor_height
-        dist_to_floor = np.maximum(dist_to_floor, 0.0)
-        base_contact = 1.0 - (dist_to_floor / max(floor_tolerance, 1e-4))
-        base_contact = np.clip(base_contact, 0.0, 1.0)
-        
-        # 2. Velocity Guard (Lift Detection + Horizontal Slip)
+        # --- 1. Compute Velocities ---
         if self.prev_world_pos is None:
              self.prev_world_pos = world_pos[0].copy() if world_pos.ndim == 3 else world_pos.copy()
              
-        # dt passed in is 1.0/max(self.framerate, 1.0) usually? 
-        # In process_frame it was calculated: dt = 1.0/max(self.framerate, 1.0)
-        # We'll use the passed dt.
-        
         lin_vel = np.zeros_like(world_pos)
-        
-        # Batch Mode Velocity
-        if world_pos.shape[0] > 1:
-             # First frame vs prev state
+        if F > 1:
              lin_vel[0] = (world_pos[0] - self.prev_world_pos) / dt
-             # Subsequent frames
              lin_vel[1:] = (world_pos[1:] - world_pos[:-1]) / dt
-             
-             # Update State to Last Frame of Batch
              self.prev_world_pos = world_pos[-1].copy()
+             pass
         else:
-             # Streaming Mode
              lin_vel = (world_pos - self.prev_world_pos) / dt
              self.prev_world_pos = world_pos.copy()
+             
+        vel_y = lin_vel[..., y_dim] # (F, 24) or (24,)
         
-        # Upward Velocity Penalty
-        vel_up = lin_vel[..., y_dim]
-        v_min_up, v_max_up = 0.05, 1.0 # 5cm/s to 100cm/s
-        vel_up_penalty = (vel_up - v_min_up) / (v_max_up - v_min_up)
-        vel_up_penalty = np.clip(vel_up_penalty, 0.0, 1.0)
+        vel_h_vec = lin_vel.copy()
+        vel_h_vec[..., y_dim] = 0.0
+        vel_h = np.linalg.norm(vel_h_vec, axis=-1)
         
-        # Downward Velocity Penalty (Contact Watch - suppress freefall contact)
-        vel_down = -vel_up
-        v_min_down, v_max_down = 0.20, 1.50
-        vel_down_penalty = (vel_down - v_min_down) / (v_max_down - v_min_down)
-        vel_down_penalty = np.clip(vel_down_penalty, 0.0, 1.0)
+        # --- 2. Determine Contact Candidates (State Machine) ---
+        # Initialize with history if available
+        if self.prev_contact_mask is None:
+            self.prev_contact_mask = np.zeros(24, dtype=bool)
         
-        # Horizontal Velocity Penalty (Sliding/Swinging)
-        vel_horiz_vec = lin_vel.copy()
-        vel_horiz_vec[..., y_dim] = 0.0 # Remove vertical component
-        vel_horiz = np.linalg.norm(vel_horiz_vec, axis=2)
+        # We need a boolean mask for logic
+        current_contact_state = np.zeros((F, 24), dtype=bool)
         
-        v_min_h, v_max_h = 0.2, 4.0 # 20cm/s to 400cm/s (Relaxed for running stops)
-        vel_horiz_penalty = (vel_horiz - v_min_h) / (v_max_h - v_min_h)
-        vel_horiz_penalty = np.clip(vel_horiz_penalty, 0.0, 1.0)
+        # Iterate (Vectorized per frame usually, but here we loop f for clarity/state)
+        # Actually, for batch F>1, state propagation is tricky. 
+        # But usually F=1 in streaming.
         
-        # Guards
-        velocity_factor = (1.0 - vel_up_penalty) * (1.0 - vel_down_penalty) * (1.0 - vel_horiz_penalty)
+        curr_state = self.prev_contact_mask.astype(bool) # (24,)
         
-        # 3. CoM Weighting (Center of Gravity Shift)
+        # Tip Positions (Heels/Toes/Hands)
+        # Need to use 'temp_tips' which are computed in forward kinematics
+        # But we need them aligned with world_pos frame index.
+        # process_frame stores self.temp_tips (dict of joint -> pos array)
+        
+        # Ensure temp_tips exists
+        tips_available = hasattr(self, 'temp_tips') and self.temp_tips is not None
+        
+        for f in range(F):
+            # Per-Joint Checking
+            for j in range(24):
+                # Use Tip Position if available
+                pos = world_pos[f, j, :]
+                if tips_available and j in self.temp_tips:
+                    pos = self.temp_tips[j][f]
+                    
+                h = pos[y_dim] - floor_height
+                vy = vel_y[f, j]
+                vh = vel_h[f, j]
+                
+                was_contact = curr_state[j]
+                
+                if was_contact:
+                    # EXIT Conditions
+                    # 1. Lifted
+                    if h > tol_exit:
+                        curr_state[j] = False
+                    # 2. Sliding (Slip)
+                    elif vh > 0.5: # 0.5 m/s slip limit
+                        curr_state[j] = False
+                    # 3. Active Lift (Jump/Rebound)
+                    elif vy > 0.1: # Rising fast (> 10cm/s) -> Break Contact immediately
+                        curr_state[j] = False
+                    else:
+                        # Sustain
+                        curr_state[j] = True
+                else:
+                    # ENTRY Conditions
+                    # 1. In Zone
+                    if h < tol_enter:
+                        # 2. Descent Stopped (Soft Landing)
+                        # vy should be close to 0 or positive (rising CHECK)
+                        # allow slight negative drift (-0.05) due to noise
+                        # AND Prevent Re-Entry if Rising Fast (Oscillation Fix)
+                        # Hysteresis: Entry < 0.05, Exit > 0.1.
+                        if vy > -0.05 and vy < 0.05: 
+                            curr_state[j] = True
+                            
+            # --- 3. Heel/Toe Geometric Resolution ---
+            # If both Heel and Toe are candidates, apply geometric priority.
+            # Left: Heel(7), Toe(10). Right: Heel(8), Toe(11).
+            for (heel, toe) in [(7, 10), (8, 11)]:
+                # Get Heights
+                if tips_available and heel in self.temp_tips and toe in self.temp_tips:
+                    h_heel = self.temp_tips[heel][f, y_dim]
+                    h_toe = self.temp_tips[toe][f, y_dim]
+                else:
+                    # Fallback to joint positions
+                    h_heel = world_pos[f, heel, y_dim]
+                    h_toe = world_pos[f, toe, y_dim]
+
+                # Diff: Positive = Heel Higher
+                diff = h_heel - h_toe
+                band = 0.05 # 5cm blending band
+                
+                r_heel = 0.5
+                r_toe = 0.5
+                
+                if diff > band: # Heel is > 5cm above Toe -> Toe takes all
+                    r_heel = 0.0
+                    r_toe = 1.0
+                elif diff < -band: # Toe is > 5cm above Heel -> Heel takes all
+                    r_heel = 1.0
+                    r_toe = 0.0
+                else:
+                    # Blend [-band, +band] -> [0, 2*band]
+                    # t goes 0 (Heel Only) to 1 (Toe Only)
+                    t = (diff + band) / (2.0 * band)
+                    r_toe = t
+                    r_heel = 1.0 - t
+                    
+                # Apply strictly? 
+                # If a contact is OFF, it stays OFF.
+                # If both are ON, we modulate them? 
+                # Actually, the user wants "Heel gets no contact" if lifted.
+                # So we act on the boolean state? 
+                # Better: We keep boolean state as "Physical Candidate", 
+                # and use these ratios for Mass Distribution Weighting.
+                
+                # Store ratios for this frame/pair to use in Weighting step
+                # We can hack this by storing in a temporary dict
+                pass 
+                
+            current_contact_state[f] = curr_state.copy()
+            
+        # Update History
+        self.prev_contact_mask = curr_state.astype(float) # Store as float mask for compatibility
+        
+        # --- 4. Mass Distribution (ZMP) ---
+        contact_masses = np.zeros((F, 24), dtype=np.float32)
+        total_mass = self.total_mass_kg
+        
+        # Compute Ref Point (ZMP)
         if self.current_com is not None:
-            com = self.current_com
+             com = self.current_com # (F, 3)
         else:
-            com = self._compute_full_body_com(world_pos) # (F, 3)
-        
-        # --- ZMP Dynamics (Dynamic CoM) ---
-        # 1. Calculate CoM Velocity and Acceleration
+             com = self._compute_full_body_com(world_pos)
+             
+        # Compute COM Accel (Horizontal)
+        # Use existing filter state
         com_vel = np.zeros_like(com)
         if F > 1:
-             # Vectorized (Axis 0 is Time)
-             com_vel[1:] = (com[1:] - com[:-1]) / dt
-             if self.prev_com_pos is not None:
-                 com_vel[0] = (com[0] - self.prev_com_pos) / dt
+            com_vel[1:] = (com[1:] - com[:-1]) / dt
+            if self.prev_com_pos is not None: com_vel[0] = (com[0] - self.prev_com_pos) / dt
         elif self.prev_com_pos is not None:
-             com_vel[0] = (com[0] - self.prev_com_pos) / dt
-             
-        # Filter Velocity? Or compute Accel from Vel diff
-        com_accel = np.zeros_like(com)
-        if F > 1:
-             com_accel[1:] = (com_vel[1:] - com_vel[:-1]) / dt
-             if self.prev_com_vel is not None:
-                 com_accel[0] = (com_vel[0] - self.prev_com_vel) / dt
-        elif self.prev_com_vel is not None:
-             # Calculate raw acceleration (streaming)
-             com_accel_curr = (com_vel - self.prev_com_vel) / dt
-             com_accel = com_accel_curr # Assign to array (broadcasting if array 1)
-             
-        # --- Tuning: Amplify Acceleration ---
-        com_accel *= 5.0  
+            com_vel = (com - self.prev_com_pos) / dt
+            
+        accel_h = np.zeros_like(com) # Simplified: Ignore acceleration for stability first?
+        # User requested: "Use center of mass and momentum"
+        # ZMP = CoM - (h/g)*accel
+        g = 9.81
+        h_com = np.maximum(com[..., y_dim] - floor_height, 0.1)
         
-        # Filter Acceleration (OneEuro)
-        if hasattr(self, 'com_accel_filter'):
-            # In batch, filter sequentially
-            for f_idx in range(F):
-                 com_accel[f_idx] = self.com_accel_filter(com_accel[f_idx])
+        # Calculate Accel for ZMP
+        if self.prev_com_vel is not None:
+             accel = (com_vel - self.prev_com_vel) / dt
+             accel_h = accel.copy()
+             accel_h[..., y_dim] = 0.0
+             
+        zmp_offset = - (h_com[:, np.newaxis] / g) * accel_h
+        target_point = com + zmp_offset
         
-        # Update State
+        # Update COM State
         if F > 0:
              self.prev_com_pos = com[-1].copy()
              self.prev_com_vel = com_vel[-1].copy()
-             
-        # 2. Calculate ZMP Offset
-        g = 9.81
-        com_h = com[..., y_dim] - floor_height
-        com_h = np.maximum(com_h, 0.1) # Min height 10cm safety
-        
-        # Accel Horizontal
-        accel_h = com_accel.copy()
-        accel_h[..., y_dim] = 0.0
-        
-        zmp_offset = - (com_h[:, np.newaxis] / g) * accel_h
-        
-        # Target Point for Balance
-        balance_target = com + zmp_offset
-        # ----------------------------------
 
-        # Horizontal Distance to BALANCE TARGET (ZMP)
-        diff = world_pos - balance_target[:, np.newaxis, :]
-        diff[..., y_dim] = 0.0
-        dist_sq = np.sum(diff**2, axis=2)
-        
-        # Gaussian Falloff
-        sigma = 1.0 # Broaden
-        com_factor = np.exp(-dist_sq / (2 * sigma**2))
-        com_factor = 0.3 + 0.7 * com_factor # Min weight 0.3
-        
-        com = balance_target
-        
-        # Combine Base Contact Quality
-        contact_mask = base_contact * velocity_factor * com_factor
-        
-        # --- Mass Distribution Logic ---
-        total_mass = self.total_mass_kg
-        contact_masses = np.zeros((F, 24), dtype=np.float32)
-        
-        # Calculate Root Speed (Pelvis) for Adaptive Guard
-        root_vel_h = lin_vel[:, 0].copy()
-        root_vel_h[..., y_dim] = 0.0
-        root_speed = np.linalg.norm(root_vel_h, axis=1) # (F,)
-        
+        # Distribute
         for f in range(F):
-            # Adaptive Guard Threshold
-            v_root_t = np.clip((root_speed[f] - 0.1) / (0.5 - 0.1), 0.0, 1.0)
-            hold_guard_max = 2.5 * (1.0 - v_root_t) + 1.0 * v_root_t
-            candidates = [] 
-            
-            # 1. Base Joints
-            for i in range(24):
-                if contact_mask[f, i] > 0.01:
-                    # Store
-                    candidates.append({'idx': i, 'qual': contact_mask[f, i], 'd_sq': dist_sq[f, i], 'is_tip': False})
-                    
-            # 2. Add Tip Contacts
-            for idx in [7, 8, 10, 11, 22, 23]:
-                # 7,8=Heel, 10,11=Toe, 22,23=Hand
-                 if idx in self.temp_tips:
-                     tip_pos = self.temp_tips[idx] # (F, 3)
-                     
-                     # Tip Velocity
-                     tv_up = lin_vel[f, idx, y_dim]
-                     tv_up_pen = np.clip(tv_up / 0.5, 0.0, 1.0) 
-                     
-                     prev_contact_f = self.prev_contact_mask if F > 0 else np.zeros(24)
-                     if self.prev_contact_mask is None: prev_contact_f = np.zeros(24)
-                     
-                     was_contact = prev_contact_f[idx] > 0.01 
-                     was_contact_tip = was_contact
-                     
-                     # Use 'temp_tips' history if available?
-                     tv_h = np.linalg.norm([lin_vel[f, idx, d] for d in range(3) if d != y_dim])
-                     
-                     v_min_d, v_max_d = 0.05, 0.50 
-                     tv_down_pen = np.clip((-tv_up - v_min_d)/(v_max_d - v_min_d), 0.0, 1.0)
-                     
-                     # Streaming Hysteresis for Descent Guard
-                     if pose_data_aa.shape[0] == 1:
-                         if not hasattr(self, 'prev_tip_pen'): self.prev_tip_pen = {}
-                         
-                         decay = np.exp(-dt / 0.1) # 100ms Decay
-                         last_pen = self.prev_tip_pen.get(idx, 0.0)
-                         tv_down_pen = max(tv_down_pen, last_pen * decay)
-                         self.prev_tip_pen[idx] = tv_down_pen
-                     
-                     v_min_h, v_max_h = 0.05, 1.50
-                     tv_h_pen = np.clip((tv_h - v_min_h)/(v_max_h - v_min_h), 0.0, 1.0)
-                     
-                     # Dynamic Tolerance
-                     entry_scale = 1.0 - 0.95 * tv_down_pen 
-                     eff_tol_tip = floor_tolerance if was_contact_tip else (floor_tolerance * entry_scale)
-                     
-                     d_floor = tip_pos[f, y_dim] - floor_height
-                     d_floor = np.maximum(d_floor, 0.0)
-                     qual = 1.0 - (d_floor / max(eff_tol_tip, 1e-4))
-                     qual = np.clip(qual, 0.0, 1.0)
-
-                     if qual > 0.01:
-                          if was_contact_tip:
-                               # Holding
-                               tv_h_hold_pen = np.clip((tv_h - 0.2)/(hold_guard_max - 0.2), 0.0, 1.0)
-                               qual *= (1.0 - tv_up_pen) * (1.0 - tv_h_hold_pen)
-                          else:
-                               # Entry
-                               qual *= (1.0 - tv_up_pen) * (1.0 - tv_h_pen)
-                     
-                     if qual > 0.01:
-                         # Dist
-                         d = tip_pos[f] - com[f]
-                         d[y_dim] = 0.0 # Remove vertical component
-                         d_sq = np.sum(d**2)
-                         
-                         current_q = contact_mask[f, idx]
-                         contact_mask[f, idx] = max(current_q, qual)
-
-                         candidates.append({'idx': idx, 'qual': qual, 'd_sq': d_sq, 'is_tip': True})
-            
-            if not candidates:
+            # Active Indices
+            active_indices = np.where(current_contact_state[f])[0]
+            if len(active_indices) == 0:
                 continue
-
-            # 3. Calculate Weights
-            weights = []
-            sigma = 0.30 
-            denom = 2 * sigma * sigma
-            
-            for c in candidates:
-                dist_factor = np.exp(-c['d_sq'] / denom) 
-                w = c['qual'] * dist_factor
-                weights.append(w)
                 
+            weights = []
+            
+            # Recalculate Heel/Toe Ratios for this frame
+            # (Repeating logic for clarity inside loop)
+            geo_weights = np.ones(24)
+            for (heel, toe) in [(7, 10), (8, 11)]:
+                # Get Heights
+                if tips_available and heel in self.temp_tips and toe in self.temp_tips:
+                    h_heel = self.temp_tips[heel][f, y_dim]
+                    h_toe = self.temp_tips[toe][f, y_dim]
+                else:
+                    h_heel, h_toe = world_pos[f, heel, y_dim], world_pos[f, toe, y_dim]
+                
+                diff = h_heel - h_toe
+                band = 0.05
+                if diff > band: 
+                    geo_weights[heel] = 0.0
+                    geo_weights[toe] = 1.0
+                elif diff < -band:
+                    geo_weights[heel] = 1.0
+                    geo_weights[toe] = 0.0
+                else:
+                    t = (diff + band) / (2.0 * band)
+                    geo_weights[toe] = t
+                    geo_weights[heel] = 1.0 - t
+            
+            # Distance Weights
+            sigma = 0.15 # Sharp (was 0.5)
+            
+            for idx in active_indices:
+                # Position
+                pos = world_pos[f, idx, :]
+                if tips_available and idx in self.temp_tips:
+                    pos = self.temp_tips[idx][f]
+                    
+                # Dist to ZMP
+                dist_vec = pos - target_point[f]
+                dist_vec[y_dim] = 0.0
+                d_sq = np.sum(dist_vec**2)
+                
+                w_dist = np.exp(-d_sq / (2 * sigma**2))
+                
+                # Combine with Geometric Weight
+                w_final = w_dist * geo_weights[idx]
+                weights.append(w_final)
+            
             total_w = sum(weights)
+            if total_w > 1e-4:
+                for i, idx in enumerate(active_indices):
+                    contact_masses[f, idx] = total_mass * (weights[i] / total_w)
             
-            if total_w > 0:
-                for i, c in enumerate(candidates):
-                    mass_share = total_mass * (weights[i] / total_w)
-                    target_idx = c['idx']
-                    contact_masses[f, target_idx] += mass_share
-            
-            # --- Refine Foot/Ankle Balance (Post-Pass) ---
+            # --- Refine Foot/Ankle Balance (Post-Pass: ZMP Projection) ---
             for (idx_a, idx_f) in [(7, 10), (8, 11)]:
                 m_a = contact_masses[f, idx_a]
                 m_f = contact_masses[f, idx_f]
                 total_pair = m_a + m_f
                 
-                w_foot = 0.5
+                if total_pair < 0.1:
+                    continue
+
+                # 1. Geometric Validity (Height Logic)
+                # Re-evaluate validity based on the 5cm band
+                h_heel = 0.0
+                h_toe = 0.0
+                if tips_available and idx_f in self.temp_tips and idx_a in self.temp_tips:
+                     h_heel = self.temp_tips[idx_a][f, y_dim]
+                     h_toe = self.temp_tips[idx_f][f, y_dim]
+                else:
+                     h_heel = world_pos[f, idx_a, y_dim]
+                     h_toe = world_pos[f, idx_f, y_dim]
+                     
+                diff = h_heel - h_toe
+                band = 0.05
                 
-                if total_pair > 0.1: 
-                    # 1. Base Weight (Lean / Flat Logic)
-                    plane_dims = [d for d in [0, 1, 2] if d != y_dim]
-                    p_a = world_pos[f, idx_a, plane_dims]
-                    p_f = world_pos[f, idx_f, plane_dims]
-                    p_c = com[f, plane_dims]
+                # Default: Both valid
+                valid_heel = 1.0
+                valid_toe = 1.0
+                
+                if diff > band: # Heel High
+                    valid_heel = 0.0
+                    valid_toe = 1.0
+                elif diff < -band: # Toe High
+                    valid_heel = 1.0
+                    valid_toe = 0.0
+                else: # Mixing Band
+                    t_geo = (diff + band) / (2.0 * band)
+                    valid_toe = t_geo
+                    valid_heel = 1.0 - t_geo
                     
-                    # Project CoM onto line A-F
-                    vec_af = p_f - p_a
-                    len_sq = np.sum(vec_af**2)
-                    
-                    if len_sq > 1e-6:
-                        vec_ac = p_c - p_a
-                        t = np.dot(vec_ac, vec_af) / len_sq
-                        w_foot_base = np.clip(t, 0.0, 1.0)
-                    else:
-                        w_foot_base = 0.5
-                        
-                    # 2. Geometric Bias (Height Comparison)
-                    geo_toe_bias = 0.0
-                    geo_heel_bias = 0.0
-                    toe_bias = 0.0
-                    heel_bias = 0.0
-                    
-                    h_toe = 0.0
-                    h_heel = 0.0
-                    
-                    if hasattr(self, 'temp_tips') and idx_f in self.temp_tips and idx_a in self.temp_tips:
-                        h_toe = self.temp_tips[idx_f][f, y_dim]
-                        h_heel = self.temp_tips[idx_a][f, y_dim]
-                        
-                        height_diff = (h_toe - h_heel) + heel_toe_bias 
-                        
-                        if height_diff < -0.005:
-                             geo_toe_bias = np.clip((-height_diff - 0.005) / 0.035, 0.0, 1.0)
-                        
-                        if height_diff > 0.005:
-                             geo_heel_bias = np.clip((height_diff - 0.005) / 0.045, 0.0, 1.0)
-                             
-                    if geo_toe_bias > 0: toe_bias = geo_toe_bias
-                    if geo_heel_bias > 0: heel_bias = geo_heel_bias
-                    
-                    # Maintain Pitch Calculation for Velocity Logic (Reaching/Flattening)
-                    foot_pitch = 0.0
-                    if hasattr(self, 'temp_tips') and idx_f in self.temp_tips:
-                        t_pos = self.temp_tips[idx_f][f]
-                        v_ft = t_pos - world_pos[f, idx_f]
-                        v_ft_h = np.linalg.norm([v_ft[d] for d in range(3) if d != y_dim])
-                        if v_ft_h > 0.01:
-                            foot_pitch = np.arctan2(v_ft[y_dim], v_ft_h) * (180.0 / np.pi)
-                            
-                    # Calculate Pitch Velocity
-                    if f > 0:
-                        pitch_vel = foot_pitch - self.prev_foot_pitch_arr[idx_f]
-                    else:
-                        pitch_vel = 0.0
-                    self.prev_foot_pitch_arr[idx_f] = foot_pitch
-                        
-                    # --- Bias Suppression by ZMP (Physics Wins) ---
-                    if len_sq > 1e-6:
-                        vec_af_norm = vec_af / np.sqrt(len_sq)
-                        zmp_off_vec = zmp_offset[f, plane_dims]
-                        zmp_proj = np.dot(zmp_off_vec, vec_af_norm)
-                        
-                        # Heel Suppression (ZMP Forward > 2cm)
-                        if heel_bias > 0.0 and zmp_proj > 0.02: 
-                             suppress = np.clip((zmp_proj - 0.02) / 0.08, 0.0, 1.0)
-                             heel_bias *= (1.0 - suppress)
-                             
-                             dynamic_toe = suppress
-                             toe_bias = max(toe_bias, dynamic_toe)
-                             
-                        # Toe Suppression (ZMP Backward < -2cm)
-                        if toe_bias > 0.0 and zmp_proj < -0.02:
-                             suppress = np.clip((-zmp_proj - 0.02) / 0.08, 0.0, 1.0)
-                             toe_bias *= (1.0 - suppress)
-                             
-                    # --- Ankle Rotation / Reaching Logic ---
-                    if idx_f in [10, 11] and pitch_vel < -1.0: 
-                         if h_toe < 0.15:
-                                 reaching_bias = np.clip((-pitch_vel - 1.0) / 4.0, 0.0, 1.0)
-                                 toe_bias = max(toe_bias, reaching_bias)
-                             
-                    # --- Flattening Bias (Heel Drop) ---
-                    if foot_pitch < 0.0 and pitch_vel > 0.0:
-                        flattening_bias = np.clip((-foot_pitch) / 10.0, 0.0, 1.0) 
-                        toe_bias = max(toe_bias, flattening_bias)
-                    
-                    # Blend
-                    w_foot_target = w_foot_base * (1.0 - toe_bias - heel_bias) + (1.0 * toe_bias) + (0.0 * heel_bias)
-                    
-                    # --- Temporal Smoothing (Anti-Jitter) ---
-                    alpha_smooth = 0.2
-                    pair_idx = 0 if idx_f == 10 else 1
-                    
-                    if f == 0 and self.prev_w_foot is not None:
-                         # Use carried over state
-                         w_foot = self.prev_w_foot[pair_idx] * (1.0 - alpha_smooth) + w_foot_target * alpha_smooth
-                         
-                    # Update State
-                    self.prev_w_foot[pair_idx] = w_foot
+                # 2. ZMP Demand (Project ZMP onto Foot Axis)
+                # Use 'target_point' which includes CoM + Momentum (ZMP)
+                zmp = target_point[f]
+                
+                plane_dims = [d for d in [0, 1, 2] if d != y_dim]
+                p_heel = world_pos[f, idx_a, plane_dims]
+                p_toe = world_pos[f, idx_f, plane_dims]
+                p_zmp = zmp[plane_dims]
+                
+                if tips_available and idx_f in self.temp_tips and idx_a in self.temp_tips:
+                     p_heel = self.temp_tips[idx_a][f][plane_dims]
+                     p_toe = self.temp_tips[idx_f][f][plane_dims]
 
-                    # 3. Hover Guard
-                    if (toe_bias < 0.1 and heel_bias < 0.1):
-                        if min(h_heel, h_toe) > floor_height + 0.05:
-                            contact_masses[f, idx_f] = 0.0
-                            contact_masses[f, idx_a] = 0.0
-                        else:
-                            contact_masses[f, idx_f] = total_pair * w_foot
-                            contact_masses[f, idx_a] = total_pair * (1.0 - w_foot)
-                    else:
-                        # Bias active (Toe or Heel Reach) -> Allow contact 
-                        contact_masses[f, idx_f] = total_pair * w_foot
-                        contact_masses[f, idx_a] = total_pair * (1.0 - w_foot)
-
-        
-        # --- Contact Smoothing (Filtered Floor Pressure) ---
-        if pose_data_aa.shape[0] == 1:
-            if not hasattr(self, 'contact_mass_filter'):
-                 self.contact_mass_filter = OneEuroFilter(min_cutoff=1.0, beta=0.005, framerate=self.framerate)
-                 
-            # Filter (24,)
-            curr_contacts = contact_masses[0]
-            if self.contact_mass_filter._x.last_value is None:
-                 filtered_contacts = self.contact_mass_filter(curr_contacts)
-                 filtered_contacts = curr_contacts # Passthrough first frame
-            else:
-                 filtered_contacts = self.contact_mass_filter(curr_contacts)
-                 
-            contact_masses[0] = filtered_contacts
-
-        # Convert to float32 mask
-        contact_mask = contact_masses.astype(np.float32)
-
-        # Update contact mask history (for hysteresis)
-        self.prev_contact_mask = contact_mask[-1].copy() if F > 0 else self.prev_contact_mask
-        
-        return contact_mask
+                vec_ht = p_toe - p_heel
+                vec_hz = p_zmp - p_heel
+                
+                dist_sq = np.sum(vec_ht**2)
+                demand_toe = 0.5
+                demand_heel = 0.5
+                
+                if dist_sq > 1e-6:
+                    # Projection
+                    t_zmp = np.dot(vec_hz, vec_ht) / dist_sq
+                    # Clamp [0, 1] means strictly between heel/toe.
+                    t_zmp = np.clip(t_zmp, 0.0, 1.0)
+                    
+                    demand_toe = t_zmp
+                    demand_heel = 1.0 - t_zmp
+                
+                # 3. Combine
+                # Start with 'demand' (Physics preference), gated by 'validity' (Geometry)
+                
+                share_toe = demand_toe * valid_toe
+                share_heel = demand_heel * valid_heel
+                
+                total_share = share_toe + share_heel
+                
+                if total_share > 1e-4:
+                    normalized_toe = share_toe / total_share
+                    normalized_heel = share_heel / total_share
+                    
+                    contact_masses[f, idx_f] = total_pair * normalized_toe
+                    contact_masses[f, idx_a] = total_pair * normalized_heel
+                    
+        return contact_masses
     def set_axis_permutation(self, axis_permutation):
         """
         Parse and cache the axis permutation matrix.
@@ -1363,6 +2099,9 @@ class SMPLProcessor:
             raise ValueError(f"Unknown input_type: {input_type}")
             
         # --- Handle Coordinate System Conversion ---
+        # Default Internal Up Axis is Y (1)
+        self.internal_y_dim = 1
+        
         if axis_permutation is not None:
              self.set_axis_permutation(axis_permutation)
              
@@ -1384,7 +2123,12 @@ class SMPLProcessor:
              r_all = R.from_rotvec(flat_pose)
              quats = r_all.as_quat().reshape(F, 24, 4)
              
-        elif input_up_axis == 'Z':
+             r_all = R.from_rotvec(flat_pose)
+             quats = r_all.as_quat().reshape(F, 24, 4)
+             
+        # Post-Permutation Alignment
+        # If the resulting data is Z-up (as indicated by options), rotate it to Y-up.
+        if input_up_axis == 'Z':
             # Convert Z-up to Y-up
             tx, ty, tz = trans_data[..., 0], trans_data[..., 1], trans_data[..., 2]
             trans_data = np.stack([tx, tz, -ty], axis=-1)
@@ -1397,6 +2141,9 @@ class SMPLProcessor:
             flat_pose = pose_data_aa.reshape(-1, 3)
             r_all = R.from_rotvec(flat_pose)
             quats = r_all.as_quat().reshape(F, 24, 4)
+            
+            # Rotated to Y-up
+            self.internal_y_dim = 1
             
         elif input_up_axis == 'Y':
             pass
@@ -1418,7 +2165,8 @@ class SMPLProcessor:
             tips (dict): Index -> Position (F, 3) for end effectors (Feet, Hands).
         """
         F = trans_data.shape[0]
-        world_pos = np.zeros((F, 24, 3))
+        # Extending to 28 output joints (24 original + 4 virtual)
+        world_pos = np.zeros((F, 28, 3))
         
         # Optimization: Create ONE Rotation object for all joints at once to speed up init
         # We need frames for a specific joint to be contiguous for easy slicing later.
@@ -1429,25 +2177,34 @@ class SMPLProcessor:
         # We store slices for each joint to avoid re-slicing (though slicing R is cheapish)
         # Actually we just slice on the fly to keep code clean.
         
-        global_rots = [None] * 24
+        global_rots = [None] * 28
         parents = self._get_hierarchy()
 
-        for i in range(24):
+        for i in range(28):
             parent = parents[i]
             
-            # Slice the global rotation object
-            # Because we transposed to (24, F, 4), the frames for joint i are at [i*F : (i+1)*F]
-            start = i * F
-            end = (i + 1) * F
-            rot_local = all_rots[start:end]
+            if i < 24:
+                # Slice the global rotation object
+                # Because we transposed to (24, F, 4), the frames for joint i are at [i*F : (i+1)*F]
+                start = i * F
+                end = (i + 1) * F
+                rot_local = all_rots[start:end]
+            else:
+                # Virtual Joint (Fixed extension)
+                # Local rotation is Identity.
+                rot_local = None # Flag to skip multiplication
             
             if parent == -1:
                 global_rots[i] = rot_local
                 world_pos[:, i, :] = trans_data # (F, 3)
             else:
-                global_rots[i] = global_rots[parent] * rot_local
+                if rot_local is not None:
+                    global_rots[i] = global_rots[parent] * rot_local
+                else:
+                    # Identity local: Global = Parent Global
+                    global_rots[i] = global_rots[parent]
                 
-                # Calculate Offset
+                # Calculate Offset (using 28-element skeleton_offsets)
                 local_pos = self.skeleton_offsets[i]
 
                 # Apply Rotation (Parent's Global Rotation) to the Local Offset
@@ -1457,31 +2214,21 @@ class SMPLProcessor:
         # --- Tip Projection for Contact Detection ---
         tips = {} # index -> pos (F, 3)
         
-        # Feet (10, 11)
-        # Calibrated Offset (Frame 0 Analysis with Reflection)
-        # Vector: [0, -0.14, 0.05] (Local Y-down/Z-forward mix)
-        if hasattr(self, 'foot_offset') and self.foot_offset is not None:
-             foot_offset = self.foot_offset
-        else:
-             foot_offset = np.array([0.0, -0.14, 0.05])
-             
-        for idx in [10, 11]:
-            if idx < 24:
-                tips[idx] = world_pos[:, idx, :] + global_rots[idx].apply(foot_offset)
-
-        # Heels (7, 8 - Ankles) - Standard Heel Drop: 5cm
-        heel_offset = np.array([0.0, -0.05, 0.0])
-        for idx in [7, 8]:
-            tips[idx] = world_pos[:, idx, :] + global_rots[idx].apply(heel_offset)
-            
-        # Hands (22, 23)
-        hand_len = self.limb_data['lengths']['hand'] - 0.08
+        # Use Virtual End-Effectors (Indices 24-27) for accurate contact
+        # L_Foot (10) -> L_Toe (24)
+        # R_Foot (11) -> R_Toe (25)
+        # L_Hand (22) -> L_Tip (26)
+        # R_Hand (23) -> R_Tip (27)
         
-        for idx, sign in [(22, 1.0), (23, -1.0)]: # Left (+), Right (-)
-            if idx < 24:
-                 hand_offset = np.array([sign, 0.0, 0.0]) * max(hand_len, 0.1)
-                 tips[idx] = world_pos[:, idx, :] + global_rots[idx].apply(hand_offset)
-                 
+        # Verify we have enough joints (28)
+        if world_pos.shape[1] >= 28:
+            tips[10] = world_pos[:, 24, :]
+            tips[11] = world_pos[:, 25, :]
+            tips[22] = world_pos[:, 26, :]
+            tips[23] = world_pos[:, 27, :]
+        else:
+             # Fallback if virtual joints missing (should not happen with new logic)
+             pass
                   
         # Store tips and world_pos for later contact logic/debug
         self.temp_tips = tips 
@@ -1743,6 +2490,11 @@ class SMPLProcessor:
         r = (Weighted_Pos / Mass) - Joint_Pos.
         """
         F = world_pos.shape[0]
+        
+        # Optimization: Slice to 24 body joints (ignore virtual tips)
+        world_pos_full = world_pos
+        world_pos = world_pos_full[:, :24, :]
+        
         t_floor_vecs = np.zeros((F, self.target_joint_count, 3))
         
         # If no floor, return zero
@@ -1753,9 +2505,10 @@ class SMPLProcessor:
         # Gravity is Down. Support is Up. 
         # F_support = m * -g.
         g_mag = 9.81
-        if options.input_up_axis == 'Z':
+        internal_up = getattr(self, 'internal_y_dim', 1)
+        if internal_up == 2:
             g_vec = np.array([0.0, 0.0, -g_mag])
-        else: 
+        else:
             g_vec = np.array([0.0, -g_mag, 0.0])
             
         support_accel = -g_vec # Upwards 9.81
@@ -1842,7 +2595,7 @@ class SMPLProcessor:
         t_dyn_vecs = np.zeros((F, self.target_joint_count, 3))
         
         # Pre-compute Gravity Torques
-        t_grav_vecs = self._compute_gravity_torques(world_pos, options)
+        t_grav_vecs = self._compute_gravity_torques(world_pos, options, global_rots, tips)
         
         # Pre-compute Floor Support Torques
         t_floor_vecs = self._compute_floor_support_torques(world_pos, contact_masses, tips, options)
@@ -2019,6 +2772,11 @@ class SMPLProcessor:
             pose_data_aa, contact_mask, tips, options
         )
         
+        # --- Probabilistic Contact (Parallel Output) ---
+        contact_probs = self._compute_probabilistic_contacts(
+             world_pos, pose_data_aa, options
+        )
+        
         # Scalar torque magnitude for output
         torques = np.linalg.norm(torques_vec, axis=-1)
 
@@ -2049,7 +2807,8 @@ class SMPLProcessor:
             'efforts_grav': efforts_grav,
             'efforts_net': efforts_net,
             'positions': world_pos,
-            'floor_contact': contact_mask
+            'floor_contact': contact_mask,
+            'contact_probs': contact_probs
         }
         
         return res

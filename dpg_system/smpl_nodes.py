@@ -1415,6 +1415,7 @@ class SMPLDynamicsNode(SMPLNode):
         
         self.torques_output = self.add_output('torques out')
         self.metrics_output = self.add_output('metrics out')
+        self.contact_probs_output = self.add_output('contact probs out')
         
         self.gender = self.add_property('gender', widget_type='combo', default_value='neutral', callback=self.params_changed)
         self.gender.widget.combo_items = ['male', 'female', 'neutral']
@@ -1642,6 +1643,11 @@ class SMPLTorqueNode(SMPLNode):
         
         self.torque_vec_output = self.add_output('torque_vectors')
         self.gravity_torque_vec_output = self.add_output('gravity_torque_vectors')
+        self.contact_probs_output = self.add_output('contact_probs')
+        self.contact_pressure_output = self.add_output('contact_pressure')
+        self.output_com = self.add_output('com_pos')
+        self.output_zmp = self.add_output('zmp_pos')
+        self.output_limb_lengths = self.add_output('limb_lengths')
         
 
         self.zero_root_torque = self.add_property('zero_root_torque', widget_type='checkbox', default_value=True)
@@ -1719,9 +1725,16 @@ class SMPLTorqueNode(SMPLNode):
                         framerate=self.framerate,
                         betas=self.betas,
                         gender=self.gender,
-                        total_mass_kg=self.total_mass
+                        total_mass_kg=self.total_mass,
+                        model_path=os.path.dirname(os.path.abspath(__file__)) # Use absolute path to dpg_system
                     )
                     self._on_axis_perm_changed()
+                    
+                    # Send updated limb lengths immediately upon config change
+                    if hasattr(self.processor, 'skeleton_offsets'):
+                         offsets = self.processor.skeleton_offsets # (24, 3)
+                         lengths = np.linalg.norm(offsets, axis=-1) # (24,)
+                         self.output_limb_lengths.send(lengths)
         
         # Ensure processor exists
         if self.processor is None:
@@ -1729,9 +1742,16 @@ class SMPLTorqueNode(SMPLNode):
                 framerate=self.framerate,
                 betas=self.betas,
                 gender=self.gender,
-                total_mass_kg=self.total_mass
+                total_mass_kg=self.total_mass,
+                model_path=os.path.dirname(os.path.abspath(__file__))
             )
              self._on_axis_perm_changed()
+             
+             # Send initial limb lengths
+             if hasattr(self.processor, 'skeleton_offsets'):
+                 offsets = self.processor.skeleton_offsets
+                 lengths = np.linalg.norm(offsets, axis=-1)
+                 self.output_limb_lengths.send(lengths)
 
         # 2. Process Data
         if self.pose_input.fresh_input:
@@ -1841,11 +1861,17 @@ class SMPLTorqueNode(SMPLNode):
                 torques_vec = res.get('torques_vec', np.zeros((torques.shape[0], 24, 3)))
                 torques_grav_vec = res.get('torques_grav_vec', np.zeros((torques.shape[0], 24, 3)))
                 
+                # CoM / ZMP
+                com_out = getattr(self.processor, 'current_com', np.zeros((torques.shape[0], 3)))
+                zmp_out = getattr(self.processor, 'current_zmp', np.zeros((torques.shape[0], 3)))
+                
                 if torques.shape[0] == 1:
                     torques = torques[0] # (22,)
                     efforts_dyn = efforts_dyn[0]
                     efforts_grav = efforts_grav[0]
                     efforts_net = efforts_net[0]
+                    com_out = com_out[0] if com_out.ndim > 1 else com_out
+                    zmp_out = zmp_out[0] if zmp_out.ndim > 1 else zmp_out
                     inertias = inertias[0]
                     torques_vec = torques_vec[0] # (24, 3)
                     torques_grav_vec = torques_grav_vec[0]
@@ -1902,6 +1928,21 @@ class SMPLTorqueNode(SMPLNode):
                      if pos.shape[0] == 1:
                          pos = pos[0] # (24, 3)
                      self.output_positions.send(pos)
+                
+                if 'contact_probs' in res:
+                     probs = res['contact_probs']
+                     if probs.shape[0] == 1:
+                         probs = probs[0]
+                     self.contact_probs_output.send(probs)
+                     
+                press_out = getattr(self.processor, 'contact_pressure', None)
+                if press_out is not None:
+                     if press_out.ndim > 1 and torques.shape[0] == 1:
+                         press_out = press_out[0]
+                     self.contact_pressure_output.send(press_out)
+                     
+                self.output_com.send(com_out)
+                self.output_zmp.send(zmp_out)
             
             except Exception as e:
                 # Catch processing errors (e.g. shape mismatch on first frame)
