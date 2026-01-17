@@ -200,7 +200,9 @@ class SMPLProcessor:
             # 25: R_Toe (Child of 11)
             # 26: L_Fingertip (Child of 22/L_Hand)
             # 27: R_Fingertip (Child of 37/R_Hand)
+            # 27: R_Fingertip (Child of 37/R_Hand)
             parents = [-1, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9, 12, 13, 14, 16, 17, 18, 19, 20, 21, 10, 11, 22, 37]
+            self.parents = parents # Persist for RNE Physics
             
             # Note: We need 28 offsets now
             model_offsets = np.zeros((28, 3))
@@ -602,9 +604,10 @@ class SMPLProcessor:
                 # Handle startup first frame
                 raw_acc = (com_vel - self.prob_prev_com_vel) / dt
                 
-                # Heavy smoothing to reject noise (Alpha ~ 0.05)
-                # Previous 0.2 was too jittery.
-                alpha_acc = 0.05
+                # Heavy smoothing to reject noise (Alpha ~ 0.05 is too slow for Jumps)
+                # Jumps happen in 30-60 frames. Alpha 0.05 lags by 20 frames.
+                # Increase to 0.5 (Responsive)
+                alpha_acc = 0.5
                 com_acc = self.prob_prev_com_acc * (1.0 - alpha_acc) + raw_acc * alpha_acc
                 
                 # Update State
@@ -727,13 +730,71 @@ class SMPLProcessor:
                     t = (v_total_mag - v_safe) / (v_cut - v_safe)
                     p_vel = np.exp(-5.0 * t**2) # Sharp decay
                 
-                # Asymmetric Lift Logic (Strict Separation)
-                # If lifting fast, break contact immediately even if V_total is low-ish?
-                # V_total covers it usually, but let's be safe.
-                if vy > 0.20: # Distinct lift (Relaxed from 0.10)
+                # Asymmetric Lift Logic with Hysteresis
+                # User Request: "If contact has not been made yet, and CoM is rising and potential contact point is rising, then contact is not established."
+                # "If contact has already been establish and is ongoing, minor upward movement should not break contact."
+                
+                if not hasattr(self, 'prob_prev_in_contact') or self.prob_prev_in_contact is None:
+                     self.prob_prev_in_contact = np.zeros(J, dtype=bool)
+                     
+                was_contact = self.prob_prev_in_contact[j]
+                
+                # Thresholds
+                # Exit (Breaking Contact): Loose. Allow jitter up to 0.20 m/s.
+                thresh_exit = 0.20 
+                # Entry (Making Contact): Strict. Must be stable (0.02 m/s).
+                thresh_entry = 0.02
+                
+                # Logic
+                failed_gate = False
+                
+                if was_contact:
+                     # In Contact: Only break if lifting distinctly
+                     if vy > thresh_exit:
+                          failed_gate = True
+                else:
+                     # Not In Contact: Strict Entry
+                     # 1. Foot must be stable (~0 velocity)
+                     if vy > thresh_entry:
+                          failed_gate = True
+                          
+                     # 2. Global Rise Check (Prevent grabbing while launching)
+                     # If CoM is launching UP, and Foot is loose, deny contact.
+                     # com_vel is computed above.
+                     if com_vel[y_dim] > 0.1 and vy > 0.01: # Even slight foot rise during CoM launch is suspicious
+                          failed_gate = True
+                          
+                # 3. Acceleration Gate (Apex / Freefall)
+                # If body is accelerating downwards at near-gravity (Freefall), and velocity is low (Apex),
+                # We cannot be supported. Spurious contact usually happens here because Height is low and Vel is 0.
+                # Adjusted threshold to -2.0 based on file analysis (Data shows ~ -2.5m/s^2 at apex).
+                if com_acc[y_dim] < -2.0 and v_total_mag < 0.5:
+                     failed_gate = True
+                          
+                if failed_gate:
                     p_vel = 0.0
                     
                 p_contact_j = p_prox * p_vel
+                
+                # --- Contact Debounce (Confirmation) ---
+                # User Request: "Need at least two consecutive frames of contact to confirm"
+                if not hasattr(self, 'prob_contact_duration') or self.prob_contact_duration is None:
+                     self.prob_contact_duration = np.zeros(J, dtype=int)
+                     
+                if p_contact_j > 0.5:
+                     self.prob_contact_duration[j] += 1
+                else:
+                     self.prob_contact_duration[j] = 0
+                     
+                # Debounce: Suppress if duration < 2
+                if self.prob_contact_duration[j] < 2:
+                     p_contact_j = 0.0
+                
+                # Update State for Next Frame
+                # Using 0.5 as binary threshold for "Established Contact" state
+                # Note: This creates a feedback loop across frames (Hysteresis state).
+                is_contact = (p_contact_j > 0.5)
+                self.prob_prev_in_contact[j] = is_contact
                 
                 # Use p_contact_j for subsequent logic assignments...
                 # Note: original code assigned p_vy and p_slip separately.
@@ -806,6 +867,14 @@ class SMPLProcessor:
             total_weight = 0.0
             weights = np.zeros(J)
             
+            # Compute Beta (Lying Factor)
+            # If Indices [0, 3, 6, 9, 12, 15] have significant contact sum?
+            core_contact_sum = np.sum(self.prob_contact_probs[[0, 3, 6, 9, 12, 15]])
+            # If Pelvis(0) or Spine(3) is down, beta -> 1.0
+            beta = np.clip(core_contact_sum, 0.0, 1.0)
+            
+            # Refined Weight calculation with Beta
+            total_weight = 0.0
             for j in range(J):
                 p = self.prob_contact_probs[j]
                 if p < 0.01: continue
@@ -816,15 +885,21 @@ class SMPLProcessor:
                 else: 
                     pos = world_pos[f, j]
                 pos_hz = pos[plane_dims]
-                
                 dist_sq = np.sum((pos_hz - zmp_hz)**2)
                 
-                # Weight: P / (d^2 + epsilon)
-                # Epsilon 0.005 = ~7cm radius "hotspot"
-                w = p / (dist_sq + 0.005)
+                w_idw = p / (dist_sq + 0.005)
+                # w_mass = p * 50.0 
+                # ISSUE: p is very high for Pelvis/Spine (Deep penetration), low for Knees.
+                # If we use p directly, Pelvis hogs all support. Knees get none.
+                # Result: Hips lift legs (High Effort).
+                # FIX: Uniform Distribution (or close to it) ensures all touching parts support themselves.
+                w_mass = 10.0 if p > 0.01 else 0.0
                 
-                weights[j] = w
-                total_weight += w
+                # Blend
+                w_final = w_idw * (1.0 - beta) + w_mass * beta
+                
+                weights[j] = w_final
+                total_weight += w_final
             
             # Normalize
             # Normalize
@@ -945,6 +1020,11 @@ class SMPLProcessor:
         self.last_frame_spiked = False # To prevent stuck rejection on fast moves
         self.prev_vel_aa = None
         self.prev_acc_aa = None
+        
+        # Dual Path (Effort) State
+        self.prev_pose_q_effort = None
+        self.prev_vel_aa_effort = None
+        
         self.prev_world_pos = None # For Linear Velocity calculation
         self.prev_tips = None # For Tip Velocity calculation
         # Vectorized OneEuroFilter for 72 channels (24 joints * 3)
@@ -1477,6 +1557,57 @@ class SMPLProcessor:
         # Cross Product
         t_grav_vecs = np.cross(r_vecs, f_grav)
         
+        # --- Apparent Gravity (Airborne Physics) ---
+        # If in freefall, body accelerates with gravity (a ~ -g). Effective weight is 0.
+        # If landing, body decelerates (a > 0). Effective weight is > mg.
+        # FIX: Use ROOT Position (System Frame) instead of CoM (which includes internal Dynamics).
+        # Using CoM causes internal limb swings to trigger global gravity scaling.
+        
+        dt = options.dt
+        current_root = world_pos[:, 0, :] # (F, 3)
+        
+        if not hasattr(self, 'prev_root_gravity'):
+             self.prev_root_gravity = current_root.copy()
+             self.prev_vel_gravity = np.zeros_like(current_root)
+             root_acc = np.zeros_like(current_root)
+        else:
+             # Vel
+             # Handle Teleport (Resets)
+             dist = np.linalg.norm(current_root - self.prev_root_gravity, axis=-1)
+             if np.any(dist > 2.0): # 2 meters per frame jump? Reset.
+                  self.prev_root_gravity = current_root.copy()
+                  self.prev_vel_gravity = np.zeros_like(current_root)
+                  root_acc = np.zeros_like(current_root)
+             else:
+                  current_vel = (current_root - self.prev_root_gravity) / dt
+                  # Acc
+                  root_acc = (current_vel - self.prev_vel_gravity) / dt
+                  
+                  # Update History
+                  self.prev_root_gravity = current_root.copy()
+                  self.prev_vel_gravity = current_vel
+             
+        # Calculate Scaling Factor: (g + a_y) / g
+        y_dim = getattr(self, 'internal_y_dim', 1)
+        g_mag = 9.81
+        a_y = root_acc[..., y_dim]
+        
+        # G_factor needs to match shape of t_grav_vecs for broadcasting (F, 1, 1) or (F, 24, 3)? ((F,))
+        g_factor = np.clip((g_mag + a_y) / g_mag, 0.0, 5.0) # Clamp 0 to 5g
+        
+        # Store for debug
+        self.g_factor = g_factor[0] if len(g_factor) > 0 else 1.0
+        
+        # Apply to Gravity Torque
+        # (F,) -> (F, 1, 1)
+        g_factor_reshaped = g_factor[:, np.newaxis, np.newaxis]
+        t_grav_vecs *= g_factor_reshaped
+        
+        # Note: 'f_grav' used for RNE subtraction later is derived from 'g_vec'.
+        # We rely on 'contact_pressure' being scaled by GRF factor (process_frame logic) 
+        # to scale the GRF term. 
+        # So both T_grav and T_grf scale together. 
+        
         # Optimization: Cache Full Body CoM (Root Subtree) for Floor Contact logic
         # subtree_com[:, 0, :] is the CoM of the whole tree (rooted at 0)
         # Note: If F=1, simple assignment. If F>1, whole array.
@@ -1488,128 +1619,82 @@ class SMPLProcessor:
         # When Standing, Hips support the Upper Body (calculating load torque).
         # We blend between these models based on Foot Contact Probability.
         
+        # --- 4. Generalized Ground Reaction Forces (RNE) ---
+        # Instead of heuristic "Support Logic", we calculate the actual Moment of Ground Reaction Forces.
+        # Torque_net = Torque_gravity - Torque_GRF
+        
         if hasattr(self, 'contact_pressure') and self.contact_pressure is not None:
-             # Use Pressure (Load Bearing) instead of Raw Contact Probability
-             pressures = self.contact_pressure # (F, J)
-             if pressures.ndim == 1:
-                 pressures = pressures[np.newaxis, :]
+             # 1. Compute GRF Vectors at each Joint
+             J = world_pos.shape[1] # Define J
              
-             J_probs = pressures.shape[1]
-             
-             # Left Chain: Hip(1), Knee(4), Ankle(7), Foot(10), Toe(24 if exists)
-             # Right Chain: Hip(2), Knee(5), Ankle(8), Foot(11), Toe(25 if exists)
-             
-             def sum_pressure(indices):
-                 total = np.zeros(pressures.shape[0])
-                 for idx in indices:
-                     if idx < J_probs: total += pressures[:, idx]
-                 return total
-                 
-             # Aggregate Ground Support via Summation of Normalized Pressures
-             p_L = sum_pressure([7, 10, 24]) # L_Ankle, L_Foot, L_Toe
-             p_R = sum_pressure([8, 11, 25]) # R_Ankle, R_Foot, R_Toe
-             
-             # --- Arm Support (Universal Gravity) ---
-             # Left Hand: Wrist(20), Hand(22), Tip(26)
-             # Right Hand: Wrist(21), Hand(23), Tip(27)
-             p_L_hand = sum_pressure([20, 22, 26])
-             p_R_hand = sum_pressure([21, 23, 27])
-             
-             # Total Weight Force (F, 3)
              m_total = self.current_total_mass # (F,)
-             f_body_vec = m_total[:, np.newaxis] * g_vec[np.newaxis, :] # (F, 3)
+             f_total_weight = m_total[:, np.newaxis] * g_vec[np.newaxis, :] # (F, 3)
              
-             # Load is directly proportional to Pressure (which sums to ~1.0 if grounded)
-             load_L = f_body_vec * p_L[:, np.newaxis]
-             load_R = f_body_vec * p_R[:, np.newaxis]
+             pressures = self.contact_pressure # (F, J)
+             if pressures.ndim == 1: pressures = pressures[np.newaxis, :]
              
-             load_L_hand = f_body_vec * p_L_hand[:, np.newaxis]
-             load_R_hand = f_body_vec * p_R_hand[:, np.newaxis]
+             # GRF Force Vectors per Joint (Point Forces)
+             # (F, J, 3)
+             f_grf_vecs = pressures[..., np.newaxis] * f_total_weight[:, np.newaxis, :]
              
-             # Apply to Leg Chains
-             # We assume Whole Body CoM is the pivot source for the load
-             com_pos = self.current_com # (F, 3)
+             # 2. Backward Pass (Accumulate GRF Moments up the tree)
+             # We need to know:
+             # - Cumulative Supported Force below joint j (F_cum)
+             # - Cumulative Moment of those forces about joint j (M_cum)
              
-             # --- Resting Logic (Core Damping) ---
-             # If the Pelvis/Spine/Head supports the body, Gravity Torque on Root/Spine should be zero.
-             # Indices: 0(Pelvis), 3,6,9(Spine), 12,15(Neck/Head)
-             p_core = sum_pressure([0, 3, 6, 9, 12, 15])
+             # Initialize
+             f_cum_grf = f_grf_vecs.copy()
+             m_cum_grf = np.zeros_like(f_grf_vecs) # Moments about the joint itself
              
-             # Apply Damping to Root (0) & Spine if grounded
-             # We dampen the *entire* gravity torque vector for these joints
-             # because the floor is holding them up directly.
-             core_damping = 1.0 - np.clip(p_core[:, np.newaxis], 0.0, 1.0)
+             # Parents array for traversal
+             parents = self.parents 
              
-             # Apply to Core Joints
-             for cj in [0, 3, 6, 9, 12, 15]:
-                 if cj < t_grav_vecs.shape[1]:
-                    t_grav_vecs[:, cj, :] *= core_damping
+             # Backward Pass (Leaf -> Root)
+             # Iterate J-1 down to 1 (0 is root)
+             for j in range(J-1, 0, -1):
+                 parent = parents[j]
+                 
+                 # Propagate TO Parent
+                 # Force propagates directly
+                 f_j = f_cum_grf[:, j, :]
+                 f_cum_grf[:, parent, :] += f_j
+                 
+                 # Moment propagates:
+                 # M_parent += M_joint + (Pos_joint - Pos_parent) x F_joint
+                 
+                 # Vector r from Parent to Joint
+                 r = world_pos[:, j, :] - world_pos[:, parent, :]
+                 
+                 # Additional Moment from Force at j acting on parent lever arm
+                 dt_force = np.cross(r, f_j)
+                 
+                 # Add child's internal moment + lever moment
+                 m_cum_grf[:, parent, :] += m_cum_grf[:, j, :] + dt_force
+                 
+             # 3. Apply to Gravity Torques
+             # The existing 't_grav_vecs' calculates the moment of the SUBTREE MASS about the joint.
+             # 'm_cum_grf' is now the moment of the SUBTREE GROUND FORCES about the joint.
+             # Net Load = Gravity Load - Support Load
              
-             def apply_standing_torque(indices, load_vec, p_ground):
-                 for j in indices:
-                     # Calculate Torque: (CoM - Joint) x Load
-                     # Note: This ignores the mass of the leg itself "subtractively" (leg is BELOW hip),
-                     # but as an approximation of "Whole Body Load", using Global CoM is robust.
-                     
-                     joint_p = world_pos[:, j, :]
-                     r = com_pos - joint_p
-                     
-                     # Calculate Full Torque first
-                     t_standing = np.cross(r, load_vec)
-                     
-                     # --- Vertical Clearance Efficiency (Lying vs Standing) ---
-                     # If the Joint is at the SAME height as the CoM (Lying Down),
-                     # the muscles do NOT need to generate huge torque to "hold the body up" 
-                     # because the body is resting on the floor.
-                     # "Standing Torque" implies lifting against gravity.
-                     
-                     h_rel = com_pos[..., y_dim] - joint_p[..., y_dim] # (F,)
-                     
-                     # Efficiency: 0 if h_rel <= 0 (Lying/Inverted?), 1 if h_rel > 0.30m (Standing)
-                     # Sigmoid-like ramp
-                     eff = np.clip(h_rel / 0.30, 0.0, 1.0)
-                     eff = eff[:, np.newaxis] # (F, 1)
-                     
-                     t_standing *= eff
-                     
-                     # --- Sagittal Plane Dominance (Roll Attenuation) ---
-                     # Even in a normal "straight down" stance, the feet are laterally offset 
-                     # from the central Body CoM (hips width). 
-                     # This creates a constant "Roll" torque (Z-axis) if we assume vertical gravity.
-                     # In reality, Ground Reaction Forces angle inward to support this passively.
-                     # To match expected "Low Effort" in rest pose, we strongly attenuate this lateral component,
-                     # focusing purely on Sagittal (Pitch) balance (e.g. leaning forward/backward).
-                     
-                     # Attenuate Roll Torque (Index 2 for Z-axis)
-                     # 0.2 factor allows slight sensitivity to lateral leaning without penalizing stance width.
-                     t_standing[..., 2] *= 0.2
-                     
-                     # Blend:
-                     # T_final = T_lift * (1 - P) + T_standing * P
-                     # P = p_ground
-                     
-                     p_blend = p_ground[:, np.newaxis]
-                     t_grav_vecs[:, j, :] = t_grav_vecs[:, j, :] * (1.0 - p_blend) + t_standing * p_blend
+             # Note on Sign Convention:
+             # Gravity Torque (Lift) usually attempts to ROTATE the limb DOWN.
+             # Support Torque (GRF) attempts to ROTATE the limb UP (Support).
+             # If completely supported (Lying), they cancel.
+             # If Standing, GRF >> Leg Weight -> Negative Torque (Support Load).
              
-             # Apply Legs (Hip, Knee, Ankle)
-             apply_standing_torque([1, 4, 7], load_L, p_L)
-             apply_standing_torque([2, 5, 8], load_R, p_R)
+             # Apply
+             # Roll Attenuation (Sagittal Dominance) still valuable for perceptual "Effort"?
+             # RNE is physically correct, but "Effort" is subjective.
+             # Let's trust pure physics first. If Standing:
+             # M_grav (Leg) is small. M_grf (Whole Body) is huge.
+             # Net = Huge Support Torque. This is correct (Squatting is hard).
+             # But "Standing Straight" should be low effort?
+             # If aligned, Moment arm is small. So M_grf is small?
+             # Yes. If joints are stacked, Cross Product is small.
+             # Yes. If joints are stacked, Cross Product is small.
+             # RNE handles alignment automatically!
              
-             # Apply Arms (Collar(13/14), Shoulder(16/17), Elbow(18/19))
-             # Note: Wrist(20/21) is the contact point, so torque is applied up to Elbow.
-             apply_standing_torque([13, 16, 18], load_L_hand, p_L_hand)
-             apply_standing_torque([14, 17, 19], load_R_hand, p_R_hand)
-             
-             # Apply Pelvis (0)?
-             # Standard Pelvis Torque is (CoM - Pelvis) x Weight.
-             # This is ALREADY "Whole Body Load".
-             # So Pelvis needs no correction, it acts as the Root.
-             # BUT user said "Does not apply any gravity torque to pelvis".
-             # If Pelvis is Fixed Root, it sees full torque.
-             # If Pelvis is Free Body, gravity on CoM creates Linear Force, not Torque *on itself*?
-             # But our output is "Effort" to *hold* that posture.
-             # So Pelvis Torque is correct.
-             pass
+             t_grav_vecs -= m_cum_grf[:, :t_grav_vecs.shape[1], :]
         
         return t_grav_vecs
 
@@ -2318,17 +2403,19 @@ class SMPLProcessor:
              
         return input_spike_detected
 
-    def _compute_angular_kinematics(self, F, pose_data_aa, quats, options):
+
+    def _compute_angular_kinematics(self, F, pose_data_aa, quats, options, use_filter=True, state_suffix=''):
         """
-        Computes Angular Velocity and Acceleration.
-        Handles both Streaming (OneEuroFilter) and Batch (Vectorized) modes.
-        Updates internal state (prev_pose_q, prev_vel_aa, etc.).
+        Computes angular velocity and acceleration.
+        Dual Path Support: Can optionally bypass filter and use separate state history.
         
         Args:
-            F (int): Number of frames.
+            F (int): Frame count.
             pose_data_aa (F, 24, 3): Pose axis-angle.
             quats (F, 24, 4): Pose quaternions.
-            options (SMPLProcessingOptions): Usage: dt, filter_min_cutoff, filter_beta, accel_clamp.
+            options (SMPLProcessingOptions): Usage: dt, filter_min_cutoff, filter_beta.
+            use_filter (bool): Whether to use OneEuroFilter (True for Contact Path, False for Effort Path).
+            state_suffix (str): Suffix for state variables (e.g. '', '_effort').
             
         Returns:
             ang_vel (F, 24, 3): Angular velocity vectors.
@@ -2336,26 +2423,41 @@ class SMPLProcessor:
         """
         dt = options.dt
         
-        if F == 1 and hasattr(self, 'prev_pose_aa'):
+        # Resolve State Variable Names
+        name_prev_pose_aa = 'prev_pose_aa' + state_suffix
+        name_prev_pose_q = 'prev_pose_q' + state_suffix
+        name_prev_vel_aa = 'prev_vel_aa' + state_suffix
+        
+        # Access State
+        prev_pose_aa = getattr(self, name_prev_pose_aa, None)
+        prev_pose_q = getattr(self, name_prev_pose_q, None)
+        prev_vel_aa = getattr(self, name_prev_vel_aa, None)
+        
+        # KEY FIX: Always enter streaming block if F==1. 
+        # Do not rely on hasattr() because the attribute might not exist yet for new suffixes.
+        if F == 1:
             # Streaming mode
             curr_aa = pose_data_aa[0] # (24, 3)
             
-            if self.prev_pose_aa is None:
+            if prev_pose_aa is None:
                 # First frame, no velocity/accel
                 ang_vel = np.zeros_like(curr_aa)
                 ang_acc = np.zeros_like(curr_aa)
-                self.prev_pose_aa = curr_aa
-                self.prev_vel_aa = ang_vel
                 
-                # Check for Shape Mismatch (Re-init filter if needed) -> Logic moved inside OneEuro Init check?
-                # We need to initialize filter if not exists
-                if self.pose_filter is None:
+                # Init State (using setattr for dynamic names)
+                setattr(self, name_prev_pose_aa, curr_aa)
+                setattr(self, name_prev_vel_aa, ang_vel)
+                
+                # Check for Shape Mismatch (Re-init filter if needed)
+                if use_filter and options.enable_one_euro_filter and self.pose_filter is None:
                      self.pose_filter = OneEuroFilter(min_cutoff=options.filter_min_cutoff, beta=options.filter_beta, framerate=self.framerate)
             else:
                 dt = 1.0 / self.framerate if self.framerate > 0 else 0.016
                 
+                filtered_q = None
+                
                 # One Euro Filter for Pose
-                if options.enable_one_euro_filter:
+                if use_filter and options.enable_one_euro_filter:
                     if self.pose_filter is None:
                         # Initialize
                         self.pose_filter = OneEuroFilter(min_cutoff=options.filter_min_cutoff, beta=options.filter_beta, framerate=self.framerate)
@@ -2365,8 +2467,6 @@ class SMPLProcessor:
                     self.pose_filter._beta = options.filter_beta
                     
                     # Filter the signal (Pose Quaternions to handle wrapping)
-                    # Flatten to (96,) for filter
-                    # Convert AA to Quat
                     curr_q = quats[0].flatten() # (96,)
                     
                     # Check for Shape Mismatch (Re-init filter if needed)
@@ -2374,13 +2474,12 @@ class SMPLProcessor:
                         if self.pose_filter._x.last_value.shape != curr_q.shape:
                             # Reset filter state completely
                             self.pose_filter = OneEuroFilter(min_cutoff=options.filter_min_cutoff, beta=options.filter_beta, framerate=self.framerate)
-                            self.prev_pose_q = None # Reset our history too
+                            setattr(self, name_prev_pose_q, None)
+                            prev_pose_q = None
                             
                     # Align Quaternions to avoid flips (Double Cover)
                     if self.pose_filter._x.last_value is not None:
                         prev_filtered_q = self.pose_filter._x.last_value
-                        # Vectorized Dot Product
-                        # Reshape to (24, 4)
                         c_rs = curr_q.reshape(-1, 4)
                         p_rs = prev_filtered_q.reshape(-1, 4)
                         dots = np.sum(c_rs * p_rs, axis=1) # (24,)
@@ -2391,51 +2490,83 @@ class SMPLProcessor:
                     
                     # Filter
                     filtered_q_flat = self.pose_filter(curr_q)
+                    filtered_q = filtered_q_flat.reshape(24, 4)
                 else:
                     # Bypass Filter
-                    curr_q = quats[0].flatten()
-                    filtered_q_flat = curr_q
+                    curr_q = quats[0] # (24, 4)
+                    
+                    # Ensure continuity (Unwrap) just like Filter does
+                    # This prevents numerical discontinuities if Quats flip sign
+                    # Although Rotation object handles it, manual unwrap is safer for debugging/consistency
+                    if prev_pose_q is not None:
+                         # prev_pose_q is the LAST STORED STATE (Unfiltered)
+                         # We need to access it properly.
+                         # Logic below accesses it via `getattr`.
+                         pass 
+                         
+                    # We can't easily access 'prev_pose_q' here because it's loaded later in the function?
+                    # No, it's loaded at line 2506 *after* filtering.
+                    # To unwrap, we need the previous value NOW.
+                    
+                    # Access Previous State
+                    prev_state_q = getattr(self, name_prev_pose_q, None)
+                    
+                    if prev_state_q is not None:
+                        # Align to previous
+                         c_rs = curr_q.reshape(-1, 4)
+                         p_rs = prev_state_q.reshape(-1, 4)
+                         dots = np.sum(c_rs * p_rs, axis=1)
+                         mask = dots < 0
+                         if np.any(mask):
+                             c_rs[mask] *= -1.0
+                             curr_q = c_rs 
+                             
+                    filtered_q = curr_q
                 
                 # Normalize Filtered Quats
-                filtered_q = filtered_q_flat.reshape(24, 4)
                 norms = np.linalg.norm(filtered_q, axis=1, keepdims=True)
                 filtered_q /= (norms + 1e-8)
                 
                 # Velocity computation using FILTERED Quaternions
                 r_curr = R.from_quat(filtered_q)
                 
-                # Need previous FILTERED quat
-                if not hasattr(self, 'prev_pose_q') or self.prev_pose_q is None:
+                # Need previous FILTERED quat (from State)
+                if prev_pose_q is None:
                     ang_vel = np.zeros((24, 3))
                     raw_ang_acc = np.zeros((24, 3))
                     # Initialize history
-                    self.prev_pose_q = filtered_q
+                    setattr(self, name_prev_pose_q, filtered_q)
                 else:
-                    r_prev = R.from_quat(self.prev_pose_q)
+                    r_prev = R.from_quat(prev_pose_q)
                     r_diff = r_curr * r_prev.inv()
                     diff_vec = r_diff.as_rotvec()
                     
                     ang_vel = diff_vec.reshape(24, 3) / dt
                     
+                    # Update History
+                    setattr(self, name_prev_pose_q, filtered_q)
+                    
                     # Acceleration
-                    if self.prev_vel_aa is None:
+                    if prev_vel_aa is None:
                         raw_ang_acc = np.zeros_like(ang_vel)
                     else:
-                        raw_ang_acc = (ang_vel - self.prev_vel_aa) / dt
+                        raw_ang_acc = (ang_vel - prev_vel_aa) / dt
+                        
+                    # Update Velocity History
+                    setattr(self, name_prev_vel_aa, ang_vel)
                 
-                # Smoothing implicitly handled by OneEuroFilter on Pose
+                # Smoothing implicitly handled by OneEuroFilter on Pose (if enabled)
                 ang_acc = raw_ang_acc
                 
-                # Acceleration Clamping REMOVED per task.
+                # Update AA History
+                # We track raw AA for spike detection logic usually?
+                # Or filtered AA? Original code tracked curr_aa (Raw/Input).
+                setattr(self, name_prev_pose_aa, curr_aa)
                 
-                # Update State with FILTERED values
-                self.prev_pose_q = filtered_q
-                self.prev_vel_aa = ang_vel
-                self.prev_acc_aa = ang_acc
+                # Wait, I might have just assigned filtered_q (Quat) to prev_pose_aa (AA) in my thought process?
+                # Let's be careful.
                 
-            # Expand dims to (F, 24, 3) for return
-            ang_vel = ang_vel[np.newaxis, ...]
-            ang_acc = ang_acc[np.newaxis, ...]
+
 
         else:
             # Batch Mode (F > 1)
@@ -2618,11 +2749,11 @@ class SMPLProcessor:
             t_dyn_vecs[:, j, :] = torque_dyn
             
             torque_grav = t_grav_vecs[:, j, :]
-            torque_floor = t_floor_vecs[:, j, :]
             
-            # Net Torque Vector (World Step 1)
-            # T_muscle = I*alpha - (T_gravity + T_floor)
-            torque_net_world = torque_dyn - (torque_grav + torque_floor)
+            # Frame Correction:
+            # torque_dyn is LOCAL/PARENT Frame (derived from Local AA).
+            # torque_grav is WORLD Frame.
+            # We must convert Gravity to Local before subtracting.
             
             # --- Transform to Parent Frame ---
             parent_idx = parents[j]
@@ -2630,17 +2761,31 @@ class SMPLProcessor:
                 # Inverse of Parent Rotation (Cached)
                 r_parent_inv = global_rot_invs[parent_idx]
                 
-                # Transform Vectors
-                t_net_local = r_parent_inv.apply(torque_net_world)
-                
-                # Also transform components if needed? 
-                t_dyn_local = r_parent_inv.apply(torque_dyn)
+                # Transform Gravity to Local
                 t_grav_local = r_parent_inv.apply(torque_grav)
                 
+                # Dynamic is already Local
+                t_dyn_local = torque_dyn
+                
+                # Net Local
+                t_net_local = t_dyn_local - t_grav_local
+                
             else:
-                t_net_local = torque_net_world
+                # Root: Parent is World (Identity)
+                t_net_local = torque_dyn - torque_grav
                 t_dyn_local = torque_dyn
                 t_grav_local = torque_grav
+            
+            # Store transformed vectors for debug outputs if needed?
+            # t_dyn_vecs is pre-filled with torque_dyn (Local)
+            # t_grav_vecs is pre-filled with World.
+            # We might want to return consistent frames? 
+            # The return dict has 'torques_vec' (Net Local). 
+            # 'torques_dyn_vec' (Currently Local).
+            # 'torques_grav_vec' (Currently World).
+            # Ideally debugging vectors should be in the same frame as Net?
+            # But changing return types might break other viz. 
+            # Let's keep t_grav_vecs (World) in the output for now, as it's "Raw Gravity".
             
             # --- Passive Limits ---
             t_passive_local = np.zeros_like(t_net_local)
@@ -2727,11 +2872,12 @@ class SMPLProcessor:
         self.prev_efforts = efforts_net.copy()
         
         return efforts_net
-    def process_frame(self, pose_data, trans_data, options):
+    def process_frame(self, pose_data, trans_data, options, effort_pose_data=None):
         """
         Process a single frame or batch of frames.
         Tracks state for torque calculation if frames are passed one by one.
         quat_format: 'xyzw' (default, Scipy) or 'wxyz' (Scalar first). Only used if input_type='quat'.
+        effort_pose_data: Optional separate pose stream for Calculation of Effort (AngAcc).
         """
         # Prepare Data (Reshape, Permute, Convert)
         trans_data, pose_data_aa, quats = self._prepare_trans_and_pose(
@@ -2757,18 +2903,44 @@ class SMPLProcessor:
             world_pos, pose_data_aa, options
         )
 
-        # --- Angular Kinematics ---
+        # --- Angular Kinematics (Main Path: Contact/Gravity) ---
+        # Uses OneEuroFilter if enabled
         ang_vel, ang_acc = self._compute_angular_kinematics(
-            F, pose_data_aa, quats, options
-        )
+            F, pose_data_aa, quats, options, use_filter=False, state_suffix=''
+        ) # was true
+        
+        # --- Angular Kinematics (Dual Path: Effort) ---
+        ang_acc_for_effort = ang_acc # Default to main path
+        
+        if effort_pose_data is not None:
+             # Process Effort Pose (Assume same Trans/Options)
+             # Use a dummy trans since we only care about rotations/quats
+             dummy_trans = trans_data
+             _, effort_aa, effort_quats = self._prepare_trans_and_pose(
+                 effort_pose_data, dummy_trans, options
+             )
+             
+             # Compute Kinematics for Effort
+             # Bypass Filter (Assume User pre-filtered) -> use_filter=False
+             # Use separate state history -> state_suffix='_effort'
+             _, effort_ang_acc = self._compute_angular_kinematics(
+                 F, effort_aa, effort_quats, options, use_filter=False, state_suffix='_effort'
+             )
+             ang_acc_for_effort = effort_ang_acc
+             eq = np.all(np.equal(ang_acc_for_effort, ang_acc))
 
+
+        if ang_acc_for_effort.ndim == 2:
+             ang_acc_for_effort = ang_acc_for_effort[np.newaxis, ...]
+             
         if ang_acc.ndim == 2:
              ang_acc = ang_acc[np.newaxis, ...]
         
         # --- Joint Torque & Effort Calculation ---
         # Now pass contact_mask and tips
+        # Key: Pass ang_acc_for_effort!
         torques_vec, inertias, efforts_net, efforts_dyn, efforts_grav, t_dyn_vecs, t_grav_vecs, t_floor_vecs = self._compute_joint_torques(
-            F, ang_acc, world_pos, parents, global_rots,
+            F, ang_acc_for_effort, world_pos, parents, global_rots,
             pose_data_aa, contact_mask, tips, options
         )
         

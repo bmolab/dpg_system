@@ -2101,7 +2101,7 @@ class Vector2DNode(Node):
 
         self.current_dims = [dim1, dim2]
 
-        self.input = self.add_input('in', triggers_execution=True)
+        self.input = self.add_input('in', triggers_execution=True, trigger_button=True, trigger_callback=self.send)
         self.input.bang_repeats_previous = False
         self.output_vector = None
         self.component_properties = []
@@ -2122,6 +2122,7 @@ class Vector2DNode(Node):
 
         self.component_count_property = self.add_option('component count', widget_type='drag_int', default_value=self.current_dims[0], callback=self.component_count_changed)
         self.format_option = self.add_option(label='number format', widget_type='text_input', default_value=self.format, callback=self.change_format)
+        self.all_inputs_trigger_option = self.add_option('all inputs trigger', widget_type='checkbox', default_value=True)
         self.output_vector = np.zeros(self.current_dims)
 
         self.first_component_input_index = -1
@@ -2223,15 +2224,22 @@ class Vector2DNode(Node):
     def component_changed(self):
         if self.first_component_input_index != -1:
             input = self.active_input()
-            # print(input)
             self.active_input.widget.set(any_to_list(input))
-            self.execute()
+            if self.all_inputs_trigger_option():
+                self.execute()
 
     def change_format(self):
         self.format = self.format_option()
         for i in range(self.max_component_count):
             for uuid in self.component_properties[i].widget.uuids:
                 dpg.configure_item(uuid, format=self.format)
+
+    def send(self):
+        output_array = np.ndarray(self.current_dims)
+        for i in range(self.current_dims[0]):
+            for j in range(self.current_dims[1]):
+                output_array[i] = self.component_properties[i]()
+        self.output.send(output_array)
 
     def execute(self):
         if self.input.fresh_input:
@@ -2242,8 +2250,9 @@ class Vector2DNode(Node):
                     output_array = np.ndarray(self.current_dims)
                     for i in range(self.current_dims[0]):
                         for j in range(self.current_dims[1]):
-                            output_array[i, j] = self.component_properties[i, j]()
-                    self.output.set_value(output_array)
+                            output_array[i] = self.component_properties[i]()
+                    self.output.send(output_array)
+                    return
                 else:
                     if self.vector_format_input() == 'list':
                         value = string_to_list(value)

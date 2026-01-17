@@ -1627,6 +1627,7 @@ class SMPLTorqueNode(SMPLNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.pose_input = self.add_input('pose', triggers_execution=True)
+        self.effort_pose_input = self.add_input('effort_pose') # Optional dual path
         self.trans_input = self.add_input('trans')
         self.config_input = self.add_input('config') # gender, betas, framerate
         
@@ -1767,49 +1768,54 @@ class SMPLTorqueNode(SMPLNode):
             # DPG pose might be (22, 3) or (24, 3) or flattened
             
             # Helper to reshape if flattened [22*3] or [24*3]
-            if pose.ndim == 1:
-                if pose.size == 72: # 24*3
-                    pose = pose.reshape(1, 24, 3)
-                elif pose.size == 66: # 22*3 (missing hands?)
-                    # SMPLProcessor expects 24 generally but we can PAD?
-                    # Or maybe it handles it? The processor reshapes based on 72.
-                    # If input is 22 joints, we need to map to 24.
-                    # 22 joints usually implies missing hands (22, 23).
-                    # Let's pad with identity/zeros.
-                    p24 = np.zeros((1, 24, 3))
-                    p24[0, :22, :] = pose.reshape(22, 3)
-                    pose = p24
-                elif pose.size == 88: # 22*4 quats
-                    # Pad to 24*4
-                    p24 = np.zeros((1, 24, 4))
-                    p24[:, :, 0] = 1.0 # Identity w=1
-                    p24[0, :22, :] = pose.reshape(22, 4)
-                    pose = p24
-                elif pose.size == 96: # 24*4
-                    pose = pose.reshape(1, 24, 4)
-            elif pose.ndim == 2:
-                # (22, 3), (24, 3), (22, 4), (24, 4)
-                if pose.shape[0] == 22:
-                    # Pad to 24 for processor comfort (it extracts 22 anyway, but hierarchy FK needs 24 indices)
-                    if pose.shape[1] == 3:
+            def reshape_pose_input(p_in):
+                if p_in.ndim == 1:
+                    if p_in.size == 72: # 24*3
+                        return p_in.reshape(1, 24, 3)
+                    elif p_in.size == 66: # 22*3 (missing hands?)
+                        # Pad with identity/zeros.
                         p24 = np.zeros((1, 24, 3))
-                        p24[0, :22, :] = pose
-                        pose = p24
-                    elif pose.shape[1] == 4:
+                        p24[0, :22, :] = p_in.reshape(22, 3)
+                        return p24
+                    elif p_in.size == 88: # 22*4 quats
+                        # Pad to 24*4
                         p24 = np.zeros((1, 24, 4))
-                        p24[:, :, 0] = 1.0
-                        p24[0, :22, :] = pose
-                        pose = p24
-                elif pose.shape[0] == 24:
-                    pose = pose[np.newaxis, ...] # Add F dim
-            
+                        p24[:, :, 0] = 1.0 # Identity w=1
+                        p24[0, :22, :] = p_in.reshape(22, 4)
+                        return p24
+                    elif p_in.size == 96: # 24*4
+                        return p_in.reshape(1, 24, 4)
+                elif p_in.ndim == 2:
+                    # (22, 3), (24, 3), (22, 4), (24, 4)
+                    if p_in.shape[0] == 22:
+                        # Pad to 24
+                        if p_in.shape[1] == 3:
+                            p24 = np.zeros((1, 24, 3))
+                            p24[0, :22, :] = p_in
+                            return p24
+                        elif p_in.shape[1] == 4:
+                            p24 = np.zeros((1, 24, 4))
+                            p24[:, :, 0] = 1.0
+                            p24[0, :22, :] = p_in
+                            return p24
+                    elif p_in.shape[0] == 24:
+                        return p_in[np.newaxis, ...] # Add F dim
+                return p_in
+
+            pose = reshape_pose_input(pose)
+
+            # Handle Effort Pose (Optional Dual Path)
+            effort_pose = None
+            if self.effort_pose_input.fresh_input and self.effort_pose_input() is not None:
+                raw_eff = self._to_array(self.effort_pose_input())
+                effort_pose = reshape_pose_input(raw_eff)
+                eq = np.all(np.equal(effort_pose, pose))
+
             # Determine input type
             # Shape is now (F, 24, C)
             input_type = 'axis_angle'
             if pose.shape[-1] == 4:
                 input_type = 'quat'
-            
-
             
             # Process
             # Prepare Config
@@ -1846,7 +1852,7 @@ class SMPLTorqueNode(SMPLNode):
             
             # Process
             try:
-                res = self.processor.process_frame(pose, trans, options)
+                res = self.processor.process_frame(pose, trans, options, effort_pose_data=effort_pose)
                 # Output Torques: (F, 22) -> (22) if F=1
                 # Output Inertias: (22,)
                 
