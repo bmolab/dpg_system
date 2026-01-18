@@ -11,7 +11,10 @@ class LowPassFilter:
             self._alpha = alpha
         
         if self._y is None:
-            self._y = value
+            import copy
+            self._y = copy.deepcopy(value) # Safe for all types (lists, arrays)
+            if hasattr(value, 'copy'):
+                self._y = value.copy()
         else:
             self._y = self._alpha * value + (1.0 - self._alpha) * self._y
             

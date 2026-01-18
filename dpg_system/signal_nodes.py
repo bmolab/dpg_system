@@ -6,6 +6,7 @@ import time
 from scipy import signal
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
+from dpg_system.one_euro_filter import OneEuroFilter
 
 
 def register_signal_nodes():
@@ -42,6 +43,8 @@ def register_signal_nodes():
     Node.app.register_node('ranger', RangerNode.factory)
     Node.app.register_node('kalman_filter', KalmanFilterNode.factory)
     Node.app.register_node('kinetic_filter', KineticFilterNode.factory)
+    Node.app.register_node('one_euro_filter', OneEuroFilterNode.factory)
+    Node.app.register_node('stream', StreamDataNode.factory)
 
 class DifferentiateNode(Node):
     @staticmethod
@@ -1272,6 +1275,34 @@ class SampleAndTriggerNode(Node):
     def execute(self):
         self.output.send(self.register_value)
 
+
+class StreamDataNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = StreamDataNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('input')
+        self.stream_input = self.add_input('stream', widget_type='checkbox', default_value=True, callback=self.do_stream)
+        self.output = self.add_output('out')
+        self.add_frame_task()
+
+    def do_stream(self):
+        if self.stream_input() is True:
+            self.add_frame_task()
+        else:
+            self.remove_frame_tasks()
+
+    def frame_task(self) -> None:
+        self.execute()
+
+    def execute(self):
+        self.output.send(self.input())
+
+
 class TogEdgeNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -1720,5 +1751,75 @@ class KalmanFilterNode(Node):
         prediction = np.dot(self.H, self.kalman_filter.predict())[0]
         self.kalman_filter.update(z)
         self.gain_output.send(self.kalman_filter.K)
-
         self.output.send(prediction)
+
+
+class OneEuroFilterNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = OneEuroFilterNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.min_cutoff = 1.0
+        self.beta = 0.0
+        self.d_cutoff = 1.0
+        
+        if len(args) > 0:
+            self.min_cutoff = any_to_float(args[0])
+        if len(args) > 1:
+            self.beta = any_to_float(args[1])
+        if len(args) > 2:
+            self.d_cutoff = any_to_float(args[2])
+
+        self.input = self.add_input('input', triggers_execution=True)
+        
+        self.min_cutoff_prop = self.add_property('min_cutoff', widget_type='drag_float', default_value=self.min_cutoff, callback=self.update_params)
+        self.beta_prop = self.add_property('beta', widget_type='drag_float', default_value=self.beta, callback=self.update_params)
+        self.d_cutoff_prop = self.add_property('d_cutoff', widget_type='drag_float', default_value=self.d_cutoff, callback=self.update_params)
+        self.dt = self.add_input('dt', widget_type='drag_float', default_value=1/60, callback=self.update_params)
+        self.output = self.add_output('out')
+        
+        self.filter = OneEuroFilter(
+            min_cutoff=self.min_cutoff,
+            beta=self.beta,
+            d_cutoff=self.d_cutoff,
+            framerate=30.0
+        )
+
+    def update_params(self):
+        self.min_cutoff = self.min_cutoff_prop()
+        self.beta = self.beta_prop()
+        self.d_cutoff = self.d_cutoff_prop()
+        
+        if self.filter:
+            self.filter._mincutoff = float(self.min_cutoff)
+            self.filter._beta = float(self.beta)
+            self.filter._framerate = float(self.dt())
+            if self.d_cutoff == 0.0:
+                self.filter._dcutoff = float(self.d_cutoff) + 1e-6
+            else:
+                self.filter._dcutoff = float(self.d_cutoff)
+
+    def execute(self):
+        data = self.input()
+        t = type(data)
+        timestamp = time.time()
+        
+        if t in [float, np.double, int, np.int64]:
+            val = float(data)
+            out = self.filter(val, timestamp)
+            self.output.send(out)
+            
+        elif t == np.ndarray:
+            out = self.filter(data, timestamp)
+            self.output.send(out)
+            
+        elif self.app.torch_available and t == torch.Tensor:
+            device = data.device
+            data_np = data.detach().cpu().numpy()
+            out_np = self.filter(data_np, timestamp)
+            out = torch.from_numpy(out_np).to(device)
+            self.output.send(out)

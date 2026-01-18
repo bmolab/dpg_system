@@ -27,6 +27,7 @@ class SMPLProcessingOptions:
     dt: float = 1.0/60.0
     add_gravity: bool = False
     enable_passive_limits: bool = False
+    enable_apparent_gravity: bool = True
     
     # --- Filtering / Signal Processing ---
     enable_one_euro_filter: bool = True
@@ -1563,45 +1564,71 @@ class SMPLProcessor:
         # FIX: Use ROOT Position (System Frame) instead of CoM (which includes internal Dynamics).
         # Using CoM causes internal limb swings to trigger global gravity scaling.
         
-        dt = options.dt
+        # --- Apparent Gravity (Airborne Physics & Locomotion Effort) ---
+        # 1. Inertial Force Logic (if enabled)
+        
         current_root = world_pos[:, 0, :] # (F, 3)
+        g_acc_vec = np.zeros_like(current_root)
         
-        if not hasattr(self, 'prev_root_gravity'):
-             self.prev_root_gravity = current_root.copy()
-             self.prev_vel_gravity = np.zeros_like(current_root)
-             root_acc = np.zeros_like(current_root)
+        if options.enable_apparent_gravity:
+            # Calculate Root Acceleration (System Acceleration)
+            dt = options.dt
+            # current_root already defined
+            
+            if not hasattr(self, 'prev_root_gravity'):
+                 self.prev_root_gravity = current_root.copy()
+                 self.prev_vel_gravity = np.zeros_like(current_root)
+                 root_acc = np.zeros_like(current_root)
+            else:
+                 # Handle Teleport (Resets)
+                 dist = np.linalg.norm(current_root - self.prev_root_gravity, axis=-1)
+                 if np.any(dist > 2.0): 
+                      self.prev_root_gravity = current_root.copy()
+                      self.prev_vel_gravity = np.zeros_like(current_root)
+                      root_acc = np.zeros_like(current_root)
+                 else:
+                      current_vel = (current_root - self.prev_root_gravity) / dt
+                      root_acc = (current_vel - self.prev_vel_gravity) / dt
+                      
+                      self.prev_root_gravity = current_root.copy()
+                      self.prev_vel_gravity = current_vel
+                      
+            # Construct Effective Gravity Vector: g_eff = g_base - a_root
+            # D'Alembert's Principle: Inertial Force = -ma. Equivalent to gravity field -a.
+            
+            # Clamp acceleration to prevent noise scaling (e.g. +/- 30 m/s^2)
+            root_acc = np.clip(root_acc, -30.0, 30.0)
+            
+            g_acc_vec = -root_acc
         else:
-             # Vel
-             # Handle Teleport (Resets)
-             dist = np.linalg.norm(current_root - self.prev_root_gravity, axis=-1)
-             if np.any(dist > 2.0): # 2 meters per frame jump? Reset.
-                  self.prev_root_gravity = current_root.copy()
-                  self.prev_vel_gravity = np.zeros_like(current_root)
-                  root_acc = np.zeros_like(current_root)
-             else:
-                  current_vel = (current_root - self.prev_root_gravity) / dt
-                  # Acc
-                  root_acc = (current_vel - self.prev_vel_gravity) / dt
-                  
-                  # Update History
-                  self.prev_root_gravity = current_root.copy()
-                  self.prev_vel_gravity = current_vel
-             
-        # Calculate Scaling Factor: (g + a_y) / g
-        y_dim = getattr(self, 'internal_y_dim', 1)
-        g_mag = 9.81
-        a_y = root_acc[..., y_dim]
+             # Reset history if disabled (to avoid stale start if re-enabled?)
+             # self.prev_root_gravity = None # Might cause error
+             pass
         
-        # G_factor needs to match shape of t_grav_vecs for broadcasting (F, 1, 1) or (F, 24, 3)? ((F,))
-        g_factor = np.clip((g_mag + a_y) / g_mag, 0.0, 5.0) # Clamp 0 to 5g
+        # Combine with Base Gravity (g_vec)
+        # g_vec is (3,)
+        # g_acc_vec is (F, 3)
+        g_vec_eff = g_vec[np.newaxis, :] + g_acc_vec # (F, 3)
         
-        # Store for debug
-        self.g_factor = g_factor[0] if len(g_factor) > 0 else 1.0
+        # Store for debug (magnitude scaling relative to 9.81)
+        g_mag_eff = np.linalg.norm(g_vec_eff, axis=-1)
+        self.g_factor = (g_mag_eff[0] / 9.81) if len(g_mag_eff) > 0 else 1.0
         
-        # Apply to Gravity Torque
-        # (F,) -> (F, 1, 1)
-        g_factor_reshaped = g_factor[:, np.newaxis, np.newaxis]
-        t_grav_vecs *= g_factor_reshaped
+        # --- Update Gravity Force Vectors ---
+        # f_grav was computed using static g_vec at Line 1555.
+        # We must RECOMPUTE it using g_vec_eff.
+        
+        # f_grav = m * g_eff
+        # subtree_masses: (F, 24)
+        # g_vec_eff: (F, 3) -> (F, 1, 3)
+        f_grav = subtree_masses[:, :, np.newaxis] * g_vec_eff[:, np.newaxis, :]
+        
+        # Recompute Torque (r x f_new)
+        # r_vecs: (F, 24, 3)
+        t_grav_vecs = np.cross(r_vecs, f_grav)
+        
+        # We NO LONGER scale by scalar g_factor. The vector logic handles it.
+        # Removed: t_grav_vecs *= g_factor_reshaped
         
         # Note: 'f_grav' used for RNE subtraction later is derived from 'g_vec'.
         # We rely on 'contact_pressure' being scaled by GRF factor (process_frame logic) 
@@ -1628,7 +1655,11 @@ class SMPLProcessor:
              J = world_pos.shape[1] # Define J
              
              m_total = self.current_total_mass # (F,)
-             f_total_weight = m_total[:, np.newaxis] * g_vec[np.newaxis, :] # (F, 3)
+             
+             # Use Effective Gravity (g_base - a_root) for GRF too
+             # This ensures D'Alembert consistency (Inertial Forces are supported by Ground)
+             # g_vec_eff: (F, 3)
+             f_total_weight = m_total[:, np.newaxis] * g_vec_eff # (F, 3)
              
              pressures = self.contact_pressure # (F, J)
              if pressures.ndim == 1: pressures = pressures[np.newaxis, :]

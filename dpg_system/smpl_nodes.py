@@ -1653,6 +1653,7 @@ class SMPLTorqueNode(SMPLNode):
 
         self.zero_root_torque = self.add_property('zero_root_torque', widget_type='checkbox', default_value=True)
         self.add_gravity_prop = self.add_property('add_gravity', widget_type='checkbox', default_value=True)
+        self.enable_app_gravity_prop = self.add_property('enable_apparent_gravity', widget_type='checkbox', default_value=True)
         self.up_axis_prop = self.add_property('up_axis', widget_type='combo', default_value='Y')
         self.up_axis_prop.widget.combo_items = ['Y', 'Z']
         self.axis_perm_prop = self.add_property('axis_permutation', widget_type='text_input', default_value='x, z, -y', callback=self._on_axis_perm_changed)
@@ -1832,6 +1833,7 @@ class SMPLTorqueNode(SMPLNode):
                 dt=1.0/max(self.framerate, 1.0),
                 add_gravity=self.add_gravity_prop(),
                 enable_passive_limits=self.enable_passive_limits(),
+                enable_apparent_gravity=self.enable_app_gravity_prop(),
                 
                 # Filtering
                 enable_one_euro_filter=self.enable_one_euro_prop(),
