@@ -882,7 +882,7 @@ class TorchTristateBlendEuclideanNode(TorchDeviceDtypeNode):
         self.err_tensor = torch.tensor(self.err_params, device=self.device, dtype=self.dtype)
 
     def execute(self):
-        signal_in = self.input()
+        signal_in = any_to_tensor(self.input())
         if signal_in is None: return
 
         # Flatten input to [S, D] if needed, or handle [B, ..., D]
@@ -1230,7 +1230,7 @@ class TorchTristateBlendESEKFNode(TorchDeviceDtypeNode):  # Renamed
         return torch.rad2deg(angle_rad)
 
     def execute(self):
-        signal_in = self.quat_input()
+        signal_in = any_to_tensor(self.quat_input())
         if signal_in is None or signal_in.dim() != 2 or signal_in.shape[1] != 4:
             return
 

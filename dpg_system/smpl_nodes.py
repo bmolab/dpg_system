@@ -1641,6 +1641,10 @@ class SMPLTorqueNode(SMPLNode):
         self.output_root = self.add_output('root_torque')
         
         self.message_handlers['set_max_torque'] = self.set_max_torque_handler
+        self.message_handlers['set_max_torque'] = self.set_max_torque_handler
+        self.message_handlers['print_max_torque'] = self.print_max_torque
+        
+        self.torque_ratios = {} # Format: {generic_joint_key: ratio_vector}
         
         self.torque_vec_output = self.add_output('torque_vectors')
         self.gravity_torque_vec_output = self.add_output('gravity_torque_vectors')
@@ -1731,6 +1735,7 @@ class SMPLTorqueNode(SMPLNode):
                         model_path=os.path.dirname(os.path.abspath(__file__)) # Use absolute path to dpg_system
                     )
                     self._on_axis_perm_changed()
+                    self._restore_max_torque_overrides()
                     
                     # Send updated limb lengths immediately upon config change
                     if hasattr(self.processor, 'skeleton_offsets'):
@@ -1748,6 +1753,7 @@ class SMPLTorqueNode(SMPLNode):
                 model_path=os.path.dirname(os.path.abspath(__file__))
             )
              self._on_axis_perm_changed()
+             self._restore_max_torque_overrides()
              
              # Send initial limb lengths
              if hasattr(self.processor, 'skeleton_offsets'):
@@ -1959,28 +1965,242 @@ class SMPLTorqueNode(SMPLNode):
                 traceback.print_exc()
                 pass
 
+    def print_max_torque(self, message='', args=[]):
+        max = self.processor.max_torque_array
+        print(max)
+
     def set_max_torque_handler(self, message='', args=[]):
         """
         Handler for 'set_max_torque' message.
-        Expected args: [joint_name_filter, max_torque_value]
-        Example: ['neck', 50.0]
+        Expected args: 
+        1. [joint_name_filter, value] where value is float or list of 3 floats.
+        2. [(24,3) numpy array] -> Sets full profile.
+        3. [(24,) numpy array] -> Sets full profile (isotropic).
         """
         if self.processor is None:
             return
             
+        # Case 1: Direct Array Payload (Single Argument)
+        if len(args) == 1 and isinstance(args[0], np.ndarray):
+            arr = args[0]
+            if arr.shape == (24, 3) or arr.shape == (24, 1) or arr.shape == (24,):
+                # --- Persistence Logic for Arrays (Biometric Back-Projection + Heuristic) ---
+                # Strategy: 
+                # 1. Analyze Input attributes against Defaults.
+                # 2. If Input matches Default BUT we have a saved override, prefer the Override (Heuristic).
+                # 3. Construct "Effective Array" that merges Input and Overrides.
+                # 4. Apply Effective Array to Processor.
+                
+                defaults = self.processor._compute_max_torque_profile()
+                effective_arr = arr.copy() # Start with input
+                
+                # Function to ensure we have a vector for math
+                def to_vec(v):
+                    v = np.array(v, dtype=float)
+                    if v.ndim == 0: return np.full(3, v)
+                    if v.shape == (1,): return np.full(3, v[0])
+                    return v
+
+                # Capture valid joint indices for mapping
+                # We need to apply logic per Biometric Group
+                
+                # Copy old ratios to reference during decision making
+                old_ratios = getattr(self, 'torque_ratios', {}).copy()
+                new_ratios = {}
+                
+                overrides_applied = 0
+                
+                for k in defaults:
+                    default_vec = to_vec(defaults[k])
+                    
+                    # Find ALL joint indices belonging to this group
+                    # e.g., 'knee' -> left_knee_idx, right_knee_idx
+                    indices = []
+                    for i, name in enumerate(self.processor.joint_names):
+                        if k in name:
+                            indices.append(i)
+                            
+                    if not indices: continue
+                    
+                    # Check the First representative for logic (assuming isotropic input for the group if from biometric source)
+                    # If input array varies with group (e.g. left knee != right knee), this logic is imperfect but sufficient for biometric groups.
+                    rep_idx = indices[0]
+                    val_vec = arr[rep_idx]
+                    
+                    # --- Heuristic Check ---
+                    is_default = np.allclose(val_vec, default_vec, rtol=1e-3, atol=1e-3)
+                    
+                    has_override = False
+                    start_ratio = 1.0
+                    if k in old_ratios:
+                        start_ratio = old_ratios[k]
+                        if not np.allclose(start_ratio, 1.0, rtol=1e-3, atol=1e-3):
+                            has_override = True
+                            
+                    final_ratio = 1.0
+                    
+                    if is_default and has_override:
+                        # IGNORE Reset. Restore Override.
+                        # Calculate restored value based on CURRENT default (which is what we are comparing against)
+                        restored_val = default_vec * start_ratio
+                        
+                        # Apply to Effective Array (All indices in group)
+                        for idx in indices:
+                            effective_arr[idx] = restored_val
+                            
+                        # Keep Old Ratio
+                        final_ratio = start_ratio
+                        overrides_applied += 1
+                        
+                    else:
+                        # Accept Input (New Custom or Confirmed Default)
+                        final_ratio = val_vec / (default_vec + 1e-6)
+                        # No change to effective_arr needed (it has input value)
+                        
+                    # Store
+                    new_ratios[k] = final_ratio
+                    
+                # 1. Apply Effective Array
+                self.processor.set_full_max_torque_profile(effective_arr)
+                
+                # 2. Persist Ratios
+                self.torque_ratios = new_ratios
+                
+                if overrides_applied > 0:
+                    print(f"SMPLTorqueNode: Array Input processed. Preserved {overrides_applied} custom overrides against default reset.")
+                # else:
+                #     print(f"SMPLTorqueNode: Array Input processed. No overrides active or Input was non-default.")
+                
+                return
+                        
+                print(f"SMPLTorqueNode: Persisted array settings via {len(self.torque_ratios)} biometric groups.")
+                return
+            else:
+                 print(f"SMPLTorqueNode: Invalid max torque array shape {arr.shape}. Expected (24, 3) or (24,).")
+                 return
+
+        # Case 2: Standard [Filter, Value]
         if len(args) >= 2:
             joint_filter = str(args[0])
             try:
-                val = float(args[1])
-                count = self.processor.set_max_torque(joint_filter, val)
+                # Value might be float, list, or numpy array
+                val = args[1]
+                # count = self.processor.set_max_torque(joint_filter, val) # MOVED BELOW CHECK
+                
+                # --- Persistence Logic (Scaling) ---
+                # Calculate ratio relative to current biometric default
+                defaults = self.processor._compute_max_torque_profile()
+                
+                # Function to ensure we have a vector for math
+                def to_vec(v):
+                    v = np.array(v, dtype=float)
+                    if v.ndim == 0: return np.full(3, v)
+                    if v.shape == (1,): return np.full(3, v[0])
+                    return v
+
+                val_vec = to_vec(val)
+                
+                # Check which keys were updated
+                # Logic mirrors SMPLProcessor.set_max_torque: `if joint_filter in k:`
+                for k in defaults:
+                    if joint_filter in k:
+                        # Calculate Ratio
+                        default_vec = to_vec(defaults[k])
+                        
+                        # --- Heuristic: Default Rejection ---
+                        # If the incoming value 'val_vec' matches 'default_vec', AND we already have a custom override,
+                        # we assume this is a 'System Reset' (e.g. from file loader) and ignore it to preserve user intent.
+                        
+                        is_default = np.allclose(val_vec, default_vec, rtol=1e-3, atol=1e-3)
+                        
+                        existing_ratio = 1.0
+                        if hasattr(self, 'torque_ratios') and k in self.torque_ratios:
+                             # Check if existing ratio is non-trivial from 1.0 vector
+                             r = self.torque_ratios[k] # vector
+                             if not np.allclose(r, 1.0, rtol=1e-3, atol=1e-3):
+                                 existing_ratio = 2.0 # Just a flag that it's "Custom"
+                        
+                        if is_default and existing_ratio != 1.0:
+                             print(f"SMPLTorqueNode: Ignoring reset to default for '{k}' because custom override is active.")
+                             # Skip update!
+                             # But wait, set_max_torque was ALREADY called above!
+                             # We need to perform this check BEFORE calling set_max_torque.
+                             continue
+                        
+                        # Calculate Ratio
+                        ratio = val_vec / (default_vec + 1e-6)
+                        
+                        # Store intent
+                        if not hasattr(self, 'torque_ratios'): self.torque_ratios = {}
+                        self.torque_ratios[k] = ratio
+                        # print(f"Stored Max Torque Ratio for '{k}': {ratio}")
+                
+                # --- APPLY Update (Moved below check) ---
+                # We can't use the simple 'count = processor.set_max_torque' because we might skip some keys.
+                # However, set_max_torque applies to ALL matching keys.
+                # If we want to selectively skip, we might differ from processor logic.
+                # But typically 'joint_filter' maps to specific joints.
+                # If the heuristic triggers, it usually triggers for ALL joints in the filter (if filter is broad and defaults match).
+                
+                # Let's Refactor: Call set_max_torque ONLY if we didn't skip everything?
+                # Or better: Iterate keys and call set_max_torque per key if valid.
+                
+                count = 0
+                for k in defaults:
+                    if joint_filter in k:
+                         default_vec = to_vec(defaults[k])
+                         is_default = np.allclose(val_vec, default_vec, rtol=1e-3, atol=1e-3)
+                         
+                         has_override = False
+                         if hasattr(self, 'torque_ratios') and k in self.torque_ratios:
+                             r = self.torque_ratios[k]
+                             if not np.allclose(r, 1.0, rtol=1e-3, atol=1e-3):
+                                 has_override = True
+                                 
+                         if is_default and has_override:
+                             print(f"SMPLTorqueNode: Ignoring reset to default for '{k}' (Override Active).")
+                             continue
+                         
+                         # Apply Update
+                         self.processor.set_max_torque(k, val)
+                         count += 1
+                         
+                         # Update Storage
+                         ratio = val_vec / (default_vec + 1e-6)
+                         if not hasattr(self, 'torque_ratios'): self.torque_ratios = {}
+                         self.torque_ratios[k] = ratio
+
                 if count > 0:
                     print(f"SMPLTorqueNode: Updated max torque for {count} joints matching '{joint_filter}' to {val}")
                 else:
-                    print(f"SMPLTorqueNode: No joints found matching '{joint_filter}'")
+                    if count == 0:
+                         print(f"SMPLTorqueNode: No update performed (filtered or rejected).")
             except ValueError:
                 print(f"SMPLTorqueNode: Invalid torque value '{args[1]}'")
                 
             except Exception as e:
-                # logging.error(f"Error in SMPLTorqueNode: {e}")
-                print(f"Error in SMPLTorqueNode: {e}")
+                print(f"SMPLTorqueNode: Error updating torque: {e}")
+                import traceback
+                traceback.print_exc()
                 pass
+
+    def _restore_max_torque_overrides(self):
+        """
+        Re-applies user Max Torque settings by scaling current defaults by stored Ratios.
+        """
+        if hasattr(self, 'torque_ratios') and self.torque_ratios and self.processor:
+            defaults = self.processor._compute_max_torque_profile()
+            count = 0
+            for k, ratio in self.torque_ratios.items():
+                if k in defaults:
+                    default_val = defaults[k]
+                    # Ensure Vector for safe math
+                    v_def = np.array(default_val, dtype=float)
+                    if v_def.ndim == 0: v_def = np.full(3, v_def)
+                    elif v_def.size == 1: v_def = np.full(3, v_def.item())
+                    
+                    new_val = v_def * ratio
+                    self.processor.set_max_torque(k, new_val)
+                    count += 1
+            if count > 0:
+                 print(f"SMPLTorqueNode: Restored max torque for {count} joint groups based on biometric scaling.")

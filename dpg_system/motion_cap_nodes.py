@@ -1013,6 +1013,9 @@ class MoCapGLBody(MoCapNode):
         elif joint_index == 28:
             local_index = 27
 
+        if local_index > 27:
+            return
+
         # if joint_index >= t_ActiveJointCount:
         #     return
         if local_index < 0:

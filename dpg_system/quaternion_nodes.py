@@ -331,24 +331,31 @@ class NormalizeQuaternionNode(Node):
         self.output = self.add_output('normalized')
 
     def execute(self):
+        expanded = False
         quats = self.input()
         if isinstance(quats, list):
-            quats = np.array(quats)
+            quats = any_to_array(quats)
         if isinstance(quats, np.ndarray):
             if len(quats.shape) == 1 and quats.shape[0] == 4:
                 quats = np.expand_dims(quats, 0)
+                expanded = True
             if len(quats.shape) == 2 and quats.shape[1] == 4:
                 num_quats = quats.shape[0]
                 magnitudes = np.linalg.norm(quats, axis=1, keepdims=True)
                 norm_quats = quats / magnitudes
+                if expanded:
+                    norm_quats = np.squeeze(norm_quats, 0)
                 self.output.send(norm_quats)
         elif isinstance(quats, torch.Tensor):
             if len(quats.shape) == 1 and quats.shape[0] == 4:
                 quats = torch.unsqueeze(quats, 0)
+                expanded = True
             if len(quats.shape) == 2 and quats.shape[1] == 4:
                 num_quats = quats.shape[0]
                 magnitudes = torch.linalg.norm(quats, axis=1, keepdims=True)
                 norm_quats = quats / magnitudes
+                if expanded:
+                    norm_quats = torch.squeeze(norm_quats, 0)
                 self.output.send(norm_quats)
 
 

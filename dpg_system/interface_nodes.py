@@ -1176,7 +1176,7 @@ class FloatNode(NumericValueNode):
             elif t == str and val == '+':
                 self.widget_type = 'input_float'
 
-        self.input = self.add_float_input('', triggers_execution=True, widget_type=self.widget_type,
+        self.input = self.add_input('', triggers_execution=True, widget_type=self.widget_type,
                                           widget_uuid=self.value, widget_width=self.widget_width, trigger_button=True)
         if self.param_name is not None:
             self.output = self.add_output(self.param_name + ' out')
@@ -1207,7 +1207,7 @@ class IntNode(NumericValueNode):
         if self.min is not None:
             kwargs['min'] = self.min
 
-        self.input = self.add_int_input('', triggers_execution=True, widget_type=self.widget_type,
+        self.input = self.add_input('', triggers_execution=True, widget_type=self.widget_type,
                                         widget_uuid=self.value, widget_width=self.widget_width, trigger_button=True,
                                         **kwargs)
         if self.param_name is not None:
@@ -1243,7 +1243,7 @@ class SliderNode(NumericValueNode):
             self.max = 100 if is_int else 1.0
 
         if is_int:
-            self.input = self.add_int_input('', triggers_execution=True, widget_type=self.widget_type,
+            self.input = self.add_input('', triggers_execution=True, widget_type=self.widget_type,
                                             widget_uuid=self.value, widget_width=self.widget_width,
                                             trigger_button=True, max=self.max)
             if self.param_name is not None:
@@ -1251,7 +1251,7 @@ class SliderNode(NumericValueNode):
             else:
                 self.output = self.add_int_output('int out')
         else:
-            self.input = self.add_float_input('', triggers_execution=True, widget_type=self.widget_type,
+            self.input = self.add_input('', triggers_execution=True, widget_type=self.widget_type,
                                               widget_uuid=self.value, widget_width=self.widget_width,
                                               trigger_button=True, max=self.max)
             if self.param_name is not None:
@@ -1288,7 +1288,7 @@ class KnobNode(NumericValueNode):
 
         if value_type is float:
             self.format = '%.3f'
-            self.input = self.add_float_input('', triggers_execution=True, widget_type='knob_float',
+            self.input = self.add_input('', triggers_execution=True, widget_type='knob_float',
                                               widget_uuid=self.value, widget_width=self.widget_width,
                                               trigger_button=True, max=self.max)
             if self.param_name is not None:
@@ -1297,7 +1297,7 @@ class KnobNode(NumericValueNode):
                 self.output = self.add_float_output('float out')
         else:
             self.format = '%d'
-            self.input = self.add_int_input('', triggers_execution=True, widget_type='knob_float',
+            self.input = self.add_input('', triggers_execution=True, widget_type='knob_float',
                                             widget_uuid=self.value, widget_width=self.widget_width,
                                             trigger_button=True, max=self.max)
             if self.param_name is not None:
@@ -1317,7 +1317,7 @@ class StringNode(ValueNode):
     def setup_specific_ui(self, args):
         self.widget_type = 'text_input'
         self.widget_width = 100
-        self.input = self.add_string_input('###text in', triggers_execution=True, widget_type=self.widget_type,
+        self.input = self.add_input('###text in', triggers_execution=True, widget_type=self.widget_type,
                                            widget_uuid=self.value, widget_width=self.widget_width,
                                            trigger_button=True)
 

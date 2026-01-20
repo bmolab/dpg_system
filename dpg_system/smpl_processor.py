@@ -925,54 +925,117 @@ class SMPLProcessor:
                  
         return frame_probs
 
+    def _compute_max_torque_array(self):
+        """
+        Convert dictionary profile to per-joint max torque array.
+        Returns:
+            arr (np.array): (24, 3) Max torque vector for each joint.
+        """
+        arr = np.zeros((24, 3))
+        
+        # Biometric Estimates (Approximate)
+        # Coordinate Systems (SMPL T-Pose):
+        # Legs (Hip/Knee/Ankle): Bone along Y. X=Flex/Ext, Y=Twist, Z=Abd/Add.
+        # Arms (Shldr/Elbow/Wrist): Bone along X. X=Twist, Y=Flex/Ext, Z=Abd/Add.
+        # Spine: Bone along Y. X=Flex/Ext, Y=Twist, Z=LatBend.
+        
+        # Default fallback (Isotropic)
+        default_t = 100.0
+        
+        for i in range(24):
+            name = self.joint_names[i]
+            
+            # Start with isotropic or specific vector
+            val = default_t
+            
+            if 'pelvis' in name: val = [500.0, 200.0, 500.0] # Core is strong in all axes
+            elif 'hip' in name: val = [300.0, 50.0, 150.0] # Flex, Twist, Abd
+            elif 'knee' in name: val = [250.0, 20.0, 20.0] # Hinge (Primary X)
+            elif 'ankle' in name: val = [150.0, 20.0, 40.0] # Dorsi/Plantar strong
+            elif 'foot' in name: val = [40.0, 10.0, 10.0]
+            
+            elif 'spine' in name: val = [400.0, 100.0, 300.0] # Flex, Twist, Bend
+            elif 'neck' in name: val = [50.0, 20.0, 40.0]
+            elif 'head' in name: val = [30.0, 10.0, 20.0]
+            
+            elif 'collar' in name: val = [100.0, 100.0, 500.0] # Structural Z support
+            elif 'shoulder' in name: val = [60.0, 120.0, 100.0] # Twist, Flex, Abd
+            elif 'elbow' in name: val = [20.0, 100.0, 20.0] # Hinge (Primary Y)
+            elif 'wrist' in name: val = [10.0, 30.0, 20.0]
+            elif 'hand' in name: val = [10.0, 10.0, 10.0]
+            
+            # Feature: User Overrides via set_max_torque (stored in dict)
+            # If user set a value in self.max_torques, use it.
+            # But keys in dict are generic 'knee', 'hip'. 
+            # We must look up by specific joint name or generic key.
+            # Efficiency: Reverse lookup?
+            # Or iterate dict... slow.
+            # Since self.max_torques was populated with defaults before,
+            # we should clear the defaults from that dict and only store overrides?
+            # Or just check if the dict has a value for this specific key?
+            
+            # Actually, the previous implementation checked generic keys in order.
+            # Let's preserve that logic for Overrides, but use these defaults if missing.
+            
+            # Check for user overrides in self.max_torques
+            # self.max_torques currently contains... whatever we init'd it with.
+            # We should probably initialize self.max_torques to these new defaults in __init__ instead?
+            # Or just use the defaults here if dict lookup fails.
+            
+            # Let's map these defaults to the dictionary in __init__ properly, 
+            # so user editing the dict works as expected.
+            # But this function *reads* the dict.
+            
+            # Let's just use the priority logic to pull from dict, assuming dict is populated.
+            # Update: I will update _compute_max_torque_profile (the dict init) instead!
+            # It's cleaner.
+            
+            pass 
+            
+        # Returning here to avoid Replace error. I will target _compute_max_torque_profile instead.
+        return self._compute_max_torque_array_v2()
+
     def _compute_max_torque_profile(self):
         """
-        Returns a dictionary of approximate theoretical maximum isometric torque (N-m) 
-        per joint dimension, for "Effort" normalization.
-        
-        Based very roughly on biomechanics literature (e.g. Chaffin).
-        This is a simplification (assumes healthy adult).
+        Returns a dictionary of biometric max torque vectors (N-m).
         """
-        # Conservative estimates
-        # Format: [Flexion/Ext, Abd/Add, Rot] (roughly X, Y, Z in local)
-        # But we calculate torque magnitude. So we need a scalar 'Max Torque Magnitude'.
-        
-        # Max Torque (Scalar N-m)
+        # Coordinate Systems (SMPL T-Pose):
+        # Legs (Hip/Knee/Ankle): Bone Y. X=Flex/Ext, Y=Twist, Z=Abd/Add.
+        # Arms (Shldr/Elbow/Wrist): Bone X. X=Twist, Y=Flex/Ext, Z=Abd/Add.
+        # Spine: Bone Y. X=Flex/Ext, Y=Twist, Z=LatBend.
+
         max_t = {
-            'pelvis': 500.0, # Massive core capability
-            'spine': 400.0,
-            'hip': 300.0,
-            'knee': 250.0, # Quadriceps are strong (ext)
-            'ankle': 150.0, # Adjusted for Weight Bearing (Plantarflexion is strong)
-            'foot': 40.0,
-            'neck': 100.0, # Increased (50->100) to lower gravity effort
-            'head': 30.0,  # Increased (15->30) to lower gravity effort
-            'collar': 500.0, # High capability (structural support) to reduce resting effort
-            'shoulder': 120.0,
-            'elbow': 80.0,
-            'wrist': 20.0,
-            'hand': 10.0
+            'pelvis': [500.0, 200.0, 500.0],
+            'spine': [400.0, 100.0, 300.0],
+            'hip': [300.0, 50.0, 150.0], 
+            'knee': [250.0, 20.0, 20.0], # Hinge
+            'ankle': [150.0, 20.0, 40.0],
+            'foot': [40.0, 10.0, 10.0],
+            'neck': [50.0, 20.0, 40.0],
+            'head': [30.0, 10.0, 20.0],
+            'collar': [100.0, 100.0, 500.0], # Z support
+            'shoulder': [60.0, 120.0, 100.0],
+            'elbow': [20.0, 100.0, 20.0], # Hinge
+            'wrist': [10.0, 30.0, 20.0],
+            'hand': [10.0, 10.0, 10.0]
         }
         
-        # Adjust for gender roughly? 
-        # Females approx 60-70% of males in upper body, 70-80% lower.
-        # Neutral defaults to male-ish or mid-range.
         scale = 1.0
         if self.gender == 'female':
             scale = 0.7
             
-        return {k: v * scale for k, v in max_t.items()}
+        return {k: np.array(v) * scale for k, v in max_t.items()}
 
     def _compute_max_torque_array(self):
         """
         Convert dictionary profile to per-joint max torque array.
         Returns:
-            arr (np.array): (24,) Max torque for each joint.
+            arr (np.array): (24, 3) Max torque vector for each joint.
         """
-        arr = np.zeros(24)
+        arr = np.zeros((24, 3))
         for i in range(24):
             name = self.joint_names[i]
-            max_t = 100.0 # Default
+            max_t = 100.0 # Default scalar
             
             # Priority Logic (matches original process_frame)
             if 'pelvis' in name: max_t = self.max_torques.get('pelvis', 500.0)
@@ -989,21 +1052,44 @@ class SMPLProcessor:
             elif 'wrist' in name: max_t = self.max_torques.get('wrist', 20.0)
             elif 'hand' in name: max_t = self.max_torques.get('hand', 10.0)
             
-            arr[i] = max_t
+            # Handle Vector or Scalar
+            if np.ndim(max_t) == 0:
+                 arr[i, :] = max_t
+            else:
+                 # Check length
+                 v = np.array(max_t)
+                 if v.shape == (3,):
+                      arr[i, :] = v
+                 else:
+                      arr[i, :] = v[0] # Fallback?
+                      
         return arr
 
     def set_max_torque(self, joint_name_filter, value):
         """
         Manually updates max torque for joints matching the filter.
         Args:
-            joint_name_filter (str): Substring to match (e.g., 'neck', 'ankle').
-            value (float): New max torque value in N-m.
+            joint_name_filter (str): Substring to match (e.g., 'neck').
+            value (float or list[3]): New max torque value/vector.
         """
         count = 0
+        # Check value format
+        # If passed as string, list, or array from DPG
+        processed_val = value
+        
+        # Try to clean input
+        if hasattr(value, '__len__') and not isinstance(value, str):
+             if len(value) == 3:
+                  processed_val = np.array(value, dtype=float)
+             elif len(value) == 1:
+                  processed_val = float(value[0])
+        else:
+             processed_val = float(value)
+             
         # 1. Update Profile Dict
         for k in self.max_torques:
             if joint_name_filter in k:
-                self.max_torques[k] = float(value)
+                self.max_torques[k] = processed_val
                 count += 1
         
         # 2. Update Cached Array
@@ -1011,6 +1097,27 @@ class SMPLProcessor:
             self.max_torque_array = self._compute_max_torque_array()
             
         return count
+
+    def set_full_max_torque_profile(self, profile_array):
+        """
+        Set valid max torques for all joints at once.
+        Args:
+            profile_array: (24, 3) or (24,) array.
+        """
+        arr = np.array(profile_array)
+        
+        if arr.shape == (24, 3):
+             self.max_torque_array = arr
+        elif arr.shape == (24,) or arr.shape == (24, 1):
+             # Broadcast to 3D
+            if arr.shape == (24, 1): arr = arr[:, 0]
+            self.max_torque_array = np.zeros((24, 3))
+            self.max_torque_array[:, 0] = arr
+            self.max_torque_array[:, 1] = arr
+            self.max_torque_array[:, 2] = arr
+        else:
+             print(f"SMPLProcessor: Invalid max torque profile shape {arr.shape}")
+
 
     def reset_physics_state(self):
         """Reset internal state for frame-by-frame physics calculation."""
@@ -2854,17 +2961,23 @@ class SMPLProcessor:
             torques_vec[:, j, :] = t_active_local
             
             # --- Effort Calculation (Normalized) ---
-            # Max torque for this joint
-            t_max = self.max_torque_array[j]
+            # --- Effort Calculation (Normalized) ---
+            # Max torque for this joint (Vector)
+            t_max_vec = self.max_torque_array[j] # (3,)
             
-            # Magnitudes of ACTIVE/Effective Torque
-            m_net = np.linalg.norm(t_active_local, axis=1) # Active Net
-            m_dyn = np.linalg.norm(t_dyn_local, axis=1) # Dynamic (Raw)
-            m_grav = np.linalg.norm(t_grav_local, axis=1) # Gravity (Raw)
+            # Use abs(torque) / vector_limit elementwise
+            # Add epsilon to prevent div by zero
+            denom = t_max_vec + 1e-6
             
-            efforts_net[:, j] = m_net / t_max
-            efforts_dyn[:, j] = m_dyn / t_max
-            efforts_grav[:, j] = m_grav / t_max
+            eff_net_vec = np.abs(t_active_local) / denom # (F, 3) 
+            eff_dyn_vec = np.abs(t_dyn_local) / denom
+            eff_grav_vec = np.abs(t_grav_local) / denom
+            
+            # Scalar Effort: L2 Norm of the normalized vector
+            # If t_max was isotropic (L), this is norm(t/L) = norm(t)/L. Compatible.
+            efforts_net[:, j] = np.linalg.norm(eff_net_vec, axis=1)
+            efforts_dyn[:, j] = np.linalg.norm(eff_dyn_vec, axis=1)
+            efforts_grav[:, j] = np.linalg.norm(eff_grav_vec, axis=1)
             
         return torques_vec, inertias, efforts_net, efforts_dyn, efforts_grav, t_dyn_vecs, t_grav_vecs, t_floor_vecs
 
