@@ -20,6 +20,8 @@ import json
 # # from body_defs import JointTranslator
 # print('after body_defs')
 import dpg_system.MotionSDK as shadow
+import random
+from dpg_system.smpl_nodes import SMPLNode
 
 def register_motion_cap_nodes():
     Node.app.register_node('gl_body', MoCapGLBody.factory)
@@ -40,6 +42,7 @@ def register_motion_cap_nodes():
     Node.app.register_node('limb_size', LimbSizingNode.factory)
     Node.app.register_node('quaternion_diff_and_axis', DiffQuaternionsNode.factory)
     Node.app.register_node('check_burst', CheckBurstNode.factory)
+    Node.app.register_node('json_npz_frame_picker', JsonRandomEventWindowNode.factory)
 
 def find_process_id(process_name):
     try:
@@ -1306,6 +1309,77 @@ class CheckBurstNode(Node):
                 print(f"Saved burst files to {path}")
         except Exception as e:
             print("Error saving burst files:", e)
+
+
+class JsonRandomEventWindowNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = JsonRandomEventWindowNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.events = []
+        self.next_event = self.add_input('next', triggers_execution=True, trigger_button=True)
+        self.json_path_input = self.add_input('json path', widget_type='text_input',
+                                              default_value='/home/bmolab/Projects/AMASS_2/burst_files.json', callback=self.load_json)
+        self.joint_input = self.add_input('joint', widget_type='text_input', default_value='')
+        self.path_output = self.add_output('npz path')
+        self.event_frame_out = self.add_output('event frame')
+        self.joints = self.add_output('joints')
+        self.jerk_values = self.add_output('jerk values')
+        self.jerk_index = self.add_output('jerk index')
+        self.prev_acc = self.add_output('prev_acc')
+        self.acc = self.add_output('acc')
+
+    def load_json(self):
+        json_path = self.json_path_input()
+        print("loaded json file", json_path)
+        if not json_path or not os.path.exists(json_path):
+            self.events = []
+            return
+
+        with open(json_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+
+        events = []
+
+        if isinstance(data, dict):
+            for npz_path, event_list in data.items():
+                if isinstance(event_list, list):
+                    for event in event_list:
+                        if isinstance(event, dict) and "frame" in event:
+                            joints = []
+                            for i in event["jerk_indices"]:
+                                joints.append(SMPLNode.joint_names[i])
+
+                            events.append((npz_path, int(event['frame']), joints, event["jerk_indices"], event["jerk_values"],
+                                          event['prev_acc'], event['acc']))
+        self.events = events
+
+        print(f"loaded {len(self.events)} events")
+
+    def execute(self):
+        if not self.events:
+            self.load_json()
+
+        joint_str = self.joint_input()
+        if joint_str == '':
+            npz_path, event_frame, joints, jerk_index , jerk_values, prev_acc, acc = random.choice(self.events)
+
+        else:
+            joint_idx = SMPLNode.joint_names.index(joint_str)
+            filtered = [(p, fr, joints, jerk_index, jerk_values, acc, prev_acc) for (p, fr, joints, jerk_index, jerk_values, acc, prev_acc) in self.events if joint_idx in jerk_index]
+            npz_path, event_frame, joints, jerk_index, jerk_values, acc, prev_acc = random.choice(filtered)
+
+        self.path_output.send(npz_path)
+        self.event_frame_out.send(event_frame)
+        self.joints.send(joints)
+        self.jerk_values.send(jerk_values)
+        self.jerk_index.send(jerk_index)
+        self.acc.send(acc)
+        self.prev_acc.send(prev_acc)
 
 
 class NumpyEncoder(json.JSONEncoder):
