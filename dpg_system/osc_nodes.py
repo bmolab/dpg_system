@@ -1935,7 +1935,7 @@ class OSCReceiver:
                 if self.source is not None:
                     self.osc_manager.unregister_receive_node(self)
                 # self.name = new_name
-                self.find_source_node(self.name)
+                self.find_source_node(new_name)
                 # self.find_source_node(self.name)
                 # self.osc_manager.connect_receive_node_to_source(self, self.source)
 
@@ -2535,7 +2535,6 @@ class OSCWidget(OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
             self.update_output_label()
             if isinstance(self, Node):
                 self.unparsed_args = [str(self.name), str(self.address)]
-                print('widget', self.unparsed_args)
 
     def update_output_label(self):
         if hasattr(self, 'output'):

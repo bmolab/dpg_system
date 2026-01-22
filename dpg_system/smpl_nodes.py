@@ -8,8 +8,11 @@ import os
 import scipy
 from scipy import signal
 from dpg_system.node import Node
+from dpg_system.interface_nodes import Vector2DNode
 import pickle
 from dpg_system.conversion_utils import *
+from dpg_system.smpl_dynamics import SMPLDynamicsModel
+from dpg_system.smpl_processor import SMPLProcessor, SMPLProcessingOptions
 import pickle
 import chumpy as ch
 from chumpy.ch import MatVecMult
@@ -35,6 +38,7 @@ def register_smpl_nodes():
     Node.app.register_node("smpl_take", SMPLTakeNode.factory)
     Node.app.register_node("smpl_pose_to_joints", SMPLPoseToJointsNode.factory)
     Node.app.register_node("smpl_body", SMPLBodyNode.factory)
+    Node.app.register_node("smpl_pose", SMPLPoseNode.factory)
 
     Node.app.register_node("smpl_quats_to_joints", SMPLPoseQuatsToJointsNode.factory)
 
@@ -42,6 +46,8 @@ def register_smpl_nodes():
     Node.app.register_node("smpl_to_quats", SMPLToQuaternionsNode.factory)
     Node.app.register_node("active_to_smpl", ActiveToSMPLPoseNode.factory)
     Node.app.register_node("quats_flip_y_z", QuatFlipYZAxesNode.factory)
+    Node.app.register_node("smpl_dynamics", SMPLDynamicsNode.factory)
+    Node.app.register_node("smpl_torque", SMPLTorqueNode.factory)\
 
 
 class SMPLNode(Node):
@@ -90,6 +96,54 @@ class SMPLNode(Node):
             print('load_SMPL_R_model_file failed', e)
             return None
         return None
+
+
+class SMPLPoseNode(Vector2DNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = SMPLPoseNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        Vector2DNode.__init__(self, label, data, ['22', '4'])
+
+    def custom_create(self, from_file):
+        Vector2DNode.custom_create(self, from_file)
+        self.zero_input.set_label('reset')
+        for i in range(1, 23):
+            input = self.inputs[i]
+
+            dpg.configure_item(input.widget.uuids[3], label=SMPLNode.joint_names[i - 1])
+            for id in input.widget.uuids:
+                dpg.configure_item(id, width=45)
+            input.set([1.0, 0.0, 0.0, 0.0])
+            self.output_vector[i - 1, 0] = 1.0
+
+    def zero(self):
+        not_zeroed = True
+        if self.vector_format_input() == 'numpy':
+            if self.current_dims[0] == self.output_vector.shape[0]:
+                if self.current_dims[1] == 1 and len(self.output_vector.shape) == 1:
+                    self.output_vector = np.zeros(self.current_dims[0])
+                    self.output_vector[:, 0] = 1.0
+                    not_zeroed = False
+            if not_zeroed:
+                self.output_vector = np.zeros(self.current_dims)
+                self.output_vector[:, 0] = 1.0
+
+        elif self.vector_format_input() == 'torch':
+            if self.current_dims[0] == self.output_vector.shape[0]:
+                if self.current_dims[1] == 1 and len(self.output_vector.shape) == 1:
+                    self.output_vector = torch.zeros(self.current_dims[0])
+                    self.output_vector[:, 0] = 1.0
+                    not_zeroed = False
+            if not_zeroed:
+                self.output_vector = torch.zeros(self.current_dims)
+                self.output_vector[:, 0] = 1.0
+        else:
+            self.output_vector = [[1.0, 0.0, 0.0, 0.0] * self.current_dims[0]]
+        self.execute()
+
 
 
 # class JointTranslator():
@@ -201,6 +255,36 @@ class SMPLNode(Node):
 #     def __init__(self, label, data, args):
 #         pass
 
+def quaternion_multiply_scalar_first(q1: np.ndarray, q2: np.ndarray) -> np.ndarray:
+    """
+    Multiplies two quaternions in [w, x, y, z] format.
+    This function is vectorized and can handle arrays of quaternions.
+
+    Args:
+        q1 (np.ndarray): The first quaternion or batch of quaternions.
+                         Shape can be (4,) for a single quaternion or
+                         (N, 4) for a batch of N quaternions.
+        q2 (np.ndarray): The second quaternion or batch of quaternions.
+                         Must be compatible for broadcasting with q1.
+
+    Returns:
+        np.ndarray: The resulting quaternion product, with the same shape as the inputs.
+    """
+    # Extract components using vectorized slicing for efficiency
+    # The ellipsis (...) allows this to work for both single (4,) and batch (N, 4) arrays
+    w1, x1, y1, z1 = q1[..., 0], q1[..., 1], q1[..., 2], q1[..., 3]
+    w2, x2, y2, z2 = q2[..., 0], q2[..., 1], q2[..., 2], q2[..., 3]
+
+    # Apply the standard quaternion multiplication formula
+    w = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2
+    x = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2
+    y = w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2
+    z = w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2
+
+    # Stack the results back into a new array along the last axis
+    return np.stack((w, x, y, z), axis=-1)
+
+
 class SMPLToActivePoseNode(JointTranslator, Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -218,34 +302,34 @@ class SMPLToActivePoseNode(JointTranslator, Node):
         self.output = self.add_output('active pose')
         self.y_up = np.array([0.7071067811865475, -0.7071067811865475, 0.0, 0.0])
 
-    def quaternion_multiply_scalar_first(self, q1: np.ndarray, q2: np.ndarray) -> np.ndarray:
-        """
-        Multiplies two quaternions in [w, x, y, z] format.
-        This function is vectorized and can handle arrays of quaternions.
-
-        Args:
-            q1 (np.ndarray): The first quaternion or batch of quaternions.
-                             Shape can be (4,) for a single quaternion or
-                             (N, 4) for a batch of N quaternions.
-            q2 (np.ndarray): The second quaternion or batch of quaternions.
-                             Must be compatible for broadcasting with q1.
-
-        Returns:
-            np.ndarray: The resulting quaternion product, with the same shape as the inputs.
-        """
-        # Extract components using vectorized slicing for efficiency
-        # The ellipsis (...) allows this to work for both single (4,) and batch (N, 4) arrays
-        w1, x1, y1, z1 = q1[..., 0], q1[..., 1], q1[..., 2], q1[..., 3]
-        w2, x2, y2, z2 = q2[..., 0], q2[..., 1], q2[..., 2], q2[..., 3]
-
-        # Apply the standard quaternion multiplication formula
-        w = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2
-        x = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2
-        y = w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2
-        z = w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2
-
-        # Stack the results back into a new array along the last axis
-        return np.stack((w, x, y, z), axis=-1)
+    # def quaternion_multiply_scalar_first(self, q1: np.ndarray, q2: np.ndarray) -> np.ndarray:
+    #     """
+    #     Multiplies two quaternions in [w, x, y, z] format.
+    #     This function is vectorized and can handle arrays of quaternions.
+    #
+    #     Args:
+    #         q1 (np.ndarray): The first quaternion or batch of quaternions.
+    #                          Shape can be (4,) for a single quaternion or
+    #                          (N, 4) for a batch of N quaternions.
+    #         q2 (np.ndarray): The second quaternion or batch of quaternions.
+    #                          Must be compatible for broadcasting with q1.
+    #
+    #     Returns:
+    #         np.ndarray: The resulting quaternion product, with the same shape as the inputs.
+    #     """
+    #     # Extract components using vectorized slicing for efficiency
+    #     # The ellipsis (...) allows this to work for both single (4,) and batch (N, 4) arrays
+    #     w1, x1, y1, z1 = q1[..., 0], q1[..., 1], q1[..., 2], q1[..., 3]
+    #     w2, x2, y2, z2 = q2[..., 0], q2[..., 1], q2[..., 2], q2[..., 3]
+    #
+    #     # Apply the standard quaternion multiplication formula
+    #     w = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2
+    #     x = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2
+    #     y = w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2
+    #     z = w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2
+    #
+    #     # Stack the results back into a new array along the last axis
+    #     return np.stack((w, x, y, z), axis=-1)
 
     def swap_yz_axis_angle(self, axis_angle: np.ndarray) -> np.ndarray:
         """
@@ -273,18 +357,22 @@ class SMPLToActivePoseNode(JointTranslator, Node):
 
     def execute(self):
         smpl_pose = self.input()
-        smpl_pose = any_to_array(smpl_pose)
+        smpl_pose = any_to_array(smpl_pose).copy()
         if len(smpl_pose.shape) == 1:
-            smpl_pose = np.reshape(smpl_pose, (-1, 3))
+            if smpl_pose.shape[0] < 30:
+                smpl_pose = np.expand_dims(smpl_pose, axis=1)
+            else:
+                smpl_pose = np.reshape(smpl_pose, (-1, 3))
+        joint_count = smpl_pose.shape[0]
         if self.output_format_in() == 'quaternions':
-            active_pose = np.zeros((22, 4))
+            active_pose = np.zeros((joint_count, 4))
             active_pose[:, 0] = 1.0
         elif self.output_format_in() == 'rotation_vectors':
-            active_pose = np.zeros((22, 3))
+            active_pose = np.zeros((joint_count, 3))
         else:
             if len(smpl_pose.shape) == 1:
                 smpl_pose = np.expand_dims(smpl_pose, axis=1)
-            active_pose = np.zeros((22, smpl_pose.shape[-1]))
+            active_pose = np.zeros((joint_count, smpl_pose.shape[-1]))
 
         # NOTE: smpl seems to assume z is up vector which messes up axes of root rotation
         # we should force root rotation to rotate -90 around x axis
@@ -298,12 +386,12 @@ class SMPLToActivePoseNode(JointTranslator, Node):
                     rot = scipy.spatial.transform.Rotation.from_rotvec(active_pose)
                     active_pose = rot.as_quat(scalar_first=True)
                     if self.y_is_up():
-                        active_pose[5] = self.quaternion_multiply_scalar_first(self.y_up, active_pose[5])
+                        active_pose[5] = quaternion_multiply_scalar_first(self.y_up, active_pose[5])
                 else:
                     if self.y_is_up():
                         rot = scipy.spatial.transform.Rotation.from_rotvec(active_pose[5])
                         root_rot = rot.as_quat(scalar_first=True)
-                        root_rot = self.quaternion_multiply_scalar_first(self.y_up, root_rot)
+                        root_rot = quaternion_multiply_scalar_first(self.y_up, root_rot)
                         rot = scipy.spatial.transform.Rotation.from_quat(root_rot, scalar_first=True)
                         active_pose[5] = rot.as_rotvec()
 
@@ -313,7 +401,7 @@ class SMPLToActivePoseNode(JointTranslator, Node):
                     rot = scipy.spatial.transform.Rotation.from_quat(active_pose, scalar_first=True)
                     active_pose = rot.as_rotvec()
                 elif self.y_is_up():
-                    active_pose[5] = self.quaternion_multiply_scalar_first(self.y_up, active_pose[5])
+                    active_pose[5] = quaternion_multiply_scalar_first(self.y_up, active_pose[5])
             else:
                 active_pose = JointTranslator.translate_from_smpl_to_bmolab_active(smpl_pose)
 
@@ -331,6 +419,8 @@ class SMPLToQuaternionsNode(JointTranslator, Node):
         Node.__init__(self, label, data, args)
 
         self.input = self.add_input('smpl pose', triggers_execution=True)
+        self.y_is_up = self.add_property('y is up', widget_type='checkbox')
+        self.y_up = np.array([0.7071067811865475, -0.7071067811865475, 0.0, 0.0])
         self.output = self.add_output('smpl pose as quaternions')
 
     def execute(self):
@@ -345,6 +435,9 @@ class SMPLToQuaternionsNode(JointTranslator, Node):
                 # active_pose = JointTranslator.translate_from_smpl_to_bmolab_active(smpl_pose)
                 rot = scipy.spatial.transform.Rotation.from_rotvec(active_smpl_pose)
                 active_smpl_pose = rot.as_quat(scalar_first=True)
+                if self.y_is_up():
+                    active_smpl_pose[0] = quaternion_multiply_scalar_first(self.y_up, active_smpl_pose[0])
+
                 self.output.send(active_smpl_pose)
 
 
@@ -1305,3 +1398,809 @@ class QuatFlipYZAxesNode(Node):
         # Convert the resulting Rotation object back to a quaternion numpy array
         original_quats[self.rotate_joint] = new_rot.as_quat(scalar_first=True)
         self.quats_output.send(original_quats)
+
+class SMPLDynamicsNode(SMPLNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = SMPLDynamicsNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+
+        self.pose_input = self.add_input('pose in', triggers_execution=True)
+        self.trans_input = self.add_input('trans in')
+        self.metadata_input = self.add_input('metadata')
+        
+        self.torques_output = self.add_output('torques out')
+        self.metrics_output = self.add_output('metrics out')
+        self.contact_probs_output = self.add_output('contact probs out')
+        
+        self.gender = self.add_property('gender', widget_type='combo', default_value='neutral', callback=self.params_changed)
+        self.gender.widget.combo_items = ['male', 'female', 'neutral']
+        
+        self.total_mass = self.add_property('total_mass', widget_type='drag_float', default_value=75.0, callback=self.params_changed)
+        self.model_path = self.add_property('model_path', widget_type='text_input', default_value='', callback=self.params_changed)
+        
+        self.input_smoothing = self.add_property('input_smoothing', widget_type='drag_float', default_value=0.0)
+        self.calibrate_pose = self.add_property('calibrate_pose', widget_type='button', callback=self.calibrate_callback)
+        self.up_axis = self.add_property('input_up_axis', widget_type='combo', default_value='Y-up', callback=self.params_changed)
+        self.up_axis.widget.combo_items = ['Y-up', 'Z-up']
+
+        self.calibrate_trigger = self.add_input('calibrate', triggers_execution=True)
+        self.smoothing_input = self.add_input('smoothing')
+        self.mass_input = self.add_input('mass')
+        
+        self.current_betas = None
+        self.current_dt = 1.0/60.0
+        self.model = None
+
+
+    def custom_create(self, from_file):
+        self._initialize_model()
+
+    def calibrate_callback(self):
+        if self.model:
+            self.model.calibrate_balance()
+
+    def params_changed(self):
+        self._initialize_model()
+
+    def _initialize_model(self):
+        gender = self.gender()
+        mass = self.total_mass()
+        path = self.model_path()
+        # Pass betas if we have them
+        self.model = SMPLDynamicsModel(total_mass=mass, gender=gender, betas=self.current_betas, model_path=path)
+
+    def execute(self):
+        # Handle Metadata Input
+        if self.metadata_input.fresh_input:
+            meta = self.metadata_input()
+            if isinstance(meta, dict):
+                needs_reinit = False
+                
+                # Framerate -> DT
+                if 'mocap_framerate' in meta:
+                    try:
+                        fps = float(meta['mocap_framerate'])
+                        if fps > 0:
+                            self.current_dt = 1.0 / fps
+                    except:
+                        pass
+                        
+                # Gender
+                if 'gender' in meta:
+                    new_gender = str(meta['gender'])
+                    if new_gender != self.gender():
+                        self.gender.set(new_gender)
+                        needs_reinit = True # Mass ratios change
+                        
+                # Total Mass
+                if 'total_mass' in meta:
+                    try:
+                        new_mass = float(meta['total_mass'])
+                        if abs(new_mass - self.total_mass()) > 0.001:
+                            self.total_mass.set(new_mass)
+                            needs_reinit = True
+                    except:
+                        pass
+                        
+                # Betas (Shape)
+                if 'betas' in meta:
+                    new_betas = meta['betas']
+                    # Check if changed (using numpy array comparison if needed, or just assuming diff)
+                    # Simple equality check might fail for arrays
+                    if self.current_betas is None or not np.array_equal(self.current_betas, new_betas):
+                         self.current_betas = new_betas
+                         needs_reinit = True
+                         
+                if needs_reinit:
+                    self._initialize_model()
+
+        if self.pose_input.fresh_input:
+            pose = self.pose_input()
+            trans = self.trans_input()
+            
+            # Handle formats
+            # Pose: Expect (22, 3) or (66,)
+            pose = any_to_array(pose).copy()
+            if trans is None:
+                trans = np.zeros(3)
+            else:
+                trans = any_to_array(trans).copy()
+                
+            if pose is not None and self.model is not None:
+                dt = self.current_dt
+                
+                # Coordinate System Conversion & Format Handling
+                # Physics Model is Z-up. 
+                # Inputs can be (22, 3) Axis-Angle OR (22, 4) Quaternions.
+                
+                up_axis_mode = self.up_axis()
+                from scipy.spatial.transform import Rotation
+                
+                # Check for Quaternions (Last dim 4)
+                is_quaternion = (pose.shape[-1] == 4)
+                
+                # 1. Apply Y-up -> Z-up Correction (if needed)
+                if up_axis_mode == 'Y-up':
+                     # Rotation Matrix for -90 deg X
+                     R_fix = Rotation.from_euler('x', -90, degrees=True).as_matrix()
+                     
+                     # 1a. Fix Translation
+                     # v_new = R @ v_old
+                     trans = R_fix @ trans
+                     
+                     # 1b. Fix Root Orientation
+                     if is_quaternion:
+                         # Root is pose[0] (4,)
+                         root_quat = pose[0] # (x, y, z, w) usually from scipy
+                         root_r = Rotation.from_quat(root_quat)
+                         
+                         # R_new = R_fix @ R_root
+                         new_root_r = Rotation.from_matrix(R_fix @ root_r.as_matrix())
+                         pose[0] = new_root_r.as_quat()
+                     else:
+                         # Axis-Angle
+                         root_rotvec = pose[0]
+                         root_mat = Rotation.from_rotvec(root_rotvec).as_matrix()
+                         new_root_mat = R_fix @ root_mat
+                         pose[0] = Rotation.from_matrix(new_root_mat).as_rotvec()
+                
+                # 2. Convert to Axis-Angle (if Quaternion)
+                # SMPLDynamicsModel expects (22, 3) Axis-Angle
+                if is_quaternion:
+                    # Convert (22, 4) -> (22, 3)
+                    # We can batch convert if shape is (22, 4)
+                    if pose.ndim == 2:
+                        # scipy Rotation can take (N, 4)
+                        # Note: scipy expects (x, y, z, w). Ensure upstream provides this.
+                        # Assuming DPG standard is consistent with scipy? Usually yes.
+                        r_objs = Rotation.from_quat(pose)
+                        pose = r_objs.as_rotvec() # (22, 3)
+                    else:
+                        # Maybe flattened (88,)? Handle if needed, but any_to_array usually preserves shape?
+                        # If simple flat array, reshape first?
+                        # For now assume (22, 4)
+                        pass
+
+                # Calibration Input
+
+                # Calibration Input
+                if self.calibrate_trigger.fresh_input:
+                    if self.model:
+                        self.model.calibrate_balance()
+
+                # Calibration Button (Handled by callback, but check purely for legacy/safety if needed? No, callback is better)
+                if self.calibrate_pose():
+                     # This might return True if clicked? dpg_system button properties return True on click frame.
+                     # But we added a callback, so we might double-trigger if we check here too.
+                     # Remove this check if callback handles it.
+                     pass 
+                
+                smoothing = self.input_smoothing()
+                if self.smoothing_input.fresh_input:
+                    s_val = self.smoothing_input()
+                    if s_val is not None:
+                        smoothing = float(s_val)
+                        self.input_smoothing.set(smoothing)
+                
+                if smoothing < 0: smoothing = 0.0
+
+                # Mass Input processing (should be rare)
+                if self.mass_input.fresh_input:
+                    m_val = self.mass_input()
+                    if m_val is not None:
+                         m_float = float(m_val)
+                         if abs(m_float - self.total_mass()) > 0.001:
+                             self.total_mass.set(m_float)
+                             self._initialize_model()
+                
+                try:
+                    torques, metrics = self.model.update_frame(trans, pose, dt, smoothing_sigma=smoothing)
+                    
+                    # Convert torques dict to (22, 3) numpy array
+                    torque_array = np.zeros((22, 3))
+                    from dpg_system.smpl_dynamics import SMPL_JOINT_NAMES
+                    
+                    for i, name in enumerate(SMPL_JOINT_NAMES):
+                        if name in torques:
+                            torque_array[i] = torques[name]
+                    
+                    self.torques_output.send(torque_array)
+                    self.metrics_output.send(metrics)
+                    
+                except Exception as e:
+                    # On first frames history might be insufficient? 
+                    # update_frame handles it gracefully (returns 0s)
+                    pass
+
+
+class SMPLTorqueNode(SMPLNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = SMPLTorqueNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.pose_input = self.add_input('pose', triggers_execution=True)
+        self.effort_pose_input = self.add_input('effort_pose') # Optional dual path
+        self.trans_input = self.add_input('trans')
+        self.config_input = self.add_input('config') # gender, betas, framerate
+        
+        self.torques_output = self.add_output('torques')
+        self.inertia_output = self.add_output('inertia')
+        self.effort_output = self.add_output('effort')
+        self.gravity_effort_output = self.add_output('gravity_effort')
+        self.combined_effort_output = self.add_output('combined_effort')
+        self.output_contact = self.add_output('floor_contact')
+        self.output_positions = self.add_output('joint_positions')
+        self.output_root = self.add_output('root_torque')
+        
+        self.message_handlers['set_max_torque'] = self.set_max_torque_handler
+        self.message_handlers['set_max_torque'] = self.set_max_torque_handler
+        self.message_handlers['print_max_torque'] = self.print_max_torque
+        
+        self.torque_ratios = {} # Format: {generic_joint_key: ratio_vector}
+        
+        self.torque_vec_output = self.add_output('torque_vectors')
+        self.gravity_torque_vec_output = self.add_output('gravity_torque_vectors')
+        self.contact_probs_output = self.add_output('contact_probs')
+        self.contact_pressure_output = self.add_output('contact_pressure')
+        self.output_com = self.add_output('com_pos')
+        self.output_zmp = self.add_output('zmp_pos')
+        self.output_limb_lengths = self.add_output('limb_lengths')
+        
+
+        self.zero_root_torque = self.add_property('zero_root_torque', widget_type='checkbox', default_value=True)
+        self.add_gravity_prop = self.add_property('add_gravity', widget_type='checkbox', default_value=True)
+        self.enable_app_gravity_prop = self.add_property('enable_apparent_gravity', widget_type='checkbox', default_value=True)
+        self.up_axis_prop = self.add_property('up_axis', widget_type='combo', default_value='Y')
+        self.up_axis_prop.widget.combo_items = ['Y', 'Z']
+        self.axis_perm_prop = self.add_property('axis_permutation', widget_type='text_input', default_value='x, z, -y', callback=self._on_axis_perm_changed)
+        self.quat_format_prop = self.add_property('quat_format', widget_type='combo', default_value='wxyz')
+        self.quat_format_prop.widget.combo_items = ['xyzw', 'wxyz']
+        
+        self.enable_passive_limits = self.add_property('enable_passive_limits', widget_type='checkbox', default_value=True)
+        
+        self.enable_one_euro_prop = self.add_property('enable_one_euro_filter', widget_type='checkbox', default_value=True)
+        self.min_cutoff_prop = self.add_property('one_euro_min_cutoff', widget_type='drag_float', default_value=1.0)
+        self.beta_prop = self.add_property('one_euro_beta', widget_type='drag_float', default_value=0.05)
+        
+        self.spike_thresh_prop = self.add_property('effort_spike_threshold', widget_type='drag_float', default_value=0.0) # Output (Effort)
+        self.input_spike_prop = self.add_property('input_spike_threshold', widget_type='drag_float', default_value=0.0) # Input (Pose Degrees)
+        self.jerk_prop = self.add_property('jerk_threshold', widget_type='drag_float', default_value=0.0) # Input Jerk (Deg/Frame^3)
+        self.floor_enable_prop = self.add_property('floor_contact_enable', widget_type='checkbox', default_value=True)
+        self.floor_height_prop = self.add_property('floor_height', widget_type='drag_float', default_value=0.0)
+        self.floor_tol_prop = self.add_property('floor_tolerance', widget_type='drag_float', default_value=0.15)
+        
+        # Bias: Negative = Toe Preference, Positive = Heel Preference
+        self.heel_toe_bias_prop = self.add_property('heel_toe_bias', widget_type='drag_float', default_value=0.02)
+        
+        # Calibrated default for Subject_81: [0.0, -0.14, 0.05]
+
+
+        self.processor = None
+        # Default config
+        self.framerate = 60.0
+        self.gender = 'neutral'
+        self.betas = None
+        self.total_mass = 75.0
+        
+    def _to_array(self, d):
+        d = any_to_array(d)
+        return d
+
+    def _on_axis_perm_changed(self):
+        if self.processor:
+            self.processor.set_axis_permutation(self.axis_perm_prop())
+
+    def execute(self):
+        # 1. Handle Config
+
+        if self.config_input.fresh_input:
+            cfg = self.config_input()
+            if isinstance(cfg, dict):
+                changed = False
+                
+                if 'motioncapture_framerate' in cfg:
+                    fr = float(cfg['motioncapture_framerate'])
+                    if fr != self.framerate:
+                        self.framerate = fr
+                        changed = True
+                        
+                if 'gender' in cfg:
+                    g = str(cfg['gender'])
+                    if g != self.gender:
+                        self.gender = g
+                        changed = True
+                        
+                if 'betas' in cfg:
+                    b = self._to_array(cfg['betas'])
+                    # Simple check
+                    if self.betas is None or not np.array_equal(self.betas, b):
+                        self.betas = b
+                        changed = True
+                
+                # Re-init processor if needed
+                if changed or self.processor is None:
+                    self.processor = SMPLProcessor(
+                        framerate=self.framerate,
+                        betas=self.betas,
+                        gender=self.gender,
+                        total_mass_kg=self.total_mass,
+                        model_path=os.path.dirname(os.path.abspath(__file__)) # Use absolute path to dpg_system
+                    )
+                    self._on_axis_perm_changed()
+                    self._restore_max_torque_overrides()
+                    
+                    # Send updated limb lengths immediately upon config change
+                    if hasattr(self.processor, 'skeleton_offsets'):
+                         offsets = self.processor.skeleton_offsets # (24, 3)
+                         lengths = np.linalg.norm(offsets, axis=-1) # (24,)
+                         self.output_limb_lengths.send(lengths)
+        
+        # Ensure processor exists
+        if self.processor is None:
+             self.processor = SMPLProcessor(
+                framerate=self.framerate,
+                betas=self.betas,
+                gender=self.gender,
+                total_mass_kg=self.total_mass,
+                model_path=os.path.dirname(os.path.abspath(__file__))
+            )
+             self._on_axis_perm_changed()
+             self._restore_max_torque_overrides()
+             
+             # Send initial limb lengths
+             if hasattr(self.processor, 'skeleton_offsets'):
+                 offsets = self.processor.skeleton_offsets
+                 lengths = np.linalg.norm(offsets, axis=-1)
+                 self.output_limb_lengths.send(lengths)
+
+        # 2. Process Data
+        if self.pose_input.fresh_input:
+            pose = self._to_array(self.pose_input())
+            trans = self.trans_input()
+            if trans is None:
+                trans = np.zeros(3)
+            else:
+                trans = self._to_array(trans)
+                
+            # Input format handling
+            # SMPLProcessor expects (F, 24, 3) or (F, 24, 4) or flattened
+            # DPG pose might be (22, 3) or (24, 3) or flattened
+            
+            # Helper to reshape if flattened [22*3] or [24*3]
+            def reshape_pose_input(p_in):
+                if p_in.ndim == 1:
+                    if p_in.size == 72: # 24*3
+                        return p_in.reshape(1, 24, 3)
+                    elif p_in.size == 66: # 22*3 (missing hands?)
+                        # Pad with identity/zeros.
+                        p24 = np.zeros((1, 24, 3))
+                        p24[0, :22, :] = p_in.reshape(22, 3)
+                        return p24
+                    elif p_in.size == 88: # 22*4 quats
+                        # Pad to 24*4
+                        p24 = np.zeros((1, 24, 4))
+                        p24[:, :, 0] = 1.0 # Identity w=1
+                        p24[0, :22, :] = p_in.reshape(22, 4)
+                        return p24
+                    elif p_in.size == 96: # 24*4
+                        return p_in.reshape(1, 24, 4)
+                elif p_in.ndim == 2:
+                    # (22, 3), (24, 3), (22, 4), (24, 4)
+                    if p_in.shape[0] == 22:
+                        # Pad to 24
+                        if p_in.shape[1] == 3:
+                            p24 = np.zeros((1, 24, 3))
+                            p24[0, :22, :] = p_in
+                            return p24
+                        elif p_in.shape[1] == 4:
+                            p24 = np.zeros((1, 24, 4))
+                            p24[:, :, 0] = 1.0
+                            p24[0, :22, :] = p_in
+                            return p24
+                    elif p_in.shape[0] == 24:
+                        return p_in[np.newaxis, ...] # Add F dim
+                return p_in
+
+            pose = reshape_pose_input(pose)
+
+            # Handle Effort Pose (Optional Dual Path)
+            effort_pose = None
+            if self.effort_pose_input.fresh_input and self.effort_pose_input() is not None:
+                raw_eff = self._to_array(self.effort_pose_input())
+                effort_pose = reshape_pose_input(raw_eff)
+                eq = np.all(np.equal(effort_pose, pose))
+
+            # Determine input type
+            # Shape is now (F, 24, C)
+            input_type = 'axis_angle'
+            if pose.shape[-1] == 4:
+                input_type = 'quat'
+            
+            # Process
+            # Prepare Config
+            options = SMPLProcessingOptions(
+                input_type=input_type,
+                return_quats=True,
+                
+                # Coordinates
+                input_up_axis=self.up_axis_prop(),
+                axis_permutation=self.processor.axis_permutation if hasattr(self.processor, 'axis_permutation') else None,
+                quat_format=self.quat_format_prop(),
+                
+                # Physics
+                dt=1.0/max(self.framerate, 1.0),
+                add_gravity=self.add_gravity_prop(),
+                enable_passive_limits=self.enable_passive_limits(),
+                enable_apparent_gravity=self.enable_app_gravity_prop(),
+                
+                # Filtering
+                enable_one_euro_filter=self.enable_one_euro_prop(),
+                filter_min_cutoff=self.min_cutoff_prop() if hasattr(self, 'min_cutoff_prop') else 1.0,
+                filter_beta=self.beta_prop() if hasattr(self, 'beta_prop') else 0.05,
+                
+                # Spikes / Clamping
+                spike_threshold=self.spike_thresh_prop() if hasattr(self, 'spike_thresh_prop') else 0.0,
+                input_spike_threshold=self.input_spike_prop() if hasattr(self, 'input_spike_prop') else 0.0,
+                jerk_threshold=self.jerk_prop() if hasattr(self, 'jerk_prop') else 0.0,
+                
+                # Floor
+                floor_enable=self.floor_enable_prop(),
+                floor_height=self.floor_height_prop() if hasattr(self, 'floor_height_prop') else 0.0,
+                floor_tolerance=self.floor_tol_prop() if hasattr(self, 'floor_tol_prop') else 0.15,
+                heel_toe_bias=self.heel_toe_bias_prop() if hasattr(self, 'heel_toe_bias_prop') else 0.0
+            )
+            
+            # Process
+            try:
+                res = self.processor.process_frame(pose, trans, options, effort_pose_data=effort_pose)
+                # Output Torques: (F, 22) -> (22) if F=1
+                # Output Inertias: (22,)
+                
+                torques = res['torques']
+                inertias = res['inertias']
+                efforts_dyn = res.get('efforts_dyn', np.zeros_like(torques)) 
+                efforts_grav = res.get('efforts_grav', np.zeros_like(torques))
+                efforts_net = res.get('efforts_net', np.zeros_like(torques))
+                
+                # Vectors
+                # If key missing in older processor versions (shouldn't happen), fallback to zeros
+                torques_vec = res.get('torques_vec', np.zeros((torques.shape[0], 24, 3)))
+                torques_grav_vec = res.get('torques_grav_vec', np.zeros((torques.shape[0], 24, 3)))
+                
+                # CoM / ZMP
+                com_out = getattr(self.processor, 'current_com', np.zeros((torques.shape[0], 3)))
+                zmp_out = getattr(self.processor, 'current_zmp', np.zeros((torques.shape[0], 3)))
+                
+                if torques.shape[0] == 1:
+                    torques = torques[0] # (22,)
+                    efforts_dyn = efforts_dyn[0]
+                    efforts_grav = efforts_grav[0]
+                    efforts_net = efforts_net[0]
+                    com_out = com_out[0] if com_out.ndim > 1 else com_out
+                    zmp_out = zmp_out[0] if zmp_out.ndim > 1 else zmp_out
+                    inertias = inertias[0]
+                    torques_vec = torques_vec[0] # (24, 3)
+                    torques_grav_vec = torques_grav_vec[0]
+                    
+                # Zero Root Torque if requested
+                if self.zero_root_torque():
+                    # Preserve shape (22,), but Zero out Root (Index 0)
+                    # We send the Original Root Torque to the dedicated output
+                    self.output_root.send(torques[0])
+                    
+                    # Zero out index 0 in place (or on copy)
+                    # Note: These are references to the arrays in 'res'. 
+                    # If we modify them, it might affect 'res' for verification, but that's fine here.
+                    
+                    # Make copies to be safe against side effects if 'res' is reused? 
+                    # 'res' is created fresh in process_frame.
+                    
+                    torques = torques.copy()
+                    torques[0] = 0.0
+                    
+                    inertias = inertias.copy()
+                    inertias[0] = 0.0
+                    
+                    efforts_dyn = efforts_dyn.copy()
+                    efforts_dyn[0] = 0.0
+                    
+                    efforts_grav = efforts_grav.copy()
+                    efforts_grav[0] = 0.0
+                    
+                    efforts_net = efforts_net.copy()
+                    efforts_net[0] = 0.0
+                    
+                    torques_vec = torques_vec.copy()
+                    torques_vec[0] = np.zeros(3)
+                    
+                    torques_grav_vec = torques_grav_vec.copy()
+                    torques_grav_vec[0] = np.zeros(3)
+
+                self.torques_output.send(torques)
+                self.inertia_output.send(inertias)
+                self.effort_output.send(efforts_dyn)
+                self.gravity_effort_output.send(efforts_grav)
+                self.combined_effort_output.send(efforts_net)
+                
+                self.torque_vec_output.send(torques_vec)
+                self.gravity_torque_vec_output.send(torques_grav_vec)
+
+                # Send Floor Contact
+                if 'floor_contact' in res:
+                     self.output_contact.send(res['floor_contact'][0]) # (24,) float array
+                
+                if 'positions' in res:
+                     pos = res['positions']
+                     if pos.shape[0] == 1:
+                         pos = pos[0] # (24, 3)
+                     self.output_positions.send(pos)
+                
+                if 'contact_probs' in res:
+                     probs = res['contact_probs']
+                     if probs.shape[0] == 1:
+                         probs = probs[0]
+                     self.contact_probs_output.send(probs)
+                     
+                press_out = getattr(self.processor, 'contact_pressure', None)
+                if press_out is not None:
+                     if press_out.ndim > 1 and torques.shape[0] == 1:
+                         press_out = press_out[0]
+                     self.contact_pressure_output.send(press_out)
+                     
+                self.output_com.send(com_out)
+                self.output_zmp.send(zmp_out)
+            
+            except Exception as e:
+                # Catch processing errors (e.g. shape mismatch on first frame)
+                print(f"SMPLTorqueNode Error: {e}")
+                import traceback
+                traceback.print_exc()
+                pass
+
+    def print_max_torque(self, message='', args=[]):
+        max = self.processor.max_torque_array
+        print(max)
+
+    def set_max_torque_handler(self, message='', args=[]):
+        """
+        Handler for 'set_max_torque' message.
+        Expected args: 
+        1. [joint_name_filter, value] where value is float or list of 3 floats.
+        2. [(24,3) numpy array] -> Sets full profile.
+        3. [(24,) numpy array] -> Sets full profile (isotropic).
+        """
+        if self.processor is None:
+            return
+            
+        # Case 1: Direct Array Payload (Single Argument)
+        if len(args) == 1 and isinstance(args[0], np.ndarray):
+            arr = args[0]
+            if arr.shape == (24, 3) or arr.shape == (24, 1) or arr.shape == (24,):
+                # --- Persistence Logic for Arrays (Biometric Back-Projection + Heuristic) ---
+                # Strategy: 
+                # 1. Analyze Input attributes against Defaults.
+                # 2. If Input matches Default BUT we have a saved override, prefer the Override (Heuristic).
+                # 3. Construct "Effective Array" that merges Input and Overrides.
+                # 4. Apply Effective Array to Processor.
+                
+                defaults = self.processor._compute_max_torque_profile()
+                effective_arr = arr.copy() # Start with input
+                
+                # Function to ensure we have a vector for math
+                def to_vec(v):
+                    v = np.array(v, dtype=float)
+                    if v.ndim == 0: return np.full(3, v)
+                    if v.shape == (1,): return np.full(3, v[0])
+                    return v
+
+                # Capture valid joint indices for mapping
+                # We need to apply logic per Biometric Group
+                
+                # Copy old ratios to reference during decision making
+                old_ratios = getattr(self, 'torque_ratios', {}).copy()
+                new_ratios = {}
+                
+                overrides_applied = 0
+                
+                for k in defaults:
+                    default_vec = to_vec(defaults[k])
+                    
+                    # Find ALL joint indices belonging to this group
+                    # e.g., 'knee' -> left_knee_idx, right_knee_idx
+                    indices = []
+                    for i, name in enumerate(self.processor.joint_names):
+                        if k in name:
+                            indices.append(i)
+                            
+                    if not indices: continue
+                    
+                    # Check the First representative for logic (assuming isotropic input for the group if from biometric source)
+                    # If input array varies with group (e.g. left knee != right knee), this logic is imperfect but sufficient for biometric groups.
+                    rep_idx = indices[0]
+                    val_vec = arr[rep_idx]
+                    
+                    # --- Heuristic Check ---
+                    is_default = np.allclose(val_vec, default_vec, rtol=1e-3, atol=1e-3)
+                    
+                    has_override = False
+                    start_ratio = 1.0
+                    if k in old_ratios:
+                        start_ratio = old_ratios[k]
+                        if not np.allclose(start_ratio, 1.0, rtol=1e-3, atol=1e-3):
+                            has_override = True
+                            
+                    final_ratio = 1.0
+                    
+                    if is_default and has_override:
+                        # IGNORE Reset. Restore Override.
+                        # Calculate restored value based on CURRENT default (which is what we are comparing against)
+                        restored_val = default_vec * start_ratio
+                        
+                        # Apply to Effective Array (All indices in group)
+                        for idx in indices:
+                            effective_arr[idx] = restored_val
+                            
+                        # Keep Old Ratio
+                        final_ratio = start_ratio
+                        overrides_applied += 1
+                        
+                    else:
+                        # Accept Input (New Custom or Confirmed Default)
+                        final_ratio = val_vec / (default_vec + 1e-6)
+                        # No change to effective_arr needed (it has input value)
+                        
+                    # Store
+                    new_ratios[k] = final_ratio
+                    
+                # 1. Apply Effective Array
+                self.processor.set_full_max_torque_profile(effective_arr)
+                
+                # 2. Persist Ratios
+                self.torque_ratios = new_ratios
+                
+                if overrides_applied > 0:
+                    print(f"SMPLTorqueNode: Array Input processed. Preserved {overrides_applied} custom overrides against default reset.")
+                # else:
+                #     print(f"SMPLTorqueNode: Array Input processed. No overrides active or Input was non-default.")
+                
+                return
+                        
+                print(f"SMPLTorqueNode: Persisted array settings via {len(self.torque_ratios)} biometric groups.")
+                return
+            else:
+                 print(f"SMPLTorqueNode: Invalid max torque array shape {arr.shape}. Expected (24, 3) or (24,).")
+                 return
+
+        # Case 2: Standard [Filter, Value]
+        if len(args) >= 2:
+            joint_filter = str(args[0])
+            try:
+                # Value might be float, list, or numpy array
+                val = args[1]
+                # count = self.processor.set_max_torque(joint_filter, val) # MOVED BELOW CHECK
+                
+                # --- Persistence Logic (Scaling) ---
+                # Calculate ratio relative to current biometric default
+                defaults = self.processor._compute_max_torque_profile()
+                
+                # Function to ensure we have a vector for math
+                def to_vec(v):
+                    v = np.array(v, dtype=float)
+                    if v.ndim == 0: return np.full(3, v)
+                    if v.shape == (1,): return np.full(3, v[0])
+                    return v
+
+                val_vec = to_vec(val)
+                
+                # Check which keys were updated
+                # Logic mirrors SMPLProcessor.set_max_torque: `if joint_filter in k:`
+                for k in defaults:
+                    if joint_filter in k:
+                        # Calculate Ratio
+                        default_vec = to_vec(defaults[k])
+                        
+                        # --- Heuristic: Default Rejection ---
+                        # If the incoming value 'val_vec' matches 'default_vec', AND we already have a custom override,
+                        # we assume this is a 'System Reset' (e.g. from file loader) and ignore it to preserve user intent.
+                        
+                        is_default = np.allclose(val_vec, default_vec, rtol=1e-3, atol=1e-3)
+                        
+                        existing_ratio = 1.0
+                        if hasattr(self, 'torque_ratios') and k in self.torque_ratios:
+                             # Check if existing ratio is non-trivial from 1.0 vector
+                             r = self.torque_ratios[k] # vector
+                             if not np.allclose(r, 1.0, rtol=1e-3, atol=1e-3):
+                                 existing_ratio = 2.0 # Just a flag that it's "Custom"
+                        
+                        if is_default and existing_ratio != 1.0:
+                             print(f"SMPLTorqueNode: Ignoring reset to default for '{k}' because custom override is active.")
+                             # Skip update!
+                             # But wait, set_max_torque was ALREADY called above!
+                             # We need to perform this check BEFORE calling set_max_torque.
+                             continue
+                        
+                        # Calculate Ratio
+                        ratio = val_vec / (default_vec + 1e-6)
+                        
+                        # Store intent
+                        if not hasattr(self, 'torque_ratios'): self.torque_ratios = {}
+                        self.torque_ratios[k] = ratio
+                        # print(f"Stored Max Torque Ratio for '{k}': {ratio}")
+                
+                # --- APPLY Update (Moved below check) ---
+                # We can't use the simple 'count = processor.set_max_torque' because we might skip some keys.
+                # However, set_max_torque applies to ALL matching keys.
+                # If we want to selectively skip, we might differ from processor logic.
+                # But typically 'joint_filter' maps to specific joints.
+                # If the heuristic triggers, it usually triggers for ALL joints in the filter (if filter is broad and defaults match).
+                
+                # Let's Refactor: Call set_max_torque ONLY if we didn't skip everything?
+                # Or better: Iterate keys and call set_max_torque per key if valid.
+                
+                count = 0
+                for k in defaults:
+                    if joint_filter in k:
+                         default_vec = to_vec(defaults[k])
+                         is_default = np.allclose(val_vec, default_vec, rtol=1e-3, atol=1e-3)
+                         
+                         has_override = False
+                         if hasattr(self, 'torque_ratios') and k in self.torque_ratios:
+                             r = self.torque_ratios[k]
+                             if not np.allclose(r, 1.0, rtol=1e-3, atol=1e-3):
+                                 has_override = True
+                                 
+                         if is_default and has_override:
+                             print(f"SMPLTorqueNode: Ignoring reset to default for '{k}' (Override Active).")
+                             continue
+                         
+                         # Apply Update
+                         self.processor.set_max_torque(k, val)
+                         count += 1
+                         
+                         # Update Storage
+                         ratio = val_vec / (default_vec + 1e-6)
+                         if not hasattr(self, 'torque_ratios'): self.torque_ratios = {}
+                         self.torque_ratios[k] = ratio
+
+                if count > 0:
+                    print(f"SMPLTorqueNode: Updated max torque for {count} joints matching '{joint_filter}' to {val}")
+                else:
+                    if count == 0:
+                         print(f"SMPLTorqueNode: No update performed (filtered or rejected).")
+            except ValueError:
+                print(f"SMPLTorqueNode: Invalid torque value '{args[1]}'")
+                
+            except Exception as e:
+                print(f"SMPLTorqueNode: Error updating torque: {e}")
+                import traceback
+                traceback.print_exc()
+                pass
+
+    def _restore_max_torque_overrides(self):
+        """
+        Re-applies user Max Torque settings by scaling current defaults by stored Ratios.
+        """
+        if hasattr(self, 'torque_ratios') and self.torque_ratios and self.processor:
+            defaults = self.processor._compute_max_torque_profile()
+            count = 0
+            for k, ratio in self.torque_ratios.items():
+                if k in defaults:
+                    default_val = defaults[k]
+                    # Ensure Vector for safe math
+                    v_def = np.array(default_val, dtype=float)
+                    if v_def.ndim == 0: v_def = np.full(3, v_def)
+                    elif v_def.size == 1: v_def = np.full(3, v_def.item())
+                    
+                    new_val = v_def * ratio
+                    self.processor.set_max_torque(k, new_val)
+                    count += 1
+            if count > 0:
+                 print(f"SMPLTorqueNode: Restored max torque for {count} joint groups based on biometric scaling.")

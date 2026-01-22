@@ -28,6 +28,7 @@ def register_quaternion_nodes():
     Node.app.register_node('rotation_matrix_diff', RotationMatrixDiffNode.factory)
     Node.app.register_node('matrix_to_axis_angle', MatrixToAxisAngleNode.factory)
     Node.app.register_node('matrix_to_rotvec', MatrixToAxisAngleNode.factory)
+    Node.app.register_node('quaternion_norm', NormalizeQuaternionNode.factory)
 
 
 class QuaternionToEulerNode(Node):
@@ -64,6 +65,45 @@ class QuaternionToEulerNode(Node):
             else:
                 if self.app.verbose:
                     print('quaternion_to_euler received improperly formatted input')
+
+
+def numpy_quaternion_to_axis_angle(quaternions):
+    """
+    Convert rotations given as quaternions to axis/angle.
+    Args:
+        quaternions: quaternions with real part first,
+            as numpy array of shape (..., 4).
+    Returns:
+        Rotations given as a vector in axis angle form, as a numpy array
+            of shape (..., 3), where the magnitude is the angle
+            turned anticlockwise in radians around the vector's
+            direction.
+    """
+    quaternions = np.array(quaternions, copy=False)
+    added_dim = False
+    if quaternions.ndim == 1:
+        added_dim = True
+        quaternions = quaternions[np.newaxis, :]
+
+    # Compute the magnitude of the imaginary (vector) part
+    norms = np.linalg.norm(quaternions[..., 1:], axis=-1, keepdims=True)
+
+    # Compute the half-angle theta/2
+    # atan2(norm(v), w)
+    half_angles = np.arctan2(norms, quaternions[..., :1])
+
+    # Compute 0.5 * sin(theta/2) / (theta/2)
+    # np.sinc(x) computes sin(pi*x)/(pi*x)
+    # So np.sinc(half_angles / np.pi) computes sin(half_angles)/half_angles
+    # This handles the limit as half_angles -> 0 correctly (returns 1.0)
+    sin_half_angles_over_angles = 0.5 * np.sinc(half_angles / np.pi)
+
+    # Compute the result v / (sin(theta/2) / theta) = v * theta / sin(theta/2)
+    out = quaternions[..., 1:] / sin_half_angles_over_angles
+
+    if added_dim:
+        return out.squeeze(axis=0)
+    return out
 
 def torch_quaternion_to_axis_angle(quaternions: torch.Tensor) -> torch.Tensor:
     """
@@ -113,11 +153,12 @@ class QuaternionToRotVecNode(Node):
         self.degree_factor = 180.0 / math.pi
 
         self.input = self.add_input('quaternion', triggers_execution=True)
-        self.output = self.add_output('euler angles')
+        self.output = self.add_output('axis angles')
 
     def execute(self):
         if self.input.fresh_input:
             data = self.input()
+
             if type(data) not in [torch.Tensor, np.ndarray]:
                 data = any_to_tensor(data)
             if type(data) == torch.Tensor:
@@ -129,6 +170,16 @@ class QuaternionToRotVecNode(Node):
                 else:
                     if self.app.verbose:
                         print('quaternion_to_rotvec received improperly formatted input')
+            elif type(data) == np.ndarray:
+                if data.shape[-1] % 4 == 0:
+                    rot_vec = numpy_quaternion_to_axis_angle(data)
+                    # q = quaternion.as_quat_array(data)
+                    # rot_vec = quaternion.as_rotation_vector(q)
+                    self.output.send(rot_vec)
+                else:
+                    if self.app.verbose:
+                        print('quaternion_to_rotvec received improperly formatted input')
+
 
 def mps_sinc(x: torch.Tensor) -> torch.Tensor:
     """
@@ -265,6 +316,49 @@ class QuaternionToRotationMatrixNode(Node):
                 else:
                     if self.app.verbose:
                         print('quaternion_to_matrix received improperly formatted input')
+
+
+class NormalizeQuaternionNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NormalizeQuaternionNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('quaternions', triggers_execution=True)
+        self.output = self.add_output('normalized')
+
+    def execute(self):
+        expanded = False
+        quats = self.input()
+        if isinstance(quats, list):
+            quats = any_to_array(quats)
+        if isinstance(quats, np.ndarray):
+            if len(quats.shape) == 1 and quats.shape[0] == 4:
+                quats = np.expand_dims(quats, 0)
+                expanded = True
+            if len(quats.shape) == 2 and quats.shape[1] == 4:
+                num_quats = quats.shape[0]
+                magnitudes = np.linalg.norm(quats, axis=1, keepdims=True)
+                norm_quats = quats / magnitudes
+                if expanded:
+                    norm_quats = np.squeeze(norm_quats, 0)
+                self.output.send(norm_quats)
+        elif isinstance(quats, torch.Tensor):
+            if len(quats.shape) == 1 and quats.shape[0] == 4:
+                quats = torch.unsqueeze(quats, 0)
+                expanded = True
+            if len(quats.shape) == 2 and quats.shape[1] == 4:
+                num_quats = quats.shape[0]
+                magnitudes = torch.linalg.norm(quats, axis=1, keepdims=True)
+                norm_quats = quats / magnitudes
+                if expanded:
+                    norm_quats = torch.squeeze(norm_quats, 0)
+                self.output.send(norm_quats)
+
+
 
 
 class QuaternionDistanceNode(Node):

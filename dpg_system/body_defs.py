@@ -2,44 +2,7 @@ print('in')
 
 import numpy as np
 
-# t_NoJoint = -1
-# t_Body = 0
-# t_MidVertebrae = 1
-# t_BaseOfSkull = 2
-# t_TopOfHead = 3
-# t_PelvisAnchor = 4              #  can invert quat *not used*
-# t_LeftShoulder = 5
-# t_LeftKnuckle = 6
-# t_LeftFingerTip = 7
-# t_LeftAnkle = 8
-# t_LeftElbow = 9                 # close to inversion 0.95
-# t_LeftWrist = 10                #  can invert quat 1.99
-# t_LeftHeel = 11
-# t_LeftKnee = 12
-# t_LeftShoulderBladeBase = 13
-# t_LeftHip = 14
-# t_LeftBallOfFoot = 15
-# t_LeftToeTip = 16
-# t_UpperVertebrae = 17
-# t_Reference = 18
-# t_RightShoulder = 19
-# t_RightKnuckle = 20
-# t_RightFingerTip = 21
-# t_RightAnkle = 22
-# t_RightElbow = 23               #  can invert quat 1.07
-# t_RightWrist = 24               #  can invert quat  1.99
-# t_RightHeel = 25
-# t_RightKnee = 26                #  .78
-# t_RightShoulderBladeBase = 27
-# t_RightHip = 28
-# t_RightBallOfFoot = 29
-# t_RightToeTip = 30
-# t_SpinePelvis = 31
-# t_LowerVertebrae = 32
-# t_Tracker0 = 33
-# t_Tracker1 = 34
-# t_Tracker2 = 35
-# t_Tracker3 = 36
+
 
 # new active joint mode constants
 
@@ -147,7 +110,8 @@ class JointTranslator():
         'right_ankle': 8, 'spine3': 9, 'left_foot': 10, 'right_foot': 11,
         'neck': 12, 'left_collar': 13, 'right_collar': 14, 'head': 15,
         'left_shoulder': 16, 'right_shoulder': 17, 'left_elbow': 18, 'right_elbow': 19,
-        'left_wrist': 20, 'right_wrist': 21
+        'left_wrist': 20, 'right_wrist': 21, 'left_hand': 22, 'right_hand': 23,
+        'left_toe_tip': 24, 'right_toe_tip': 25, 'left_finger_tip': 26, 'right_finger_tip': 27
     }
 
     bmolab_active_joints = {
@@ -155,7 +119,9 @@ class JointTranslator():
         'spine_pelvis': 4, 'pelvis_anchor': 5, 'left_hip': 6, 'left_knee': 7,
         'left_ankle': 8, 'right_hip': 9, 'right_knee': 10, 'right_ankle': 11,
         'left_shoulder_blade': 12, 'left_shoulder': 13, 'left_elbow': 14, 'left_wrist': 15,
-        'right_shoulder_blade': 16, 'right_shoulder': 17, 'right_elbow': 18, 'right_wrist': 19
+        'right_shoulder_blade': 16, 'right_shoulder': 17, 'right_elbow': 18, 'right_wrist': 19,
+        'left_foot': 20, 'right_foot': 21, 'left_hand': 22, 'right_hand': 23,
+        'left_toe_tip': 24, 'right_toe_tip': 25, 'left_finger_tip': 26, 'right_finger_tip': 27
     }
 
     joints_to_input_vector = [-1, 2, 0, -1, 5, 13, -1, -1, 8, 14, 15, -1, 7, 12, 6, -1, -1, 1, -1, 17, -1, -1, 11, 18,
@@ -181,7 +147,15 @@ class JointTranslator():
         'right_collar': 'right_shoulder_blade',
         'right_shoulder': 'right_shoulder',
         'right_elbow': 'right_elbow',
-        'right_wrist': 'right_wrist'
+        'right_wrist': 'right_wrist',
+        'left_foot': 'left_foot',
+        'right_foot': 'right_foot',
+        'left_hand': 'left_hand',
+        'right_hand': 'right_hand',
+        'left_toe_tip': 'left_toe_tip',
+        'right_toe_tip': 'right_toe_tip',
+        'left_finger_tip': 'left_finger_tip',
+        'right_finger_tip': 'right_finger_tip'
     }
 
     smpl_to_smpl_active_joint_map = {
@@ -204,7 +178,9 @@ class JointTranslator():
         'right_collar': 'right_shoulder_blade',
         'right_shoulder': 'right_shoulder',
         'right_elbow': 'right_elbow',
-        'right_wrist': 'right_wrist'
+        'right_wrist': 'right_wrist',
+        'left_foot': 'left_foot',
+        'right_foot': 'right_foot'
     }
 
     smpl_from_bmolab_active_joint_map = {
@@ -507,7 +483,8 @@ class JointTranslator():
             smpl_index = JointTranslator.smpl_joints[smpl_joint]
             active_joint = JointTranslator.smpl_to_bmolab_active_joint_map[smpl_joint]
             active_index = JointTranslator.bmolab_active_joints[active_joint]
-            active_pose[active_index] = smpl_pose[smpl_index]
+            if smpl_index < smpl_pose.shape[0]:
+                active_pose[active_index] = smpl_pose[smpl_index]
         return active_pose
 
     @staticmethod

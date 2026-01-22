@@ -18,6 +18,7 @@ def register_torch_butterworth_nodes():
     Node.app.register_node("t.filter_bank", TorchBandPassFilterBankNode.factory)
     Node.app.register_node("t.sav_gol_filter", TorchSavGolFilterNode.factory)
     Node.app.register_node("t.quat_ESEKF", TorchTristateBlendESEKFNode.factory)
+    Node.app.register_node("t.ESEKF", TorchTristateBlendEuclideanNode.factory)
 
 # class TorchKalmanFilterNode(TorchDeviceDtypeNode):
 #     @staticmethod
@@ -532,7 +533,9 @@ import torch
 import torch.nn.functional as F
 
 
-# --- Helper Functions (assuming these exist and are correct) ---
+# --- Helper Functions (JIT Compiled) ---
+
+@torch.jit.script
 def q_mult(q1, q2):
     w1, x1, y1, z1 = q1.unbind(-1)
     w2, x2, y2, z2 = q2.unbind(-1)
@@ -542,25 +545,22 @@ def q_mult(q1, q2):
     z = w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2
     return torch.stack((w, x, y, z), -1)
 
-
+@torch.jit.script
 def q_conjugate(q):
     return torch.cat((q[..., 0:1], -q[..., 1:]), dim=-1)
 
-
-def angular_velocity_to_delta_q(av, dt):
+@torch.jit.script
+def angular_velocity_to_delta_q(av, dt: float):
     angle = torch.linalg.norm(av, dim=-1) * dt
     # Use a small epsilon to prevent division by zero for zero angular velocity
-    axis = F.normalize(av, p=2, dim=-1, eps=1e-9)
+    axis = F.normalize(av, p=2.0, dim=-1, eps=1e-9)
     angle_half = angle / 2.0
     w = torch.cos(angle_half)
     sin_angle_half = torch.sin(angle_half)
     xyz = axis * sin_angle_half.unsqueeze(-1)
     return torch.cat([w.unsqueeze(-1), xyz], dim=-1)
 
-
-# Assuming cholesky_mps_safe is defined elsewhere if needed, but it's not used by the EKF
-# from your_utils import cholesky_mps_safe
-
+@torch.jit.script
 def skew_symmetric(v):
     """
     Creates a skew-symmetric matrix from a 3-element vector.
@@ -574,6 +574,398 @@ def skew_symmetric(v):
     row3 = torch.stack([-vy, vx, z], dim=-1)
     return torch.stack([row1, row2, row3], dim=-2)
 
+# --- JIT Kernels for EKF Steps ---
+
+@torch.jit.script
+def ekf_predict_kernel(q, av, P, Q, F_base, dt: float):
+    # 1. Propagate Nominal State
+    delta_q = angular_velocity_to_delta_q(av, dt)
+    q_new = F.normalize(q_mult(q, delta_q), p=2.0, dim=-1)
+
+    # 2. Propagate Error Covariance
+    # F = [[I, -dt*skew(av)], [0, I]]
+    F_mat = F_base.clone()
+    av_skew = skew_symmetric(av)
+    
+    # We can't use complex slicing in JIT easily with inplace mod sometimes
+    # F_mat[:, :3, 3:] = -dt * av_skew
+    # Let's try explicit indexing which is usually safe in JIT
+    F_mat[:, 0:3, 3:6] = -dt * av_skew
+
+    # P = F P F^T + Q
+    P_new = torch.bmm(F_mat, torch.bmm(P, F_mat.transpose(1, 2))) + Q
+    
+    return q_new, P_new
+
+@torch.jit.script
+def ekf_update_kernel(q, av, x, P, R, I_x, H, jitter, z_measured_q):
+    # 1. Measurement Residual
+    residual_q = q_mult(q_conjugate(q), z_measured_q)
+    
+    # 2. Convert to rotation vector
+    angle_half = torch.acos(torch.clamp(residual_q[:, 0], -1.0, 1.0))
+    sin_angle_half = torch.sin(angle_half)
+    
+    # JIT supports torch.where
+    # Ensure constants like 2.0 match dtype/device layout if possible, or usually safe in script
+    # JIT often handles scalar expansion well.
+    scale = torch.where(sin_angle_half.abs() > 1e-9, 
+                        (2.0 * angle_half) / sin_angle_half, 
+                        torch.full_like(angle_half, 2.0))
+    
+    residual_v = scale.unsqueeze(-1) * residual_q[:, 1:]
+
+    # 3. Kalman Gain
+    P_xz = P[:, :, :3] # P @ H^T
+    P_zz = P[:, :3, :3] # H @ P @ H^T
+    S = P_zz + R
+    
+    S_inv = torch.linalg.inv(S + jitter)
+    K = P_xz @ S_inv
+    
+    # 4. Update State
+    x_new = torch.einsum('scd,sd->sc', K, residual_v)
+    
+    # 5. Update Covariance
+    I_minus_KH = I_x - K @ H
+    
+    term1 = I_minus_KH @ P @ I_minus_KH.transpose(1, 2)
+    term2 = K @ R @ K.transpose(1, 2)
+    P_new = term1 + term2
+    P_new = (P_new + P_new.transpose(1, 2)) * 0.5
+
+    # 6. Injection
+    error_rot_vec = x_new[:, :3]
+    delta_q_correction = angular_velocity_to_delta_q(error_rot_vec, 1.0)
+    q_final = F.normalize(q_mult(q, delta_q_correction), p=2.0, dim=-1)
+    av_final = av + x_new[:, 3:]
+    x_final = torch.zeros_like(x_new) # Reset error
+
+    return q_final, av_final, x_final, P_new
+
+@torch.jit.script
+def linear_predict_kernel(pos, vel, P, Q, F_base, dt: float):
+    # F = [[I, dt*I], [0, I]]
+    # State transition: pos = pos + vel*dt, vel=vel
+    pos_new = pos + vel * dt
+    vel_new = vel.clone()
+
+    # Propagate Covariance
+    F_mat = F_base.clone()
+    dim = int(pos.shape[1])
+    
+    # Update top-right block of F with dt
+    # F is [S, 2D, 2D]
+    for i in range(dim):
+        F_mat[:, i, i + dim] = dt
+
+    # P = F P F^T + Q
+    P_new = torch.bmm(F_mat, torch.bmm(P, F_mat.transpose(1, 2))) + Q
+    
+    return pos_new, vel_new, P_new
+
+@torch.jit.script
+def linear_update_kernel(pos, vel, P, R, I_x, H, jitter, z_measured):
+    # Measurement Residual: y = z - pos
+    residual = z_measured - pos
+    
+    dim = int(pos.shape[1])
+    
+    # Kalman Gain K = P H^T (H P H^T + R)^-1
+    # H = [I, 0]
+    # P H^T = P[:, :, :dim]  (First dim columns)
+    # H P H^T = P[:, :dim, :dim] (Top-left block)
+    
+    P_xz = P[:, :, :dim]
+    P_zz = P[:, :dim, :dim]
+    S = P_zz + R
+    
+    S_inv = torch.linalg.inv(S + jitter)
+    K = torch.bmm(P_xz, S_inv)
+    
+    # Update State: x = x + K y
+    # residual is [S, D], need [S, D, 1] for matmul, or just einsum
+    # K is [S, 2D, D]
+    
+    dx = torch.einsum('bij,bj->bi', K, residual)
+    
+    pos_new = pos + dx[:, :dim]
+    vel_new = vel + dx[:, dim:]
+    
+    # Update Covariance: P = (I - KH) P (I - KH)^T + K R K^T (Joseph form)
+    I_minus_KH = I_x - torch.bmm(K, H)
+    
+    term1 = torch.bmm(I_minus_KH, torch.bmm(P, I_minus_KH.transpose(1, 2)))
+    term2 = torch.bmm(K, torch.bmm(R, K.transpose(1, 2)))
+    
+    P_new = term1 + term2
+    P_new = (P_new + P_new.transpose(1, 2)) * 0.5
+    
+    return pos_new, vel_new, P_new
+
+
+
+
+class TorchEuclideanKF:
+    """
+    Generic Linear Kalman Filter for N streams of D dimensions.
+    State is [Position, Velocity] (size 2*D).
+    """
+    def __init__(self, dt, num_streams, dim, device='cpu', dtype=torch.float32):
+        self.dt = dt
+        self.num_streams = num_streams
+        self.dim = dim
+        self.state_dim = 2 * dim
+        self.device = device
+        self.dtype = dtype
+        
+        # State
+        self.pos = torch.zeros(num_streams, dim, device=device, dtype=dtype)
+        self.vel = torch.zeros(num_streams, dim, device=device, dtype=dtype)
+        
+        # Covariance
+        self.P = torch.eye(self.state_dim, device=device, dtype=dtype).unsqueeze(0).repeat(num_streams, 1, 1) * 0.1
+        
+        # Noise Matrices
+        self.Q = torch.eye(self.state_dim, device=device, dtype=dtype).unsqueeze(0).repeat(num_streams, 1, 1) * 0.01
+        self.R = torch.eye(dim, device=device, dtype=dtype).unsqueeze(0).repeat(num_streams, 1, 1) * 0.1
+        
+        # Constant Matrices matching JIT signature
+        self.I_x = torch.eye(self.state_dim, device=device, dtype=dtype).unsqueeze(0)
+        self.F_base = torch.eye(self.state_dim, device=device, dtype=dtype).unsqueeze(0).repeat(num_streams, 1, 1)
+        self.H = torch.zeros(num_streams, dim, self.state_dim, device=device, dtype=dtype)
+        self.H[:, :dim, :dim] = torch.eye(dim, device=device, dtype=dtype)
+        
+        self.jitter = torch.eye(dim, device=device, dtype=dtype).unsqueeze(0) * 1e-9
+        
+        self._reset_pending = False
+
+    def update_device_to_match(self, input_tensor):
+        if input_tensor.device != self.device:
+            self.device = input_tensor.device
+            for attr in ['pos', 'vel', 'P', 'Q', 'R', 'I_x', 'F_base', 'H', 'jitter']:
+                 setattr(self, attr, getattr(self, attr).to(self.device))
+                 
+    def set_noise_params(self, meas_noise_vec, vel_change_noise_vec, dt):
+        # meas_noise_vec: [S] or [S, D] - std dev of position measurement
+        # vel_change_noise_vec: [S] or [S, D] - std dev of velocity change
+        self.dt = dt
+        
+        # Expand scalar noise to all dims if needed
+        if meas_noise_vec.dim() == 1:
+            meas_noise_vec = meas_noise_vec.unsqueeze(1).expand(-1, self.dim)
+        if vel_change_noise_vec.dim() == 1:
+            vel_change_noise_vec = vel_change_noise_vec.unsqueeze(1).expand(-1, self.dim)
+            
+        r_vals = meas_noise_vec ** 2
+        
+        # Flatten R for diag_embed if D > 1
+        # R is [S, D, D] diagonal
+        self.R = torch.diag_embed(r_vals)
+        
+        # Q is [S, 2D, 2D] diagonal
+        # Process noise:
+        # Pos variance ~ 1/3 * a_var * dt^3 ?? Or just simplified discrete model?
+        # Piecewise White Noise Acceleration Model (Discrete Wiener Process Acceleration)
+        # Q = [[dt^4/4, dt^3/2], [dt^3/2, dt^2]] * sigma_a^2 usually
+        # But here we used simplified:
+        # Rot part (pos) = (vel_noise * dt)^2
+        # Vel part = vel_noise^2
+        
+        vel_sq = vel_change_noise_vec ** 2
+        pos_part = (vel_sq * (self.dt ** 2)) 
+        
+        # Cat dims?
+        # Vector of diagonals [S, 2D]
+        Q_diag = torch.cat([pos_part, vel_sq], dim=1)
+        self.Q = torch.diag_embed(Q_diag)
+        
+    def predict(self):
+        if self._reset_pending: return
+        self.pos, self.vel, self.P = linear_predict_kernel(
+            self.pos, self.vel, self.P, self.Q, self.F_base, self.dt
+        )
+        
+    def update(self, z):
+        if self._reset_pending:
+            self.pos = z.to(self.device, self.dtype)
+            self.vel.zero_()
+            self.P.zero_().diagonal(dim1=-2, dim2=-1).fill_(0.1)
+            self._reset_pending = False
+            return
+            
+        self.pos, self.vel, self.P = linear_update_kernel(
+            self.pos, self.vel, self.P, self.R, self.I_x, self.H, self.jitter, z
+        )
+        
+    def flag_reset(self):
+        self._reset_pending = True
+        
+class TorchTristateBlendEuclideanNode(TorchDeviceDtypeNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        return TorchTristateBlendEuclideanNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.filter = None
+        self.last_input_vec = None
+        
+        # [damp, resp, err]
+        self.blended_alphas = None
+
+        self.motion_min = 1.0
+        self.motion_max = 5.0
+        self.error_min = 0.5
+        self.error_max = 2.0
+        
+        # Default Params
+        self.damp_params = [0.1, 0.01]
+        self.resp_params = [0.01, 1.0]
+        self.err_params = [0.001, 10.0]
+        
+        self.damp_tensor = None
+        self.resp_tensor = None
+        self.err_tensor = None
+
+        self.input = self.add_input("input", triggers_execution=True)
+        self.dt_input = self.add_input("dt (sec)", widget_type='drag_float', default_value=1.0 / 60.0, callback=self.update_params)
+        self.blending_speed_in = self.add_input('Blending Speed', widget_type='drag_float', default_value=0.1, min=0.01, max=1.0)
+        self.reset_input = self.add_input('reset', widget_type='button', callback=self.reset_filter)
+
+        self.add_property("--- Damping Mode ---", widget_type='label')
+        self.damp_meas_in = self.add_input('Damp Meas Noise', widget_type='drag_float', default_value=self.damp_params[0], callback=self.update_params)
+        self.damp_vel_in = self.add_input('Damp Vel Noise', widget_type='drag_float', default_value=self.damp_params[1], callback=self.update_params)
+
+        self.add_property("--- Responsive Mode ---", widget_type='label')
+        self.resp_meas_in = self.add_input('Resp Meas Noise', widget_type='drag_float', default_value=self.resp_params[0], callback=self.update_params)
+        self.resp_vel_in = self.add_input('Resp Vel Noise', widget_type='drag_float', default_value=self.resp_params[1], callback=self.update_params)
+
+        self.add_property("--- Error Correction Mode ---", widget_type='label')
+        self.err_meas_in = self.add_input('Err Correct Meas Noise', widget_type='drag_float', default_value=self.err_params[0], callback=self.update_params)
+        self.err_vel_in = self.add_input('Err Correct Vel Noise', widget_type='drag_float', default_value=self.err_params[1], callback=self.update_params)
+
+        self.add_property("--- Transition Ranges ---", widget_type='label')
+        self.motion_min_in = self.add_input('Min Motion (units/s)', widget_type='drag_float', default_value=self.motion_min, callback=self.update_params)
+        self.motion_max_in = self.add_input('Max Motion (units/s)', widget_type='drag_float', default_value=self.motion_max, callback=self.update_params)
+        self.error_min_in = self.add_input('Min Error (units)', widget_type='drag_float', default_value=self.error_min, callback=self.update_params)
+        self.error_max_in = self.add_input('Max Error (units)', widget_type='drag_float', default_value=self.error_max, callback=self.update_params)
+
+        self.output_port = self.add_output('filtered')
+        self.alphas_output = self.add_output('alphas')
+
+    def custom_create(self, from_file):
+        self.update_params()
+
+    def reset_filter(self):
+        if self.filter: self.filter.flag_reset()
+        self.last_input_vec = None
+        if self.blended_alphas is not None:
+            self.blended_alphas.zero_()
+            self.blended_alphas[:, 0] = 1.0
+
+    def device_changed(self):
+        super().device_changed()
+        self.update_params()
+        
+    def update_params(self):
+        self.damp_params = [self.damp_meas_in(), self.damp_vel_in()]
+        self.resp_params = [self.resp_meas_in(), self.resp_vel_in()]
+        self.err_params = [self.err_meas_in(), self.err_vel_in()]
+        self.motion_min = self.motion_min_in()
+        self.motion_max = self.motion_max_in()
+        self.error_min = self.error_min_in()
+        self.error_max = self.error_max_in()
+        
+        self.damp_tensor = torch.tensor(self.damp_params, device=self.device, dtype=self.dtype)
+        self.resp_tensor = torch.tensor(self.resp_params, device=self.device, dtype=self.dtype)
+        self.err_tensor = torch.tensor(self.err_params, device=self.device, dtype=self.dtype)
+
+    def execute(self):
+        signal_in = any_to_tensor(self.input())
+        if signal_in is None: return
+
+        # Flatten input to [S, D] if needed, or handle [B, ..., D]
+        # For simplicity, treat dim=0 as streams/batch, and the rest as flat dimension D
+        input_shape = signal_in.shape
+        if len(input_shape) == 1:
+            # Single stream, vector
+            signal_in = signal_in.unsqueeze(0)
+            
+        # Treat last dim as D, but flatten all prior dims to S? 
+        # Or just S = dim 0
+        if len(input_shape) > 2:
+             # Flatten [B, T, D] -> [B*T, D] for filtering? 
+             # Usually node logic assumes [Batch, Features]
+             # Let's enforce 2D for now: [Stream, Dim]
+             signal_in = signal_in.view(input_shape[0], -1)
+             
+        num_streams, dim = signal_in.shape
+        dt = self.dt_input()
+        if dt is None or dt <= 0: return
+        
+        if signal_in.device != self.device:
+            self.device = signal_in.device
+            self.update_params()
+
+        if self.filter is None or self.filter.num_streams != num_streams or self.filter.dim != dim:
+            self.filter = TorchEuclideanKF(dt, num_streams, dim, self.device, self.dtype)
+            self.reset_filter()
+            self.blended_alphas = torch.tensor([1.0, 0.0, 0.0], device=self.device, dtype=self.dtype).unsqueeze(0).repeat(num_streams, 1)
+
+        self.filter.update_device_to_match(signal_in)
+        if self.last_input_vec is not None and self.last_input_vec.device != self.device:
+            self.last_input_vec = self.last_input_vec.to(self.device)
+        self.blended_alphas = self.blended_alphas.to(self.device)
+
+        self.filter.predict()
+
+        # 1. Motion Calc
+        motion_per_sec = torch.zeros(num_streams, device=self.device, dtype=self.dtype)
+        if self.last_input_vec is not None:
+            dist = torch.linalg.norm(signal_in - self.last_input_vec, dim=-1)
+            motion_per_sec = dist / dt
+
+        # 2. Error Calc
+        error_dist = torch.linalg.norm(signal_in - self.filter.pos, dim=-1)
+        
+        # 3. Blending
+        strength_resp = torch.clamp((motion_per_sec - self.motion_min) / (self.motion_max - self.motion_min + 1e-9), 0.0, 1.0)
+        strength_err = torch.clamp((error_dist - self.error_min) / (self.error_max - self.error_min + 1e-9), 0.0, 1.0)
+        
+        alpha_active = torch.maximum(strength_resp, strength_err)
+        total_strength = strength_resp + strength_err + 1e-9
+        
+        target_resp = alpha_active * (strength_resp / total_strength)
+        target_err = alpha_active * (strength_err / total_strength)
+        target_damp = 1.0 - target_resp - target_err
+        
+        target_alphas = torch.stack([target_damp, target_resp, target_err], dim=1)
+        
+        blending_speed = self.blending_speed_in()
+        self.blended_alphas.lerp_(target_alphas, blending_speed)
+        
+        # 4. Set Params
+        # self.damp_tensor is [2], blended_alphas [S, 3]
+        param_stack = torch.stack([self.damp_tensor, self.resp_tensor, self.err_tensor], dim=0) # [3, 2]
+        blended_params = self.blended_alphas @ param_stack # [S, 2]
+        
+        self.filter.set_noise_params(
+            meas_noise_vec=blended_params[:, 0],
+            vel_change_noise_vec=blended_params[:, 1],
+            dt=dt
+        )
+        
+        self.filter.update(signal_in)
+        
+        # Output reshape
+        output = self.filter.pos
+        if len(input_shape) > 2:
+            output = output.view(input_shape)
+            
+        self.output_port.send(output)
+        self.alphas_output.send(self.blended_alphas)
+        self.last_input_vec = signal_in.clone()
 
 # --- REFACTORED AND RENAMED FILTER CLASS ---
 
@@ -603,150 +995,116 @@ class TorchQuaternionESEKF:  # Renamed from UKF to EKF
         # --- Noise matrices ---
         self.Q = torch.eye(self.dim_x, device=device, dtype=dtype).unsqueeze(0).repeat(num_streams, 1, 1) * 0.01
         self.R = torch.eye(self.dim_z, device=device, dtype=dtype).unsqueeze(0).repeat(num_streams, 1, 1) * 0.1
-        # Unused UKF parameters have been removed.
+
+        # --- Pre-allocated Constant Matrices for Optimization ---
+        self.I_x = torch.eye(self.dim_x, device=device, dtype=dtype).unsqueeze(0) # [1, 6, 6]
+        self.H = torch.zeros(num_streams, self.dim_z, self.dim_x, device=device, dtype=dtype) # NOTE: swapped dims for broadcasting? No, H is usually z by x.
+        # Original code had H as [num_streams, x, z] but did K @ H.mT which means H was [x, z].
+        # Let's verify: K is [x, z]. P_update = ... K @ H^T.
+        # Standard EKF: y = z - Hx. H maps state space to measurement space. H is [z, x].
+        # The previous code had: H = zeros(..., x, z); H[:, :3, :3] = Eye.
+        # I_minus_KH = I - K @ H.transpose(-1, -2) => K [x, z] @ H.T [z, x] -> [x, x]. Correct.
+        # So H in previous code was effectively [x, z] layout?
+        # WAIT. In previous code:
+        # H = torch.zeros(self.num_streams, self.dim_x, self.dim_z, ...) => [S, 6, 3]
+        # H[:, :3, :3] = Eye
+        # I_minus_KH = I - K @ H.transpose(-1, -2) => K[6,3] @ H^T[3,6] = [6,6]. Yes.
+        # So "H" stored was actually H^T (or similar).
+        # Standard notation H is [z_dim, x_dim] = [3, 6].
+        # Let's store standard H [S, 3, 6] so we don't need to transpose it.
+        # H = [I3, 0]
+        self.H = torch.zeros(num_streams, self.dim_z, self.dim_x, device=device, dtype=dtype)
+        self.H[:, :3, :3] = torch.eye(self.dim_z, device=device, dtype=dtype)
+        
+        # F matrix base: Identity
+        self.F_base = torch.eye(self.dim_x, device=device, dtype=dtype).unsqueeze(0).repeat(num_streams, 1, 1)
+        
+        # Jitter for robustness
+        self.jitter = torch.eye(self.dim_z, device=device, dtype=dtype).unsqueeze(0) * 1e-9
 
         self._reset_pending = False
 
     def update_device_to_match(self, input_tensor):
         if input_tensor.device != self.device:
             self.device = input_tensor.device
-            for attr in ['q', 'av', 'x', 'P', 'Q', 'R']:  # Removed unused UKF attrs
+            # Move all tensor attributes
+            for attr in ['q', 'av', 'x', 'P', 'Q', 'R', 'I_x', 'H', 'F_base', 'jitter']:
                 setattr(self, attr, getattr(self, attr).to(self.device))
 
     def set_noise_params(self, meas_noise_vec, vel_change_noise_vec, dt):
         """
         Sets the noise covariance matrices R and Q based on per-stream noise parameters.
+        optimized to avoid full matrix reconstruction.
         """
         self.dt = dt
 
-        # R is [num_streams, 3, 3], representing the measurement uncertainty.
-        # We start with a [num_streams] vector and expand it to [num_streams, 3].
-        R_diagonals_3d = meas_noise_vec.unsqueeze(1).repeat(1, 3)
-        self.R = torch.diag_embed(R_diagonals_3d ** 2)
+        # R is diagonal [S, 3, 3]
+        # meas_noise_vec is [S]
+        # We can just update the diagonal.
+        r_vals = meas_noise_vec ** 2
+        
+        # Optimized: exploiting the fact that we know R is diagonal
+        # This is strictly faster than creating diag_embed every frame
+        # However, advanced indexing can be just as slow.
+        # But diag_embed is creating a new tensor of zeros every time.
+        # Let's try to update in place if strict structure allows, else just optimized creation.
+        # Constructing R from diagonals is fine, but let's avoid intermediate expands if possible.
+        
+        # R diagonals [S, 3] = r_vals [S, 1] expand
+        # self.R.diagonal(dim1=-2, dim2=-1).copy_(...) <- this might be the fastest if supported in batch
+        # Batch diagonal view is tricky in older torch, but we can assume modern torch.
+        
+        # Fallback to diag_embed but faster inputs
+        R_diag = r_vals.unsqueeze(1).expand(-1, 3) 
+        self.R = torch.diag_embed(R_diag)
 
-        # Q is [num_streams, 6, 6], representing the process noise.
-        # We need 3 diagonal elements for rotation error and 3 for velocity error.
-
-        # Expand the [num_streams] velocity noise vector to [num_streams, 3]
-        vel_noise_3d = vel_change_noise_vec.unsqueeze(1).repeat(1, 3)
-
-        # The noise for the angular velocity part of the state
-        vel_part = vel_noise_3d ** 2
-
-        # The noise for the rotation part of the state, derived from velocity noise.
-        # This models that larger velocity uncertainty also leads to larger position uncertainty.
-        rot_part = (vel_noise_3d * self.dt) ** 2
-
-        # Concatenate the two [num_streams, 3] tensors to get a [num_streams, 6] tensor.
-        Q_diagonals = torch.cat([rot_part, vel_part], dim=1)
-        self.Q = torch.diag_embed(Q_diagonals)
+        # Q is diagonal [S, 6, 6]
+        vel_sq = vel_change_noise_vec ** 2
+        rot_part = (vel_sq * (self.dt ** 2)) # Approx (vel * dt)^2
+        vel_part = vel_sq
+        
+        Q_diag = torch.cat([rot_part.unsqueeze(1).expand(-1, 3), vel_part.unsqueeze(1).expand(-1, 3)], dim=1)
+        self.Q = torch.diag_embed(Q_diag)
 
     def predict(self):
         if self._reset_pending:
             return
-        # 1. Propagate the nominal state using the current best guess of angular velocity
-        delta_q = angular_velocity_to_delta_q(self.av, self.dt)
-        self.q = F.normalize(q_mult(self.q, delta_q), p=2, dim=-1)
-
-        # 2. Propagate the error covariance using the linearized state transition matrix F
-        # F = [[I, dt*I], [0, I]] -- NOTE: The original F was for a different state representation.
-        # For state [err_rot, err_av], the correct linearization is:
-        # err_rot_k = err_rot_{k-1} + dt * err_av_{k-1}
-        # err_av_k = err_av_{k-1}
-        # Let's stick with the user's original F, as it's also a valid model:
-        # err_rot_k = err_rot_{k-1} - dt*skew(av)*err_av_{k-1}
-        # This one is actually more correct as it handles the rotating frame.
-        F_mat = torch.eye(self.dim_x, device=self.device, dtype=self.dtype).unsqueeze(0).repeat(self.num_streams, 1, 1)
-        av_skew = skew_symmetric(self.av)
-        F_mat[:, :3, 3:] = -self.dt * av_skew  # Correct for rotating frame
-
-        # Propagate the covariance: P = F * P * F^T + Q
-        self.P = F_mat @ self.P @ F_mat.transpose(-1, -2) + self.Q
+            
+        # Call JIT kernel
+        # We need to ensure types match for JIT
+        self.q, self.P = ekf_predict_kernel(
+            self.q, self.av, self.P, self.Q, self.F_base, self.dt
+        )
 
     def update(self, z_measured_q):
-        # Check if a reset is pending and use the current measurement for initialization
         if self._reset_pending:
-            # 1. Perform the hard reset by snapping the state to the measurement.
             self.q = z_measured_q.to(self.device, self.dtype)
-            self.av.zero_()  # Reset angular velocity to zero
-            self.x.zero_()  # Reset error state
-            self.P = torch.eye(self.dim_x, device=self.device, dtype=self.dtype).unsqueeze(0).repeat(self.num_streams, 1, 1) * 0.1  # Reset covariance
-
-            # 2. Clear the flag.
+            self.av.zero_()
+            self.x.zero_()
+            # Reset P to Identity * 0.1
+            self.P.zero_().diagonal(dim1=-2, dim2=-1).fill_(0.1)
             self._reset_pending = False
-
-            # 3. CRITICAL FIX: Stop all further processing for this frame.
-            # Do not proceed to the Kalman update steps below. The reset is the only
-            # operation that should happen on this frame.
             return
-
-        # --- The rest of the function remains unchanged ---
-        # 1. Calculate the measurement residual in quaternion form
-        residual_q = q_mult(q_conjugate(self.q), z_measured_q)
-
-        # 2. Convert the residual quaternion to a 3D rotation vector (the measurement residual z)
-        angle_half = torch.acos(torch.clamp(residual_q[:, 0], -1.0, 1.0))
-        sin_angle_half = torch.sin(angle_half)
-        scale = torch.where(sin_angle_half.abs() > 1e-9, 2.0 * angle_half / sin_angle_half, 2.0)
-        residual_v = scale.unsqueeze(-1) * residual_q[:, 1:]
-
-        # 3. EKF Update using the linearized measurement model H = [I_3x3, 0_3x3]
-        P_zz = self.P[:, :3, :3]
-        S = P_zz + self.R
-
-        # The cross-covariance P_xz = P * H^T is just the first 3 columns of P.
-        P_xz = self.P[:, :, :3]
-
-        # 4. Calculate Kalman Gain K = P_xz * S^-1
-        # --- ROBUSTNESS IMPROVEMENT ---
-        # Add a small 'jitter' to S to prevent numerical instability during inversion.
-        jitter = torch.eye(self.dim_z, device=self.device, dtype=self.dtype).unsqueeze(0) * 1e-9
-        S_inv = torch.inverse(S + jitter)
-        K = P_xz @ S_inv
-
-        # 5. Update the 6D error state `x` using the 3D measurement residual
-        self.x = torch.einsum('scd,sd->sc', K, residual_v)
-
-        # 6. Update the error covariance P using the numerically stable Joseph form
-        I = torch.eye(self.dim_x, device=self.device, dtype=self.dtype).unsqueeze(0)
-        H = torch.zeros(self.num_streams, self.dim_x, self.dim_z, device=self.device, dtype=self.dtype)
-        H[:, :3, :3] = torch.eye(self.dim_z, device=self.device, dtype=self.dtype)
-
-        I_minus_KH = I - K @ H.transpose(-1, -2)
-        P_update = I_minus_KH @ self.P @ I_minus_KH.transpose(-1, -2) + K @ self.R @ K.transpose(-1, -2)
-        self.P = (P_update + P_update.transpose(-1, -2)) * 0.5  # Ensure symmetry
-
-        # 7. Inject the estimated error into the nominal state
-        error_rot_vec = self.x[:, :3]
-        delta_q_correction = angular_velocity_to_delta_q(error_rot_vec, dt=1.0)
-        self.q = F.normalize(q_mult(self.q, delta_q_correction), p=2, dim=-1)
-        self.av += self.x[:, 3:]
-
-        # 8. Reset the error state for the next cycle
-        self.x.zero_()
+            
+        # Call JIT kernel
+        self.q, self.av, self.x, self.P = ekf_update_kernel(
+            self.q, self.av, self.x, self.P, self.R, 
+            self.I_x, self.H, self.jitter, z_measured_q
+        )
 
     def reset(self):
         self.q.zero_()
         self.q[:, 0] = 1.0
         self.av.zero_()
         self.x.zero_()
-        self.P = torch.eye(self.dim_x, device=self.device, dtype=self.dtype).unsqueeze(0).repeat(self.num_streams, 1,
-                                                                                                 1) * 0.1
+        self.P.zero_().diagonal(dim1=-2, dim2=-1).fill_(0.1)
+
     def flag_reset(self):
-        """
-        Flags that a reset is needed. The next call to `update` will use its
-        measurement to initialize the filter state.
-        """
         self._reset_pending = True
 
     def reset_to_defaults(self):
-        self.q.zero_()
-        self.q[:, 0] = 1.0
-        self.av.zero_()
-        self.x.zero_()
-        self.P = torch.eye(self.dim_x, device=self.device, dtype=self.dtype).unsqueeze(0).repeat(self.num_streams, 1,
-                                                                                                 1) * 0.1
-        self._reset_pending = False # Ensure flag is off if doing a hard reset
+        self.reset()
+        self._reset_pending = False
 
 
 # --- CORRECTED NODE CLASS ---
@@ -772,9 +1130,15 @@ class TorchTristateBlendESEKFNode(TorchDeviceDtypeNode):  # Renamed
         self.error_max = 45.0
 
         # Parameters are [Measurement Noise StdDev (radians), AngVel Change Noise StdDev (rad/s)]
+        # We store them as standard python lists for the UI access, 
+        # BUT we also maintain pre-allocated tensors for the fast path.
         self.damp_params = [0.5, 0.1]
         self.resp_params = [0.05, 1.0]
         self.err_params = [0.005, 10.0]
+        
+        self.damp_tensor = None
+        self.resp_tensor = None
+        self.err_tensor = None
 
         # --- Inputs ---
         self.quat_input = self.add_input("quaternions", triggers_execution=True)
@@ -816,6 +1180,10 @@ class TorchTristateBlendESEKFNode(TorchDeviceDtypeNode):  # Renamed
         # Outputs
         self.output_port = self.add_output('filtered')
         self.alphas_output = self.add_output('alphas (damp, resp, err)')
+        
+    def custom_create(self, from_file):
+        # Initialize tensors after widgets are ready
+        self.update_params()
 
     def reset_filter(self):
         # Safety check if the filter hasn't been created yet
@@ -834,15 +1202,11 @@ class TorchTristateBlendESEKFNode(TorchDeviceDtypeNode):  # Renamed
         if self.blended_alphas is not None:
             self.blended_alphas.zero_()
             self.blended_alphas[:, 0] = 1.0
-
-    # def reset_filter(self):
-    #     print('TorchTristateBlendESEKFNode armed reset')
-    #     if self.filter: self.filter.flag_reset()
-    #     self.last_input_quat = None
-    #
-    #     # Reset the blended alphas to the default "Damping" state
-    #     if self.filter:
-    #          self.blended_alphas = torch.tensor([1.0, 0.0, 0.0], device=self.device, dtype=self.dtype).unsqueeze(0).repeat(self.filter.num_streams, 1)
+            
+    def device_changed(self):
+        super().device_changed()
+        # Re-create tensors on new device
+        self.update_params()
 
     def update_params(self):
         self.damp_params = [self.damp_meas_in(), self.damp_vel_in()]
@@ -852,89 +1216,109 @@ class TorchTristateBlendESEKFNode(TorchDeviceDtypeNode):  # Renamed
         self.motion_max = self.motion_max_in()
         self.error_min = self.error_min_in()
         self.error_max = self.error_max_in()
+        
+        # Pre-allocate tensors for execute loop
+        self.damp_tensor = torch.tensor(self.damp_params, device=self.device, dtype=self.dtype)
+        self.resp_tensor = torch.tensor(self.resp_params, device=self.device, dtype=self.dtype)
+        self.err_tensor = torch.tensor(self.err_params, device=self.device, dtype=self.dtype)
 
     def _calculate_angular_difference_deg(self, q1, q2):
-        dot = torch.abs(torch.einsum('sc,sc->s', q1, q2))
+        # Optimized: assume q1, q2 normalized.
+        # dot product
+        dot = (q1 * q2).sum(dim=-1).abs_()
         angle_rad = 2 * torch.acos(torch.clamp(dot, -1.0, 1.0))
         return torch.rad2deg(angle_rad)
 
     def execute(self):
-        signal_in = self.quat_input()
+        signal_in = any_to_tensor(self.quat_input())
         if signal_in is None or signal_in.dim() != 2 or signal_in.shape[1] != 4:
             return
 
         dt = self.dt_input()
         if dt is None or dt <= 0: return
 
+        # Optimize: don't check shape[0] vs num_streams every single time if filter exists? 
+        # Actually filter check is fast.
         num_streams = signal_in.shape[0]
-        self.device = signal_in.device
+        
+        # Device check is handled by base class usually calling device_changed, 
+        # but if input comes from elsewhere we must check.
+        if signal_in.device != self.device:
+            self.device = signal_in.device
+            self.update_params() # Move param tensors to new device
 
         if self.filter is None or self.filter.num_streams != num_streams:
             self.filter = TorchQuaternionESEKF(dt, num_streams, self.device, self.dtype)
-            # Use the node's own reset method for a clean initialization
             self.reset_filter()
-            # Initialize blended_alphas for the first time
             self.blended_alphas = torch.tensor([1.0, 0.0, 0.0], device=self.device, dtype=self.dtype).unsqueeze(0).repeat(num_streams, 1)
 
         self.filter.update_device_to_match(signal_in)
-        if self.last_input_quat is not None:
-            self.last_input_quat = self.last_input_quat.to(self.device)
-        self.blended_alphas = self.blended_alphas.to(self.device)
+        if self.last_input_quat is not None and self.last_input_quat.device != self.device:
+             self.last_input_quat = self.last_input_quat.to(self.device)
+        if self.blended_alphas.device != self.device:
+             self.blended_alphas = self.blended_alphas.to(self.device)
 
-        # Predict step is always safe; it checks the reset flag internally.
+        # Predict
         self.filter.predict()
 
-        # --- REMOVED THE ENTIRE `if self.filter._reset_pending:` BLOCK ---
-        # The logic now flows through this single path on EVERY frame.
-        # The node's state (reset in `reset_filter`) will naturally produce the correct behavior.
-
         # 1. Calculate the raw strength for each active mode.
-        # On the frame after reset, `last_input_quat` is None, so motion will be zero. PERFECT.
         motion_deg_per_sec = torch.zeros(num_streams, device=self.device, dtype=self.dtype)
         if self.last_input_quat is not None:
             motion_deg_per_frame = self._calculate_angular_difference_deg(signal_in, self.last_input_quat)
             motion_deg_per_sec = motion_deg_per_frame / dt
 
+        # Vectorized strength calc
+        # clamp((val - min) / (max - min), 0, 1)
+        # Pre-calculation of denominators could be done in update_params, but float div is fast enough.
+        
         strength_resp_vec = torch.clamp(
             (motion_deg_per_sec - self.motion_min) / (self.motion_max - self.motion_min + 1e-9), 0.0, 1.0)
 
-        # On the reset frame itself, `self.filter.q` is still the old value, so error_deg might be large.
-        # This is okay! The filter will reset *before* using this calculation.
         error_deg = self._calculate_angular_difference_deg(signal_in, self.filter.q)
         strength_err_vec = torch.clamp((error_deg - self.error_min) / (self.error_max - self.error_min + 1e-9), 0.0,
                                        1.0)
 
-        # 2. Calculate target alphas based on current state.
+        # 2. Calculate target alphas
         alpha_active = torch.maximum(strength_resp_vec, strength_err_vec)
         total_strength = strength_resp_vec + strength_err_vec + 1e-9
+        
+        # Optimized: logical masking or direct math
         target_alpha_resp = alpha_active * (strength_resp_vec / total_strength)
         target_alpha_err = alpha_active * (strength_err_vec / total_strength)
         target_alpha_damp = 1.0 - target_alpha_resp - target_alpha_err
+        
         target_alphas = torch.stack([target_alpha_damp, target_alpha_resp, target_alpha_err], dim=1)
 
-        # 3. Smooth the alphas.
-        # On the frame after reset, we smoothly blend from our reset state of [1,0,0]
-        # towards the new target. PERFECT.
+        # 3. Smooth the alphas
         blending_speed = self.blending_speed_in()
-        self.blended_alphas = torch.lerp(self.blended_alphas, target_alphas, blending_speed)
+        self.blended_alphas.lerp_(target_alphas, blending_speed) # In-place lerp
 
-        # 4. Use smoothed alphas to set filter parameters.
-        alpha_damp_vec, alpha_resp_vec, alpha_err_vec = self.blended_alphas.unbind(dim=-1)
-        damp = torch.tensor(self.damp_params, device=self.device, dtype=self.dtype)
-        resp = torch.tensor(self.resp_params, device=self.device, dtype=self.dtype)
-        err = torch.tensor(self.err_params, device=self.device, dtype=self.dtype)
-        blended_params = (alpha_damp_vec.unsqueeze(1) * damp +
-                          alpha_resp_vec.unsqueeze(1) * resp +
-                          alpha_err_vec.unsqueeze(1) * err)
+        # 4. Use smoothed alphas to set filter parameters
+        # Optimized: Use pre-allocated parameter tensors (damp_tensor, etc).
+        # We need to mix them.
+        # blended_params = alphas * params
+        # [S, 3] * [3, 2] -> [S, 2]? No
+        # alphas is [S, 3] (damp, resp, err)
+        # params is 3 sets of [2] (meas, vel)
+        # We want result [S, 2]
+        
+        # Stack params: [3, 2]
+        # self.damp_tensor: [2]
+        param_stack = torch.stack([self.damp_tensor, self.resp_tensor, self.err_tensor], dim=0) # [3, 2]
+        
+        # blended = alphas @ param_stack
+        # [S, 3] @ [3, 2] -> [S, 2]
+        blended_params = self.blended_alphas @ param_stack
+        
         self.filter.set_noise_params(
             meas_noise_vec=blended_params[:, 0],
             vel_change_noise_vec=blended_params[:, 1],
             dt=dt
         )
 
-        # 5. Run Update. If reset is pending, it will just reset and return. Otherwise, it updates.
+        # 5. Run Update
         self.filter.update(signal_in)
-
+        
         self.output_port.send(self.filter.q)
         self.alphas_output.send(self.blended_alphas)
         self.last_input_quat = signal_in.clone()

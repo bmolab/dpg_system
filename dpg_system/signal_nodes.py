@@ -6,6 +6,7 @@ import time
 from scipy import signal
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
+from dpg_system.one_euro_filter import OneEuroFilter
 
 
 def register_signal_nodes():
@@ -42,6 +43,9 @@ def register_signal_nodes():
     Node.app.register_node('ranger', RangerNode.factory)
     Node.app.register_node('kalman_filter', KalmanFilterNode.factory)
     Node.app.register_node('kinetic_filter', KineticFilterNode.factory)
+    Node.app.register_node('one_euro_filter', OneEuroFilterNode.factory)
+    Node.app.register_node('physics_filter', PhysicsFilterNode.factory)
+    Node.app.register_node('stream', StreamDataNode.factory)
 
 class DifferentiateNode(Node):
     @staticmethod
@@ -1280,6 +1284,34 @@ class SampleAndTriggerNode(Node):
     def execute(self):
         self.output.send(self.register_value)
 
+
+class StreamDataNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = StreamDataNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('input')
+        self.stream_input = self.add_input('stream', widget_type='checkbox', default_value=True, callback=self.do_stream)
+        self.output = self.add_output('out')
+        self.add_frame_task()
+
+    def do_stream(self):
+        if self.stream_input() is True:
+            self.add_frame_task()
+        else:
+            self.remove_frame_tasks()
+
+    def frame_task(self) -> None:
+        self.execute()
+
+    def execute(self):
+        self.output.send(self.input())
+
+
 class TogEdgeNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -1728,5 +1760,211 @@ class KalmanFilterNode(Node):
         prediction = np.dot(self.H, self.kalman_filter.predict())[0]
         self.kalman_filter.update(z)
         self.gain_output.send(self.kalman_filter.K)
-
         self.output.send(prediction)
+
+
+class OneEuroFilterNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = OneEuroFilterNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.min_cutoff = 1.0
+        self.beta = 0.0
+        self.d_cutoff = 1.0
+        
+        if len(args) > 0:
+            self.min_cutoff = any_to_float(args[0])
+        if len(args) > 1:
+            self.beta = any_to_float(args[1])
+        if len(args) > 2:
+            self.d_cutoff = any_to_float(args[2])
+
+        self.input = self.add_input('input', triggers_execution=True)
+        
+        self.min_cutoff_prop = self.add_property('min_cutoff', widget_type='drag_float', default_value=self.min_cutoff, callback=self.update_params)
+        self.beta_prop = self.add_property('beta', widget_type='drag_float', default_value=self.beta, callback=self.update_params)
+        self.d_cutoff_prop = self.add_property('d_cutoff', widget_type='drag_float', default_value=self.d_cutoff, callback=self.update_params)
+        self.dt = self.add_input('dt', widget_type='drag_float', default_value=1/60, callback=self.update_params)
+        self.output = self.add_output('out')
+        
+        self.filter = OneEuroFilter(
+            min_cutoff=self.min_cutoff,
+            beta=self.beta,
+            d_cutoff=self.d_cutoff,
+            framerate=30.0
+        )
+
+    def update_params(self):
+        self.min_cutoff = self.min_cutoff_prop()
+        self.beta = self.beta_prop()
+        self.d_cutoff = self.d_cutoff_prop()
+        
+        if self.filter:
+            self.filter._mincutoff = float(self.min_cutoff)
+            self.filter._beta = float(self.beta)
+            self.filter._framerate = float(self.dt())
+            if self.d_cutoff == 0.0:
+                self.filter._dcutoff = float(self.d_cutoff) + 1e-6
+            else:
+                self.filter._dcutoff = float(self.d_cutoff)
+
+    def execute(self):
+        data = self.input()
+        t = type(data)
+        timestamp = time.time()
+        
+        if t in [float, np.double, int, np.int64]:
+            val = float(data)
+            out = self.filter(val, timestamp)
+            self.output.send(out)
+            
+        elif t == np.ndarray:
+            out = self.filter(data, timestamp)
+            self.output.send(out)
+            
+        elif self.app.torch_available and t == torch.Tensor:
+            device = data.device
+            data_np = data.detach().cpu().numpy()
+            out_np = self.filter(data_np, timestamp)
+            out = torch.from_numpy(out_np).to(device)
+            self.output.send(out)
+
+class PhysicsFilterNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = PhysicsFilterNode(name, data, args)
+        return node
+        
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        
+        self.input = self.add_input('input', triggers_execution=True)
+        
+        # Constraints (Units per second, etc.)
+        self.max_vel_prop = self.add_property('max_vel', widget_type='drag_float', default_value=500.0) 
+        self.max_accel_prop = self.add_property('max_accel', widget_type='drag_float', default_value=50.0) 
+        self.max_jerk_prop = self.add_property('max_jerk', widget_type='drag_float', default_value=500.0)
+        
+        self.freq_prop = self.add_property('freq', widget_type='drag_float', default_value=5.0)
+        self.zeta_prop = self.add_property('zeta', widget_type='drag_float', default_value=2.5)
+        
+        self.dt_prop = self.add_input('dt', widget_type='drag_float', default_value=1/60)
+        
+        self.output = self.add_output('out')
+        
+        # State
+        self.pos = None
+        self.vel = None
+        self.acc = None
+        self.prev_time = None
+        
+    def execute(self):
+        target = self.input()
+        if target is None:
+            return
+            
+        try:
+            # 1. Handle Input Type (Scalar / Numpy / Tensor)
+            is_tensor = False
+            device = None
+            target_np = None
+            is_scalar = False
+            
+            if self.app.torch_available and isinstance(target, torch.Tensor):
+                is_tensor = True
+                device = target.device
+                target_np = target.detach().cpu().numpy()
+            else:
+                # Robustly convert lists/tuples/scalars/arrays
+                target_np = np.asanyarray(target, dtype=float)
+                if target_np.ndim == 0:
+                     is_scalar = True
+                     target_np = target_np.reshape(1)
+                
+            # 2. Initialize State
+            if self.pos is None:
+                self.pos = target_np.copy()
+                self.vel = np.zeros_like(target_np)
+                self.acc = np.zeros_like(target_np)
+                self.prev_time = time.time()
+                
+                # Passthrough first frame
+                self.output.send(target)
+                return
+    
+            # 3. Check Shape Consistency (Reset if changed)
+            if target_np.shape != self.pos.shape:
+                 self.pos = target_np.copy()
+                 self.vel = np.zeros_like(target_np)
+                 self.acc = np.zeros_like(target_np)
+            
+            # 4. Integrate
+            # Get DT
+            dt = self.dt_prop()
+            if dt <= 0: dt = 1/60.0 # Safety
+            
+            # Parameters
+            lim_v = self.max_vel_prop()
+            lim_a = self.max_accel_prop()
+            lim_j = self.max_jerk_prop()
+            
+            freq = self.freq_prop()
+            zeta = self.zeta_prop()
+            
+            if freq < 0.1: freq = 0.1
+            
+            omega = 2.0 * 3.14159 * freq
+            k_p = omega * omega
+            k_d = 2.0 * zeta * omega
+            
+            # 5. Damped Spring Dynamics (PD Controller)
+            # a_ideal = (target - pos) * k_p - vel * k_d
+            
+            error = target_np - self.pos
+            a_ideal = (error * k_p) - (self.vel * k_d)
+            
+            # 6. Jerk Control (Track a_ideal)
+            # j_req = (a_ideal - acc) / dt
+            j_req = (a_ideal - self.acc) / dt
+            
+            # Clamp Jerk
+            j_clamped = np.clip(j_req, -lim_j, lim_j)
+            
+            # Integrate Accel
+            new_acc = self.acc + j_clamped * dt
+            
+            # Clamp Accel
+            new_acc = np.clip(new_acc, -lim_a, lim_a)
+            
+            # Integrate Vel
+            new_vel = self.vel + new_acc * dt
+            
+            # Clamp Vel
+            new_vel = np.clip(new_vel, -lim_v, lim_v)
+            
+            # Integrate Pos
+            new_pos = self.pos + new_vel * dt
+            
+            # Update State
+            self.pos = new_pos
+            self.vel = new_vel
+            self.acc = new_acc
+            
+            # Output
+            out_val = new_pos
+            
+            if is_tensor:
+                out_t = torch.from_numpy(out_val).to(device).type(target.dtype)
+                self.output.send(out_t)
+            elif is_scalar:
+                self.output.send(float(out_val[0]))
+            else:
+                self.output.send(out_val)
+                
+        except Exception as e:
+             # print(f"PhysicsFilterNode Error: {e}")
+             pass

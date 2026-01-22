@@ -1176,7 +1176,7 @@ class FloatNode(NumericValueNode):
             elif t == str and val == '+':
                 self.widget_type = 'input_float'
 
-        self.input = self.add_float_input('', triggers_execution=True, widget_type=self.widget_type,
+        self.input = self.add_input('', triggers_execution=True, widget_type=self.widget_type,
                                           widget_uuid=self.value, widget_width=self.widget_width, trigger_button=True)
         if self.param_name is not None:
             self.output = self.add_output(self.param_name + ' out')
@@ -1207,7 +1207,7 @@ class IntNode(NumericValueNode):
         if self.min is not None:
             kwargs['min'] = self.min
 
-        self.input = self.add_int_input('', triggers_execution=True, widget_type=self.widget_type,
+        self.input = self.add_input('', triggers_execution=True, widget_type=self.widget_type,
                                         widget_uuid=self.value, widget_width=self.widget_width, trigger_button=True,
                                         **kwargs)
         if self.param_name is not None:
@@ -1243,7 +1243,7 @@ class SliderNode(NumericValueNode):
             self.max = 100 if is_int else 1.0
 
         if is_int:
-            self.input = self.add_int_input('', triggers_execution=True, widget_type=self.widget_type,
+            self.input = self.add_input('', triggers_execution=True, widget_type=self.widget_type,
                                             widget_uuid=self.value, widget_width=self.widget_width,
                                             trigger_button=True, max=self.max)
             if self.param_name is not None:
@@ -1251,7 +1251,7 @@ class SliderNode(NumericValueNode):
             else:
                 self.output = self.add_int_output('int out')
         else:
-            self.input = self.add_float_input('', triggers_execution=True, widget_type=self.widget_type,
+            self.input = self.add_input('', triggers_execution=True, widget_type=self.widget_type,
                                               widget_uuid=self.value, widget_width=self.widget_width,
                                               trigger_button=True, max=self.max)
             if self.param_name is not None:
@@ -1288,7 +1288,7 @@ class KnobNode(NumericValueNode):
 
         if value_type is float:
             self.format = '%.3f'
-            self.input = self.add_float_input('', triggers_execution=True, widget_type='knob_float',
+            self.input = self.add_input('', triggers_execution=True, widget_type='knob_float',
                                               widget_uuid=self.value, widget_width=self.widget_width,
                                               trigger_button=True, max=self.max)
             if self.param_name is not None:
@@ -1297,7 +1297,7 @@ class KnobNode(NumericValueNode):
                 self.output = self.add_float_output('float out')
         else:
             self.format = '%d'
-            self.input = self.add_int_input('', triggers_execution=True, widget_type='knob_float',
+            self.input = self.add_input('', triggers_execution=True, widget_type='knob_float',
                                             widget_uuid=self.value, widget_width=self.widget_width,
                                             trigger_button=True, max=self.max)
             if self.param_name is not None:
@@ -1317,7 +1317,7 @@ class StringNode(ValueNode):
     def setup_specific_ui(self, args):
         self.widget_type = 'text_input'
         self.widget_width = 100
-        self.input = self.add_string_input('###text in', triggers_execution=True, widget_type=self.widget_type,
+        self.input = self.add_input('###text in', triggers_execution=True, widget_type=self.widget_type,
                                            widget_uuid=self.value, widget_width=self.widget_width,
                                            trigger_button=True)
 
@@ -2101,7 +2101,7 @@ class Vector2DNode(Node):
 
         self.current_dims = [dim1, dim2]
 
-        self.input = self.add_input('in', triggers_execution=True)
+        self.input = self.add_input('in', triggers_execution=True, trigger_button=True, trigger_callback=self.send)
         self.input.bang_repeats_previous = False
         self.output_vector = None
         self.component_properties = []
@@ -2122,6 +2122,7 @@ class Vector2DNode(Node):
 
         self.component_count_property = self.add_option('component count', widget_type='drag_int', default_value=self.current_dims[0], callback=self.component_count_changed)
         self.format_option = self.add_option(label='number format', widget_type='text_input', default_value=self.format, callback=self.change_format)
+        self.all_inputs_trigger_option = self.add_option('all inputs trigger', widget_type='checkbox', default_value=True)
         self.output_vector = np.zeros(self.current_dims)
 
         self.first_component_input_index = -1
@@ -2223,15 +2224,22 @@ class Vector2DNode(Node):
     def component_changed(self):
         if self.first_component_input_index != -1:
             input = self.active_input()
-            # print(input)
             self.active_input.widget.set(any_to_list(input))
-            self.execute()
+            if self.all_inputs_trigger_option():
+                self.execute()
 
     def change_format(self):
         self.format = self.format_option()
         for i in range(self.max_component_count):
             for uuid in self.component_properties[i].widget.uuids:
                 dpg.configure_item(uuid, format=self.format)
+
+    def send(self):
+        output_array = np.ndarray(self.current_dims)
+        for i in range(self.current_dims[0]):
+            for j in range(self.current_dims[1]):
+                output_array[i] = self.component_properties[i]()
+        self.output.send(output_array)
 
     def execute(self):
         if self.input.fresh_input:
@@ -2242,8 +2250,9 @@ class Vector2DNode(Node):
                     output_array = np.ndarray(self.current_dims)
                     for i in range(self.current_dims[0]):
                         for j in range(self.current_dims[1]):
-                            output_array[i, j] = self.component_properties[i, j]()
-                    self.output.set_value(output_array)
+                            output_array[i] = self.component_properties[i]()
+                    self.output.send(output_array)
+                    return
                 else:
                     if self.vector_format_input() == 'list':
                         value = string_to_list(value)

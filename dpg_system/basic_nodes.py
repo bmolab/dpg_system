@@ -1349,7 +1349,9 @@ class PackNode(Node):
                             self.in_types.append(any_to_string(arg))
                             in_names.append(any_to_string(arg))
         else:
-            self.in_types = [None, None]
+            for i in range(self.num_ins):
+                self.in_types.append(None)
+                in_names.append('in ' + str(i + 1))
 
         for i in range(self.num_ins):
             triggers = False
