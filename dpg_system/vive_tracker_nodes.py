@@ -8,6 +8,9 @@ def register_vive_tracker_nodes():
     Node.app.register_node('vive_tracker', ViveTrackerNode.factory)
     # Node.app.register_node('continuous_rotation', ContinuousRotationNode.factory)
 
+
+
+
 class ViveTrackerNode(Node):
     open_vr = None
 
@@ -33,8 +36,27 @@ class ViveTrackerNode(Node):
         self.orientation = None
         self.previous_orientation = None
         self.position = None
+        self.__mutex = threading.Lock()
+        self.thread = threading.Thread(target=self.vive_service_loop)
+        self.thread_started = False
+        if not self.thread_started:
+            self.thread.start()
+            self.thread_started = True
+
+    def vive_service_loop(self):
+        while True:
+            if self.enable_in():
+                self.get_data()
+            time.sleep(self.interval)
 
     def frame_task(self):
+        self.get_data()
+
+    def custom_cleanup(self) -> None:
+        if self.thread.is_alive():
+            self.thread.join(1)
+
+    def get_data(self):
         if self.which_tracker_in() in ViveTrackerNode.open_vr.devices:
             if self.output_format_in() == 'quaternion':
                 orientation = ViveTrackerNode.open_vr.devices[self.which_tracker_in()].get_pose_quaternion()
@@ -65,13 +87,14 @@ class ViveTrackerNode(Node):
                     self.orientation_out.send(self.orientation)
                     self.position_out.send(self.position)
 
-    def execute(self):
-        if self.enable_in():
-            if not self.has_frame_task:
-                self.add_frame_task()
-        else:
-            if self.has_frame_task:
-                self.remove_frame_tasks()
+
+    # def execute(self):
+    #     if self.enable_in():
+    #         if not self.has_frame_task:
+    #             self.add_frame_task()
+    #     else:
+    #         if self.has_frame_task:
+    #             self.remove_frame_tasks()
 
 
 
