@@ -1390,6 +1390,9 @@ class JsonRandomEventWindowNode(Node):
         if not self.events:
             self.load_json()
 
+        if not self.events:
+            return
+
         joint_str = self.joint_input()
         if joint_str == '':
             npz_path, event_frame, joints, jerk_index , jerk_values, prev_acc, acc = random.choice(self.events)
