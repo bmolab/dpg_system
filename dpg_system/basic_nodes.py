@@ -3585,9 +3585,13 @@ class NPZDirectoryIteratorNode(Node):
         super().__init__(label, data, args)
 
         self.iterator = None
+        self.current_file = None
+        self._did_resume = False
         self.next_file_input = self.add_input('next file', triggers_execution=True, trigger_button=True)
         self.directory_input = self.add_input('directory in', widget_type='text_input', callback=self.new_directory)
+        self.saving_path = self.add_input('saving path', widget_type='text_input',default_value="/home/bmolab/Projects/AMASS/iterator_state.json")
         self.reset_input = self.add_input('reset', trigger_button=True, callback=self.reset_iterator, trigger_callback=self.reset_iterator)
+        self.resume = self.add_input('resume from last run', widget_type="checkbox", default_value=False)
         self.output = self.add_output('next path out')
         self.done_output = self.add_output('done')
 
@@ -3595,21 +3599,41 @@ class NPZDirectoryIteratorNode(Node):
         dir = self.directory_input()
         if dir != '' and os.path.exists(dir):
             self.iterator = NpzFileIterator(dir)
+            self.current_file = None
+            self._did_resume = False
 
     def reset_iterator(self):
-        self.iterator.reset()  # also work
-        # del self.iterator
-        # dir_path = self.directory_input()
-        # if dir_path and os.path.exists(dir_path):
-        #     self.iterator = NpzFileIterator(dir_path)
-        # elif self.iterator is not None:
-        #     self.iterator = NpzFileIterator(self.iterator.root_dir)
+        self.iterator.reset()
+        self.current_file = None
+        self._did_resume = False
 
     def execute(self):
+        if self.resume() and not self._did_resume:
+            if os.path.exists(self.saving_path()):
+                with open(self.saving_path(), "r") as f:
+                    target_file = os.path.abspath(json.load(f)["file_path"])
+                try:
+                    while True:
+                        path = self.iterator.next_file()
+                        if os.path.abspath(path) == target_file:
+                            # path = self.iterator.next_file()
+                            self.output.send(path)
+                            break
+                except StopIteration:
+                    self.done_output.send('bang')
+            self._did_resume = True
+            return
+
         try:
             if self.iterator is not None:
                 file_name = self.iterator.next_file()
+                self.current_file = os.path.abspath(file_name)
                 self.output.send(file_name)
+
+                with open(self.saving_path(), "w") as f:
+                    json.dump(
+                        {"file_path": self.current_file}, f)
+
         except StopIteration:
             self.done_output.send('bang')
 
