@@ -608,6 +608,7 @@ class OpenTakeNode(MoCapNode):
                 self.frame_count = max_len
             else:
                 self.frame_count += 1
+            self.frame_input.widget.max = self.frame_count
             self.frame_input.set(self.frame_count, propagate=False)
 
     def dump_take(self):
