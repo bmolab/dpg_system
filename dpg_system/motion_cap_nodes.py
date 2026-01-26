@@ -390,6 +390,7 @@ class OpenTakeNode(MoCapNode):
         self.stop_button = self.add_input('stop', widget_type='button', callback=self.stop_button_clicked)
         self.loop_input = self.add_input('loop', widget_type='checkbox', default_value=True)
         self.external_clock_enable_input = self.add_input('enable external clock', widget_type='checkbox', default_value=False)
+        self.save_temp_input = self.add_input('save temp files', widget_type='checkbox', default_value=False)
         self.external_clock_input = self.add_input('external clock', callback=self.external_play)
         self.add_spacer()
         self.frame_input = self.add_input('frame', widget_type='drag_int', callback=self.frame_widget_changed)
@@ -533,7 +534,8 @@ class OpenTakeNode(MoCapNode):
                 starttime = datetime.datetime.now()
                 path_start = os.getcwd()
                 self.temp_save_name = datetime.datetime.strftime(starttime, 'temp_take_%Y%m%d_%H%M%S.npz')
-                self.save_take(path_start + '/' + self.temp_save_name)
+                if self.save_temp_input():
+                    self.save_take(path_start + '/' + self.temp_save_name)
                 self.reset_clip()
 
     def save_sequence(self):
