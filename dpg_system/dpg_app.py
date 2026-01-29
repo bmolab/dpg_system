@@ -1715,6 +1715,8 @@ class App:
                 self.get_current_editor().save(filename)
 
     def save(self, default_directory='patches'):
+        if default_directory == 'patches' and not os.path.exists('patches'):
+            os.makedirs('patches')
         SaveDialog(self, default_path=default_directory, callback=self.save_file_callback, extensions=['.json'])
 
     def save_file_callback(self, save_path):
@@ -1724,6 +1726,8 @@ class App:
             print('no file chosen')
 
     def save_patches(self, path=''):
+        if not os.path.exists('patches'):
+            os.makedirs('patches')
         SaveDialog(self, default_path='patches', callback=self.save_patches_callback, extensions=['.json'])
 
     def save_patches_callback(self, save_path):
