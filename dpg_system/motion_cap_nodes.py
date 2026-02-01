@@ -12,12 +12,16 @@ from xml.etree.ElementTree import XML
 import scipy
 import copy
 import datetime
+import json
+
 #
 # print('before body_defs')
 # import body_defs
 # # from body_defs import JointTranslator
 # print('after body_defs')
 import dpg_system.MotionSDK as shadow
+import random
+from dpg_system.smpl_nodes import SMPLNode
 
 def register_motion_cap_nodes():
     Node.app.register_node('gl_body', MoCapGLBody.factory)
@@ -37,6 +41,8 @@ def register_motion_cap_nodes():
     Node.app.register_node('calibrate_pose', PoseCalibrateNode.factory)
     Node.app.register_node('limb_size', LimbSizingNode.factory)
     Node.app.register_node('quaternion_diff_and_axis', DiffQuaternionsNode.factory)
+    Node.app.register_node('check_burst', CheckBurstNode.factory)
+    Node.app.register_node('json_npz_frame_picker', JsonRandomEventWindowNode.factory)
 
 def find_process_id(process_name):
     try:
@@ -340,6 +346,11 @@ class MoCapTakeNode(MoCapNode):
         self.start_stop_streaming()
 
 
+def take_cancel_callback(sender, app_data):
+    if sender is not None:
+        dpg.delete_item(sender)
+    Node.app.active_widget = -1
+
 
 class OpenTakeNode(MoCapNode):
     @staticmethod
@@ -378,6 +389,9 @@ class OpenTakeNode(MoCapNode):
         self.play_pause_button.name_archive.append('pause')
         self.stop_button = self.add_input('stop', widget_type='button', callback=self.stop_button_clicked)
         self.loop_input = self.add_input('loop', widget_type='checkbox', default_value=True)
+        self.external_clock_enable_input = self.add_input('enable external clock', widget_type='checkbox', default_value=False)
+        self.save_temp_input = self.add_input('save temp files', widget_type='checkbox', default_value=False)
+        self.external_clock_input = self.add_input('external clock', callback=self.external_play)
         self.add_spacer()
         self.frame_input = self.add_input('frame', widget_type='drag_int', callback=self.frame_widget_changed)
         self.length_property = self.add_input('length: 0', widget_type='label')
@@ -468,22 +482,22 @@ class OpenTakeNode(MoCapNode):
         if not self.streaming and self.frame_count > 0:
             self.last_frame_out = -1
             self.current_frame = self.speed() * -1.0
-            # print('play_button_clicked', self.current_frame)
-            self.add_frame_task()
+#            print('play_button_clicked', self.current_frame)
+            self.start_playing()
             self.streaming = True
             self.play_pause_button.set_label('pause')
             self.play_pause_button.widget.set_active_theme(Node.active_theme_yellow)
         else:
             if self.streaming:
                 self.streaming = False
-                self.remove_frame_tasks()
+                self.stop_playing()
                 self.play_pause_button.set_label('play')
                 self.play_pause_button.widget.set_active_theme(Node.active_theme_green)
 
     def record_button_clicked(self):
         if self.streaming:
             self.streaming = False
-            self.remove_frame_tasks()
+            self.stop_playing()
             self.play_pause_button.set_label('play')
 
         if not self.recording:
@@ -520,7 +534,8 @@ class OpenTakeNode(MoCapNode):
                 starttime = datetime.datetime.now()
                 path_start = os.getcwd()
                 self.temp_save_name = datetime.datetime.strftime(starttime, 'temp_take_%Y%m%d_%H%M%S.npz')
-                self.save_take(path_start + '/' + self.temp_save_name)
+                if self.save_temp_input():
+                    self.save_take(path_start + '/' + self.temp_save_name)
                 self.reset_clip()
 
     def save_sequence(self):
@@ -595,12 +610,29 @@ class OpenTakeNode(MoCapNode):
                 self.frame_count = max_len
             else:
                 self.frame_count += 1
+            self.frame_input.widget.max = self.frame_count
             self.frame_input.set(self.frame_count, propagate=False)
 
     def dump_take(self):
         self.dump_out.send(self.take_dict)
 
+    def start_playing(self):
+        if not self.external_clock_enable_input():
+            self.add_frame_task()
+
+    def stop_playing(self):
+        if not self.external_clock_enable_input():
+            self.remove_frame_tasks()
+
     def frame_task(self):
+        self.step()
+
+    def external_play(self):
+        if self.external_clock_enable_input():
+            if self.streaming:
+                self.step()
+
+    def step(self):
         self.current_frame += self.speed()
         if int(self.current_frame) > self.last_frame_out:
             if self.current_frame > self.clip_end:
@@ -1200,6 +1232,195 @@ class DiffQuaternionsNode(Node):
         distances = quaternion.rotation_intrinsic_distance(q1__, q2__)
         return distances
 
+
+class CheckBurstNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = CheckBurstNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('diff array', triggers_execution=True)
+        self.input2 = self.add_input('previous frame array', callback=self.receive_prev)
+        self.prev_diff_input = self.add_input('previous diff array', callback=self.receive_prev_diff)
+        self.frame_input = self.add_input('frame')
+        self.file_input = self.add_input('file')
+        self.threshold1_input = self.add_input('threshold 1', widget_type='drag_float', default_value=0.1, min=0.0, max=1.0)
+        self.threshold2_input = self.add_input('threshold 2 previous', widget_type='drag_float', default_value=0.01, min=0.0, max=1.0)
+        self.threshold_L_input = self.add_input('threshold low', widget_type='drag_float', default_value=0.01, min=0.0, max=1.0)
+        self.jerk_threshold = self.add_input('jerk threshold pct', widget_type='drag_float', default_value=0.5, min=0.0, max=5.0)
+        self.save_button = self.add_input('save burst files', widget_type='button', callback=self.save_result)
+        # add timestamp--node for date and time sting (Datetime node)
+        # chack burst date and timestamp begining num (file name, check burst Nov...)
+        # take dict: save a temp file--
+        # 'date_time'--combine object
+        self.save_path_input = self.add_input('save path', widget_type='text_input', default_value='/home/bmolab/Projects/AMASS_2/burst_files.json')
+        self.file_dict_out = self.add_output('file_dict')
+        self.file_dict = {}
+
+    def receive_prev(self):
+        pass
+
+    def receive_prev_diff(self):
+        pass
+
+    def execute(self):
+        acc = np.asarray(self.input())
+        prev_vel = np.asarray(self.input2())
+        prev_acc = np.asarray(self.prev_diff_input())
+
+        if self.frame_input() == 0:
+            return
+
+        self.detect_sudden_burst(acc, prev_vel, prev_acc)
+        self.file_dict_out.send(self.file_dict)
+
+    def detect_sudden_burst(self, acc, prev_vel, prev_acc):
+
+        mag_diff = np.linalg.norm(acc)
+        # mag_diff_prev = np.linalg.norm(prev_diff)
+        # diff_acceleration = np.abs(mag_diff - mag_diff_prev)
+        # avg_mag_diff = (mag_diff + mag_diff_prev) / 2
+        # jerk = diff_acceleration > self.jerk_threshold() * avg_mag_diff
+
+        # element-wise
+        acc_arr = np.asarray(acc).ravel()
+        prev_acc_arr = np.asarray(prev_acc).ravel()
+        jerk = np.abs(acc_arr - prev_acc_arr)
+        # threshold_arr = np.full(22, 0.2)
+        jerk_mask = (jerk > self.threshold_L_input()) & (jerk > self.jerk_threshold() * ((acc_arr + prev_acc_arr) / 2))
+
+        if mag_diff > self.threshold1_input():
+            diff_max_i = np.argmax(acc)
+            prev_v = prev_vel[diff_max_i]
+
+            if prev_v < self.threshold2_input() or (self.frame_input() > 1 and jerk_mask.any()):
+                print(self.file_input())
+                print('frame', self.frame_input())
+                print('acc', acc)
+                print('prev_vel', prev_vel)
+                print('prev_v', prev_v)
+                print('mag_diff_acc', mag_diff)
+                print('prev_acc', prev_acc)
+                print('jerk_mask', jerk_mask)
+
+                # jerk = jerk_mask > threshold_arr
+                i_jerk = np.where(jerk_mask)[0].tolist()
+                values = jerk[i_jerk].tolist()
+                print('indices', i_jerk)
+                print('values', values)
+
+                # print('mag_diff_prev', mag_diff_prev)
+                # print('avg_mag_diff', avg_mag_diff)
+                # print('diff_acceleration', diff_acceleration)
+
+                event = {'frame': self.frame_input(),
+                         'prev_vel': prev_vel,
+                         'prev_v': prev_v,
+                         'acc': acc,
+                         'prev_acc': prev_acc,
+                         'jerk': float(jerk_mask.any()),
+                         'mag_diff': mag_diff,
+                         'jerk_indices': i_jerk,
+                         'jerk_values': values,
+                }
+                self.file_dict.setdefault(self.file_input(), []).append(event)
+
+
+    def save_result(self):
+        path = self.save_path_input()
+
+        try:
+            with open(path, 'w', encoding='utf-8') as f:
+                json.dump(self.file_dict, f, indent=2, cls=NumpyEncoder)
+                print(f"Saved burst files to {path}")
+        except Exception as e:
+            print("Error saving burst files:", e)
+
+
+class JsonRandomEventWindowNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = JsonRandomEventWindowNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.events = []
+        self.next_event = self.add_input('next', triggers_execution=True, trigger_button=True)
+        self.json_path_input = self.add_input('json path', widget_type='text_input',
+                                              default_value='/home/bmolab/Projects/AMASS_2/burst_files.json', callback=self.load_json)
+        self.joint_input = self.add_input('joint', widget_type='text_input', default_value='')
+        self.path_output = self.add_output('npz path')
+        self.event_frame_out = self.add_output('event frame')
+        self.joints = self.add_output('joints')
+        self.jerk_values = self.add_output('jerk values')
+        self.jerk_index = self.add_output('jerk index')
+        self.prev_acc = self.add_output('prev_acc')
+        self.acc = self.add_output('acc')
+
+    def load_json(self):
+        json_path = self.json_path_input()
+        print("loaded json file", json_path)
+        if not json_path or not os.path.exists(json_path):
+            self.events = []
+            return
+
+        with open(json_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+
+        events = []
+
+        if isinstance(data, dict):
+            for npz_path, event_list in data.items():
+                if isinstance(event_list, list):
+                    for event in event_list:
+                        if isinstance(event, dict) and "frame" in event:
+                            joints = []
+                            for i in event["jerk_indices"]:
+                                joints.append(SMPLNode.joint_names[i])
+
+                            events.append((npz_path, int(event['frame']), joints, event["jerk_indices"], event["jerk_values"],
+                                          event['prev_acc'], event['acc']))
+        self.events = events
+
+        print(f"loaded {len(self.events)} events")
+
+    def execute(self):
+        if not self.events:
+            self.load_json()
+
+        if not self.events:
+            return
+
+        joint_str = self.joint_input()
+        if joint_str == '':
+            npz_path, event_frame, joints, jerk_index , jerk_values, prev_acc, acc = random.choice(self.events)
+
+        else:
+            joint_idx = SMPLNode.joint_names.index(joint_str)
+            filtered = [(p, fr, joints, jerk_index, jerk_values, acc, prev_acc) for (p, fr, joints, jerk_index, jerk_values, acc, prev_acc) in self.events if joint_idx in jerk_index]
+            npz_path, event_frame, joints, jerk_index, jerk_values, acc, prev_acc = random.choice(filtered)
+
+        self.path_output.send(npz_path)
+        self.event_frame_out.send(event_frame)
+        self.joints.send(joints)
+        self.jerk_values.send(jerk_values)
+        self.jerk_index.send(jerk_index)
+        self.acc.send(acc)
+        self.prev_acc.send(prev_acc)
+
+
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        if isinstance(obj, (np.floating, np.integer)):
+            return obj.item()
+        return super().default(obj)
 
 class SimpleMoCapGLBody(MoCapNode):
     @staticmethod

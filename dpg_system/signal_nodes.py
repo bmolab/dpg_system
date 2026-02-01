@@ -61,7 +61,11 @@ class DifferentiateNode(Node):
 
         self.input = self.add_input('', triggers_execution=True)
         self.absolute = self.add_input('absolute', widget_type='checkbox', default_value=False)
+        self.reset_input = self.add_input('reset', widget_type='button', callback=self.reset)
         self.output = self.add_output('')
+
+    def reset(self):
+        self.previous_value = None
 
     def float_diff(self, received, absolute):
         if float == self.previousType:
@@ -143,7 +147,11 @@ class DifferentiateNode(Node):
 
             self.output.send(output)
 
-        self.previous_value = received
+        else:
+            output = np.zeros_like(received)
+            self.output.send(output)
+
+        self.previous_value = received.copy()
         self.previousType = t
 
 
