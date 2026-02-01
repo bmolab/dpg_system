@@ -1631,12 +1631,12 @@ class SMPLTorqueNode(SMPLNode):
         self.trans_input = self.add_input('trans')
         self.config_input = self.add_input('config') # gender, betas, framerate
         
-        self.torques_output = self.add_output('torques')
-        self.inertia_output = self.add_output('inertia')
+        # self.torques_output removed
+
         self.effort_output = self.add_output('effort')
         self.gravity_effort_output = self.add_output('gravity_effort')
         self.combined_effort_output = self.add_output('combined_effort')
-        self.output_contact = self.add_output('floor_contact')
+
         self.output_positions = self.add_output('joint_positions')
         self.output_root = self.add_output('root_torque')
         
@@ -1646,13 +1646,22 @@ class SMPLTorqueNode(SMPLNode):
         
         self.torque_ratios = {} # Format: {generic_joint_key: ratio_vector}
         
-        self.torque_vec_output = self.add_output('torque_vectors')
+        self.output_torque_vectors = self.add_output("torque_vectors")
+        self.inertia_output = self.add_output("inertias")
         self.gravity_torque_vec_output = self.add_output('gravity_torque_vectors')
+        self.dynamic_torque_vec_output = self.add_output('dynamic_torque_vectors')
+        self.passive_torque_vec_output = self.add_output('passive_torque_vectors')
         self.contact_probs_output = self.add_output('contact_probs')
+        self.contact_probs_fusion_output = self.add_output('contact_probs_fusion')
         self.contact_pressure_output = self.add_output('contact_pressure')
         self.output_com = self.add_output('com_pos')
         self.output_zmp = self.add_output('zmp_pos')
         self.output_limb_lengths = self.add_output('limb_lengths')
+        self.noise_score_output = self.add_output('noise_score')
+        self.noise_report_output = self.add_output('noise_report')
+        
+        # Noise stats controls
+        self.reset_noise_stats_input = self.add_input('reset_noise_stats', widget_type='button', callback=self._reset_noise_stats)
         
 
         self.zero_root_torque = self.add_property('zero_root_torque', widget_type='checkbox', default_value=True)
@@ -1679,6 +1688,12 @@ class SMPLTorqueNode(SMPLNode):
         
         # Bias: Negative = Toe Preference, Positive = Heel Preference
         self.heel_toe_bias_prop = self.add_property('heel_toe_bias', widget_type='drag_float', default_value=0.02)
+        self.impact_mitigation_prop = self.add_property('enable_impact_mitigation', widget_type='checkbox', default_value=True)
+        
+        # --- Rate Limiting ---
+        self.enable_rate_limiting_prop = self.add_property('enable_rate_limiting', widget_type='checkbox', default_value=True)
+        self.rate_limit_strength_prop = self.add_property('rate_limit_strength', widget_type='drag_float', default_value=1.0)
+        self.enable_kf_smoothing_prop = self.add_property('enable_kf_smoothing', widget_type='checkbox', default_value=True)
         
         # Calibrated default for Subject_81: [0.0, -0.14, 0.05]
 
@@ -1697,6 +1712,11 @@ class SMPLTorqueNode(SMPLNode):
     def _on_axis_perm_changed(self):
         if self.processor:
             self.processor.set_axis_permutation(self.axis_perm_prop())
+
+    def _reset_noise_stats(self):
+        """Reset noise statistics for a new file evaluation."""
+        if self.processor:
+            self.processor.reset_noise_stats()
 
     def execute(self):
         # 1. Handle Config
@@ -1855,7 +1875,13 @@ class SMPLTorqueNode(SMPLNode):
                 floor_enable=self.floor_enable_prop(),
                 floor_height=self.floor_height_prop() if hasattr(self, 'floor_height_prop') else 0.0,
                 floor_tolerance=self.floor_tol_prop() if hasattr(self, 'floor_tol_prop') else 0.15,
-                heel_toe_bias=self.heel_toe_bias_prop() if hasattr(self, 'heel_toe_bias_prop') else 0.0
+                heel_toe_bias=self.heel_toe_bias_prop() if hasattr(self, 'heel_toe_bias_prop') else 0.0,
+                enable_impact_mitigation=self.impact_mitigation_prop() if hasattr(self, 'impact_mitigation_prop') else True,
+                
+                # Rate Limiting
+                enable_rate_limiting=self.enable_rate_limiting_prop() if hasattr(self, 'enable_rate_limiting_prop') else True,
+                rate_limit_strength=self.rate_limit_strength_prop() if hasattr(self, 'rate_limit_strength_prop') else 1.0,
+                enable_kf_smoothing=self.enable_kf_smoothing_prop() if hasattr(self, 'enable_kf_smoothing_prop') else True
             )
             
             # Process
@@ -1864,23 +1890,24 @@ class SMPLTorqueNode(SMPLNode):
                 # Output Torques: (F, 22) -> (22) if F=1
                 # Output Inertias: (22,)
                 
-                torques = res['torques']
+                # torques = res['torques'] # REMOVED
                 inertias = res['inertias']
-                efforts_dyn = res.get('efforts_dyn', np.zeros_like(torques)) 
-                efforts_grav = res.get('efforts_grav', np.zeros_like(torques))
-                efforts_net = res.get('efforts_net', np.zeros_like(torques))
+                efforts_dyn = res.get('efforts_dyn', np.zeros_like(inertias)) 
+                efforts_grav = res.get('efforts_grav', np.zeros_like(inertias))
+                efforts_net = res.get('efforts_net', np.zeros_like(inertias))
                 
                 # Vectors
                 # If key missing in older processor versions (shouldn't happen), fallback to zeros
-                torques_vec = res.get('torques_vec', np.zeros((torques.shape[0], 24, 3)))
-                torques_grav_vec = res.get('torques_grav_vec', np.zeros((torques.shape[0], 24, 3)))
+                torques_vec = res.get('torques_vec', np.zeros((inertias.shape[0], 24, 3)))
+                torques_grav_vec = res.get('torques_grav_vec', np.zeros((inertias.shape[0], 24, 3)))
+                torques_passive_vec = res.get('torques_passive_vec', np.zeros((inertias.shape[0], 24, 3)))
                 
                 # CoM / ZMP
-                com_out = getattr(self.processor, 'current_com', np.zeros((torques.shape[0], 3)))
-                zmp_out = getattr(self.processor, 'current_zmp', np.zeros((torques.shape[0], 3)))
+                com_out = getattr(self.processor, 'current_com', np.zeros((inertias.shape[0], 3)))
+                zmp_out = getattr(self.processor, 'current_zmp', np.zeros((inertias.shape[0], 3)))
                 
-                if torques.shape[0] == 1:
-                    torques = torques[0] # (22,)
+                if inertias.shape[0] == 1:
+                    # torques = torques[0] # REMOVED
                     efforts_dyn = efforts_dyn[0]
                     efforts_grav = efforts_grav[0]
                     efforts_net = efforts_net[0]
@@ -1889,54 +1916,57 @@ class SMPLTorqueNode(SMPLNode):
                     inertias = inertias[0]
                     torques_vec = torques_vec[0] # (24, 3)
                     torques_grav_vec = torques_grav_vec[0]
+                    torques_passive_vec = torques_passive_vec[0]
                     
                 # Zero Root Torque if requested
                 if self.zero_root_torque():
-                    # Preserve shape (22,), but Zero out Root (Index 0)
-                    # We send the Original Root Torque to the dedicated output
-                    self.output_root.send(torques[0])
+                     # Send original root torque (scalar) before zeroing vectors
+                     root_val = np.linalg.norm(torques_vec[0])
+                     self.output_root.send(root_val)
                     
-                    # Zero out index 0 in place (or on copy)
-                    # Note: These are references to the arrays in 'res'. 
-                    # If we modify them, it might affect 'res' for verification, but that's fine here.
-                    
-                    # Make copies to be safe against side effects if 'res' is reused? 
-                    # 'res' is created fresh in process_frame.
-                    
-                    torques = torques.copy()
-                    torques[0] = 0.0
-                    
-                    inertias = inertias.copy()
-                    inertias[0] = 0.0
-                    
-                    efforts_dyn = efforts_dyn.copy()
-                    efforts_dyn[0] = 0.0
-                    
-                    efforts_grav = efforts_grav.copy()
-                    efforts_grav[0] = 0.0
-                    
-                    efforts_net = efforts_net.copy()
-                    efforts_net[0] = 0.0
-                    
-                    torques_vec = torques_vec.copy()
-                    torques_vec[0] = np.zeros(3)
-                    
-                    torques_grav_vec = torques_grav_vec.copy()
-                    torques_grav_vec[0] = np.zeros(3)
+                     # Zero out index 0
+                     inertias = inertias.copy()
+                     inertias[0] = 0.0
+                     
+                     efforts_dyn = efforts_dyn.copy()
+                     efforts_dyn[0] = 0.0
+                     
+                     efforts_grav = efforts_grav.copy()
+                     efforts_grav[0] = 0.0
+                     
+                     efforts_net = efforts_net.copy()
+                     efforts_net[0] = 0.0
+                     
+                     torques_vec = torques_vec.copy()
+                     torques_vec[0] = np.zeros(3)
+                     
+                     torques_grav_vec = torques_grav_vec.copy()
+                     torques_grav_vec[0] = np.zeros(3)
 
-                self.torques_output.send(torques)
-                self.inertia_output.send(inertias)
+                # self.torques_output.send(torques) - Removed
+
                 self.effort_output.send(efforts_dyn)
                 self.gravity_effort_output.send(efforts_grav)
                 self.combined_effort_output.send(efforts_net)
                 
-                self.torque_vec_output.send(torques_vec)
-                self.gravity_torque_vec_output.send(torques_grav_vec)
+                if 'torques_dyn_vec' in res:
+                    self.output_torque_vectors.send(torques_vec)
 
-                # Send Floor Contact
-                if 'floor_contact' in res:
-                     self.output_contact.send(res['floor_contact'][0]) # (24,) float array
-                
+                if 'inertias' in res:
+                    self.inertia_output.send(inertias)
+
+                if 'torques_dyn_vec' in res:
+                    t_dyn = res['torques_dyn_vec']
+                    if t_dyn.shape[0] == 1:
+                        # Unpack if batch=1 (J,3)
+                        self.dynamic_torque_vec_output.send(t_dyn[0])
+                    else:
+                        self.dynamic_torque_vec_output.send(t_dyn)
+
+                self.gravity_torque_vec_output.send(torques_grav_vec)
+                self.passive_torque_vec_output.send(torques_passive_vec)
+
+
                 if 'positions' in res:
                      pos = res['positions']
                      if pos.shape[0] == 1:
@@ -1948,15 +1978,27 @@ class SMPLTorqueNode(SMPLNode):
                      if probs.shape[0] == 1:
                          probs = probs[0]
                      self.contact_probs_output.send(probs)
+
+                if 'contact_probs_fusion' in res:
+                     probs_fusion = res['contact_probs_fusion']
+                     if probs_fusion.shape[0] == 1:
+                         probs_fusion = probs_fusion[0]
+                     self.contact_probs_fusion_output.send(probs_fusion)
                      
                 press_out = getattr(self.processor, 'contact_pressure', None)
                 if press_out is not None:
-                     if press_out.ndim > 1 and torques.shape[0] == 1:
-                         press_out = press_out[0]
+                     if press_out.ndim > 1:
+                         press_out = press_out.flatten()
                      self.contact_pressure_output.send(press_out)
                      
                 self.output_com.send(com_out)
                 self.output_zmp.send(zmp_out)
+                
+                # Send noise statistics
+                noise_score = self.processor.get_noise_score()
+                noise_report = self.processor.get_noise_report()
+                self.noise_score_output.send(noise_score)
+                self.noise_report_output.send(noise_report)
             
             except Exception as e:
                 # Catch processing errors (e.g. shape mismatch on first frame)
