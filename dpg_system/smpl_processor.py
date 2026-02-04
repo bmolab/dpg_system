@@ -284,11 +284,6 @@ class SMPLProcessingOptions:
     filter_min_cutoff: float = 1.0
     filter_beta: float = 0.0
     
-    # --- Spike Detection / Clamping ---
-    spike_threshold: float = 0.0 # Output Output Hysteresis
-    input_spike_threshold: float = 0.0 # Teleport Detection
-    jerk_threshold: float = 0.0 # Jerk-based spike
-    
     # --- Floor / Environment ---
     floor_enable: bool = False
     floor_height: float = 0.0
@@ -2806,87 +2801,7 @@ class SMPLProcessor:
         
         return world_pos, global_rots, tips
 
-    def _detect_input_spikes(self, pose_data_aa, world_pos, options):
-        """
-        Detects anomalies in input data (Teleport, Glitch, Wobble).
-        Updates internal state (prev_pose_raw, etc.).
-        Returns:
-            input_spike_detected (bool): True if spike detected.
-        """
-        input_spike_detected = False
-        
-        # Only run spike detection if streaming (frame by frame)
-        if pose_data_aa.shape[0] == 1:
-             # 1. Teleport Detection (Large Step)
-             if options.input_spike_threshold > 0.0 and self.prev_pose_raw is not None:
-                 diff = np.abs(pose_data_aa - self.prev_pose_raw)
-                 diff_norm = np.linalg.norm(diff, axis=2)
-                 
-                 # Scale Threshold by dt (Normalize to 60 FPS)
-                 # Unit is effectively "Degrees per Frame @ 60 FPS"
-                 scale_factor = options.dt * 60.0
-                 th_rad = np.radians(options.input_spike_threshold) * scale_factor
-                 
-                 if np.max(diff_norm) > th_rad:
-                     if not self.last_frame_spiked:
-                         input_spike_detected = True
-                         self.last_frame_spiked = True # Guard ON
-                     else:
-                         self.last_frame_spiked = True # Sustain Guard
-                 else:
-                     self.last_frame_spiked = False
-             
-             # 2. Accel / Jerk Detection (Glitch/Wobble)
-             # Always track state to support dynamic toggling
-             if self.prev_pose_raw is not None:
-                   # Lazy init for hot-reload
-                   if not hasattr(self, 'prev_vel_aa_raw'): self.prev_vel_aa_raw = None
-                   if not hasattr(self, 'prev_acc_raw'): self.prev_acc_raw = None
-                   
-                   if self.prev_vel_aa_raw is None:
-                       self.prev_vel_aa_raw = np.zeros_like(pose_data_aa)
-                   
-                   # V_new
-                   v_new = pose_data_aa - self.prev_pose_raw
-                   
-                   # A_new
-                   acc_new = v_new - self.prev_vel_aa_raw
-                   self.prev_vel_aa_raw = v_new
-                   
-                   # Check Thresholds
-                   # Only Jerk Threshold remains
-                   if options.jerk_threshold > 0.0:
-                       # Jerk Check
-                       if self.prev_acc_raw is not None:
-                            jerk_vec = acc_new - self.prev_acc_raw
-                            jerk_mag = np.linalg.norm(jerk_vec, axis=2)
-                            jerk_th_rad = np.radians(options.jerk_threshold)
-                            
-                            mask_jerk = jerk_mag > jerk_th_rad
-                            
-                            y_dim = 2 if options.input_up_axis == 'Z' else 1
-                            
-                            # --- Floor Contact Logic ---
-                            if options.floor_enable:
-                                 y_vals = world_pos[:, :24, y_dim] # (1, 24)
-                                 
-                                 on_floor = y_vals < (options.floor_height + options.floor_tolerance)
-                                 mask_jerk = np.logical_and(mask_jerk, ~on_floor)
-                            
-                            
-                            if np.any(mask_jerk):
-                                 input_spike_detected = True
-                                 
-                   self.prev_acc_raw = acc_new
-                  
-             # Update Pose History
-             self.prev_pose_raw = pose_data_aa.copy()
-             
-        else:
-             # Batch Mode - Reset State
-             pass
-             
-        return input_spike_detected
+
 
 
     def _compute_angular_kinematics(self, F, pose_data_aa, quats, options, use_filter=True, state_suffix=''):
@@ -3303,41 +3218,7 @@ class SMPLProcessor:
 
         return torques_vec, inertias, efforts_net, efforts_dyn, efforts_grav, t_dyn_vecs, t_grav_vecs, t_passive_vecs
 
-    def _apply_output_spike_rejection(self, efforts_net, input_spike_detected, options):
-        """
-        Filters sudden spikes in effort output (Teleport prevention).
-        Uses input_spike_detected flag and internal threshold.
-        Updates self.prev_efforts.
-        Returns filtered efforts_net.
-        """
-        masked_output = False
-        
-        if input_spike_detected:
-            masked_output = True 
-            
-        if options.spike_threshold > 0.0:
-            if self.prev_efforts is None:
-                self.prev_efforts = np.zeros_like(efforts_net)
-                
-            # Check for Output-based spikes only if Input trigger didn't catch it
-            if not masked_output:
-                if efforts_net.shape == self.prev_efforts.shape:
-                    diff = np.abs(efforts_net - self.prev_efforts)
-                    mask = diff > options.spike_threshold
-                    if np.any(mask):
-                        efforts_net[mask] = self.prev_efforts[mask]
-                        
-        # Global Override for Input Detection
-        if masked_output:
-            if self.prev_efforts is not None:
-                if efforts_net.shape == self.prev_efforts.shape:
-                    efforts_net = self.prev_efforts.copy()
-            else:
-                 efforts_net[:] = 0.0 # Safety
-                 
-        self.prev_efforts = efforts_net.copy()
-        
-        return efforts_net
+
 
     def _apply_torque_rate_limiting(self, t_dyn_vecs, options):
         """
@@ -3588,10 +3469,7 @@ class SMPLProcessor:
         world_pos, global_rots, tips = self._compute_forward_kinematics(trans_data, quats)
         parents = self._get_hierarchy()
 
-        # --- Input Spike Detection (Teleport) ---
-        input_spike_detected = self._detect_input_spikes(
-            pose_data_aa, world_pos, options
-        )
+
 
 
 
@@ -3747,8 +3625,7 @@ class SMPLProcessor:
         # Scalar torque magnitude for output
         # torques is now removed as per user request
 
-        # --- Output Spike Rejection ---
-        efforts_net = self._apply_output_spike_rejection(efforts_net, input_spike_detected, options)
+
             
         output_quats = quats[:, :self.target_joint_count, :]
         

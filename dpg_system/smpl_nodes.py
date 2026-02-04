@@ -1679,9 +1679,7 @@ class SMPLTorqueNode(SMPLNode):
         self.min_cutoff_prop = self.add_property('one_euro_min_cutoff', widget_type='drag_float', default_value=1.0)
         self.beta_prop = self.add_property('one_euro_beta', widget_type='drag_float', default_value=0.05)
         
-        self.spike_thresh_prop = self.add_property('effort_spike_threshold', widget_type='drag_float', default_value=0.0) # Output (Effort)
-        self.input_spike_prop = self.add_property('input_spike_threshold', widget_type='drag_float', default_value=0.0) # Input (Pose Degrees)
-        self.jerk_prop = self.add_property('jerk_threshold', widget_type='drag_float', default_value=0.0) # Input Jerk (Deg/Frame^3)
+
         self.floor_enable_prop = self.add_property('floor_contact_enable', widget_type='checkbox', default_value=True)
         self.floor_height_prop = self.add_property('floor_height', widget_type='drag_float', default_value=0.0)
         self.floor_tol_prop = self.add_property('floor_tolerance', widget_type='drag_float', default_value=0.15)
@@ -1866,10 +1864,6 @@ class SMPLTorqueNode(SMPLNode):
                 filter_min_cutoff=self.min_cutoff_prop() if hasattr(self, 'min_cutoff_prop') else 1.0,
                 filter_beta=self.beta_prop() if hasattr(self, 'beta_prop') else 0.05,
                 
-                # Spikes / Clamping
-                spike_threshold=self.spike_thresh_prop() if hasattr(self, 'spike_thresh_prop') else 0.0,
-                input_spike_threshold=self.input_spike_prop() if hasattr(self, 'input_spike_prop') else 0.0,
-                jerk_threshold=self.jerk_prop() if hasattr(self, 'jerk_prop') else 0.0,
                 
                 # Floor
                 floor_enable=self.floor_enable_prop(),
