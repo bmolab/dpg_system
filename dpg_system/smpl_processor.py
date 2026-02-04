@@ -768,44 +768,34 @@ class SMPLProcessor:
             
         return offsets
 
-    def _compute_probabilistic_contacts(self, world_pos, pose_data_aa, options):
+    def _update_physics_state(self, world_pos, pose_data_aa, options):
         """
-        Estimates contact probability P(C) for each joint [0..1].
-        P(C) = P_prox * P_kin * P_load * P_geo
+        Updates physics state (Velocity, CoM, ZMP) for the current frame.
+        Removes legacy contact probability logic.
         """
         F = world_pos.shape[0]
-        J = world_pos.shape[1] # 24 or 28
+        J = world_pos.shape[1]
         dt = options.dt
         y_dim = getattr(self, 'internal_y_dim', 1)
         
-        # State Initialization / Resizing (Must happen before early return)
-        if not hasattr(self, 'prob_contact_probs') or self.prob_contact_probs is None or self.prob_contact_probs.shape[0] != J:
-             self.prob_contact_probs = np.zeros(J, dtype=np.float32)
-             
+        # --- 1. Velocity Smoothing State ---
         if not hasattr(self, 'prob_smoothed_vel') or self.prob_smoothed_vel is None or self.prob_smoothed_vel.shape[0] != J:
-             # Explicitly (J, 3) for F=1 state
              self.prob_smoothed_vel = np.zeros((J, 3), dtype=np.float32)
-             # Also reset prev_world_pos if size changes to avoid mismatch
              self.prob_prev_world_pos = None
 
-        if not hasattr(self, 'contact_impact_velocity') or self.contact_impact_velocity is None or self.contact_impact_velocity.shape[0] != J:
-             self.contact_impact_velocity = np.zeros(J, dtype=np.float32)
-
         if not options.floor_enable:
-             return np.zeros((F, J), dtype=np.float32)
+             return
              
         floor_height = options.floor_height
 
         # --- Use Effective Position (Tips Override) ---
-        # If we remapped tips (e.g. 23 -> Toe), we must compute velocity of the TIP, not the original joint.
         effective_pos = world_pos.copy()
         if hasattr(self, 'temp_tips') and self.temp_tips:
              for j, t_pos in self.temp_tips.items():
-                  # t_pos is (F, 3)
                   if j < J:
                        effective_pos[:, j, :] = t_pos
 
-        # Velocities
+        # --- Velocity Calculation ---
         if not hasattr(self, 'prob_prev_world_pos') or self.prob_prev_world_pos is None:
              lin_vel = np.zeros_like(effective_pos)
              self.prob_prev_world_pos = effective_pos[0].copy() if effective_pos.ndim == 3 else effective_pos.copy()
@@ -818,508 +808,96 @@ class SMPLProcessor:
              lin_vel = (effective_pos - self.prob_prev_world_pos) / dt
              self.prob_prev_world_pos = effective_pos.copy()
              
-        # Temporal Smoothing for Velocity (Trend Analysis)
+        # Temporal Smoothing
         if F == 1:
-             # lin_vel is (1, J, 3). We want (J, 3) for storage.
              current_vel = lin_vel[0] # (J, 3)
-             
-             # Alpha = 0.8 (Responsive). 
-             # Previous 0.3 (History dominates) caused lag during sharp impacts (Cartwheel).
              alpha_v = 0.8 
-             
              self.prob_smoothed_vel = self.prob_smoothed_vel * (1.0 - alpha_v) + current_vel * alpha_v
-             # Broadcast back to (1, J, 3)
-             lin_vel = self.prob_smoothed_vel[np.newaxis, ...] # (1, J, 3)
+        
+        # --- 2. CoM & ZMP State ---
+        
+        # CoM Access
+        if self.current_com is not None:
+            com = self.current_com # (F, 3) 
+            if com.ndim == 2: c = com[0] # Assume F=1/streaming for state mostly
+            else: c = com
         else:
-             # Batch mode: No state smoothing possible across frames in one call easily
-             pass
+            c = self._compute_full_body_com(world_pos[0:1])[0]
 
-             
-        vel_y = lin_vel[..., y_dim]
-        vel_h_vec = lin_vel.copy()
-        vel_h_vec[..., y_dim] = 0.0
-        vel_h = np.linalg.norm(vel_h_vec, axis=-1)
-        
-        # --- Factors ---
-        frame_probs = np.zeros((F, J), dtype=np.float32)
-        
-        # Tips Access
-        tips_available = hasattr(self, 'temp_tips') and self.temp_tips is not None
-        
-        for f in range(F):
-            # 1. ZMP Load Prior (Balance)
-            # Use current CoM/ZMP state
-            # Slice world_pos to 24 for CoM calc if necessary, but _compute_full_body_com usually handles slicing internal?
-            # Actually _compute_full_body_com calculates mass weighted average.
-            # If we pass 28 joints to it, and masses are 24, it might crash there too?
-            # Let's check com calc safely.
-            # But here we use 'self.current_com' which is typically pre-calced (on 24 e.g.).
-            if self.current_com is not None:
-                com = self.current_com # (F, 3) 
-                # (Assuming F=1 or current_com matches F)
-                if com.ndim == 2: c = com[f]
-                else: c = com
+        # CoM Dynamics (Acceleration)
+        if not hasattr(self, 'prob_prev_com') or self.prob_prev_com is None:
+            self.prob_prev_com = c.copy()
+            self.prob_prev_com_vel = np.zeros_like(c)
+            self.prob_prev_com_acc = np.zeros_like(c)
+            self.com_acc_filter = OneEuroFilter(min_cutoff=0.5, beta=0.2, d_cutoff=1.0)
+            
+            com_vel = np.zeros_like(c)
+            com_acc = np.zeros_like(c)
+        else:
+            # Kinematics
+            if F > 1:
+                 com_vel = (c - self.prob_prev_com) / dt # Approx
             else:
-            # Fallback: slice to 24 for safety? No, pass full so children (28/29) are valid.
-                c = self._compute_full_body_com(world_pos[f:f+1])[0]
-
-            # --- Dynamic ZMP Calculation ---
-            # ZMP = CoM_proj - (h/g) * a_horz
-            # Requires acceleration tracking.
-
-            # 1. State Initialization
-            if not hasattr(self, 'prob_prev_com') or self.prob_prev_com is None:
-                self.prob_prev_com = c.copy()
-                self.prob_prev_com_vel = np.zeros_like(c)
-                self.prob_prev_com_acc = np.zeros_like(c)
-                
-                # Initialize OneEuroFilter for COM Acceleration
-                # Adaptive smoothing: smooths static noise (0.5Hz), tracks fast motion (beta=0.2)
+                 com_vel = (c - self.prob_prev_com) / dt
+                 
+            # Acceleration
+            raw_acc = (com_vel - self.prob_prev_com_vel) / dt
+            
+            if not hasattr(self, 'com_acc_filter'):
                 self.com_acc_filter = OneEuroFilter(min_cutoff=0.5, beta=0.2, d_cutoff=1.0)
-                
-                com_vel = np.zeros_like(c)
-                com_acc = np.zeros_like(c)
-            else:
-                # 2. Kinematics
-                if F > 1:
-                     # Batch mode approximation (less accurate per frame if gap)
-                     # For now, treat as step
-                     com_vel = (c - self.prob_prev_com) / dt
-                else:
-                     com_vel = (c - self.prob_prev_com) / dt
-                     
-                # 3. Acceleration & Smoothing (EMA)
-                # Raw Acc
-                # Handle startup first frame
-                # 3. Acceleration & Smoothing (OneEuroFilter)
-                # Raw Acc
-                raw_acc = (com_vel - self.prob_prev_com_vel) / dt
-                
-                # Ensure filter exists (handle hot-reload or legacy state)
-                if not hasattr(self, 'com_acc_filter'):
-                    self.com_acc_filter = OneEuroFilter(min_cutoff=0.5, beta=0.2, d_cutoff=1.0)
 
-                # Update filter frequency to match current dt
-                if dt > 0:
-                    self.com_acc_filter._freq = 1.0 / dt
-                
-                # Apply filter
-                com_acc = self.com_acc_filter(raw_acc)
-                
-                # Update State
-                self.prob_prev_com = c.copy()
-                self.prob_prev_com_vel = com_vel.copy()
-                self.prob_prev_com_acc = com_acc.copy()
-                
-            # 4. Calculate Offset
-            plane_dims = [d for d in [0, 1, 2] if d != y_dim]
+            if dt > 0:
+                self.com_acc_filter._freq = 1.0 / dt
             
-            # h = CoM Height relative to floor
-            com_h = c[y_dim] - floor_height
-            g = 9.81
+            com_acc = self.com_acc_filter(raw_acc)
             
-            # Offset = - (h/g) * a
-            # We only care about horizontal acceleration for ZMP shift
-            acc_horz = com_acc[plane_dims] # 2D
-            zmp_offset = - (com_h / g) * acc_horz
+            # Update State
+            self.prob_prev_com = c.copy()
+            self.prob_prev_com_vel = com_vel.copy()
+            self.prob_prev_com_acc = com_acc.copy()
             
-            # Static Projection
-            p_zmp_static = c[plane_dims]
-            p_zmp = p_zmp_static + zmp_offset
-            
-            # Store 3D ZMP for Output (Projected to Floor)
-            if not hasattr(self, 'current_zmp') or self.current_zmp is None:
-                 # Use 'c' which is guaranteed to be the CoM
-                 if c.ndim == 1: shape = (3,)
-                 elif c.ndim == 2: shape = (c.shape[0], 3)
-                 else: shape = (3,)
-                 self.current_zmp = np.zeros(shape)
-            
-            # Pack back into 3D (assuming floor height Y)
-            if self.current_zmp.ndim == 1:
-                self.current_zmp[plane_dims] = p_zmp
-                self.current_zmp[y_dim] = floor_height
-            else:
-                self.current_zmp[f, plane_dims] = p_zmp
-                self.current_zmp[f, y_dim] = floor_height
-            
-            # --- ZMP Smoothing ---
-            # Smooth the ZMP position to reduce oscillation in contact pressure weighting
-            ZMP_ALPHA = 0.1  # 10% new per frame (slow smooth for stability)
-            
-            if not hasattr(self, 'prev_zmp_smooth'):
-                self.prev_zmp_smooth = self.current_zmp.copy()
-            
-            # Ensure shape matches
-            if self.prev_zmp_smooth.shape != self.current_zmp.shape:
-                self.prev_zmp_smooth = self.current_zmp.copy()
-            
-            # Apply EMA smoothing
-            if self.current_zmp.ndim == 1:
-                self.current_zmp = self.prev_zmp_smooth * (1.0 - ZMP_ALPHA) + self.current_zmp * ZMP_ALPHA
-                self.prev_zmp_smooth = self.current_zmp.copy()
-            else:
-                self.current_zmp[f] = self.prev_zmp_smooth[f] * (1.0 - ZMP_ALPHA) + self.current_zmp[f] * ZMP_ALPHA
-                self.prev_zmp_smooth[f] = self.current_zmp[f].copy()
-            
-            # --- Stability Heuristic (Feet Balance) ---
-            # Check how well feet support the CoM. If balanced, dampen hand sensitivity.
-            # If failing (unstable), increase hand sensitivity (allow catch).
-            feet_indices = [7, 8, 10, 11, 24, 25, 28, 29]
-            min_foot_dist = 100.0
-            
-            # Helper to get Hz Pos of any joint
-            def get_hz_pos(idx):
-                 if tips_available and idx in self.temp_tips: p = self.temp_tips[idx][f]
-                 else: p = world_pos[f, idx]
-                 return p[plane_dims]
-                 
-            for f_idx in feet_indices:
-                d = np.linalg.norm(get_hz_pos(f_idx) - p_zmp)
-                if d < min_foot_dist: min_foot_dist = d
-                
-            # Score 1.0 (Stable) -> 0.0 (Unstable). Threshold ~0.25m.
-            stability_score = np.exp(- (min_foot_dist / 0.25)**2)
-            
-            # Hand Sigma: 0.05 (Stable) -> 0.10 (Unstable)
-            sigma_hand_dynamic = 0.05 + 0.05 * (1.0 - stability_score)
-            
-            # 2. Joint Loop
-            current_p = np.zeros(J)
-            for j in range(J):
-                # Pos
-                if tips_available and j in self.temp_tips:
-                    pos = self.temp_tips[j][f]
-                else:
-                    pos = world_pos[f, j]
-                
-                h = pos[y_dim] - floor_height
-                
-                # Apply Virtual Heel Offset if Ankle (7, 8) or Wrist (20, 21)
-                # Note: Hands (22, 23) do NOT get bias, allowing fingertips to touch accurately.
-                if j in [7, 8, 20, 21]:
-                    h -= options.heel_toe_bias
-                
-                vy = vel_y[f, j] if vel_y.ndim > 1 else vel_y[j]
-                vh = vel_h[f, j] if vel_h.ndim > 1 else vel_h[j]
-                
-                # A. Proximity P(h)
-                # Gaussian falloff
-                # Sigma derived from floor_tolerance (assumed to be ~3-sigma boundary)
-                # If tol=0.15, sigma=0.05. Contact breaks at ~6cm.
-                sigma_h = options.floor_tolerance / 3.0
-                if sigma_h < 0.02: sigma_h = 0.02 # Safety floor
-                
-                # Use Dynamic Sigma for Hands
-                if j in [20, 21, 22, 23]:
-                    sigma_h = sigma_hand_dynamic
-                
-                if h <= 0:
-                    p_prox = 1.0
-                else:
-                    p_prox = np.exp(-0.5 * (h / sigma_h)**2)
-                
-                # Clip for large distances (optimization)
-                if h > 0.20: p_prox = 0.0
-                
-                # B. Kinematics P(v)
-                # Issue: During swing (arc), Vy or Vh might dip individually while V_total is high.
-                # Component-wise checks allow False Positives.
-                # Solution: Use Velocity Magnitude Gating.
-                
-                v_total_mag = np.sqrt(vy**2 + vh**2)
-                
-                v_safe = 0.20 # Relaxed from 0.15
-                v_cut = 0.50  # Relaxed from 0.30
-                
-                # Note: We apply Velocity Gating EVEN if Underground (h <= 0).
-                # Why? Mocap errors or interpolation sometimes cause feet to "clip" 
-                # through the floor during a fast swing.
-                # If we forced Contact=1.0 just because h<0, we'd get a false positive slam.
-                # Real contact (standing/pushing) implies low velocity relative to the planted foot.
-                
-                if v_total_mag < v_safe:
-                    p_vel = 1.0
-                elif v_total_mag > v_cut:
-                    p_vel = 0.0
-                else:
-                    # Smooth Decay
-                    t = (v_total_mag - v_safe) / (v_cut - v_safe)
-                    p_vel = np.exp(-5.0 * t**2) # Sharp decay
-                
-                # Asymmetric Lift Logic with Hysteresis
-                # User Request: "If contact has not been made yet, and CoM is rising and potential contact point is rising, then contact is not established."
-                # "If contact has already been establish and is ongoing, minor upward movement should not break contact."
-                
-                if not hasattr(self, 'prob_prev_in_contact') or self.prob_prev_in_contact is None:
-                     self.prob_prev_in_contact = np.zeros(J, dtype=bool)
-                     
-                was_contact = self.prob_prev_in_contact[j]
-                
-                # --- Load Bearing Logic (ZMP Persistence) ---
-                # Check 2D distance to ZMP
-                pos_hz = pos[plane_dims]
-                dist_zmp = np.linalg.norm(pos_hz - p_zmp)
-                
-                # Load Factor: 1.0 (Close/Supporting) -> 0.0 (Far/Free)
-                # Sigma = 0.45m (Relaxed from 0.3m to allow wider stance support)
-                load_factor = np.exp(- (dist_zmp / 0.45)**2)
-                
-                # Thresholds
-                # Exit (Breaking Contact):
-                # Standard: 0.20 m/s
-                # Loaded: Relax to 0.40 m/s (0.2 + 0.2) to allow jitter but catch lifts.
-                thresh_exit = 0.20 + 0.20 * load_factor
-                
-                # Velocity Cutoff (Total Velocity)
-                v_safe = 0.20 + 0.20 * load_factor
-                v_cut = 0.50 + 1.0 * load_factor # Allow high slip velocity if load bearing (up to 1.5 m/s)
-                
-                # Entry (Making Contact): Strict. Must be stable (0.02 m/s).
-                thresh_entry = 0.02
-                
-                # Logic
-                failed_gate = False
-                
-                if was_contact:
-                     # In Contact: Only break if lifting distinctly
-                     # Use scaled threshold
-                     if vy > thresh_exit:
-                          failed_gate = True
-                else:
-                     # Not In Contact: Strict Entry
-                     # 1. Foot must be stable (~0 velocity)
-                     if vy > thresh_entry:
-                          failed_gate = True
-                          
-                     # 2. Global Rise Check (Prevent grabbing while launching)
-                     # If CoM is launching UP, and Foot is loose, deny contact.
-                     # com_vel is computed above.
-                     if com_vel[y_dim] > 0.1 and vy > 0.01: # Even slight foot rise during CoM launch is suspicious
-                          failed_gate = True
-                          
-                # 3. Acceleration Gate (Apex / Freefall) with Persistence
-                if not hasattr(self, 'prob_freefall_timer') or self.prob_freefall_timer is None:
-                     self.prob_freefall_timer = np.zeros(J, dtype=int)
-                     
-                # Condition: Accelerating down significantly, Low velocity, Not Load Bearing
-                is_freefall_likely = (com_acc[y_dim] < -5.0) and (v_total_mag < 0.5) and (load_factor < 0.2)
-                
-                if is_freefall_likely:
-                     self.prob_freefall_timer[j] += 1
-                else:
-                     self.prob_freefall_timer[j] = 0
-                     
-                # Gate triggers only after sustained freefall signal (5 frames ~ 80ms)
-                # filters out oscillatory noise in Acc signal.
-                if self.prob_freefall_timer[j] > 5:
-                     failed_gate = True
-
-                          
-                if failed_gate:
-                    p_vel = 0.0
-                
-                if failed_gate:
-                    p_vel = 0.0
-                
-                # Re-Evaluate p_vel with new v_cut (Sensitivity)
-                # Note: We calculated v_total_mag earlier.
-                if v_total_mag < v_safe:
-                    p_vel_raw = 1.0
-                elif v_total_mag > v_cut:
-                    p_vel_raw = 0.0
-                else:
-                    t = (v_total_mag - v_safe) / (v_cut - v_safe)
-                    p_vel_raw = np.exp(-5.0 * t**2)
-                
-                # Apply gate cleanly
-                if failed_gate:
-                    p_vel = 0.0
-                else:
-                    p_vel = p_vel_raw
-                    
-                p_contact_j = p_prox * p_vel
-                
-                # --- Contact Debounce (Confirmation) ---
-                if not hasattr(self, 'prob_contact_duration') or self.prob_contact_duration is None:
-                     self.prob_contact_duration = np.zeros(J, dtype=int)
-                     
-                if p_contact_j > 0.5:
-                     self.prob_contact_duration[j] += 1
-                else:
-                     self.prob_contact_duration[j] = 0
-                     
-                # Debounce: Suppress if duration < 2
-                if self.prob_contact_duration[j] < 2:
-                     p_contact_j = 0.0
-                
-                # Update State for Next Frame
-                # Using 0.5 as binary threshold for "Established Contact" state
-                # Note: This creates a feedback loop across frames (Hysteresis state).
-                is_contact = (p_contact_j > 0.5)
-                self.prob_prev_in_contact[j] = is_contact
-                
-                # Use p_contact_j for subsequent logic assignments...
-                # Note: original code assigned p_vy and p_slip separately.
-                # We unify them into p_vel.
-                
-                # Combine
-                current_p[j] = p_contact_j
-                
-                frame_probs[f, j] = p_contact_j
-            
-            # 3. Heel/Toe Geometry Override (Specific to Feet)
-            # Apply the 5cm band logic as a Probability Mask
-            for (heel, toe) in [(7, 10), (8, 11)]:
-                 # Get P_raw
-                 p_h = current_p[heel]
-                 p_t = current_p[toe]
-                 
-                 # Heights
-                 if tips_available and heel in self.temp_tips: h_h = self.temp_tips[heel][f, y_dim]
-                 else: h_h = world_pos[f, heel, y_dim]
-                 if tips_available and toe in self.temp_tips: h_t = self.temp_tips[toe][f, y_dim]
-                 else: h_t = world_pos[f, toe, y_dim]
-                 
-                 # Apply Virtual Heel Offset
-                 h_h -= options.heel_toe_bias
-                 
-                 diff = h_h - h_t
-                 band = 0.10 # Relaxed to 10cm to prevent dropout on pitched feet
-                 
-
-                 # Mask [0..1]
-                 mask_heel = 1.0
-                 mask_toe = 1.0
-                 
-                 if diff > band: # Heel High
-                      mask_heel = 0.0
-                 elif diff < -band: # Toe High
-                      mask_toe = 0.0
-                 else:
-                      # Inside the band (-10cm to +10cm), consider both valid.
-                      # This solves the issue where Ankle depth breaks Toe contact.
-                      pass
-                      
-                 current_p[heel] *= mask_heel
-                 current_p[toe] *= mask_toe
-                 
-            # 4. Temporal Smoothing (Bayesian Update)
-            # P_new = alpha * P_obs + (1-alpha) * P_old
-            if f == 0:
-                 self.prob_contact_probs = current_p # Initialize
-            else:
-                 # Alpha = Learning Rate. 
-                 # 0.5 = Faster response (User requested less "persistence")
-                 alpha = 0.5
-                 self.prob_contact_probs = self.prob_contact_probs * (1.0 - alpha) + current_p * alpha
-            frame_probs[f] = self.prob_contact_probs
-            
-            # --- 5. Contact Pressure (Load Distribution) ---
-            # Distinguish "Touching" from "Load Bearing" using ZMP proximity.
-            # Pressure ~ P_contact * (1 / distance_to_zmp^2)
-            if not hasattr(self, 'contact_pressure') or self.contact_pressure is None or self.contact_pressure.shape != frame_probs.shape:
-                 self.contact_pressure = np.zeros_like(frame_probs)
-            
-            # Grounded Set: Ankles(7,8), Toes(10,11 - Wait 10,11 are Feet, 24,25 are Toes)
-            # We use all joints that have contact > 0
-            # Get ZMP for this frame
-            zmp_f = self.current_zmp[f] if self.current_zmp.ndim > 1 else self.current_zmp # (3,)
-            zmp_hz = zmp_f[plane_dims] # 2D
-            
-            # Accumulate weights
-            total_weight = 0.0
-            weights = np.zeros(J)
-            
-            # Compute Beta (Lying Factor)
-            # If Indices [0, 3, 6, 9, 12, 15] have significant contact sum?
-            core_contact_sum = np.sum(self.prob_contact_probs[[0, 3, 6, 9, 12, 15]])
-            # If Pelvis(0) or Spine(3) is down, beta -> 1.0
-            beta = np.clip(core_contact_sum, 0.0, 1.0)
-            
-            # Refined Weight calculation with Beta
-            total_weight = 0.0
-            for j in range(J):
-                p = self.prob_contact_probs[j]
-                if p < 0.01: continue
-                
-                # Get Joint Horizontal Pos
-                if tips_available and j in self.temp_tips: 
-                    pos = self.temp_tips[j][f]
-                else: 
-                    pos = world_pos[f, j]
-                pos_hz = pos[plane_dims]
-                dist_sq = np.sum((pos_hz - zmp_hz)**2)
-                
-                w_idw = p / (dist_sq + 0.005)
-                # w_mass = p * 50.0 
-                # ISSUE: p is very high for Pelvis/Spine (Deep penetration), low for Knees.
-                # If we use p directly, Pelvis hogs all support. Knees get none.
-                # Result: Hips lift legs (High Effort).
-                # FIX: Uniform Distribution (or close to it) ensures all touching parts support themselves.
-                w_mass = 10.0 if p > 0.01 else 0.0
-                
-                # Blend
-                w_final = w_idw * (1.0 - beta) + w_mass * beta
-
-                # --- Impact Mitigation (Soft Contact) ---
-                if options.enable_impact_mitigation:
-                     # Check Onset/Vel State
-                     v_curr = vel_y[f, j]
-                     
-                     # Using p threshold for state tracking
-                     if p < 0.05: 
-                         self.contact_impact_velocity[j] = 0.0
-                     elif self.contact_impact_velocity[j] == 0.0:
-                         # Onset
-                         if v_curr < -0.1: # Significant downward
-                              self.contact_impact_velocity[j] = v_curr
-                         else:
-                              # Static or upward (already supported or gentle)
-                              self.contact_impact_velocity[j] = 0.001 
-                     
-                     # Calculate Factor
-                     v_impact = self.contact_impact_velocity[j]
-                     mitigation = 1.0
-                     
-                     if v_impact < -0.1:
-                          # Decaying support based on velocity ratio
-                          ratio = v_curr / v_impact # Positive ( - / - )
-                          # If ratio is 1.0 (Still at impact speed) -> Mitigation 0.0
-                          # If ratio is 0.0 (Stopped) -> Mitigation 1.0
-                          ratio = np.clip(ratio, 0.0, 1.0)
-                          
-                          mitigation = 1.0 - ratio
-                          # Easing
-                          mitigation = mitigation * mitigation
-                          
-                     w_final *= mitigation
-                
-                weights[j] = w_final
-                total_weight += w_final
-            
-            # Normalize
-            # Normalize
-            if total_weight > 1e-6:
-                self.contact_pressure[f] = weights / total_weight
-                
-                # --- 6. Dynamic GRF Scaling ---
-                # Scale Pressure by Vertical Acceleration (F = m * (g + a))
-                # If jumping (pushing off), a_y > 0 -> Pressure > 1.0 (High Effort)
-                # If falling (airborne), a_y ~ -g -> Pressure ~ 0.0
-                # If landing, a_y >> 0 -> Pressure >> 1.0 (Impact)
-                
-                acc_vert = com_acc[y_dim]
-                # Factor = (g + a) / g
-                # Clip lower bound to 0 (can't have negative pressure)
-                grf_factor = max(0.0, (g + acc_vert) / g)
-                
-                self.contact_pressure[f] *= grf_factor
-                
-            else:
-                self.contact_pressure[f] = 0.0 # No pressure if no contact
-                 
-        return frame_probs
+        # ZMP Calculation
+        plane_dims = [d for d in [0, 1, 2] if d != y_dim]
+        
+        # h = CoM Height relative to floor
+        com_h = c[y_dim] - floor_height
+        g = 9.81
+        
+        # Offset = - (h/g) * a_horz
+        acc_horz = com_acc[plane_dims] 
+        zmp_offset = - (com_h / g) * acc_horz
+        
+        # Static Projection
+        p_zmp_static = c[plane_dims]
+        p_zmp = p_zmp_static + zmp_offset
+        
+        # Store ZMP
+        if not hasattr(self, 'current_zmp') or self.current_zmp is None:
+             self.current_zmp = np.zeros(3) # Streaming assumption
+        
+        if self.current_zmp.ndim == 1:
+            self.current_zmp[plane_dims] = p_zmp
+            self.current_zmp[y_dim] = floor_height
+        else:
+            # Should handle batch if needed, but prob_prev state implies F=1
+            self.current_zmp[-1, plane_dims] = p_zmp
+            self.current_zmp[-1, y_dim] = floor_height
+        
+        # ZMP Smoothing
+        ZMP_ALPHA = 0.1 
+        
+        if not hasattr(self, 'prev_zmp_smooth'):
+            self.prev_zmp_smooth = self.current_zmp.copy()
+        
+        if self.prev_zmp_smooth.shape != self.current_zmp.shape:
+             self.prev_zmp_smooth = self.current_zmp.copy()
+        
+        if self.current_zmp.ndim == 1:
+            self.current_zmp = self.prev_zmp_smooth * (1.0 - ZMP_ALPHA) + self.current_zmp * ZMP_ALPHA
+            self.prev_zmp_smooth = self.current_zmp.copy()
+        else:
+            # Simple batch smooth?
+            pass
 
     def _compute_probabilistic_contacts_fusion(self, F, J, world_pos, vel_y, vel_h, floor_height, options):
         """
@@ -1593,10 +1171,9 @@ class SMPLProcessor:
             # Update: I will update _compute_max_torque_profile (the dict init) instead!
             # It's cleaner.
             
-            pass 
+            arr[i] = val 
             
-        # Returning here to avoid Replace error. I will target _compute_max_torque_profile instead.
-        return self._compute_max_torque_array_v2()
+        return arr
 
     def _compute_max_torque_profile(self):
         """
@@ -4050,7 +3627,8 @@ class SMPLProcessor:
              ang_acc = ang_acc[np.newaxis, ...]
         
         # --- Probabilistic Contact (Moved Early for Dynamics) ---
-        contact_probs = self._compute_probabilistic_contacts(
+        # --- Probabilistic Contact (Moved Early for Dynamics) ---
+        self._update_physics_state(
              world_pos, pose_data_aa, options
         )
         
@@ -4181,10 +3759,11 @@ class SMPLProcessor:
              self.last_tip_positions = {k: v[-1].copy() for k, v in self.temp_tips.items()}
 
         # --- Output Dictionary ---
+        # --- Output Dictionary ---
         res = {
             'pose': output_quats if options.return_quats else pose_data_aa[:, :self.target_joint_count, :],
             'trans': trans_data,
-            'contact_probs': contact_probs, # Legacy
+            'contact_probs': contact_probs_fusion, # Legacy alias
             'contact_probs_fusion': contact_probs_fusion, # New
             'torques_vec': torques_vec,
             'torques_grav_vec': t_grav_vecs,
@@ -4197,7 +3776,6 @@ class SMPLProcessor:
             'efforts_net': efforts_net,
             'positions': world_pos,
 
-            'contact_probs': contact_probs,
             'contact_pressure': self.contact_pressure
         }
         
