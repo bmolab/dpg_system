@@ -1629,44 +1629,44 @@ class SMPLProcessor:
             
         return {k: np.array(v) * scale for k, v in max_t.items()}
 
-    def _compute_max_torque_array(self):
-        """
-        Convert dictionary profile to per-joint max torque array.
-        Returns:
-            arr (np.array): (24, 3) Max torque vector for each joint.
-        """
-        arr = np.zeros((24, 3))
-        for i in range(24):
-            name = self.joint_names[i]
-            max_t = 100.0 # Default scalar
-            
-            # Priority Logic (matches original process_frame)
-            if 'pelvis' in name: max_t = self.max_torques.get('pelvis', 500.0)
-            elif 'hip' in name: max_t = self.max_torques.get('hip', 300.0)
-            elif 'knee' in name: max_t = self.max_torques.get('knee', 250.0)
-            elif 'ankle' in name: max_t = self.max_torques.get('ankle', 40.0)
-            elif 'foot' in name: max_t = self.max_torques.get('foot', 30.0)
-            elif 'spine' in name: max_t = self.max_torques.get('spine', 400.0)
-            elif 'neck' in name: max_t = self.max_torques.get('neck', 50.0)
-            elif 'head' in name: max_t = self.max_torques.get('head', 15.0)
-            elif 'collar' in name: max_t = self.max_torques.get('collar', 500.0)
-            elif 'shoulder' in name: max_t = self.max_torques.get('shoulder', 120.0)
-            elif 'elbow' in name: max_t = self.max_torques.get('elbow', 80.0)
-            elif 'wrist' in name: max_t = self.max_torques.get('wrist', 20.0)
-            elif 'hand' in name: max_t = self.max_torques.get('hand', 10.0)
-            
-            # Handle Vector or Scalar
-            if np.ndim(max_t) == 0:
-                 arr[i, :] = max_t
-            else:
-                 # Check length
-                 v = np.array(max_t)
-                 if v.shape == (3,):
-                      arr[i, :] = v
-                 else:
-                      arr[i, :] = v[0] # Fallback?
-                      
-        return arr
+    # def _compute_max_torque_array(self):
+    #     """
+    #     Convert dictionary profile to per-joint max torque array.
+    #     Returns:
+    #         arr (np.array): (24, 3) Max torque vector for each joint.
+    #     """
+    #     arr = np.zeros((24, 3))
+    #     for i in range(24):
+    #         name = self.joint_names[i]
+    #         max_t = 100.0 # Default scalar
+    #
+    #         # Priority Logic (matches original process_frame)
+    #         if 'pelvis' in name: max_t = self.max_torques.get('pelvis', 500.0)
+    #         elif 'hip' in name: max_t = self.max_torques.get('hip', 300.0)
+    #         elif 'knee' in name: max_t = self.max_torques.get('knee', 250.0)
+    #         elif 'ankle' in name: max_t = self.max_torques.get('ankle', 40.0)
+    #         elif 'foot' in name: max_t = self.max_torques.get('foot', 30.0)
+    #         elif 'spine' in name: max_t = self.max_torques.get('spine', 400.0)
+    #         elif 'neck' in name: max_t = self.max_torques.get('neck', 50.0)
+    #         elif 'head' in name: max_t = self.max_torques.get('head', 15.0)
+    #         elif 'collar' in name: max_t = self.max_torques.get('collar', 500.0)
+    #         elif 'shoulder' in name: max_t = self.max_torques.get('shoulder', 120.0)
+    #         elif 'elbow' in name: max_t = self.max_torques.get('elbow', 80.0)
+    #         elif 'wrist' in name: max_t = self.max_torques.get('wrist', 20.0)
+    #         elif 'hand' in name: max_t = self.max_torques.get('hand', 10.0)
+    #
+    #         # Handle Vector or Scalar
+    #         if np.ndim(max_t) == 0:
+    #              arr[i, :] = max_t
+    #         else:
+    #              # Check length
+    #              v = np.array(max_t)
+    #              if v.shape == (3,):
+    #                   arr[i, :] = v
+    #              else:
+    #                   arr[i, :] = v[0] # Fallback?
+    #
+    #     return arr
 
     def set_max_torque(self, joint_name_filter, value):
         """

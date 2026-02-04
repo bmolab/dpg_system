@@ -1009,6 +1009,8 @@ class PolyphonicSamplerNode(Node):
         # MIDI Support
         self.midi_input = self.add_input('midi', callback=self.on_midi)
         self.base_note_input = self.add_input('base_note', widget_type='drag_int', default_value=60, min=0, max=127)
+        
+        self.auto_stop_input = self.add_input('auto_stop', widget_type='checkbox', default_value=True)
 
         # Output
         self.active_out = self.add_output('active_voices')
@@ -1452,8 +1454,11 @@ class PolyphonicSamplerNode(Node):
                         # Update fade tracking
                         alloc["fade"] = fade
                         if fade <= 0.001:
-                            if alloc.get("fade_zero_since") is None:
-                                alloc["fade_zero_since"] = time.time()
+                            if self.auto_stop_input():
+                                if alloc.get("fade_zero_since") is None:
+                                    alloc["fade_zero_since"] = time.time()
+                            else:
+                                alloc["fade_zero_since"] = None
                         else:
                             alloc["fade_zero_since"] = None
                         
@@ -1495,7 +1500,7 @@ class PolyphonicSamplerNode(Node):
                 
                 # Check for zero fade timeout on START?
                 # If we start with 0.0, we should track timeout immediately.
-                if fade <= 0.001:
+                if fade <= 0.001 and self.auto_stop_input():
                     # Search for the alloc we just added or updated
                     for alloc in self.active_allocations:
                         if alloc["sid"] == sid and alloc["idx"] == idx:
