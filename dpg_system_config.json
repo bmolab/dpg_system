@@ -25,5 +25,7 @@
   "orbbec_nodes": true,
   "vive_tracker_nodes": true,
   "sampler_nodes": true,
+  "visca_nodes": true,
+  "pjlink_nodes": true,
   "default_ip_base": "10.1.1.0"
 }
