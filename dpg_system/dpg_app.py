@@ -101,8 +101,8 @@ for import_name in to_be_imported:
         globals()[import_name] = import_module('dpg_system.' + import_name)
         print('Imported ' + import_name)
         imported.append(import_name)
-    except ModuleNotFoundError:
-        print('No module named ' + import_name)
+    except ModuleNotFoundError as e:
+        print(f'No module named {import_name}: {e}')
 
 def widget_active(source, data, user_data):
     pass
