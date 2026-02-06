@@ -9,6 +9,7 @@ import time
 
 def register_visca_nodes():
     Node.app.register_node('visca_camera', ViscaNode.factory)
+    Node.app.register_node('ptz_camera', ViscaNode.factory)
 
 class ViscaNode(Node):
     @staticmethod
@@ -35,10 +36,6 @@ class ViscaNode(Node):
         self.pan_active = False
         self.tilt_active = False
         self.zoom_active = False
-
-        self.pan_released = True
-        self.tilt_released = True
-        self.zoom_released = True
 
         # --- Inputs ---
         # Control Inputs
@@ -91,30 +88,29 @@ class ViscaNode(Node):
 
     def frame_task(self):
         try:
-            if dpg.is_item_deactivated(self.pan_input.widget.uuid):
-                self.pan_initiated = False
+            if dpg.is_item_deactivated(self.pan_input.widget.uuid) and self.pan_active:
+                print("PAN DEACTIVATED")
                 if self.pan_active:
                     self.pan_release()
+                self.pan_initiated = False
 
-            if dpg.is_item_deactivated(self.tilt_input.widget.uuid):
-                self.tilt_initiated = False
+            if dpg.is_item_deactivated(self.tilt_input.widget.uuid) and self.tilt_active:
+                print("TILT DEACTIVATED")
                 if self.tilt_active:
                     self.tilt_release()
+                self.tilt_initiated = False
 
-            if dpg.is_item_deactivated(self.zoom_input.widget.uuid):
-                self.zoom_initiated = False
+            if dpg.is_item_deactivated(self.zoom_input.widget.uuid) and self.zoom_active:
+                print("ZOOM DEACTIVATED")
                 if self.zoom_active:
                     self.zoom_release()
+                self.zoom_initiated = False
 
+            # print(self.pan_initiated, self.tilt_initiated, self.zoom_initiated)
             if self.pan_initiated or self.tilt_initiated:
                 self.drive_pan_tilt()
             if self.zoom_initiated:
                 self.drive_zoom()
-
-            # if self.zoom_active:
-            #     if dpg.is_item_deactivated(self.zoom_input.widget.uuid):
-            #         self.zoom_active = False
-            #         self.zoom_release(None, None)
 
         except Exception:
             # Ignore DPG thread errors (SystemError, Item not found, etc.)
@@ -156,13 +152,14 @@ class ViscaNode(Node):
 
     def pan_release(self):
         # Reset to 0 and Stop
-        self.pan_active = False
+        self.pan_initiated = False
         self.pan_input.set(0.0)
         # We need to send a stop command OR just re-trigger drive_pan which will see 0
         self.drive_pan_tilt()
 
     def tilt_release(self):
         self.tilt_active = False
+
         self.tilt_input.set(0.0)
         self.drive_pan_tilt()
 
@@ -219,9 +216,15 @@ class ViscaNode(Node):
             tilt_dir = 0x02 # Down
 
         if pan_dir != 0x03:
+            print('pan active')
             self.pan_active = True
+        else:
+            self.pan_active = False
         if tilt_dir != 0x03:
+            print('tilt active')
             self.tilt_active = True
+        else:
+            self.tilt_active = False
 
         # 8x 01 06 01 VV WW 03 03 FF (Stop)
         # Note: If we are stopping Pan (dir 03), speed matters less but usually 0 or current.
@@ -229,13 +232,19 @@ class ViscaNode(Node):
         self.send_packet(self.build_visca_command(cmd))
 
     def drive_pan(self):
-        self.pan_initiated = True
+        if self.pan_active or self.pan_input() != 0.00:
+            print("PAN INITIATED", self.pan_input())
+            self.pan_initiated = True
 
     def drive_tilt(self):
-        self.tilt_initiated = True
+        if self.tilt_active or self.tilt_input() != 0.00:
+            print("TILT INITIATED", self.tilt_input())
+            self.tilt_initiated = True
 
     def drive_zoom_init(self):
-        self.zoom_initiated = True
+        if self.zoom_active or self.zoom_input() != 0.00:
+            print("ZOOM INITIATED", self.tilt_input())
+            self.zoom_initiated = True
 
     def drive_zoom(self):
         val = self.zoom_input()
@@ -266,6 +275,7 @@ class ViscaNode(Node):
         else:
             # Stop
             cmd = bytearray([0x04, 0x07, 0x00])
+            self.zoom_active = False
             
         self.send_packet(self.build_visca_command(cmd))
 

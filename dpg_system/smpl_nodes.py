@@ -359,7 +359,7 @@ class SMPLToActivePoseNode(JointTranslator, Node):
         smpl_pose = self.input()
         smpl_pose = any_to_array(smpl_pose).copy()
         if len(smpl_pose.shape) == 1:
-            if smpl_pose.shape[0] < 30:
+            if smpl_pose.shape[0] <= 30:
                 smpl_pose = np.expand_dims(smpl_pose, axis=1)
             else:
                 smpl_pose = np.reshape(smpl_pose, (-1, 3))
@@ -1688,6 +1688,10 @@ class SMPLTorqueNode(SMPLNode):
         self.heel_toe_bias_prop = self.add_property('heel_toe_bias', widget_type='drag_float', default_value=0.02)
         self.impact_mitigation_prop = self.add_property('enable_impact_mitigation', widget_type='checkbox', default_value=True)
         
+        # Contact Method Selection
+        self.contact_method_prop = self.add_property('contact_method', widget_type='combo', default_value='fusion')
+        self.contact_method_prop.widget.combo_items = ['fusion', 'com_driven']
+        
         # --- Rate Limiting ---
         self.enable_rate_limiting_prop = self.add_property('enable_rate_limiting', widget_type='checkbox', default_value=True)
         self.rate_limit_strength_prop = self.add_property('rate_limit_strength', widget_type='drag_float', default_value=1.0)
@@ -1871,6 +1875,7 @@ class SMPLTorqueNode(SMPLNode):
                 floor_tolerance=self.floor_tol_prop() if hasattr(self, 'floor_tol_prop') else 0.15,
                 heel_toe_bias=self.heel_toe_bias_prop() if hasattr(self, 'heel_toe_bias_prop') else 0.0,
                 enable_impact_mitigation=self.impact_mitigation_prop() if hasattr(self, 'impact_mitigation_prop') else True,
+                contact_method=self.contact_method_prop() if hasattr(self, 'contact_method_prop') else 'fusion',
                 
                 # Rate Limiting
                 enable_rate_limiting=self.enable_rate_limiting_prop() if hasattr(self, 'enable_rate_limiting_prop') else True,

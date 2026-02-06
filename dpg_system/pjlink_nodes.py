@@ -8,6 +8,7 @@ import threading
 
 def register_pjlink_nodes():
     Node.app.register_node('pjlink_projector', PJLinkNode.factory)
+    Node.app.register_node('projector_control', PJLinkNode.factory)
 
 class PJLinkNode(Node):
     @staticmethod

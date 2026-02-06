@@ -178,6 +178,11 @@ class NoiseStats:
     rate_limit_severity: float = 0.0     # Sum of clamped magnitudes
     innovation_severity: float = 0.0     # Sum of clamped innovation magnitudes
     
+    # PEAK severity (worst individual events)
+    max_spike_severity: float = 0.0      # Worst single spike magnitude
+    max_frame_severity: float = 0.0      # Worst single frame total severity
+    spike_severity_list: list = None     # List of all spike severities for percentile analysis
+    
     # Per-joint cumulative (for identifying problematic joints)
     joint_spike_counts: np.ndarray = None
     joint_spike_severity: np.ndarray = None
@@ -194,6 +199,8 @@ class NoiseStats:
             self.joint_rate_limit_counts = np.zeros(24, dtype=np.int32)
         if self.joint_jitter_counts is None:
             self.joint_jitter_counts = np.zeros(24, dtype=np.int32)
+        if self.spike_severity_list is None:
+            self.spike_severity_list = []
     
     def reset(self):
         """Reset all statistics."""
@@ -205,6 +212,9 @@ class NoiseStats:
         self.spike_severity = 0.0
         self.rate_limit_severity = 0.0
         self.innovation_severity = 0.0
+        self.max_spike_severity = 0.0
+        self.max_frame_severity = 0.0
+        self.spike_severity_list = []
         self.joint_spike_counts.fill(0)
         self.joint_spike_severity.fill(0.0)
         self.joint_rate_limit_counts.fill(0)
@@ -215,30 +225,63 @@ class NoiseStats:
         Compute a normalized noise score (0-100).
         Higher = noisier file.
         
-        Uses SEVERITY (magnitude) rather than just counts to better differentiate
-        between files with mild vs severe noise.
+        Calibrated so that:
+        - Clean files: 0-20
+        - Acceptable with noise (like Cartwheel): 30-50
+        - Problematic (extreme teleports like Maritsa): 70-100
+        
+        Key insight: Extreme teleports (>500 N·m spikes) are the most problematic
+        and should dominate the score over continuous mild noise.
         """
         if self.total_frames == 0:
             return 0.0
         
-        # Severity-based scoring (N·m per frame)
-        # Spike severity has highest weight - teleports are worst
-        # Rate limit and innovation severity are secondary
-        severity_per_frame = (
-            self.spike_severity * 1.0 +           # Full weight for spikes
-            self.rate_limit_severity * 0.2 +      # Lower weight for rate limits
-            self.innovation_severity * 0.1 +      # Lowest for innovation
-            self.jitter_damping_events * 0.1      # Jitter still count-based
+        # Average severity component (capped at 20 points)
+        # This captures continuous noise but shouldn't dominate
+        avg_severity_per_frame = (
+            self.spike_severity * 1.0 +           
+            self.rate_limit_severity * 0.2 +      
+            self.innovation_severity * 0.1        
         ) / self.total_frames
+        avg_score = min(20.0, avg_severity_per_frame * 0.2)
         
-        # Normalize to 0-100 scale
-        # 10 N·m/frame severity = score of 50
-        # 20+ N·m/frame severity = score of 100
-        score = min(100.0, severity_per_frame * 5.0)
+        # Peak severity is the KEY differentiator for extreme teleports
+        # Use threshold-based scoring:
+        # - 0-100 N·m: mild (0-15 points)
+        # - 100-300 N·m: moderate (15-35 points)  <- Cartwheel ~307
+        # - 300-600 N·m: concerning (35-55 points)
+        # - 600+ N·m: severe (55-80 points)  <- Maritsa ~1126
+        peak = self.max_spike_severity
+        if peak <= 100:
+            peak_score = peak * 0.15  # 0-15
+        elif peak <= 300:
+            peak_score = 15 + (peak - 100) * 0.10  # 15-35
+        elif peak <= 600:
+            peak_score = 35 + (peak - 300) * 0.067  # 35-55
+        else:
+            peak_score = 55 + min(25, (peak - 600) * 0.05)  # 55-80 (cap at 80)
+        
+        # P99 spike severity (captures consistency of severe spikes)
+        p99_score = 0.0
+        if len(self.spike_severity_list) >= 20:
+            p99 = np.percentile(self.spike_severity_list, 99)
+            p99_score = min(15.0, p99 / 20.0)
+        
+        # Combined score
+        combined = avg_score + peak_score + p99_score
+        
+        score = min(100.0, combined)
         return score
     
     def get_report(self):
         """Return a summary dict of noise statistics."""
+        # Compute percentiles if enough data
+        p95_spike = 0.0
+        p99_spike = 0.0
+        if len(self.spike_severity_list) >= 10:
+            p95_spike = np.percentile(self.spike_severity_list, 95)
+            p99_spike = np.percentile(self.spike_severity_list, 99)
+        
         return {
             'total_frames': self.total_frames,
             'noise_score': self.get_noise_score(),
@@ -251,6 +294,11 @@ class NoiseStats:
             'spike_severity': self.spike_severity,
             'rate_limit_severity': self.rate_limit_severity,
             'innovation_severity': self.innovation_severity,
+            # PEAK metrics (identifies extreme teleports)
+            'max_spike_severity': self.max_spike_severity,
+            'max_frame_severity': self.max_frame_severity,
+            'spike_severity_p95': p95_spike,
+            'spike_severity_p99': p99_spike,
             # Per-frame metrics
             'spikes_per_frame': self.spike_detections / max(1, self.total_frames),
             'severity_per_frame': (self.spike_severity + self.rate_limit_severity) / max(1, self.total_frames),
@@ -290,6 +338,7 @@ class SMPLProcessingOptions:
     floor_tolerance: float = 0.15
     heel_toe_bias: float = 0.0
     enable_impact_mitigation: bool = True
+    contact_method: str = 'fusion'  # 'fusion' or 'com_driven'
     
     # --- Torque Rate Limiting ---
     enable_rate_limiting: bool = True
@@ -806,7 +855,7 @@ class SMPLProcessor:
         # Temporal Smoothing
         if F == 1:
              current_vel = lin_vel[0] # (J, 3)
-             alpha_v = 0.8 
+             alpha_v = 0.3  # Reduced from 0.8 for more stable velocity tracking
              self.prob_smoothed_vel = self.prob_smoothed_vel * (1.0 - alpha_v) + current_vel * alpha_v
         
         # --- 2. CoM & ZMP State ---
@@ -824,7 +873,7 @@ class SMPLProcessor:
             self.prob_prev_com = c.copy()
             self.prob_prev_com_vel = np.zeros_like(c)
             self.prob_prev_com_acc = np.zeros_like(c)
-            self.com_acc_filter = OneEuroFilter(min_cutoff=0.5, beta=0.2, d_cutoff=1.0)
+            self.com_acc_filter = OneEuroFilter(min_cutoff=0.3, beta=0.1, d_cutoff=1.0)  # Lower cutoff for more smoothing
             
             com_vel = np.zeros_like(c)
             com_acc = np.zeros_like(c)
@@ -839,7 +888,7 @@ class SMPLProcessor:
             raw_acc = (com_vel - self.prob_prev_com_vel) / dt
             
             if not hasattr(self, 'com_acc_filter'):
-                self.com_acc_filter = OneEuroFilter(min_cutoff=0.5, beta=0.2, d_cutoff=1.0)
+                self.com_acc_filter = OneEuroFilter(min_cutoff=0.3, beta=0.1, d_cutoff=1.0)  # Lower cutoff
 
             if dt > 0:
                 self.com_acc_filter._freq = 1.0 / dt
@@ -1099,6 +1148,589 @@ class SMPLProcessor:
             
             contact_probs[f, j] = self.prob_contact_probs_fusion[j]
             
+        return contact_probs
+
+    def _compute_probabilistic_contacts_com_driven(self, F, J, world_pos, floor_height, options):
+        """
+        CoM-Driven Contact Detection for IMU-noisy data.
+        
+        Uses Center of Mass position/movement to infer which joints MUST be 
+        bearing load, overriding noisy joint motion/position.
+        
+        Key differences from fusion:
+        - CoM projection is primary (not joint height)
+        - Velocity penalty is suppressed when CoM says joint is loaded
+        - Soft proximity gating for feet, hard for hands
+        """
+        # --- State Initialization ---
+        if not hasattr(self, 'prob_contact_probs_com') or self.prob_contact_probs_com is None or len(self.prob_contact_probs_com) != J:
+             self.prob_contact_probs_com = np.zeros(J)
+             
+        # Smoothed load factors to reduce frame-to-frame oscillation
+        if not hasattr(self, 'prob_load_factors_smooth') or self.prob_load_factors_smooth is None or len(self.prob_load_factors_smooth) != J:
+             self.prob_load_factors_smooth = np.zeros(J)
+        
+        # One-euro filter for CoM to smooth out motion capture noise
+        if not hasattr(self, 'com_one_euro_filter') or self.com_one_euro_filter is None:
+             # Conservative parameters: min_cutoff=1.0 (gentle smoothing), beta=0.5 (moderate speed response)
+             self.com_one_euro_filter = OneEuroFilter(min_cutoff=1.0, beta=0.5, framerate=self.framerate)
+             
+        # Use internal Y dimension
+        y_dim = getattr(self, 'internal_y_dim', 1)
+        if y_dim == 1:
+             plane_dims = [0, 2]  # X, Z (Y-up)
+        else:
+             plane_dims = [0, 1]  # X, Y (Z-up)
+        
+        # --- Parameters ---
+        SOFT_CEILING = 0.25       # Below this, height has minimal effect (for feet)
+        HARD_CEILING = 0.40       # Above this, contact = 0 
+        HAND_SOFT_CEILING = 0.10  # Stricter soft ceiling for hands (10cm)
+        HAND_HARD_CEILING = 0.20  # Hands must be very close for contact
+        LOAD_VEL_SUPPRESS = 0.85  # How much load factor suppresses velocity penalty
+        
+        # Candidate contact joints (includes virtual joints)
+        # 7/8: ankles, 10/11: feet, 24/25: toes, 28/29: heels
+        FOOT_JOINTS = {7, 8, 10, 11, 24, 25, 28, 29}
+        # 20/21: wrists, 22/23: hands, 26/27: fingers
+        HAND_JOINTS = {20, 21, 22, 23, 26, 27}
+        
+        # Kinematic chains for relative height comparison
+        # Within each chain, only joints near the lowest get contact pressure
+        # Note: ankle is NOT a contact point - heel is the contact point at the back of foot
+        # Leg chains: ordered by typical vertical position when standing
+        # ankle(7) -> heel(28) -> foot(10) -> toe(24)
+        # knee(4) is above ankle so handled separately in the chain as: knee -> ankle -> heel -> foot -> toe
+        LEFT_LEG_CHAIN = [4, 7, 28, 10, 24]   # knee, ankle, heel, foot, toe
+        RIGHT_LEG_CHAIN = [5, 8, 29, 11, 25]
+        # Left arm chain: elbow(18) -> wrist(20) -> hand(22) -> finger(26)
+        # When hand is flat, wrist/hand/fingers all in contact
+        # Right arm chain: elbow(19) -> wrist(21) -> hand(23) -> finger(27)
+        LEFT_ARM_CHAIN = [18, 20, 22, 26]   # elbow, wrist, hand, finger
+        RIGHT_ARM_CHAIN = [19, 21, 23, 27]
+        
+        # Threshold for "significantly lower" in relative height (meters)
+        CHAIN_HEIGHT_THRESHOLD = 0.05  # 5cm difference means lower joint takes priority
+        
+        contact_probs = np.zeros((F, J), dtype=np.float32)
+        
+        # Tips availability
+        tips_available = hasattr(self, 'temp_tips') and self.temp_tips is not None
+        
+        for f in range(F):
+            # --- CoM Access ---
+            if self.current_com is not None:
+                com = self.current_com
+                if com.ndim == 2: c = com[f]
+                else: c = com
+            else:
+                c = self._compute_full_body_com(world_pos[f:f+1])[0]
+            
+            # --- Apply One-Euro Filter to CoM ---
+            # This smooths out motion capture noise to prevent acceleration spikes
+            c = self.com_one_euro_filter(c.flatten())
+            
+            # --- CoM Acceleration (for push-off detection) ---
+            com_acc = getattr(self, 'prob_prev_com_acc', np.zeros(3))
+            
+            # --- CoM Horizontal Projection ---
+            com_hz = c[plane_dims]
+            
+            # --- Compute Load Factor for All Joints ---
+            # Based on inverse distance from CoM projection
+            load_factors = np.zeros(J)
+            total_weight = 0.0
+            
+            # Use Gaussian weighting with large sigma for soft falloff
+            # This prevents small CoM offsets from causing dramatic weight differences
+            SIGMA_LOAD = 0.50  # 50cm - very soft falloff
+            
+            for j in range(J):
+                # Only compute for potential contact joints
+                if j not in FOOT_JOINTS and j not in HAND_JOINTS:
+                    continue
+                
+                # Get joint position
+                if tips_available and j in self.temp_tips:
+                    pos = self.temp_tips[j][f]
+                else:
+                    pos = world_pos[f, j]
+                
+                pos_hz = pos[plane_dims]
+                dist = np.sqrt(np.sum((pos_hz - com_hz)**2))
+                
+                # Gaussian weight: exp(-0.5 * (dist/sigma)^2)
+                # At dist=sigma (50cm), weight = 0.61
+                # At dist=2*sigma (1m), weight = 0.14
+                # This is much softer than inverse-distance
+                weight = np.exp(-0.5 * (dist / SIGMA_LOAD)**2)
+                load_factors[j] = weight
+                total_weight += weight
+            
+            # Normalize load factors
+            if total_weight > 1e-6:
+                load_factors = load_factors / total_weight
+            
+            # --- Height-Proximity Boost for Multi-Support Poses ---
+            # If a joint is close to floor, boost its load factor regardless of CoM distance
+            # This helps all-fours and crawling poses where hands bear significant weight
+            for j in range(J):
+                if j not in FOOT_JOINTS and j not in HAND_JOINTS:
+                    continue
+                
+                # Get height
+                if tips_available and j in self.temp_tips:
+                    h = self.temp_tips[j][f][y_dim] - options.floor_height
+                else:
+                    h = world_pos[f, j, y_dim] - options.floor_height
+                
+                # Height-proximity boost: exponential increase as height decreases
+                # At h=0, boost = 2.0 (double the load factor)
+                # At h=SOFT_CEILING (0.25m), boost = 1.0 (no change)
+                # At h>SOFT_CEILING, boost = 1.0
+                if h <= 0:
+                    height_boost = 2.0
+                elif h < SOFT_CEILING:
+                    # Linear interpolation: 2.0 at h=0, 1.0 at h=SOFT_CEILING
+                    height_boost = 2.0 - 1.0 * (h / SOFT_CEILING)
+                else:
+                    height_boost = 1.0
+                
+                load_factors[j] *= height_boost
+            
+            # Re-normalize after height boost
+            load_sum = np.sum(load_factors)
+            if load_sum > 1e-6:
+                load_factors = load_factors / load_sum
+            # --- Multi-Support Detection (All-Fours, Crawling, etc.) ---
+            # Detect when both hands and feet are close to floor
+            # Use torque-based load distribution: joints opposite to CoM need more force
+            
+            MULTI_SUPPORT_THRESHOLD = 0.20  # Height threshold for "potentially in contact"
+            
+            # Check front (hands) and back (feet) contact candidates
+            front_low = []  # Hand joints below threshold
+            back_low = []   # Foot joints below threshold
+            front_positions = {}  # joint -> horizontal position
+            back_positions = {}
+            
+            for j in HAND_JOINTS:
+                if tips_available and j in self.temp_tips:
+                    pos = self.temp_tips[j][f]
+                else:
+                    pos = world_pos[f, j]
+                h = pos[y_dim] - options.floor_height
+                if h < MULTI_SUPPORT_THRESHOLD:
+                    front_low.append(j)
+                    front_positions[j] = pos[plane_dims]
+            
+            for j in FOOT_JOINTS:
+                if tips_available and j in self.temp_tips:
+                    pos = self.temp_tips[j][f]
+                else:
+                    pos = world_pos[f, j]
+                h = pos[y_dim] - options.floor_height
+                if h < MULTI_SUPPORT_THRESHOLD:
+                    back_low.append(j)
+                    back_positions[j] = pos[plane_dims]
+            
+            # If both front and back have low joints, we're in multi-support mode
+            if len(front_low) > 0 and len(back_low) > 0:
+                # --- Torque-Based Load Distribution ---
+                # The body must be balanced: sum of (force * distance from CoM) = 0
+                # Joints further from CoM on the "light" side need MORE force
+                
+                # Calculate weighted center of all low contact points
+                all_low = front_low + back_low
+                all_positions = {**front_positions, **back_positions}
+                
+                # For each contact point, calculate its lever arm (distance from CoM)
+                # and direction (which side of CoM it's on)
+                lever_arms = {}
+                for j in all_low:
+                    pos_hz = all_positions[j]
+                    # Vector from CoM to joint
+                    lever_vec = pos_hz - com_hz
+                    lever_arms[j] = {
+                        'distance': np.linalg.norm(lever_vec),
+                        'direction': lever_vec / (np.linalg.norm(lever_vec) + 1e-6)
+                    }
+                
+                # Find the dominant support axis (line connecting front and back)
+                front_center = np.mean([front_positions[j] for j in front_low], axis=0)
+                back_center = np.mean([back_positions[j] for j in back_low], axis=0)
+                support_axis = back_center - front_center
+                support_axis_norm = np.linalg.norm(support_axis)
+                if support_axis_norm > 1e-6:
+                    support_axis = support_axis / support_axis_norm
+                else:
+                    support_axis = np.array([1, 0])
+                
+                # Project CoM onto support axis relative to front center
+                com_proj = np.dot(com_hz - front_center, support_axis)
+                span = np.dot(back_center - front_center, support_axis)
+                
+                if span > 1e-6:
+                    # com_ratio: 0 = at front, 1 = at back
+                    com_ratio = np.clip(com_proj / span, 0, 1)
+                else:
+                    com_ratio = 0.5
+                
+                # Torque balance: front_load * front_dist = back_load * back_dist
+                # If CoM is closer to back (com_ratio high), front needs more load
+                # front_ratio = (1 - com_ratio), back_ratio = com_ratio (inverted)
+                # This is NOT quite right - let me do proper torque calculation
+                
+                # Front joints are at com_proj (relative to CoM = 0)
+                # Back joints are at (span - com_proj) = span*(1 - com_ratio)
+                front_lever = com_proj  # Distance from CoM to front
+                back_lever = span - com_proj  # Distance from CoM to back
+                
+                # For static equilibrium: F_front * d_front = F_back * d_back
+                # F_front / F_back = d_back / d_front
+                # So if CoM is close to back (front_lever large, back_lever small),
+                # front needs LESS force (shorter lever advantage)
+                
+                # Calculate load ratios based on inverse lever arms
+                # (longer arm = less force needed for same torque)
+                if front_lever > 0.01 and back_lever > 0.01:
+                    # Inverse of lever arm (shorter arm = more force needed)
+                    front_force_ratio = back_lever / (front_lever + back_lever)
+                    back_force_ratio = front_lever / (front_lever + back_lever)
+                elif front_lever < 0.01:
+                    # CoM is right at front
+                    front_force_ratio = 0.9
+                    back_force_ratio = 0.1
+                elif back_lever < 0.01:
+                    # CoM is right at back
+                    front_force_ratio = 0.1
+                    back_force_ratio = 0.9
+                else:
+                    front_force_ratio = 0.5
+                    back_force_ratio = 0.5
+                
+                # Calculate current front/back load sums
+                front_load = sum(load_factors[j] for j in HAND_JOINTS)
+                back_load = sum(load_factors[j] for j in FOOT_JOINTS)
+                total_load = front_load + back_load
+                
+                if total_load > 1e-6:
+                    # Blend toward torque-based target
+                    # The more joints are low, the more we trust this calculation
+                    blend_factor = min(1.0, (len(front_low) + len(back_low)) / 4.0)
+                    
+                    current_front_ratio = front_load / total_load
+                    target_front = front_force_ratio * blend_factor + current_front_ratio * (1.0 - blend_factor)
+                    target_back = back_force_ratio * blend_factor + (1.0 - current_front_ratio) * (1.0 - blend_factor)
+                    
+                    # Scale factors to achieve target distribution
+                    if front_load > 1e-6:
+                        front_scale = (target_front * total_load) / front_load
+                    else:
+                        front_scale = 1.0
+                    
+                    if back_load > 1e-6:
+                        back_scale = (target_back * total_load) / back_load
+                    else:
+                        back_scale = 1.0
+                    
+                    # Apply scaling
+                    for j in HAND_JOINTS:
+                        load_factors[j] *= front_scale
+                    for j in FOOT_JOINTS:
+                        load_factors[j] *= back_scale
+                    
+                    # Re-normalize
+                    load_sum = np.sum(load_factors)
+                    if load_sum > 1e-6:
+                        load_factors = load_factors / load_sum
+            
+            # --- Smooth Load Factors (reduces oscillation from normalization changes) ---
+            LOAD_SMOOTH_ALPHA = 0.15  # 15% new, 85% old - more stable
+            for j in range(J):
+                self.prob_load_factors_smooth[j] = (
+                    self.prob_load_factors_smooth[j] * (1.0 - LOAD_SMOOTH_ALPHA) + 
+                    load_factors[j] * LOAD_SMOOTH_ALPHA
+                )
+            load_factors = self.prob_load_factors_smooth.copy()
+            
+            # --- Acceleration Boost ---
+            # If CoM is accelerating, boost joints in the opposite direction (push-off)
+            # Using conservative threshold and boost to avoid spiky contact probs
+            acc_mag = np.linalg.norm(com_acc[plane_dims])
+            if acc_mag > 2.0:  # Increased threshold (was 0.5)
+                acc_dir = -com_acc[plane_dims] / (acc_mag + 1e-6)  # Opposite direction
+                
+                for j in FOOT_JOINTS:
+                    if tips_available and j in self.temp_tips:
+                        pos = self.temp_tips[j][f]
+                    else:
+                        pos = world_pos[f, j]
+                    
+                    pos_hz = pos[plane_dims]
+                    joint_dir = pos_hz - com_hz
+                    joint_dir_norm = np.linalg.norm(joint_dir)
+                    if joint_dir_norm > 0.01:
+                        joint_dir = joint_dir / joint_dir_norm
+                        alignment = np.dot(joint_dir, acc_dir)
+                        if alignment > 0:
+                            # This joint is in the push direction - boost load (reduced from 30% to 15%)
+                            boost = alignment * 0.15  # Up to 15% boost
+                            load_factors[j] = min(1.0, load_factors[j] + boost)
+            
+            # --- Chain-Relative Height Suppression ---
+            # Within each limb chain, suppress load factors for joints that are 
+            # significantly higher than the lowest joint in the chain.
+            # This prevents knee contact when foot is clearly lower.
+            
+            def get_joint_pos(joint_idx):
+                """Get 3D position of a joint, using virtual tip if available."""
+                if tips_available and joint_idx in self.temp_tips:
+                    return self.temp_tips[joint_idx][f]
+                elif joint_idx < world_pos.shape[1]:
+                    return world_pos[f, joint_idx]
+                else:
+                    return None
+            
+            def apply_angle_chain_suppression(chain):
+                """Height-based suppression within a chain with smoothing.
+                
+                Suppress joints that are higher than the lowest joint.
+                Smooths the suppression factors over time for stable output.
+                """
+                SUPPRESS_RATE = 0.03      # 3cm - exponential decay rate
+                SMOOTH_ALPHA = 0.15       # EMA alpha for smoothing suppression factors
+                
+                # Initialize suppression smoothing state if needed
+                if not hasattr(self, '_chain_suppression_smooth'):
+                    self._chain_suppression_smooth = {}
+                
+                chain_key = tuple(chain)
+                if chain_key not in self._chain_suppression_smooth:
+                    self._chain_suppression_smooth[chain_key] = {j: 1.0 for j in chain}
+                
+                # Get heights of all joints in chain
+                chain_data = {}  # joint_idx -> height
+                for joint_idx in chain:
+                    joint_pos = get_joint_pos(joint_idx)
+                    if joint_pos is not None:
+                        chain_data[joint_idx] = joint_pos[y_dim]
+                
+                if len(chain_data) < 2:
+                    return
+                
+                # Find lowest joint
+                lowest_height = min(chain_data.values())
+                
+                # Calculate and smooth suppression factors
+                for j, h in chain_data.items():
+                    h_above = h - lowest_height
+                    if h_above > 0:
+                        raw_factor = np.exp(-h_above / SUPPRESS_RATE)
+                    else:
+                        raw_factor = 1.0  # No suppression for lowest
+                    
+                    # Smooth the suppression factor
+                    prev_factor = self._chain_suppression_smooth[chain_key].get(j, raw_factor)
+                    smooth_factor = prev_factor * (1 - SMOOTH_ALPHA) + raw_factor * SMOOTH_ALPHA
+                    self._chain_suppression_smooth[chain_key][j] = smooth_factor
+                    
+                    # Apply smoothed suppression
+                    load_factors[j] *= smooth_factor
+            
+            # Apply to all limb chains
+            apply_angle_chain_suppression(LEFT_LEG_CHAIN)
+            apply_angle_chain_suppression(RIGHT_LEG_CHAIN)
+            apply_angle_chain_suppression(LEFT_ARM_CHAIN)
+            apply_angle_chain_suppression(RIGHT_ARM_CHAIN)
+            
+            # Re-normalize after chain suppression to prevent cross-limb interference
+            load_sum = np.sum(load_factors)
+            if load_sum > 1e-6:
+                load_factors = load_factors / load_sum
+            
+            # --- Per-Joint Contact Calculation ---
+            for j in range(J):
+                # Get position
+                if tips_available and j in self.temp_tips:
+                    pos = self.temp_tips[j][f]
+                else:
+                    pos = world_pos[f, j]
+                
+                h = pos[y_dim] - floor_height
+                
+                # Apply heel bias for ankles
+                if j in [7, 8]:
+                    h -= options.heel_toe_bias
+                
+                # --- Load Factor (Primary for feet) ---
+                p_load = load_factors[j]
+                
+                # --- Velocity (from smoothed state) ---
+                if hasattr(self, 'prob_smoothed_vel') and self.prob_smoothed_vel is not None:
+                    lin_vel = self.prob_smoothed_vel  # (J, 3)
+                else:
+                    lin_vel = np.zeros((J, 3))
+                
+                vy = lin_vel[j, y_dim]
+                vel_h_vec = lin_vel[j].copy()
+                vel_h_vec[y_dim] = 0.0
+                vh = np.linalg.norm(vel_h_vec)
+                v_total = np.sqrt(vy**2 + vh**2)
+                
+                # --- Height Gating ---
+                if j in HAND_JOINTS:
+                    # Stricter gating for hands - must be very close to ground
+                    if h > HAND_HARD_CEILING:
+                        p_height = 0.0
+                    elif h > HAND_SOFT_CEILING:
+                        # Linear falloff between soft and hard ceiling
+                        p_height = 1.0 - (h - HAND_SOFT_CEILING) / (HAND_HARD_CEILING - HAND_SOFT_CEILING)
+                    else:
+                        p_height = 1.0
+                elif j in FOOT_JOINTS:
+                    # Soft gating for feet (height has minimal effect below ceiling)
+                    if h > HARD_CEILING:
+                        p_height = 0.0
+                    elif h > SOFT_CEILING:
+                        # Very gradual falloff
+                        p_height = np.exp(-2.0 * (h - SOFT_CEILING) / SOFT_CEILING)
+                    elif h <= 0:
+                        p_height = 1.0
+                    else:
+                        # Below soft ceiling: minimal height penalty
+                        p_height = 1.0 - 0.2 * (h / SOFT_CEILING)  # At most 20% penalty
+                else:
+                    # Non-contact joints: hard cutoff
+                    p_height = 0.0 if h > 0.10 else 1.0
+                
+                # --- Velocity Penalty (Suppressed by Load) ---
+                # Softer base velocity penalty for IMU noise tolerance
+                v_threshold = 0.4  # Higher threshold for IMU noise
+                if v_total < v_threshold:
+                    p_vel_base = 1.0
+                else:
+                    # Gentler exponential: -3.0 instead of -5.0
+                    p_vel_base = np.exp(-3.0 * (v_total - v_threshold))
+                
+                # Suppress velocity penalty when loaded (IMU velocity is noisy)
+                # High load -> almost ignore velocity
+                # Low load -> velocity matters
+                vel_suppression = 0.9 * p_load  # Increased from 0.85
+                p_vel = p_vel_base + (1.0 - p_vel_base) * vel_suppression
+                p_vel = min(1.0, p_vel)
+                
+                # --- Lift-off Check with Hysteresis ---
+                # Once lifted, stay lifted until consistent descent pattern
+                # IMPORTANT: Only mark as lifted if joint is actually rising AND above minimum height
+                
+                # Initialize lift state tracking if needed
+                if not hasattr(self, '_lift_state'):
+                    self._lift_state = {}  # joint_idx -> {'lifted': bool, 'lift_frames': int, 'descent_frames': int, 'prev_h': float}
+                
+                if j not in self._lift_state:
+                    self._lift_state[j] = {'lifted': False, 'lift_frames': 0, 'descent_frames': 0, 'prev_h': h}
+                
+                state = self._lift_state[j]
+                
+                # Constants for lift-off detection
+                MIN_LIFT_HEIGHT = 0.12  # 12cm - must be above this to be considered "lifted"
+                VEL_THRESHOLD = 0.05    # 5cm/s - significant velocity threshold
+                HEIGHT_RISING_THRESHOLD = 0.002  # 2mm/frame - check if height is actually increasing
+                
+                # Check if height is actually rising
+                height_rising = h > state['prev_h'] + HEIGHT_RISING_THRESHOLD
+                height_falling = h < state['prev_h'] - HEIGHT_RISING_THRESHOLD
+                state['prev_h'] = h
+                
+                # Check current motion pattern
+                # Must have BOTH positive velocity AND height actually increasing
+                is_ascending = vy > VEL_THRESHOLD and height_rising
+                is_descending = vy < -VEL_THRESHOLD or height_falling
+                
+                # Track lift/descent frame counts
+                if is_ascending:
+                    state['lift_frames'] = min(state['lift_frames'] + 1, 10)
+                    state['descent_frames'] = 0
+                elif is_descending:
+                    state['descent_frames'] = min(state['descent_frames'] + 1, 10)
+                    state['lift_frames'] = max(0, state['lift_frames'] - 1)
+                else:
+                    # Near-zero velocity: decay both counters
+                    state['lift_frames'] = max(0, state['lift_frames'] - 1)
+                    state['descent_frames'] = max(0, state['descent_frames'] - 1)
+                
+                # State transitions
+                LIFT_THRESHOLD = 4  # Frames needed to confirm lift-off
+                DESCENT_THRESHOLD = 3  # Frames needed to confirm re-contact
+                
+                if not state['lifted']:
+                    # Not currently lifted - check for lift-off
+                    # MUST be above minimum height AND have consistent lift motion
+                    if state['lift_frames'] >= LIFT_THRESHOLD and h > MIN_LIFT_HEIGHT:
+                        state['lifted'] = True
+                else:
+                    # Currently lifted - check for re-contact
+                    # Can return to contact if: descending OR height drops below threshold
+                    if state['descent_frames'] >= DESCENT_THRESHOLD or h < MIN_LIFT_HEIGHT * 0.8:
+                        state['lifted'] = False
+                
+                # Calculate p_lift based on state
+                if state['lifted']:
+                    # Joint is lifted - strong suppression
+                    # But still allow some response if velocity becomes very negative
+                    if vy < -0.15:
+                        # Fast descent - allow re-contact
+                        p_lift = min(1.0, 1.0 + vy * 4.0)  # At vy=-0.25, p_lift=0
+                    else:
+                        p_lift = 0.2  # Maintain low probability while lifted
+                else:
+                    # Not lifted - normal upward velocity suppression (softer)
+                    if vy > 0:
+                        # Weaker suppression - mainly to smooth transitions
+                        vel_suppression_strength = 3.0 * (1.0 - min(1.0, p_load / 0.5))
+                        p_lift = np.exp(-vel_suppression_strength * vy)
+                    else:
+                        p_lift = 1.0
+                
+                # --- Fusion ---
+                # For feet: load is primary, height is soft gating
+                # For hands: height is hard gating, load and lift-off secondary
+                if j in FOOT_JOINTS:
+                    # Load-driven: p_load * soft_height * lift_check
+                    p_raw = p_load * p_height * p_lift
+                elif j in HAND_JOINTS:
+                    # Height-gated: Load and lift-off only matter if height allows
+                    # Rising hands should have reduced probability
+                    p_raw = p_height * p_load * p_lift
+                else:
+                    p_raw = 0.0
+                
+                # Clamp
+                p_raw = max(0.0, min(1.0, p_raw))
+                
+                # --- No Output Smoothing ---
+                # Raw probabilities pass through directly
+                # (Noise is handled upstream by one-euro filter on CoM and load factor smoothing)
+                contact_probs[f, j] = p_raw
+        
+        # --- Aggregate Virtual Joints into Parents ---
+        # Merge virtual joint probs into parent joints for visualization compatibility
+        # (motion capture systems often don't track knuckle/ball-of-foot angles)
+        # toe (24, 25) -> foot (10, 11)
+        # heel (28, 29) -> ankle (7, 8)
+        # finger (26, 27) -> hand (22, 23)
+        for f in range(F):
+            # Left side
+            contact_probs[f, 10] = min(1.0, contact_probs[f, 10] + contact_probs[f, 24])  # toe -> foot
+            contact_probs[f, 7] = min(1.0, contact_probs[f, 7] + contact_probs[f, 28])   # heel -> ankle
+            contact_probs[f, 22] = min(1.0, contact_probs[f, 22] + contact_probs[f, 26]) # finger -> hand
+            
+            # Right side
+            contact_probs[f, 11] = min(1.0, contact_probs[f, 11] + contact_probs[f, 25])  # toe -> foot
+            contact_probs[f, 8] = min(1.0, contact_probs[f, 8] + contact_probs[f, 29])   # heel -> ankle
+            contact_probs[f, 23] = min(1.0, contact_probs[f, 23] + contact_probs[f, 27]) # finger -> hand
+        
         return contact_probs
 
     def _compute_max_torque_array(self):
@@ -3332,6 +3964,10 @@ class SMPLProcessor:
                     self.noise_stats.spike_severity += excess
                     self.noise_stats.joint_spike_counts[j] += 1
                     self.noise_stats.joint_spike_severity[j] += excess
+                    # Track peak severity for extreme teleport detection
+                    if excess > self.noise_stats.max_spike_severity:
+                        self.noise_stats.max_spike_severity = excess
+                    self.noise_stats.spike_severity_list.append(excess)
             
             # --- PASS 2: Propagate to neighbors (parent + children) ---
             neighbor_suspect = set()
@@ -3362,6 +3998,8 @@ class SMPLProcessor:
                             if delta[j, axis] > effective_limits[j]:
                                 t_dyn_limited[f, j, axis] = prev_torque[j, axis] + effective_limits[j]
                                 frame_rate_limits += 1
+                                clamped_amount = delta[j, axis] - effective_limits[j]
+                                self.noise_stats.rate_limit_severity += clamped_amount
                                 self.noise_stats.joint_rate_limit_counts[j] += 1
                             elif delta[j, axis] < -effective_limits[j]:
                                 t_dyn_limited[f, j, axis] = prev_torque[j, axis] - effective_limits[j]
@@ -3373,6 +4011,8 @@ class SMPLProcessor:
                         if delta[j, axis] > effective_limits[j]:
                             t_dyn_limited[f, j, axis] = prev_torque[j, axis] + effective_limits[j]
                             frame_rate_limits += 1
+                            clamped_amount = delta[j, axis] - effective_limits[j]
+                            self.noise_stats.rate_limit_severity += clamped_amount
                             self.noise_stats.joint_rate_limit_counts[j] += 1
                         elif delta[j, axis] < -effective_limits[j]:
                             t_dyn_limited[f, j, axis] = prev_torque[j, axis] - effective_limits[j]
@@ -3427,8 +4067,13 @@ class SMPLProcessor:
                 
                 # Count innovation clamps (KF clamped the update)
                 innovation_mag = np.linalg.norm(pre_update - t_dyn_limited[f], axis=1)
-                clamp_count = np.sum(innovation_mag > CLAMP_RADIUS * 0.9)  # Near clamp limit
+                clamped_mask = innovation_mag > CLAMP_RADIUS * 0.9  # Near clamp limit
+                clamp_count = np.sum(clamped_mask)
                 frame_innovation_clamps += clamp_count
+                # Track severity: sum of magnitudes that exceeded clamp radius
+                if clamp_count > 0:
+                    excess_innovations = innovation_mag[clamped_mask] - CLAMP_RADIUS * 0.9
+                    self.noise_stats.innovation_severity += np.sum(excess_innovations)
             
             # Update prev for next frame in batch
             self.prev_dynamic_torque = t_dyn_limited[f].copy()
@@ -3522,10 +4167,16 @@ class SMPLProcessor:
              # Batch - simplified
              vel_y_in = np.zeros((F, world_pos.shape[1]))
              vel_h_in = np.zeros((F, world_pos.shape[1]))
-             
-        contact_probs_fusion = self._compute_probabilistic_contacts_fusion(
-             F, world_pos.shape[1], world_pos, vel_y_in, vel_h_in, options.floor_height, options
-        )
+        
+        # --- Contact Method Selection ---
+        if options.contact_method == 'com_driven':
+             contact_probs_fusion = self._compute_probabilistic_contacts_com_driven(
+                  F, world_pos.shape[1], world_pos, options.floor_height, options
+             )
+        else:  # Default: 'fusion'
+             contact_probs_fusion = self._compute_probabilistic_contacts_fusion(
+                  F, world_pos.shape[1], world_pos, vel_y_in, vel_h_in, options.floor_height, options
+             )
         
         # --- Weighted Mass Distribution (for RNE GRF) ---
         # 1. Total Contact Mass (kg)
@@ -3559,11 +4210,14 @@ class SMPLProcessor:
                   else: pos = world_pos[f, j]
                   
                   pos_hz = pos[pd]
-                  dist_sq = np.sum((pos_hz - zmp_hz)**2)
+                  dist = np.sqrt(np.sum((pos_hz - zmp_hz)**2))
                   
-                  # Weight = P / (Dist^2 + epsilon)
-                  # Epsilon 0.005 (approx 7cm radius peak)
-                  w_dist[j] = p / (dist_sq + 0.005)
+                  # Use Gaussian weight instead of IDW for softer falloff
+                  # This prevents excessive sensitivity to ZMP distance
+                  # sigma = 0.40m so hands/feet at reasonable distances get fair weight
+                  SIGMA_PRESS = 0.40
+                  gauss_weight = np.exp(-0.5 * (dist / SIGMA_PRESS)**2)
+                  w_dist[j] = p * gauss_weight
                   
              # Normalize
              w_sum = np.sum(w_dist)
@@ -3571,10 +4225,18 @@ class SMPLProcessor:
              if w_sum > 1e-6:
                   weights = w_dist / w_sum
                   
-                  # Hard Height Cutoff (Prevent Ghost Contact at > 15cm)
-                  heights = world_pos[f, :, yd] - options.floor_height
-                  mask_high = heights > 0.15
-                  weights[mask_high] = 0.0
+                  # Hard Height Cutoff (Prevent Ghost Contact)
+                  # Use actual tip positions for height check if available
+                  # Increased threshold to 0.25m to allow all-fours poses
+                  for j in range(weights.shape[0]):
+                       if weights[j] < 0.001:
+                            continue
+                       if j in tips:
+                            h = tips[j][f][yd] - options.floor_height
+                       else:
+                            h = world_pos[f, j, yd] - options.floor_height
+                       if h > 0.25:  # 25cm cutoff for all-fours compatibility
+                            weights[j] = 0.0
                   
                   # Re-normalize after cutoff
                   w_sum_2 = np.sum(weights)
