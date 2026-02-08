@@ -564,6 +564,7 @@ class BasePropertyWidget:
         """Subclasses can normalize default_value type here."""
         if self.default_value is None:
             self.default_value = self._get_zero_value()
+        self.set_default_value(self.default_value)
         self.value = self.default_value
 
     def _get_zero_value(self):
@@ -1191,7 +1192,7 @@ class DragFloatN(ScalarWidget):
         mn, mx = self._get_limits(-math.inf, math.inf)
         # Default value comes as list from init
         for i in range(self.columns):
-            val = self.default_value[0] if self.default_value else 0.0
+            val = self.default_value[i] if self.default_value else 0.0
             dpg.add_drag_float(width=self.widget_width, clamped=True, tag=self.uuids[i],
                                max_value=mx, min_value=mn, user_data=self.node,
                                default_value=val, speed=self.speed)
@@ -1223,6 +1224,9 @@ class DragFloatN(ScalarWidget):
         for uuid in self.uuids:
             dpg.configure_item(uuid, format=format)
 
+    def set_default_value(self, data):
+        print('set default value', data)
+        self.default_value = any_to_list(data)
 
 
 # --- 4. The Factory ---
@@ -2057,8 +2061,8 @@ class Node:
                     widget_type: Optional[str] = None, width: int = 80,
                     triggers_execution: bool = False, trigger_button: bool = False,
                     default_value: Any = None, min: Optional[float] = None,
-                    max: Optional[float] = None, callback: Optional[Callable] = None) -> 'NodeProperty':
-        new_property = NodeProperty(label, uuid, self, widget_type, width, triggers_execution, trigger_button, default_value, min, max)
+                    max: Optional[float] = None, callback: Optional[Callable] = None, **kwargs) -> 'NodeProperty':
+        new_property = NodeProperty(label, uuid, self, widget_type, width, triggers_execution, trigger_button, default_value, min, max, **kwargs)
         self.properties.append(new_property)
         self.ordered_elements.append(new_property)
         if callback is not None:
@@ -2071,9 +2075,9 @@ class Node:
                     widget_type: Optional[str] = None, width: int = 80,
                     triggers_execution: bool = False, trigger_button: bool = False,
                     default_value: Any = None, min: Optional[float] = None,
-                    max: Optional[float] = None, callback: Optional[Callable] = None) -> 'NodeProperty':
+                    max: Optional[float] = None, callback: Optional[Callable] = None, **kwargs) -> 'NodeProperty':
         if self.show_options_check is None and self.app.easy_mode:
-            self.show_options_check = self.add_property('show options', widget_type='checkbox', default_value=False, callback=self.show_hide_options)
+            self.show_options_check = self.add_property('show options', widget_type='checkbox', default_value=False, callback=self.show_hide_options, **kwargs)
 
         new_option = NodeProperty(label, uuid, self, widget_type, width, triggers_execution, trigger_button, default_value, min, max)
         self.options.append(new_option)

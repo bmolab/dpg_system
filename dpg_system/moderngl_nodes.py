@@ -1,19 +1,21 @@
 
+import numpy as np
 import dearpygui.dearpygui as dpg
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
-import numpy as np
 from dpg_system.moderngl_base import MGLContext
 import moderngl
+import math
+from ctypes import c_void_p
 from dpg_system.matrix_utils import *
 
 def register_moderngl_nodes():
     Node.app.register_node('mgl_context', MGLContextNode.factory)
     Node.app.register_node('mgl_box', MGLBoxNode.factory)
-    Node.app.register_node('mgl_translate', MGLTransformNode.factory)
-    Node.app.register_node('mgl_rotate', MGLTransformNode.factory)
-    Node.app.register_node('mgl_scale', MGLTransformNode.factory)
-    Node.app.register_node('mgl_scale', MGLTransformNode.factory)
+    Node.app.register_node('mgl_transform', MGLTransformationNode.factory)
+    Node.app.register_node('mgl_translate', MGLTransformSingleNode.factory)
+    Node.app.register_node('mgl_rotate', MGLRotationNode.factory)
+    Node.app.register_node('mgl_scale', MGLScaleNode.factory)
     Node.app.register_node('mgl_camera', MGLCameraNode.factory)
     Node.app.register_node('mgl_display', MGLDisplayNode.factory)
     Node.app.register_node('mgl_sphere', MGLSphereNode.factory)
@@ -21,6 +23,7 @@ def register_moderngl_nodes():
     Node.app.register_node('mgl_color', MGLColorNode.factory)
     Node.app.register_node('mgl_light', MGLLightNode.factory)
     Node.app.register_node('mgl_material', MGLMaterialNode.factory)
+
 
 class MGLNode(Node):
     def __init__(self, label: str, data, args):
@@ -35,13 +38,38 @@ class MGLNode(Node):
 
     def execute(self):
         if self.mgl_input.fresh_input:
-            input_data = self.mgl_input()
-            if input_data == 'draw':
+            input_list = self.mgl_input()
+            do_draw = False
+            t = type(input_list)
+            if t == list:
+                if type(input_list[0]) == str:
+                    if input_list[0] == 'draw':
+                        do_draw = True
+            elif t == str:
+                if input_list == 'draw':
+                    do_draw = True
+            if do_draw:
+                self.ctx = MGLContext.get_instance()
+                self.remember_state()
                 self.draw()
                 self.mgl_output.send('draw')
+                self.restore_state()
+                self.ctx = None
+            else:
+                self.handle_other_messages(input_list)
+
+    def remember_state(self):
+        pass
+
+    def restore_state(self):
+        pass
 
     def draw(self):
         pass
+
+    def handle_other_messages(self, message):
+        pass
+
 
 class MGLContextNode(Node):
     @staticmethod
@@ -59,18 +87,19 @@ class MGLContextNode(Node):
         self.image_item = None
         self.external_window = None
         self.fullscreen_window = None
-        
-        self.width_input = self.add_input('width', widget_type='drag_int', default_value=self.width, callback=self.resize)
-        self.height_input = self.add_input('height', widget_type='drag_int', default_value=self.height, callback=self.resize)
-        self.display_mode_input = self.add_input('display_mode', widget_type='combo', default_value='node')
-        self.display_mode_input.widget.combo_items = ['off', 'node', 'window', 'fullscreen']
-        
-        self.samples_input = self.add_input('samples', widget_type='combo', default_value='4')
-        self.samples_input.widget.combo_items = ['0', '2', '4', '6', '8', '16']
-        
+
         self.render_trigger = self.add_input('render', triggers_execution=True)
         self.mgl_chain_output = self.add_output('mgl_chain')
         self.texture_output = self.add_output('texture_tag')
+
+        self.width_option = self.add_option('width', widget_type='drag_int', default_value=self.width, callback=self.resize)
+        self.height_option = self.add_option('height', widget_type='drag_int', default_value=self.height, callback=self.resize)
+        self.display_mode_option = self.add_option('display_mode', widget_type='combo', default_value='node')
+        self.display_mode_option.widget.combo_items = ['off', 'node', 'window', 'fullscreen']
+        
+        self.samples_option = self.add_option('samples', widget_type='combo', default_value='4')
+        self.samples_option.widget.combo_items = ['0', '2', '4', '6', '8', '16']
+        
 
     def custom_cleanup(self):
         if self.texture_tag:
@@ -81,8 +110,8 @@ class MGLContextNode(Node):
             dpg.delete_item(self.fullscreen_window)
 
     def resize(self):
-        self.width = max(1, self.width_input())
-        self.height = max(1, self.height_input())
+        self.width = max(1, self.width_option())
+        self.height = max(1, self.height_option())
 
     def update_display(self, mode):
         # ... (Node display logic omitted for brevity if unchanged, but I need to include context to replace correctly)
@@ -190,13 +219,13 @@ class MGLContextNode(Node):
 
     def execute(self):
         # Escape Exits Fullscreen
-        if self.display_mode_input() == 'fullscreen' and dpg.is_key_pressed(dpg.mvKey_Escape):
-            self.display_mode_input.set('window')
-            dpg.set_value(self.display_mode_input.widget.uuid, 'window')
+        if self.display_mode_option() == 'fullscreen' and dpg.is_key_pressed(dpg.mvKey_Escape):
+            self.display_mode_option.set('window')
+            dpg.set_value(self.display_mode_option.widget.uuid, 'window')
             self.update_display('window')
 
         # 0. Sync Window Image Size (Stretch to fit)
-        if self.external_window and dpg.does_item_exist(self.external_window) and self.display_mode_input() == 'window':
+        if self.external_window and dpg.does_item_exist(self.external_window) and self.display_mode_option() == 'window':
              win_w = dpg.get_item_width(self.external_window)
              win_h = dpg.get_item_height(self.external_window)
              
@@ -211,7 +240,7 @@ class MGLContextNode(Node):
         
         # Update FBO size
         try:
-            samples = int(self.samples_input())
+            samples = int(self.samples_option())
         except:
             samples = 4
             
@@ -231,7 +260,7 @@ class MGLContextNode(Node):
             
             # Sync back actual samples if fallback occurred
             if self.context.samples != samples:
-                self.samples_input.set(str(self.context.samples))
+                self.samples_option.set(str(self.context.samples))
             
             # Clear
             self.context.clear(0.0, 0.0, 0.0, 1.0)
@@ -267,8 +296,9 @@ class MGLContextNode(Node):
             self.texture_output.send(self.texture_tag)
         
         # 2. Update Display
-        mode = self.display_mode_input()
+        mode = self.display_mode_option()
         self.update_display(mode)
+
 
 class MGLDisplayNode(Node):
     @staticmethod
@@ -365,6 +395,53 @@ class MGLTransformNode(MGLNode):
 
     def __init__(self, label, data, args):
         super().__init__(label, data, args)
+        self.ctx = None
+
+    def get_translation_matrix(self, t):
+        m = np.identity(4, dtype=np.float32)
+        m[3, :3] = t
+        return m
+    
+    def get_scale_matrix(self, s):
+        return np.diag([s[0], s[1], s[2], 1.0]).astype(np.float32)
+    
+    def get_rotation_matrix(self, r):
+        # Euler XYZ
+        # Use helper from matrix_utils or build it
+        rx = rotation_matrix(r[0], [1, 0, 0])
+        ry = rotation_matrix(r[1], [0, 1, 0])
+        rz = rotation_matrix(r[2], [0, 0, 1])
+        # Order implies T * R * S usually, or T * Rz * Ry * Rx * S
+        # matrix multiplication is associative but not commutative.
+        # we want R = Rz * Ry * Rx
+        return np.dot(rz, np.dot(ry, rx))
+
+    def remember_state(self):
+        if self.ctx is not None:
+            self.ctx.push_matrix()
+
+    def restore_state(self):
+        if self.ctx is not None:
+            self.ctx.pop_matrix()
+
+    def draw(self):
+        if self.ctx is not None:
+            self.perform_transformation()
+
+    def perform_transformation(self):
+        pass
+
+
+class MGLTransformationNode(MGLTransformNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        return MGLTransformationNode(name, data, args)
+
+    def __init__(self, label, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        super().initialize(args)
         self.translate_input = self.add_input(label='translate', widget_type='drag_float_n', default_value=[0, 0, 0], speed=1.0, columns=3)
         self.rotate_input = self.add_input(label='rotate', widget_type='drag_float_n', default_value=[0, 0, 0], speed=1.0, columns=3)
         self.scale_input = self.add_input(label='scale', widget_type='drag_float_n', default_value=[1, 1, 1], speed=1.0, columns=3)
@@ -386,46 +463,116 @@ class MGLTransformNode(MGLNode):
         dpg.configure_item(self.scale_input.widget.uuids[1], width=45)
         dpg.configure_item(self.scale_input.widget.uuids[2], width=45)
 
-    def get_translation_matrix(self, t):
-        m = np.identity(4, dtype=np.float32)
-        m[3, :3] = t
-        return m
-    
-    def get_scale_matrix(self, s):
-        return np.diag([s[0], s[1], s[2], 1.0]).astype(np.float32)
-    
-    def get_rotation_matrix(self, r):
-        # Euler XYZ
-        # Use helper from matrix_utils or build it
-        rx = rotation_matrix(r[0], [1, 0, 0])
-        ry = rotation_matrix(r[1], [0, 1, 0])
-        rz = rotation_matrix(r[2], [0, 0, 1])
-        # Order implies T * R * S usually, or T * Rz * Ry * Rx * S
-        # matrix multiplication is associative but not commutative.
-        # we want R = Rz * Ry * Rx
-        return np.dot(rz, np.dot(ry, rx))
+    def perform_transformation(self):
+        if self.ctx is not None:
+            t = self.translate_input()
+            self.ctx.multiply_matrix(self.get_translation_matrix(t))
 
-    def execute(self):
-        # Override execute to wrap the draw call
-        if self.mgl_input.fresh_input:
-            if self.mgl_input() == 'draw':
-                ctx = MGLContext.get_instance()
-                ctx.push_matrix()
-                
-                # Translation
-                t = self.translate_input()
-                ctx.multiply_matrix(self.get_translation_matrix(t))
-                
-                # Rotation
-                r = self.rotate_input()
-                ctx.multiply_matrix(self.get_rotation_matrix(r))
-                
-                # Scale
-                s = self.scale_input()
-                ctx.multiply_matrix(self.get_scale_matrix(s))
-                
-                self.mgl_output.send('draw')
-                ctx.pop_matrix()
+            # Rotation
+            r = self.rotate_input()
+            self.ctx.multiply_matrix(self.get_rotation_matrix(r))
+
+            # Scale
+            s = self.scale_input()
+            self.ctx.multiply_matrix(self.get_scale_matrix(s))
+
+
+class MGLTransformSingleNode(MGLTransformNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        return MGLTransformSingleNode(name, data, args)
+
+    def __init__(self, label, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        super().initialize(args)
+        self.values = [0.0, 0.0, 0.0]
+        self.values[0] = self.arg_as_float(default_value=0.0)
+        self.values[1] = self.arg_as_float(index=1, default_value=0.0)
+        self.values[2] = self.arg_as_float(index=2, default_value=0.0)
+
+        self.x = self.add_input('x', widget_type='drag_float', default_value=self.values[0], callback=self.receive_value)
+        self.y = self.add_input('y', widget_type='drag_float', default_value=self.values[1])
+        self.z = self.add_input('z', widget_type='drag_float', default_value=self.values[2])
+
+        self.reset_button = self.add_property('reset', widget_type='button', callback=self.reset)
+
+    def receive_value(self):
+        value = self.x()
+        if not np.isscalar(value):
+            if isinstance(value, np.ndarray):
+                if value.size > 1:
+                    value = value.flatten()
+                    if value.shape[0] == 3:
+                        self.x.set(value[0])
+                        self.y.set(value[1])
+                        self.z.set(value[2])
+            elif isinstance(value, list):
+                if len(value) == 3:
+                    self.x.set(value[0])
+                    self.y.set(value[1])
+                    self.z.set(value[2])
+            elif self.app.torch_available and isinstance(value, torch.Tensor):
+                value = value.flatten().cpu()
+                if value.shape[0] == 3:
+                    self.x.set(float(value[0]))
+                    self.y.set(float(value[1]))
+                    self.z.set(float(value[2]))
+
+    def reset(self):
+        self.x.set(0.0)
+        self.y.set(0.0)
+        self.z.set(0.0)
+
+    def perform_transformation(self):
+        self.values[0] = self.x()
+        self.values[1] = self.y()
+        self.values[2] = self.z()
+        if self.ctx is not None:
+            self.ctx.multiply_matrix(self.get_translation_matrix(self.values))
+
+
+class MGLRotationNode(MGLTransformSingleNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        return MGLRotationNode(name, data, args)
+
+    def __init__(self, label, data, args):
+        super().__init__(label, data, args)
+
+    def custom_create(self, from_file):
+        dpg.configure_item(self.x.widget.uuids[0], speed=1.0)
+        dpg.configure_item(self.y.widget.uuids[0], speed=1.0)
+        dpg.configure_item(self.z.widget.uuids[0], speed=1.0)
+
+    def perform_transformation(self):
+        self.values[0] = self.x()
+        self.values[1] = self.y()
+        self.values[2] = self.z()
+        if self.ctx is not None:
+            self.ctx.multiply_matrix(self.get_rotation_matrix(self.values))
+
+
+class MGLScaleNode(MGLTransformSingleNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        return MGLScaleNode(name, data, args)
+
+    def __init__(self, label, data, args):
+        super().__init__(label, data, args)
+
+    def reset(self):
+        self.x.set(1.0)
+        self.y.set(1.0)
+        self.z.set(1.0)
+
+    def perform_transformation(self):
+        self.values[0] = self.x()
+        self.values[1] = self.y()
+        self.values[2] = self.z()
+        if self.ctx is not None:
+            self.ctx.multiply_matrix(self.get_scale_matrix(self.values))
 
 
 class MGLColorNode(MGLNode):
@@ -435,28 +582,29 @@ class MGLColorNode(MGLNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.color_input = self.add_input('color', widget_type='color_picker', default_value=[1.0, 1.0, 1.0, 1.0])
-        # Base class MGLNode already adds mgl_input ('mgl chain in') and mgl_output ('mgl chain out')
 
-    def execute(self):
-        if self.mgl_input.fresh_input:
-            if self.mgl_input() == 'draw':
-                c = self.color_input()
-                # Normalize if needed
-                if len(c) > 4: c = c[:4]
-                elif len(c) == 3: c = [*c, 255 if c[0] > 1.0 else 1.0]
-                
-                # Check for 0-255 range
-                if max(c) > 1.0:
-                    c = [val / 255.0 for val in c]
-                
-                ctx = MGLContext.get_instance()
-                prev_color = ctx.current_color
-                try:
-                    ctx.current_color = tuple(c)
-                    self.mgl_output.send('draw')
-                finally:
-                    ctx.current_color = prev_color
+    def initialize(self, args):
+        super().initialize(args)
+        self.color_input = self.add_input('color', widget_type='color_picker', default_value=[1.0, 1.0, 1.0, 1.0])
+        self.prev_color = [1.0, 1.0, 1.0, 1.0]
+
+    def remember_state(self):
+        self.prev_color = self.ctx.current_color
+
+    def restore_state(self):
+        self.ctx.current_color = self.prev_color
+
+    def draw(self):
+        c = self.color_input()
+        # Normalize if needed
+        if len(c) > 4: c = c[:4]
+        elif len(c) == 3: c = [*c, 255 if c[0] > 1.0 else 1.0]
+
+        # Check for 0-255 range
+        if max(c) > 1.0:
+            c = [val / 255.0 for val in c]
+            self.ctx.current_color = tuple(c)
+
 
 class MGLLightNode(MGLNode):
     @staticmethod
@@ -465,6 +613,9 @@ class MGLLightNode(MGLNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+
+    def initialize(self, args):
+        super().initialize(args)
         self.pos_input = self.add_input('position', widget_type='drag_float_n', default_value=[0.0, 5.0, 5.0], columns=3)
         self.ambient_input = self.add_input('ambient', widget_type='color_picker', default_value=[0.1, 0.1, 0.1])
         self.diffuse_input = self.add_input('diffuse', widget_type='color_picker', default_value=[1.0, 1.0, 1.0])
@@ -480,39 +631,31 @@ class MGLLightNode(MGLNode):
         dpg.configure_item(self.pos_input.widget.uuids[1], width=45)
         dpg.configure_item(self.pos_input.widget.uuids[2], width=45)
 
-    def execute(self):
-        if self.mgl_input.fresh_input:
-            if self.mgl_input() == 'draw':
-                ctx = MGLContext.get_instance()
-                
-                # Transform Light Position by current Model Matrix
-                # So lights can be attached to moving objects
-                # pos is (x, y, z, 1)
-                pos = self.pos_input()
-                if len(pos) == 3: pos = [*pos, 1.0]
-                
-                model = ctx.get_model_matrix()
-                # p_world = M * p_local
-                world_pos = np.dot(model, pos)
-                
-                # Normalize Colors
-                def norm(c):
-                    if len(c) > 3: c = c[:3]
-                    if max(c) > 1.0:
-                        return [val / 255.0 for val in c]
-                    return c
+    def draw(self):
+        pos = self.pos_input()
+        if len(pos) == 3: pos = [*pos, 1.0]
 
-                # Register Light
-                light_data = {
-                    'pos': world_pos[:3],
-                    'ambient': norm(self.ambient_input()),
-                    'diffuse': norm(self.diffuse_input()),
-                    'specular': norm(self.specular_input()),
-                    'intensity': self.intensity_input()
-                }
-                ctx.lights.append(light_data)
-                
-                self.mgl_output.send('draw')
+        if self.ctx is not None:
+            model = self.ctx.get_model_matrix()
+            # p_world = M * p_local
+            world_pos = np.dot(model, pos)
+
+            # Normalize Colors
+            def norm(c):
+                if len(c) > 3: c = c[:3]
+                if max(c) > 1.0:
+                    return [val / 255.0 for val in c]
+                return c
+
+            # Register Light
+            light_data = {
+                'pos': world_pos[:3],
+                'ambient': norm(self.ambient_input()),
+                'diffuse': norm(self.diffuse_input()),
+                'specular': norm(self.specular_input()),
+                'intensity': self.intensity_input()
+            }
+            self.ctx.lights.append(light_data)
 
 
 class MGLMaterialNode(MGLNode):
@@ -522,44 +665,43 @@ class MGLMaterialNode(MGLNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+
+    def initialize(self, args):
+        super().initialize(args)
         self.ambient_input = self.add_input('ambient', widget_type='color_picker', default_value=[0.1, 0.1, 0.1])
         self.diffuse_input = self.add_input('diffuse', widget_type='color_picker', default_value=[1.0, 1.0, 1.0])
         self.specular_input = self.add_input('specular', widget_type='color_picker', default_value=[0.5, 0.5, 0.5])
         self.shininess_input = self.add_input('shininess', widget_type='drag_float', default_value=32.0, min_value=1.0, max_value=256.0)
+        self.prev_material = None
 
     def custom_create(self, from_file):
         dpg.configure_item(self.ambient_input.widget.uuids[0], label='ambient')
         dpg.configure_item(self.diffuse_input.widget.uuids[0], label='diffuse')
         dpg.configure_item(self.specular_input.widget.uuids[0], label='specular')
 
-    def execute(self):
-        if self.mgl_input.fresh_input:
-            if self.mgl_input() == 'draw':
-                ctx = MGLContext.get_instance()
-                
-                # Save previous material
-                prev_material = ctx.current_material.copy()
-                
-                # Normalize colors
-                def norm(c):
-                    if len(c) > 3: c = c[:3]
-                    if max(c) > 1.0:
-                        return [val / 255.0 for val in c]
-                    return c
+    def remember_state(self):
+        self.prev_material = self.ctx.current_material.copy()
 
-                # Set new material
-                ctx.current_material = {
-                    'ambient': norm(self.ambient_input()),
-                    'diffuse': norm(self.diffuse_input()),
-                    'specular': norm(self.specular_input()),
-                    'shininess': self.shininess_input()
-                }
-                
-                try:
-                    self.mgl_output.send('draw')
-                finally:
-                    # Restore
-                    ctx.current_material = prev_material
+    def restore_state(self):
+        self.ctx.current_material = self.prev_material
+
+    def draw(self):
+        if self.ctx is not None:
+
+            # Normalize colors
+            def norm(c):
+                if len(c) > 3: c = c[:3]
+                if max(c) > 1.0:
+                    return [val / 255.0 for val in c]
+                return c
+
+            # Set new material
+            self.ctx.current_material = {
+                'ambient': norm(self.ambient_input()),
+                'diffuse': norm(self.diffuse_input()),
+                'specular': norm(self.specular_input()),
+                'shininess': self.shininess_input()
+            }
 
 
 class MGLBoxNode(MGLNode):
@@ -569,6 +711,9 @@ class MGLBoxNode(MGLNode):
 
     def __init__(self, label, data, args):
         super().__init__(label, data, args)
+
+    def initialize(self, args):
+        super().initialize(args)
         self.vbo = None
         self.ibo = None
         self.vao = None
@@ -587,163 +732,240 @@ class MGLBoxNode(MGLNode):
         dpg.configure_item(self.size_input.widget.uuids[2], width=45)
 
     def create_geometry(self):
-        ctx_wrapper = MGLContext.get_instance()
-        ctx = ctx_wrapper.ctx
-        # Force context activation
-        if ctx_wrapper.fbo:
-            ctx_wrapper.fbo.use()
-        
-        vertices = [
-            # Front face
-            -0.5, -0.5, 0.5,  0.0, 0.0, 1.0,
-             0.5, -0.5, 0.5,  0.0, 0.0, 1.0,
-             0.5,  0.5, 0.5,  0.0, 0.0, 1.0,
-            -0.5,  0.5, 0.5,  0.0, 0.0, 1.0,
-            
-            # Back face
-            -0.5, -0.5, -0.5, 0.0, 0.0, -1.0,
-            -0.5,  0.5, -0.5, 0.0, 0.0, -1.0,
-             0.5,  0.5, -0.5, 0.0, 0.0, -1.0,
-             0.5, -0.5, -0.5, 0.0, 0.0, -1.0,
-             
-            # Top face
-            -0.5,  0.5, -0.5, 0.0, 1.0, 0.0,
-            -0.5,  0.5,  0.5, 0.0, 1.0, 0.0,
-             0.5,  0.5,  0.5, 0.0, 1.0, 0.0,
-             0.5,  0.5, -0.5, 0.0, 1.0, 0.0,
-             
-            # Bottom face
-            -0.5, -0.5, -0.5, 0.0, -1.0, 0.0,
-             0.5, -0.5, -0.5, 0.0, -1.0, 0.0,
-             0.5, -0.5,  0.5, 0.0, -1.0, 0.0,
-            -0.5, -0.5,  0.5, 0.0, -1.0, 0.0,
-            
-            # Right face
-             0.5, -0.5, -0.5, 1.0, 0.0, 0.0,
-             0.5,  0.5, -0.5, 1.0, 0.0, 0.0,
-             0.5,  0.5,  0.5, 1.0, 0.0, 0.0,
-             0.5, -0.5,  0.5, 1.0, 0.0, 0.0,
-             
-            # Left face
-            -0.5, -0.5, -0.5, -1.0, 0.0, 0.0,
-            -0.5, -0.5,  0.5, -1.0, 0.0, 0.0,
-            -0.5,  0.5,  0.5, -1.0, 0.0, 0.0,
-            -0.5,  0.5, -0.5, -1.0, 0.0, 0.0,
-        ]
-        
-        indices = [
-            0, 1, 2, 2, 3, 0,
-            4, 5, 6, 6, 7, 4,
-            8, 9, 10, 10, 11, 8,
-            12, 13, 14, 14, 15, 12,
-            16, 17, 18, 18, 19, 16,
-            20, 21, 22, 22, 23, 20
-        ]
-        
-        vertices = np.array(vertices, dtype='f4')
-        indices = np.array(indices, dtype='i4')
-        
-        self.vbo = ctx.buffer(vertices.tobytes())
-        self.ibo = ctx.buffer(indices.tobytes())
-        self.prog = MGLContext.get_instance().default_shader
-        
-        self.vao = ctx.vertex_array(self.prog, [(self.vbo, '3f 3f', 'in_position', 'in_normal')], self.ibo)
+        if self.ctx is not None:
+            inner_ctx = self.ctx.ctx
+            # Force context activation
+            if inner_ctx.fbo:
+                inner_ctx.fbo.use()
+
+            vertices = [
+                # Front face
+                -0.5, -0.5, 0.5,  0.0, 0.0, 1.0,
+                 0.5, -0.5, 0.5,  0.0, 0.0, 1.0,
+                 0.5,  0.5, 0.5,  0.0, 0.0, 1.0,
+                -0.5,  0.5, 0.5,  0.0, 0.0, 1.0,
+
+                # Back face
+                -0.5, -0.5, -0.5, 0.0, 0.0, -1.0,
+                -0.5,  0.5, -0.5, 0.0, 0.0, -1.0,
+                 0.5,  0.5, -0.5, 0.0, 0.0, -1.0,
+                 0.5, -0.5, -0.5, 0.0, 0.0, -1.0,
+
+                # Top face
+                -0.5,  0.5, -0.5, 0.0, 1.0, 0.0,
+                -0.5,  0.5,  0.5, 0.0, 1.0, 0.0,
+                 0.5,  0.5,  0.5, 0.0, 1.0, 0.0,
+                 0.5,  0.5, -0.5, 0.0, 1.0, 0.0,
+
+                # Bottom face
+                -0.5, -0.5, -0.5, 0.0, -1.0, 0.0,
+                 0.5, -0.5, -0.5, 0.0, -1.0, 0.0,
+                 0.5, -0.5,  0.5, 0.0, -1.0, 0.0,
+                -0.5, -0.5,  0.5, 0.0, -1.0, 0.0,
+
+                # Right face
+                 0.5, -0.5, -0.5, 1.0, 0.0, 0.0,
+                 0.5,  0.5, -0.5, 1.0, 0.0, 0.0,
+                 0.5,  0.5,  0.5, 1.0, 0.0, 0.0,
+                 0.5, -0.5,  0.5, 1.0, 0.0, 0.0,
+
+                # Left face
+                -0.5, -0.5, -0.5, -1.0, 0.0, 0.0,
+                -0.5, -0.5,  0.5, -1.0, 0.0, 0.0,
+                -0.5,  0.5,  0.5, -1.0, 0.0, 0.0,
+                -0.5,  0.5, -0.5, -1.0, 0.0, 0.0,
+            ]
+
+            indices = [
+                0, 1, 2, 2, 3, 0,
+                4, 5, 6, 6, 7, 4,
+                8, 9, 10, 10, 11, 8,
+                12, 13, 14, 14, 15, 12,
+                16, 17, 18, 18, 19, 16,
+                20, 21, 22, 22, 23, 20
+            ]
+
+            vertices = np.array(vertices, dtype='f4')
+            indices = np.array(indices, dtype='i4')
+
+            self.vbo = inner_ctx.buffer(vertices.tobytes())
+            self.ibo = inner_ctx.buffer(indices.tobytes())
+            self.prog = self.ctx.default_shader
+
+            self.vao = inner_ctx.vertex_array(self.prog, [(self.vbo, '3f 3f', 'in_position', 'in_normal')], self.ibo)
 
     def draw(self):
-        if self.vao is None:
-            self.create_geometry()
-            
-        ctx = MGLContext.get_instance()
-        
-        # Uniforms
-        # Note: MGL writes matrices as bytes directly
-        # We need to make sure arrays are C-contiguous/float32
-        
-        if 'M' in self.prog:
-            model = ctx.get_model_matrix()
-            s = self.size_input()
-            scale_mat = np.diag([s[0], s[1], s[2], 1.0]).astype(np.float32)
-            # Pre-multiply scale for local transformation
-            # M_gl = M_parent_gl @ S_gl => M_np = S_np @ M_parent_np
-            model = np.dot(scale_mat, model)
-            self.prog['M'].write(model.tobytes())
-        if 'V' in self.prog:
-            self.prog['V'].write(ctx.view_matrix.tobytes())
-        if 'P' in self.prog:
-            self.prog['P'].write(ctx.projection_matrix.tobytes())
-        if 'color' in self.prog:
-            c = ctx.current_color
-            self.prog['color'].value = tuple(c)
-        # Lights
-        ctx.update_lights(self.prog)
-        ctx.update_material(self.prog)
+        if self.ctx is not None:
+            if self.vao is None:
+                self.create_geometry()
+            inner_ctx = self.ctx.ctx
 
-        # Render Mode
-        # Render Mode
-        mode = self.mode_input()
-        cull = self.cull_input()
-        
-        # Shader Point Culling
-        if 'point_culling' in self.prog:
-            self.prog['point_culling'].value = (mode == 'points' and cull)
-        if 'round_points' in self.prog:
-            self.prog['round_points'].value = (mode == 'points' and self.round_input())
+           # Uniforms
+            # Note: MGL writes matrices as bytes directly
+            # We need to make sure arrays are C-contiguous/float32
 
-        if cull:
-            ctx.ctx.enable(moderngl.CULL_FACE)
-        else:
-            ctx.ctx.disable(moderngl.CULL_FACE)
+            if 'M' in self.prog:
+                model = self.ctx.get_model_matrix()
+                s = self.size_input()
+                scale_mat = np.diag([s[0], s[1], s[2], 1.0]).astype(np.float32)
+                # Pre-multiply scale for local transformation
+                # M_gl = M_parent_gl @ S_gl => M_np = S_np @ M_parent_np
+                model = np.dot(scale_mat, model)
+                self.prog['M'].write(model.tobytes())
+            if 'V' in self.prog:
+                self.prog['V'].write(self.ctx.view_matrix.tobytes())
+            if 'P' in self.prog:
+                self.prog['P'].write(self.ctx.projection_matrix.tobytes())
+            if 'color' in self.prog:
+                c = self.ctx.current_color
+                self.prog['color'].value = tuple(c)
+            # Lights
+            self.ctx.update_lights(self.prog)
+            self.ctx.update_material(self.prog)
 
-        if mode == 'wireframe':
-            ctx.ctx.wireframe = True
-            self.vao.render()
-            ctx.ctx.wireframe = False
-        elif mode == 'points':
-            if 'point_size' in self.prog:
-                self.prog['point_size'].value = self.point_size_input()
-            self.vao.render(mode=moderngl.POINTS)
-        else:
-            self.vao.render()
-        
-        # Restore CULL_FACE default (Enabled) if changed? 
-        # Better to just set it every time or rely on MGLContextNode to reset.
-        # MGLContextNode resets to enable(CULL_FACE).
+            # Render Mode
+            # Render Mode
+            mode = self.mode_input()
+            cull = self.cull_input()
 
-class MGLSphereNode(MGLNode):
+            # Shader Point Culling
+            if 'point_culling' in self.prog:
+                self.prog['point_culling'].value = (mode == 'points' and cull)
+            if 'round_points' in self.prog:
+                self.prog['round_points'].value = (mode == 'points' and self.round_input())
+
+            if cull:
+                inner_ctx.enable(moderngl.CULL_FACE)
+            else:
+                inner_ctx.disable(moderngl.CULL_FACE)
+
+            if mode == 'wireframe':
+                inner_ctx.wireframe = True
+                self.vao.render()
+                inner_ctx.wireframe = False
+            elif mode == 'points':
+                if 'point_size' in self.prog:
+                    self.prog['point_size'].value = self.point_size_input()
+                self.vao.render(mode=moderngl.POINTS)
+            else:
+                self.vao.render()
+
+            # Restore CULL_FACE default (Enabled) if changed?
+            # Better to just set it every time or rely on MGLContextNode to reset.
+            # MGLContextNode resets to enable(CULL_FACE).
+
+
+class MGLShapeNode(MGLNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        return MGLShapeNode(name, data, args)
+
+    def __init__(self, label, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        super().initialize(args)
+
+    def end_initialization(self):
+        self.mode_input = self.add_input('mode', widget_type='combo', default_value='solid')
+        self.mode_input.widget.combo_items = ['solid', 'wireframe', 'points']
+        self.cull_input = self.add_input('cull', widget_type='checkbox', default_value=True)
+        self.point_size_input = self.add_input('point_size', widget_type='drag_float', default_value=4.0, min_value=1.0)
+        self.round_input = self.add_input('round', widget_type='checkbox', default_value=True)
+        self.vbo = None
+        self.vao = None
+        self.prog = None
+
+    def geometry_changed(self):
+        self.vao = None
+        self.vbo = None
+
+    def create_geometry(self):
+        return None
+
+    def render_geometry(self, vertices):
+        if self.ctx is not None and vertices is not None:
+            inner_ctx = self.ctx.ctx
+            data = np.array(vertices, dtype='f4')
+            self.vbo = inner_ctx.buffer(data.tobytes())
+            self.prog = self.ctx.default_shader
+            self.vao = inner_ctx.vertex_array(self.prog, [(self.vbo, '3f 3f', 'in_position', 'in_normal')])
+
+    def handle_shape_params(self):
+        pass
+
+    def draw(self):
+        if self.ctx is not None:
+            inner_ctx = self.ctx.ctx
+            if self.vao is None:
+                vertices = self.create_geometry()
+                self.render_geometry(vertices)
+            self.handle_shape_params()
+            if 'V' in self.prog:
+                self.prog['V'].write(self.ctx.view_matrix.tobytes())
+            if 'P' in self.prog:
+                self.prog['P'].write(self.ctx.projection_matrix.tobytes())
+            if 'color' in self.prog:
+                c = self.ctx.current_color
+                self.prog['color'].value = tuple(c)
+
+            # Lights
+            self.ctx.update_lights(self.prog)
+            self.ctx.update_material(self.prog)
+
+            # Render Mode
+            mode = self.mode_input()
+            cull = self.cull_input()
+
+            # Shader Point Culling
+            if 'point_culling' in self.prog:
+                self.prog['point_culling'].value = (mode == 'points' and cull)
+            if 'round_points' in self.prog:
+                self.prog['round_points'].value = (mode == 'points' and self.round_input())
+
+            if cull:
+                inner_ctx.enable(moderngl.CULL_FACE)
+            else:
+                inner_ctx.disable(moderngl.CULL_FACE)
+
+            if mode == 'wireframe':
+                inner_ctx.wireframe = True
+                self.vao.render()
+                inner_ctx.wireframe = False
+            elif mode == 'points':
+                if 'point_size' in self.prog:
+                    self.prog['point_size'].value = self.point_size_input()
+                self.vao.render(mode=moderngl.POINTS)
+            else:
+                self.vao.render()
+
+
+class MGLSphereNode(MGLShapeNode):
     @staticmethod
     def factory(name, data, args=None):
         return MGLSphereNode(name, data, args)
 
     def __init__(self, label, data, args):
         super().__init__(label, data, args)
-        self.vbo = None
-        self.vao = None
+
+    def initialize(self, args):
+        super().initialize(args)
         self.radius_input = self.add_input('radius', widget_type='drag_float', default_value=0.5, speed=0.01)
-        self.mode_input = self.add_input('mode', widget_type='combo', default_value='solid')
-        self.mode_input.widget.combo_items = ['solid', 'wireframe', 'points']
-        self.cull_input = self.add_input('cull', widget_type='checkbox', default_value=True)
-        self.point_size_input = self.add_input('point_size', widget_type='drag_float', default_value=4.0, min_value=1.0)
-        self.round_input = self.add_input('round', widget_type='checkbox', default_value=True)
         self.stacks_input = self.add_input('stacks', widget_type='drag_int', default_value=16, min_value=3, callback=self.geometry_changed)
         self.sectors_input = self.add_input('sectors', widget_type='drag_int', default_value=32, min_value=3, callback=self.geometry_changed)
-        # Lazy init
-
-    def geometry_changed(self):
-        self.vao = None
-        self.vbo = None
+        self.end_initialization()
 
     def custom_create(self, from_file):
         dpg.configure_item(self.stacks_input.widget.uuids[0], width=100)
         dpg.configure_item(self.sectors_input.widget.uuids[0], width=100)
 
     def create_geometry(self):
-        ctx = MGLContext.get_instance().ctx
         import math
         vertices = []
-        
+
         stacks = max(3, self.stacks_input())
         sectors = max(3, self.sectors_input())
-        
+
         # Helper function
         def get_vert(lat_sin, lat_cos, lng):
             x = lat_cos * math.cos(lng)
@@ -755,115 +977,61 @@ class MGLSphereNode(MGLNode):
             lat0 = math.pi * (-0.5 + float(i) / stacks)
             z0 = math.sin(lat0)
             zr0 = math.cos(lat0)
-            
+
             lat1 = math.pi * (-0.5 + float(i+1) / stacks)
             z1 = math.sin(lat1)
             zr1 = math.cos(lat1)
-            
+
             for j in range(sectors):
                 lng0 = 2 * math.pi * float(j) / sectors
                 lng1 = 2 * math.pi * float(j+1) / sectors
-                
+
                 v00 = get_vert(z0, zr0, lng0)
                 v10 = get_vert(z0, zr0, lng1)
                 v01 = get_vert(z1, zr1, lng0)
                 v11 = get_vert(z1, zr1, lng1)
-                
+
                 # Triangle 1
                 vertices.extend(v00)
                 vertices.extend(v11)
                 vertices.extend(v10)
-                
+
                 # Triangle 2
                 vertices.extend(v00)
                 vertices.extend(v01)
                 vertices.extend(v11)
+        return vertices
 
-        data = np.array(vertices, dtype='f4')
-        self.vbo = ctx.buffer(data.tobytes())
-        self.prog = MGLContext.get_instance().default_shader
-        self.vao = ctx.vertex_array(self.prog, [(self.vbo, '3f 3f', 'in_position', 'in_normal')])
-    
-    def draw(self):
-        if self.vao is None:
-            self.create_geometry()
-            
-        ctx = MGLContext.get_instance()
-        if 'M' in self.prog:
-            model = ctx.get_model_matrix()
-            r = self.radius_input()
-            scale_mat = np.diag([r, r, r, 1.0]).astype(np.float32)
-            # Pre-multiply scale for local transformation
-            model = np.dot(scale_mat, model)
-            self.prog['M'].write(model.tobytes())
-        if 'V' in self.prog:
-            self.prog['V'].write(ctx.view_matrix.tobytes())
-        if 'P' in self.prog:
-            self.prog['P'].write(ctx.projection_matrix.tobytes())
-        if 'color' in self.prog:
-            c = ctx.current_color
-            self.prog['color'].value = tuple(c)
-        # Lights
-        ctx.update_lights(self.prog)
-        ctx.update_material(self.prog)
+    def handle_shape_params(self):
+        if self.ctx is not None:
+            if 'M' in self.prog:
+                model = self.ctx.get_model_matrix()
+                r = self.radius_input()
+                scale_mat = np.diag([r, r, r, 1.0]).astype(np.float32)
+                # Pre-multiply scale for local transformation
+                model = np.dot(scale_mat, model)
+                self.prog['M'].write(model.tobytes())
 
 
-        # Render Mode
-        mode = self.mode_input()
-        cull = self.cull_input()
-        
-        # Shader Point Culling
-        if 'point_culling' in self.prog:
-            self.prog['point_culling'].value = (mode == 'points' and cull)
-        if 'round_points' in self.prog:
-            self.prog['round_points'].value = (mode == 'points' and self.round_input())
-
-        if cull:
-            ctx.ctx.enable(moderngl.CULL_FACE)
-        else:
-            ctx.ctx.disable(moderngl.CULL_FACE)
-
-        if mode == 'wireframe':
-            ctx.ctx.wireframe = True
-            self.vao.render()
-            ctx.ctx.wireframe = False
-        elif mode == 'points':
-            if 'point_size' in self.prog:
-                self.prog['point_size'].value = self.point_size_input()
-            self.vao.render(mode=moderngl.POINTS)
-        else:
-            self.vao.render()
-
-
-class MGLCylinderNode(MGLNode):
+class MGLCylinderNode(MGLShapeNode):
     @staticmethod
     def factory(name, data, args=None):
         return MGLCylinderNode(name, data, args)
 
     def __init__(self, label, data, args):
         super().__init__(label, data, args)
-        self.vbo = None
-        self.vao = None
+
+    def initialize(self, args):
+        super().initialize(args)
         self.radius_input = self.add_input('radius', widget_type='drag_float', default_value=0.5, speed=0.01)
         self.height_input = self.add_input('height', widget_type='drag_float', default_value=1.0, speed=0.01)
-        self.mode_input = self.add_input('mode', widget_type='combo', default_value='solid')
-        self.mode_input.widget.combo_items = ['solid', 'wireframe', 'points']
-        self.cull_input = self.add_input('cull', widget_type='checkbox', default_value=True)
-        self.point_size_input = self.add_input('point_size', widget_type='drag_float', default_value=4.0, min_value=1.0)
-        self.round_input = self.add_input('round', widget_type='checkbox', default_value=True)
         self.slices_input = self.add_input('slices', widget_type='drag_int', default_value=32, min_value=3, callback=self.geometry_changed)
-        # Removed flip_winding
-        # Lazy init
-
-    def geometry_changed(self):
-        self.vao = None
-        self.vbo = None
+        self.end_initialization()
 
     def custom_create(self, from_file):
         dpg.configure_item(self.slices_input.widget.uuids[0], width=100)
 
     def create_geometry(self):
-        ctx = MGLContext.get_instance().ctx
         import math
         
         vertices = []
@@ -916,68 +1084,19 @@ class MGLCylinderNode(MGLNode):
             vertices.extend(t2)
             vertices.extend(t_top)
             vertices.extend(t_bot)
+        return vertices
 
-        data = np.array(vertices, dtype='f4')
-        self.vbo = ctx.buffer(data.tobytes())
-        self.prog = MGLContext.get_instance().default_shader
-        self.vao = ctx.vertex_array(self.prog, [(self.vbo, '3f 3f', 'in_position', 'in_normal')])
-    
-    def draw(self):
-        if self.vao is None:
-            self.create_geometry()
-            
-        ctx = MGLContext.get_instance()
-        if 'M' in self.prog:
-            model = ctx.get_model_matrix()
-            r = self.radius_input()
-            h = self.height_input()
-            scale_mat = np.diag([r, h, r, 1.0]).astype(np.float32)
-            # Pre-multiply scale for local transformation
-            model = np.dot(scale_mat, model)
-            self.prog['M'].write(model.tobytes())
-        if 'V' in self.prog:
-            self.prog['V'].write(ctx.view_matrix.tobytes())
-        if 'P' in self.prog:
-            self.prog['P'].write(ctx.projection_matrix.tobytes())
-        if 'color' in self.prog:
-            c = ctx.current_color
-            self.prog['color'].value = tuple(c)
-        # Lights
-        ctx.update_lights(self.prog)
-        ctx.update_material(self.prog)
-        if 'view_pos' in self.prog:
-            # We need camera position for culling.
-            # Get it from MGLContext or passed uniform?
-            # MGLCameraNode updates it?
-            # Let's rely on MGLContext storing it, or just use View Matrix inverse?
-            # For now, let's assume MGLCameraNode sets 'view_pos' uniform on default shader.
-            pass
+    def handle_shape_params(self):
+        if self.ctx is not None:
+            if 'M' in self.prog:
+                model = self.ctx.get_model_matrix()
+                r = self.radius_input()
+                h = self.height_input()
+                scale_mat = np.diag([r, h, r, 1.0]).astype(np.float32)
+                # Pre-multiply scale for local transformation
+                model = np.dot(scale_mat, model)
+                self.prog['M'].write(model.tobytes())
 
-        # Render Mode
-        mode = self.mode_input()
-        cull = self.cull_input()
-        
-        # Shader Point Culling
-        if 'point_culling' in self.prog:
-            self.prog['point_culling'].value = (mode == 'points' and cull)
-        if 'round_points' in self.prog:
-            self.prog['round_points'].value = (mode == 'points' and self.round_input())
-
-        if cull:
-            ctx.ctx.enable(moderngl.CULL_FACE)
-        else:
-            ctx.ctx.disable(moderngl.CULL_FACE)
-
-        if mode == 'wireframe':
-            ctx.ctx.wireframe = True
-            self.vao.render()
-            ctx.ctx.wireframe = False
-        elif mode == 'points':
-            if 'point_size' in self.prog:
-                self.prog['point_size'].value = self.point_size_input()
-            self.vao.render(mode=moderngl.POINTS)
-        else:
-            self.vao.render()
 
 class MGLCameraNode(MGLNode):
     @staticmethod
@@ -986,12 +1105,16 @@ class MGLCameraNode(MGLNode):
         
     def __init__(self, label, data, args):
         super().__init__(label, data, args)
-        self.fov = self.add_input('fov', widget_type='drag_float', default_value=60.0, speed=1.0)
-        self.pos = self.add_input('pos', widget_type='drag_float_n', default_value=[3, 3, 3], speed=0.1, columns=3)
-        self.target = self.add_input('target', widget_type='drag_float_n', default_value=[0, 0, 0], speed=0.1, columns=3)
-        self.up = self.add_input('up', widget_type='drag_float_n', default_value=[0, 1, 0], columns=3)
+
+    def initialize(self, args):
+        super().initialize(args)
+        self.fov = self.add_input('fov', widget_type='drag_float', default_value=60.0)
+        self.pos = self.add_input('pos', widget_type='drag_float_n', default_value=[0.0, 0.0, 3.0], speed=0.1, columns=3)
+        self.target = self.add_input('target', widget_type='drag_float_n', default_value=[0.0, 0.0, 0.0], speed=0.1, columns=3)
+        self.up = self.add_input('up', widget_type='drag_float_n', default_value=[0.0, 1.0, 0.0], columns=3)
 
     def custom_create(self, from_file):
+        dpg.configure_item(self.fov.widget.uuids[0], speed=1.0)
         dpg.configure_item(self.pos.widget.uuids[2], label='pos')
         dpg.configure_item(self.pos.widget.uuids[0], width=45)
         dpg.configure_item(self.pos.widget.uuids[1], width=45)
@@ -1007,22 +1130,22 @@ class MGLCameraNode(MGLNode):
 
     def draw(self):
         # Set View and Projection
-        ctx = MGLContext.get_instance()
-        
-        # Projection
-        aspect = ctx.width / ctx.height
-        if aspect == 0: aspect = 1.0
-        p = perspective(self.fov(), aspect, 0.1, 100.0)
-        ctx.set_projection_matrix(p)
-        
-        # View
-        v = look_at(self.pos(), self.target(), self.up())
-        ctx.set_view_matrix(v)
-        
-        # Update view_pos in default shader if available
-        if 'view_pos' in ctx.default_shader:
-            ctx.default_shader['view_pos'].value = tuple(self.pos())
-        
-        # Just pass signal? Actually Camera should usually be BEFORE transform/geometry 
-        # in the chain for View/Proj to be set for them.
-        pass
+        if self.ctx is not None:
+
+            # Projection
+            aspect = self.ctx.width / self.ctx.height
+            if aspect == 0: aspect = 1.0
+            p = perspective(self.fov(), aspect, 0.1, 100.0)
+            self.ctx.set_projection_matrix(p)
+
+            # View
+            v = look_at(self.pos(), self.target(), self.up())
+            self.ctx.set_view_matrix(v)
+
+            # Update view_pos in default shader if available
+            if 'view_pos' in self.ctx.default_shader:
+                self.ctx.default_shader['view_pos'].value = tuple(self.pos())
+
+            # Just pass signal? Actually Camera should usually be BEFORE transform/geometry
+            # in the chain for View/Proj to be set for them.
+            pass
