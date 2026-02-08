@@ -1118,7 +1118,7 @@ class ColorPicker(BasePropertyWidget):
         self.default_value = tuple(any_to_list(data))
 
     def _draw_widget(self):
-        dpg.add_color_picker(label='color', width=self.widget_width, display_type=dpg.mvColorEdit_float,
+        dpg.add_color_picker(label=self._label, width=self.widget_width, display_type=dpg.mvColorEdit_float,
                              tag=self.uuid, picker_mode=dpg.mvColorPicker_wheel, no_side_preview=False,
                              no_alpha=False, alpha_bar=True, alpha_preview=dpg.mvColorEdit_AlphaPreviewHalf,
                              user_data=self.node, no_inputs=True, default_value=self.default_value)

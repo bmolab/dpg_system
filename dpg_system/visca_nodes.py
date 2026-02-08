@@ -58,6 +58,15 @@ class ViscaNode(Node):
         self.preset_store_input = self.add_input('preset to store', widget_type='input_int')
         self.preset_store_button = self.add_input('store preset', widget_type='button', callback=self.store_preset)
 
+        # Debug / Custom
+        self.custom_cmd_input = self.add_input('custom_cmd_hex', widget_type='text_input', default_value='81 01 06 04 FF', callback=self.send_custom)
+        self.send_custom_btn = self.add_input('send_custom', widget_type='button', callback=self.send_custom)
+        
+        self.pan_abs_input = self.add_input('pan_abs', widget_type='input_int', default_value=0)
+        self.tilt_abs_input = self.add_input('tilt_abs', widget_type='input_int', default_value=0)
+        self.abs_speed_input = self.add_input('abs_speed', widget_type='drag_int', default_value=5, min=1, max=18)
+        self.drive_abs_btn = self.add_input('drive_absolute', widget_type='button', callback=self.drive_absolute)
+
         self.show_options_property = self.add_property('show_connection_options', widget_type='checkbox', callback=self.show_options_local)
         self.ip_property = self.add_option('ip', widget_type='text_input', default_value=self.default_ip)
         self.port_property = self.add_option('port', widget_type='input_int', default_value=self.port)
@@ -89,19 +98,16 @@ class ViscaNode(Node):
     def frame_task(self):
         try:
             if dpg.is_item_deactivated(self.pan_input.widget.uuid) and self.pan_active:
-                print("PAN DEACTIVATED")
                 if self.pan_active:
                     self.pan_release()
                 self.pan_initiated = False
 
             if dpg.is_item_deactivated(self.tilt_input.widget.uuid) and self.tilt_active:
-                print("TILT DEACTIVATED")
                 if self.tilt_active:
                     self.tilt_release()
                 self.tilt_initiated = False
 
             if dpg.is_item_deactivated(self.zoom_input.widget.uuid) and self.zoom_active:
-                print("ZOOM DEACTIVATED")
                 if self.zoom_active:
                     self.zoom_release()
                 self.zoom_initiated = False
@@ -216,12 +222,10 @@ class ViscaNode(Node):
             tilt_dir = 0x02 # Down
 
         if pan_dir != 0x03:
-            print('pan active')
             self.pan_active = True
         else:
             self.pan_active = False
         if tilt_dir != 0x03:
-            print('tilt active')
             self.tilt_active = True
         else:
             self.tilt_active = False
@@ -233,17 +237,14 @@ class ViscaNode(Node):
 
     def drive_pan(self):
         if self.pan_active or self.pan_input() != 0.00:
-            print("PAN INITIATED", self.pan_input())
             self.pan_initiated = True
 
     def drive_tilt(self):
         if self.tilt_active or self.tilt_input() != 0.00:
-            print("TILT INITIATED", self.tilt_input())
             self.tilt_initiated = True
 
     def drive_zoom_init(self):
         if self.zoom_active or self.zoom_input() != 0.00:
-            print("ZOOM INITIATED", self.tilt_input())
             self.zoom_initiated = True
 
     def drive_zoom(self):
@@ -318,7 +319,6 @@ class ViscaNode(Node):
         self.send_packet(self.build_visca_command(cmd))
 
     def store_preset(self):
-        print('saved_preset')
         preset_id = self.preset_store_input()
         if preset_id < 0 or preset_id > 255:
             return
@@ -417,12 +417,101 @@ class ViscaNode(Node):
     def build_visca_command(self, cmd_bytes):
         # 8x 01 ... FF
         # x is camera address, usually 1 for VISCA over IP
-        prefix = bytearray([0x81, 0x01])
+        prefix = bytearray([0x81, 0x01]) 
         terminator = bytearray([0xFF])
         return prefix + cmd_bytes + terminator
+
+    def send_custom(self):
+        # Expects hex string like "81 01 06 04 FF"
+        hex_str = self.custom_cmd_input()
+        try:
+            # Remove spaces and convert to bytes
+            clean_hex = hex_str.replace(' ', '')
+            cmd = bytearray.fromhex(clean_hex)
+            # Send directly (send_packet handles header)
+            # Wait, send_packet expects payload. 
+            # If user provides full 81...FF command, we should pass it as payload?
+            # Yes, build_visca_command adds 81 01 and FF. 
+            # But custom command might be fully formed or not.
+            # Let's assume user provides full command including 81 and FF.
+            # So we SHOULD NOT use build_visca_command if it already has 81.
+            
+            # Check if it starts with 81
+            if cmd[0] == 0x81:
+                # Raw payload
+                self.send_packet(cmd)
+            else:
+                # Assume it's the inner part
+                self.send_packet(self.build_visca_command(cmd))
+        except Exception as e:
+            print(f"Error parsing hex: {e}")
+
+    def drive_absolute(self):
+        pan = self.pan_abs_input()
+        tilt = self.tilt_abs_input()
+        speed = self.abs_speed_input()
+        
+        # 8x 01 06 02 VV WW 0Y 0Y 0Y 0Y 0Z 0Z 0Z 0Z FF
+        # VV = Pan Speed, WW = Tilt Speed (use same for both for now)
+        vv = speed
+        ww = speed
+        
+        # Pan Bytes (4 bytes big endian generally, but VISCA might use nibbles?)
+        # Spec says: 0Y 0Y 0Y 0Y. 
+        # This usually means Y is a nibble. e.g. Position 0x1234 -> 00 00 01 02 03 04? 
+        # Wait, YYYY is the hex value. 
+        # Standard VISCA Absolute Position:
+        # YYYY: Pan Position (0xYYYY)
+        # ZZZZ: Tilt Position (0xZZZZ)
+        # 
+        # BUT the packet has 0Y 0Y 0Y 0Y.
+        # This implies standard VISCA usage where bytes are spread out?
+        # NO, usually it's just 4 bytes: Y1 Y2 Y3 Y4?
+        # Let's check spec details carefully.
+        # "0Y 0Y 0Y 0Y"
+        # If position is P = 0xABCD.
+        # Bytes are: 0A 0B 0C 0D.
+        # Yes, nibblized!
+        
+        # Helper to nibblize
+        def to_nibbles(val):
+            # Val is int.
+            # Handle negative (two's complement 16 bit? or just 4 nibbles?)
+            # Usually 16-bit signed integer for Pan/Tilt.
+            val = int(val)
+            if val < 0:
+                val = (1 << 16) + val # 2's complement for 16 bit
+            
+            # Now we have 0 to 65535.
+            # 0xABCD
+            n1 = (val >> 12) & 0xF
+            n2 = (val >> 8) & 0xF
+            n3 = (val >> 4) & 0xF
+            n4 = val & 0xF
+            return [n1, n2, n3, n4] # Actually need 0Y .. so [n1, n2, n3, n4] is correct if we prefix 0.
+            
+        p_nibbles = to_nibbles(pan)
+        t_nibbles = to_nibbles(tilt)
+        
+        # 81 01 06 02 VV WW 0Y 0Y 0Y 0Y 0Z 0Z 0Z 0Z FF
+        # We need to construct the inner core (06 02 ...) if using build_visca
+        # Or just build the whole thing.
+        # Let's use build_visca_command which takes the inner part (Command Data).
+        # Inner: 06 02 VV WW ...
+        
+        payload = bytearray([0x06, 0x02, vv, ww])
+        payload.extend(p_nibbles) # 0Y 0Y 0Y 0Y? No wait, bytearray takes bytes.
+        # We need [0x0Y, 0x0Y, ...]
+        
+        for n in p_nibbles:
+            payload.append(n) # n is 0-15, which is 0x0N. Correct.
+            
+        for n in t_nibbles:
+            payload.append(n)
+            
+        self.send_packet(self.build_visca_command(payload))
 
     def cleanup(self):
         self.rx_running = False
         if self.socket:
             self.socket.close()
-

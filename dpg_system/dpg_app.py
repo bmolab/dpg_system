@@ -66,7 +66,8 @@ optional_import = [
     'sampler_nodes',
     'visca_nodes',
     'pjlink_nodes',
-    'ndi_nodes'
+    'ndi_nodes',
+    'moderngl_nodes'
 ]
 
 imported = []
