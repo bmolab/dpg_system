@@ -19,10 +19,14 @@ def register_moderngl_nodes():
     Node.app.register_node('mgl_camera', MGLCameraNode.factory)
     Node.app.register_node('mgl_display', MGLDisplayNode.factory)
     Node.app.register_node('mgl_sphere', MGLSphereNode.factory)
+    Node.app.register_node('mgl_geo_sphere', MGLGeodesicSphereNode.factory)
+    Node.app.register_node('mgl_point_cloud', MGLPointCloudNode.factory)
+    Node.app.register_node('mgl_model', MGLModelNode.factory)
     Node.app.register_node('mgl_cylinder', MGLCylinderNode.factory)
     Node.app.register_node('mgl_color', MGLColorNode.factory)
     Node.app.register_node('mgl_light', MGLLightNode.factory)
     Node.app.register_node('mgl_material', MGLMaterialNode.factory)
+    Node.app.register_node('mgl_texture', MGLTextureNode.factory)
 
 
 class MGLNode(Node):
@@ -87,6 +91,7 @@ class MGLContextNode(Node):
         self.image_item = None
         self.external_window = None
         self.fullscreen_window = None
+        self.render_target = None
 
         self.render_trigger = self.add_input('render', triggers_execution=True)
         self.mgl_chain_output = self.add_output('mgl_chain')
@@ -108,6 +113,8 @@ class MGLContextNode(Node):
             dpg.delete_item(self.external_window)
         if self.fullscreen_window:
             dpg.delete_item(self.fullscreen_window)
+        if hasattr(self, 'render_target') and self.render_target:
+            self.render_target.release()
 
     def resize(self):
         self.width = max(1, self.width_option())
@@ -238,15 +245,21 @@ class MGLContextNode(Node):
                          if dpg.get_item_width(child) != win_w or dpg.get_item_height(child) != win_h:
                              dpg.configure_item(child, width=win_w, height=win_h)
         
-        # Update FBO size
+        # Update FBO size/Check
         try:
             samples = int(self.samples_option())
         except:
             samples = 4
-            
+        
+        if self.render_target is None or self.render_target.width != self.width or self.render_target.height != self.height or self.render_target.samples != samples:
+            if self.render_target:
+                self.render_target.release()
+            self.render_target = self.context.create_render_target(self.width, self.height, samples)
+
         # Scope the ModernGL Context to avoid polluting global GL state (e.g. for legacy gl_nodes)
         with self.context.ctx:
-            self.context.update_framebuffer(self.width, self.height, samples=samples)
+            # Activate Local Target
+            self.context.use_render_target(self.render_target)
             
             # Reset Context State
             self.context.current_color = (1.0, 1.0, 1.0, 1.0)
@@ -259,8 +272,8 @@ class MGLContextNode(Node):
             }
             
             # Sync back actual samples if fallback occurred
-            if self.context.samples != samples:
-                self.samples_option.set(str(self.context.samples))
+            if self.render_target.samples != samples:
+                self.samples_option.set(str(self.render_target.samples))
             
             # Clear
             self.context.clear(0.0, 0.0, 0.0, 1.0)
@@ -695,7 +708,6 @@ class MGLMaterialNode(MGLNode):
                     return [val / 255.0 for val in c]
                 return c
 
-            # Set new material
             self.ctx.current_material = {
                 'ambient': norm(self.ambient_input()),
                 'diffuse': norm(self.diffuse_input()),
@@ -704,155 +716,81 @@ class MGLMaterialNode(MGLNode):
             }
 
 
-class MGLBoxNode(MGLNode):
+class MGLTextureNode(MGLNode):
     @staticmethod
     def factory(name, data, args=None):
-        return MGLBoxNode(name, data, args)
+        return MGLTextureNode(name, data, args)
 
     def __init__(self, label, data, args):
         super().__init__(label, data, args)
+        self.texture = None
+        self.width = 0
+        self.height = 0
+        self.channels = 0
 
     def initialize(self, args):
         super().initialize(args)
-        self.vbo = None
-        self.ibo = None
-        self.vao = None
-        self.size_input = self.add_input('size', widget_type='drag_float_n', default_value=[1.0, 1.0, 1.0], columns=3, speed=0.01)
-        self.mode_input = self.add_input('mode', widget_type='combo', default_value='solid')
-        self.mode_input.widget.combo_items = ['solid', 'wireframe', 'points']
-        self.cull_input = self.add_input('cull', widget_type='checkbox', default_value=True)
-        self.point_size_input = self.add_input('point_size', widget_type='drag_float', default_value=4.0, min_value=1.0)
-        self.round_input = self.add_input('round', widget_type='checkbox', default_value=True)
-        # Lazy init
+        # Input: Numpy/Torch array
+        self.source_input = self.add_input('source', triggers_execution=True)
+        # Output: Texture Object
+        self.texture_output = self.add_output('texture')
 
-    def custom_create(self, from_file):
-        dpg.configure_item(self.size_input.widget.uuids[2], label='size')
-        dpg.configure_item(self.size_input.widget.uuids[0], width=45)
-        dpg.configure_item(self.size_input.widget.uuids[1], width=45)
-        dpg.configure_item(self.size_input.widget.uuids[2], width=45)
+    def execute(self):
+        # Handle Texture Update
+        if self.source_input.fresh_input:
+            data = self.source_input()
+            if data is not None:
+                self.update_texture(data)
+        
+        # Output Texture
+        if self.texture:
+            self.texture_output.send(self.texture)
 
-    def create_geometry(self):
-        if self.ctx is not None:
-            inner_ctx = self.ctx.ctx
-            # Force context activation
-            if inner_ctx.fbo:
-                inner_ctx.fbo.use()
+        # Handle Chain Propagation
+        if self.mgl_input.fresh_input:
+            msg = self.mgl_input()
+            self.mgl_output.send(msg)
 
-            vertices = [
-                # Front face
-                -0.5, -0.5, 0.5,  0.0, 0.0, 1.0,
-                 0.5, -0.5, 0.5,  0.0, 0.0, 1.0,
-                 0.5,  0.5, 0.5,  0.0, 0.0, 1.0,
-                -0.5,  0.5, 0.5,  0.0, 0.0, 1.0,
+    def update_texture(self, data):
+        # Handle formats
+        if isinstance(data, list):
+            data = np.array(data, dtype=np.uint8)
+        elif self.app.torch_available and isinstance(data, torch.Tensor):
+            data = data.detach().cpu().numpy().astype(np.uint8)
+        
+        if not isinstance(data, np.ndarray):
+            return
 
-                # Back face
-                -0.5, -0.5, -0.5, 0.0, 0.0, -1.0,
-                -0.5,  0.5, -0.5, 0.0, 0.0, -1.0,
-                 0.5,  0.5, -0.5, 0.0, 0.0, -1.0,
-                 0.5, -0.5, -0.5, 0.0, 0.0, -1.0,
+        # data shape: [H, W, C]
+        if data.ndim != 3:
+            print(f"MGLTextureNode: Expected 3D array [H, W, C], got {data.shape}")
+            return
 
-                # Top face
-                -0.5,  0.5, -0.5, 0.0, 1.0, 0.0,
-                -0.5,  0.5,  0.5, 0.0, 1.0, 0.0,
-                 0.5,  0.5,  0.5, 0.0, 1.0, 0.0,
-                 0.5,  0.5, -0.5, 0.0, 1.0, 0.0,
+        h, w, c = data.shape
+        if c not in [3, 4]:
+            print(f"MGLTextureNode: Expected 3 or 4 channels, got {c}")
+            return
 
-                # Bottom face
-                -0.5, -0.5, -0.5, 0.0, -1.0, 0.0,
-                 0.5, -0.5, -0.5, 0.0, -1.0, 0.0,
-                 0.5, -0.5,  0.5, 0.0, -1.0, 0.0,
-                -0.5, -0.5,  0.5, 0.0, -1.0, 0.0,
-
-                # Right face
-                 0.5, -0.5, -0.5, 1.0, 0.0, 0.0,
-                 0.5,  0.5, -0.5, 1.0, 0.0, 0.0,
-                 0.5,  0.5,  0.5, 1.0, 0.0, 0.0,
-                 0.5, -0.5,  0.5, 1.0, 0.0, 0.0,
-
-                # Left face
-                -0.5, -0.5, -0.5, -1.0, 0.0, 0.0,
-                -0.5, -0.5,  0.5, -1.0, 0.0, 0.0,
-                -0.5,  0.5,  0.5, -1.0, 0.0, 0.0,
-                -0.5,  0.5, -0.5, -1.0, 0.0, 0.0,
-            ]
-
-            indices = [
-                0, 1, 2, 2, 3, 0,
-                4, 5, 6, 6, 7, 4,
-                8, 9, 10, 10, 11, 8,
-                12, 13, 14, 14, 15, 12,
-                16, 17, 18, 18, 19, 16,
-                20, 21, 22, 22, 23, 20
-            ]
-
-            vertices = np.array(vertices, dtype='f4')
-            indices = np.array(indices, dtype='i4')
-
-            self.vbo = inner_ctx.buffer(vertices.tobytes())
-            self.ibo = inner_ctx.buffer(indices.tobytes())
-            self.prog = self.ctx.default_shader
-
-            self.vao = inner_ctx.vertex_array(self.prog, [(self.vbo, '3f 3f', 'in_position', 'in_normal')], self.ibo)
-
-    def draw(self):
-        if self.ctx is not None:
-            if self.vao is None:
-                self.create_geometry()
-            inner_ctx = self.ctx.ctx
-
-           # Uniforms
-            # Note: MGL writes matrices as bytes directly
-            # We need to make sure arrays are C-contiguous/float32
-
-            if 'M' in self.prog:
-                model = self.ctx.get_model_matrix()
-                s = self.size_input()
-                scale_mat = np.diag([s[0], s[1], s[2], 1.0]).astype(np.float32)
-                # Pre-multiply scale for local transformation
-                # M_gl = M_parent_gl @ S_gl => M_np = S_np @ M_parent_np
-                model = np.dot(scale_mat, model)
-                self.prog['M'].write(model.tobytes())
-            if 'V' in self.prog:
-                self.prog['V'].write(self.ctx.view_matrix.tobytes())
-            if 'P' in self.prog:
-                self.prog['P'].write(self.ctx.projection_matrix.tobytes())
-            if 'color' in self.prog:
-                c = self.ctx.current_color
-                self.prog['color'].value = tuple(c)
-            # Lights
-            self.ctx.update_lights(self.prog)
-            self.ctx.update_material(self.prog)
-
-            # Render Mode
-            # Render Mode
-            mode = self.mode_input()
-            cull = self.cull_input()
-
-            # Shader Point Culling
-            if 'point_culling' in self.prog:
-                self.prog['point_culling'].value = (mode == 'points' and cull)
-            if 'round_points' in self.prog:
-                self.prog['round_points'].value = (mode == 'points' and self.round_input())
-
-            if cull:
-                inner_ctx.enable(moderngl.CULL_FACE)
-            else:
-                inner_ctx.disable(moderngl.CULL_FACE)
-
-            if mode == 'wireframe':
-                inner_ctx.wireframe = True
-                self.vao.render()
-                inner_ctx.wireframe = False
-            elif mode == 'points':
-                if 'point_size' in self.prog:
-                    self.prog['point_size'].value = self.point_size_input()
-                self.vao.render(mode=moderngl.POINTS)
-            else:
-                self.vao.render()
-
-            # Restore CULL_FACE default (Enabled) if changed?
-            # Better to just set it every time or rely on MGLContextNode to reset.
-            # MGLContextNode resets to enable(CULL_FACE).
+        # Check if recreate needed
+        if self.texture is None or w != self.width or h != self.height or c != self.channels:
+            if self.texture:
+                self.texture.release()
+            
+            self.width = w
+            self.height = h
+            self.channels = c
+            
+            ctx = MGLContext.get_instance().ctx
+            self.texture = ctx.texture((w, h), c)
+            self.texture.filter = (moderngl.LINEAR, moderngl.LINEAR) # Smooth scaling
+            # Flipping? Often textures are upside down relative to GL.
+            # Usually images are top-down, GL is bottom-up.
+            # Standard is data should be right for GL, or use build_mipmaps
+        
+        # Write data
+        # Note: moderngl expects bytes
+        # Provide contiguous bytes
+        self.texture.write(data.tobytes())
 
 
 class MGLShapeNode(MGLNode):
@@ -872,7 +810,9 @@ class MGLShapeNode(MGLNode):
         self.cull_input = self.add_input('cull', widget_type='checkbox', default_value=True)
         self.point_size_input = self.add_input('point_size', widget_type='drag_float', default_value=4.0, min_value=1.0)
         self.round_input = self.add_input('round', widget_type='checkbox', default_value=True)
+        self.texture_input = self.add_input('texture')
         self.vbo = None
+        self.ibo = None
         self.vao = None
         self.prog = None
 
@@ -881,15 +821,26 @@ class MGLShapeNode(MGLNode):
         self.vbo = None
 
     def create_geometry(self):
-        return None
+        return None, None
 
-    def render_geometry(self, vertices):
-        if self.ctx is not None and vertices is not None:
+    def render_geometry(self, vertices, indices=None):
+        if self.ctx is not None and vertices is not None and len(vertices) > 0:
             inner_ctx = self.ctx.ctx
             data = np.array(vertices, dtype='f4')
             self.vbo = inner_ctx.buffer(data.tobytes())
+            
+            if indices is not None:
+                ind_data = np.array(indices, dtype='i4')
+                self.ibo = inner_ctx.buffer(ind_data.tobytes())
+            else:
+                self.ibo = None
+                
             self.prog = self.ctx.default_shader
-            self.vao = inner_ctx.vertex_array(self.prog, [(self.vbo, '3f 3f', 'in_position', 'in_normal')])
+            
+            if self.ibo is not None:
+                self.vao = inner_ctx.vertex_array(self.prog, [(self.vbo, '3f 3f 2f', 'in_position', 'in_normal', 'in_texcoord')], self.ibo)
+            else:
+                self.vao = inner_ctx.vertex_array(self.prog, [(self.vbo, '3f 3f 2f', 'in_position', 'in_normal', 'in_texcoord')])
 
     def handle_shape_params(self):
         pass
@@ -898,8 +849,12 @@ class MGLShapeNode(MGLNode):
         if self.ctx is not None:
             inner_ctx = self.ctx.ctx
             if self.vao is None:
-                vertices = self.create_geometry()
-                self.render_geometry(vertices)
+                vertices, indices = self.create_geometry()
+                self.render_geometry(vertices, indices)
+            
+            if self.prog is None:
+                return
+
             self.handle_shape_params()
             if 'V' in self.prog:
                 self.prog['V'].write(self.ctx.view_matrix.tobytes())
@@ -923,6 +878,18 @@ class MGLShapeNode(MGLNode):
             if 'round_points' in self.prog:
                 self.prog['round_points'].value = (mode == 'points' and self.round_input())
 
+            # Texturing
+            tex = self.texture_input()
+            if tex is not None and isinstance(tex, moderngl.Texture):
+                tex.use(location=0)
+                if 'diffuse_map' in self.prog:
+                    self.prog['diffuse_map'].value = 0
+                if 'has_texture' in self.prog:
+                    self.prog['has_texture'].value = True
+            else:
+                if 'has_texture' in self.prog:
+                    self.prog['has_texture'].value = False
+
             if cull:
                 inner_ctx.enable(moderngl.CULL_FACE)
             else:
@@ -938,6 +905,89 @@ class MGLShapeNode(MGLNode):
                 self.vao.render(mode=moderngl.POINTS)
             else:
                 self.vao.render()
+
+
+class MGLBoxNode(MGLShapeNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        return MGLBoxNode(name, data, args)
+
+    def __init__(self, label, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        super().initialize(args)
+        self.size_input = self.add_input('size', widget_type='drag_float_n', default_value=[1.0, 1.0, 1.0], columns=3,
+                                         speed=0.01)
+        self.end_initialization()
+
+    def custom_create(self, from_file):
+        dpg.configure_item(self.size_input.widget.uuids[2], label='size')
+        dpg.configure_item(self.size_input.widget.uuids[0], width=45)
+        dpg.configure_item(self.size_input.widget.uuids[1], width=45)
+        dpg.configure_item(self.size_input.widget.uuids[2], width=45)
+
+    def create_geometry(self):
+        # Front face
+        # ...
+        vertices = [
+            # Front face
+            -0.5, -0.5, 0.5, 0.0, 0.0, 1.0, 0.0, 0.0,
+            0.5, -0.5, 0.5, 0.0, 0.0, 1.0, 1.0, 0.0,
+            0.5, 0.5, 0.5, 0.0, 0.0, 1.0, 1.0, 1.0,
+            -0.5, 0.5, 0.5, 0.0, 0.0, 1.0, 0.0, 1.0,
+
+            # Back face
+            -0.5, -0.5, -0.5, 0.0, 0.0, -1.0, 0.0, 0.0,
+            -0.5, 0.5, -0.5, 0.0, 0.0, -1.0, 0.0, 1.0,
+            0.5, 0.5, -0.5, 0.0, 0.0, -1.0, 1.0, 1.0,
+            0.5, -0.5, -0.5, 0.0, 0.0, -1.0, 1.0, 0.0,
+
+            # Top face
+            -0.5, 0.5, -0.5, 0.0, 1.0, 0.0, 0.0, 1.0,
+            -0.5, 0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 0.0,
+            0.5, 0.5, 0.5, 0.0, 1.0, 0.0, 1.0, 0.0,
+            0.5, 0.5, -0.5, 0.0, 1.0, 0.0, 1.0, 1.0,
+
+            # Bottom face
+            -0.5, -0.5, -0.5, 0.0, -1.0, 0.0, 0.0, 1.0,
+            0.5, -0.5, -0.5, 0.0, -1.0, 0.0, 1.0, 1.0,
+            0.5, -0.5, 0.5, 0.0, -1.0, 0.0, 1.0, 0.0,
+            -0.5, -0.5, 0.5, 0.0, -1.0, 0.0, 0.0, 0.0,
+
+            # Right face
+            0.5, -0.5, -0.5, 1.0, 0.0, 0.0, 1.0, 0.0,
+            0.5, 0.5, -0.5, 1.0, 0.0, 0.0, 1.0, 1.0,
+            0.5, 0.5, 0.5, 1.0, 0.0, 0.0, 0.0, 1.0,
+            0.5, -0.5, 0.5, 1.0, 0.0, 0.0, 0.0, 0.0,
+
+            # Left face
+            -0.5, -0.5, -0.5, -1.0, 0.0, 0.0, 0.0, 0.0,
+            -0.5, -0.5, 0.5, -1.0, 0.0, 0.0, 1.0, 0.0,
+            -0.5, 0.5, 0.5, -1.0, 0.0, 0.0, 1.0, 1.0,
+            -0.5, 0.5, -0.5, -1.0, 0.0, 0.0, 0.0, 1.0,
+        ]
+
+        indices = [
+            0, 1, 2, 2, 3, 0,
+            4, 5, 6, 6, 7, 4,
+            8, 9, 10, 10, 11, 8,
+            12, 13, 14, 14, 15, 12,
+            16, 17, 18, 18, 19, 16,
+            20, 21, 22, 22, 23, 20
+        ]
+
+        return vertices, indices
+
+    def handle_shape_params(self):
+        if self.ctx is not None:
+            if 'M' in self.prog:
+                model = self.ctx.get_model_matrix()
+                s = self.size_input()
+                scale_mat = np.diag([s[0], s[1], s[2], 1.0]).astype(np.float32)
+                # Pre-multiply scale for local transformation
+                model = np.dot(scale_mat, model)
+                self.prog['M'].write(model.tobytes())
 
 
 class MGLSphereNode(MGLShapeNode):
@@ -962,45 +1012,43 @@ class MGLSphereNode(MGLShapeNode):
     def create_geometry(self):
         import math
         vertices = []
+        indices = []
 
         stacks = max(3, self.stacks_input())
         sectors = max(3, self.sectors_input())
 
-        # Helper function
-        def get_vert(lat_sin, lat_cos, lng):
-            x = lat_cos * math.cos(lng)
-            y = lat_sin
-            z = lat_cos * math.sin(lng)
-            return [x, y, z, x, y, z]
-
+        # Generate Vertices
+        for i in range(stacks + 1):
+            lat = math.pi * (-0.5 + float(i) / stacks)
+            y = math.sin(lat)
+            zr = math.cos(lat)
+            
+            for j in range(sectors + 1):
+                lng = 2 * math.pi * float(j) / sectors
+                x = zr * math.cos(lng)
+                z = zr * math.sin(lng)
+                
+                # Pos (3f) + Normal (3f) + UV (2f)
+                u = float(j) / sectors
+                v = float(i) / stacks
+                vertices.extend([x, y, z, x, y, z, u, v])
+                
+        # Generate Indices
+        # k1--k1+1
+        # |  / |
+        # | /  |
+        # k2--k2+1
         for i in range(stacks):
-            lat0 = math.pi * (-0.5 + float(i) / stacks)
-            z0 = math.sin(lat0)
-            zr0 = math.cos(lat0)
-
-            lat1 = math.pi * (-0.5 + float(i+1) / stacks)
-            z1 = math.sin(lat1)
-            zr1 = math.cos(lat1)
-
+            k1 = i * (sectors + 1)
+            k2 = k1 + sectors + 1
+            
             for j in range(sectors):
-                lng0 = 2 * math.pi * float(j) / sectors
-                lng1 = 2 * math.pi * float(j+1) / sectors
+                indices.extend([k1, k2, k1 + 1])
+                indices.extend([k1 + 1, k2, k2 + 1])
+                k1 += 1
+                k2 += 1
 
-                v00 = get_vert(z0, zr0, lng0)
-                v10 = get_vert(z0, zr0, lng1)
-                v01 = get_vert(z1, zr1, lng0)
-                v11 = get_vert(z1, zr1, lng1)
-
-                # Triangle 1
-                vertices.extend(v00)
-                vertices.extend(v11)
-                vertices.extend(v10)
-
-                # Triangle 2
-                vertices.extend(v00)
-                vertices.extend(v01)
-                vertices.extend(v11)
-        return vertices
+        return vertices, indices
 
     def handle_shape_params(self):
         if self.ctx is not None:
@@ -1033,58 +1081,84 @@ class MGLCylinderNode(MGLShapeNode):
 
     def create_geometry(self):
         import math
-        
         vertices = []
-        slices = max(3, self.slices_input())
-        # Removed flip = self.flip_input()
+        indices = []
         
-        # Unit cylinder: radius 1, height 1 (from -0.5 to 0.5 on Y)
-        # Side
+        slices = max(3, self.slices_input())
+        
+        # --- Top Cap ---
+        # Center Top (UV 0.5, 0.5)
+        base_top_center = len(vertices) // 8
+        vertices.extend([0.0, 0.5, 0.0, 0.0, 1.0, 0.0, 0.5, 0.5])
+        
+        # Circle Top
+        base_top_circle = len(vertices) // 8
+        for i in range(slices + 1):
+            theta = 2 * math.pi * float(i) / slices
+            x = math.cos(theta)
+            z = math.sin(theta)
+            u = 0.5 + 0.5 * x
+            v = 0.5 + 0.5 * z
+            vertices.extend([x, 0.5, z, 0.0, 1.0, 0.0, u, v])
+            
+        # Indices Top (Fan)
+        # Center -> i+1 -> i (Standard CCW for Up Normal)
         for i in range(slices):
-            theta0 = 2 * math.pi * float(i) / slices
-            theta1 = 2 * math.pi * float(i+1) / slices
+            indices.extend([base_top_center, base_top_circle + i + 1, base_top_circle + i])
+
+
+        # --- Bottom Cap ---
+        # Center Bottom (UV 0.5, 0.5)
+        base_bot_center = len(vertices) // 8
+        vertices.extend([0.0, -0.5, 0.0, 0.0, -1.0, 0.0, 0.5, 0.5])
+        
+        # Circle Bottom
+        base_bot_circle = len(vertices) // 8
+        for i in range(slices + 1):
+            theta = 2 * math.pi * float(i) / slices
+            x = math.cos(theta)
+            z = math.sin(theta)
+            u = 0.5 + 0.5 * x
+            v = 0.5 + 0.5 * z
+            vertices.extend([x, -0.5, z, 0.0, -1.0, 0.0, u, v])
             
-            x0 = math.cos(theta0); z0 = math.sin(theta0)
-            x1 = math.cos(theta1); z1 = math.sin(theta1)
+        # Indices Bottom (Fan)
+        # Center -> i -> i+1 (Standard CCW for Down Normal)
+        for i in range(slices):
+            indices.extend([base_bot_center, base_bot_circle + i, base_bot_circle + i + 1])
+
+
+        # --- Side ---
+        base_side = len(vertices) // 8
+        # Top Row (v=1)
+        for i in range(slices + 1):
+            theta = 2 * math.pi * float(i) / slices
+            x = math.cos(theta)
+            z = math.sin(theta)
+            u = float(i) / slices
+            vertices.extend([x, 0.5, z, x, 0.0, z, u, 1.0])
+
+        # Bottom Row (v=0)
+        for i in range(slices + 1):
+            theta = 2 * math.pi * float(i) / slices
+            x = math.cos(theta)
+            z = math.sin(theta)
+            u = float(i) / slices
+            vertices.extend([x, -0.5, z, x, 0.0, z, u, 0.0])
+
+        # Indices Side
+        # k (Top) -- k+1
+        # |          |
+        # k+N (Bot) -- k+N+1
+        offset = slices + 1
+        for i in range(slices):
+            k = base_side + i
+            # Tri 1: Top-Right, Top-Left, Bot-Right (CCW)
+            indices.extend([k, k + 1, k + offset])
+            # Tri 2: Top-Left, Bot-Left, Bot-Right (CCW)
+            indices.extend([k + 1, k + offset + 1, k + offset])
             
-            # Bottom (-0.5) and Top (0.5)
-            y_bot = -0.5
-            y_top = 0.5
-            
-            # Normals (x, 0, z)
-            n0 = [x0, 0, z0]
-            n1 = [x1, 0, z1]
-            
-            # Side Quads -> Triangles
-            # v0 (bot, t0), v1 (top, t0), v2 (top, t1), v3 (bot, t1)
-            
-            p0 = [x0, y_bot, z0]; p1 = [x0, y_top, z0]
-            p2 = [x1, y_top, z1]; p3 = [x1, y_bot, z1]
-            
-            # Default to CCW (Consistent with Caps)
-            # Triangle 1: p0, p1, p2
-            t1 = [*p0, *n0, *p1, *n0, *p2, *n1]
-            # Triangle 2: p0, p2, p3
-            t2 = [*p0, *n0, *p2, *n1, *p3, *n1]
-            
-            # Caps
-            # Top Cap (Normal 0, 1, 0)
-            nt = [0, 1, 0]
-            c_top = [0, 0.5, 0]
-            # c_top, p2, p1
-            t_top = [*c_top, *nt, *p2, *nt, *p1, *nt]
-            
-            # Bottom Cap (Normal 0, -1, 0)
-            nb = [0, -1, 0]
-            c_bot = [0, -0.5, 0]
-            # c_bot, p0, p3
-            t_bot = [*c_bot, *nb, *p0, *nb, *p3, *nb]
-            
-            vertices.extend(t1)
-            vertices.extend(t2)
-            vertices.extend(t_top)
-            vertices.extend(t_bot)
-        return vertices
+        return vertices, indices
 
     def handle_shape_params(self):
         if self.ctx is not None:
@@ -1096,6 +1170,398 @@ class MGLCylinderNode(MGLShapeNode):
                 # Pre-multiply scale for local transformation
                 model = np.dot(scale_mat, model)
                 self.prog['M'].write(model.tobytes())
+
+
+class MGLGeodesicSphereNode(MGLShapeNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        return MGLGeodesicSphereNode(name, data, args)
+
+    def __init__(self, label, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        super().initialize(args)
+        self.radius_input = self.add_input('radius', widget_type='drag_float', default_value=0.5, speed=0.01)
+        self.subdivisions_input = self.add_input('subdivisions', widget_type='drag_int', default_value=2, min_value=0, max_value=5, callback=self.geometry_changed)
+        self.end_initialization()
+
+    def create_geometry(self):
+        import math
+        
+        radius = 1.0 # Base radius, scaled by model matrix later
+        t = (1.0 + math.sqrt(5.0)) / 2.0
+
+        # Base Icosahedron Vertices
+        verts = [
+            [-1,  t,  0], [ 1,  t,  0], [-1, -t,  0], [ 1, -t,  0],
+            [ 0, -1,  t], [ 0,  1,  t], [ 0, -1, -t], [ 0,  1, -t],
+            [ t,  0, -1], [ t,  0,  1], [-t,  0, -1], [-t,  0,  1]
+        ]
+        
+        # Normalize to radius 1
+        def normalize(v):
+            l = math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2])
+            return [v[0]/l, v[1]/l, v[2]/l]
+            
+        verts = [normalize(v) for v in verts]
+
+        # Base Icosahedron Indices (Triangles)
+        faces = [
+            [0, 11, 5], [0, 5, 1], [0, 1, 7], [0, 7, 10], [0, 10, 11],
+            [1, 5, 9], [5, 11, 4], [11, 10, 2], [10, 7, 6], [7, 1, 8],
+            [3, 9, 4], [3, 4, 2], [3, 2, 6], [3, 6, 8], [3, 8, 9],
+            [4, 9, 5], [2, 4, 11], [6, 2, 10], [8, 6, 7], [9, 8, 1]
+        ]
+
+        # Subdivision Cache to avoid duplicate vertices
+        midpoint_cache = {}
+
+        def get_midpoint(i1, i2):
+            # Key is sorted tuple ensuring 1-2 is same as 2-1
+            key = tuple(sorted((i1, i2)))
+            if key in midpoint_cache:
+                return midpoint_cache[key]
+            
+            v1 = verts[i1]
+            v2 = verts[i2]
+            mid = [v1[0] + v2[0], v1[1] + v2[1], v1[2] + v2[2]]
+            verts.append(normalize(mid))
+            
+            idx = len(verts) - 1
+            midpoint_cache[key] = idx
+            return idx
+
+        # Subdivide
+        subs = self.subdivisions_input()
+        for _ in range(subs):
+            new_faces = []
+            for tri in faces:
+                v1, v2, v3 = tri
+                a = get_midpoint(v1, v2)
+                b = get_midpoint(v2, v3)
+                c = get_midpoint(v3, v1)
+                
+                new_faces.append([v1, a, c])
+                new_faces.append([v2, b, a])
+                new_faces.append([v3, c, b])
+                new_faces.append([a, b, c])
+            faces = new_faces
+
+        # Prepare Buffers
+        final_vertices = []
+        final_indices = []
+
+        # For smooth shading, we need normals per vertex.
+        # For a sphere, Normal == Position (normalized).
+        # We can just reuse the vertex list since it's already unique and normalized.
+        
+        # MGLShapeNode expects interleaved [x, y, z, nx, ny, nz, u, v]
+        for v in verts:
+            final_vertices.extend(v) # Pos
+            final_vertices.extend(v) # Normal (Same as Pos)
+            
+            # UV (Spherical Projection)
+            # v is normalized
+            u = 0.5 + math.atan2(v[2], v[0]) / (2 * math.pi)
+            v_coord = 0.5 - math.asin(v[1]) / math.pi
+            final_vertices.extend([u, v_coord])
+            
+        # Flatten indices
+        for tri in faces:
+            final_indices.extend(tri)
+
+        return final_vertices, final_indices
+
+    def handle_shape_params(self):
+        if self.ctx is not None:
+            if 'M' in self.prog:
+                model = self.ctx.get_model_matrix()
+                r = self.radius_input()
+                scale_mat = np.diag([r, r, r, 1.0]).astype(np.float32)
+                model = np.dot(scale_mat, model)
+                self.prog['M'].write(model.tobytes())
+
+
+
+class MGLPointCloudNode(MGLShapeNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        return MGLPointCloudNode(name, data, args)
+
+    def __init__(self, label, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        super().initialize(args)
+        self.points_input = self.add_input('points', triggers_execution=True)
+        self.end_initialization()
+        self.points_data = None
+        self.dirty = False
+
+    def custom_create(self, from_file):
+        if not from_file:
+            self.mode_input.set('points')
+            self.mode_input.widget.set('points')
+
+    def execute(self):
+        if self.points_input.fresh_input:
+            data = self.points_input()
+            if data is not None:
+                # Convert to numpy float32
+                if isinstance(data, list):
+                    data = np.array(data, dtype=np.float32)
+                elif isinstance(data, np.ndarray):
+                    data = data.astype(np.float32)
+                elif self.app.torch_available and isinstance(data, torch.Tensor):
+                    data = data.detach().cpu().numpy().astype(np.float32)
+                
+                # Reshape if flat [N*3] -> [N, 3]
+                if data.ndim == 1 and data.size % 3 == 0:
+                    data = data.reshape(-1, 3)
+                
+                if data.ndim == 2 and data.shape[1] == 3:
+                     self.points_data = data
+                     self.dirty = True
+        
+        super().execute()
+
+    def draw(self):
+        if self.ctx and self.dirty and self.points_data is not None:
+            # Prepare interleaved data [x,y,z, nx,ny,nz, u,v]
+            count = self.points_data.shape[0]
+            
+            # Dummy Normals (0, 1, 0)
+            normals = np.tile([0.0, 1.0, 0.0], (count, 1)).astype(np.float32)
+            
+            # Dummy UVs (0, 0)
+            uvs = np.zeros((count, 2), dtype=np.float32)
+            
+            # Combine
+            # [N, 8]
+            vertices = np.hstack([self.points_data, normals, uvs]).flatten().astype(np.float32)
+            
+            # Update Geometry
+            self.render_geometry(vertices, indices=None)
+            self.dirty = False
+            
+        super().draw()
+
+    def create_geometry(self):
+        # Fallback if draw called without data
+        return [], None
+
+    def handle_shape_params(self):
+         if self.ctx is not None and 'M' in self.prog:
+            model = self.ctx.get_model_matrix()
+            # Debug: Check translation
+            # print(f"PC Model Trans: {model[3, :3]}")
+            self.prog['M'].write(model.tobytes())
+
+
+class MGLModelNode(MGLShapeNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        return MGLModelNode(name, data, args)
+
+    def __init__(self, label, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        super().initialize(args)
+        self.file_input = self.add_input('file_path', widget_type='text_input', default_value='', callback=self.reload_model)
+        self.scale_input = self.add_input('scale', widget_type='drag_float', default_value=1.0)
+        self.center_input = self.add_input('center', widget_type='checkbox', default_value=True)
+        
+        # UV Controls
+        self.uv_mode_input = self.add_input('uv_mode', widget_type='combo', default_value='original')
+        self.uv_mode_input.widget.combo_items = ['original', 'sphere', 'cylinder', 'plane_xy', 'plane_xz', 'box']
+        self.uv_scale_input = self.add_input('uv_scale', widget_type='drag_float', default_value=1.0)
+        self.generate_uv_button = self.add_property('generate_uv', widget_type='button', callback=self.reload_model)
+        
+        self.loaded_geometry = None
+        self.end_initialization()
+
+    def reload_model(self):
+        self.dirty = True
+        self.vao = None # Force recreation
+        self.vbo = None
+
+    def create_geometry(self):
+        import trimesh
+        path = self.file_input()
+        if not path:
+            return [], None
+
+        try:
+            mesh = trimesh.load(path)
+            
+            # Handle Scene (multiple meshes)
+            if isinstance(mesh, trimesh.Scene):
+                # Concatenate all geometries in the scene
+                # This works if they are compatible
+                if len(mesh.geometry) > 0:
+                    mesh = trimesh.util.concatenate(tuple(mesh.geometry.values()))
+                else:
+                    print(f"MGLModelNode: Scene at {path} is empty.")
+                    return [], None
+
+            # Process Mesh
+            if self.center_input():
+                mesh.vertices -= mesh.center_mass
+            
+            # Scale is applied in handle_shape_params via Matrix
+            # scale = self.scale_input()
+            # if scale != 1.0:
+            #    mesh.apply_scale(scale)
+
+            # Ensure Normals
+            if mesh.vertex_normals is None or mesh.vertex_normals.shape != mesh.vertices.shape:
+                mesh.compute_vertex_normals()
+
+            # Extract UVs
+            uvs = None
+            uv_mode = self.uv_mode_input()
+            uv_scale = self.uv_scale_input()
+
+            if uv_mode == 'original':
+                # Try to get existing UVs
+                if hasattr(mesh.visual, 'uv') and mesh.visual.uv is not None:
+                    uvs = mesh.visual.uv
+                
+                # If plain ColorVisuals or None, try converting/accessing
+                if uvs is None:
+                    try:
+                        # visual.to_texture() might create dummy UVs or simple projection
+                        pass 
+                    except:
+                        pass
+                
+                if uvs is not None:
+                    # Match vertex count
+                    if uvs.shape[0] != mesh.vertices.shape[0]:
+                        print(f"MGLModelNode: UV count mismatch ({uvs.shape[0]} != {mesh.vertices.shape[0]}). Ignoring UVs.")
+                        uvs = None
+                
+                if uvs is None:
+                     print(f"MGLModelNode: No UVs found for {path}. using zeros.")
+                     uvs = np.zeros((mesh.vertices.shape[0], 2), dtype=np.float32)
+
+            else:
+                # Generate UVs based on geometry
+                verts = mesh.vertices
+                if uv_mode == 'sphere':
+                    # Spherical Projection
+                    # u = 0.5 + atan2(z, x) / 2pi
+                    # v = 0.5 - asin(y / R) / pi
+                    # Assume centered at 0,0,0 (already centered if center_input is True)
+                    # Normalize first
+                    norms = np.linalg.norm(verts, axis=1, keepdims=True)
+                    norms[norms == 0] = 1.0
+                    v_norm = verts / norms
+                    
+                    u = 0.5 + np.arctan2(v_norm[:, 2], v_norm[:, 0]) / (2 * np.pi)
+                    v = 0.5 - np.arcsin(v_norm[:, 1]) / np.pi
+                    uvs = np.stack([u, v], axis=1)
+
+                elif uv_mode == 'cylinder':
+                    # Cylindrical Projection
+                    # u = 0.5 + atan2(z, x) / 2pi
+                    # v = (y - ymin) / (ymax - ymin)
+                    norms_xz = np.linalg.norm(verts[:, [0, 2]], axis=1, keepdims=True)
+                    norms_xz[norms_xz == 0] = 1.0
+                    
+                    u = 0.5 + np.arctan2(verts[:, 2], verts[:, 0]) / (2 * np.pi)
+                    
+                    y = verts[:, 1]
+                    ymin, ymax = y.min(), y.max()
+                    h = ymax - ymin
+                    if h == 0: h = 1.0
+                    v = (y - ymin) / h
+                    uvs = np.stack([u, v], axis=1)
+
+                elif uv_mode == 'plane_xy':
+                    # Planar XY
+                    # u = (x - xmin) / w
+                    # v = (y - ymin) / h
+                    x = verts[:, 0]
+                    y = verts[:, 1]
+                    xmin, xmax = x.min(), x.max()
+                    ymin, ymax = y.min(), y.max()
+                    w, h = xmax - xmin, ymax - ymin
+                    if w == 0: w = 1.0
+                    if h == 0: h = 1.0
+                    
+                    u = (x - xmin) / w
+                    v = (y - ymin) / h
+                    uvs = np.stack([u, v], axis=1)
+
+                elif uv_mode == 'plane_xz':
+                    # Planar XZ
+                    x = verts[:, 0]
+                    z = verts[:, 2]
+                    xmin, xmax = x.min(), x.max()
+                    zmin, zmax = z.min(), z.max()
+                    w, h = xmax - xmin, zmax - zmin
+                    if w == 0: w = 1.0
+                    if h == 0: h = 1.0
+                    
+                    u = (x - xmin) / w
+                    v = (z - zmin) / h
+                    uvs = np.stack([u, v], axis=1)
+                
+                elif uv_mode == 'box':
+                    # Tri-planar / Cube Mapping simplified
+                    # Naively project based on dominant normal?
+                    # Too complex for this simple block?
+                    # Let's do simple bounding box normalize for now (XYZ -> UVW)
+                    # Use XY for Front/Back, XZ for Top/Bot, YZ for Left/Right?
+                    # This requires per-face processing which we don't easily have here (shared vertices).
+                    # Fallback to Sphere for now or just generic normalize.
+                    # Let's implement normalized Position 3D (maybe for 3D textures later? No, we need 2D).
+                    # Let's do a simple "Unwrapped Box" approximation -> Sphere?
+                    # Let's default to Sphere for Box for now to avoid complexity.
+                    print("MGLModelNode: Box mapping complex on shared vertices. Using Sphere.")
+                    norms = np.linalg.norm(verts, axis=1, keepdims=True)
+                    norms[norms == 0] = 1.0
+                    v_norm = verts / norms
+                    u = 0.5 + np.arctan2(v_norm[:, 2], v_norm[:, 0]) / (2 * np.pi)
+                    v = 0.5 - np.arcsin(v_norm[:, 1]) / np.pi
+                    uvs = np.stack([u, v], axis=1)
+            
+            # Apply Scale
+            if uvs is not None:
+                uvs = uvs.astype(np.float32) * uv_scale
+
+            # Interleave Data [Pos, Normal, UV]
+            vertices = mesh.vertices.astype(np.float32)
+            normals = mesh.vertex_normals.astype(np.float32)
+            
+            # Combine [N, 8] -> Flatten
+            vertex_data = np.hstack([vertices, normals, uvs]).flatten()
+            
+            # Indices
+            indices = mesh.faces.flatten().astype(np.int32)
+            
+            print(f"MGLModelNode: Loaded {path} ({len(vertices)} verts, {len(mesh.faces)} faces)")
+            return vertex_data, indices
+
+        except Exception as e:
+            print(f"MGLModelNode: Failed to load {path}: {e}")
+            return [], None
+
+    def handle_shape_params(self):
+        if self.ctx is not None and 'M' in self.prog:
+            model = self.ctx.get_model_matrix()
+            
+            # Apply dynamic scaling
+            s = self.scale_input()
+            if s != 1.0:
+                scale_mat = np.diag([s, s, s, 1.0]).astype(np.float32)
+                model = np.dot(scale_mat, model)
+                
+            self.prog['M'].write(model.tobytes())
+
 
 
 class MGLCameraNode(MGLNode):
