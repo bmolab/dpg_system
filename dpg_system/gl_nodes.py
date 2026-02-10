@@ -2730,8 +2730,6 @@ class GLNumpyLines(GLNode):
         self.new_array = False
         self.motion_array = None
 
-
-
     def custom_create(self, from_file):
         dpg.configure_item(self.color_control.widget.uuid, no_alpha=True)
         dpg.configure_item(self.color_control.widget.uuid, alpha_preview=dpg.mvColorEdit_AlphaPreviewNone)

@@ -8,6 +8,8 @@ import moderngl
 import math
 from ctypes import c_void_p
 from dpg_system.matrix_utils import *
+from dpg_system.body_base import BodyData, t_PelvisAnchor, t_ActiveJointCount
+from dpg_system.body_defs import *
 
 def register_moderngl_nodes():
     Node.app.register_node('mgl_context', MGLContextNode.factory)
@@ -27,6 +29,7 @@ def register_moderngl_nodes():
     Node.app.register_node('mgl_light', MGLLightNode.factory)
     Node.app.register_node('mgl_material', MGLMaterialNode.factory)
     Node.app.register_node('mgl_texture', MGLTextureNode.factory)
+    Node.app.register_node('mgl_body', MGLBodyNode.factory)
 
 
 class MGLNode(Node):
@@ -412,7 +415,7 @@ class MGLTransformNode(MGLNode):
 
     def get_translation_matrix(self, t):
         m = np.identity(4, dtype=np.float32)
-        m[3, :3] = t
+        m[:3, 3] = t
         return m
     
     def get_scale_matrix(self, s):
@@ -864,7 +867,15 @@ class MGLShapeNode(MGLNode):
                 c = self.ctx.current_color
                 self.prog['color'].value = tuple(c)
 
-            # Lights
+            # Update Lights and Material
+            # DEBUG: Check Context State
+            if hasattr(self, 'debug_light_count') and self.debug_light_count < 20:
+                print(f"MGLBodyNode: Lights={len(self.ctx.lights)}, Mat={self.ctx.current_material['diffuse']}")
+                print(f"Shader has num_lights? {'num_lights' in self.prog}")
+                self.debug_light_count += 1
+            if not hasattr(self, 'debug_light_count'):
+                self.debug_light_count = 0
+
             self.ctx.update_lights(self.prog)
             self.ctx.update_material(self.prog)
 
@@ -986,9 +997,9 @@ class MGLBoxNode(MGLShapeNode):
                 s = self.size_input()
                 scale_mat = np.diag([s[0], s[1], s[2], 1.0]).astype(np.float32)
                 # Pre-multiply scale for local transformation
-                model = np.dot(scale_mat, model)
-                self.prog['M'].write(model.tobytes())
-
+                # Post-multiply scale for local transformation
+                model = np.dot(model, scale_mat)
+                self.prog['M'].write(model.T.tobytes())
 
 class MGLSphereNode(MGLShapeNode):
     @staticmethod
@@ -1056,9 +1067,9 @@ class MGLSphereNode(MGLShapeNode):
                 model = self.ctx.get_model_matrix()
                 r = self.radius_input()
                 scale_mat = np.diag([r, r, r, 1.0]).astype(np.float32)
-                # Pre-multiply scale for local transformation
-                model = np.dot(scale_mat, model)
-                self.prog['M'].write(model.tobytes())
+                # Post-multiply scale for local transformation
+                model = np.dot(model, scale_mat)
+                self.prog['M'].write(model.T.tobytes())
 
 
 class MGLCylinderNode(MGLShapeNode):
@@ -1167,9 +1178,9 @@ class MGLCylinderNode(MGLShapeNode):
                 r = self.radius_input()
                 h = self.height_input()
                 scale_mat = np.diag([r, h, r, 1.0]).astype(np.float32)
-                # Pre-multiply scale for local transformation
-                model = np.dot(scale_mat, model)
-                self.prog['M'].write(model.tobytes())
+                # Post-multiply scale for local transformation
+                model = np.dot(model, scale_mat)
+                self.prog['M'].write(model.T.tobytes())
 
 
 class MGLGeodesicSphereNode(MGLShapeNode):
@@ -1279,8 +1290,8 @@ class MGLGeodesicSphereNode(MGLShapeNode):
                 model = self.ctx.get_model_matrix()
                 r = self.radius_input()
                 scale_mat = np.diag([r, r, r, 1.0]).astype(np.float32)
-                model = np.dot(scale_mat, model)
-                self.prog['M'].write(model.tobytes())
+                model = np.dot(model, scale_mat)
+                self.prog['M'].write(model.T.tobytes())
 
 
 
@@ -1352,11 +1363,11 @@ class MGLPointCloudNode(MGLShapeNode):
         return [], None
 
     def handle_shape_params(self):
-         if self.ctx is not None and 'M' in self.prog:
+        if self.ctx is not None and 'M' in self.prog:
             model = self.ctx.get_model_matrix()
             # Debug: Check translation
             # print(f"PC Model Trans: {model[3, :3]}")
-            self.prog['M'].write(model.tobytes())
+            self.prog['M'].write(model.T.tobytes())
 
 
 class MGLModelNode(MGLShapeNode):
@@ -1558,9 +1569,9 @@ class MGLModelNode(MGLShapeNode):
             s = self.scale_input()
             if s != 1.0:
                 scale_mat = np.diag([s, s, s, 1.0]).astype(np.float32)
-                model = np.dot(scale_mat, model)
+                model = np.dot(model, scale_mat)
                 
-            self.prog['M'].write(model.tobytes())
+            self.prog['M'].write(model.T.tobytes())
 
 
 
@@ -1615,3 +1626,412 @@ class MGLCameraNode(MGLNode):
             # Just pass signal? Actually Camera should usually be BEFORE transform/geometry
             # in the chain for View/Proj to be set for them.
             pass
+
+from dpg_system.body_base import BodyData, t_PelvisAnchor, t_ActiveJointCount
+from dpg_system.body_defs import *
+
+class MGLBodyNode(MGLNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        return MGLBodyNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.body = BodyData()
+        self.body.node = self
+        
+        self.pose_input = self.add_input('pose_in', triggers_execution=True)
+        self.scale_input = self.add_input('scale', widget_type='drag_float', default_value=1.0)
+        
+        self.joint_callback = self.add_output('joint_callback')
+        self.joint_id_out = self.add_output('joint_id')
+        
+        self.global_matrices = {} # Map joint_index -> mat4
+        
+        self.cube_vbo = None
+        self.cube_vao = None
+        self.prog = None
+        self.instance_vbo = None
+        self.max_limbs = 64
+
+    def initialize_gl(self):
+        if self.ctx.ctx is None: return
+        
+        # Simple Cube Geometry (centered at 0,0,0, size 1x1x1)
+        # But body_base cubes are complex. Let's use simple unit cube valid for scaling.
+        vertices = np.array([
+            # Front
+            -0.5, -0.5, 0.5, 0, 0, 1, 0, 0,
+             0.5, -0.5, 0.5, 0, 0, 1, 1, 0,
+             0.5,  0.5, 0.5, 0, 0, 1, 1, 1,
+            -0.5,  0.5, 0.5, 0, 0, 1, 0, 1,
+            # Back
+            -0.5, -0.5, -0.5, 0, 0, -1, 0, 0,
+             0.5, -0.5, -0.5, 0, 0, -1, 1, 0,
+             0.5,  0.5, -0.5, 0, 0, -1, 1, 1,
+            -0.5,  0.5, -0.5, 0, 0, -1, 0, 1,
+            # Top
+            -0.5,  0.5, -0.5, 0, 1, 0, 0, 0,
+            -0.5,  0.5,  0.5, 0, 1, 0, 0, 1,
+             0.5,  0.5,  0.5, 0, 1, 0, 1, 1,
+             0.5,  0.5, -0.5, 0, 1, 0, 1, 0,
+            # Bottom
+            -0.5, -0.5, -0.5, 0, -1, 0, 0, 0,
+             0.5, -0.5, -0.5, 0, -1, 0, 1, 0,
+             0.5, -0.5,  0.5, 0, -1, 0, 1, 1,
+            -0.5, -0.5,  0.5, 0, -1, 0, 0, 1,
+            # Right
+             0.5, -0.5, -0.5, 1, 0, 0, 0, 0,
+             0.5,  0.5, -0.5, 1, 0, 0, 1, 0,
+             0.5,  0.5,  0.5, 1, 0, 0, 1, 1,
+             0.5, -0.5,  0.5, 1, 0, 0, 0, 1,
+            # Left
+            -0.5, -0.5, -0.5, -1, 0, 0, 0, 0,
+            -0.5, -0.5,  0.5, -1, 0, 0, 1, 0,
+            -0.5,  0.5,  0.5, -1, 0, 0, 1, 1,
+            -0.5,  0.5, -0.5, -1, 0, 0, 0, 1,
+        ], dtype='f4')
+        
+        indices = np.array([
+            0, 1, 2, 2, 3, 0,
+            4, 7, 6, 6, 5, 4,
+            8, 9, 10, 10, 11, 8,
+            12, 13, 14, 14, 15, 12,
+            16, 17, 18, 18, 19, 16,
+            20, 21, 22, 22, 23, 20
+        ], dtype='i4')
+
+        ctx = self.ctx.ctx
+        self.cube_vbo = ctx.buffer(vertices)
+        self.cube_ibo = ctx.buffer(indices)
+        
+        # Shader for Skinned Rendering (Batched Limbs)
+        self.prog = ctx.program(
+            vertex_shader='''
+                #version 330
+                uniform mat4 VP; // ViewProjection
+                
+                #define MAX_BONES 50
+                uniform mat4 bones[MAX_BONES];
+                
+                in vec3 in_pos;
+                in vec3 in_norm;
+                in float in_bone_index;
+                
+                // Material Color
+                uniform vec4 color;
+                
+                out vec3 v_norm;
+                out vec3 v_pos;
+                out vec4 v_color;
+                
+                void main() {
+                    int b_idx = int(in_bone_index);
+                    mat4 bone_mat = bones[b_idx];
+                    
+                    vec4 world_pos = bone_mat * vec4(in_pos, 1.0);
+                    gl_Position = VP * world_pos;
+                    v_pos = world_pos.xyz;
+                    
+                    // Normal Matrix
+                    mat3 normal_matrix = transpose(inverse(mat3(bone_mat)));
+                    v_norm = normal_matrix * in_norm;
+                    
+                    v_color = color; 
+                }
+            ''',
+            fragment_shader='''
+                #version 330
+                #define MAX_LIGHTS 8
+                
+                in vec3 v_norm;
+                in vec3 v_pos;
+                in vec4 v_color;
+                
+                uniform vec3 view_pos;
+                
+                // Lighting Uniforms
+                struct Light {
+                    vec3 pos;
+                    vec3 ambient;
+                    vec3 diffuse;
+                    vec3 specular;
+                    float intensity;
+                };
+                
+                uniform int num_lights;
+                uniform Light lights[MAX_LIGHTS];
+                
+                // Material Uniforms
+                uniform vec3 material_ambient;
+                uniform vec3 material_diffuse;
+                uniform vec3 material_specular;
+                uniform float material_shininess;
+                
+                out vec4 f_color;
+                
+                void main() {
+                    vec3 norm = normalize(v_norm);
+                    vec3 viewDir = normalize(view_pos - v_pos);
+                    vec3 result = vec3(0.0);
+                    
+                    // If no lights, use simple ambient fallback based on material
+                    if (num_lights == 0) {
+                        result = material_ambient * v_color.rgb + material_diffuse * v_color.rgb * 0.5;
+                    } else {
+                        vec3 total_ambient = vec3(0.0);
+                        vec3 total_diffuse = vec3(0.0);
+                        vec3 total_specular = vec3(0.0);
+                        
+                        for(int i = 0; i < MAX_LIGHTS; i++) {
+                            if (i >= num_lights) break;
+                            
+                            // Ambient
+                            total_ambient += lights[i].ambient * material_ambient;
+                            
+                            // Diffuse
+                            vec3 lightDir = normalize(lights[i].pos - v_pos);
+                            float diff = max(dot(norm, lightDir), 0.0);
+                            
+                            total_diffuse += diff * lights[i].diffuse * material_diffuse * lights[i].intensity;
+                            
+                            // Specular (Blinn-Phong)
+                            vec3 halfwayDir = normalize(lightDir + viewDir);
+                            float spec = pow(max(dot(norm, halfwayDir), 0.0), material_shininess);
+                            total_specular += spec * lights[i].specular * material_specular * lights[i].intensity;
+                        }
+                        
+                        result = (total_ambient + total_diffuse + total_specular) * v_color.rgb;
+                    }
+
+                    f_color = vec4(result, v_color.a);
+                }
+            '''
+        )
+        
+        # Build Limb Geometry
+        all_verts = []
+        all_norms = []
+        all_indices = []
+        
+        def_points = [
+            (-.5, -.5, 0), (-1.0, -1.0, 0.5), (.5, -.5, 0), (1.0, -1.0, 0.5),
+            (.5, .5, 0), (1.0, 1.0, 0.5), (-.5, .5, 0),(-1.0, 1.0, .5),
+            (-.5, -.5, 1.0), (.5, -.5, 1.0), (.5, .5, 1.0), (-.5, .5, 1.0)
+        ]
+
+        for i in range(len(self.body.joints)):
+            if i == t_PelvisAnchor: continue
+            pts = def_points
+            if i < len(self.body.limb_vertices) and self.body.limb_vertices[i] is not None:
+                pts = self.body.limb_vertices[i]
+            
+            # Simple scaling logic based on dims or defaults
+            scale_vec = np.array([0.05, 0.05, 1.0])
+            if i < len(self.body.joints) and self.body.joints[i] is not None:
+                j = self.body.joints[i]
+                if hasattr(j, 'dims'):
+                     dz = j.dims[0]
+                     dx = j.dims[1] / 2.0
+                     dy = j.dims[2] / 2.0
+                     scale_vec = np.array([dx, dy, dz])
+
+            def add_tri(p1, p2, p3, n):
+                all_verts.extend(p1); all_norms.extend(n); all_indices.append(float(i))
+                all_verts.extend(p2); all_norms.extend(n); all_indices.append(float(i))
+                all_verts.extend(p3); all_norms.extend(n); all_indices.append(float(i))
+
+            def calc_n(p1, p2, p3):
+                v1 = np.array(p2) - np.array(p1)
+                v2 = np.array(p3) - np.array(p1)
+                c = np.cross(v2, v1)
+                l = np.linalg.norm(c)
+                return c / l if l > 0 else c
+            
+            # Apply scale FIRST
+            pts_np = [np.array(p) * scale_vec for p in pts]
+            
+            if len(pts) == 8:
+                n0 = calc_n(pts_np[0], pts_np[1], pts_np[2])
+                add_tri(pts_np[0], pts_np[1], pts_np[2], n0)
+                add_tri(pts_np[2], pts_np[1], pts_np[3], n0)
+                n1 = calc_n(pts_np[2], pts_np[3], pts_np[4])
+                add_tri(pts_np[2], pts_np[3], pts_np[4], n1)
+                add_tri(pts_np[4], pts_np[3], pts_np[5], n1)
+                n2 = calc_n(pts_np[4], pts_np[5], pts_np[6])
+                add_tri(pts_np[4], pts_np[5], pts_np[6], n2)
+                add_tri(pts_np[6], pts_np[5], pts_np[7], n2)
+                n3 = calc_n(pts_np[6], pts_np[7], pts_np[0])
+                add_tri(pts_np[6], pts_np[7], pts_np[0], n3)
+                add_tri(pts_np[0], pts_np[7], pts_np[1], n3)
+                n4 = calc_n(pts_np[1], pts_np[3], pts_np[7])
+                add_tri(pts_np[1], pts_np[3], pts_np[7], n4); add_tri(pts_np[7], pts_np[3], pts_np[5], n4)
+                n5 = calc_n(pts_np[0], pts_np[2], pts_np[6])
+                add_tri(pts_np[0], pts_np[2], pts_np[6], n5); add_tri(pts_np[6], pts_np[2], pts_np[4], n5)
+            else:
+                n = calc_n(pts_np[0], pts_np[1], pts_np[2])
+                add_tri(pts_np[0], pts_np[1], pts_np[2], n); add_tri(pts_np[2], pts_np[1], pts_np[3], n)
+                n = calc_n(pts_np[2], pts_np[3], pts_np[4])
+                add_tri(pts_np[2], pts_np[3], pts_np[4], n); add_tri(pts_np[4], pts_np[3], pts_np[5], n)
+                n = calc_n(pts_np[4], pts_np[5], pts_np[6])
+                add_tri(pts_np[4], pts_np[5], pts_np[6], n); add_tri(pts_np[6], pts_np[5], pts_np[7], n)
+                n = calc_n(pts_np[6], pts_np[7], pts_np[0])
+                add_tri(pts_np[6], pts_np[7], pts_np[0], n); add_tri(pts_np[0], pts_np[7], pts_np[1], n)
+                n = calc_n(pts_np[1], pts_np[8], pts_np[3])
+                add_tri(pts_np[1], pts_np[8], pts_np[3], n); add_tri(pts_np[3], pts_np[8], pts_np[9], n)
+                n = calc_n(pts_np[3], pts_np[9], pts_np[5])
+                add_tri(pts_np[3], pts_np[9], pts_np[5], n); add_tri(pts_np[5], pts_np[9], pts_np[10], n)
+                n = calc_n(pts_np[5], pts_np[10], pts_np[7])
+                add_tri(pts_np[5], pts_np[10], pts_np[7], n); add_tri(pts_np[7], pts_np[10], pts_np[11], n)
+                n = calc_n(pts_np[7], pts_np[11], pts_np[1])
+                add_tri(pts_np[7], pts_np[11], pts_np[1], n); add_tri(pts_np[1], pts_np[11], pts_np[8], n)
+                # TOP CAP Normal (should be +Z/Outward, but standard calc gives -Z/Inward)
+                # So we swap arguments to flip it back
+                n = calc_n(pts_np[8], pts_np[11], pts_np[9])
+                add_tri(pts_np[8], pts_np[9], pts_np[11], n); add_tri(pts_np[11], pts_np[9], pts_np[10], n)
+                n = calc_n(pts_np[0], pts_np[2], pts_np[6])
+                add_tri(pts_np[0], pts_np[2], pts_np[6], n); add_tri(pts_np[6], pts_np[2], pts_np[4], n)
+
+        
+        v_data = np.array(all_verts, dtype='f4')
+        n_data = np.array(all_norms, dtype='f4')
+        i_data = np.array(all_indices, dtype='f4')
+        
+        self.limb_top_fix_vbo = ctx.buffer(np.hstack([v_data.reshape(-1,3), n_data.reshape(-1,3), i_data.reshape(-1,1)]).flatten().tobytes())
+        self.limb_top_fix_vao = ctx.vertex_array(self.prog, [
+            (self.limb_top_fix_vbo, '3f 3f 1f', 'in_pos', 'in_norm', 'in_bone_index')
+        ])
+
+    def execute(self):
+        if self.pose_input.fresh_input:
+            data = self.pose_input()
+            if data is not None:
+                self.body.update_quats(data)
+
+        if self.mgl_input.fresh_input:
+            msg = self.mgl_input()
+            if msg == 'draw':
+                self.ctx = MGLContext.get_instance()
+                self.draw()
+                self.ctx = None
+            self.mgl_output.send(msg)
+
+    def draw(self):
+        if not self.ctx or not self.ctx.ctx: return
+        if not getattr(self, 'limb_top_fix_vao', None): 
+             print("MGLBodyNode: initializing GL for top cap normal fix")
+             self.initialize_gl()
+        
+        # 1. Compute Global Matrices for all joints
+        self.global_matrices = {}
+        
+        if len(self.ctx.model_matrix_stack) > 0:
+            world_mat = self.ctx.model_matrix_stack[-1]
+        else:
+            world_mat = np.identity(4, dtype=np.float32)
+
+        s = self.scale_input()
+        scale_mat = np.diag([s, s, s, 1.0])
+        rot_flip = rotation_matrix(180, [0, 0, 1]).T
+        
+        root_mat = world_mat @ rot_flip @ scale_mat
+        
+        self.traverse_matrices(t_PelvisAnchor, root_mat)
+        
+        # 2. Upload Bone Matrices
+        bones_bytes = bytearray()
+        MAX_BONES = 50
+        
+        for i in range(MAX_BONES):
+            if i in self.global_matrices:
+                m = self.global_matrices[i]
+            else:
+                m = np.identity(4, dtype='f4')
+            bones_bytes.extend(m.T.astype('f4').flatten().tobytes())
+            
+        if 'bones' in self.prog:
+            self.prog['bones'].write(bones_bytes)
+            
+        # 3. Uniforms
+        vp = self.ctx.view_matrix @ self.ctx.projection_matrix
+        self.prog['VP'].write(vp.flatten().tobytes())
+        
+        try:
+            inv_view = np.linalg.inv(self.ctx.view_matrix)
+            cam_pos = inv_view[3, :3]
+            if 'view_pos' in self.prog:
+                self.prog['view_pos'].value = tuple(cam_pos)
+        except:
+            pass
+
+        self.ctx.update_lights(self.prog)
+        self.ctx.update_material(self.prog)
+        if 'color' in self.prog:
+            c = self.ctx.current_color
+            self.prog['color'].value = tuple(c)
+        
+        # 4. Draw
+        if getattr(self, 'limb_top_fix_vao', None):
+            self.ctx.ctx.disable(moderngl.CULL_FACE)
+            self.limb_top_fix_vao.render(mode=moderngl.TRIANGLES)
+            self.ctx.ctx.enable(moderngl.CULL_FACE)
+
+    def traverse_matrices(self, joint_index, current_mat):
+        if joint_index == t_PelvisAnchor:
+             joint = self.body.joints[joint_index]
+             trans = np.identity(4, dtype='f4')
+             t_vec = joint.bone_translation * 0.01 
+             trans[:3, 3] = t_vec
+             
+             anim_rot = np.identity(4, dtype='f4')
+             if self.body.joint_matrices is not None and -1 < joint_index < self.body.joint_matrices.shape[1]: 
+                  anim_rot = self.body.joint_matrices[self.body.current_body, joint_index].reshape((4,4)).T
+                  if np.abs(anim_rot).sum() < 0.1: anim_rot = np.identity(4, dtype='f4')
+
+             current_mat = current_mat @ trans @ anim_rot
+        
+        # self.global_matrices[joint_index] = current_mat # DO NOT OVERWRITE! This destroys limb alignment
+        
+        children = self.body.joints[joint_index].immed_children
+        for child_idx in children:
+             self.process_child_matrices(child_idx, current_mat)
+
+    def process_child_matrices(self, joint_index, parent_mat):
+        joint = self.body.joints[joint_index]
+        if joint is None: return
+
+        rest_rot = np.identity(4, dtype='f4')
+        trans_bone = np.identity(4, dtype='f4')
+        trans_bone[:3, 3] = joint.bone_translation 
+        
+        anim_rot = np.identity(4, dtype='f4')
+        if self.body.joint_matrices is not None and -1 < joint_index < self.body.joint_matrices.shape[1]: 
+             anim_matrix = self.body.joint_matrices[self.body.current_body, joint_index].reshape((4,4)).T
+             if np.abs(anim_matrix).sum() > 0.1: 
+                  anim_rot = anim_matrix
+        
+        # Calculate Limb Matrix
+        b_vec = joint.bone_translation
+        b_len = np.linalg.norm(b_vec)
+        
+        target_axis = b_vec / (b_len + 1e-6)
+        up = np.array([0.0, 0.0, 1.0], dtype='f4')
+        
+        rot_align = np.identity(4, dtype='f4')
+        dot_p = np.dot(up, target_axis)
+        
+        if np.abs(dot_p) < 0.99:
+             axis = np.cross(up, target_axis)
+             angle = math.acos(dot_p)
+             rot_align = rotation_matrix(math.degrees(angle), axis).T
+        elif dot_p < -0.99:
+             rot_align = rotation_matrix(180, [1, 0, 0]).T
+        
+        limb_model = parent_mat @ rest_rot @ rot_align
+        self.global_matrices[joint_index] = limb_model
+        
+        child_global = parent_mat @ rest_rot @ trans_bone @ anim_rot
+        self.traverse_matrices(joint_index, child_global)
+
+        
+
