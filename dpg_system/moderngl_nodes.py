@@ -995,11 +995,11 @@ class MGLBoxNode(MGLShapeNode):
             if 'M' in self.prog:
                 model = self.ctx.get_model_matrix()
                 s = self.size_input()
-                scale_mat = np.diag([s[0], s[1], s[2], 1.0]).astype(np.float32)
+                scale_mat = np.diag([s[0], s[1], s[2], 1.0]).astype('f4')
                 # Pre-multiply scale for local transformation
                 # Post-multiply scale for local transformation
                 model = np.dot(model, scale_mat)
-                self.prog['M'].write(model.T.tobytes())
+                self.prog['M'].write(model.astype('f4').T.tobytes())
 
 class MGLSphereNode(MGLShapeNode):
     @staticmethod
@@ -1066,10 +1066,10 @@ class MGLSphereNode(MGLShapeNode):
             if 'M' in self.prog:
                 model = self.ctx.get_model_matrix()
                 r = self.radius_input()
-                scale_mat = np.diag([r, r, r, 1.0]).astype(np.float32)
+                scale_mat = np.diag([r, r, r, 1.0]).astype('f4')
                 # Post-multiply scale for local transformation
                 model = np.dot(model, scale_mat)
-                self.prog['M'].write(model.T.tobytes())
+                self.prog['M'].write(model.astype('f4').T.tobytes())
 
 
 class MGLCylinderNode(MGLShapeNode):
@@ -1177,10 +1177,10 @@ class MGLCylinderNode(MGLShapeNode):
                 model = self.ctx.get_model_matrix()
                 r = self.radius_input()
                 h = self.height_input()
-                scale_mat = np.diag([r, h, r, 1.0]).astype(np.float32)
+                scale_mat = np.diag([r, h, r, 1.0]).astype('f4')
                 # Post-multiply scale for local transformation
                 model = np.dot(model, scale_mat)
-                self.prog['M'].write(model.T.tobytes())
+                self.prog['M'].write(model.astype('f4').T.tobytes())
 
 
 class MGLGeodesicSphereNode(MGLShapeNode):
@@ -1289,9 +1289,9 @@ class MGLGeodesicSphereNode(MGLShapeNode):
             if 'M' in self.prog:
                 model = self.ctx.get_model_matrix()
                 r = self.radius_input()
-                scale_mat = np.diag([r, r, r, 1.0]).astype(np.float32)
+                scale_mat = np.diag([r, r, r, 1.0]).astype('f4')
                 model = np.dot(model, scale_mat)
-                self.prog['M'].write(model.T.tobytes())
+                self.prog['M'].write(model.astype('f4').T.tobytes())
 
 
 
@@ -1367,7 +1367,7 @@ class MGLPointCloudNode(MGLShapeNode):
             model = self.ctx.get_model_matrix()
             # Debug: Check translation
             # print(f"PC Model Trans: {model[3, :3]}")
-            self.prog['M'].write(model.T.tobytes())
+            self.prog['M'].write(model.astype('f4').T.tobytes())
 
 
 class MGLModelNode(MGLShapeNode):
@@ -1571,7 +1571,7 @@ class MGLModelNode(MGLShapeNode):
                 scale_mat = np.diag([s, s, s, 1.0]).astype(np.float32)
                 model = np.dot(model, scale_mat)
                 
-            self.prog['M'].write(model.T.tobytes())
+            self.prog['M'].write(model.astype('f4').T.tobytes())
 
 
 
@@ -1640,13 +1640,79 @@ class MGLBodyNode(MGLNode):
         self.body = BodyData()
         self.body.node = self
         
+        # Manually initialize joint hierarchy because standard BodyData lacks connect_limbs
+        self.build_hierarchy(self.body.joints)
+        self.body.create_limbs()
+        
         self.pose_input = self.add_input('pose_in', triggers_execution=True)
+        self.display_mode_input = self.add_input('display_mode', widget_type='combo', default_value='solid')
+        self.display_mode_input.widget.combo_items = ['solid', 'lines']
         self.scale_input = self.add_input('scale', widget_type='drag_float', default_value=1.0)
         
         self.joint_callback = self.add_output('joint_callback')
         self.joint_id_out = self.add_output('joint_id')
         
         self.global_matrices = {} # Map joint_index -> mat4
+        
+    def build_hierarchy(self, joints):
+        # Manually connect limbs (Hierarchy for traversal)
+        # Based on AlternateBodyData.connect_humanoid
+        
+        # Initialize empty lists first
+        for joint in joints:
+            joint.immed_children = []
+            
+        # Helper to safely append
+        def add_child(parent_idx, child_idx):
+            if 0 <= parent_idx < len(joints) and 0 <= child_idx < len(joints):
+                joints[parent_idx].immed_children.append(child_idx)
+
+        # Spine
+        add_child(t_PelvisAnchor, t_SpinePelvis)
+        add_child(t_SpinePelvis, t_LowerVertebrae)
+        add_child(t_LowerVertebrae, t_MidVertebrae)
+        add_child(t_MidVertebrae, t_UpperVertebrae)
+        add_child(t_UpperVertebrae, t_BaseOfSkull)
+        # Connect extremities (Indices 20+)
+        add_child(t_BaseOfSkull, t_TopOfHead) 
+        
+        # Legs
+        add_child(t_PelvisAnchor, t_LeftHip)
+        add_child(t_PelvisAnchor, t_RightHip)
+        
+        add_child(t_LeftHip, t_LeftKnee)
+        add_child(t_LeftKnee, t_LeftAnkle)
+        add_child(t_LeftAnkle, t_LeftBallOfFoot)
+        if t_LeftHeel < len(joints):
+            add_child(t_LeftAnkle, t_LeftHeel)
+        if t_LeftBallOfFoot < len(joints) and t_LeftToeTip < len(joints):
+             add_child(t_LeftBallOfFoot, t_LeftToeTip)
+        
+        add_child(t_RightHip, t_RightKnee)
+        add_child(t_RightKnee, t_RightAnkle)
+        add_child(t_RightAnkle, t_RightBallOfFoot)
+        if t_RightHeel < len(joints):
+            add_child(t_RightAnkle, t_RightHeel)
+        if t_RightBallOfFoot < len(joints) and t_RightToeTip < len(joints):
+             add_child(t_RightBallOfFoot, t_RightToeTip)
+        
+        # Arms (Collar/ShoulderBlade attached to MidVertebrae usually, or Spine?)
+        # AlternateBodyData: MidVertebrae -> ShoulderBlade -> Shoulder
+        add_child(t_MidVertebrae, t_LeftShoulderBladeBase)
+        add_child(t_LeftShoulderBladeBase, t_LeftShoulder)
+        add_child(t_LeftShoulder, t_LeftElbow)
+        add_child(t_LeftElbow, t_LeftWrist)
+        add_child(t_LeftWrist, t_LeftKnuckle)
+        if t_LeftKnuckle < len(joints) and t_LeftFingerTip < len(joints):
+             add_child(t_LeftKnuckle, t_LeftFingerTip)
+        
+        add_child(t_MidVertebrae, t_RightShoulderBladeBase)
+        add_child(t_RightShoulderBladeBase, t_RightShoulder)
+        add_child(t_RightShoulder, t_RightElbow)
+        add_child(t_RightElbow, t_RightWrist)
+        add_child(t_RightWrist, t_RightKnuckle)
+        if t_RightKnuckle < len(joints) and t_RightFingerTip < len(joints):
+             add_child(t_RightKnuckle, t_RightFingerTip)
         
         self.cube_vbo = None
         self.cube_vao = None
@@ -1814,6 +1880,13 @@ class MGLBodyNode(MGLNode):
         all_norms = []
         all_indices = []
         
+        # Skeleton Lines
+        line_verts = []
+        line_norms = []
+        line_indices = []
+        line_bone_indices = []
+        line_vert_count = 0
+        
         def_points = [
             (-.5, -.5, 0), (-1.0, -1.0, 0.5), (.5, -.5, 0), (1.0, -1.0, 0.5),
             (.5, .5, 0), (1.0, 1.0, 0.5), (-.5, .5, 0),(-1.0, 1.0, .5),
@@ -1822,6 +1895,9 @@ class MGLBodyNode(MGLNode):
 
         for i in range(len(self.body.joints)):
             if i == t_PelvisAnchor: continue
+            if self.body.joints[i] is None or not self.body.joints[i].do_draw:
+                continue
+                
             pts = def_points
             if i < len(self.body.limb_vertices) and self.body.limb_vertices[i] is not None:
                 pts = self.body.limb_vertices[i]
@@ -1847,6 +1923,15 @@ class MGLBodyNode(MGLNode):
                 c = np.cross(v2, v1)
                 l = np.linalg.norm(c)
                 return c / l if l > 0 else c
+                
+            # Add Skeleton Line Segment (0,0,0 -> 0,0,dz)
+            l_start = [0.0, 0.0, 0.0]
+            l_end = [0.0, 0.0, scale_vec[2]]
+            line_verts.extend(l_start); line_verts.extend(l_end)
+            line_norms.extend([0,0,1]); line_norms.extend([0,0,1]) # Dummy normals
+            line_bone_indices.append(float(i)); line_bone_indices.append(float(i))
+            line_indices.append(line_vert_count); line_indices.append(line_vert_count+1)
+            line_vert_count += 2
             
             # Apply scale FIRST
             pts_np = [np.array(p) * scale_vec for p in pts]
@@ -1901,6 +1986,21 @@ class MGLBodyNode(MGLNode):
         self.limb_top_fix_vao = ctx.vertex_array(self.prog, [
             (self.limb_top_fix_vbo, '3f 3f 1f', 'in_pos', 'in_norm', 'in_bone_index')
         ])
+
+        # Create Skeleton VBO/VAO
+        l_v_data = np.array(line_verts, dtype='f4')
+        l_n_data = np.array(line_norms, dtype='f4')
+        l_b_data = np.array(line_bone_indices, dtype='f4')
+        l_i_data = np.array(line_indices, dtype='i4') # Indices are int
+        
+        # Interleave
+        # buffer data: pos(3), norm(3), bone(1)
+        self.skeleton_vbo = ctx.buffer(np.hstack([l_v_data.reshape(-1,3), l_n_data.reshape(-1,3), l_b_data.reshape(-1,1)]).flatten().tobytes())
+        self.skeleton_index_buffer = ctx.buffer(l_i_data.tobytes())
+        
+        self.skeleton_vao = ctx.vertex_array(self.prog, [
+            (self.skeleton_vbo, '3f 3f 1f', 'in_pos', 'in_norm', 'in_bone_index')
+        ], index_buffer=self.skeleton_index_buffer)
 
     def execute(self):
         if self.pose_input.fresh_input:
@@ -1972,9 +2072,29 @@ class MGLBodyNode(MGLNode):
         
         # 4. Draw
         if getattr(self, 'limb_top_fix_vao', None):
-            self.ctx.ctx.disable(moderngl.CULL_FACE)
-            self.limb_top_fix_vao.render(mode=moderngl.TRIANGLES)
-            self.ctx.ctx.enable(moderngl.CULL_FACE)
+            mode = self.display_mode_input()
+            
+            if mode == 'lines':
+                if hasattr(self, 'skeleton_vao'):
+                    # Disable CULL_FACE just in case, though lines don't face
+                    self.ctx.ctx.disable(moderngl.CULL_FACE)
+                    self.skeleton_vao.render(mode=moderngl.LINES)
+                    self.ctx.ctx.enable(moderngl.CULL_FACE)
+            else:
+                self.ctx.ctx.disable(moderngl.CULL_FACE)
+                self.limb_top_fix_vao.render(mode=moderngl.TRIANGLES)
+                self.ctx.ctx.enable(moderngl.CULL_FACE)
+
+        # 5. Joint Callbacks
+        # Iterate all joints and trigger callback with their global matrix
+        for i, joint in enumerate(self.body.joints):
+            if i in self.global_matrices:
+                if not hasattr(joint, 'do_draw') or joint.do_draw:
+                    mat = self.global_matrices[i]
+                    self.ctx.model_matrix_stack.append(mat)
+                    self.joint_id_out.send(i)
+                    self.joint_callback.send('draw')
+                    self.ctx.model_matrix_stack.pop()
 
     def traverse_matrices(self, joint_index, current_mat):
         if joint_index == t_PelvisAnchor:
