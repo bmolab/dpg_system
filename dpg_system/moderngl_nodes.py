@@ -5,6 +5,7 @@ from dpg_system.node import Node
 from dpg_system.conversion_utils import *
 from dpg_system.moderngl_base import MGLContext
 import moderngl
+import threading
 import math
 from ctypes import c_void_p
 from dpg_system.matrix_utils import *
@@ -706,9 +707,12 @@ class MGLMaterialNode(MGLNode):
 
             # Normalize colors
             def norm(c):
-                if len(c) > 3: c = c[:3]
+                # if len(c) > 3: c = c[:3] # Allow alpha
                 if max(c) > 1.0:
                     return [val / 255.0 for val in c]
+                # Ensure 4 components (defaults to alpha 1.0 if missing)
+                if len(c) == 3:
+                    return list(c) + [1.0]
                 return c
 
             self.ctx.current_material = {
@@ -1647,6 +1651,7 @@ class MGLBodyNode(MGLNode):
         self.pose_input = self.add_input('pose_in', triggers_execution=True)
         self.display_mode_input = self.add_input('display_mode', widget_type='combo', default_value='solid')
         self.display_mode_input.widget.combo_items = ['solid', 'lines']
+        self.enable_callbacks_input = self.add_input('enable_callbacks', widget_type='checkbox', default_value=True)
         self.scale_input = self.add_input('scale', widget_type='drag_float', default_value=1.0)
         
         self.joint_callback = self.add_output('joint_callback')
@@ -1829,9 +1834,9 @@ class MGLBodyNode(MGLNode):
                 uniform Light lights[MAX_LIGHTS];
                 
                 // Material Uniforms
-                uniform vec3 material_ambient;
-                uniform vec3 material_diffuse;
-                uniform vec3 material_specular;
+                uniform vec4 material_ambient;
+                uniform vec4 material_diffuse;
+                uniform vec4 material_specular;
                 uniform float material_shininess;
                 
                 out vec4 f_color;
@@ -1843,7 +1848,7 @@ class MGLBodyNode(MGLNode):
                     
                     // If no lights, use simple ambient fallback based on material
                     if (num_lights == 0) {
-                        result = material_ambient * v_color.rgb + material_diffuse * v_color.rgb * 0.5;
+                        result = material_ambient.rgb * v_color.rgb + material_diffuse.rgb * v_color.rgb * 0.5;
                     } else {
                         vec3 total_ambient = vec3(0.0);
                         vec3 total_diffuse = vec3(0.0);
@@ -1853,24 +1858,28 @@ class MGLBodyNode(MGLNode):
                             if (i >= num_lights) break;
                             
                             // Ambient
-                            total_ambient += lights[i].ambient * material_ambient;
+                            total_ambient += lights[i].ambient * material_ambient.rgb;
                             
                             // Diffuse
                             vec3 lightDir = normalize(lights[i].pos - v_pos);
                             float diff = max(dot(norm, lightDir), 0.0);
                             
-                            total_diffuse += diff * lights[i].diffuse * material_diffuse * lights[i].intensity;
+                            total_diffuse += diff * lights[i].diffuse * material_diffuse.rgb * lights[i].intensity;
                             
                             // Specular (Blinn-Phong)
                             vec3 halfwayDir = normalize(lightDir + viewDir);
                             float spec = pow(max(dot(norm, halfwayDir), 0.0), material_shininess);
-                            total_specular += spec * lights[i].specular * material_specular * lights[i].intensity;
+                            total_specular += spec * lights[i].specular * material_specular.rgb * lights[i].intensity;
                         }
                         
-                        result = (total_ambient + total_diffuse + total_specular) * v_color.rgb;
+                        // Premultiplied Alpha Output
+                        // Body Color = (Ambient + Diffuse) * Alpha
+                        // Specular = Specular (Additive)
+                        float alpha = v_color.a * material_diffuse.a * material_ambient.a;
+                        result = (total_ambient + total_diffuse) * v_color.rgb * alpha + total_specular;
+                        
+                        f_color = vec4(result, alpha);
                     }
-
-                    f_color = vec4(result, v_color.a);
                 }
             '''
         )
@@ -2002,12 +2011,45 @@ class MGLBodyNode(MGLNode):
             (self.skeleton_vbo, '3f 3f 1f', 'in_pos', 'in_norm', 'in_bone_index')
         ], index_buffer=self.skeleton_index_buffer)
 
+        # Unlit Shader for Optimized Lines
+        self.unlit_prog = ctx.program(
+            vertex_shader='''
+                #version 330
+                uniform mat4 VP;
+                #define MAX_BONES 50
+                uniform mat4 bones[MAX_BONES];
+                in vec3 in_pos;
+                // Skipped Normals
+                in float in_bone_index;
+                uniform vec4 color;
+                out vec4 v_color;
+                void main() {
+                    int b_idx = int(in_bone_index);
+                    mat4 bone_mat = bones[b_idx];
+                    vec4 world_pos = bone_mat * vec4(in_pos, 1.0);
+                    gl_Position = VP * world_pos;
+                    v_color = color; 
+                }
+            ''',
+            fragment_shader='''
+                #version 330
+                in vec4 v_color;
+                out vec4 f_color;
+                void main() {
+                    f_color = v_color;
+                }
+            '''
+        )
+        self.skeleton_unlit_vao = ctx.vertex_array(self.unlit_prog, [
+            (self.skeleton_vbo, '3f 12x 1f', 'in_pos', 'in_bone_index')
+        ], index_buffer=self.skeleton_index_buffer)
+
     def execute(self):
         if self.pose_input.fresh_input:
             data = self.pose_input()
             if data is not None:
                 self.body.update_quats(data)
-
+    
         if self.mgl_input.fresh_input:
             msg = self.mgl_input()
             if msg == 'draw':
@@ -2048,53 +2090,68 @@ class MGLBodyNode(MGLNode):
             else:
                 m = np.identity(4, dtype='f4')
             bones_bytes.extend(m.T.astype('f4').flatten().tobytes())
+
+        # Determine Render Mode
+        mode = self.display_mode_input()
+        use_unlit = (mode == 'lines')
+        
+        # Select Program
+        target_prog = self.unlit_prog if use_unlit and hasattr(self, 'unlit_prog') else self.prog
             
-        if 'bones' in self.prog:
-            self.prog['bones'].write(bones_bytes)
+        if 'bones' in target_prog:
+            target_prog['bones'].write(bones_bytes)
             
         # 3. Uniforms
         vp = self.ctx.view_matrix @ self.ctx.projection_matrix
-        self.prog['VP'].write(vp.flatten().tobytes())
+        if 'VP' in target_prog:
+            target_prog['VP'].write(vp.flatten().tobytes())
         
-        try:
-            inv_view = np.linalg.inv(self.ctx.view_matrix)
-            cam_pos = inv_view[3, :3]
-            if 'view_pos' in self.prog:
-                self.prog['view_pos'].value = tuple(cam_pos)
-        except:
-            pass
+        # Lit-only uniforms
+        if not use_unlit:
+            try:
+                inv_view = np.linalg.inv(self.ctx.view_matrix)
+                cam_pos = inv_view[3, :3]
+                if 'view_pos' in target_prog:
+                    target_prog['view_pos'].value = tuple(cam_pos)
+            except:
+                pass
+            
+            self.ctx.update_lights(target_prog)
+            self.ctx.update_material(target_prog)
 
-        self.ctx.update_lights(self.prog)
-        self.ctx.update_material(self.prog)
-        if 'color' in self.prog:
+        if 'color' in target_prog:
             c = self.ctx.current_color
-            self.prog['color'].value = tuple(c)
+            target_prog['color'].value = tuple(c)
         
         # 4. Draw
-        if getattr(self, 'limb_top_fix_vao', None):
-            mode = self.display_mode_input()
-            
-            if mode == 'lines':
-                if hasattr(self, 'skeleton_vao'):
-                    # Disable CULL_FACE just in case, though lines don't face
-                    self.ctx.ctx.disable(moderngl.CULL_FACE)
-                    self.skeleton_vao.render(mode=moderngl.LINES)
-                    self.ctx.ctx.enable(moderngl.CULL_FACE)
-            else:
+        if use_unlit:
+            if hasattr(self, 'skeleton_unlit_vao'):
+                self.ctx.ctx.disable(moderngl.CULL_FACE)
+                self.skeleton_unlit_vao.render(mode=moderngl.LINES)
+                self.ctx.ctx.enable(moderngl.CULL_FACE)
+        else:
+            if getattr(self, 'limb_top_fix_vao', None):
                 self.ctx.ctx.disable(moderngl.CULL_FACE)
                 self.limb_top_fix_vao.render(mode=moderngl.TRIANGLES)
                 self.ctx.ctx.enable(moderngl.CULL_FACE)
 
-        # 5. Joint Callbacks
-        # Iterate all joints and trigger callback with their global matrix
-        for i, joint in enumerate(self.body.joints):
-            if i in self.global_matrices:
-                if not hasattr(joint, 'do_draw') or joint.do_draw:
-                    mat = self.global_matrices[i]
-                    self.ctx.model_matrix_stack.append(mat)
-                    self.joint_id_out.send(i)
-                    self.joint_callback.send('draw')
-                    self.ctx.model_matrix_stack.pop()
+        # 5. Joint Callbacks (Optional)
+        if self.enable_callbacks_input():
+            # Iterate all joints and trigger callback with their global matrix
+            for i, joint in enumerate(self.body.joints):
+                # Filter duplicates (e.g. 4=6=9 and 1=12=16 are coincident)
+                if i in [t_PelvisAnchor, t_LeftHip, t_RightHip, t_LeftShoulderBladeBase, t_RightShoulderBladeBase]:
+                    continue
+                if joint is None:
+                    continue
+                
+                if i in self.global_matrices:
+                    if not hasattr(joint, 'do_draw') or joint.do_draw:
+                        mat = self.global_matrices[i]
+                        self.ctx.model_matrix_stack.append(mat)
+                        self.joint_id_out.send(i)
+                        self.joint_callback.send('draw')
+                        self.ctx.model_matrix_stack.pop()
 
     def traverse_matrices(self, joint_index, current_mat):
         if joint_index == t_PelvisAnchor:

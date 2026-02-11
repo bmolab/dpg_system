@@ -1,6 +1,6 @@
 from OpenGL.GLUT import *
 from dpg_system.body_base import *
-
+import threading
 # openGL Context is a node
 # it outputs a draw message per render cycle
 # children draw when they receive this message (and register as child, save gl_context)

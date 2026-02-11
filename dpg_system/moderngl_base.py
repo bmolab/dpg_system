@@ -103,7 +103,8 @@ class MGLContext:
             self.ctx = moderngl.create_context(standalone=True)
             self.ctx.enable(moderngl.BLEND)
             self.ctx.enable(moderngl.DEPTH_TEST)
-            self.ctx.blend_func = moderngl.DEFAULT_BLENDING
+            # Use Premultiplied Alpha Blending to allow additive specular on transparent surfaces
+            self.ctx.blend_func = (moderngl.ONE, moderngl.ONE_MINUS_SRC_ALPHA)
         except Exception as e:
             print(f"Failed to create standalone context: {e}")
             return
@@ -120,9 +121,9 @@ class MGLContext:
         self.current_color = (1.0, 1.0, 1.0, 1.0)
         self.lights = [] 
         self.current_material = {
-            'ambient': [0.1, 0.1, 0.1],
-            'diffuse': [1.0, 1.0, 1.0],
-            'specular': [0.5, 0.5, 0.5],
+            'ambient': [0.1, 0.1, 0.1, 1.0],
+            'diffuse': [1.0, 1.0, 1.0, 1.0],
+            'specular': [0.5, 0.5, 0.5, 1.0],
             'shininess': 32.0
         }
         
@@ -186,9 +187,9 @@ class MGLContext:
                 uniform Light lights[MAX_LIGHTS];
                 
                 // Material Uniforms
-                uniform vec3 material_ambient;
-                uniform vec3 material_diffuse;
-                uniform vec3 material_specular;
+                uniform vec4 material_ambient;
+                uniform vec4 material_diffuse;
+                uniform vec4 material_specular;
                 uniform float material_shininess;
                 
                 in vec3 v_normal;
@@ -202,13 +203,15 @@ class MGLContext:
                         vec3 v = normalize(view_pos - v_pos);
                         if (dot(n, v) < 0.0) discard;
                     }
-                    
+
                     vec4 base_color = color;
-                    float alpha = base_color.a;
+                    float alpha = base_color.a * material_diffuse.a * material_ambient.a;
 
                     // Apply Texture
                     if (has_texture) {
-                        base_color *= texture(diffuse_map, v_texcoord);
+                        vec4 texColor = texture(diffuse_map, v_texcoord);
+                        base_color *= texColor;
+                        alpha *= texColor.a;
                     }
                     
                     // Round Points
@@ -227,6 +230,7 @@ class MGLContext:
                     if (num_lights == 0) {
                         final_rgb = vec3(0.2) * base_color.rgb; // Simple fallback
                     } else {
+                        vec3 total_emission = vec3(0.0); // If we had emission map
                         vec3 total_ambient = vec3(0.0);
                         vec3 total_diffuse = vec3(0.0);
                         vec3 total_specular = vec3(0.0);
@@ -235,20 +239,23 @@ class MGLContext:
                             if (i >= num_lights) break;
                             
                             // Ambient
-                            total_ambient += lights[i].ambient * material_ambient;
+                            total_ambient += lights[i].ambient * material_ambient.rgb;
                             
                             // Diffuse
                             vec3 lightDir = normalize(lights[i].pos - v_pos);
                             float diff = max(dot(norm, lightDir), 0.0); // One-sided
-                            total_diffuse += diff * lights[i].diffuse * material_diffuse * lights[i].intensity;
+                            total_diffuse += diff * lights[i].diffuse * material_diffuse.rgb * lights[i].intensity;
                             
                             // Specular (Blinn-Phong)
                             vec3 halfwayDir = normalize(lightDir + viewDir);
                             float spec = pow(max(dot(norm, halfwayDir), 0.0), material_shininess);
-                            total_specular += spec * lights[i].specular * material_specular * lights[i].intensity; 
+                            total_specular += spec * lights[i].specular * material_specular.rgb * lights[i].intensity; 
                         }
                         
-                        final_rgb = (total_ambient + total_diffuse + total_specular) * base_color.rgb;
+                        // Premultiplied Alpha Output
+                        // Body Color = (Ambient + Diffuse) * Alpha
+                        // Specular = Specular (Additive, not multiplied by alpha)
+                        final_rgb = (total_ambient + total_diffuse) * base_color.rgb * alpha + total_specular;
                     }
                     
                     f_color = vec4(final_rgb, alpha);

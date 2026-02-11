@@ -4,7 +4,8 @@ import numpy as np
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from dpg_system.body_defs import *
-from pylab import *
+# from pylab import *
+import numpy as np
 from dpg_system.conversion_utils import *
 
 
