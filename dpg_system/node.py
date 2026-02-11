@@ -2438,24 +2438,27 @@ class Node:
 
     def check_for_messages(self, in_data: Union[str, List[Any]]) -> bool:
         self.message_handled = False
-        if len(self.message_handlers) > 0:
+        t = type(in_data)
+        if t in [str, list]:
             message = ''
             message_data = []
-            t = type(in_data)
-            if t == str:
+            if t is str:
                 message_list = in_data.split(' ')
                 message = message_list[0]
                 message_data = message_list[1:]
             elif t == list:
-                list_len = len(in_data)
-                if list_len > 0:
+                if len(in_data) > 0:
                     if type(in_data[0]) == str:
                         message = in_data[0]
                         message_data = in_data[1:]
             if message != '':
-                if message in self.message_handlers:
-                    self.message_handlers[message](message, message_data)
-                    self.message_handled = True
+                if len(self.message_handlers) > 0:
+                    if message in self.message_handlers:
+                        self.message_handlers[message](message, message_data)
+                        self.message_handled = True
+                if not self.message_handled:
+                    # could be a property, option, inpupt
+                    pass
         return self.message_handled
 
     def save_custom(self, container: Dict[str, Any]):

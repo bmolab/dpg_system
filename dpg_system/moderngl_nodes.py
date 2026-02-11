@@ -1647,17 +1647,201 @@ class MGLBodyNode(MGLNode):
         # Manually initialize joint hierarchy because standard BodyData lacks connect_limbs
         self.build_hierarchy(self.body.joints)
         self.body.create_limbs()
-        
-        self.pose_input = self.add_input('pose_in', triggers_execution=True)
-        self.display_mode_input = self.add_input('display_mode', widget_type='combo', default_value='solid')
-        self.display_mode_input.widget.combo_items = ['solid', 'lines']
+
+        self.pose_input = self.add_input('pose', triggers_execution=True)
+
         self.enable_callbacks_input = self.add_input('enable_callbacks', widget_type='checkbox', default_value=True)
+        self.display_mode_input = self.add_input('display_mode', widget_type='combo', default_value='lines')
+        self.display_mode_input.widget.combo_items = ['lines', 'solid']
+        
         self.scale_input = self.add_input('scale', widget_type='drag_float', default_value=1.0)
+        self.joint_radius_input = self.add_input('joint_radius', widget_type='drag_float', default_value=0.1)
+        self.joint_data_input = self.add_input('joint_data')
+        self.color_input = self.add_input('color', widget_type='color_picker', default_value=[1.0, 1.0, 1.0, 1.0])
+        self.instanced_display_mode_input = self.add_input('instanced_mode', widget_type='combo', default_value='solid')
+        self.instanced_display_mode_input.widget.combo_items = ['solid', 'wireframe', 'points']
         
         self.joint_callback = self.add_output('joint_callback')
         self.joint_id_out = self.add_output('joint_id')
+
+    def initialize_instanced_gl(self):
+        ctx = self.ctx.ctx
+        # 1. Sphere Geometry (Unit Sphere)
+        # Reusing similar logic to MGLSphereNode but simplified
+        sphere_res = 16
+        # Parametric sphere generation... or just reuse cube for testing?
+        # Let's generate a proper sphere
         
-        self.global_matrices = {} # Map joint_index -> mat4
+        verts = []
+        norms = []
+        indices = []
+        
+        import math
+        
+        for i in range(sphere_res + 1):
+            lat = math.pi * i / sphere_res
+            for j in range(sphere_res + 1):
+                lon = 2 * math.pi * j / sphere_res
+                x = math.sin(lat) * math.cos(lon)
+                y = math.sin(lat) * math.sin(lon)
+                z = math.cos(lat)
+                verts.extend([x, y, z])
+                norms.extend([x, y, z])
+                
+        for i in range(sphere_res):
+            for j in range(sphere_res):
+                p1 = i * (sphere_res + 1) + j
+                p2 = p1 + 1
+                p3 = (i + 1) * (sphere_res + 1) + j
+                p4 = p3 + 1
+                indices.extend([p1, p2, p3, p2, p4, p3])
+        
+        self.instanced_sphere_vbo = ctx.buffer(np.array(verts, dtype='f4').tobytes())
+        self.instanced_sphere_ibo = ctx.buffer(np.array(indices, dtype='i4').tobytes())
+        self.instanced_sphere_norms = ctx.buffer(np.array(norms, dtype='f4').tobytes())
+        
+        # 2. Instance Data Buffers (Dynamic)
+        # We need to pre-calculate the "valid" bone indices to skip duplicates
+        valid_indices = []
+        for i, joint in enumerate(self.body.joints):
+             if i in [t_PelvisAnchor, t_LeftHip, t_RightHip, t_LeftShoulderBladeBase, t_RightShoulderBladeBase]:
+                continue
+             if joint is None:
+                continue
+             valid_indices.append(i)
+        
+        self.instanced_bone_indices = np.array(valid_indices, dtype='i4')
+        # Buffer for bone indices (static enough unless body changes)
+        self.instanced_bone_idx_buffer = ctx.buffer(self.instanced_bone_indices.tobytes())
+        
+        # Buffer for radii (dynamic) - Initial size matching valid count
+        self.instanced_radius_buffer = ctx.buffer(reserve=len(valid_indices) * 4) # float32
+        
+        # 3. VAO
+        # Attributes: in_pos, in_norm, in_radius, in_bone_idx
+        # Radius and BoneIdx are per-instance (divisor=1)
+        
+        self.instanced_vao = ctx.vertex_array(self.ctx.mgl_instanced_joint_shader, [
+            (self.instanced_sphere_vbo, '3f', 'in_pos'),
+            (self.instanced_sphere_norms, '3f', 'in_norm'),
+            (self.instanced_radius_buffer, '1f/i', 'in_radius'),
+            (self.instanced_bone_idx_buffer, '1i/i', 'in_bone_idx'),
+        ], index_buffer=self.instanced_sphere_ibo)
+        
+    def draw_instanced(self, joint_data):
+        # DEBUG PRINTS FOR USER
+        if not hasattr(self, 'instanced_vao'):
+            # print("MGLBodyNode: No instanced_vao in draw_instanced - skipping")
+            return
+            
+        ctx = self.ctx.ctx
+        num_joints = len(self.body.joints)
+        
+        # Robust Data Handling
+        if not isinstance(joint_data, np.ndarray):
+            joint_data = np.array(joint_data, dtype=np.float32)
+            
+        joint_data = joint_data.flatten()
+        
+        # DEBUG
+        # print(f"MGLBodyNode: draw_instanced entered. Data len: {len(joint_data)}/{num_joints}. Global Mats: {len(self.global_matrices)}")
+        
+        # Ensure data size matches full body first
+        if len(joint_data) < num_joints:
+             # Pad with zeros
+             padded = np.zeros(num_joints, dtype=np.float32)
+             padded[:len(joint_data)] = joint_data
+             full_data = padded
+        else:
+             full_data = joint_data[:num_joints].astype(np.float32)
+
+        # Filter to Valid Indices (Remove duplicates)
+        # self.instanced_bone_indices contains indices of joints we actually draw
+        # We need to extract data for these indices
+        valid_data = full_data[self.instanced_bone_indices]
+        
+        # Apply base radius multiplier
+        base_r = self.joint_radius_input()
+        if base_r is None: base_r = 0.1 # Default or prevent crash
+        
+        # Multiply valid data by base radius
+        scaled_data = valid_data * base_r
+        
+        self.instanced_radius_buffer.write(scaled_data.tobytes())
+        
+        # Setup Shader Uniforms (VP)
+        if 'VP' in self.ctx.mgl_instanced_joint_shader:
+            # Match MGLBodyNode.draw logic: View @ Projection likely
+            # Though standard is Projection @ View, it depends on conventions
+            # Let's align with working limb code
+            vp = self.ctx.view_matrix @ self.ctx.projection_matrix
+            self.ctx.mgl_instanced_joint_shader['VP'].write(vp.flatten().tobytes())
+            
+        # Upload Bones to Shader
+        max_bones = 50
+        bones_bytes = bytearray(max_bones * 64) 
+        
+        for i in range(min(num_joints, max_bones)):
+            if i in self.global_matrices:
+                mat = self.global_matrices[i]
+                # Transpose for OpenGL (Column-Major)
+                bones_bytes[i*64 : (i+1)*64] = mat.T.astype('f4').flatten().tobytes()
+        
+        if 'bones' in self.ctx.mgl_instanced_joint_shader:
+            self.ctx.mgl_instanced_joint_shader['bones'].write(bones_bytes)
+            
+        # Note: Shader does NOT have base_radius uniform, so we handle it on CPU above.
+        
+        
+        # Set Color
+        # Use node input if available, otherwise context
+        sphere_color = self.color_input()
+        if sphere_color is None:
+             sphere_color = self.ctx.current_color
+             
+        # Normalize colors (handle 0-255 vs 0-1)
+        # Identical logic to MGLMaterialNode.norm(c)
+        def norm(c):
+             if c is None or len(c) == 0: return [1.0, 1.0, 1.0, 1.0] # Fallback
+             
+             # Handle list/tuple to list
+             c_list = list(c)
+             
+             if max(c_list) > 1.0:
+                 c_list = [val / 255.0 for val in c_list]
+                 
+             # Ensure 4 components (defaults to alpha 1.0 if missing)
+             if len(c_list) == 3:
+                 return c_list + [1.0]
+             return c_list
+             
+        final_color = norm(sphere_color)
+        
+        if 'color' in self.ctx.mgl_instanced_joint_shader:
+            self.ctx.mgl_instanced_joint_shader['color'].value = tuple(final_color)
+             
+        # Handle Display Mode
+        mode = self.instanced_display_mode_input()
+        
+        # Disable culling
+        self.ctx.ctx.disable(moderngl.CULL_FACE) 
+        # Enable Standard Alpha Blending
+        self.ctx.ctx.enable(moderngl.BLEND)
+        self.ctx.ctx.blend_func = moderngl.SRC_ALPHA, moderngl.ONE_MINUS_SRC_ALPHA
+        
+        count = len(scaled_data)
+        
+        if mode == 'wireframe':
+            self.ctx.ctx.wireframe = True
+            self.instanced_vao.render(instances=count)
+            self.ctx.ctx.wireframe = False
+        elif mode == 'points':
+            self.instanced_vao.render(instances=count, mode=moderngl.POINTS)
+        else:
+            self.instanced_vao.render(instances=count)
+            
+        self.ctx.ctx.disable(moderngl.BLEND)
+        self.ctx.ctx.enable(moderngl.CULL_FACE)
         
     def build_hierarchy(self, joints):
         # Manually connect limbs (Hierarchy for traversal)
@@ -2044,11 +2228,17 @@ class MGLBodyNode(MGLNode):
             (self.skeleton_vbo, '3f 12x 1f', 'in_pos', 'in_bone_index')
         ], index_buffer=self.skeleton_index_buffer)
 
+        # Initialize Instanced Geometry (Spheres)
+        self.initialize_instanced_gl()
+
     def execute(self):
         if self.pose_input.fresh_input:
             data = self.pose_input()
             if data is not None:
                 self.body.update_quats(data)
+
+        if self.joint_data_input.fresh_input:
+            self.latest_joint_data = self.joint_data_input()
     
         if self.mgl_input.fresh_input:
             msg = self.mgl_input()
@@ -2060,9 +2250,15 @@ class MGLBodyNode(MGLNode):
 
     def draw(self):
         if not self.ctx or not self.ctx.ctx: return
+        
+        # 5. Instanced Visualization (Optional) - MOVED TO END
+        # if hasattr(self, 'latest_joint_data') and self.latest_joint_data is not None:
+        #      self.draw_instanced(self.latest_joint_data)
+        
         if not getattr(self, 'limb_top_fix_vao', None): 
              print("MGLBodyNode: initializing GL for top cap normal fix")
              self.initialize_gl()
+
         
         # 1. Compute Global Matrices for all joints
         self.global_matrices = {}
@@ -2152,6 +2348,10 @@ class MGLBodyNode(MGLNode):
                         self.joint_id_out.send(i)
                         self.joint_callback.send('draw')
                         self.ctx.model_matrix_stack.pop()
+        
+        # 6. Instanced Visualization (Final Step)
+        if hasattr(self, 'latest_joint_data') and self.latest_joint_data is not None:
+             self.draw_instanced(self.latest_joint_data)
 
     def traverse_matrices(self, joint_index, current_mat):
         if joint_index == t_PelvisAnchor:

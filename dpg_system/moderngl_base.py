@@ -263,6 +263,58 @@ class MGLContext:
             '''
         )
 
+        # Instanced Sphere Shader (Simple)
+        self.mgl_instanced_joint_shader = self.ctx.program(
+            vertex_shader='''
+                #version 330
+                uniform mat4 VP;
+                #define MAX_BONES 50
+                uniform mat4 bones[MAX_BONES];
+                
+                in vec3 in_pos;
+                in vec3 in_norm;
+                in float in_radius;     // Per-instance radius
+                in int in_bone_idx;     // Per-instance bone index
+                
+                out vec3 v_pos;
+                out vec3 v_norm;
+                
+                void main() {
+                    mat4 bone_mat = bones[in_bone_idx];
+                    
+                    // Scale local sphere by radius
+                    vec3 local_pos = in_pos * in_radius;
+                    
+                    // Transform to world space via bone matrix
+                    // Note: bone_mat includes rotation and translation
+                    vec4 world_pos = bone_mat * vec4(local_pos, 1.0);
+                    
+                    // Rotate normal
+                    mat3 normal_matrix = mat3(bone_mat);
+                    v_norm = normal_matrix * in_norm; 
+                    v_pos = world_pos.xyz;
+                    
+                    gl_Position = VP * world_pos;
+                }
+            ''',
+            fragment_shader='''
+                #version 330
+                
+                uniform vec3 view_pos;
+                uniform vec4 color;
+                
+                in vec3 v_pos;
+                in vec3 v_norm;
+                
+                out vec4 f_color;
+                
+                void main() {
+                    // Unlit / Flat Color
+                    f_color = color;
+                }
+            '''
+        )
+
     # Properties for backward compatibility (if needed) and convenience
     @property
     def fbo(self): return self.active_target.fbo
