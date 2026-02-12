@@ -1180,7 +1180,7 @@ class GLTransformNode(GLNode):
 
     def receive_value(self):
         value = self.x()
-        if not isscalar(value):
+        if not np.isscalar(value):
             if isinstance(value, np.ndarray):
                 if value.size > 1:
                     value = value.flatten()
