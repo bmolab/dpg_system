@@ -601,10 +601,15 @@ class OpenTakeNode(MoCapNode):
                 keys_list = list(incoming_dict.keys())
                 self.sequence_keys = keys_list.copy()
                 for key in keys_list:
+                    value = incoming_dict[key]
                     if key in self.take_dict:
-                        self.take_dict[key].append(incoming_dict[key])
+                        if isinstance(value, np.ndarray):
+                            value = value.copy()
+                        self.take_dict[key].append(value)
                     else:
-                        self.take_dict[key] = [incoming_dict[key]]
+                        if isinstance(value, np.ndarray):
+                            value = value.copy()
+                        self.take_dict[key] = [value]
                     if len(self.take_dict[key]) > max_len:
                         max_len = len(self.take_dict[key])
                 self.frame_count = max_len
