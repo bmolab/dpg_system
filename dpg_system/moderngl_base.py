@@ -399,12 +399,18 @@ class MGLContext:
                 prog[name].value = light['intensity']
 
     def update_material(self, prog):
+        def _pad4(c):
+            c = tuple(c)
+            if len(c) == 3:
+                return c + (1.0,)
+            return c[:4]
+
         if 'material_ambient' in prog:
-            prog['material_ambient'].value = tuple(self.current_material['ambient'])
+            prog['material_ambient'].value = _pad4(self.current_material['ambient'])
         if 'material_diffuse' in prog:
-            prog['material_diffuse'].value = tuple(self.current_material['diffuse'])
+            prog['material_diffuse'].value = _pad4(self.current_material['diffuse'])
         if 'material_specular' in prog:
-            prog['material_specular'].value = tuple(self.current_material['specular'])
+            prog['material_specular'].value = _pad4(self.current_material['specular'])
         if 'material_shininess' in prog:
             prog['material_shininess'].value = self.current_material['shininess']
 

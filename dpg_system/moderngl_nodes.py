@@ -30,6 +30,8 @@ def register_moderngl_nodes():
     Node.app.register_node('mgl_light', MGLLightNode.factory)
     Node.app.register_node('mgl_material', MGLMaterialNode.factory)
     Node.app.register_node('mgl_texture', MGLTextureNode.factory)
+    Node.app.register_node('mgl_plane', MGLPlaneNode.factory)
+    Node.app.register_node('mgl_disk', MGLDiskNode.factory)
     Node.app.register_node('mgl_body', MGLBodyNode.factory)
 
 
@@ -1343,6 +1345,187 @@ class MGLGeodesicSphereNode(MGLShapeNode):
                 model = np.dot(model, scale_mat)
                 self.prog['M'].write(model.astype('f4').T.tobytes())
 
+
+class MGLPlaneNode(MGLShapeNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        return MGLPlaneNode(name, data, args)
+
+    def __init__(self, label, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        super().initialize(args)
+        self.width_input = self.add_input('width', widget_type='drag_float', default_value=1.0, speed=0.01)
+        self.depth_input = self.add_input('depth', widget_type='drag_float', default_value=1.0, speed=0.01)
+        self.subdivisions_input = self.add_input('subdivisions', widget_type='drag_int', default_value=1, min_value=1, max_value=256, callback=self.geometry_changed)
+        self.end_initialization()
+
+    def custom_create(self, from_file):
+        dpg.configure_item(self.subdivisions_input.widget.uuids[0], width=100)
+
+    def create_geometry(self):
+        vertices = []
+        indices = []
+
+        subs = max(1, self.subdivisions_input())
+        verts_per_side = (subs + 1) * (subs + 1)
+
+        # --- Top face (normal = +Y) ---
+        for iz in range(subs + 1):
+            for ix in range(subs + 1):
+                x = -0.5 + float(ix) / subs
+                z = -0.5 + float(iz) / subs
+                u = float(ix) / subs
+                v = float(iz) / subs
+                vertices.extend([x, 0.0, z, 0.0, 1.0, 0.0, u, v])
+
+        for iz in range(subs):
+            for ix in range(subs):
+                bl = iz * (subs + 1) + ix
+                br = bl + 1
+                tl = (iz + 1) * (subs + 1) + ix
+                tr = tl + 1
+                indices.extend([bl, tl, br])
+                indices.extend([br, tl, tr])
+
+        # --- Bottom face (normal = -Y, reversed winding) ---
+        for iz in range(subs + 1):
+            for ix in range(subs + 1):
+                x = -0.5 + float(ix) / subs
+                z = -0.5 + float(iz) / subs
+                u = float(ix) / subs
+                v = float(iz) / subs
+                vertices.extend([x, 0.0, z, 0.0, -1.0, 0.0, u, v])
+
+        for iz in range(subs):
+            for ix in range(subs):
+                bl = verts_per_side + iz * (subs + 1) + ix
+                br = bl + 1
+                tl = verts_per_side + (iz + 1) * (subs + 1) + ix
+                tr = tl + 1
+                # Reversed winding for -Y face
+                indices.extend([bl, br, tl])
+                indices.extend([br, tr, tl])
+
+        return vertices, indices
+
+    def handle_shape_params(self):
+        if self.ctx is not None:
+            if 'M' in self.prog:
+                model = self.ctx.get_model_matrix()
+                w = self.width_input()
+                d = self.depth_input()
+                scale_mat = np.diag([w, 1.0, d, 1.0]).astype('f4')
+                model = np.dot(model, scale_mat)
+                self.prog['M'].write(model.astype('f4').T.tobytes())
+
+
+class MGLDiskNode(MGLShapeNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        return MGLDiskNode(name, data, args)
+
+    def __init__(self, label, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        super().initialize(args)
+        self.radius_input = self.add_input('radius', widget_type='drag_float', default_value=0.5, speed=0.01)
+        self.segments_input = self.add_input('segments', widget_type='drag_int', default_value=32, min_value=3, max_value=256, callback=self.geometry_changed)
+        self.rings_input = self.add_input('rings', widget_type='drag_int', default_value=1, min_value=1, max_value=64, callback=self.geometry_changed)
+        self.end_initialization()
+
+    def custom_create(self, from_file):
+        dpg.configure_item(self.segments_input.widget.uuids[0], width=100)
+        dpg.configure_item(self.rings_input.widget.uuids[0], width=100)
+
+    def create_geometry(self):
+        import math
+        vertices = []
+        indices = []
+
+        segments = max(3, self.segments_input())
+        rings = max(1, self.rings_input())
+
+        # --- Top face (normal = +Y) ---
+        # Center vertex
+        vertices.extend([0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.5, 0.5])
+
+        # Concentric rings from inner to outer
+        for r in range(1, rings + 1):
+            frac = float(r) / rings
+            for s in range(segments):
+                theta = 2.0 * math.pi * float(s) / segments
+                x = frac * math.cos(theta)
+                z = frac * math.sin(theta)
+                u = 0.5 + 0.5 * x
+                v = 0.5 + 0.5 * z
+                vertices.extend([x, 0.0, z, 0.0, 1.0, 0.0, u, v])
+
+        # Indices for top face
+        # Inner fan: center to first ring
+        for s in range(segments):
+            s_next = (s + 1) % segments
+            indices.extend([0, 1 + s, 1 + s_next])
+
+        # Ring quads
+        for r in range(1, rings):
+            inner_base = 1 + (r - 1) * segments
+            outer_base = 1 + r * segments
+            for s in range(segments):
+                s_next = (s + 1) % segments
+                i0 = inner_base + s
+                i1 = inner_base + s_next
+                i2 = outer_base + s
+                i3 = outer_base + s_next
+                indices.extend([i0, i2, i1])
+                indices.extend([i1, i2, i3])
+
+        # --- Bottom face (normal = -Y, reversed winding) ---
+        verts_per_side = 1 + rings * segments
+        offset = verts_per_side
+
+        # Center vertex
+        vertices.extend([0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.5, 0.5])
+
+        for r in range(1, rings + 1):
+            frac = float(r) / rings
+            for s in range(segments):
+                theta = 2.0 * math.pi * float(s) / segments
+                x = frac * math.cos(theta)
+                z = frac * math.sin(theta)
+                u = 0.5 + 0.5 * x
+                v = 0.5 + 0.5 * z
+                vertices.extend([x, 0.0, z, 0.0, -1.0, 0.0, u, v])
+
+        # Indices for bottom face (reversed winding)
+        for s in range(segments):
+            s_next = (s + 1) % segments
+            indices.extend([offset, offset + 1 + s_next, offset + 1 + s])
+
+        for r in range(1, rings):
+            inner_base = offset + 1 + (r - 1) * segments
+            outer_base = offset + 1 + r * segments
+            for s in range(segments):
+                s_next = (s + 1) % segments
+                i0 = inner_base + s
+                i1 = inner_base + s_next
+                i2 = outer_base + s
+                i3 = outer_base + s_next
+                indices.extend([i0, i1, i2])
+                indices.extend([i1, i3, i2])
+
+        return vertices, indices
+
+    def handle_shape_params(self):
+        if self.ctx is not None:
+            if 'M' in self.prog:
+                model = self.ctx.get_model_matrix()
+                r = self.radius_input()
+                scale_mat = np.diag([r, 1.0, r, 1.0]).astype('f4')
+                model = np.dot(model, scale_mat)
+                self.prog['M'].write(model.astype('f4').T.tobytes())
 
 
 class MGLPointCloudNode(MGLShapeNode):
