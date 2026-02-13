@@ -97,6 +97,13 @@ class MGLContextNode(Node):
         self.fullscreen_window = None
         self.render_target = None
 
+        # PBO double-buffer state for async readback
+        self._pbo = [None, None]   # two Buffer objects
+        self._pbo_index = 0        # which PBO to read INTO this frame
+        self._pbo_ready = False    # first frame has no previous data
+        self._pbo_width = 0
+        self._pbo_height = 0
+
         self.render_trigger = self.add_input('render', triggers_execution=True)
         self.mgl_chain_output = self.add_output('mgl_chain')
         self.texture_output = self.add_output('texture_tag')
@@ -119,6 +126,9 @@ class MGLContextNode(Node):
             dpg.delete_item(self.fullscreen_window)
         if hasattr(self, 'render_target') and self.render_target:
             self.render_target.release()
+        for pbo in self._pbo:
+            if pbo is not None:
+                pbo.release()
 
     def resize(self):
         self.width = max(1, self.width_option())
@@ -285,11 +295,47 @@ class MGLContextNode(Node):
             # Signal Downstream to Draw
             self.mgl_chain_output.send('draw')
             
-            # Read Pixels and Update DPG Texture
-            data = self.context.get_pixel_data()
+            # --- PBO Double-Buffered Async Readback ---
+            # Resolve MSAA if needed (same as get_pixel_data but without the sync read)
+            rt = self.render_target
+            if rt.samples > 0 and rt.msaa_fbo:
+                self.context.ctx.copy_framebuffer(rt.fbo, rt.msaa_fbo)
+            
+            buf_size = self.width * self.height * 4  # RGBA uint8
+            
+            # Recreate PBOs if resolution changed
+            if self._pbo_width != self.width or self._pbo_height != self.height:
+                for i in range(2):
+                    if self._pbo[i] is not None:
+                        self._pbo[i].release()
+                    self._pbo[i] = self.context.ctx.buffer(reserve=buf_size)
+                self._pbo_width = self.width
+                self._pbo_height = self.height
+                self._pbo_ready = False
+                self._pbo_index = 0
+            
+            # Determine which PBO to write into (current) and which to read from (previous)
+            write_pbo = self._pbo[self._pbo_index]
+            read_pbo = self._pbo[1 - self._pbo_index]
+            
+            # Initiate async DMA transfer: FBO -> write_pbo
+            rt.fbo.read_into(write_pbo, components=4)
+            
+            # Read from the OTHER PBO (filled last frame)
+            if self._pbo_ready:
+                data = read_pbo.read()
+            else:
+                # First frame: fall back to synchronous read
+                data = write_pbo.read()
+                self._pbo_ready = True
+            
+            # Swap PBO index for next frame
+            self._pbo_index = 1 - self._pbo_index
         
-        # 1. Create Texture if needed
-        pixels = np.frombuffer(data, dtype=np.uint8).astype(np.float32) / 255.0
+        # OpenGL framebuffer origin is bottom-left, DPG textures expect top-left.
+        # Flip rows vertically to correct the orientation.
+        pixels = np.frombuffer(data, dtype=np.uint8).reshape(self.height, self.width, 4)
+        pixels = np.flipud(pixels).flatten().astype(np.float32) / 255.0
         
         if self.texture_tag is None or not dpg.does_item_exist(self.texture_tag):
              with dpg.texture_registry(show=False):

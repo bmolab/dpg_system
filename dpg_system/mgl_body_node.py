@@ -79,35 +79,68 @@ class MGLBodyNode(MGLNode):
 
     def initialize_instanced_gl(self):
         ctx = self.ctx.ctx
-        # 1. Sphere Geometry (Unit Sphere)
-        # Reusing similar logic to MGLSphereNode but simplified
-        sphere_res = 16
-        # Parametric sphere generation... or just reuse cube for testing?
-        # Let's generate a proper sphere
+        # 1. Geodesic Sphere Geometry (Unit Icosphere)
+        subdivisions = 2
         
+        t = (1.0 + math.sqrt(5.0)) / 2.0
+        
+        # Base icosahedron vertices (normalized to unit sphere)
+        ico_verts = [
+            [-1,  t,  0], [ 1,  t,  0], [-1, -t,  0], [ 1, -t,  0],
+            [ 0, -1,  t], [ 0,  1,  t], [ 0, -1, -t], [ 0,  1, -t],
+            [ t,  0, -1], [ t,  0,  1], [-t,  0, -1], [-t,  0,  1]
+        ]
+        
+        def normalize_v(v):
+            l = math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2])
+            return [v[0]/l, v[1]/l, v[2]/l]
+        
+        ico_verts = [normalize_v(v) for v in ico_verts]
+        
+        # Base icosahedron faces
+        faces = [
+            [0, 11, 5], [0, 5, 1], [0, 1, 7], [0, 7, 10], [0, 10, 11],
+            [1, 5, 9], [5, 11, 4], [11, 10, 2], [10, 7, 6], [7, 1, 8],
+            [3, 9, 4], [3, 4, 2], [3, 2, 6], [3, 6, 8], [3, 8, 9],
+            [4, 9, 5], [2, 4, 11], [6, 2, 10], [8, 6, 7], [9, 8, 1]
+        ]
+        
+        # Subdivide
+        midpoint_cache = {}
+        
+        def get_midpoint(i1, i2):
+            key = tuple(sorted((i1, i2)))
+            if key in midpoint_cache:
+                return midpoint_cache[key]
+            v1 = ico_verts[i1]
+            v2 = ico_verts[i2]
+            mid = normalize_v([v1[0]+v2[0], v1[1]+v2[1], v1[2]+v2[2]])
+            ico_verts.append(mid)
+            idx = len(ico_verts) - 1
+            midpoint_cache[key] = idx
+            return idx
+        
+        for _ in range(subdivisions):
+            new_faces = []
+            for tri in faces:
+                v1, v2, v3 = tri
+                a = get_midpoint(v1, v2)
+                b = get_midpoint(v2, v3)
+                c = get_midpoint(v3, v1)
+                new_faces.extend([[v1,a,c], [v2,b,a], [v3,c,b], [a,b,c]])
+            faces = new_faces
+            midpoint_cache.clear()
+        
+        # Build vertex and index buffers (normals == positions for unit sphere)
         verts = []
         norms = []
+        for v in ico_verts:
+            verts.extend(v)
+            norms.extend(v)
+        
         indices = []
-        
-        import math
-        
-        for i in range(sphere_res + 1):
-            lat = math.pi * i / sphere_res
-            for j in range(sphere_res + 1):
-                lon = 2 * math.pi * j / sphere_res
-                x = math.sin(lat) * math.cos(lon)
-                y = math.sin(lat) * math.sin(lon)
-                z = math.cos(lat)
-                verts.extend([x, y, z])
-                norms.extend([x, y, z])
-                
-        for i in range(sphere_res):
-            for j in range(sphere_res):
-                p1 = i * (sphere_res + 1) + j
-                p2 = p1 + 1
-                p3 = (i + 1) * (sphere_res + 1) + j
-                p4 = p3 + 1
-                indices.extend([p1, p2, p3, p2, p4, p3])
+        for tri in faces:
+            indices.extend(tri)
         
         self.instanced_sphere_vbo = ctx.buffer(np.array(verts, dtype='f4').tobytes())
         self.instanced_sphere_ibo = ctx.buffer(np.array(indices, dtype='i4').tobytes())
@@ -266,8 +299,6 @@ class MGLBodyNode(MGLNode):
         # Handle Display Mode
         mode = self.instanced_display_mode_input()
         
-        # Disable culling
-        self.ctx.ctx.disable(moderngl.CULL_FACE) 
         # Enable Standard Alpha Blending
         self.ctx.ctx.enable(moderngl.BLEND)
         self.ctx.ctx.blend_func = moderngl.SRC_ALPHA, moderngl.ONE_MINUS_SRC_ALPHA
@@ -275,16 +306,21 @@ class MGLBodyNode(MGLNode):
         count = len(scaled_data)
         
         if mode == 'wireframe':
+            self.ctx.ctx.disable(moderngl.CULL_FACE)
             self.ctx.ctx.wireframe = True
             self.instanced_vao.render(instances=count)
             self.ctx.ctx.wireframe = False
+            self.ctx.ctx.enable(moderngl.CULL_FACE)
         elif mode == 'points':
+            self.ctx.ctx.disable(moderngl.CULL_FACE)
             self.instanced_vao.render(instances=count, mode=moderngl.POINTS)
+            self.ctx.ctx.enable(moderngl.CULL_FACE)
         else:
+            # Solid: enable culling to prevent back-face checkering
+            self.ctx.ctx.enable(moderngl.CULL_FACE)
             self.instanced_vao.render(instances=count)
             
         self.ctx.ctx.disable(moderngl.BLEND)
-        self.ctx.ctx.enable(moderngl.CULL_FACE)
         
     def build_hierarchy(self, joints):
         # Manually connect limbs (Hierarchy for traversal)
@@ -713,10 +749,9 @@ class MGLBodyNode(MGLNode):
             world_mat = np.identity(4, dtype=np.float32)
 
         s = self.scale_input()
-        scale_mat = np.diag([s, s, s, 1.0])
-        rot_flip = rotation_matrix(180, [0, 0, 1]).T
+        scale_mat = np.diag([s, s, s, 1.0]).astype(np.float32)
         
-        root_mat = world_mat @ rot_flip @ scale_mat
+        root_mat = world_mat @ scale_mat
         
         self.traverse_matrices(t_PelvisAnchor, root_mat)
         

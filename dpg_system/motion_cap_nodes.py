@@ -13,6 +13,7 @@ import scipy
 import copy
 import datetime
 import json
+import time
 
 #
 # print('before body_defs')
@@ -1220,7 +1221,7 @@ class DiffQuaternionsNode(Node):
         self.diff_quats = np.expand_dims(diff_quats, axis=0)
         try:
             self.axes = quaternion.as_rotation_vector(self.diff_quats)
-        except Exception as a:
+        except Exception as e:
             print(e)
 
         angles = np.linalg.norm(self.axes, axis=2) + 1e-8
