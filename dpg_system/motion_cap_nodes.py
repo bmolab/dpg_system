@@ -43,7 +43,9 @@ def register_motion_cap_nodes():
     Node.app.register_node('limb_size', LimbSizingNode.factory)
     Node.app.register_node('quaternion_diff_and_axis', DiffQuaternionsNode.factory)
     Node.app.register_node('check_burst', CheckBurstNode.factory)
+    Node.app.register_node('cadence_filter', CadenceFilterNode.factory)
     Node.app.register_node('json_npz_frame_picker', JsonRandomEventWindowNode.factory)
+    Node.app.register_node('tracker_root_inference', TrackerRootInferenceNode.factory)
 
 def find_process_id(process_name):
     try:
@@ -1050,8 +1052,12 @@ class MoCapGLBody(MoCapNode):
             local_index = 26
         elif joint_index == 28:
             local_index = 27
+        elif joint_index == 29:
+            local_index = 28
+        elif joint_index == 30:
+            local_index = 29
 
-        if local_index > 27:
+        if local_index > 29:
             return
 
         # if joint_index >= t_ActiveJointCount:
@@ -2342,3 +2348,419 @@ class LimbSizingNode(MoCapNode):
                 self.input_dict[limb_name].set(current[0])
                 self.receive_size(limb_name)
         self.in_receive_size = False
+
+
+class TrackerRootInferenceNode(MoCapNode):
+    """
+    Corrects root (pelvis) position by modeling the actual tracker placement
+    on the left thigh and comparing the model's predicted tracker position
+    with the tracker's reported position.
+
+    The Shadow mocap system infers root position from a tracker on the left
+    thigh but doesn't know the exact mounting position. This causes vertical
+    drift when the left leg is raised. This node provides adjustable parameters
+    for tracker placement to compute a better root position estimate.
+
+    Inputs:
+        positions (37x3): Full Shadow positions array (Y-up, meters)
+        pose (20x4 or 37x4): Quaternion pose data (needed for left hip global rotation)
+
+    Parameters:
+        tracker_down_thigh: Distance from hip joint down the thigh bone axis (meters)
+        tracker_radial_offset: Perpendicular distance from bone axis to tracker (meters)
+        tracker_circumference_angle: Rotation around thigh circumference (degrees)
+            0 = lateral/outside, 90 = front, 180 = medial/inside, 270 = back
+        tracker_index: Which Shadow tracker (0-3)
+    """
+
+    # Shadow position array indices
+    SHADOW_HIPS_INDEX = 4        # PelvisAnchor in shadow indexing
+    SHADOW_LEFT_HIP_INDEX = 14   # LeftHip in shadow indexing
+    SHADOW_LEFT_KNEE_INDEX = 12  # LeftKnee in shadow indexing
+    SHADOW_RIGHT_HIP_INDEX = 28  # RightHip in shadow indexing
+    SHADOW_RIGHT_KNEE_INDEX = 26 # RightKnee in shadow indexing
+    SHADOW_TRACKER_INDICES = [33, 34, 35, 36]  # Tracker0-3 in shadow indexing
+
+    # From definition.xml: Hips -> LeftThigh / RightThigh offsets in cm
+    HIPS_TO_LEFT_HIP_OFFSET = np.array([8.91, -6.269997, 0.0]) / 100.0    # meters
+    HIPS_TO_RIGHT_HIP_OFFSET = np.array([-8.91, -6.269997, 0.0]) / 100.0  # meters
+
+    # From definition.xml: Thigh -> Leg bone vectors (symmetric, same for both sides)
+    # translate="0 -44.852665 -1.566289"
+    THIGH_BONE_VECTOR = np.array([0.0, -44.852665, -1.566289]) / 100.0  # meters
+
+    # SMPL joint indices for left/right
+    SMPL_LEFT_HIP = 1
+    SMPL_LEFT_KNEE = 4
+    SMPL_RIGHT_HIP = 2
+    SMPL_RIGHT_KNEE = 5
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TrackerRootInferenceNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        # Inputs
+        self.positions_input = self.add_input('positions', triggers_execution=True)
+        self.pose_input = self.add_input('pose')
+        self.limb_lengths_input = self.add_input('limb_lengths', callback=self._on_limb_lengths_received)
+
+        # Parameters
+        self.thigh_side = self.add_property(
+            'thigh_side', widget_type='combo', default_value='right', callback=self._on_side_changed)
+        self.thigh_side.widget.combo_items = ['left', 'right']
+        self.tracker_down_thigh = self.add_property(
+            'tracker_down_thigh', widget_type='drag_float', default_value=0.15)
+        self.tracker_radial_offset = self.add_property(
+            'tracker_radial_offset', widget_type='drag_float', default_value=0.08)
+        self.tracker_circumference_angle = self.add_property(
+            'tracker_circumference_angle', widget_type='drag_float', default_value=0.0)
+        self.tracker_index = self.add_property(
+            'tracker_index', widget_type='drag_int', default_value=0)
+        self.enabled = self.add_property(
+            'enabled', widget_type='checkbox', default_value=True)
+
+        # Outputs
+        self.corrected_root_output = self.add_output('corrected root')
+        self.correction_output = self.add_output('correction')
+        self.tracker_model_pos_output = self.add_output('tracker model pos')
+        self.corrected_positions_output = self.add_output('corrected positions')
+
+        # Current bone vectors (start with definition.xml defaults, updated by limb_lengths)
+        # Store both sides; the active side is selected by thigh_side property
+        self._hips_to_hip = {
+            'left': self.HIPS_TO_LEFT_HIP_OFFSET.copy(),
+            'right': self.HIPS_TO_RIGHT_HIP_OFFSET.copy(),
+        }
+        self._thigh_bone_vecs = {
+            'left': self.THIGH_BONE_VECTOR.copy(),
+            'right': self.THIGH_BONE_VECTOR.copy(),
+        }
+
+    def custom_create(self, from_file):
+        self._select_side()
+
+    def _on_side_changed(self):
+        """Called when the thigh_side combo changes."""
+        self._select_side()
+
+    def _select_side(self):
+        """Select active bone vectors for the current thigh side."""
+        side = self.thigh_side()
+        self._current_hips_to_hip = self._hips_to_hip[side]
+        self._thigh_bone_vec = self._thigh_bone_vecs[side]
+        # Precompute thigh bone direction (unit vector)
+        self._update_bone_frame()
+
+    def _update_bone_frame(self):
+        """Recompute bone direction and perpendicular frame from current bone vectors."""
+        bone_len = np.linalg.norm(self._thigh_bone_vec)
+        if bone_len < 1e-6:
+            bone_len = 0.45  # fallback
+        self.thigh_bone_direction = self._thigh_bone_vec / bone_len
+        self.thigh_bone_length = bone_len
+        self._build_thigh_local_frame()
+
+    def _on_limb_lengths_received(self):
+        """Handle limb_lengths input from smpl_beta_editor.
+
+        Updates the hips-to-left_hip offset and thigh bone vector
+        to match current body proportions.
+
+        Expected format: dict with 'offsets' key containing (30, 3) or (24, 3)
+        array in SMPL joint order (pelvis=0, left_hip=1, left_knee=4).
+        """
+        data = self.limb_lengths_input()
+        if data is None:
+            return
+
+        if isinstance(data, dict):
+            offsets = data.get('offsets', None)
+            if offsets is not None:
+                offsets = any_to_array(offsets)
+                if offsets.ndim == 2 and offsets.shape[1] == 3:
+                    # SMPL: left_hip=1, right_hip=2, left_knee=4, right_knee=5
+                    if offsets.shape[0] > self.SMPL_LEFT_HIP:
+                        self._hips_to_hip['left'] = offsets[self.SMPL_LEFT_HIP].copy()
+                    if offsets.shape[0] > self.SMPL_RIGHT_HIP:
+                        self._hips_to_hip['right'] = offsets[self.SMPL_RIGHT_HIP].copy()
+                    if offsets.shape[0] > self.SMPL_LEFT_KNEE:
+                        self._thigh_bone_vecs['left'] = offsets[self.SMPL_LEFT_KNEE].copy()
+                    if offsets.shape[0] > self.SMPL_RIGHT_KNEE:
+                        self._thigh_bone_vecs['right'] = offsets[self.SMPL_RIGHT_KNEE].copy()
+                    self._select_side()
+                    return
+
+            # Fallback: use 'lengths' dict if 'offsets' not available
+            lengths = data.get('lengths', None)
+            if lengths is not None and isinstance(lengths, dict):
+                if 'pelvis_width' in lengths:
+                    pw = float(lengths['pelvis_width']) * 0.5
+                    self._hips_to_hip['left'] = np.array([pw, -0.05, 0.0])
+                    self._hips_to_hip['right'] = np.array([-pw, -0.05, 0.0])
+                if 'upper_leg' in lengths:
+                    ul = float(lengths['upper_leg'])
+                    bone_dir = self.thigh_bone_direction
+                    self._thigh_bone_vecs['left'] = bone_dir * ul
+                    self._thigh_bone_vecs['right'] = bone_dir * ul
+                self._select_side()
+
+    def _build_thigh_local_frame(self):
+        """Build an orthonormal frame around the thigh bone axis.
+
+        The bone direction is the primary axis. We construct two perpendicular
+        vectors that define the plane around the bone for radial offset placement.
+        Convention: perp1 = lateral direction, perp2 = forward direction (in rest pose).
+        """
+        bone_dir = self.thigh_bone_direction
+
+        # Choose a reference vector not parallel to bone direction
+        # In Y-up rest pose, bone points mostly in -Y, so X or Z work
+        ref = np.array([1.0, 0.0, 0.0])
+        if abs(np.dot(bone_dir, ref)) > 0.9:
+            ref = np.array([0.0, 0.0, 1.0])
+
+        # Gram-Schmidt to get perpendicular vectors
+        self.perp1 = ref - np.dot(ref, bone_dir) * bone_dir
+        self.perp1 /= np.linalg.norm(self.perp1)
+
+        self.perp2 = np.cross(bone_dir, self.perp1)
+        self.perp2 /= np.linalg.norm(self.perp2)
+
+    def _compute_tracker_offset_local(self):
+        """Compute the tracker offset from the hip joint in thigh-local (rest pose) coordinates.
+
+        Returns:
+            np.ndarray: 3D offset vector from hip joint to tracker in rest-pose coordinates.
+        """
+        down = self.tracker_down_thigh()
+        radial = self.tracker_radial_offset()
+        angle_deg = self.tracker_circumference_angle()
+        angle_rad = np.radians(angle_deg)
+
+        # Along-bone component
+        along_bone = self.thigh_bone_direction * down
+
+        # Radial component: rotate around bone axis by circumference angle
+        radial_dir = (self.perp1 * np.cos(angle_rad) +
+                      self.perp2 * np.sin(angle_rad))
+        radial_vec = radial_dir * radial
+
+        return along_bone + radial_vec
+
+    @staticmethod
+    def _quat_rotate_vector(q_wxyz, v):
+        """Rotate vector v by quaternion q (w, x, y, z format).
+
+        Uses the formula: v' = q * v * q^-1
+        """
+        w, x, y, z = q_wxyz
+        # Quaternion-vector rotation (optimized)
+        t = 2.0 * np.array([
+            y * v[2] - z * v[1],
+            z * v[0] - x * v[2],
+            x * v[1] - y * v[0]
+        ])
+        return v + w * t + np.cross(np.array([x, y, z]), t)
+
+    def _get_hip_global_quat(self, pose_data):
+        """Extract the global (absolute) hip quaternion for the selected thigh side.
+
+        The pose data contains local rotations. To get the global hip rotation,
+        we compose: pelvis_global * hip_local.
+
+        Args:
+            pose_data: (20, 4) or (37, 4) quaternion array in (w, x, y, z) format
+
+        Returns:
+            np.ndarray: global hip quaternion in (w, x, y, z) format, or None
+        """
+        if pose_data is None:
+            return None
+
+        pose = any_to_array(pose_data)
+
+        if pose.ndim == 1:
+            if pose.size == 80:
+                pose = pose.reshape(20, 4)
+            elif pose.size == 148:
+                pose = pose.reshape(37, 4)
+            else:
+                return None
+
+        side = self.thigh_side()
+
+        # Determine which indexing scheme we have
+        if pose.shape[0] == 37:
+            # Raw shadow data: use shadow indices
+            pelvis_idx = self.SHADOW_HIPS_INDEX
+            hip_idx = self.SHADOW_LEFT_HIP_INDEX if side == 'left' else self.SHADOW_RIGHT_HIP_INDEX
+        elif pose.shape[0] == 20:
+            # Active joints: use active joint map
+            pelvis_idx = self.active_joint_map['pelvis_anchor']
+            hip_key = 'left_hip' if side == 'left' else 'right_hip'
+            hip_idx = self.active_joint_map[hip_key]
+        else:
+            return None
+
+        # Quaternions are already in wxyz format
+        pelvis_q = pose[pelvis_idx].copy()
+        hip_local_q = pose[hip_idx].copy()
+
+        # Compose: global_hip = pelvis_global * hip_local
+        global_hip_q = self._quat_multiply(pelvis_q, hip_local_q)
+
+        return global_hip_q
+
+    @staticmethod
+    def _quat_multiply(q1, q2):
+        """Multiply two quaternions in (w, x, y, z) format."""
+        w1, x1, y1, z1 = q1
+        w2, x2, y2, z2 = q2
+        return np.array([
+            w1*w2 - x1*x2 - y1*y2 - z1*z2,
+            w1*x2 + x1*w2 + y1*z2 - z1*y2,
+            w1*y2 - x1*z2 + y1*w2 + z1*x2,
+            w1*z2 + x1*y2 - y1*x2 + z1*w2
+        ])
+
+    def execute(self):
+        if not self.positions_input.fresh_input:
+            return
+
+        positions = any_to_array(self.positions_input())
+        if positions is None:
+            return
+
+        if positions.ndim != 2 or positions.shape[0] < 37 or positions.shape[1] != 3:
+            return
+
+        if not self.enabled():
+            # Pass through the original root position
+            self.corrected_root_output.send(positions[self.SHADOW_HIPS_INDEX].copy())
+            self.corrected_positions_output.send(positions.copy())
+            return
+
+        # Get tracker index
+        tidx = int(self.tracker_index())
+        tidx = max(0, min(3, tidx))
+        tracker_shadow_idx = self.SHADOW_TRACKER_INDICES[tidx]
+
+        # Get positions for the selected thigh side
+        side = self.thigh_side()
+        system_root_pos = positions[self.SHADOW_HIPS_INDEX].copy()
+        tracker_pos = positions[tracker_shadow_idx].copy()
+        hip_shadow_idx = self.SHADOW_LEFT_HIP_INDEX if side == 'left' else self.SHADOW_RIGHT_HIP_INDEX
+        hip_pos = positions[hip_shadow_idx].copy()
+
+        # Get hip global rotation for the selected side
+        pose_data = self.pose_input()
+        hip_global_q = self._get_hip_global_quat(pose_data)
+
+        if hip_global_q is None:
+            # Can't compute correction without pose data, pass through
+            self.corrected_root_output.send(system_root_pos)
+            self.corrected_positions_output.send(positions.copy())
+            return
+
+        # Compute the tracker offset in rest-pose local coordinates
+        tracker_offset_local = self._compute_tracker_offset_local()
+
+        # Rotate the offset into world space using the hip's global rotation
+        tracker_offset_world = self._quat_rotate_vector(hip_global_q, tracker_offset_local)
+
+        # The modeled tracker position = hip_world_pos + rotated_offset
+        tracker_model_pos = hip_pos + tracker_offset_world
+
+        # The correction: the model's predicted tracker position is derived from
+        # Shadow's hip_pos (which contains the root positioning error). The
+        # difference between model and actual tracker reveals that error.
+        correction = tracker_model_pos - tracker_pos
+
+        # Subtract the error from the system root to correct it
+        corrected_root = system_root_pos - correction
+
+        # Build corrected positions array
+        corrected_positions = positions.copy()
+        corrected_positions[self.SHADOW_HIPS_INDEX] = corrected_root
+
+        # Send outputs
+        self.corrected_root_output.send(corrected_root)
+        self.correction_output.send(correction)
+        self.tracker_model_pos_output.send(tracker_model_pos)
+        self.corrected_positions_output.send(corrected_positions)
+
+
+class CadenceFilterNode(MoCapNode):
+    """Causal moving-average filter for removing sensor cadence artifacts.
+    
+    Applies a causal moving average (window size N) to pose and/or trans arrays.
+    A window of 3 removes the 33.3 Hz cadence from ~33 Hz sensors upsampled to 100 Hz.
+    Uses ring buffers for streaming (single-frame) operation.
+    """
+    @staticmethod
+    def factory(name, data, args=None):
+        node = CadenceFilterNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.pose_input = self.add_input('pose in', triggers_execution=True)
+        self.trans_input = self.add_input('trans in', triggers_execution=True)
+        
+        self.pose_output = self.add_output('pose out')
+        self.trans_output = self.add_output('trans out')
+        
+        self.enable_prop = self.add_property('enable', widget_type='checkbox', default_value=True)
+        self.window_prop = self.add_property('window', widget_type='drag_int', default_value=3)
+        
+        self._pose_ring = None
+        self._trans_ring = None
+        self._pose_ring_idx = 0
+        self._trans_ring_idx = 0
+
+    def execute(self):
+        enabled = self.enable_prop()
+        win = self.window_prop()
+        
+        if self.pose_input.fresh_input:
+            pose = self.pose_input()
+            if pose is not None:
+                pose = np.array(pose, dtype=np.float64)
+                if enabled and win >= 2:
+                    pose = self._smooth(pose, win, 'pose')
+                self.pose_output.send(pose)
+        
+        if self.trans_input.fresh_input:
+            trans = self.trans_input()
+            if trans is not None:
+                trans = np.array(trans, dtype=np.float64)
+                if enabled and win >= 2:
+                    trans = self._smooth(trans, win, 'trans')
+                self.trans_output.send(trans)
+
+    def _smooth(self, data, win, kind):
+        """Apply causal moving average using a ring buffer."""
+        flat = data.flatten()
+        n = flat.size
+        
+        ring_attr = f'_{kind}_ring'
+        idx_attr = f'_{kind}_ring_idx'
+        
+        ring = getattr(self, ring_attr, None)
+        
+        # Re-init ring buffer if size or window changed
+        if ring is None or ring.shape[0] != win or ring.shape[1] != n:
+            setattr(self, ring_attr, np.tile(flat, (win, 1)))
+            setattr(self, idx_attr, 0)
+            ring = getattr(self, ring_attr)
+        
+        idx = getattr(self, idx_attr)
+        ring[idx] = flat
+        setattr(self, idx_attr, (idx + 1) % win)
+        
+        smoothed = np.mean(ring, axis=0)
+        return smoothed.reshape(data.shape)

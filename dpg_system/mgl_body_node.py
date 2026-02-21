@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
@@ -11,6 +12,27 @@ from dpg_system.moderngl_nodes import MGLNode
 
 
 class MGLBodyNode(MGLNode):
+    # Mapping from SMPL limb length keys to body_base joint indices.
+    # Each joint's bone_translation is the offset FROM ITS PARENT to that joint,
+    # so e.g. 'upper_leg' (hip→knee) maps to the Knee joints, not the Hip joints.
+    SMPL_TO_BODY_MAP = {
+        'upper_leg':     [t_LeftKnee, t_RightKnee],              # hip → knee
+        'lower_leg':     [t_LeftAnkle, t_RightAnkle],            # knee → ankle
+        'upper_arm':     [t_LeftElbow, t_RightElbow],            # shoulder → elbow
+        'lower_arm':     [t_LeftWrist, t_RightWrist],            # elbow → wrist
+        'collar':        [t_LeftShoulder, t_RightShoulder],      # shoulder_blade → shoulder
+        'spine_lower':   [t_SpinePelvis],                        # pelvis → spine1
+        'spine_mid':     [t_LowerVertebrae],                     # spine1 → spine2
+        'spine_upper':   [t_MidVertebrae],                       # spine2 → spine3
+        'spine_to_neck': [t_UpperVertebrae],                     # spine3 → neck
+        'neck':          [t_BaseOfSkull],                        # upper_vertebrae → base_of_skull
+        'head':          [t_TopOfHead],                          # base_of_skull → top_of_head
+        'foot':          [t_LeftBallOfFoot, t_RightBallOfFoot],  # ankle → ball_of_foot
+        'hand':          [t_LeftKnuckle, t_RightKnuckle],        # wrist → knuckle
+    }
+    # pelvis_width and shoulder_width need special ratio-based handling
+    # because the translations go at angles from center, not purely lateral.
+
     @staticmethod
     def factory(name, data, args=None):
         return MGLBodyNode(name, data, args)
@@ -34,6 +56,9 @@ class MGLBodyNode(MGLNode):
         self.scale_input = self.add_input('scale', widget_type='drag_float', default_value=1.0)
         self.joint_radius_input = self.add_input('joint_radius', widget_type='drag_float', default_value=0.1)
         self.joint_data_input = self.add_input('joint_data')
+        self.limb_lengths_input = self.add_input('limb_lengths')
+        self.skeleton_mode_input = self.add_input('skeleton_mode', widget_type='combo', default_value='shadow', callback=self._on_skeleton_mode_changed)
+        self.skeleton_mode_input.widget.combo_items = ['shadow', 'smpl']
         self.color_input = self.add_input('color', widget_type='color_picker', default_value=[1.0, 1.0, 1.0, 1.0])
         self.instanced_display_mode_input = self.add_input('instanced_mode', widget_type='combo', default_value='solid')
         self.instanced_display_mode_input.widget.combo_items = ['solid', 'wireframe', 'points']
@@ -41,6 +66,17 @@ class MGLBodyNode(MGLNode):
         self.joint_callback = self.add_output('joint_callback')
         self.joint_data_out = self.add_output('joint_data')
         self.joint_id_out = self.add_output('joint_id')
+
+        # Original bone translations from definition.xml (immutable reference)
+        self._original_translations = {}
+        for joint_idx, joint in enumerate(self.body.joints):
+            if joint is not None:
+                self._original_translations[joint_idx] = joint.bone_translation.copy()
+
+        # Baseline translations used for Shadow mode scaling (captured from originals)
+        self._baseline_translations = None
+        self._gl_dirty = False
+        self._last_limb_data = None  # Store last limb data for mode switching
         
         # Mapping for Active Joint Data (User provides data in t_* order, separate from internal list order)
         self.joint_name_to_pose_index = {
@@ -199,34 +235,10 @@ class MGLBodyNode(MGLNode):
         else:
             joint_data = joint_data.flatten()
         
-        # DEBUG
-        # print(f"MGLBodyNode: draw_instanced entered. Data len: {len(joint_data)}/{num_joints}. Global Mats: {len(self.global_matrices)}")
-        
-        # Build full_data array mapping bone indices to their correct data indices.
-        # For bone indices 0-19: data index == bone index (active joints, t_ order)
-        # For bone indices >= 20: remap to match MoCapGLBody.joint_callback mapping
-        #   bone 20 (TopOfHead)       -> skip (no data)
-        #   bone 21 (LeftBallOfFoot)   -> data index 20
-        #   bone 22 (LeftToeTip)       -> data index 24
-        #   bone 23 (RightBallOfFoot)  -> data index 21
-        #   bone 24 (RightToeTip)      -> data index 25
-        #   bone 25 (LeftKnuckle)      -> data index 22
-        #   bone 26 (LeftFingerTip)    -> data index 26
-        #   bone 27 (RightKnuckle)     -> data index 23
-        #   bone 28 (RightFingerTip)   -> data index 27
-        #   bone >= 29                 -> skip
-        bone_to_data = {
-            21: 20, 22: 24, 23: 21, 24: 25,
-            25: 22, 26: 26, 27: 23, 28: 27
-        }
-        
+        # Data arrives in body t_ index order (smpl_to_active outputs proper indices)
         full_data = np.zeros(num_joints, dtype=np.float32)
-        for i in range(min(num_joints, 20)):
-            if i < len(joint_data):
-                full_data[i] = joint_data[i]
-        for bone_idx, data_idx in bone_to_data.items():
-            if bone_idx < num_joints and data_idx < len(joint_data):
-                full_data[bone_idx] = joint_data[data_idx]
+        for i in range(min(num_joints, len(joint_data))):
+            full_data[i] = joint_data[i]
 
         # Filter to Valid Indices
         # self.instanced_bone_indices contains indices of joints we actually draw
@@ -584,6 +596,7 @@ class MGLBodyNode(MGLNode):
                      dy = j.dims[2] / 2.0
                      scale_vec = np.array([dx, dy, dz])
 
+
             def add_tri(p1, p2, p3, n):
                 all_verts.extend(p1); all_norms.extend(n); all_indices.append(float(i))
                 all_verts.extend(p2); all_norms.extend(n); all_indices.append(float(i))
@@ -710,6 +723,288 @@ class MGLBodyNode(MGLNode):
         # Initialize Instanced Geometry (Spheres)
         self.initialize_instanced_gl()
 
+    # Explicit mapping: SMPL joint index → body joint array index (t_* constants)
+    # NOTE: bmolab_active_joints indices diverge from body joint array indices
+    # for non-active joints (>=20), so we must use t_* constants directly.
+    SMPL_JOINT_TO_BODY_JOINT = {
+        0: t_PelvisAnchor,              # pelvis
+        1: t_LeftHip,                   # left_hip
+        2: t_RightHip,                  # right_hip
+        3: t_SpinePelvis,               # spine1
+        4: t_LeftKnee,                  # left_knee
+        5: t_RightKnee,                 # right_knee
+        6: t_LowerVertebrae,            # spine2
+        7: t_LeftAnkle,                 # left_ankle
+        8: t_RightAnkle,                # right_ankle
+        9: t_MidVertebrae,              # spine3
+        10: t_LeftBallOfFoot,           # left_foot
+        11: t_RightBallOfFoot,          # right_foot
+        12: t_UpperVertebrae,           # neck
+        13: t_LeftShoulderBladeBase,     # left_collar
+        14: t_RightShoulderBladeBase,    # right_collar
+        15: t_BaseOfSkull,              # head
+        16: t_LeftShoulder,             # left_shoulder
+        17: t_RightShoulder,            # right_shoulder
+        18: t_LeftElbow,                # left_elbow
+        19: t_RightElbow,               # right_elbow
+        20: t_LeftWrist,                # left_wrist
+        21: t_RightWrist,               # right_wrist
+        22: t_LeftKnuckle,              # left_hand
+        23: t_RightKnuckle,             # right_hand
+        24: t_LeftToeTip,               # left_toe_tip
+        25: t_RightToeTip,              # right_toe_tip
+        26: t_LeftFingerTip,            # left_finger_tip
+        27: t_RightFingerTip,           # right_finger_tip
+        28: t_LeftHeel,                 # left_heel
+        29: t_RightHeel,                # right_heel
+    }
+
+    def _on_skeleton_mode_changed(self):
+        """Re-apply limb data when skeleton mode is toggled."""
+        # Restore original Shadow bone translations before re-applying
+        for joint_idx, orig_bt in self._original_translations.items():
+            if joint_idx < len(self.body.joints) and self.body.joints[joint_idx] is not None:
+                self.body.joints[joint_idx].bone_translation = orig_bt.copy()
+        self._baseline_translations = None
+
+        mode = self.skeleton_mode_input()
+        if mode == 'smpl':
+            # Use existing limb data if available, otherwise compute defaults
+            if self._last_limb_data is not None and isinstance(self._last_limb_data, dict) and 'offsets' in self._last_limb_data:
+                self._apply_limb_lengths(self._last_limb_data)
+            else:
+                offsets = self._get_default_smpl_offsets()
+                if offsets is not None:
+                    self._apply_smpl_offsets(offsets, {})
+                    self._gl_dirty = True
+                    print('mgl_body: applied default SMPL skeleton offsets')
+                else:
+                    print('mgl_body: smplx not available, cannot switch to SMPL skeleton')
+        elif self._last_limb_data is not None:
+            self._apply_limb_lengths(self._last_limb_data)
+        self._gl_dirty = True
+
+    def _apply_limb_lengths(self, limb_data):
+        """Apply SMPL limb lengths to body joints by scaling bone_translation vectors."""
+        lengths = limb_data.get('lengths', limb_data) if isinstance(limb_data, dict) else {}
+        if not lengths:
+            return
+
+        # Store baseline translations on first use
+        if self._baseline_translations is None:
+            self._baseline_translations = {}
+            for joint_idx, joint in enumerate(self.body.joints):
+                if joint is not None:
+                    self._baseline_translations[joint_idx] = joint.bone_translation.copy()
+
+        skeleton_mode = self.skeleton_mode_input()
+
+        # --- SMPL skeleton mode: use actual SMPL offset vectors ---
+        if skeleton_mode == 'smpl':
+            offsets = limb_data.get('offsets') if isinstance(limb_data, dict) else None
+            if offsets is not None:
+                self._apply_smpl_offsets(offsets, lengths)
+                self._gl_dirty = True
+                return
+            # Fall through to shadow mode if no offsets available
+
+        # --- Shadow skeleton mode: scale existing directions ---
+        bl = self._baseline_translations
+
+        # Joints with asymmetric custom geometry that extends well below z=0
+        # (e.g. pelvis bowl, shoulder blade shapes). Only update bone_translation
+        # for correct positioning, not dims[0] which would deform the shape.
+        SKIP_DIMS_JOINTS = {t_SpinePelvis, t_LeftShoulderBladeBase, t_RightShoulderBladeBase}
+
+        # Standard limb lengths: scale bone_translation direction-preserving
+        for smpl_key, joint_indices in self.SMPL_TO_BODY_MAP.items():
+            if smpl_key not in lengths:
+                continue
+            new_length = lengths[smpl_key]
+            for ji in joint_indices:
+                if ji >= len(self.body.joints) or self.body.joints[ji] is None:
+                    continue
+                if ji not in bl:
+                    continue
+                baseline = bl[ji]
+                baseline_len = np.linalg.norm(baseline)
+                if baseline_len < 1e-6:
+                    continue
+                direction = baseline / baseline_len
+                self.body.joints[ji].bone_translation = direction * new_length
+                if ji not in SKIP_DIMS_JOINTS:
+                    self.body.joints[ji].dims[0] = new_length
+                    self.body.joints[ji].base_dims[0] = new_length
+
+        # Special handling: pelvis_width (ratio-based, translations at angles)
+        if 'pelvis_width' in lengths and t_LeftHip in bl and t_RightHip in bl:
+            baseline_pw = np.linalg.norm(bl[t_LeftHip] - bl[t_RightHip])
+            if baseline_pw > 1e-6:
+                ratio = lengths['pelvis_width'] / baseline_pw
+                for ji in [t_LeftHip, t_RightHip]:
+                    new_bt = bl[ji] * ratio
+                    self.body.joints[ji].bone_translation = new_bt
+                    base_dims = self.body.joints[ji].base_dims
+                    self.body.joints[ji].dims[1] = base_dims[1] * ratio
+                    self.body.joints[ji].dims[2] = base_dims[2] * ratio
+
+        # Special handling: shoulder_width (ratio-based)
+        if 'shoulder_width' in lengths:
+            l_blade, r_blade = t_LeftShoulderBladeBase, t_RightShoulderBladeBase
+            l_sh, r_sh = t_LeftShoulder, t_RightShoulder
+            if all(j in bl for j in [l_blade, r_blade, l_sh, r_sh]):
+                l_pos = bl[l_blade] + bl[l_sh]
+                r_pos = bl[r_blade] + bl[r_sh]
+                baseline_sw = np.linalg.norm(l_pos - r_pos)
+                if baseline_sw > 1e-6:
+                    ratio = lengths['shoulder_width'] / baseline_sw
+                    for ji in [l_blade, r_blade]:
+                        new_bt = bl[ji] * ratio
+                        self.body.joints[ji].bone_translation = new_bt
+                        base_dims = self.body.joints[ji].base_dims
+                        self.body.joints[ji].dims[1] = base_dims[1] * ratio
+                        self.body.joints[ji].dims[2] = base_dims[2] * ratio
+
+        self._gl_dirty = True
+
+    def _get_default_smpl_offsets(self):
+        """Compute default SMPL offsets from smplx model (betas=0, neutral)."""
+        if hasattr(self, '_default_smpl_offsets') and self._default_smpl_offsets is not None:
+            return self._default_smpl_offsets
+
+        try:
+            import torch
+            import smplx
+        except ImportError:
+            return None
+
+        model_path = os.path.dirname(os.path.abspath(__file__))
+        try:
+            model = smplx.create(model_path=model_path, model_type='smplh',
+                                 gender='MALE', num_betas=10, ext='pkl')
+            output = model(betas=torch.zeros(1, 10))
+            joints = output.joints[0].detach().cpu().numpy()
+
+            print(f"mgl_body: SMPL-H joints shape: {joints.shape}")
+
+            # SMPL parent indices
+            smpl_parents = [
+                -1, 0, 0, 0, 1, 2, 3, 4, 5, 6,
+                7, 8, 9, 9, 9, 12, 13, 14, 16, 17,
+                18, 19, 20, 21,
+            ]
+
+            offsets = np.zeros((30, 3))
+            for i in range(1, 24):
+                child_idx = i
+                # Handle SMPL-H hand joint remapping
+                if joints.shape[0] > 24:
+                    if i == 22:
+                        child_idx = 22  # Left hand base in SMPL-H
+                    if i == 23:
+                        child_idx = 37  # Right hand base in SMPL-H
+                offsets[i] = joints[child_idx] - joints[smpl_parents[i]]
+
+            # Diagnostic: print hand offset distances
+            l_hand_dist = np.linalg.norm(offsets[22])
+            r_hand_dist = np.linalg.norm(offsets[23])
+            l_forearm_dist = np.linalg.norm(offsets[20])
+            r_forearm_dist = np.linalg.norm(offsets[21])
+            print(f"mgl_body: SMPL offset distances:")
+            print(f"  left forearm (20): {l_forearm_dist:.4f}m")
+            print(f"  right forearm (21): {r_forearm_dist:.4f}m")
+            print(f"  left hand (22, using joints[22]): {l_hand_dist:.4f}m")
+            print(f"  right hand (23, using joints[37]): {r_hand_dist:.4f}m")
+
+            # If left hand offset is suspiciously large (>0.15m = 15cm),
+            # joints[22] is probably not the left hand base.
+            # Try alternative indices.
+            if l_hand_dist > 0.15 and joints.shape[0] > 24:
+                print(f"  WARNING: left hand offset {l_hand_dist:.4f}m seems too large!")
+                # Scan nearby indices for the actual left hand base
+                best_idx = 22
+                best_dist = l_hand_dist
+                for try_idx in range(22, min(37, joints.shape[0])):
+                    d = np.linalg.norm(joints[try_idx] - joints[20])
+                    if 0.01 < d < best_dist:
+                        best_dist = d
+                        best_idx = try_idx
+                if best_idx != 22:
+                    print(f"  Using joints[{best_idx}] instead (dist={best_dist:.4f}m)")
+                    offsets[22] = joints[best_idx] - joints[20]
+
+            # Virtual extensions matching smpl_processor
+            foot_vec = np.array([0.0, 0.0, 1.0])
+            offsets[24] = foot_vec * 0.15  # L_Toe
+            offsets[25] = foot_vec * 0.15  # R_Toe
+
+            # Fingertips: extend hand direction
+            l_dir = offsets[22] / max(np.linalg.norm(offsets[22]), 1e-6)
+            r_dir = offsets[23] / max(np.linalg.norm(offsets[23]), 1e-6)
+            offsets[26] = l_dir * 0.08
+            offsets[27] = r_dir * 0.08
+
+            # Heels
+            offsets[28] = np.array([0.0, -0.03, -0.07])
+            offsets[29] = np.array([0.0, -0.03, -0.07])
+
+            self._default_smpl_offsets = offsets
+            return offsets
+        except Exception as e:
+            print(f"mgl_body: error computing default SMPL offsets: {e}")
+            import traceback
+            traceback.print_exc()
+            return None
+
+    def _apply_smpl_offsets(self, offsets, lengths):
+        """Replace body joint bone translations with SMPL model offset vectors."""
+        idx_map = MGLBodyNode.SMPL_JOINT_TO_BODY_JOINT
+
+        # Joints with custom geometry that should NOT have dims[0] scaled
+        SKIP_DIMS_JOINTS = {t_SpinePelvis, t_LeftShoulderBladeBase, t_RightShoulderBladeBase}
+
+        # Print diagnostics for key joints on first call
+        if not hasattr(self, '_smpl_offsets_debug_done'):
+            self._smpl_offsets_debug_done = True
+            print(f"_apply_smpl_offsets: offsets shape={offsets.shape}")
+            for si in [0, 3, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]:
+                if si < offsets.shape[0]:
+                    v = offsets[si]
+                    bi = idx_map.get(si, -1)
+                    print(f"  SMPL {si} -> body {bi}: offset={v}, norm={np.linalg.norm(v):.4f}m")
+            # Check fingertip original translations
+            for bi in [t_LeftFingerTip, t_RightFingerTip, t_LeftKnuckle, t_RightKnuckle]:
+                orig = self._original_translations.get(bi)
+                if orig is not None:
+                    print(f"  body {bi}: original bone_translation={orig}, norm={np.linalg.norm(orig):.4f}m")
+                else:
+                    print(f"  body {bi}: NOT in _original_translations")
+
+        # Virtual extension indices — preserve Shadow geometry for these
+        # (toes and heels only; fingertips get SMPL offsets applied directly)
+        VIRTUAL_INDICES = {24, 25, 28, 29}
+
+        # offsets is (30, 3) in SMPL joint order
+        for smpl_i in range(min(offsets.shape[0], 30)):
+            body_i = idx_map.get(smpl_i, -1)
+            if body_i < 0 or body_i >= len(self.body.joints):
+                continue
+            joint = self.body.joints[body_i]
+            if joint is None:
+                continue
+
+            offset_vec = offsets[smpl_i]
+            length = np.linalg.norm(offset_vec)
+
+            # Skip virtual extensions — preserve Shadow geometry for these
+            if smpl_i in VIRTUAL_INDICES:
+                continue
+
+            joint.bone_translation = offset_vec.copy()
+            if length > 1e-6 and body_i not in SKIP_DIMS_JOINTS:
+                joint.dims[0] = length
+                joint.base_dims[0] = length
+
     def execute(self):
         if self.pose_input.fresh_input:
             data = self.pose_input()
@@ -718,7 +1013,13 @@ class MGLBodyNode(MGLNode):
 
         if self.joint_data_input.fresh_input:
             self.latest_joint_data = self.joint_data_input()
-    
+
+        if self.limb_lengths_input.fresh_input:
+            limb_data = self.limb_lengths_input()
+            if limb_data is not None:
+                self._last_limb_data = limb_data
+                self._apply_limb_lengths(limb_data)
+
         if self.mgl_input.fresh_input:
             msg = self.mgl_input()
             if msg == 'draw':
@@ -734,9 +1035,13 @@ class MGLBodyNode(MGLNode):
         # if hasattr(self, 'latest_joint_data') and self.latest_joint_data is not None:
         #      self.draw_instanced(self.latest_joint_data)
         
-        if not getattr(self, 'limb_top_fix_vao', None): 
-             print("MGLBodyNode: initializing GL for top cap normal fix")
+        if not getattr(self, 'limb_top_fix_vao', None) or self._gl_dirty:
+             if self._gl_dirty:
+                 print("MGLBodyNode: re-initializing GL for updated limb lengths")
+             else:
+                 print("MGLBodyNode: initializing GL for top cap normal fix")
              self.initialize_gl()
+             self._gl_dirty = False
 
         
         # 1. Compute Global Matrices for all joints
@@ -755,6 +1060,7 @@ class MGLBodyNode(MGLNode):
         
         self.traverse_matrices(t_PelvisAnchor, root_mat)
         
+
         # 2. Upload Bone Matrices
         bones_bytes = bytearray()
         MAX_BONES = 50
@@ -830,14 +1136,9 @@ class MGLBodyNode(MGLNode):
                         
                         # Pass Joint Data Payload if available
                         if hasattr(self, 'latest_joint_data') and self.latest_joint_data is not None:
-                             # Remap non-active joints (>= 20) to compacted data indices
-                             bone_to_data = {
-                                 21: 20, 22: 24, 23: 21, 24: 25,
-                                 25: 22, 26: 26, 27: 23, 28: 27
-                             }
-                             data_idx = bone_to_data.get(i, i)  # Use remapped index or direct index
-                             if data_idx < len(self.latest_joint_data) and (i < 20 or i in bone_to_data):
-                                  self.joint_data_out.send(self.latest_joint_data[data_idx])
+                             # Data arrives in body t_ index order, use directly
+                             if i < len(self.latest_joint_data):
+                                  self.joint_data_out.send(self.latest_joint_data[i])
                         
                         self.joint_callback.send('draw')
                         self.ctx.model_matrix_stack.pop()

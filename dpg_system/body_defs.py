@@ -111,7 +111,8 @@ class JointTranslator():
         'neck': 12, 'left_collar': 13, 'right_collar': 14, 'head': 15,
         'left_shoulder': 16, 'right_shoulder': 17, 'left_elbow': 18, 'right_elbow': 19,
         'left_wrist': 20, 'right_wrist': 21, 'left_hand': 22, 'right_hand': 23,
-        'left_toe_tip': 24, 'right_toe_tip': 25, 'left_finger_tip': 26, 'right_finger_tip': 27
+        'left_toe_tip': 24, 'right_toe_tip': 25, 'left_finger_tip': 26, 'right_finger_tip': 27,
+        'left_heel': 28, 'right_heel': 29
     }
 
     bmolab_active_joints = {
@@ -121,7 +122,8 @@ class JointTranslator():
         'left_shoulder_blade': 12, 'left_shoulder': 13, 'left_elbow': 14, 'left_wrist': 15,
         'right_shoulder_blade': 16, 'right_shoulder': 17, 'right_elbow': 18, 'right_wrist': 19,
         'left_foot': 20, 'right_foot': 21, 'left_hand': 22, 'right_hand': 23,
-        'left_toe_tip': 24, 'right_toe_tip': 25, 'left_finger_tip': 26, 'right_finger_tip': 27
+        'left_toe_tip': 24, 'right_toe_tip': 25, 'left_finger_tip': 26, 'right_finger_tip': 27,
+        'left_heel': 28, 'right_heel': 29
     }
 
     joints_to_input_vector = [-1, 2, 0, -1, 5, 13, -1, -1, 8, 14, 15, -1, 7, 12, 6, -1, -1, 1, -1, 17, -1, -1, 11, 18,
@@ -155,7 +157,9 @@ class JointTranslator():
         'left_toe_tip': 'left_toe_tip',
         'right_toe_tip': 'right_toe_tip',
         'left_finger_tip': 'left_finger_tip',
-        'right_finger_tip': 'right_finger_tip'
+        'right_finger_tip': 'right_finger_tip',
+        'left_heel': 'left_heel',
+        'right_heel': 'right_heel'
     }
 
     smpl_to_smpl_active_joint_map = {
@@ -486,6 +490,62 @@ class JointTranslator():
             if smpl_index < smpl_pose.shape[0]:
                 active_pose[active_index] = smpl_pose[smpl_index]
         return active_pose
+
+    # Maps SMPL joint index → body t_ constant index
+    SMPL_TO_BODY_INDEX = {
+        0: t_PelvisAnchor,           # pelvis
+        1: t_LeftHip,                # left_hip
+        2: t_RightHip,               # right_hip
+        3: t_SpinePelvis,            # spine1
+        4: t_LeftKnee,               # left_knee
+        5: t_RightKnee,              # right_knee
+        6: t_LowerVertebrae,         # spine2
+        7: t_LeftAnkle,              # left_ankle
+        8: t_RightAnkle,             # right_ankle
+        9: t_MidVertebrae,           # spine3
+        10: t_LeftBallOfFoot,        # left_foot
+        11: t_RightBallOfFoot,       # right_foot
+        12: t_UpperVertebrae,        # neck
+        13: t_LeftShoulderBladeBase,  # left_collar
+        14: t_RightShoulderBladeBase, # right_collar
+        15: t_BaseOfSkull,           # head
+        16: t_LeftShoulder,          # left_shoulder
+        17: t_RightShoulder,         # right_shoulder
+        18: t_LeftElbow,             # left_elbow
+        19: t_RightElbow,            # right_elbow
+        20: t_LeftWrist,             # left_wrist
+        21: t_RightWrist,            # right_wrist
+        22: t_LeftKnuckle,           # left_hand
+        23: t_RightKnuckle,          # right_hand
+        24: t_LeftToeTip,            # left_toe_tip
+        25: t_RightToeTip,           # right_toe_tip
+        26: t_LeftFingerTip,         # left_finger_tip
+        27: t_RightFingerTip,        # right_finger_tip
+        28: t_LeftHeel,              # left_heel
+        29: t_RightHeel,             # right_heel
+    }
+
+    @staticmethod
+    def translate_from_smpl_to_body_joints(smpl_pose):
+        """Map SMPL pose data to body t_ joint indices (31 entries, 0-30).
+
+        Non-active joints (TopOfHead=20, etc.) get identity quaternions
+        for 4-wide data, zeros for everything else.
+        """
+        if len(smpl_pose.shape) == 1:
+            smpl_pose = np.expand_dims(smpl_pose, axis=1)
+        width = smpl_pose.shape[-1]
+        output_size = t_RightHeel + 1  # 31 entries (indices 0-30)
+        body_pose = np.zeros((output_size, width), dtype=np.float32)
+
+        # Set identity quaternion padding for 4-wide (quaternion) data
+        if width == 4:
+            body_pose[:, 0] = 1.0  # w=1, x=y=z=0 → identity rotation
+
+        for smpl_idx, body_idx in JointTranslator.SMPL_TO_BODY_INDEX.items():
+            if smpl_idx < smpl_pose.shape[0]:
+                body_pose[body_idx] = smpl_pose[smpl_idx]
+        return body_pose
 
     @staticmethod
     def translate_from_smpl_to_smpl_active(smpl_pose): #  expects n x 3 in, outputs 20 x 3

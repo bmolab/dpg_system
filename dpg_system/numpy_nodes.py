@@ -35,6 +35,7 @@ def register_numpy_nodes():
     Node.app.register_node('np.ones', NumpyGeneratorNode.factory)
     Node.app.register_node('np.zeros', NumpyGeneratorNode.factory)
     Node.app.register_node('np.linspace', NumpyLinSpaceNode.factory)
+    Node.app.register_node('np.grid', NumpyMGridNode.factory)
     Node.app.register_node('np.squeeze', NumpySqueezeNode.factory)
     Node.app.register_node('np.expand_dims', NumpyExpandDimsNode.factory)
     Node.app.register_node('np.unsqueeze', NumpyExpandDimsNode.factory)
@@ -210,6 +211,66 @@ class NumpyLinSpaceNode(Node):
     def execute(self):
         out_array = self.op(any_to_float(self.start()), any_to_float(self.stop()), any_to_int(self.steps()), dtype=self.dtype)
         self.output.send(out_array)
+
+
+class NumpyMGridNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyMGridNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        min_x = 0.0
+        max_x = 1.0
+        min_y = 0.0
+        max_y = 1.0
+        divisions_x = 10
+        divisions_y = 10
+
+        if len(args) > 0:
+            min_x = any_to_float(args[0])
+        if len(args) > 1:
+            max_x = any_to_float(args[1])
+        if len(args) > 2:
+            min_y = any_to_float(args[2])
+        if len(args) > 3:
+            max_y = any_to_float(args[3])
+        if len(args) > 4:
+            divisions_x = any_to_int(args[4])
+        if len(args) > 5:
+            divisions_y = any_to_int(args[5])
+
+        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+        self.min_x = self.add_property('min x', widget_type='drag_float', default_value=min_x)
+        self.max_x = self.add_property('max x', widget_type='drag_float', default_value=max_x)
+        self.min_y = self.add_property('min y', widget_type='drag_float', default_value=min_y)
+        self.max_y = self.add_property('max y', widget_type='drag_float', default_value=max_y)
+        self.divisions_x = self.add_property('divisions x', widget_type='drag_int', default_value=divisions_x)
+        self.divisions_y = self.add_property('divisions y', widget_type='drag_int', default_value=divisions_y)
+        self.z_value = self.add_property('z', widget_type='drag_float', default_value=0.0)
+
+        self.output = self.add_output('grid points')
+
+    def execute(self):
+        min_x = any_to_float(self.min_x())
+        max_x = any_to_float(self.max_x())
+        min_y = any_to_float(self.min_y())
+        max_y = any_to_float(self.max_y())
+        div_x = any_to_int(self.divisions_x())
+        div_y = any_to_int(self.divisions_y())
+        z = any_to_float(self.z_value())
+
+        if div_x < 2:
+            div_x = 2
+        if div_y < 2:
+            div_y = 2
+
+        yy, xx = np.mgrid[min_y:max_y:complex(0, div_y), min_x:max_x:complex(0, div_x)]
+        zz = np.full_like(xx, z)
+        points = np.stack([xx, yy, zz], axis=-1).astype(np.float32)
+        self.output.send(points)
 
 
 class NumpyNodeWithAxisNode(Node):

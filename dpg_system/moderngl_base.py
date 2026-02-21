@@ -427,11 +427,11 @@ class MGLContext:
     
     def multiply_matrix(self, matrix):
         if self.model_matrix_stack:
-            # Note: matrix multiplication order usually: current * new
-            # But due to row-major (numpy) vs column-major (GL) implicit transpose,
-            # we need pre-multiplication in numpy to achieve post-multiplication in GL
+            # Post-multiplication to match legacy OpenGL: M_new = M_old * T_new
+            # Last transform in the chain is applied first to vertices, so
+            # translate->rotate means object rotates locally at translated position.
             # M_gl_new = M_gl_old @ T_gl  => M_numpy_new = T_numpy @ M_numpy_old
-            self.model_matrix_stack[-1] = np.dot(matrix, self.model_matrix_stack[-1])
+            self.model_matrix_stack[-1] = np.dot(self.model_matrix_stack[-1], matrix)
             
     def get_model_matrix(self):
         if self.model_matrix_stack:

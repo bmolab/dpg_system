@@ -27,8 +27,8 @@ class LowPassFilter:
 class OneEuroFilter:
     def __init__(self, min_cutoff=1.0, beta=0.0, d_cutoff=1.0, framerate=30.0):
         self._freq = float(framerate)
-        self._mincutoff = float(min_cutoff)
-        self._beta = float(beta)
+        self._mincutoff = np.asarray(min_cutoff, dtype=np.float64)  # scalar or per-element array
+        self._beta = np.asarray(beta, dtype=np.float64)              # scalar or per-element array
         self._dcutoff = float(d_cutoff)
         
         self._x = LowPassFilter(self._alpha(self._mincutoff))

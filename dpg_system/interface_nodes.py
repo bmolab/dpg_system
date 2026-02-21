@@ -2109,7 +2109,8 @@ class Vector2DNode(Node):
             dim2 = 8
         kwargs = {'columns': dim2}
         for i in range(self.max_component_count):
-            cp = self.add_input('row ' + str(i), widget_type='drag_float_n', callback=self.component_changed, **kwargs)
+            cp = self.add_input('[' + str(i) + ']', widget_type='drag_float_n', callback=self.component_changed, **kwargs)
+            cp.name_archive.append('row ' + str(i))
             self.component_properties.append(cp)
 
         self.zero_input = self.add_input('zero', widget_type='button', callback=self.zero)

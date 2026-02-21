@@ -47,7 +47,9 @@ def register_smpl_nodes():
     Node.app.register_node("active_to_smpl", ActiveToSMPLPoseNode.factory)
     Node.app.register_node("quats_flip_y_z", QuatFlipYZAxesNode.factory)
     Node.app.register_node("smpl_dynamics", SMPLDynamicsNode.factory)
-    Node.app.register_node("smpl_torque", SMPLTorqueNode.factory)\
+    Node.app.register_node("smpl_torque", SMPLTorqueNode.factory)
+    Node.app.register_node("smpl_beta_editor", SMPLBetaEditorNode.factory)
+    Node.app.register_node("shadow_to_smpl", ShadowToSMPLNode.factory)
 
 
 class SMPLNode(Node):
@@ -379,9 +381,8 @@ class SMPLToActivePoseNode(JointTranslator, Node):
 
         if len(smpl_pose.shape) > 1:
             if smpl_pose.shape[1] == 3:
-                # if self.y_is_up():
-                #     smpl_pose[0] = rotate_vector_rodrigues(smpl_pose[0], np.array([1.0, 0.0, 0.0]), -90)
-                active_pose = JointTranslator.translate_from_smpl_to_bmolab_active(smpl_pose)
+                # Map to body t_ indices (31 entries) with proper padding
+                active_pose = JointTranslator.translate_from_smpl_to_body_joints(smpl_pose)
                 if self.output_format_in() == 'quaternions':
                     rot = scipy.spatial.transform.Rotation.from_rotvec(active_pose)
                     active_pose = rot.as_quat(scalar_first=True)
@@ -396,14 +397,14 @@ class SMPLToActivePoseNode(JointTranslator, Node):
                         active_pose[5] = rot.as_rotvec()
 
             elif smpl_pose.shape[1] == 4:
-                active_pose = JointTranslator.translate_from_smpl_to_bmolab_active(smpl_pose)
+                active_pose = JointTranslator.translate_from_smpl_to_body_joints(smpl_pose)
                 if self.output_format_in() == 'rotation_vectors':
                     rot = scipy.spatial.transform.Rotation.from_quat(active_pose, scalar_first=True)
                     active_pose = rot.as_rotvec()
                 elif self.y_is_up():
                     active_pose[5] = quaternion_multiply_scalar_first(self.y_up, active_pose[5])
             else:
-                active_pose = JointTranslator.translate_from_smpl_to_bmolab_active(smpl_pose)
+                active_pose = JointTranslator.translate_from_smpl_to_body_joints(smpl_pose)
 
         self.output.send(active_pose)
 
@@ -1627,7 +1628,6 @@ class SMPLTorqueNode(SMPLNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.pose_input = self.add_input('pose', triggers_execution=True)
-        self.effort_pose_input = self.add_input('effort_pose') # Optional dual path
         self.trans_input = self.add_input('trans')
         self.config_input = self.add_input('config') # gender, betas, framerate
         
@@ -1664,38 +1664,50 @@ class SMPLTorqueNode(SMPLNode):
         self.reset_noise_stats_input = self.add_input('reset_noise_stats', widget_type='button', callback=self._reset_noise_stats)
         
 
-        self.zero_root_torque = self.add_property('zero_root_torque', widget_type='checkbox', default_value=True)
-        self.add_gravity_prop = self.add_property('add_gravity', widget_type='checkbox', default_value=True)
-        self.enable_app_gravity_prop = self.add_property('enable_apparent_gravity', widget_type='checkbox', default_value=True)
+        self.zero_root_torque = self.add_option('zero_root_torque', widget_type='checkbox', default_value=True)
+        self.add_gravity_prop = self.add_option('add_gravity', widget_type='checkbox', default_value=True)
+        self.enable_app_gravity_prop = self.add_option('enable_apparent_gravity', widget_type='checkbox', default_value=True)
         self.up_axis_prop = self.add_property('up_axis', widget_type='combo', default_value='Y')
         self.up_axis_prop.widget.combo_items = ['Y', 'Z']
         self.axis_perm_prop = self.add_property('axis_permutation', widget_type='text_input', default_value='x, z, -y', callback=self._on_axis_perm_changed)
         self.quat_format_prop = self.add_property('quat_format', widget_type='combo', default_value='wxyz')
         self.quat_format_prop.widget.combo_items = ['xyzw', 'wxyz']
         
-        self.enable_passive_limits = self.add_property('enable_passive_limits', widget_type='checkbox', default_value=True)
+        self.enable_passive_limits = self.add_option('enable_passive_limits', widget_type='checkbox', default_value=True)
         
-        self.enable_one_euro_prop = self.add_property('enable_one_euro_filter', widget_type='checkbox', default_value=True)
-        self.min_cutoff_prop = self.add_property('one_euro_min_cutoff', widget_type='drag_float', default_value=1.0)
-        self.beta_prop = self.add_property('one_euro_beta', widget_type='drag_float', default_value=0.05)
+        self.enable_one_euro_prop = self.add_option('enable_one_euro_filter', widget_type='checkbox', default_value=True)
+        self.min_cutoff_prop = self.add_option('one_euro_min_cutoff', widget_type='drag_float', default_value=1.0)
+        self.beta_prop = self.add_option('one_euro_beta', widget_type='drag_float', default_value=0.05)
         
 
-        self.floor_enable_prop = self.add_property('floor_contact_enable', widget_type='checkbox', default_value=True)
-        self.floor_height_prop = self.add_property('floor_height', widget_type='drag_float', default_value=0.0)
-        self.floor_tol_prop = self.add_property('floor_tolerance', widget_type='drag_float', default_value=0.15)
+        self.floor_enable_prop = self.add_option('floor_contact_enable', widget_type='checkbox', default_value=True)
+        self.floor_height_prop = self.add_option('floor_height', widget_type='drag_float', default_value=0.0)
+        self.floor_tol_prop = self.add_option('floor_tolerance', widget_type='drag_float', default_value=0.15)
+        self.reset_floor_input = self.add_input('reset_floor', widget_type='button', callback=self._reset_floor)
         
         # Bias: Negative = Toe Preference, Positive = Heel Preference
-        self.heel_toe_bias_prop = self.add_property('heel_toe_bias', widget_type='drag_float', default_value=0.02)
-        self.impact_mitigation_prop = self.add_property('enable_impact_mitigation', widget_type='checkbox', default_value=True)
+        self.heel_toe_bias_prop = self.add_option('heel_toe_bias', widget_type='drag_float', default_value=0.02)
+        self.impact_mitigation_prop = self.add_option('enable_impact_mitigation', widget_type='checkbox', default_value=True)
         
         # Contact Method Selection
-        self.contact_method_prop = self.add_property('contact_method', widget_type='combo', default_value='fusion')
-        self.contact_method_prop.widget.combo_items = ['fusion', 'com_driven']
+        self.contact_method_prop = self.add_option('contact_method', widget_type='combo', default_value='fusion')
+        self.contact_method_prop.widget.combo_items = ['fusion', 'com_driven', 'consensus']
+        self.contact_refine_prop = self.add_option('contact_refinement_iters', widget_type='drag_int', default_value=1)
         
         # --- Rate Limiting ---
-        self.enable_rate_limiting_prop = self.add_property('enable_rate_limiting', widget_type='checkbox', default_value=True)
-        self.rate_limit_strength_prop = self.add_property('rate_limit_strength', widget_type='drag_float', default_value=1.0)
-        self.enable_kf_smoothing_prop = self.add_property('enable_kf_smoothing', widget_type='checkbox', default_value=True)
+        self.enable_rate_limiting_prop = self.add_option('enable_rate_limiting', widget_type='checkbox', default_value=True)
+        self.rate_limit_strength_prop = self.add_option('rate_limit_strength', widget_type='drag_float', default_value=1.0)
+        self.enable_kf_smoothing_prop = self.add_option('enable_kf_smoothing', widget_type='checkbox', default_value=True)
+        
+        # --- World-Frame Dynamics ---
+        self.world_frame_dynamics_prop = self.add_option('world_frame_dynamics', widget_type='checkbox', default_value=False)
+        self.com_pos_mc_prop = self.add_option('com_pos_min_cutoff', widget_type='drag_float', default_value=8.0)
+        self.com_pos_beta_prop = self.add_option('com_pos_beta', widget_type='drag_float', default_value=0.05)
+        self.com_vel_mc_prop = self.add_option('com_vel_min_cutoff', widget_type='drag_float', default_value=3.0)
+        self.com_vel_beta_prop = self.add_option('com_vel_beta', widget_type='drag_float', default_value=0.05)
+        self.com_acc_mc_prop = self.add_option('com_acc_min_cutoff', widget_type='drag_float', default_value=2.0)
+        self.com_acc_beta_prop = self.add_option('com_acc_beta', widget_type='drag_float', default_value=0.8)
+        self.smooth_input_window_prop = self.add_property('smooth_input_window', widget_type='drag_int', default_value=0)
         
         # Calibrated default for Subject_81: [0.0, -0.14, 0.05]
 
@@ -1719,6 +1731,13 @@ class SMPLTorqueNode(SMPLNode):
         """Reset noise statistics for a new file evaluation."""
         if self.processor:
             self.processor.reset_noise_stats()
+
+    def _reset_floor(self):
+        """Reset the adaptive floor height estimate back to the configured floor_height."""
+        if self.processor:
+            base_height = self.floor_height_prop() if hasattr(self, 'floor_height_prop') else 0.0
+            self.processor._inferred_floor_height = base_height
+            print(f"SMPLTorqueNode: Adaptive floor reset to {base_height:.3f}")
 
     def execute(self):
         # 1. Handle Config
@@ -1833,13 +1852,6 @@ class SMPLTorqueNode(SMPLNode):
 
             pose = reshape_pose_input(pose)
 
-            # Handle Effort Pose (Optional Dual Path)
-            effort_pose = None
-            if self.effort_pose_input.fresh_input and self.effort_pose_input() is not None:
-                raw_eff = self._to_array(self.effort_pose_input())
-                effort_pose = reshape_pose_input(raw_eff)
-                eq = np.all(np.equal(effort_pose, pose))
-
             # Determine input type
             # Shape is now (F, 24, C)
             input_type = 'axis_angle'
@@ -1876,16 +1888,25 @@ class SMPLTorqueNode(SMPLNode):
                 heel_toe_bias=self.heel_toe_bias_prop() if hasattr(self, 'heel_toe_bias_prop') else 0.0,
                 enable_impact_mitigation=self.impact_mitigation_prop() if hasattr(self, 'impact_mitigation_prop') else True,
                 contact_method=self.contact_method_prop() if hasattr(self, 'contact_method_prop') else 'fusion',
+                contact_refinement_iterations=self.contact_refine_prop() if hasattr(self, 'contact_refine_prop') else 1,
                 
                 # Rate Limiting
                 enable_rate_limiting=self.enable_rate_limiting_prop() if hasattr(self, 'enable_rate_limiting_prop') else True,
                 rate_limit_strength=self.rate_limit_strength_prop() if hasattr(self, 'rate_limit_strength_prop') else 1.0,
-                enable_kf_smoothing=self.enable_kf_smoothing_prop() if hasattr(self, 'enable_kf_smoothing_prop') else True
+                enable_kf_smoothing=self.enable_kf_smoothing_prop() if hasattr(self, 'enable_kf_smoothing_prop') else True,
+                world_frame_dynamics=self.world_frame_dynamics_prop() if hasattr(self, 'world_frame_dynamics_prop') else False,
+                com_pos_min_cutoff=self.com_pos_mc_prop() if hasattr(self, 'com_pos_mc_prop') else 8.0,
+                com_pos_beta=self.com_pos_beta_prop() if hasattr(self, 'com_pos_beta_prop') else 0.05,
+                com_vel_min_cutoff=self.com_vel_mc_prop() if hasattr(self, 'com_vel_mc_prop') else 3.0,
+                com_vel_beta=self.com_vel_beta_prop() if hasattr(self, 'com_vel_beta_prop') else 0.05,
+                com_acc_min_cutoff=self.com_acc_mc_prop() if hasattr(self, 'com_acc_mc_prop') else 2.0,
+                com_acc_beta=self.com_acc_beta_prop() if hasattr(self, 'com_acc_beta_prop') else 0.8,
+                smooth_input_window=self.smooth_input_window_prop() if hasattr(self, 'smooth_input_window_prop') else 0,
             )
             
             # Process
             try:
-                res = self.processor.process_frame(pose, trans, options, effort_pose_data=effort_pose)
+                res = self.processor.process_frame(pose, trans, options)
                 # Output Torques: (F, 22) -> (22) if F=1
                 # Output Inertias: (22,)
                 
@@ -2245,3 +2266,472 @@ class SMPLTorqueNode(SMPLNode):
                     count += 1
             if count > 0:
                  print(f"SMPLTorqueNode: Restored max torque for {count} joint groups based on biometric scaling.")
+
+
+class SMPLBetaEditorNode(Node):
+    """Node for manually tuning SMPL betas and outputting a config dict for smpl_torque."""
+
+    # Semantic labels for beta components (from SMPL-H PCA analysis)
+    BETA_LABELS = [
+        'beta_0 size',       # Overall body scale (dominant)
+        'beta_1 weight',     # Girth / BMI (legs > arms)
+        'beta_2 arm_ratio',  # Arm length relative to body
+        'beta_3 leg_ratio',  # Leg length relative to body
+        'beta_4',
+        'beta_5',
+        'beta_6',
+        'beta_7',
+        'beta_8',
+        'beta_9',
+    ]
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = SMPLBetaEditorNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        # Beta properties (all 10)
+        self.beta_props = []
+        for i in range(10):
+            prop = self.add_property(self.BETA_LABELS[i], widget_type='slider_float', default_value=0.0, min=-2.5, max=2.5, callback=self._on_param_changed)
+            self.beta_props.append(prop)
+
+        # Body parameters
+        self.gender_prop = self.add_property('gender', widget_type='combo', default_value='neutral', callback=self._on_param_changed)
+        self.gender_prop.widget.combo_items = ['male', 'female', 'neutral']
+        self.total_mass_prop = self.add_property('total_mass', widget_type='drag_float', default_value=75.0, callback=self._on_param_changed)
+
+        # Optional input: full 10-element beta array overrides properties
+        self.betas_input = self.add_input('betas_in', callback=self._on_betas_received)
+
+        # Reset button
+        self.reset_input = self.add_input('reset', widget_type='button', callback=self._reset_betas)
+
+        # Outputs
+        self.config_output = self.add_output('config')
+        self.limb_lengths_output = self.add_output('limb_lengths')
+
+    def _reset_betas(self):
+        for prop in self.beta_props:
+            prop.widget.set(0.0)
+        self._recompute_and_send()
+
+    def custom_create(self, from_file):
+        self._recompute_and_send()
+
+    def _get_betas_array(self):
+        """Assemble a 10-element betas array from the property widgets."""
+        betas = np.zeros(10)
+        for i, prop in enumerate(self.beta_props):
+            betas[i] = prop()
+        return betas
+
+    def _on_betas_received(self):
+        """When a full betas array or config dict arrives via input, update the property widgets."""
+        raw = self.betas_input()
+        if raw is None:
+            return
+        if isinstance(raw, dict):
+            if 'betas' in raw:
+                b = any_to_array(raw['betas']).flatten()
+                for i in range(min(len(b), 10)):
+                    self.beta_props[i].widget.set(float(b[i]))
+            if 'gender' in raw:
+                self.gender_prop.widget.set(raw['gender'])
+        else:
+            b = any_to_array(raw).flatten()
+            for i in range(min(len(b), 10)):
+                self.beta_props[i].widget.set(float(b[i]))
+        self._recompute_and_send()
+
+    def _on_param_changed(self):
+        """Any property changed — recompute and send."""
+        self._recompute_and_send()
+
+    def _recompute_and_send(self):
+        """Recompute limb properties and send config + limb lengths."""
+        betas = self._get_betas_array()
+        gender = self.gender_prop()
+        total_mass = self.total_mass_prop()
+
+        # Build config dict (matches smpl_torque config input format)
+        config = {
+            'betas': betas,
+            'gender': gender,
+        }
+        self.config_output.send(config)
+
+        # Compute limb lengths using SMPLProcessor
+        try:
+            processor = SMPLProcessor(
+                framerate=60.0,
+                betas=betas,
+                gender=gender,
+                total_mass_kg=total_mass,
+                model_path=os.path.dirname(os.path.abspath(__file__))
+            )
+            lengths = processor.limb_data.get('lengths', {})
+            masses = processor.limb_data.get('masses', {})
+
+            # Also compute total scaled mass for display
+            scale_mass = 1.0
+            if len(betas) > 1:
+                scale_mass += betas[0] * 0.08
+                scale_mass += betas[1] * 0.20
+            scaled_total = total_mass * max(0.4, scale_mass)
+
+            result = {
+                'lengths': lengths,
+                'masses': masses,
+                'total_mass_scaled': scaled_total,
+            }
+            offsets = processor.limb_data.get('offsets')
+            if offsets is not None:
+                result['offsets'] = offsets
+            self.limb_lengths_output.send(result)
+        except Exception as e:
+            print(f"SMPLBetaEditorNode: Error computing limb properties: {e}")
+
+    def execute(self):
+        """Triggered by betas_in input if it has triggers_execution."""
+        if self.betas_input.fresh_input:
+            self._on_betas_received()
+
+
+class ShadowToSMPLNode(Node):
+    """
+    Converts Shadow mocap rotations to SMPL format so that the
+    SMPL skeleton reproduces the same physical world-space pose.
+
+    Uses per-joint correction: q_smpl_i = C_parent(i) * q_shadow_i * C_i^-1
+    where C_i maps joint i's children's Shadow offset directions to SMPL.
+
+    Accepts quaternion (20x4, wxyz) or axis-angle (20x3) input.
+    Outputs quaternion (24x4, wxyz) or axis-angle (22x3) in SMPL joint order.
+    """
+
+    # SMPL parent indices
+    SMPL_PARENTS = [
+        -1, 0, 0, 0, 1, 2, 3, 4, 5, 6,
+        7, 8, 9, 9, 9, 12, 13, 14, 16, 17,
+        18, 19, 20, 21,
+    ]
+
+    # SMPL children (built from parents)
+    SMPL_CHILDREN = None  # {parent_idx: [child_idx, ...]}
+
+    @classmethod
+    def _build_children_map(cls):
+        children = {i: [] for i in range(24)}
+        for i in range(1, 24):
+            p = cls.SMPL_PARENTS[i]
+            children[p].append(i)
+        cls.SMPL_CHILDREN = children
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return ShadowToSMPLNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.pose_input = self.add_input('pose', triggers_execution=True)
+        self.trans_input = self.add_input('trans')
+        self.config_input = self.add_input('config')
+
+        self.output_format_prop = self.add_property('output_format', widget_type='combo', default_value='quaternions')
+        self.output_format_prop.widget.combo_items = ['quaternions', 'axis_angle']
+
+        self.pose_output = self.add_output('pose')
+        self.trans_output = self.add_output('trans')
+
+        if ShadowToSMPLNode.SMPL_CHILDREN is None:
+            ShadowToSMPLNode._build_children_map()
+
+        self._betas = None
+        self._gender = 'neutral'
+
+        # C_i corrections (24 Rotation objects)
+        self._C = [Rotation.identity()] * 24
+        self._C_inv = [Rotation.identity()] * 24
+
+        # Load both skeletons and compute corrections
+        self._shadow_offsets = self._load_shadow_offsets()  # {bmolab_idx: offset_vec}
+        self._recompute_corrections()
+
+    def _load_shadow_offsets(self):
+        """Load Shadow bone offset vectors, keyed by bmolab_active index."""
+        def_path = Path(os.path.dirname(os.path.abspath(__file__))) / 'definition.xml'
+        if not def_path.exists():
+            def_path = Path('dpg_system') / 'definition.xml'
+        if not def_path.exists():
+            print("ShadowToSMPLNode: definition.xml not found")
+            return {}
+
+        # Step 1: Load all offsets keyed by body joint index (joint_name_to_bmolab_index)
+        tree = ET.parse(str(def_path.resolve()))
+        root = tree.getroot()
+        body_idx_offsets = {}
+        for node in root.iter('node'):
+            if 'translate' in node.attrib:
+                limb_name = node.attrib['id']
+                ji = JointTranslator.shadow_limb_name_to_bmolab_index(limb_name)
+                if ji != -1:
+                    vals = list(map(float, node.attrib['translate'].split(' ')))
+                    body_idx_offsets[ji] = np.array(vals) / 100.0
+
+        # Step 2: Build body_joint_index → bmolab_active_index mapping
+        # For 0-19: identical. For >= 20: diverge because body has TopOfHead at 20
+        # and different ordering. This explicit map handles the ≥20 cases.
+        body_to_active = {i: i for i in range(20)}  # 0-19 are identical
+        # body joint name (t_* index) → bmolab_active name (index)
+        body_to_active[t_TopOfHead] = -1            # 20 → no bmolab_active equivalent
+        body_to_active[t_LeftBallOfFoot] = 20        # 21 → left_foot (20)
+        body_to_active[t_LeftToeTip] = 24            # 22 → left_toe_tip (24)
+        body_to_active[t_RightBallOfFoot] = 21       # 23 → right_foot (21)
+        body_to_active[t_RightToeTip] = 25           # 24 → right_toe_tip (25)
+        body_to_active[t_LeftKnuckle] = 22           # 25 → left_hand (22)
+        body_to_active[t_LeftFingerTip] = 26         # 26 → left_finger_tip (26)
+        body_to_active[t_RightKnuckle] = 23          # 27 → right_hand (23)
+        body_to_active[t_RightFingerTip] = 27        # 28 → right_finger_tip (27)
+        body_to_active[t_LeftHeel] = 28              # 29 → left_heel (28)
+        body_to_active[t_RightHeel] = 29             # 30 → right_heel (29)
+
+        # Step 3: Re-key offsets to bmolab_active indices
+        offsets = {}
+        for body_idx, vec in body_idx_offsets.items():
+            active_idx = body_to_active.get(body_idx, body_idx)
+            offsets[active_idx] = vec
+
+        print(f"ShadowToSMPLNode: loaded {len(offsets)} shadow offsets")
+        return offsets
+
+    def _load_smpl_offsets(self):
+        """Load SMPL offset vectors from smplx model. Returns (24, 3)."""
+        try:
+            import torch
+            import smplx
+        except ImportError:
+            print("ShadowToSMPLNode: smplx/torch unavailable")
+            return None
+
+        model_path = os.path.dirname(os.path.abspath(__file__))
+        gender_map = {'male': 'MALE', 'female': 'FEMALE', 'neutral': 'MALE'}
+        g_tag = gender_map.get(self._gender, 'MALE')
+
+        try:
+            model = smplx.create(model_path=model_path, model_type='smplh',
+                                 gender=g_tag, num_betas=10, ext='pkl')
+            betas_tensor = torch.zeros(1, 10)
+            if self._betas is not None:
+                b = torch.tensor(self._betas, dtype=torch.float32).flatten()
+                n = min(len(b), 10)
+                betas_tensor[0, :n] = b[:n]
+
+            output = model(betas=betas_tensor)
+            joints = output.joints[0].detach().cpu().numpy()
+            parents = self.SMPL_PARENTS
+            offsets = np.zeros((24, 3))
+            for i in range(1, 24):
+                child_idx = i
+                if joints.shape[0] > 24 and i == 23:
+                    child_idx = 37
+                offsets[i] = joints[child_idx] - joints[parents[i]]
+            return offsets
+        except Exception as e:
+            print(f"ShadowToSMPLNode: Error loading SMPL model: {e}")
+            return None
+
+    def _bmolab_to_smpl_index(self):
+        """Build bmolab active index → SMPL index map."""
+        m = {}
+        for smpl_name, bmolab_name in JointTranslator.smpl_to_bmolab_active_joint_map.items():
+            if smpl_name in JointTranslator.smpl_joints and bmolab_name in JointTranslator.bmolab_active_joints:
+                si = JointTranslator.smpl_joints[smpl_name]
+                bi = JointTranslator.bmolab_active_joints[bmolab_name]
+                m[bi] = si
+        return m
+
+    def _smpl_to_bmolab_index(self):
+        """Build SMPL index → bmolab active index map."""
+        m = {}
+        for smpl_name, bmolab_name in JointTranslator.smpl_to_bmolab_active_joint_map.items():
+            if smpl_name in JointTranslator.smpl_joints and bmolab_name in JointTranslator.bmolab_active_joints:
+                si = JointTranslator.smpl_joints[smpl_name]
+                bi = JointTranslator.bmolab_active_joints[bmolab_name]
+                m[si] = bi
+        return m
+
+    def _recompute_corrections(self):
+        """Compute per-joint C_i corrections based on children's offset directions."""
+        smpl_offsets = self._load_smpl_offsets()
+        if smpl_offsets is None or not self._shadow_offsets:
+            print("ShadowToSMPLNode: Cannot compute corrections (missing skeleton data)")
+            return
+
+        s2b = self._smpl_to_bmolab_index()  # SMPL idx → bmolab idx
+        children = self.SMPL_CHILDREN
+        C = [Rotation.identity()] * 24
+
+        for i in range(24):
+            child_indices = children[i]
+            if not child_indices:
+                continue  # leaf: C = identity
+
+            # Gather child offset direction pairs
+            shadow_dirs = []
+            smpl_dirs = []
+            for ci in child_indices:
+                bi = s2b.get(ci, -1)
+                if bi < 0 or bi not in self._shadow_offsets:
+                    continue
+                sv = self._shadow_offsets[bi]
+                mv = smpl_offsets[ci]
+                sn = np.linalg.norm(sv)
+                mn = np.linalg.norm(mv)
+                if sn < 1e-6 or mn < 1e-6:
+                    continue
+                shadow_dirs.append(sv / sn)
+                smpl_dirs.append(mv / mn)
+
+            if not shadow_dirs:
+                continue
+
+            if len(shadow_dirs) == 1:
+                # Single child: exact rotation between directions
+                C[i] = self._rotation_between(shadow_dirs[0], smpl_dirs[0])
+            else:
+                # Multi-child: SVD best-fit rotation (Wahba's problem)
+                try:
+                    r, _ = Rotation.align_vectors(
+                        np.array(smpl_dirs),
+                        np.array(shadow_dirs)
+                    )
+                    C[i] = r
+                except Exception:
+                    C[i] = self._rotation_between(shadow_dirs[0], smpl_dirs[0])
+
+        self._C = C
+        self._C_inv = [c.inv() for c in C]
+
+        # Debug: print correction angles
+        smpl_names = list(JointTranslator.smpl_joints.keys())
+        for i in range(24):
+            angle = C[i].magnitude() * 180.0 / np.pi
+            name = smpl_names[i] if i < len(smpl_names) else f'j{i}'
+            if angle > 0.1:
+                print(f"  ShadowToSMPL C[{name}]: {angle:.1f}°")
+
+    @staticmethod
+    def _rotation_between(v_from, v_to):
+        """Rotation taking unit vector v_from to v_to."""
+        cross = np.cross(v_from, v_to)
+        dot = np.dot(v_from, v_to)
+        if dot > 0.9999:
+            return Rotation.identity()
+        if dot < -0.9999:
+            perp = np.array([1., 0., 0.])
+            if abs(np.dot(v_from, perp)) > 0.9:
+                perp = np.array([0., 1., 0.])
+            axis = np.cross(v_from, perp)
+            axis /= np.linalg.norm(axis)
+            return Rotation.from_rotvec(axis * np.pi)
+        sn = np.linalg.norm(cross)
+        axis = cross / sn
+        angle = np.arctan2(sn, dot)
+        return Rotation.from_rotvec(axis * angle)
+
+    def execute(self):
+        # Handle config changes (betas/gender affect SMPL offsets)
+        if self.config_input.fresh_input:
+            cfg = self.config_input()
+            if isinstance(cfg, dict):
+                changed = False
+                if 'betas' in cfg:
+                    b = any_to_array(cfg['betas']).flatten()
+                    if self._betas is None or not np.array_equal(self._betas, b):
+                        self._betas = b
+                        changed = True
+                if 'gender' in cfg:
+                    g = str(cfg['gender'])
+                    if g != self._gender:
+                        self._gender = g
+                        changed = True
+                if changed:
+                    self._recompute_corrections()
+
+        if not self.pose_input.fresh_input:
+            return
+
+        raw_pose = self.pose_input()
+        if raw_pose is None:
+            return
+
+        bmolab_data = any_to_array(raw_pose)
+
+        # Reshape flattened input
+        if bmolab_data.ndim == 1:
+            if bmolab_data.size == 80:
+                bmolab_data = bmolab_data.reshape(20, 4)
+            elif bmolab_data.size == 60:
+                bmolab_data = bmolab_data.reshape(20, 3)
+            else:
+                return
+
+        is_quat = bmolab_data.shape[-1] == 4
+
+        # Build SMPL index → bmolab index map
+        s2b = self._smpl_to_bmolab_index()
+        parents = self.SMPL_PARENTS
+        C = self._C
+        C_inv = self._C_inv
+
+        # Output: 24 joints × 4 (quaternion wxyz)
+        smpl_quats = np.zeros((24, 4))
+        smpl_quats[:, 0] = 1.0  # identity default
+
+        for smpl_i in range(24):
+            bmolab_i = s2b.get(smpl_i, -1)
+            if bmolab_i < 0 or bmolab_i >= bmolab_data.shape[0]:
+                # No Shadow data for this joint — apply T-pose correction only
+                parent_i = parents[smpl_i]
+                if parent_i >= 0:
+                    r = C[parent_i] * C_inv[smpl_i]
+                else:
+                    r = C_inv[smpl_i]
+                smpl_quats[smpl_i] = r.as_quat(scalar_first=True)
+                continue
+
+            # Get Shadow local rotation
+            if is_quat:
+                q_shadow = Rotation.from_quat(bmolab_data[bmolab_i], scalar_first=True)
+            else:
+                q_shadow = Rotation.from_rotvec(bmolab_data[bmolab_i])
+
+            # Apply correction: q_smpl = C_parent * q_shadow * C_self^-1
+            parent_i = parents[smpl_i]
+            if parent_i >= 0:
+                q_smpl = C[parent_i] * q_shadow * C_inv[smpl_i]
+            else:
+                # Root: no parent correction
+                q_smpl = q_shadow * C_inv[smpl_i]
+
+            smpl_quats[smpl_i] = q_smpl.as_quat(scalar_first=True)
+
+        # Output format
+        if self.output_format_prop() == 'axis_angle':
+            rots = Rotation.from_quat(smpl_quats, scalar_first=True)
+            self.pose_output.send(rots.as_rotvec().astype(np.float32))
+        else:
+            self.pose_output.send(smpl_quats)
+
+        # Pass through translation
+        trans = self.trans_input()
+        if trans is not None:
+            self.trans_output.send(any_to_array(trans))
+
+
+

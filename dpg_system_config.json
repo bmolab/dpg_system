@@ -29,5 +29,6 @@
   "pjlink_nodes": true,
   "ndi_nodes": true,
   "moderngl_nodes": true,
+  "vision_describe_nodes": true,
   "default_ip_base": "10.1.1.0"
 }

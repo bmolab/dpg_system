@@ -741,7 +741,7 @@ class BodyDataBase:
             lock = ScopedLock(self.__mutex)
             self.__mutex = None
         for limb in self.limbs:
-            delete(limb)
+            del(limb)
 
     def create_joints(self):
         for joint_index in JointTranslator.bmolab_joint_index_to_name:

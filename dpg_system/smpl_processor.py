@@ -7,6 +7,7 @@ import time
 from dataclasses import dataclass
 import logging
 from dpg_system.one_euro_filter import OneEuroFilter
+from dpg_system.contact_consensus import ContactConsensus, ConsensusOptions, PARENTS as CONSENSUS_PARENTS
 
 try:
     import torch
@@ -338,12 +339,23 @@ class SMPLProcessingOptions:
     floor_tolerance: float = 0.15
     heel_toe_bias: float = 0.0
     enable_impact_mitigation: bool = True
-    contact_method: str = 'fusion'  # 'fusion' or 'com_driven'
+    contact_method: str = 'fusion'  # 'fusion', 'com_driven', or 'consensus'
+    contact_refinement_iterations: int = 1  # Torque-feedback refinement passes (0=disabled)
     
     # --- Torque Rate Limiting ---
     enable_rate_limiting: bool = True
     rate_limit_strength: float = 1.0  # Multiplier for per-joint rate limits
     enable_kf_smoothing: bool = True  # SmartClampKF filter for dynamic torque
+    
+    # --- World-Frame Dynamics ---
+    world_frame_dynamics: bool = False  # CoM-based dynamic torque (off by default for A/B comparison)
+    com_pos_min_cutoff: float = 8.0    # Base One Euro min_cutoff for CoM position filter (scaled by 1/√mass)
+    com_pos_beta: float = 0.05         # Base One Euro beta for CoM position filter
+    com_vel_min_cutoff: float = 3.0    # Base One Euro min_cutoff for CoM velocity filter (scaled by 1/√mass)
+    com_vel_beta: float = 0.05         # Base One Euro beta for CoM velocity filter
+    com_acc_min_cutoff: float = 2.0    # Base One Euro min_cutoff for CoM acceleration filter (999 = disabled)
+    com_acc_beta: float = 0.8          # Base One Euro beta — high for adaptive responsiveness during impacts
+    smooth_input_window: int = 0       # Causal moving average window for pose+trans input (0 = off, 3 = recommended for 33Hz cadence removal)
 
 class SMPLProcessor:
     def __init__(self, framerate, betas=None, gender='neutral', model_path=None, total_mass_kg=75.0):
@@ -412,6 +424,10 @@ class SMPLProcessor:
         self.skeleton_offsets = self._compute_skeleton_offsets()
         self.max_torques = self._compute_max_torque_profile()
         self.max_torque_array = self._compute_max_torque_array()
+        self._precompute_inertia_tables()
+
+        # Initialize consensus contact detection
+        self._init_contact_consensus()
 
         self.perm_basis = None
         self.perm_basis_rot = None
@@ -599,6 +615,11 @@ class SMPLProcessor:
             lengths['hand'] = (l_hand_len + r_hand_len) / 2.0
             
             lengths['spine_segment'] = (dist(0, 3) + dist(3, 6) + dist(6, 9)) / 3.0
+            # Individual spine segments (for accurate visualization)
+            lengths['spine_lower'] = dist(0, 3)     # pelvis -> spine1
+            lengths['spine_mid'] = dist(3, 6)        # spine1 -> spine2
+            lengths['spine_upper'] = dist(6, 9)      # spine2 -> spine3
+            lengths['spine_to_neck'] = dist(9, 12)   # spine3 -> neck
             lengths['neck'] = dist(12, 15) # Neck -> Head
             lengths['head'] = 0.20 
             
@@ -607,7 +628,6 @@ class SMPLProcessor:
             
             lengths['upper_arm'] = (dist(16, 18) + dist(17, 19)) / 2.0
             lengths['lower_arm'] = (dist(18, 20) + dist(19, 21)) / 2.0
-            lengths['hand'] = (dist(20, 22) + dist(21, 23)) / 2.0
             
             # Extend Lengths keys?
             # Or reliance on offsets is enough?
@@ -616,8 +636,46 @@ class SMPLProcessor:
             # The node calculates it from offsets.
             
             # Message only once? Or standard print
-            print(f"Loaded SMPL-H model ({g_tag}) for accurate anthropometry.")
-            return {'lengths': lengths, 'offsets': model_offsets}
+            # print(f"Loaded SMPL-H model ({g_tag}) for accurate anthropometry.")
+            
+            # --- Compute true segment CoM offsets from mesh ---
+            # Each vertex is assigned to the joint with the highest LBS weight.
+            # The centroid of those vertices gives the segment's center of mass.
+            # Store as offset from joint position (in T-pose coordinates).
+            try:
+                vertices = output.vertices[0].detach().cpu().numpy()  # (6890, 3)
+                lbs_weights = model.lbs_weights.detach().cpu().numpy()  # (6890, N_joints)
+                n_body_joints = min(24, lbs_weights.shape[1])
+                
+                # Assign each vertex to its dominant joint
+                seg_assignment = np.argmax(lbs_weights[:, :n_body_joints], axis=1)
+                
+                segment_com_offsets = np.zeros((n_body_joints, 3))
+                segment_com_world = np.zeros((n_body_joints, 3))
+                for j in range(n_body_joints):
+                    verts_j = vertices[seg_assignment == j]
+                    if len(verts_j) > 0:
+                        com_world = np.mean(verts_j, axis=0)
+                        segment_com_world[j] = com_world
+                        segment_com_offsets[j] = com_world - joints[j]
+                    else:
+                        segment_com_offsets[j] = np.zeros(3)
+                        segment_com_world[j] = joints[j]
+                
+                # print(f"  Computed {n_body_joints} segment CoM offsets from mesh ({len(vertices)} vertices)")
+                
+                # Debug: print spine segment CoMs
+                spine_names = {0: 'Pelvis', 3: 'Spine1', 6: 'Spine2', 9: 'Spine3', 12: 'Neck'}
+                for idx, name in spine_names.items():
+                    if idx < n_body_joints:
+                        off = segment_com_offsets[idx]
+                        # print(f"    {name}: CoM offset = [{off[0]:.4f}, {off[1]:.4f}, {off[2]:.4f}]")
+                
+            except Exception as e:
+                print(f"  Warning: Could not compute segment CoMs from mesh: {e}")
+                segment_com_offsets = None
+            
+            return {'lengths': lengths, 'offsets': model_offsets, 'segment_com_offsets': segment_com_offsets}
             
         except Exception as e:
             # Only print warning once per session ideally, but for now simple print
@@ -677,7 +735,11 @@ class SMPLProcessor:
                 'upper_leg': 0.45,
                 'lower_leg': 0.42,
                 'foot': 0.20, # length
-                'spine_segment': 0.12, # approx per spine joint
+                'spine_segment': 0.12, # average per spine joint (backward compat)
+                'spine_lower': 0.13,   # pelvis -> spine1
+                'spine_mid': 0.14,     # spine1 -> spine2
+                'spine_upper': 0.06,   # spine2 -> spine3
+                'spine_to_neck': 0.21, # spine3 -> neck
                 'neck': 0.10,
                 'head': 0.20,
                 'shoulder_width': 0.40,
@@ -702,7 +764,7 @@ class SMPLProcessor:
             
         m = m_base * max(0.4, scale_mass) # Safety clip (min 40% of base)
         
-        print(f"Computed Total Mass: {m:.2f} kg (Base: {m_base}, Betas: {self.betas[:2] if self.betas is not None else 'None'})")
+        # print(f"Computed Total Mass: {m:.2f} kg (Base: {m_base}, Betas: {self.betas[:2] if self.betas is not None else 'None'})")
 
         masses = {
             'pelvis': m * mass_fractions['pelvis'],
@@ -728,20 +790,47 @@ class SMPLProcessor:
         """
         Compute static local offsets for the skeleton based on limb lengths.
         Returns:
-            offsets (np.array): (24, 3) Local position vectors for each joint in parent frame.
+            offsets (np.array): (30, 3) Local position vectors for each joint in parent frame.
+            Includes 24 real joints + 6 virtual (24-25:toes, 26-27:fingers, 28-29:heels)
         """
         # If we have exact model offsets, use them!
         if isinstance(self.limb_data, dict) and 'offsets' in self.limb_data:
-            return self.limb_data['offsets']
+            model_offsets = self.limb_data['offsets']
+            # Ensure we have 30 joints
+            if model_offsets.shape[0] < 30:
+                offsets = np.zeros((30, 3))
+                offsets[:model_offsets.shape[0]] = model_offsets
+            else:
+                offsets = model_offsets.copy()  # Copy to avoid mutating cached data
+            
+            # Add virtual joint offsets if missing (zeros)
+            if model_offsets.shape[0] <= 24 or np.allclose(offsets[24], 0):
+                foot_len = self.limb_data['lengths'].get('foot', 0.15) if isinstance(self.limb_data, dict) else 0.15
+                toe_dir = np.array([0.0, -0.2, 1.0])
+                toe_dir = toe_dir / np.linalg.norm(toe_dir) * foot_len
+                offsets[24] = toe_dir  # L_toe from L_foot
+                offsets[25] = toe_dir  # R_toe from R_foot
+                offsets[26] = np.array([0.08, 0.0, 0.0])   # L_fingertip
+                offsets[27] = np.array([-0.08, 0.0, 0.0])  # R_fingertip
+            
+            # Always override heel offsets — model values target calcaneus center,
+            # not the ground contact point. We need the bottom of the heel.
+            # Ankle joint center is ~10-12cm above heel ground contact.
+            heel_dir = np.array([0.0, -0.9, -0.4])  # Primarily downward, slightly backward
+            heel_dir = heel_dir / np.linalg.norm(heel_dir) * 0.12  # ~12cm to floor
+            offsets[28] = heel_dir  # L_heel from L_ankle
+            offsets[29] = heel_dir  # R_heel from R_ankle
+            return offsets
         
         # Fallback to heuristic reconstruction
-        offsets = np.zeros((28, 3))
+        offsets = np.zeros((30, 3))
         
-        for i in range(28):
+        for i in range(30):
             if i < 24:
                 node_name = self.joint_names[i]
             else:
-                extra_names = ['l_toe', 'r_toe', 'l_fingertip', 'r_fingertip']
+                extra_names = ['l_toe', 'r_toe', 'l_fingertip', 'r_fingertip',
+                               'l_heel', 'r_heel']
                 node_name = extra_names[i-24]
             
             # Default logic
@@ -758,6 +847,7 @@ class SMPLProcessor:
             # Virtual Extensions
             elif 'toe' in node_name: length = 0.15
             elif 'fingertip' in node_name: length = 0.08
+            elif 'heel' in node_name: length = 0.12
 
             # Define Base Local Position (unrotated)
             lx, ly, lz = 0.0, -1.0, 0.0 # Down
@@ -798,6 +888,11 @@ class SMPLProcessor:
                 length = self.limb_data['lengths']['foot']
                 # Corrected: Point Forward (+Z) and slightly Down (-Y)
                 lx, ly, lz = 0.0, -0.2, 1.0
+            
+            elif 'heel' in node_name:
+                # Heel: primarily Downward (-Y) with slight Backward (-Z) from ankle
+                # Ankle joint center is ~10-12cm above heel ground contact point
+                lx, ly, lz = 0.0, -0.9, -0.4
             
             base_vec = np.array([lx, ly, lz])
             if 'hip' in node_name:
@@ -1336,92 +1431,24 @@ class SMPLProcessor:
             
             # If both front and back have low joints, we're in multi-support mode
             if len(front_low) > 0 and len(back_low) > 0:
-                # --- Torque-Based Load Distribution ---
-                # The body must be balanced: sum of (force * distance from CoM) = 0
-                # Joints further from CoM on the "light" side need MORE force
-                
-                # Calculate weighted center of all low contact points
-                all_low = front_low + back_low
-                all_positions = {**front_positions, **back_positions}
-                
-                # For each contact point, calculate its lever arm (distance from CoM)
-                # and direction (which side of CoM it's on)
-                lever_arms = {}
-                for j in all_low:
-                    pos_hz = all_positions[j]
-                    # Vector from CoM to joint
-                    lever_vec = pos_hz - com_hz
-                    lever_arms[j] = {
-                        'distance': np.linalg.norm(lever_vec),
-                        'direction': lever_vec / (np.linalg.norm(lever_vec) + 1e-6)
-                    }
-                
-                # Find the dominant support axis (line connecting front and back)
-                front_center = np.mean([front_positions[j] for j in front_low], axis=0)
-                back_center = np.mean([back_positions[j] for j in back_low], axis=0)
-                support_axis = back_center - front_center
-                support_axis_norm = np.linalg.norm(support_axis)
-                if support_axis_norm > 1e-6:
-                    support_axis = support_axis / support_axis_norm
-                else:
-                    support_axis = np.array([1, 0])
-                
-                # Project CoM onto support axis relative to front center
-                com_proj = np.dot(com_hz - front_center, support_axis)
-                span = np.dot(back_center - front_center, support_axis)
-                
-                if span > 1e-6:
-                    # com_ratio: 0 = at front, 1 = at back
-                    com_ratio = np.clip(com_proj / span, 0, 1)
-                else:
-                    com_ratio = 0.5
-                
-                # Torque balance: front_load * front_dist = back_load * back_dist
-                # If CoM is closer to back (com_ratio high), front needs more load
-                # front_ratio = (1 - com_ratio), back_ratio = com_ratio (inverted)
-                # This is NOT quite right - let me do proper torque calculation
-                
-                # Front joints are at com_proj (relative to CoM = 0)
-                # Back joints are at (span - com_proj) = span*(1 - com_ratio)
-                front_lever = com_proj  # Distance from CoM to front
-                back_lever = span - com_proj  # Distance from CoM to back
-                
-                # For static equilibrium: F_front * d_front = F_back * d_back
-                # F_front / F_back = d_back / d_front
-                # So if CoM is close to back (front_lever large, back_lever small),
-                # front needs LESS force (shorter lever advantage)
-                
-                # Calculate load ratios based on inverse lever arms
-                # (longer arm = less force needed for same torque)
-                if front_lever > 0.01 and back_lever > 0.01:
-                    # Inverse of lever arm (shorter arm = more force needed)
-                    front_force_ratio = back_lever / (front_lever + back_lever)
-                    back_force_ratio = front_lever / (front_lever + back_lever)
-                elif front_lever < 0.01:
-                    # CoM is right at front
-                    front_force_ratio = 0.9
-                    back_force_ratio = 0.1
-                elif back_lever < 0.01:
-                    # CoM is right at back
-                    front_force_ratio = 0.1
-                    back_force_ratio = 0.9
-                else:
-                    front_force_ratio = 0.5
-                    back_force_ratio = 0.5
-                
                 # Calculate current front/back load sums
                 front_load = sum(load_factors[j] for j in HAND_JOINTS)
                 back_load = sum(load_factors[j] for j in FOOT_JOINTS)
                 total_load = front_load + back_load
                 
                 if total_load > 1e-6:
-                    # Blend toward torque-based target
-                    # The more joints are low, the more we trust this calculation
-                    blend_factor = min(1.0, (len(front_low) + len(back_low)) / 4.0)
+                    # Target: More balanced distribution for all-fours
+                    # Use 40% front, 60% back (arms bear less than legs naturally)
+                    TARGET_FRONT_RATIO = 0.40
+                    TARGET_BACK_RATIO = 0.60
                     
                     current_front_ratio = front_load / total_load
-                    target_front = front_force_ratio * blend_factor + current_front_ratio * (1.0 - blend_factor)
-                    target_back = back_force_ratio * blend_factor + (1.0 - current_front_ratio) * (1.0 - blend_factor)
+                    
+                    # Blend toward target: the more joints are low, the more balanced
+                    blend_factor = min(1.0, (len(front_low) + len(back_low)) / 6.0)
+                    
+                    target_front = TARGET_FRONT_RATIO * blend_factor + current_front_ratio * (1.0 - blend_factor)
+                    target_back = TARGET_BACK_RATIO * blend_factor + (1.0 - current_front_ratio) * (1.0 - blend_factor)
                     
                     # Scale factors to achieve target distribution
                     if front_load > 1e-6:
@@ -1733,6 +1760,239 @@ class SMPLProcessor:
         
         return contact_probs
 
+    def _init_contact_consensus(self):
+        """Initialize the consensus contact detection module."""
+        # Build per-joint segment masses from limb_data
+        limb_masses = self.limb_data['masses']
+        segment_masses = np.zeros(24)
+        for idx in range(24):
+            name = self.joint_names[idx]
+            m = 0.0
+            if 'pelvis' in name: m = limb_masses['pelvis']
+            elif 'hip' in name: m = limb_masses['upper_leg']
+            elif 'knee' in name: m = limb_masses['lower_leg']
+            elif 'ankle' in name: m = limb_masses['foot']
+            elif 'spine' in name: m = limb_masses['spine']
+            elif 'neck' in name: m = limb_masses.get('head', 1.0) * 0.2
+            elif 'head' in name: m = limb_masses['head'] * 0.8
+            elif 'collar' in name: m = limb_masses['upper_arm'] * 0.2
+            elif 'shoulder' in name: m = limb_masses['upper_arm'] * 0.8
+            elif 'elbow' in name: m = limb_masses['lower_arm']
+            elif 'wrist' in name: m = limb_masses['hand']
+            segment_masses[idx] = m
+        
+        self._consensus = ContactConsensus(
+            parents=list(self._get_hierarchy()[:24]),
+            segment_masses=segment_masses,
+            max_torques=self.max_torque_array if hasattr(self, 'max_torque_array') else None,
+            num_joints=30  # 24 real + 6 virtual
+        )
+    
+    def _compute_probabilistic_contacts_consensus(self, F, J, world_pos, options):
+        """
+        Consensus-based contact detection.
+        
+        Delegates to ContactConsensus module which combines sensory,
+        structural, dynamic, and torque plausibility evidence.
+        """
+        contact_probs = np.zeros((F, J))
+        
+        if not options.floor_enable:
+            return contact_probs
+        
+        # Build consensus options from processing options.
+        # Use adaptive inferred floor if available (from previous frame).
+        floor_for_consensus = options.floor_height
+        if hasattr(self, '_inferred_floor_height') and self._inferred_floor_height is not None:
+            floor_for_consensus = self._inferred_floor_height
+        
+        consensus_opts = ConsensusOptions(
+            floor_height=floor_for_consensus,
+            up_axis=getattr(self, 'internal_y_dim', 1),
+        )
+        
+        for f in range(F):
+            pos = world_pos[f]  # (J, 3)
+            
+            # Get CoM - may not be available yet on first frames
+            if self.current_com is not None:
+                com = self.current_com[f] if self.current_com.ndim > 1 else self.current_com
+            else:
+                # Compute a simple CoM from the pelvis (joint 0)
+                com = pos[0].copy()
+            
+            # Feed previous frame torques for plausibility checking
+            if hasattr(self, '_prev_torque_vecs') and self._prev_torque_vecs is not None:
+                self._consensus.set_prev_torques(self._prev_torque_vecs)
+            
+            probs = self._consensus.compute_contacts(pos, com, options.dt, consensus_opts)
+            
+            # Ensure output size matches
+            contact_probs[f, :min(J, len(probs))] = probs[:min(J, len(probs))]
+        
+        return contact_probs
+
+    def _refine_contacts_from_torque_discontinuity(
+            self, contact_probs, torques_vec, world_pos, parents, options, tips):
+        """
+        Torque-discontinuity contact refinement.
+        
+        Detects sudden torque jumps between frames and tests whether
+        contact changes can explain them:
+        - If a new contact caused a torque burst → demote it
+        - If a lost contact caused a torque burst → promote it
+        - If contacts make no difference → burst is real motion, leave it
+        
+        Args:
+            contact_probs: (F, J) current contact probabilities
+            torques_vec: (F, J, 3) active torque vectors from current iteration
+            world_pos: (F, J, 3) world positions
+            parents: parent index array
+            options: processing options
+            tips: tip positions dict
+            
+        Returns:
+            refined_probs: (F, J) adjusted contact probabilities
+        """
+        F, J = contact_probs.shape
+        refined = contact_probs.copy()
+        
+        # Need previous frame torques and contacts for comparison
+        if not hasattr(self, '_prev_active_torques') or self._prev_active_torques is None:
+            return refined
+        if not hasattr(self, '_prev_contact_probs') or self._prev_contact_probs is None:
+            return refined
+        
+        prev_torques = self._prev_active_torques  # (J, 3)
+        prev_probs = self._prev_contact_probs      # (J,)
+        
+        yd = getattr(self, 'internal_y_dim', 1)
+        
+        for f in range(F):
+            curr_torques = torques_vec[f]  # (J, 3)
+            curr_probs = contact_probs[f]   # (J,)
+            
+            # Detect torque discontinuity per joint
+            torque_delta = curr_torques[:min(J, prev_torques.shape[0])] - prev_torques[:min(J, curr_torques.shape[0])]
+            delta_mag = np.linalg.norm(torque_delta, axis=-1)  # (J,)
+            
+            # Threshold: scale with dt so it's frame-rate independent
+            # A discontinuity of 50 N·m/frame at 120fps = 6000 N·m/s rate
+            DISC_THRESHOLD = 30.0  # N·m per frame (tune-able)
+            
+            # Find joints with significant torque jumps
+            problem_joints = np.where(delta_mag > DISC_THRESHOLD)[0]
+            
+            if len(problem_joints) == 0:
+                continue
+            
+            # For each problem joint, check if contact changes on
+            # descendant joints could explain the torque burst
+            for pj in problem_joints:
+                if pj >= self.target_joint_count:
+                    continue
+                
+                burst_vec = torque_delta[pj]  # (3,) the torque jump
+                burst_mag = delta_mag[pj]
+                
+                # Find descendant joints (joints whose contact forces
+                # create torque on this joint via kinematic chain)
+                descendants = self._get_descendant_joints(pj, parents, J)
+                
+                # Check which descendants had significant contact changes
+                best_fix = None
+                best_reduction = 0.0
+                
+                for dj in descendants:
+                    if dj >= J:
+                        continue
+                    
+                    dp = curr_probs[dj] - prev_probs[min(dj, len(prev_probs)-1)]
+                    
+                    if abs(dp) < 0.02:  # No meaningful change
+                        continue
+                    
+                    # Estimate the torque contribution of this contact
+                    # Contact force ≈ mass_fraction * g * up_direction
+                    # Torque on pj ≈ cross(r, F) where r = pos[dj] - pos[pj]
+                    if dj in tips:
+                        pos_dj = tips[dj][f]
+                    else:
+                        pos_dj = world_pos[f, dj]
+                    pos_pj = world_pos[f, pj]
+                    
+                    r = pos_dj - pos_pj  # lever arm
+                    
+                    # Estimate contact force direction (upward = supporting weight)
+                    f_dir = np.zeros(3)
+                    f_dir[yd] = 1.0  # upward
+                    
+                    # Approximate torque contribution magnitude
+                    # proportional to contact_prob * body_mass_fraction * g
+                    mass_frac = curr_probs[dj] * 0.3  # rough approximation
+                    f_mag = mass_frac * self.total_mass_kg * 9.81
+                    f_vec = f_dir * f_mag
+                    
+                    tau_est = np.cross(r, f_vec)  # estimated torque from this contact
+                    
+                    # Does removing/reducing this contact explain the burst?
+                    # If the contact appeared (dp > 0) and its torque aligns
+                    # with the burst direction → demoting it would reduce burst
+                    alignment = np.dot(tau_est, burst_vec) / (burst_mag + 1e-6)
+                    
+                    if dp > 0.05 and alignment > 0:
+                        # New contact appeared and its torque aligns with burst
+                        # → likely a false contact causing the burst
+                        reduction = min(alignment, burst_mag)
+                        if reduction > best_reduction:
+                            best_reduction = reduction
+                            best_fix = ('demote', dj, dp)
+                    
+                    elif dp < -0.05 and alignment < 0:
+                        # Contact disappeared and its absence aligns with burst
+                        # → likely a missed contact
+                        reduction = min(abs(alignment), burst_mag)
+                        if reduction > best_reduction:
+                            best_reduction = reduction
+                            best_fix = ('promote', dj, abs(dp))
+                
+                # Apply the best fix if it explains a meaningful portion
+                if best_fix is not None and best_reduction > DISC_THRESHOLD * 0.3:
+                    action, fix_joint, prob_change = best_fix
+                    
+                    if action == 'demote':
+                        # Reduce the contact probability
+                        scale = min(1.0, best_reduction / (burst_mag + 1e-6))
+                        refined[f, fix_joint] *= (1.0 - scale * 0.5)
+                    
+                    elif action == 'promote':
+                        # Boost the contact probability toward its previous value
+                        prev_p = prev_probs[min(fix_joint, len(prev_probs)-1)]
+                        scale = min(1.0, best_reduction / (burst_mag + 1e-6))
+                        refined[f, fix_joint] = max(
+                            refined[f, fix_joint],
+                            prev_p * scale * 0.5
+                        )
+        
+        return refined
+    
+    def _get_descendant_joints(self, joint_idx, parents, J):
+        """Get all descendant joints (children, grandchildren, etc.)."""
+        descendants = []
+        for j in range(J):
+            # Walk up from j to see if joint_idx is an ancestor
+            curr = j
+            while curr != -1 and curr != joint_idx:
+                if curr < len(parents):
+                    curr = parents[curr]
+                else:
+                    curr = -1
+            if curr == joint_idx and j != joint_idx:
+                descendants.append(j)
+        return descendants
+
+
+
     def _compute_max_torque_array(self):
         """
         Convert dictionary profile to per-joint max torque array.
@@ -2028,6 +2288,15 @@ class SMPLProcessor:
         
         # Noise Statistics Tracking
         self.noise_stats = NoiseStats()
+        
+        # Consensus Contact Detection State
+        self._prev_torque_vecs = None
+        self._prev_active_torques = None
+        self._prev_contact_probs = None
+        self._prev_joint_heights = None
+        self._inferred_floor_height = None
+        if hasattr(self, '_consensus'):
+            self._consensus.reset()
 
     def reset_noise_stats(self):
         """Reset noise statistics for a new file evaluation."""
@@ -2062,6 +2331,138 @@ class SMPLProcessor:
                    10, 11, 22, 23, 7, 8] # Included 28, 29 (Heels). 27->23.
         return parents
 
+    def _precompute_inertia_tables(self):
+        """
+        Pre-compute static inertia lookup tables at init time.
+        Eliminates redundant tree traversals during per-frame processing.
+        """
+        parents = self._get_hierarchy()
+        limb_masses = self.limb_data['masses']
+        limb_lengths = self.limb_data['lengths']
+        
+        # Build children lookup
+        children_of = {i: [] for i in range(30)}
+        for i in range(30):
+            p = parents[i]
+            if p >= 0:
+                children_of[p].append(i)
+        self._hierarchy_children = children_of
+        
+        # Build subtree membership for each joint (including self)
+        self._subtree_members = {}
+        for j in range(24):
+            members = []
+            stack = [j]
+            while stack:
+                curr = stack.pop()
+                if curr < 24:
+                    members.append(curr)
+                stack.extend(children_of.get(curr, []))
+            self._subtree_members[j] = members
+        
+        # Per-segment mass and length arrays (24,)
+        seg_mass = np.zeros(24)
+        seg_length = np.zeros(24)
+        seg_is_leaf_skip = np.zeros(24, dtype=bool)  # True for 'hand' joints (mass handled by wrist)
+        
+        for idx in range(24):
+            name = self.joint_names[idx]
+            m = 0.0
+            l = 0.0
+            
+            if 'pelvis' in name: m, l = limb_masses['pelvis'], 0.1
+            elif 'hip' in name: m, l = limb_masses['upper_leg'], limb_lengths['upper_leg']
+            elif 'knee' in name: m, l = limb_masses['lower_leg'], limb_lengths['lower_leg']
+            elif 'ankle' in name: m, l = limb_masses['foot'], limb_lengths['foot']
+            elif 'spine' in name: m, l = limb_masses['spine'], limb_lengths['spine_segment']
+            elif 'neck' in name: m, l = limb_masses.get('head', 1.0)*0.2, limb_lengths['neck']
+            elif 'head' in name: m, l = limb_masses['head']*0.8, limb_lengths['head']
+            elif 'collar' in name: m, l = limb_masses['upper_arm']*0.2, 0.1
+            elif 'shoulder' in name: m, l = limb_masses['upper_arm']*0.8, limb_lengths['upper_arm']
+            elif 'elbow' in name: m, l = limb_masses['lower_arm'], limb_lengths['lower_arm']
+            elif 'wrist' in name: m, l = limb_masses['hand'], limb_lengths['hand']
+            elif 'hand' in name:
+                seg_is_leaf_skip[idx] = True
+                continue
+            elif 'foot' in name: m, l = limb_masses['foot'] * 0.4, 0.08
+            
+            seg_mass[idx] = m
+            seg_length[idx] = l
+        
+        self._seg_mass = seg_mass
+        self._seg_length = seg_length
+        self._seg_local_inertia = (1.0/12.0) * seg_mass * (seg_length**2)
+        self._seg_is_leaf_skip = seg_is_leaf_skip
+        self._seg_has_children = np.array([len(children_of.get(i, [])) > 0 for i in range(24)])
+        
+        # For leaf nodes, store parent index for fallback direction
+        self._seg_leaf_parent = np.array([parents[i] if not self._seg_has_children[i] else -1 for i in range(24)])
+    
+    def _compute_all_subtree_inertias(self, world_positions):
+        """
+        Compute effective moment of inertia for all target joints in one call.
+        Uses precomputed tables from _precompute_inertia_tables.
+        
+        Args:
+            world_positions: (F, J, 3) world positions
+            
+        Returns:
+            inertias: (F, target_joint_count) effective inertia per joint
+        """
+        F = world_positions.shape[0]
+        parents = self._get_hierarchy()
+        inertias = np.zeros((F, self.target_joint_count))
+        
+        for j in range(self.target_joint_count):
+            joint_pos = world_positions[:, j, :]  # (F, 3)
+            total_inertia = np.zeros(F)
+            
+            for idx in self._subtree_members[j]:
+                if self._seg_is_leaf_skip[idx]:
+                    continue
+                
+                m = self._seg_mass[idx]
+                if m <= 0:
+                    continue
+                
+                l = self._seg_length[idx]
+                i_local = self._seg_local_inertia[idx]
+                
+                # Compute COM position for this segment
+                if self._seg_has_children[idx]:
+                    child_nodes = self._hierarchy_children[idx]
+                    # Vectorized mean of children positions
+                    child_positions = world_positions[:, child_nodes, :]  # (F, n_children, 3)
+                    end_pos = np.mean(child_positions, axis=1)  # (F, 3)
+                    com_pos = (world_positions[:, idx, :] + end_pos) * 0.5
+                else:
+                    # Leaf node
+                    p_idx = self._seg_leaf_parent[idx]
+                    if p_idx != -1:
+                        dir_vec = joint_pos - world_positions[:, p_idx, :]
+                        norm = np.linalg.norm(dir_vec, axis=-1, keepdims=True)
+                        norm_safe = np.maximum(norm, 1e-6)
+                        dir_vec_normalized = dir_vec / norm_safe
+                        
+                        is_small = (norm < 1e-6).flatten()
+                        if np.any(is_small):
+                            dir_vec_normalized[is_small] = np.array([0.0, 0.0, 1.0])
+                        
+                        com_pos = joint_pos + dir_vec_normalized * (l * 0.5)
+                    else:
+                        com_pos = world_positions[:, idx, :]
+                
+                # Distance from pivot to segment COM
+                r_vec = com_pos - joint_pos
+                r_sq = np.sum(r_vec**2, axis=-1)  # (F,)
+                
+                # Parallel axis theorem
+                total_inertia += (i_local + m * r_sq)
+            
+            inertias[:, j] = total_inertia
+        
+        return inertias
+
     def _compute_subtree_inertia(self, joint_idx, world_positions, world_orientations, limb_lengths, limb_masses):
         """
         Computes the effective moment of inertia of the subtree rooted at joint_idx,
@@ -2071,6 +2472,9 @@ class SMPLProcessor:
         - Segments are thin rods.
         - I_local = 1/12 * m * L^2
         - Parallel axis theorem: I_effective = I_local + m * d^2
+        
+        LEGACY: Kept for backwards compatibility. New code should use
+        _compute_all_subtree_inertias() for batch computation.
         """
         parents = self._get_hierarchy()
         children = [i for i, p in enumerate(parents) if p == joint_idx]
@@ -2085,89 +2489,61 @@ class SMPLProcessor:
             curr_children = [i for i, p in enumerate(parents) if p == curr]
             stack.extend(curr_children)
             
-        # We only care about the kinematic chain downstream. 
-        # But we need to identify which 'limb segment' is attached to which joint.
-        # Convention: The bone connecting Parent->Child is associated with Child's mass/length?
-        # Or Parent? In SMPL, "Left Knee" joint rotates the "Left Lower Leg".
-        # So Joint i controls Segment i (where Segment i is the bone extending from i to its children).
-        
-        # However, leaf nodes (hands, feet) have mass but no further joints in standard 24 set.
-        # Actually usually:
-        # Pelvis (0) -> connected to hips and spine. The "pelvis" mass is at 0.
-        # Hip (1) -> connects to knee. "Thigh" mass is here.
-        
         total_inertia = np.zeros(world_positions.shape[0])
         
         joint_pos = world_positions[..., joint_idx, :]
         
         for idx in subtree_indices:
-            # Skip if joint index is outside our target 22 joints (though hands are 22/23)
-            # We should include all 24 for mass purposes if possible.
             if idx >= 24: continue
             
             name = self.joint_names[idx]
             
-            # Map joint name to limb data keys
-            # simplified mapping
             m = 0.0
             l = 0.0
             
-            if 'pelvis' in name: m, l = limb_masses['pelvis'], 0.1 # COM close to root
+            if 'pelvis' in name: m, l = limb_masses['pelvis'], 0.1
             elif 'hip' in name: m, l = limb_masses['upper_leg'], limb_lengths['upper_leg']
             elif 'knee' in name: m, l = limb_masses['lower_leg'], limb_lengths['lower_leg']
             elif 'ankle' in name: m, l = limb_masses['foot'], limb_lengths['foot']
             elif 'spine' in name: m, l = limb_masses['spine'], limb_lengths['spine_segment']
-            elif 'neck' in name: m, l = limb_masses.get('head', 1.0)*0.2, limb_lengths['neck'] # partial head
+            elif 'neck' in name: m, l = limb_masses.get('head', 1.0)*0.2, limb_lengths['neck']
             elif 'head' in name: m, l = limb_masses['head']*0.8, limb_lengths['head']
-            elif 'collar' in name: m, l = limb_masses['upper_arm']*0.2, 0.1 # clavicle approx
+            elif 'collar' in name: m, l = limb_masses['upper_arm']*0.2, 0.1
             elif 'shoulder' in name: m, l = limb_masses['upper_arm']*0.8, limb_lengths['upper_arm']
             elif 'elbow' in name: m, l = limb_masses['lower_arm'], limb_lengths['lower_arm']
             elif 'wrist' in name: m, l = limb_masses['hand'], limb_lengths['hand']
-            elif 'hand' in name: continue # leaf, handled by wrist mass usually, or just small tip
-            elif 'foot' in name: m, l = limb_masses['foot'] * 0.4, 0.08 # Toes/Distal foot
+            elif 'hand' in name: continue
+            elif 'foot' in name: m, l = limb_masses['foot'] * 0.4, 0.08
             
             if m <= 0: continue
 
-            # Find child node to define rod direction
             child_nodes = [c for c, p in enumerate(parents) if p == idx]
             
-            com_pos = world_positions[..., idx, :] # Default fallback
+            com_pos = world_positions[..., idx, :]
             
             if len(child_nodes) > 0:
-                # Take average of children as end point
                 end_pos = np.mean([world_positions[..., c, :] for c in child_nodes], axis=0)
                 com_pos = (world_positions[..., idx, :] + end_pos) * 0.5
             else:
-                # Leaf node with mass (e.g. Toes/Foot tip)
-                # We need to estimate a direction for the segment.
-                # Heuristic: Use the parent-to-joint vector direction?
-                # Or use a default forward vector (Z)?
-                # Using parent-to-joint direction:
                 p_idx = parents[idx]
                 if p_idx != -1:
                     dir_vec = joint_pos - world_positions[..., p_idx, :]
                     norm = np.linalg.norm(dir_vec, axis=-1, keepdims=True)
                     norm_safe = norm.copy()
-                    norm_safe[norm_safe < 1e-6] = 1.0 # Prevent division by zero
+                    norm_safe[norm_safe < 1e-6] = 1.0
                     dir_vec_normalized = dir_vec / norm_safe
                     
-                    # If norm was small, use default direction
                     is_small = (norm < 1e-6).flatten()
                     if np.any(is_small):
                          dir_vec_normalized[is_small] = np.array([0.0, 0.0, 1.0])
                     
                     dir_vec = dir_vec_normalized
                     
-                    # Assume COM is at l/2 along this direction
                     com_pos = joint_pos + dir_vec * (l * 0.5)
 
-            # Distance from the PIVOT (joint_idx) to this segment's COM
             r_vec = com_pos - joint_pos
-            # r_sq = np.dot(r_vec, r_vec) # Scalar version
-            r_sq = np.sum(r_vec**2, axis=-1) # Vectorized version (F,) or scalar
+            r_sq = np.sum(r_vec**2, axis=-1)
             
-            # Parallel Axis Theorem
-            # I_eff = I_local + m * r^2
             i_local = (1.0/12.0) * m * (l**2)
             
             total_inertia += (i_local + m * r_sq)
@@ -3414,6 +3790,7 @@ class SMPLProcessor:
             # 22/23: L/R Hand (Native) - Do NOT overwrite.
             # 24/25: L/R Toe Tip (Virtual).
             # 26/27: L/R Finger Tip (Virtual).
+            # 28/29: L/R Heel (Virtual).
             
             # Map Indices 24-27 to Virtual Tips
             tips[24] = world_pos[:, 24, :] # L_Toe (Virtual) -> Index 24
@@ -3421,8 +3798,10 @@ class SMPLProcessor:
             tips[26] = world_pos[:, 26, :] # L_Finger (Virtual) -> Index 26
             tips[27] = world_pos[:, 27, :] # R_Finger (Virtual) -> Index 27
             
-            # Remove Legacy overrides if they exist
-            # (We do not want to override 10/11 with tips if they are explicitly Foot joints)
+            # Heels (if computed in FK)
+            if world_pos.shape[1] >= 30:
+                tips[28] = world_pos[:, 28, :] # L_Heel (Virtual) -> Index 28
+                tips[29] = world_pos[:, 29, :] # R_Heel (Virtual) -> Index 29
         else:
              # Fallback if virtual joints missing (should not happen with new logic)
              pass
@@ -3559,6 +3938,9 @@ class SMPLProcessor:
                 norms = np.linalg.norm(filtered_q, axis=1, keepdims=True)
                 filtered_q /= (norms + 1e-8)
                 
+                # Store filtered local quats for world-frame composition method
+                self._current_filtered_local_quats = filtered_q.copy()  # (24, 4) scipy xyzw
+                
                 # Velocity computation using FILTERED Quaternions
                 r_curr = R.from_quat(filtered_q)
                 
@@ -3575,16 +3957,78 @@ class SMPLProcessor:
                     
                     ang_vel = diff_vec.reshape(24, 3) / dt
                     
-                    # Update History
+                    # --- One Euro filter on angular velocity for acceleration ---
+                    # Raw ang_vel has noise spikes from mocap jitter. When 
+                    # differenced to get acceleration, each spike produces a 
+                    # ±pair of impulses. A One Euro filter adapts: heavy
+                    # smoothing when velocity changes slowly (noise), light
+                    # smoothing when velocity changes rapidly (real bursts).
+                    # Only the filtered velocity is used for acceleration;
+                    # raw velocity is stored for next frame's vel computation.
+                    #
+                    # Parameters are per-joint: central/high-inertia joints need
+                    # aggressive smoothing (low cutoff) while extremities need
+                    # minimal smoothing to preserve rapid dynamics.
+                    name_vel_oef = f'_vel_one_euro{state_suffix}'
+                    vel_oef = getattr(self, name_vel_oef, None)
+                    if vel_oef is None:
+                        # Per-joint-group parameters: (min_cutoff_Hz, beta)
+                        # Lower min_cutoff = more smoothing at rest
+                        # Higher beta = faster tracking of rapid changes
+                        vel_filter_params = {
+                            'pelvis':   (0.8,  0.04),   # very heavy — high inertia, slow dynamics
+                            'hip':      (1.0,  0.05),   # heavy — large range but slow
+                            'spine':    (0.8,  0.04),   # very heavy — amplified noise
+                            'knee':     (1.5,  0.08),   # moderate
+                            'ankle':    (2.0,  0.10),   # moderate-light
+                            'foot':     (3.0,  0.15),   # light
+                            'neck':     (1.5,  0.08),   # moderate
+                            'head':     (2.0,  0.10),   # moderate
+                            'collar':   (1.5,  0.08),   # moderate
+                            'shoulder': (2.5,  0.15),   # light — fast dynamics
+                            'elbow':    (3.0,  0.20),   # very light — rapid movements
+                            'wrist':    (4.0,  0.25),   # minimal — fastest dynamics
+                            'hand':     (5.0,  0.30),   # minimal
+                        }
+                        default_params = (1.5, 0.10)
+                        
+                        # Build per-element arrays (24 joints × 3 axes = 72)
+                        mc_arr = np.zeros(72)
+                        beta_arr = np.zeros(72)
+                        for j_idx in range(min(24, len(self.joint_names))):
+                            jname = self.joint_names[j_idx] if j_idx < len(self.joint_names) else ''
+                            mc, bt = default_params
+                            for key, (mc_val, bt_val) in vel_filter_params.items():
+                                if key in jname:
+                                    mc, bt = mc_val, bt_val
+                                    break
+                            mc_arr[j_idx*3:(j_idx+1)*3] = mc
+                            beta_arr[j_idx*3:(j_idx+1)*3] = bt
+                        
+                        vel_oef = OneEuroFilter(
+                            min_cutoff=mc_arr,
+                            beta=beta_arr,
+                            d_cutoff=1.0,
+                            framerate=1.0/dt
+                        )
+                        setattr(self, name_vel_oef, vel_oef)
+                    
+                    # Filter flattened velocity, then reshape back
+                    smooth_vel = vel_oef(ang_vel.flatten()).reshape(24, 3)
+                    
+                    # Update History (raw velocity for next frame's velocity computation)
                     setattr(self, name_prev_pose_q, filtered_q)
                     
-                    # Acceleration
-                    if prev_vel_aa is None:
+                    # Acceleration from ONE-EURO-FILTERED velocity
+                    name_prev_smooth_vel = f'_prev_smooth_vel{state_suffix}'
+                    prev_smooth = getattr(self, name_prev_smooth_vel, None)
+                    if prev_smooth is None or prev_smooth.shape != smooth_vel.shape:
                         raw_ang_acc = np.zeros_like(ang_vel)
                     else:
-                        raw_ang_acc = (ang_vel - prev_vel_aa) / dt
+                        raw_ang_acc = (smooth_vel - prev_smooth) / dt
+                    setattr(self, name_prev_smooth_vel, smooth_vel.copy())
                         
-                    # Update Velocity History
+                    # Update Velocity History (raw, for next frame's velocity computation)
                     setattr(self, name_prev_vel_aa, ang_vel)
                 
                 # Smoothing implicitly handled by OneEuroFilter on Pose (if enabled)
@@ -3646,8 +4090,488 @@ class SMPLProcessor:
         return ang_vel, ang_acc
 
 
+    def _compute_world_angular_kinematics(self, F, global_rots, options, state_suffix=''):
+        """
+        Compute joint angular acceleration using world-frame composition.
+        
+        For each joint j:
+          R_child_world(t) = R_parent_global_filtered(t) × R_local_filtered(t)
+        
+        - R_parent_global is the FK global rotation of the parent, strongly filtered
+          (SLERP EMA) to provide a clean, slowly-varying joint base.
+        - R_local is the per-joint One Euro filtered local rotation (from existing pipeline).
+        - The product R_child_world is differentiated for ω and α.
+        
+        Properties:
+        - Infinitely strong global filter → R_parent ≈ constant → recovers local-only α.
+        - Weak global filter → R_parent tracks real motion → stationary arm gives α ≈ 0.
+        
+        Args:
+            F (int): Frame count (expected 1 for streaming).
+            global_rots (list[Rotation]): Unfiltered world-frame rotations from FK.
+            options: Processing options.
+            state_suffix (str): State namespace for dual-path support.
+            
+        Returns:
+            ang_vel (F, 24, 3): World-frame angular velocity of composed rotation.
+            ang_acc (F, 24, 3): World-frame angular acceleration.
+        """
+        dt = options.dt if hasattr(options, 'dt') and options.dt > 0 else 1.0 / self.framerate
+        parents = self._get_hierarchy()
+        n_joints = min(24, len(global_rots))
+        
+        # State names
+        name_prev_composed = f'_prev_composed_rots{state_suffix}'
+        name_prev_vel = f'_prev_composed_vel{state_suffix}'
+        name_filt_global = f'_filtered_global_rots{state_suffix}'
+        
+        # Global filter strength: alpha for SLERP EMA (0 = infinitely strong, 1 = no filter)
+        # Low alpha → very smooth base motion → approaches local-only result
+        GLOBAL_FILTER_ALPHA = getattr(self, '_world_global_filter_alpha', 0.15)
+        
+        if F != 1:
+            # Batch mode fallback: use raw world-frame differential (no composition)
+            ang_vel_world = np.zeros((F, n_joints, 3))
+            for j in range(n_joints):
+                if global_rots[j] is None:
+                    continue
+                q_all = global_rots[j].as_quat()
+                if q_all.ndim == 1:
+                    q_all = q_all[np.newaxis, :]
+                r_curr = R.from_quat(q_all[1:])
+                r_prev = R.from_quat(q_all[:-1])
+                r_diff = r_curr * r_prev.inv()
+                v = r_diff.as_rotvec() / dt
+                ang_vel_world[1:, j, :] = v
+                ang_vel_world[0, j, :] = v[0] if len(v) > 0 else 0.0
+            
+            # Differential for batch
+            ang_vel_diff = ang_vel_world.copy()
+            for j in range(n_joints):
+                p = parents[j] if j < len(parents) else -1
+                if p >= 0 and p < n_joints:
+                    ang_vel_diff[:, j, :] = ang_vel_world[:, j, :] - ang_vel_world[:, p, :]
+            ang_acc = np.gradient(ang_vel_diff, dt, axis=0)
+            
+            # Pad
+            if n_joints < 24:
+                pad_v = np.zeros((F, 24, 3))
+                pad_a = np.zeros((F, 24, 3))
+                pad_v[:, :n_joints, :] = ang_vel_diff
+                pad_a[:, :n_joints, :] = ang_acc
+                return pad_v, pad_a
+            return ang_vel_diff, ang_acc
+        
+        # --- Streaming Mode (F=1) ---
+        
+        # 1. Extract current unfiltered global rotations as quaternions
+        curr_global_q = np.zeros((n_joints, 4))
+        for j in range(n_joints):
+            if global_rots[j] is not None:
+                q = global_rots[j].as_quat()
+                curr_global_q[j] = q[0] if q.ndim > 1 else q
+        
+        # 2. Get filtered local quaternions (from _compute_angular_kinematics)
+        filtered_local_q = getattr(self, '_current_filtered_local_quats', None)
+        if filtered_local_q is None:
+            # Fallback: use raw from FK
+            filtered_local_q = np.zeros((n_joints, 4))
+            for j in range(n_joints):
+                p = parents[j] if j < len(parents) else -1
+                if p >= 0 and global_rots[p] is not None and global_rots[j] is not None:
+                    r_p = R.from_quat(curr_global_q[p])
+                    r_j = R.from_quat(curr_global_q[j])
+                    r_local = r_p.inv() * r_j
+                    filtered_local_q[j] = r_local.as_quat()
+                else:
+                    filtered_local_q[j] = curr_global_q[j]  # Root
+        
+        # 3. Compose: R_child_world = R_raw_global_parent × R_local_filtered
+        # No rotation-level filtering on global — raw FK rotations are smooth
+        # (visually confirmed by rendered body). Only the per-joint velocity
+        # filter (step 5b) smooths the composed angular velocity.
+        composed_q = np.zeros((n_joints, 4))
+        for j in range(n_joints):
+            p = parents[j] if j < len(parents) else -1
+            r_local = R.from_quat(filtered_local_q[j])
+            if p >= 0:
+                r_parent_raw = R.from_quat(curr_global_q[p])
+                r_composed = r_parent_raw * r_local
+            else:
+                # Root: world rotation IS the local rotation
+                r_composed = r_local
+            composed_q[j] = r_composed.as_quat()
+        
+        # 5. Differentiate composed rotation for angular velocity
+        prev_composed = getattr(self, name_prev_composed, None)
+        if prev_composed is None:
+            ang_vel = np.zeros((1, 24, 3))
+            ang_acc = np.zeros((1, 24, 3))
+            setattr(self, name_prev_composed, composed_q.copy())
+            setattr(self, name_prev_vel, np.zeros((n_joints, 3)))
+            return ang_vel, ang_acc
+        
+        # Compute angular velocity from composed rotation differences
+        vel = np.zeros((n_joints, 3))
+        for j in range(n_joints):
+            r_curr_c = R.from_quat(composed_q[j])
+            r_prev_c = R.from_quat(prev_composed[j])
+            # Ensure shortest path
+            if np.dot(composed_q[j], prev_composed[j]) < 0:
+                r_prev_c = R.from_quat(-prev_composed[j])
+            r_diff = r_curr_c * r_prev_c.inv()
+            vel[j] = r_diff.as_rotvec() / dt
+        
+        # 5b. Apply per-joint One Euro filter on composed velocity (matching local pipeline)
+        name_vel_oef = f'_vel_one_euro_composed{state_suffix}'
+        vel_oef = getattr(self, name_vel_oef, None)
+        if vel_oef is None and options.enable_one_euro_filter:
+            vel_filter_params = {
+                'pelvis':   (0.8,  0.04),
+                'hip':      (1.0,  0.05),
+                'spine':    (0.8,  0.04),
+                'knee':     (1.5,  0.08),
+                'ankle':    (2.0,  0.10),
+                'foot':     (3.0,  0.15),
+                'neck':     (1.5,  0.08),
+                'head':     (2.0,  0.10),
+                'collar':   (1.5,  0.08),
+                'shoulder': (2.5,  0.15),
+                'elbow':    (3.0,  0.20),
+                'wrist':    (4.0,  0.25),
+                'hand':     (5.0,  0.30),
+            }
+            default_params = (1.5, 0.10)
+            mc_arr = np.zeros(n_joints * 3)
+            beta_arr = np.zeros(n_joints * 3)
+            for j_idx in range(min(n_joints, len(self.joint_names))):
+                jname = self.joint_names[j_idx] if j_idx < len(self.joint_names) else ''
+                mc, bt = default_params
+                for key, (mc_val, bt_val) in vel_filter_params.items():
+                    if key in jname:
+                        mc, bt = mc_val, bt_val
+                        break
+                mc_arr[j_idx*3:(j_idx+1)*3] = mc
+                beta_arr[j_idx*3:(j_idx+1)*3] = bt
+            vel_oef = OneEuroFilter(
+                min_cutoff=mc_arr, beta=beta_arr,
+                d_cutoff=1.0, framerate=1.0/dt
+            )
+            setattr(self, name_vel_oef, vel_oef)
+        
+        if vel_oef is not None:
+            smooth_vel = vel_oef(vel.flatten()).reshape(n_joints, 3)
+        else:
+            smooth_vel = vel
+        
+        # 6. Compute acceleration from FILTERED velocity differences
+        prev_vel = getattr(self, name_prev_vel, None)
+        if prev_vel is None or prev_vel.shape != smooth_vel.shape:
+            acc = np.zeros((n_joints, 3))
+        else:
+            acc = (smooth_vel - prev_vel) / dt
+        
+        # Update state
+        setattr(self, name_prev_composed, composed_q.copy())
+        setattr(self, name_prev_vel, smooth_vel.copy())  # Store FILTERED velocity
+        
+        # Pack to (1, 24, 3)
+        ang_vel_out = np.zeros((1, 24, 3))
+        ang_acc_out = np.zeros((1, 24, 3))
+        ang_vel_out[0, :n_joints, :] = vel
+        ang_acc_out[0, :n_joints, :] = acc
+        
+        return ang_vel_out, ang_acc_out
 
-    def _compute_joint_torques(self, F, ang_acc, world_pos, parents, global_rots, pose_data_aa, tips, options, contact_forces=None):
+
+    def _compute_com_dynamic_torque(self, F, world_pos, global_rots, tips, options):
+        """
+        Compute dynamic torque from subtree center-of-mass linear acceleration.
+        
+        τ_j = r_j × (m_subtree_j × a_com_j)
+        
+        Segment CoMs are computed from SMPL mesh vertex centroids (LBS weights)
+        when available, rotated into world frame by each joint's global rotation.
+        Falls back to midpoint approximation if mesh data unavailable.
+        
+        Args:
+            F: Frame count (1 for streaming)
+            world_pos: (F, J, 3) world positions from FK
+            global_rots: (F, J, 3, 3) global rotation matrices from FK
+            tips: dict mapping tip names to positions, from FK
+            options: Processing options
+            
+        Returns:
+            t_dyn_com: (F, 24, 3) dynamic torque vectors from CoM acceleration
+        """
+        dt = options.dt if hasattr(options, 'dt') and options.dt > 0 else 1.0 / self.framerate
+        parents = self._get_hierarchy()
+        n_joints = min(22, world_pos.shape[1])
+        
+        # Build segment masses (cached)
+        if not hasattr(self, '_com_seg_mass') or self._com_seg_mass is None:
+            limb_masses = self.limb_data['masses']
+            self._com_seg_mass = np.zeros(n_joints)
+            for idx in range(n_joints):
+                name = self.joint_names[idx].lower() if idx < len(self.joint_names) else ''
+                m = 0.0
+                if 'pelvis' in name: m = limb_masses['pelvis']
+                elif 'hip' in name: m = limb_masses['upper_leg']
+                elif 'knee' in name: m = limb_masses['lower_leg']
+                elif 'ankle' in name: m = limb_masses['foot']
+                elif 'spine' in name: m = limb_masses['spine']
+                elif 'neck' in name: m = limb_masses.get('head', 1.0) * 0.2
+                elif 'head' in name: m = limb_masses['head'] * 0.8
+                elif 'collar' in name: m = limb_masses['upper_arm'] * 0.2
+                elif 'shoulder' in name: m = limb_masses['upper_arm'] * 0.8
+                elif 'elbow' in name: m = limb_masses['lower_arm']
+                elif 'wrist' in name: m = limb_masses['hand']
+                self._com_seg_mass[idx] = m
+            
+            # Build children list
+            children_list = [[] for _ in range(n_joints)]
+            for j in range(n_joints):
+                p = parents[j] if j < len(parents) else -1
+                if 0 <= p < n_joints:
+                    children_list[p].append(j)
+            self._com_children = children_list
+            
+            # Map leaf joints to their tip indices (virtual joints from FK)
+            # Tips: 24=L_Toe, 25=R_Toe, 26=L_Finger, 27=R_Finger
+            self._com_tip_map = {}
+            for idx in range(n_joints):
+                name = self.joint_names[idx].lower() if idx < len(self.joint_names) else ''
+                if not children_list[idx]:  # leaf joint
+                    if 'l_wrist' in name: self._com_tip_map[idx] = 26  # L_Finger
+                    elif 'r_wrist' in name: self._com_tip_map[idx] = 27  # R_Finger
+                    elif 'l_foot' in name: self._com_tip_map[idx] = 24  # L_Toe
+                    elif 'r_foot' in name: self._com_tip_map[idx] = 25  # R_Toe
+                    # Head has no tip — use an offset along local up
+            
+            def _get_subtree(j):
+                result = [j]
+                for c in children_list[j]:
+                    result.extend(_get_subtree(c))
+                return result
+            
+            self._com_subtrees = [_get_subtree(j) for j in range(n_joints)]
+            self._com_subtree_mass = np.array([
+                np.sum([self._com_seg_mass[k] for k in st]) for st in self._com_subtrees
+            ])
+            self._com_subtree_weights = []
+            for j in range(n_joints):
+                st = self._com_subtrees[j]
+                masses = np.array([self._com_seg_mass[k] for k in st])
+                total = np.sum(masses)
+                self._com_subtree_weights.append(masses / max(total, 1e-8))
+        
+        seg_mass = self._com_seg_mass
+        subtrees = self._com_subtrees
+        subtree_mass = self._com_subtree_mass
+        subtree_weights = self._com_subtree_weights
+        children_list = self._com_children
+        tip_map = self._com_tip_map
+        
+        # Get mesh-based segment CoM offsets (T-pose, relative to each joint)
+        mesh_com_offsets = self.limb_data.get('segment_com_offsets', None)
+        use_mesh_com = mesh_com_offsets is not None and len(mesh_com_offsets) >= n_joints
+        
+        # Compute per-SEGMENT CoM world positions
+        com_pos = np.zeros((F, n_joints, 3))
+        for f in range(F):
+            seg_com = np.zeros((n_joints, 3))
+            for j in range(n_joints):
+                joint_pos = world_pos[f, j]
+                if use_mesh_com:
+                    # Rotate T-pose CoM offset by joint's global rotation
+                    R = global_rots[f, j]  # (3, 3)
+                    offset_world = R @ mesh_com_offsets[j]
+                    seg_com[j] = joint_pos + offset_world
+                else:
+                    # Fallback: midpoint approximation
+                    if children_list[j]:
+                        child_pos = world_pos[f, children_list[j][0]]
+                        seg_com[j] = 0.5 * (joint_pos + child_pos)
+                    elif j in tip_map and tip_map[j] < world_pos.shape[1]:
+                        tip_pos = world_pos[f, tip_map[j]]
+                        seg_com[j] = 0.5 * (joint_pos + tip_pos)
+                    else:
+                        seg_com[j] = joint_pos
+            
+            # Subtree CoM = mass-weighted average of segment CoMs
+            for j in range(n_joints):
+                if subtree_mass[j] < 1e-8:
+                    com_pos[f, j, :] = world_pos[f, j]
+                else:
+                    st = subtrees[j]
+                    positions = seg_com[st]
+                    com_pos[f, j, :] = np.average(positions, axis=0, weights=subtree_weights[j])
+        
+        
+        t_dyn_com = np.zeros((F, max(24, n_joints), 3))
+        
+        # Read base filter params from options (user-tunable via widgets)
+        base_pos_mc = options.com_pos_min_cutoff
+        base_pos_beta = options.com_pos_beta
+        base_vel_mc = options.com_vel_min_cutoff
+        base_vel_beta = options.com_vel_beta
+        base_acc_mc = options.com_acc_min_cutoff
+        base_acc_beta = options.com_acc_beta
+        current_params = (base_pos_mc, base_pos_beta, base_vel_mc, base_vel_beta, base_acc_mc, base_acc_beta)
+        
+        # Detect param changes → rebuild filter arrays and reset filters
+        prev_params = getattr(self, '_com_filter_params', None)
+        if prev_params != current_params:
+            self._com_filter_arrays = None
+            self._com_pos_filter = None
+            self._com_vel_filter = None
+            self._com_acc_filter = None
+            self._com_prev_smooth_pos = None
+            self._com_prev_smooth_vel = None
+            self._com_filter_params = current_params
+        
+        # Build per-joint mass-scaled filter arrays (cached until params change)
+        if not hasattr(self, '_com_filter_arrays') or self._com_filter_arrays is None:
+            n_dims = n_joints * 3
+            pos_mc = np.zeros(n_dims)
+            pos_beta = np.zeros(n_dims)
+            vel_mc = np.zeros(n_dims)
+            vel_beta = np.zeros(n_dims)
+            acc_mc = np.zeros(n_dims)
+            acc_beta = np.zeros(n_dims)
+            
+            for j in range(n_joints):
+                m = max(subtree_mass[j], 0.1)
+                s = 1.0 / np.sqrt(m)
+                pos_mc[j*3:(j+1)*3] = base_pos_mc * s
+                pos_beta[j*3:(j+1)*3] = base_pos_beta * s
+                vel_mc[j*3:(j+1)*3] = base_vel_mc * s
+                vel_beta[j*3:(j+1)*3] = base_vel_beta * s
+                acc_mc[j*3:(j+1)*3] = base_acc_mc * s
+                acc_beta[j*3:(j+1)*3] = base_acc_beta * s
+            
+            self._com_filter_arrays = (pos_mc, pos_beta, vel_mc, vel_beta, acc_mc, acc_beta)
+        
+        pos_mc, pos_beta, vel_mc, vel_beta, acc_mc, acc_beta = self._com_filter_arrays
+        
+        if F == 1:
+            # --- Streaming mode ---
+            skip_pos = base_pos_mc >= 999
+            skip_vel = base_vel_mc >= 999
+            skip_acc = base_acc_mc >= 999
+            
+            if not skip_pos and (not hasattr(self, '_com_pos_filter') or self._com_pos_filter is None):
+                n_dims = n_joints * 3
+                self._com_pos_filter = OneEuroFilter(
+                    min_cutoff=pos_mc, beta=pos_beta,
+                    d_cutoff=1.0, framerate=1.0/dt
+                )
+            if not skip_vel and (not hasattr(self, '_com_vel_filter') or self._com_vel_filter is None):
+                n_dims = n_joints * 3
+                self._com_vel_filter = OneEuroFilter(
+                    min_cutoff=vel_mc, beta=vel_beta,
+                    d_cutoff=1.0, framerate=1.0/dt
+                )
+            if not skip_acc and (not hasattr(self, '_com_acc_filter') or self._com_acc_filter is None):
+                self._com_acc_filter = OneEuroFilter(
+                    min_cutoff=acc_mc, beta=acc_beta,
+                    d_cutoff=1.0, framerate=1.0/dt
+                )
+            if not hasattr(self, '_com_prev_smooth_pos'):
+                self._com_prev_smooth_pos = None
+                self._com_prev_smooth_vel = None
+            
+            curr_pos = com_pos[0, :n_joints, :]
+            
+            # Position: filter or pass-through
+            smooth_pos = curr_pos if skip_pos else self._com_pos_filter(
+                curr_pos.flatten()
+            ).reshape(n_joints, 3)
+            
+            # Velocity from positions
+            if self._com_prev_smooth_pos is None:
+                self._com_prev_smooth_pos = smooth_pos.copy()
+                self._com_prev_smooth_vel = np.zeros((n_joints, 3))
+                return t_dyn_com
+            
+            raw_vel = (smooth_pos - self._com_prev_smooth_pos) / dt
+            
+            # Velocity: filter or pass-through
+            smooth_vel = raw_vel if skip_vel else self._com_vel_filter(
+                raw_vel.flatten()
+            ).reshape(n_joints, 3)
+            
+            # Acceleration
+            raw_acc = (smooth_vel - self._com_prev_smooth_vel) / dt
+            
+            # Acceleration: filter or pass-through
+            acc = raw_acc if skip_acc else self._com_acc_filter(
+                raw_acc.flatten()
+            ).reshape(n_joints, 3)
+            
+            # Torque = r × (m × a)
+            for j in range(n_joints):
+                r = smooth_pos[j] - world_pos[0, j]
+                F_inertial = subtree_mass[j] * acc[j]
+                t_dyn_com[0, j, :] = np.cross(r, F_inertial)
+            
+            self._com_prev_smooth_pos = smooth_pos.copy()
+            self._com_prev_smooth_vel = smooth_vel.copy()
+            
+        else:
+            # --- Batch mode ---
+            skip_pos = base_pos_mc >= 999
+            skip_vel = base_vel_mc >= 999
+            skip_acc = base_acc_mc >= 999
+            n_dims = n_joints * 3
+            
+            # Position: filter or pass-through
+            if skip_pos:
+                smooth_pos = com_pos.copy()
+            else:
+                pf = OneEuroFilter(min_cutoff=pos_mc, beta=pos_beta, d_cutoff=1.0, framerate=1.0/dt)
+                smooth_pos = np.zeros_like(com_pos)
+                for f in range(F):
+                    smooth_pos[f, :n_joints] = pf(com_pos[f, :n_joints].flatten()).reshape(n_joints, 3)
+            
+            # Velocity
+            vel = np.zeros_like(smooth_pos)
+            vel[1:] = (smooth_pos[1:] - smooth_pos[:-1]) / dt
+            vel[0] = vel[1]
+            
+            # Velocity: filter or pass-through
+            if skip_vel:
+                smooth_vel = vel.copy()
+            else:
+                vf = OneEuroFilter(min_cutoff=vel_mc, beta=vel_beta, d_cutoff=1.0, framerate=1.0/dt)
+                smooth_vel = np.zeros_like(vel)
+                for f in range(F):
+                    smooth_vel[f, :n_joints] = vf(vel[f, :n_joints].flatten()).reshape(n_joints, 3)
+            
+            # Acceleration
+            raw_acc = np.zeros_like(smooth_vel)
+            raw_acc[1:] = (smooth_vel[1:] - smooth_vel[:-1]) / dt
+            raw_acc[0] = raw_acc[1]
+            
+            # Acceleration: filter or pass-through
+            if skip_acc:
+                acc = raw_acc.copy()
+            else:
+                af = OneEuroFilter(min_cutoff=acc_mc, beta=acc_beta, d_cutoff=1.0, framerate=1.0/dt)
+                acc = np.zeros_like(raw_acc)
+                for f in range(F):
+                    acc[f, :n_joints] = af(raw_acc[f, :n_joints].flatten()).reshape(n_joints, 3)
+            
+            # Torque
+            for f in range(F):
+                for j in range(n_joints):
+                    r = smooth_pos[f, j] - world_pos[f, j]
+                    F_i = subtree_mass[j] * acc[f, j]
+                    t_dyn_com[f, j, :] = np.cross(r, F_i)
+        
+        return t_dyn_com
+
+    def _compute_joint_torques(self, F, ang_acc, world_pos, parents, global_rots, pose_data_aa, tips, options, contact_forces=None, _frame_cache=None, skip_rate_limiting=False):
         """
         Computes Joint Torques, Efforts, and Inertias.
         Iterates through joints to calculate dynamic vs gravity torques.
@@ -3715,28 +4639,76 @@ class SMPLProcessor:
         
 
 
-        # Optimization: Pre-compute Inverses of Global Rotations
-        # Many joints share parents (e.g. Pelvis->Hips, Spine->Collars), so computing inv() inside loop is redundant.
-        global_rot_invs = [r.inv() for r in global_rots]
+        # Optimization: Cache expensive computations across repeated calls within the same frame.
+        # global_rot_invs, inertias, and t_dyn_raw are identical across calls since
+        # world_pos, global_rots, and ang_acc don't change — only contact_pressure does.
+        if _frame_cache is None:
+            _frame_cache = {}
+        
+        if 'global_rot_invs' in _frame_cache:
+            global_rot_invs = _frame_cache['global_rot_invs']
+        else:
+            global_rot_invs = [r.inv() for r in global_rots]
+            _frame_cache['global_rot_invs'] = global_rot_invs
 
         # --- PASS 1: Compute Raw Dynamic Torques and Inertias ---
-        t_dyn_raw = np.zeros((F, self.target_joint_count, 3))
+        if 'inertias' in _frame_cache:
+            inertias = _frame_cache['inertias']
+            t_dyn_raw = _frame_cache['t_dyn_raw']
+        else:
+            inertias = self._compute_all_subtree_inertias(world_pos)  # (F, target_joint_count)
+            t_dyn_raw = inertias[:, :, np.newaxis] * ang_acc[:, :self.target_joint_count, :]  # (F, J, 3)
+            _frame_cache['inertias'] = inertias
+            _frame_cache['t_dyn_raw'] = t_dyn_raw
         
-        for j in range(self.target_joint_count):
-            # Inertia (F,)
-            I_eff = self._compute_subtree_inertia(j, world_pos, None, self.limb_data['lengths'], self.limb_data['masses'])
-            inertias[:, j] = I_eff
+        # --- Update Velocity Envelope (for gating after rate limiting) ---
+        # Track the per-joint velocity envelope BEFORE rate limiting
+        # so it accurately reflects actual motion, but apply the gate AFTER
+        # rate limiting to avoid cascading suppression (gate zeroes quiet
+        # frames → rate limiter can't ramp up from zero fast enough).
+        VEL_GATE_SIGMA = 0.5    # rad/s — gate at 50% when envelope ≈ 29°/s
+        VEL_ENVELOPE_TAU = 0.10  # seconds — envelope decay time constant
+        
+        ang_vel_for_gate = getattr(self, '_current_ang_vel', None)
+        vel_gate = None  # (target_joint_count,) gate values, computed now, applied later
+        if ang_vel_for_gate is not None:
+            if ang_vel_for_gate.ndim == 2:
+                ang_vel_for_gate = ang_vel_for_gate[np.newaxis, ...]
             
-            # Alpha (F, 3)
-            alpha_vec = ang_acc[:, j, :]
+            # Initialize or retrieve the velocity envelope
+            if not hasattr(self, '_vel_envelope') or self._vel_envelope is None:
+                self._vel_envelope = np.zeros(self.target_joint_count)
+            if self._vel_envelope.shape[0] != self.target_joint_count:
+                self._vel_envelope = np.zeros(self.target_joint_count)
             
-            # Dynamic Torque (F, 3) - raw computation
-            torque_dyn = I_eff[:, np.newaxis] * alpha_vec
-            t_dyn_raw[:, j, :] = torque_dyn
+            gate_dt = options.dt if hasattr(options, 'dt') and options.dt > 0 else 1.0 / max(self.framerate, 1.0)
+            decay = np.exp(-gate_dt / VEL_ENVELOPE_TAU)  # ~0.920 at 120fps, ~0.717 at 30fps
+            
+            vel_gate = np.ones(self.target_joint_count)
+            for j in range(self.target_joint_count):
+                vel_mag = np.linalg.norm(ang_vel_for_gate[:F, j, :], axis=-1)  # (F,)
+                for fi in range(F):
+                    # Leaky max: rise instantly, decay slowly
+                    self._vel_envelope[j] = max(vel_mag[fi], self._vel_envelope[j] * decay)
+                
+                vel_gate[j] = 1.0 - np.exp(-(self._vel_envelope[j] / VEL_GATE_SIGMA) ** 2)
         
         # --- Apply Rate Limiting to Raw Dynamic Torques ---
-        # This limits the maximum change per frame to prevent noise spikes
-        t_dyn_limited = self._apply_torque_rate_limiting(t_dyn_raw, options)
+        # Skip rate limiting on refinement-loop calls: those torques are only used
+        # for contact discontinuity detection, not output. Running the rate limiter
+        # would corrupt its temporal state before the final (output) call.
+        if skip_rate_limiting:
+            t_dyn_limited = t_dyn_raw.copy()
+        else:
+            t_dyn_limited = self._apply_torque_rate_limiting(t_dyn_raw, options)
+            
+            # --- Apply Velocity Gate (post rate-limiting) ---
+            # Suppress dynamic torque when angular velocity is near-zero (stationary
+            # joints). Applied AFTER rate limiting so the rate limiter can ramp up
+            # properly during motion onset from the raw signal.
+            if vel_gate is not None:
+                for j in range(min(self.target_joint_count, t_dyn_limited.shape[1])):
+                    t_dyn_limited[:, j, :] *= vel_gate[j]
         
         # --- PASS 2: Compute Net Torques, Passive, and Efforts using Limited Dynamic ---
         for j in range(self.target_joint_count):
@@ -3856,23 +4828,19 @@ class SMPLProcessor:
         """
         Apply rate limiting to dynamic torque vectors to prevent glitches.
         
-        Limits the maximum change in dynamic torque per frame based on per-joint
-        biomechanical limits, modulated by the rate_limit_strength parameter.
-        
-        When clamping would reduce the delta by more than 90% (indicating a likely
-        teleport or noise spike), the joint's torque is held steady at the previous
-        value to avoid propagating any artifact.
+        Vectorized implementation: uses NumPy array operations instead of
+        per-joint Python loops for passes 1-4.
         
         Args:
-            t_dyn_vecs (F, 24, 3): Raw dynamic torque vectors.
+            t_dyn_vecs (F, J, 3): Raw dynamic torque vectors.
             options (SMPLProcessingOptions): Contains enable_rate_limiting and rate_limit_strength.
             
         Returns:
-            t_dyn_limited (F, 24, 3): Rate-limited dynamic torque vectors.
+            t_dyn_limited (F, J, 3): Rate-limited dynamic torque vectors.
         """
         if not options.enable_rate_limiting:
             # Update state but don't limit
-            self.prev_dynamic_torque = t_dyn_vecs.copy()
+            self.prev_dynamic_torque = t_dyn_vecs[-1].copy() if t_dyn_vecs.shape[0] > 0 else t_dyn_vecs.copy()
             return t_dyn_vecs
         
         F = t_dyn_vecs.shape[0]
@@ -3891,26 +4859,18 @@ class SMPLProcessor:
             self.torque_rate_limits = self._compute_torque_rate_limits()
         
         # Scale rate limits by framerate and strength parameter
-        # Base limits are calibrated for 60 FPS
-        # Higher framerate = smaller dt = must scale down the per-frame limit
-        fps_scale = self.framerate / 60.0  # e.g., 120 FPS -> 2.0
-        strength = max(0.01, options.rate_limit_strength)  # Prevent division issues
+        fps_scale = self.framerate / 60.0
+        strength = max(0.01, options.rate_limit_strength)
+        effective_limits = (self.torque_rate_limits / fps_scale) * strength  # (J,)
         
-        # Effective limit per frame (N·m)
-        # At higher framerate, each frame has smaller dt -> smaller allowed change
-        # strength > 1.0 -> more permissive (allows faster changes)
-        # strength < 1.0 -> more conservative (smoother)
-        effective_limits = (self.torque_rate_limits / fps_scale) * strength
-        
-        # Threshold for considering a delta as a "spike" requiring full suppression
-        # If delta exceeds the limit by this multiplier, it's clearly non-physical
-        SPIKE_MULTIPLIER = 1.5  # If delta > 1.5x the allowed limit, suppress entirely
-        NEIGHBOR_MULTIPLIER = 1.0  # Adjacent joints use 1.0x threshold when neighbor spikes
+        # Spike/neighbor thresholds
+        SPIKE_MULTIPLIER = 1.5
+        NEIGHBOR_MULTIPLIER = 1.0
         
         # Jitter detection parameters
-        JITTER_WINDOW = 8  # frames to track sign changes
-        JITTER_THRESHOLD = 0.3  # sign flips per frame threshold (more = jittery)
-        JITTER_DAMPING = 0.3  # damping factor for jittery joints (0 = full damping, 1 = no damping)
+        JITTER_WINDOW = 8
+        JITTER_THRESHOLD = 0.3
+        JITTER_DAMPING = 0.3
         
         num_joints = min(self.target_joint_count, t_dyn_vecs.shape[1])
         
@@ -3919,177 +4879,158 @@ class SMPLProcessor:
             self.torque_sign_history = np.zeros((JITTER_WINDOW, num_joints, 3))
             self.jitter_history_idx = 0
         
-        # Ensure jitter history shape matches
         if self.torque_sign_history.shape[1] != num_joints:
             self.torque_sign_history = np.zeros((JITTER_WINDOW, num_joints, 3))
             self.jitter_history_idx = 0
         
-        # Build adjacency map from hierarchy (parents + children)
-        parents_list = self._get_hierarchy()
-        
-        # Build children lookup
-        children = {j: [] for j in range(num_joints)}
+        # Pre-build parent/children arrays for vectorized neighbor propagation
+        parents_arr = np.array(self._get_hierarchy()[:num_joints])  # (J,)
+        children_list = [[] for _ in range(num_joints)]
         for j in range(num_joints):
-            parent = parents_list[j]
-            if parent >= 0 and parent < num_joints:
-                children[parent].append(j)
+            p = parents_arr[j]
+            if 0 <= p < num_joints:
+                children_list[p].append(j)
         
-        # Per-frame noise tracking
-        frame_spikes = 0
-        frame_rate_limits = 0
-        frame_jitter = 0
-        frame_innovation_clamps = 0
+        # Pre-compute effective limits reshaped for broadcasting: (J, 1) for per-axis clip
+        eff_lim_col = effective_limits[:num_joints, np.newaxis]  # (J, 1)
+        spike_thresholds = effective_limits[:num_joints] * SPIKE_MULTIPLIER  # (J,)
+        neighbor_thresholds = effective_limits[:num_joints] * NEIGHBOR_MULTIPLIER  # (J,)
         
         for f in range(F):
-            curr_torque = t_dyn_vecs[f]
-            prev_torque = self.prev_dynamic_torque
+            curr_torque = t_dyn_vecs[f, :num_joints]  # (J, 3)
+            prev_torque = self.prev_dynamic_torque[:num_joints]  # (J, 3)
             
-            # Delta torque per joint
-            delta = curr_torque - prev_torque
-            delta_mags = np.linalg.norm(delta, axis=1)  # (num_joints,)
-            curr_mags = np.linalg.norm(curr_torque, axis=1)
-            prev_mags = np.linalg.norm(prev_torque, axis=1)
+            # Vectorized delta computation
+            delta = curr_torque - prev_torque  # (J, 3)
+            delta_mags = np.linalg.norm(delta, axis=1)  # (J,)
+            curr_mags = np.linalg.norm(curr_torque, axis=1)  # (J,)
+            prev_mags = np.linalg.norm(prev_torque, axis=1)  # (J,)
             
-            # --- PASS 1: Detect primary spikes ---
-            # Only trigger on INCREASES - sudden decreases are usually legitimate motion ending
-            primary_spikes = set()
-            for j in range(num_joints):
-                is_large_delta = delta_mags[j] > effective_limits[j] * SPIKE_MULTIPLIER
-                is_increasing = curr_mags[j] > prev_mags[j]  # Only suppress increases
-                if is_large_delta and is_increasing:
-                    primary_spikes.add(j)
-                    frame_spikes += 1
-                    # Track severity: how much the delta exceeded the threshold
-                    excess = delta_mags[j] - effective_limits[j] * SPIKE_MULTIPLIER
-                    self.noise_stats.spike_severity += excess
-                    self.noise_stats.joint_spike_counts[j] += 1
-                    self.noise_stats.joint_spike_severity[j] += excess
-                    # Track peak severity for extreme teleport detection
-                    if excess > self.noise_stats.max_spike_severity:
-                        self.noise_stats.max_spike_severity = excess
-                    self.noise_stats.spike_severity_list.append(excess)
+            # --- PASS 1: Detect primary spikes (vectorized) ---
+            is_increasing = curr_mags > prev_mags  # (J,)
+            spike_mask = (delta_mags > spike_thresholds) & is_increasing  # (J,) bool
             
-            # --- PASS 2: Propagate to neighbors (parent + children) ---
-            neighbor_suspect = set()
-            for j in primary_spikes:
-                # Add parent
-                parent = parents_list[j]
-                if parent >= 0 and parent < num_joints:
-                    neighbor_suspect.add(parent)
-                # Add children
-                for child in children[j]:
-                    neighbor_suspect.add(child)
+            # Accumulate noise stats for spikes
+            n_spikes = int(np.sum(spike_mask))
+            if n_spikes > 0:
+                spike_indices = np.where(spike_mask)[0]
+                excess = delta_mags[spike_mask] - spike_thresholds[spike_mask]  # (n_spikes,)
+                self.noise_stats.spike_severity += float(np.sum(excess))
+                self.noise_stats.joint_spike_counts[spike_indices] += 1
+                self.noise_stats.joint_spike_severity[spike_indices] += excess
+                max_excess = float(np.max(excess))
+                if max_excess > self.noise_stats.max_spike_severity:
+                    self.noise_stats.max_spike_severity = max_excess
+                self.noise_stats.spike_severity_list.extend(excess.tolist())
             
-            # --- PASS 3: Apply suppression with adjusted thresholds ---
-            for j in range(num_joints):
-                if j in primary_spikes:
-                    # Primary spike: full suppression - hold at previous
-                    t_dyn_limited[f, j, :] = prev_torque[j, :]
-                elif j in neighbor_suspect:
-                    # Neighbor of spike: use stricter threshold (only on increases)
-                    neighbor_limit = effective_limits[j] * NEIGHBOR_MULTIPLIER
-                    is_neighbor_increasing = curr_mags[j] > prev_mags[j]
-                    if delta_mags[j] > neighbor_limit and is_neighbor_increasing:
-                        # Neighbor exceeds stricter threshold and is increasing: suppress
-                        t_dyn_limited[f, j, :] = prev_torque[j, :]
-                    else:
-                        # Normal rate limiting
-                        for axis in range(3):
-                            if delta[j, axis] > effective_limits[j]:
-                                t_dyn_limited[f, j, axis] = prev_torque[j, axis] + effective_limits[j]
-                                frame_rate_limits += 1
-                                clamped_amount = delta[j, axis] - effective_limits[j]
-                                self.noise_stats.rate_limit_severity += clamped_amount
-                                self.noise_stats.joint_rate_limit_counts[j] += 1
-                            elif delta[j, axis] < -effective_limits[j]:
-                                t_dyn_limited[f, j, axis] = prev_torque[j, axis] - effective_limits[j]
-                            else:
-                                t_dyn_limited[f, j, axis] = curr_torque[j, axis]
-                else:
-                    # Normal joint: standard rate limiting
-                    for axis in range(3):
-                        if delta[j, axis] > effective_limits[j]:
-                            t_dyn_limited[f, j, axis] = prev_torque[j, axis] + effective_limits[j]
-                            frame_rate_limits += 1
-                            clamped_amount = delta[j, axis] - effective_limits[j]
-                            self.noise_stats.rate_limit_severity += clamped_amount
-                            self.noise_stats.joint_rate_limit_counts[j] += 1
-                        elif delta[j, axis] < -effective_limits[j]:
-                            t_dyn_limited[f, j, axis] = prev_torque[j, axis] - effective_limits[j]
-                        else:
-                            t_dyn_limited[f, j, axis] = curr_torque[j, axis]
+            # --- PASS 2: Propagate to neighbors (vectorized) ---
+            neighbor_mask = np.zeros(num_joints, dtype=bool)
+            if n_spikes > 0:
+                spike_indices = np.where(spike_mask)[0]
+                # Parents of spike joints
+                spike_parents = parents_arr[spike_indices]
+                valid_parents = spike_parents[(spike_parents >= 0) & (spike_parents < num_joints)]
+                if len(valid_parents) > 0:
+                    neighbor_mask[valid_parents] = True
+                # Children of spike joints
+                for j in spike_indices:
+                    for child in children_list[j]:
+                        neighbor_mask[child] = True
+                # Exclude primary spikes from neighbor set
+                neighbor_mask &= ~spike_mask
             
-            # --- PASS 4: Jitter Detection and Damping ---
-            # Update sign history buffer
-            curr_signs = np.sign(t_dyn_limited[f])  # (num_joints, 3)
+            # --- PASS 3: Apply suppression (vectorized) ---
+            # Default: vectorized rate-limited clip for ALL joints
+            clamped = prev_torque + np.clip(delta, -eff_lim_col, eff_lim_col)  # (J, 3)
+            
+            # Track rate limit clamps: where positive delta exceeded limit
+            exceeded_pos = delta > eff_lim_col  # (J, 3) bool
+            if np.any(exceeded_pos):
+                clamped_amounts = delta[exceeded_pos] - np.broadcast_to(eff_lim_col, delta.shape)[exceeded_pos]
+                self.noise_stats.rate_limit_severity += float(np.sum(clamped_amounts))
+                # Per-joint rate limit counts: count joints that had any axis clamped positively
+                joints_clamped = np.any(exceeded_pos, axis=1)  # (J,)
+                self.noise_stats.joint_rate_limit_counts[np.where(joints_clamped)[0]] += 1
+            
+            # Count rate limit events (number of joint-axis pairs clamped positively)
+            frame_rate_limits = int(np.sum(exceeded_pos))
+            
+            # Start with rate-limited values for all joints
+            result = clamped.copy()
+            
+            # Override: primary spikes get full suppression (hold at previous)
+            if n_spikes > 0:
+                result[spike_mask] = prev_torque[spike_mask]
+            
+            # Override: neighbors that exceed stricter threshold AND are increasing → suppress
+            if np.any(neighbor_mask):
+                neighbor_exceeded = (delta_mags > neighbor_thresholds) & is_increasing & neighbor_mask
+                result[neighbor_exceeded] = prev_torque[neighbor_exceeded]
+                # Neighbors that DON'T exceed threshold get normal rate limiting (already in result)
+            
+            t_dyn_limited[f, :num_joints] = result
+            
+            # --- PASS 4: Jitter Detection and Damping (vectorized) ---
+            curr_signs = np.sign(t_dyn_limited[f, :num_joints])  # (J, 3)
             self.torque_sign_history[self.jitter_history_idx] = curr_signs
             self.jitter_history_idx = (self.jitter_history_idx + 1) % JITTER_WINDOW
             
-            # Compute sign-flip rate per joint
-            # Count how many times sign changes between consecutive history entries
-            sign_changes = np.sum(np.abs(np.diff(self.torque_sign_history, axis=0)) > 0, axis=(0, 2))  # (num_joints,)
-            flip_rate = sign_changes / (JITTER_WINDOW - 1)  # flips per frame
+            # Sign-flip rate per joint (already vectorized in original)
+            sign_changes = np.sum(np.abs(np.diff(self.torque_sign_history, axis=0)) > 0, axis=(0, 2))  # (J,)
+            flip_rate = sign_changes / (JITTER_WINDOW - 1)
             
-            # Apply damping to jittery joints
-            for j in range(num_joints):
-                if flip_rate[j] > JITTER_THRESHOLD:
-                    # High jitter detected - blend toward previous (damping)
-                    # More jitter = more damping
-                    jitter_excess = (flip_rate[j] - JITTER_THRESHOLD) / (1.0 - JITTER_THRESHOLD + 1e-6)
-                    jitter_excess = min(1.0, jitter_excess)  # cap at 1.0
-                    damping = 1.0 - jitter_excess * (1.0 - JITTER_DAMPING)
-                    t_dyn_limited[f, j, :] = damping * t_dyn_limited[f, j, :] + (1.0 - damping) * prev_torque[j, :]
-                    frame_jitter += 1
-                    self.noise_stats.joint_jitter_counts[j] += 1
+            # Vectorized jitter damping
+            jittery = flip_rate > JITTER_THRESHOLD  # (J,) bool
+            if np.any(jittery):
+                jitter_excess = np.clip(
+                    (flip_rate[jittery] - JITTER_THRESHOLD) / (1.0 - JITTER_THRESHOLD + 1e-6),
+                    0.0, 1.0
+                )  # (n_jittery,)
+                damping = 1.0 - jitter_excess * (1.0 - JITTER_DAMPING)  # (n_jittery,)
+                # Apply damping: blend between current and previous
+                t_dyn_limited[f, np.where(jittery)[0]] = (
+                    damping[:, np.newaxis] * t_dyn_limited[f, np.where(jittery)[0]] +
+                    (1.0 - damping[:, np.newaxis]) * prev_torque[jittery]
+                )
+                frame_jitter = int(np.sum(jittery))
+                self.noise_stats.joint_jitter_counts[np.where(jittery)[0]] += 1
+            else:
+                frame_jitter = 0
             
-            # --- PASS 5: SmartClampKF Filtering ---
-            # Apply Kalman filter with innovation clamping for final smoothing
-            # This provides principled noise reduction while preventing teleportation
-            
+            # --- PASS 5: SmartClampKF Filtering (unchanged) ---
+            frame_innovation_clamps = 0
             if options.enable_kf_smoothing:
-                # Filter parameters (user-tuned values)
-                RESPONSIVENESS = 10.0   # Higher = faster tracking
-                SMOOTHNESS = 1.0        # Higher = smoother output
-                CLAMP_RADIUS = 15.0     # Max innovation per frame (N·m)
+                RESPONSIVENESS = 10.0
+                SMOOTHNESS = 1.0
+                CLAMP_RADIUS = 15.0
                 
-                # Initialize filter if needed
                 if self.dynamic_torque_kf is None:
                     dt = 1.0 / self.framerate
                     self.dynamic_torque_kf = NumpySmartClampKF(dt, num_joints, 3)
                     self.dynamic_torque_kf.update_params(RESPONSIVENESS, SMOOTHNESS, CLAMP_RADIUS, dt)
                 
-                # Predict and Update
                 self.dynamic_torque_kf.predict()
                 
-                # Track innovation before update to count clamps
                 pre_update = t_dyn_limited[f].copy()
                 t_dyn_limited[f] = self.dynamic_torque_kf.update(t_dyn_limited[f])
                 
-                # Count innovation clamps (KF clamped the update)
                 innovation_mag = np.linalg.norm(pre_update - t_dyn_limited[f], axis=1)
-                clamped_mask = innovation_mag > CLAMP_RADIUS * 0.9  # Near clamp limit
-                clamp_count = np.sum(clamped_mask)
-                frame_innovation_clamps += clamp_count
-                # Track severity: sum of magnitudes that exceeded clamp radius
+                clamped_mask = innovation_mag > CLAMP_RADIUS * 0.9
+                clamp_count = int(np.sum(clamped_mask))
+                frame_innovation_clamps = clamp_count
                 if clamp_count > 0:
                     excess_innovations = innovation_mag[clamped_mask] - CLAMP_RADIUS * 0.9
-                    self.noise_stats.innovation_severity += np.sum(excess_innovations)
+                    self.noise_stats.innovation_severity += float(np.sum(excess_innovations))
             
-            # Update prev for next frame in batch
-            self.prev_dynamic_torque = t_dyn_limited[f].copy()
+            # Update prev for next frame
+            self.prev_dynamic_torque = t_dyn_limited[f, :num_joints].copy()
             
-            # Update cumulative noise stats for this frame
+            # Update cumulative noise stats
             self.noise_stats.total_frames += 1
-            self.noise_stats.spike_detections += frame_spikes
+            self.noise_stats.spike_detections += n_spikes
             self.noise_stats.rate_limit_clamps += frame_rate_limits
             self.noise_stats.jitter_damping_events += frame_jitter
             self.noise_stats.innovation_clamps += frame_innovation_clamps
-            
-            # Reset per-frame counters for next frame
-            frame_spikes = 0
-            frame_rate_limits = 0
-            frame_jitter = 0
-            frame_innovation_clamps = 0
         
         return t_dyn_limited
 
@@ -4100,6 +5041,55 @@ class SMPLProcessor:
         quat_format: 'xyzw' (default, Scipy) or 'wxyz' (Scalar first). Only used if input_type='quat'.
         effort_pose_data: Optional separate pose stream for Calculation of Effort (AngAcc).
         """
+        # --- Optional Input Smoothing ---
+        # Causal moving average on both pose and trans to remove sensor cadence artifacts.
+        # Applied BEFORE _prepare_trans_and_pose so FK and all downstream use consistently smoothed data.
+        win = options.smooth_input_window
+        if win >= 2:
+            pose_data = np.array(pose_data, dtype=np.float64)
+            trans_data = np.array(trans_data, dtype=np.float64)
+            
+            # Determine if streaming (single-frame) or batch
+            p_flat = pose_data.reshape(-1) if pose_data.ndim > 0 else pose_data
+            t_flat = trans_data.reshape(-1) if trans_data.ndim > 0 else trans_data
+            n_pose = p_flat.size
+            n_trans = t_flat.size
+            
+            # Check if this is streaming mode (single frame input)
+            is_streaming = (pose_data.ndim <= 2) or (pose_data.ndim == 3 and pose_data.shape[0] == 1)
+            
+            if is_streaming:
+                # Ring buffer for streaming
+                if not hasattr(self, '_input_smooth_ring') or self._input_smooth_ring is None \
+                        or self._input_smooth_ring.get('n_pose') != n_pose \
+                        or self._input_smooth_ring.get('win') != win:
+                    self._input_smooth_ring = {
+                        'win': win,
+                        'n_pose': n_pose,
+                        'n_trans': n_trans,
+                        'pose_buf': np.tile(p_flat, (win, 1)),
+                        'trans_buf': np.tile(t_flat, (win, 1)),
+                        'idx': 0,
+                    }
+                ring = self._input_smooth_ring
+                ring['pose_buf'][ring['idx']] = p_flat
+                ring['trans_buf'][ring['idx']] = t_flat
+                ring['idx'] = (ring['idx'] + 1) % win
+                
+                pose_data = np.mean(ring['pose_buf'], axis=0).reshape(pose_data.shape)
+                trans_data = np.mean(ring['trans_buf'], axis=0).reshape(trans_data.shape)
+            else:
+                # Batch mode: causal moving average with edge padding
+                F_in = pose_data.shape[0] if pose_data.ndim >= 2 else 1
+                if F_in > 1:
+                    p2d = pose_data.reshape(F_in, -1)
+                    t2d = trans_data.reshape(F_in, -1)
+                    p_pad = np.concatenate([np.tile(p2d[0:1], (win - 1, 1)), p2d], axis=0)
+                    t_pad = np.concatenate([np.tile(t2d[0:1], (win - 1, 1)), t2d], axis=0)
+                    from numpy.lib.stride_tricks import sliding_window_view
+                    pose_data = np.mean(sliding_window_view(p_pad, win, axis=0), axis=-1).reshape(pose_data.shape)
+                    trans_data = np.mean(sliding_window_view(t_pad, win, axis=0), axis=-1).reshape(trans_data.shape)
+        
         # Prepare Data (Reshape, Permute, Convert)
         trans_data, pose_data_aa, quats = self._prepare_trans_and_pose(
             pose_data, trans_data, options
@@ -4110,6 +5100,7 @@ class SMPLProcessor:
         self.current_total_mass = None
         
         F = trans_data.shape[0]
+        
         # 1. Forward Kinematics (Vectorized)
         world_pos, global_rots, tips = self._compute_forward_kinematics(trans_data, quats)
         parents = self._get_hierarchy()
@@ -4119,27 +5110,46 @@ class SMPLProcessor:
 
 
         # --- Angular Kinematics (Main Path: Contact/Gravity) ---
-        # Uses OneEuroFilter if enabled
-        ang_vel, ang_acc = self._compute_angular_kinematics(
+        # Always compute local angular kinematics (needed as fallback)
+        ang_vel_local, ang_acc_local = self._compute_angular_kinematics(
             F, pose_data_aa, quats, options, use_filter=options.enable_one_euro_filter, state_suffix=''
         )
+        
+        # --- World-Frame vs Local-Frame Selection ---
+        if options.world_frame_dynamics:
+            # World-frame: compute angular velocity/acceleration from global rotations
+            # Each segment measured independently — parent noise doesn't propagate
+            ang_vel_world, ang_acc_world = self._compute_world_angular_kinematics(
+                F, global_rots, options, state_suffix=''
+            )
+            ang_acc = ang_acc_world
+            self._current_ang_vel = ang_vel_world  # World-frame velocity for gating
+        else:
+            # Legacy local-frame: parent-relative angular acceleration
+            ang_acc = ang_acc_local
+            self._current_ang_vel = ang_vel_local  # Local velocity for gating
         
         # --- Angular Kinematics (Dual Path: Effort) ---
         ang_acc_for_effort = ang_acc # Default to main path
         
         if effort_pose_data is not None:
              # Process Effort Pose (Assume same Trans/Options)
-             # Use a dummy trans since we only care about rotations/quats
              dummy_trans = trans_data
              _, effort_aa, effort_quats = self._prepare_trans_and_pose(
                  effort_pose_data, dummy_trans, options
              )
              
-             # Compute Kinematics for Effort
-             # Uses filter if enabled, separate state suffix
-             _, effort_ang_acc = self._compute_angular_kinematics(
-                 F, effort_aa, effort_quats, options, use_filter=options.enable_one_euro_filter, state_suffix='_effort'
-             )
+             if options.world_frame_dynamics:
+                 # Effort path needs its own FK for global rotations
+                 # Run FK on effort pose to get global_rots for effort
+                 _, effort_global_rots, _ = self._compute_forward_kinematics(dummy_trans, effort_quats)
+                 _, effort_ang_acc = self._compute_world_angular_kinematics(
+                     F, effort_global_rots, options, state_suffix='_effort'
+                 )
+             else:
+                 _, effort_ang_acc = self._compute_angular_kinematics(
+                     F, effort_aa, effort_quats, options, use_filter=options.enable_one_euro_filter, state_suffix='_effort'
+                 )
              ang_acc_for_effort = effort_ang_acc
 
 
@@ -4173,91 +5183,254 @@ class SMPLProcessor:
              contact_probs_fusion = self._compute_probabilistic_contacts_com_driven(
                   F, world_pos.shape[1], world_pos, options.floor_height, options
              )
+        elif options.contact_method == 'consensus':
+             contact_probs_fusion = self._compute_probabilistic_contacts_consensus(
+                  F, world_pos.shape[1], world_pos, options
+             )
         else:  # Default: 'fusion'
              contact_probs_fusion = self._compute_probabilistic_contacts_fusion(
                   F, world_pos.shape[1], world_pos, vel_y_in, vel_h_in, options.floor_height, options
              )
         
-        # --- Weighted Mass Distribution (for RNE GRF) ---
-        # 1. Total Contact Mass (kg)
-        total_contact_mass = self.total_mass_kg
+        # --- Torque-Aware Contact Refinement Loop ---
+        # Iteratively: compute floor pressure → torques → check for
+        # torque discontinuities → if a contact change explains the burst,
+        # refine the contacts → re-compute. Real torque bursts from genuine
+        # motion are left alone for downstream rate limiting.
         
-        # 2. Distribute based on Fusion Probs
-        # self.contact_pressure stores MASS per joint (kg)
-        self.contact_pressure = np.zeros((F, world_pos.shape[1]))
+        # Per-frame cache: shared across repeated _compute_joint_torques calls.
+        # Avoids recomputing global_rot_invs, inertias, and t_dyn_raw which are
+        # identical between calls (only contact_pressure changes).
+        _frame_cache = {}
         
-        for f in range(F):
-             probs = contact_probs_fusion[f] # (J,)
-             
-             # ZMP-Based Weighting (Physics)
-             # Basic Prob is purely geometric (touching). 
-             # Load Bearing depends on ZMP alignment.
-             
-             zmp_f = self.current_zmp[f] if self.current_zmp.ndim > 1 else self.current_zmp
-             yd = getattr(self, 'internal_y_dim', 1)
-             pd = [0, 2] if yd == 1 else [0, 1]
-             zmp_hz = zmp_f[pd]
-             
-             w_dist = np.zeros_like(probs)
-             
-             # Calculate IDW Weights
-             for j in range(probs.shape[0]):
-                  p = probs[j]
-                  if p < 0.01: continue
-                  
-                  # Pos
-                  if j in tips: pos = tips[j][f]
-                  else: pos = world_pos[f, j]
-                  
-                  pos_hz = pos[pd]
-                  dist = np.sqrt(np.sum((pos_hz - zmp_hz)**2))
-                  
-                  # Use Gaussian weight instead of IDW for softer falloff
-                  # This prevents excessive sensitivity to ZMP distance
-                  # sigma = 0.40m so hands/feet at reasonable distances get fair weight
-                  SIGMA_PRESS = 0.40
-                  gauss_weight = np.exp(-0.5 * (dist / SIGMA_PRESS)**2)
-                  w_dist[j] = p * gauss_weight
-                  
-             # Normalize
-             w_sum = np.sum(w_dist)
-             
-             if w_sum > 1e-6:
-                  weights = w_dist / w_sum
-                  
-                  # Hard Height Cutoff (Prevent Ghost Contact)
-                  # Use actual tip positions for height check if available
-                  # Increased threshold to 0.25m to allow all-fours poses
-                  for j in range(weights.shape[0]):
-                       if weights[j] < 0.001:
-                            continue
-                       if j in tips:
-                            h = tips[j][f][yd] - options.floor_height
-                       else:
-                            h = world_pos[f, j, yd] - options.floor_height
-                       if h > 0.25:  # 25cm cutoff for all-fours compatibility
-                            weights[j] = 0.0
-                  
-                  # Re-normalize after cutoff
-                  w_sum_2 = np.sum(weights)
-                  if w_sum_2 > 0:
-                       weights = weights / w_sum_2
-                       self.contact_pressure[f] = weights * total_contact_mass
-                  else:
-                       self.contact_pressure[f] = 0.0
-             else:
-                  self.contact_pressure[f] = 0.0      
-        # --- Contact Pressure Smoothing ---
-        # Consistent smoothing to reduce ZMP-based weight oscillation
-        # Using a moderate alpha to balance responsiveness and stability
+        working_probs = contact_probs_fusion.copy()
+        max_refine_iters = max(1, 1 + options.contact_refinement_iterations)
         
-        ALPHA_CP = 0.15  # 15% new per frame (~7 frame settling time at 120fps)
+        for refine_iter in range(max_refine_iters):
+            # --- Weighted Mass Distribution (for RNE GRF) ---
+            self.contact_pressure = np.zeros((F, world_pos.shape[1]))
+            
+            # Per-joint vertical velocity for liftoff suppression
+            yd = getattr(self, 'internal_y_dim', 1)
+            dt = options.dt if hasattr(options, 'dt') and options.dt > 0 else 1.0/30.0
+            n_joints = world_pos.shape[1]
+            
+            # Compute current joint heights (using tips where available)
+            curr_heights = np.zeros(n_joints)
+            for j in range(n_joints):
+                if j in tips:
+                    curr_heights[j] = tips[j][0, yd] if tips[j].ndim > 1 else tips[j][yd]
+                elif j < world_pos.shape[1]:
+                    curr_heights[j] = world_pos[0, j, yd]
+            
+            # Compute per-joint VY
+            if not hasattr(self, '_prev_joint_heights') or self._prev_joint_heights is None or self._prev_joint_heights.shape[0] != n_joints:
+                self._prev_joint_heights = curr_heights.copy()
+            
+            joint_vy = (curr_heights - self._prev_joint_heights) / dt
+            self._prev_joint_heights = curr_heights.copy()
+            
+            # --- Adaptive floor height estimation ---
+            # Maintain a running estimate of the actual floor height from
+            # the lowest confirmed-contact joints. This disambiguates
+            # tip-toes (foot near inferred floor) from en pointe (foot
+            # clearly above inferred floor).
+            # STABILITY: Very slow EMA + per-frame clamp. Real floors
+            # don't move, so this estimate should be rock-solid.
+            FLOOR_ALPHA = 0.02        # Very slow EMA
+            FLOOR_MAX_CHANGE = 0.002  # Max 2mm per frame
+            if not hasattr(self, '_inferred_floor_height') or self._inferred_floor_height is None:
+                self._inferred_floor_height = options.floor_height
+            
+            # Update floor estimate from high-confidence contact joints
+            all_contact_joints = [7, 8, 10, 11]
+            for vi in [24, 25, 28, 29]:
+                if vi < n_joints:
+                    all_contact_joints.append(vi)
+            
+            confirmed_heights = []
+            for j in all_contact_joints:
+                if j < working_probs.shape[1] and working_probs[0, j] > 0.5:
+                    confirmed_heights.append(curr_heights[j])
+            
+            if confirmed_heights:
+                lowest_confirmed = min(confirmed_heights)
+                raw_update = (
+                    self._inferred_floor_height * (1 - FLOOR_ALPHA) +
+                    lowest_confirmed * FLOOR_ALPHA
+                )
+                # Clamp change per frame for stability
+                delta = raw_update - self._inferred_floor_height
+                delta = np.clip(delta, -FLOOR_MAX_CHANGE, FLOOR_MAX_CHANGE)
+                self._inferred_floor_height += delta
+            
+            inferred_floor = self._inferred_floor_height
+            
+            # --- Foot probability promotion ---
+            # Toe joint rotations are poorly measured in mocap.
+            # If toe or heel shows contact, the ball-of-foot (joint 10/11)
+            # is almost certainly also in contact. Promote foot prob to
+            # match, UNLESS the foot is clearly above the inferred floor
+            # (en pointe: foot elevated >8cm above where contacts occur).
+            EN_POINTE_ABOVE_FLOOR = 0.08  # 8cm above inferred floor
+            foot_pairs = [
+                (10, 24, 28),  # left:  foot, toe, heel
+                (11, 25, 29),  # right: foot, toe, heel
+            ]
+            for f in range(F):
+                probs_f = working_probs[f]
+                for foot_j, toe_j, heel_j in foot_pairs:
+                    if foot_j >= probs_f.shape[0]: continue
+                    
+                    # Get extremity probabilities
+                    toe_p = probs_f[toe_j] if toe_j < probs_f.shape[0] else 0
+                    heel_p = probs_f[heel_j] if heel_j < probs_f.shape[0] else 0
+                    extremity_max = max(toe_p, heel_p)
+                    
+                    if extremity_max > probs_f[foot_j]:
+                        # En pointe check: is the foot clearly above the
+                        # inferred floor? If yes, toes take all pressure.
+                        # If near the floor (tip-toes), promote foot.
+                        foot_above_floor = curr_heights[foot_j] - inferred_floor
+                        if foot_above_floor < EN_POINTE_ABOVE_FLOOR:
+                            # Normal foot or tip-toes — promote foot prob
+                            working_probs[f, foot_j] = extremity_max
+            
+            for f in range(F):
+                 probs = working_probs[f]
+                 
+                 # Scale total mass by the maximum contact probability among
+                 # ALL contact candidate joints. This ensures cartwheels,
+                 # handstands, crawling, and kneeling produce proper pressure.
+                 # When airborne (max p ≈ 0.02), near-zero pressure.
+                 # When any joint is grounded (max p ≥ 0.5), full weight.
+                 # Uses 2x scaling clamped to [0,1] so p=0.5 → full weight.
+                 all_contact_indices = [0, 4, 5, 7, 8, 10, 11, 18, 19, 20, 21, 22, 23]
+                 for vi in [24, 25, 28, 29]:     # toes, heels (virtual)
+                     if vi < probs.shape[0]:
+                         all_contact_indices.append(vi)
+                 max_contact_prob = max(probs[j] for j in all_contact_indices if j < probs.shape[0])
+                 grf_scale = min(1.0, 2.0 * max_contact_prob)  # Saturates at p=0.5
+                 total_contact_mass = self.total_mass_kg * grf_scale
+                 
+                 # Use CoM (not ZMP) as the Gaussian center for pressure
+                 # distribution. During weight transfer, the CoM shifts
+                 # laterally toward the receiving foot faster than the ZMP,
+                 # correctly unloading the departing foot.
+                 if self.current_com is not None:
+                     com_f = self.current_com[f] if self.current_com.ndim > 1 else self.current_com
+                 else:
+                     com_f = self.current_zmp[f] if self.current_zmp.ndim > 1 else self.current_zmp
+                 pd = [0, 2] if yd == 1 else [0, 1]
+                 center_hz = com_f[pd]
+                 
+                 w_dist = np.zeros_like(probs)
+                 
+                 for j in range(probs.shape[0]):
+                      p = probs[j]
+                      if p < 0.01: continue
+                      
+                      # Per-joint upward velocity suppression:
+                      # If this joint is moving upward, it's lifting off —
+                      # suppress its contact pressure contribution.
+                      vy_j = joint_vy[j] if j < len(joint_vy) else 0.0
+                      if vy_j > 0.05:  # Small deadzone to ignore noise
+                          # Exponential suppression: vy=0.15 → 37%, vy=0.30 → 14%, vy=0.5 → 4%
+                          vel_suppress = np.exp(-vy_j / 0.15)
+                          p = p * vel_suppress
+                          if p < 0.01: continue
+                      
+                      if j in tips: pos = tips[j][f]
+                      else: pos = world_pos[f, j]
+                      
+                      pos_hz = pos[pd]
+                      dist = np.sqrt(np.sum((pos_hz - center_hz)**2))
+                      
+                      SIGMA_PRESS = 0.60  # Wide Gaussian — reduces sensitivity to CoM jitter
+                      gauss_weight = np.exp(-0.5 * (dist / SIGMA_PRESS)**2)
+                      # Use p² to strongly suppress weak contacts:
+                      # p=0.95 → 0.90 (barely changed)
+                      # p=0.05 → 0.0025 (97% suppressed)
+                      w_dist[j] = (p * p) * gauss_weight
+                      
+                 w_sum = np.sum(w_dist)
+                 
+                 if w_sum > 1e-6:
+                      weights = w_dist / w_sum
+                      
+                      for j in range(weights.shape[0]):
+                           if weights[j] < 0.001:
+                                continue
+                           if j in tips:
+                                h = tips[j][f][yd] - inferred_floor
+                           else:
+                                h = world_pos[f, j, yd] - inferred_floor
+                           if h > 0.25:
+                                weights[j] = 0.0
+                      
+                      w_sum_2 = np.sum(weights)
+                      if w_sum_2 > 0:
+                           weights = weights / w_sum_2
+                           
+                           # --- Toe pressure capping ---
+                           # Toe positions are unreliable (rotation poorly
+                           # measured). Cap each toe's weight to not exceed
+                           # its foot (ball) weight, unless en pointe.
+                           toe_foot_pairs = [(24, 10), (25, 11)]
+                           for toe_j, foot_j in toe_foot_pairs:
+                                if toe_j >= weights.shape[0] or foot_j >= weights.shape[0]:
+                                     continue
+                                if weights[toe_j] <= weights[foot_j]:
+                                     continue
+                                # En pointe check
+                                foot_h = curr_heights[foot_j] - inferred_floor
+                                if foot_h > EN_POINTE_ABOVE_FLOOR:
+                                     continue
+                                # Cap: redistribute excess to foot
+                                excess = weights[toe_j] - weights[foot_j]
+                                weights[toe_j] = weights[foot_j]
+                                weights[foot_j] += excess
+                           
+                           self.contact_pressure[f] = weights * total_contact_mass
+                      else:
+                           self.contact_pressure[f] = 0.0
+                 else:
+                      self.contact_pressure[f] = 0.0
+            
+            # --- Joint Torque & Effort Calculation ---
+            torques_vec, inertias, efforts_net, efforts_dyn, efforts_grav, t_dyn_vecs, t_grav_vecs, t_passive_vecs = self._compute_joint_torques(
+                F, ang_acc_for_effort, world_pos, parents, global_rots,
+                pose_data_aa, tips, options, contact_forces=None,
+                _frame_cache=_frame_cache, skip_rate_limiting=True
+            )
+            
+            # --- Refinement check (skip on last iteration) ---
+            if refine_iter < max_refine_iters - 1 and options.contact_refinement_iterations > 0:
+                refined = self._refine_contacts_from_torque_discontinuity(
+                    working_probs, torques_vec, world_pos, parents, options, tips
+                )
+                
+                # Check if anything changed
+                if np.allclose(refined, working_probs, atol=0.005):
+                    break  # Converged, no more refinement needed
+                
+                working_probs = refined
         
-        # Initialize smoothed state if needed
+        # --- Contact Pressure Smoothing (Asymmetric + Rate Clamp) ---
+        # Runs OUTSIDE the refinement loop so it always applies.
+        # Time-constant based smoothing (framerate-adaptive).
+        TAU_UP   = 0.150  # seconds — build-up time constant
+        TAU_DOWN = 0.050  # seconds — release time constant
+        MAX_RATE = 5.0 * self.total_mass_kg  # kg/s — max pressure change rate per joint
+        
+        # Convert time constants to per-frame alphas
+        alpha_up   = 1.0 - np.exp(-dt / TAU_UP)    # ~0.054 at 120fps, ~0.189 at 30fps
+        alpha_down = 1.0 - np.exp(-dt / TAU_DOWN)   # ~0.154 at 120fps, ~0.487 at 30fps
+        max_change_per_frame = MAX_RATE * dt          # kg/frame
+        
         if not hasattr(self, 'prev_contact_pressure_smooth') or self.prev_contact_pressure_smooth is None:
             self.prev_contact_pressure_smooth = self.contact_pressure.copy()
         
-        # Ensure shape matches
         if self.prev_contact_pressure_smooth.shape != self.contact_pressure.shape:
             self.prev_contact_pressure_smooth = self.contact_pressure.copy()
         
@@ -4265,23 +5438,52 @@ class SMPLProcessor:
             curr = self.contact_pressure[f]
             prev = self.prev_contact_pressure_smooth[0] if F == 1 else self.prev_contact_pressure_smooth[f]
             
-            # Simple consistent blend (no asymmetric mode switching)
-            smoothed = prev * (1.0 - ALPHA_CP) + curr * ALPHA_CP
-            self.contact_pressure[f] = smoothed
+            # Soft alpha blending based on drop magnitude.
+            # Instead of a binary switch (which is fragile near zero change),
+            # blend smoothly: small changes → slow alpha (stable),
+            # large drops → fast alpha (responsive release).
+            drop = np.maximum(0, prev - curr)  # How much each joint is dropping
+            drop_ratio = drop / (np.maximum(prev, 1.0))  # Relative drop (safe div)
+            blend = np.clip(drop_ratio / 0.3, 0, 1)  # 0→30% drop maps to 0→1
+            alpha = alpha_up * (1 - blend) + alpha_down * blend
             
-            # Update prev for next frame in batch
+            smoothed = prev * (1.0 - alpha) + curr * alpha
+            # Rate clamp: prevent single-frame radical shifts
+            delta = smoothed - prev
+            delta = np.clip(delta, -max_change_per_frame, max_change_per_frame)
+            smoothed = prev + delta
+            self.contact_pressure[f] = smoothed
             if F == 1:
                 self.prev_contact_pressure_smooth = smoothed[np.newaxis, :].copy()
             else:
                 self.prev_contact_pressure_smooth[f] = smoothed
-
-        # --- Joint Torque & Effort Calculation ---
-        # Key: Pass contact_forces!
+        
+        # Recompute torques with the smoothed contact pressure
         torques_vec, inertias, efforts_net, efforts_dyn, efforts_grav, t_dyn_vecs, t_grav_vecs, t_passive_vecs = self._compute_joint_torques(
             F, ang_acc_for_effort, world_pos, parents, global_rots,
-            pose_data_aa, tips, options, contact_forces=None
+            pose_data_aa, tips, options, contact_forces=None,
+            _frame_cache=_frame_cache, skip_rate_limiting=False
         )
         
+        # --- CoM-based dynamic torque override ---
+        # When world_frame_dynamics is enabled, replace I×α dynamic torque
+        # with τ = r × (m × a_com) from subtree center-of-mass acceleration.
+        # This naturally gives zero torque when a limb's CoM is stationary
+        # (e.g. arms hanging during torso rotation), regardless of joint rotation.
+        if options.world_frame_dynamics:
+            t_dyn_com = self._compute_com_dynamic_torque(F, world_pos, global_rots, tips, options)
+            n_j = min(t_dyn_vecs.shape[1], t_dyn_com.shape[1])
+            t_dyn_vecs[:, :n_j, :] = t_dyn_com[:, :n_j, :]
+        
+        # Store active torques and contact probs for next frame's comparison
+        if F == 1 and torques_vec.shape[1] >= 22:
+            self._prev_active_torques = torques_vec[0, :self.target_joint_count, :].copy()
+            self._prev_contact_probs = working_probs[0, :self.target_joint_count].copy()
+        
+        # Store for consensus contact feedback (uses previous frame's torques)
+        if F == 1 and t_dyn_vecs.shape[1] >= 22:
+            self._prev_torque_vecs = t_dyn_vecs[0, :self.target_joint_count, :]
+
 
         
         # Scalar torque magnitude for output
@@ -4302,8 +5504,9 @@ class SMPLProcessor:
         res = {
             'pose': output_quats if options.return_quats else pose_data_aa[:, :self.target_joint_count, :],
             'trans': trans_data,
-            'contact_probs': contact_probs_fusion, # Legacy alias
-            'contact_probs_fusion': contact_probs_fusion, # New
+            'contact_probs': contact_probs_fusion, # Original sensory prior
+            'contact_probs_fusion': contact_probs_fusion, # Legacy alias
+            'contact_probs_refined': working_probs, # After torque refinement
             'torques_vec': torques_vec,
             'torques_grav_vec': t_grav_vecs,
             'torques_passive_vec': t_passive_vecs,

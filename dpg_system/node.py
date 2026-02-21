@@ -1193,7 +1193,15 @@ class DragFloatN(ScalarWidget):
         # Default value comes as list from init
         for i in range(self.columns):
             val = self.default_value[i] if self.default_value else 0.0
-            dpg.add_drag_float(width=self.widget_width, clamped=True, tag=self.uuids[i],
+            # Last column: visible label displayed after the widget
+            # First column (if not last): hidden label for restore_properties matching
+            if i == self.columns - 1:
+                lbl = self._label
+            elif i == 0:
+                lbl = '##' + self._label
+            else:
+                lbl = ''
+            dpg.add_drag_float(width=self.widget_width, clamped=True, label=lbl, tag=self.uuids[i],
                                max_value=mx, min_value=mn, user_data=self.node,
                                default_value=val, speed=self.speed)
 
@@ -1225,7 +1233,6 @@ class DragFloatN(ScalarWidget):
             dpg.configure_item(uuid, format=format)
 
     def set_default_value(self, data):
-        print('set default value', data)
         self.default_value = any_to_list(data)
 
 
@@ -2077,9 +2084,9 @@ class Node:
                     default_value: Any = None, min: Optional[float] = None,
                     max: Optional[float] = None, callback: Optional[Callable] = None, **kwargs) -> 'NodeProperty':
         if self.show_options_check is None and self.app.easy_mode:
-            self.show_options_check = self.add_property('show options', widget_type='checkbox', default_value=False, callback=self.show_hide_options, **kwargs)
+            self.show_options_check = self.add_property('show options', widget_type='checkbox', default_value=False, callback=self.show_hide_options)
 
-        new_option = NodeProperty(label, uuid, self, widget_type, width, triggers_execution, trigger_button, default_value, min, max)
+        new_option = NodeProperty(label, uuid, self, widget_type, width, triggers_execution, trigger_button, default_value, min, max, **kwargs)
         self.options.append(new_option)
         self.ordered_elements.append(new_option)
         if callback is not None:
@@ -2586,7 +2593,13 @@ class Node:
                         if input.widget is not None:
                             a_label = dpg.get_item_label(input.widget.uuid)
                             a_label = a_label.strip('#')
-                            if a_label == property_label or a_label == org_label:
+                            match = (a_label == property_label or a_label == org_label)
+                            if not match and input.name_archive:
+                                for old_name in input.name_archive:
+                                    if old_name.strip('#') == property_label:
+                                        match = True
+                                        break
+                            if match:
                                 if 'value' in property_container:
                                     value = property_container['value']
                                     if input.widget.widget != 'button':

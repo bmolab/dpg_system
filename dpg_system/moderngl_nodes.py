@@ -33,6 +33,8 @@ def register_moderngl_nodes():
     Node.app.register_node('mgl_plane', MGLPlaneNode.factory)
     Node.app.register_node('mgl_disk', MGLDiskNode.factory)
     Node.app.register_node('mgl_body', MGLBodyNode.factory)
+    Node.app.register_node('mgl_surface', MGLSurfaceNode.factory)
+    Node.app.register_node('mgl_smpl_mesh', MGLSMPLMeshNode.factory)
 
 
 class MGLNode(Node):
@@ -106,6 +108,7 @@ class MGLContextNode(Node):
         self._pbo_width = 0
         self._pbo_height = 0
 
+        self.auto_render_input = self.add_input('auto_render', widget_type='checkbox', default_value=False, callback=self.toggle_auto_render)
         self.render_trigger = self.add_input('render', triggers_execution=True)
         self.mgl_chain_output = self.add_output('mgl_chain')
         self.texture_output = self.add_output('texture_tag')
@@ -117,9 +120,33 @@ class MGLContextNode(Node):
         
         self.samples_option = self.add_option('samples', widget_type='combo', default_value='4')
         self.samples_option.widget.combo_items = ['0', '2', '4', '6', '8', '16']
+
+        self.default_light_option = self.add_option('default_light', widget_type='checkbox', default_value=True)
+        self.light_pos_option = self.add_option('light_pos', widget_type='drag_float_n', default_value=[2.0, 5.0, 5.0], columns=3)
+        self.light_intensity_option = self.add_option('light_intensity', widget_type='drag_float', default_value=0.8)
+
+        self.default_camera_option = self.add_option('default_camera', widget_type='checkbox', default_value=True)
+        self.camera_fov_option = self.add_option('camera_fov', widget_type='drag_float', default_value=60.0)
+        self.camera_pos_option = self.add_option('camera_pos', widget_type='drag_float_n', default_value=[0.0, 0.0, 3.0], columns=3)
+        self.camera_target_option = self.add_option('camera_target', widget_type='drag_float_n', default_value=[0.0, 0.0, 0.0], columns=3)
         
 
+    def toggle_auto_render(self):
+        if self.auto_render_input():
+            self.add_frame_task()
+        else:
+            self.remove_frame_tasks()
+
+    def custom_create(self, from_file):
+        if from_file and self.auto_render_input():
+            self.add_frame_task()
+        self.camera_fov_option.widget.set_speed(1.0)
+
+    def frame_task(self):
+        self.execute()
+
     def custom_cleanup(self):
+        self.remove_frame_tasks()
         if self.texture_tag:
             dpg.delete_item(self.texture_tag)
         if self.external_window:
@@ -267,25 +294,61 @@ class MGLContextNode(Node):
         except:
             samples = 4
         
-        if self.render_target is None or self.render_target.width != self.width or self.render_target.height != self.height or self.render_target.samples != samples:
-            if self.render_target:
-                self.render_target.release()
-            self.render_target = self.context.create_render_target(self.width, self.height, samples)
-
         # Scope the ModernGL Context to avoid polluting global GL state (e.g. for legacy gl_nodes)
         with self.context.ctx:
+            # Create/update render target INSIDE the context scope —
+            # texture/FBO creation requires an active GL context.
+            if self.render_target is None or self.render_target.width != self.width or self.render_target.height != self.height or self.render_target.samples != samples:
+                if self.render_target:
+                    self.render_target.release()
+                self.render_target = self.context.create_render_target(self.width, self.height, samples)
+
             # Activate Local Target
             self.context.use_render_target(self.render_target)
             
             # Reset Context State
             self.context.current_color = (1.0, 1.0, 1.0, 1.0)
             self.context.lights = []
+            self.context.default_light_count = 0
             self.context.current_material = {
                 'ambient': [0.1, 0.1, 0.1],
                 'diffuse': [1.0, 1.0, 1.0],
                 'specular': [0.5, 0.5, 0.5],
                 'shininess': 32.0
             }
+
+            # Helper to safely coerce option values to 3-element lists
+            def _as_vec3(val, default):
+                if np.isscalar(val):
+                    return [float(val), default[1], default[2]]
+                val = list(val)
+                while len(val) < 3:
+                    val.append(default[len(val)])
+                return val[:3]
+
+            # Inject default light (overridden if mgl_light nodes are present)
+            if self.default_light_option():
+                pos = _as_vec3(self.light_pos_option(), [2.0, 5.0, 5.0])
+                intensity = self.light_intensity_option()
+                self.context.lights.append({
+                    'pos': pos,
+                    'ambient': [0.15, 0.15, 0.15],
+                    'diffuse': [1.0, 1.0, 1.0],
+                    'specular': [0.6, 0.6, 0.6],
+                    'intensity': intensity
+                })
+                self.context.default_light_count = 1
+
+            # Inject default camera (overridden if mgl_camera nodes are present)
+            if self.default_camera_option():
+                cam_pos = _as_vec3(self.camera_pos_option(), [0.0, 0.0, 3.0])
+                cam_target = _as_vec3(self.camera_target_option(), [0.0, 0.0, 0.0])
+                cam_fov = self.camera_fov_option()
+                aspect = self.width / self.height if self.height > 0 else 1.0
+                self.context.set_projection_matrix(perspective(cam_fov, aspect, 0.1, 100.0))
+                self.context.set_view_matrix(look_at(cam_pos, cam_target, [0.0, 1.0, 0.0]))
+                if 'view_pos' in self.context.default_shader:
+                    self.context.default_shader['view_pos'].value = tuple(cam_pos)
             
             # Sync back actual samples if fallback occurred
             if self.render_target.samples != samples:
@@ -701,6 +764,11 @@ class MGLLightNode(MGLNode):
         if len(pos) == 3: pos = [*pos, 1.0]
 
         if self.ctx is not None:
+            # Clear default lights on first user-placed light
+            if hasattr(self.ctx, 'default_light_count') and self.ctx.default_light_count > 0:
+                self.ctx.lights = self.ctx.lights[self.ctx.default_light_count:]
+                self.ctx.default_light_count = 0
+
             model = self.ctx.get_model_matrix()
             # p_world = M * p_local
             world_pos = np.dot(model, pos)
@@ -922,8 +990,8 @@ class MGLShapeNode(MGLNode):
             # Update Lights and Material
             # DEBUG: Check Context State
             if hasattr(self, 'debug_light_count') and self.debug_light_count < 20:
-                print(f"MGLBodyNode: Lights={len(self.ctx.lights)}, Mat={self.ctx.current_material['diffuse']}")
-                print(f"Shader has num_lights? {'num_lights' in self.prog}")
+                # print(f"MGLBodyNode: Lights={len(self.ctx.lights)}, Mat={self.ctx.current_material['diffuse']}")
+                # print(f"Shader has num_lights? {'num_lights' in self.prog}")
                 self.debug_light_count += 1
             if not hasattr(self, 'debug_light_count'):
                 self.debug_light_count = 0
@@ -1432,6 +1500,7 @@ class MGLDiskNode(MGLShapeNode):
     def initialize(self, args):
         super().initialize(args)
         self.radius_input = self.add_input('radius', widget_type='drag_float', default_value=0.5, speed=0.01)
+        self.hole_ratio_input = self.add_input('hole_ratio', widget_type='drag_float', default_value=0.0, speed=0.01, min_value=0.0, max_value=0.99, callback=self.geometry_changed)
         self.segments_input = self.add_input('segments', widget_type='drag_int', default_value=32, min_value=3, max_value=256, callback=self.geometry_changed)
         self.rings_input = self.add_input('rings', widget_type='drag_int', default_value=1, min_value=1, max_value=64, callback=self.geometry_changed)
         self.end_initialization()
@@ -1447,74 +1516,87 @@ class MGLDiskNode(MGLShapeNode):
 
         segments = max(3, self.segments_input())
         rings = max(1, self.rings_input())
+        inner_frac = max(0.0, min(self.hole_ratio_input(), 0.99))
+        has_hole = inner_frac > 0.0
 
-        # --- Top face (normal = +Y) ---
-        # Center vertex
-        vertices.extend([0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.5, 0.5])
+        def build_side(normal_y):
+            base = len(vertices) // 8
+            ny = normal_y
 
-        # Concentric rings from inner to outer
-        for r in range(1, rings + 1):
-            frac = float(r) / rings
-            for s in range(segments):
-                theta = 2.0 * math.pi * float(s) / segments
-                x = frac * math.cos(theta)
-                z = frac * math.sin(theta)
-                u = 0.5 + 0.5 * x
-                v = 0.5 + 0.5 * z
-                vertices.extend([x, 0.0, z, 0.0, 1.0, 0.0, u, v])
+            if not has_hole:
+                # Center vertex
+                vertices.extend([0.0, 0.0, 0.0, 0.0, ny, 0.0, 0.5, 0.5])
 
-        # Indices for top face
-        # Inner fan: center to first ring
-        for s in range(segments):
-            s_next = (s + 1) % segments
-            indices.extend([0, 1 + s, 1 + s_next])
+                # Concentric rings from inner to outer
+                for r in range(1, rings + 1):
+                    frac = float(r) / rings
+                    for s in range(segments):
+                        theta = 2.0 * math.pi * float(s) / segments
+                        x = frac * math.cos(theta)
+                        z = frac * math.sin(theta)
+                        u = 0.5 + 0.5 * x
+                        v = 0.5 + 0.5 * z
+                        vertices.extend([x, 0.0, z, 0.0, ny, 0.0, u, v])
 
-        # Ring quads
-        for r in range(1, rings):
-            inner_base = 1 + (r - 1) * segments
-            outer_base = 1 + r * segments
-            for s in range(segments):
-                s_next = (s + 1) % segments
-                i0 = inner_base + s
-                i1 = inner_base + s_next
-                i2 = outer_base + s
-                i3 = outer_base + s_next
-                indices.extend([i0, i2, i1])
-                indices.extend([i1, i2, i3])
+                # Inner fan
+                if ny > 0:
+                    for s in range(segments):
+                        s_next = (s + 1) % segments
+                        indices.extend([base, base + 1 + s_next, base + 1 + s])
+                else:
+                    for s in range(segments):
+                        s_next = (s + 1) % segments
+                        indices.extend([base, base + 1 + s, base + 1 + s_next])
 
-        # --- Bottom face (normal = -Y, reversed winding) ---
-        verts_per_side = 1 + rings * segments
-        offset = verts_per_side
+                # Ring quads
+                for r in range(1, rings):
+                    inner_base = base + 1 + (r - 1) * segments
+                    outer_base = base + 1 + r * segments
+                    for s in range(segments):
+                        s_next = (s + 1) % segments
+                        i0 = inner_base + s
+                        i1 = inner_base + s_next
+                        i2 = outer_base + s
+                        i3 = outer_base + s_next
+                        if ny > 0:
+                            indices.extend([i0, i1, i2])
+                            indices.extend([i1, i3, i2])
+                        else:
+                            indices.extend([i0, i2, i1])
+                            indices.extend([i1, i2, i3])
+            else:
+                # Annular disk: rings+1 concentric rings from inner_frac to 1.0
+                for r in range(rings + 1):
+                    frac = inner_frac + (1.0 - inner_frac) * float(r) / rings
+                    for s in range(segments):
+                        theta = 2.0 * math.pi * float(s) / segments
+                        x = frac * math.cos(theta)
+                        z = frac * math.sin(theta)
+                        u = 0.5 + 0.5 * x
+                        v = 0.5 + 0.5 * z
+                        vertices.extend([x, 0.0, z, 0.0, ny, 0.0, u, v])
 
-        # Center vertex
-        vertices.extend([0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.5, 0.5])
+                # Ring quads between concentric rings
+                for r in range(rings):
+                    inner_base = base + r * segments
+                    outer_base = base + (r + 1) * segments
+                    for s in range(segments):
+                        s_next = (s + 1) % segments
+                        i0 = inner_base + s
+                        i1 = inner_base + s_next
+                        i2 = outer_base + s
+                        i3 = outer_base + s_next
+                        if ny > 0:
+                            indices.extend([i0, i1, i2])
+                            indices.extend([i1, i3, i2])
+                        else:
+                            indices.extend([i0, i2, i1])
+                            indices.extend([i1, i2, i3])
 
-        for r in range(1, rings + 1):
-            frac = float(r) / rings
-            for s in range(segments):
-                theta = 2.0 * math.pi * float(s) / segments
-                x = frac * math.cos(theta)
-                z = frac * math.sin(theta)
-                u = 0.5 + 0.5 * x
-                v = 0.5 + 0.5 * z
-                vertices.extend([x, 0.0, z, 0.0, -1.0, 0.0, u, v])
-
-        # Indices for bottom face (reversed winding)
-        for s in range(segments):
-            s_next = (s + 1) % segments
-            indices.extend([offset, offset + 1 + s_next, offset + 1 + s])
-
-        for r in range(1, rings):
-            inner_base = offset + 1 + (r - 1) * segments
-            outer_base = offset + 1 + r * segments
-            for s in range(segments):
-                s_next = (s + 1) % segments
-                i0 = inner_base + s
-                i1 = inner_base + s_next
-                i2 = outer_base + s
-                i3 = outer_base + s_next
-                indices.extend([i0, i1, i2])
-                indices.extend([i1, i3, i2])
+        # Top face (+Y)
+        build_side(1.0)
+        # Bottom face (-Y)
+        build_side(-1.0)
 
         return vertices, indices
 
@@ -1600,6 +1682,162 @@ class MGLPointCloudNode(MGLShapeNode):
             model = self.ctx.get_model_matrix()
             # Debug: Check translation
             # print(f"PC Model Trans: {model[3, :3]}")
+            self.prog['M'].write(model.astype('f4').T.tobytes())
+
+
+class MGLSurfaceNode(MGLShapeNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        return MGLSurfaceNode(name, data, args)
+
+    def __init__(self, label, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        super().initialize(args)
+        self.points_input = self.add_input('points', triggers_execution=True)
+        self.end_initialization()
+        self.points_data = None
+        self.dirty = False
+
+    def execute(self):
+        if self.points_input.fresh_input:
+            data = self.points_input()
+            if data is not None:
+                # Convert to numpy float32
+                if isinstance(data, list):
+                    data = np.array(data, dtype=np.float32)
+                elif isinstance(data, np.ndarray):
+                    data = data.astype(np.float32)
+                elif self.app.torch_available and isinstance(data, torch.Tensor):
+                    data = data.detach().cpu().numpy().astype(np.float32)
+
+                # Expect (rows, cols, 3)
+                if data.ndim == 3 and data.shape[2] == 3:
+                    self.points_data = data
+                    self.dirty = True
+                elif data.ndim == 2 and data.shape[1] == 3:
+                    # Flat (N, 3) — treat as single row
+                    self.points_data = data.reshape(1, -1, 3)
+                    self.dirty = True
+
+        super().execute()
+
+    def compute_vertex_normals(self, grid):
+        """Compute per-vertex normals by averaging adjacent face normals.
+        grid: (rows, cols, 3)
+        Returns: (rows, cols, 3) normals
+        """
+        rows, cols, _ = grid.shape
+        normals = np.zeros_like(grid)
+
+        # Compute face normals for each quad (two triangles per quad)
+        # For each quad at (iy, ix), vertices are:
+        #   bl = grid[iy, ix], br = grid[iy, ix+1]
+        #   tl = grid[iy+1, ix], tr = grid[iy+1, ix+1]
+        # Triangle 1: bl, tl, br  -> edges: tl-bl, br-bl
+        # Triangle 2: br, tl, tr  -> edges: tl-br, tr-br
+
+        for iy in range(rows - 1):
+            for ix in range(cols - 1):
+                bl = grid[iy, ix]
+                br = grid[iy, ix + 1]
+                tl = grid[iy + 1, ix]
+                tr = grid[iy + 1, ix + 1]
+
+                # Triangle 1: bl, tl, br
+                n1 = np.cross(tl - bl, br - bl)
+                len1 = np.linalg.norm(n1)
+                if len1 > 1e-10:
+                    n1 /= len1
+
+                # Triangle 2: br, tl, tr
+                n2 = np.cross(tl - br, tr - br)
+                len2 = np.linalg.norm(n2)
+                if len2 > 1e-10:
+                    n2 /= len2
+
+                # Accumulate to each vertex
+                normals[iy, ix] += n1
+                normals[iy + 1, ix] += n1 + n2
+                normals[iy, ix + 1] += n1 + n2
+                normals[iy + 1, ix + 1] += n2
+
+        # Normalize
+        lengths = np.linalg.norm(normals, axis=-1, keepdims=True)
+        lengths = np.maximum(lengths, 1e-10)
+        normals /= lengths
+
+        return normals
+
+    def draw(self):
+        if self.ctx and self.dirty and self.points_data is not None:
+            grid = self.points_data
+            rows, cols, _ = grid.shape
+
+            if rows < 2 or cols < 2:
+                self.dirty = False
+                super().draw()
+                return
+
+            # Compute per-vertex normals
+            normals = self.compute_vertex_normals(grid)
+
+            # Generate UVs
+            us = np.linspace(0.0, 1.0, cols, dtype=np.float32)
+            vs = np.linspace(0.0, 1.0, rows, dtype=np.float32)
+            uu, vv = np.meshgrid(us, vs)
+            uvs = np.stack([uu, vv], axis=-1)  # (rows, cols, 2)
+
+            # --- Top face ---
+            # Interleave: [x,y,z, nx,ny,nz, u,v] per vertex
+            top_verts = np.concatenate([grid, normals, uvs], axis=-1)  # (rows, cols, 8)
+            top_verts_flat = top_verts.reshape(-1, 8)
+
+            # Triangle indices for top face
+            top_indices = []
+            for iy in range(rows - 1):
+                for ix in range(cols - 1):
+                    bl = iy * cols + ix
+                    br = bl + 1
+                    tl = (iy + 1) * cols + ix
+                    tr = tl + 1
+                    top_indices.extend([bl, tl, br])
+                    top_indices.extend([br, tl, tr])
+
+            # --- Bottom face (reversed winding, negated normals) ---
+            neg_normals = -normals
+            bot_verts = np.concatenate([grid, neg_normals, uvs], axis=-1)
+            bot_verts_flat = bot_verts.reshape(-1, 8)
+
+            bot_indices = []
+            offset = rows * cols
+            for iy in range(rows - 1):
+                for ix in range(cols - 1):
+                    bl = offset + iy * cols + ix
+                    br = bl + 1
+                    tl = offset + (iy + 1) * cols + ix
+                    tr = tl + 1
+                    # Reversed winding
+                    bot_indices.extend([bl, br, tl])
+                    bot_indices.extend([br, tr, tl])
+
+            # Combine
+            all_verts = np.vstack([top_verts_flat, bot_verts_flat]).flatten().astype(np.float32)
+            all_indices = top_indices + bot_indices
+
+            self.render_geometry(all_verts, all_indices)
+            self.dirty = False
+
+        super().draw()
+
+    def create_geometry(self):
+        # Fallback if draw called without data
+        return [], None
+
+    def handle_shape_params(self):
+        if self.ctx is not None and 'M' in self.prog:
+            model = self.ctx.get_model_matrix()
             self.prog['M'].write(model.astype('f4').T.tobytes())
 
 
@@ -1861,3 +2099,4 @@ class MGLCameraNode(MGLNode):
             pass
 
 from dpg_system.mgl_body_node import MGLBodyNode
+from dpg_system.mgl_smpl_mesh_node import MGLSMPLMeshNode
