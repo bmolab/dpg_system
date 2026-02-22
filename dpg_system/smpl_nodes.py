@@ -1688,17 +1688,16 @@ class SMPLTorqueNode(SMPLNode):
         
         # Bias: Negative = Toe Preference, Positive = Heel Preference
         self.heel_toe_bias_prop = self.add_option('heel_toe_bias', widget_type='drag_float', default_value=0.02)
-        self.impact_mitigation_prop = self.add_option('enable_impact_mitigation', widget_type='checkbox', default_value=True)
         
         # Contact Method Selection
         self.contact_method_prop = self.add_option('contact_method', widget_type='combo', default_value='fusion')
         self.contact_method_prop.widget.combo_items = ['fusion', 'stability', 'com_driven', 'consensus']
-        self.contact_refine_prop = self.add_option('contact_refinement_iters', widget_type='drag_int', default_value=1)
         
         # --- Rate Limiting ---
         self.enable_rate_limiting_prop = self.add_option('enable_rate_limiting', widget_type='checkbox', default_value=True)
         self.rate_limit_strength_prop = self.add_option('rate_limit_strength', widget_type='drag_float', default_value=1.0)
         self.enable_jitter_damping_prop = self.add_option('enable_jitter_damping', widget_type='checkbox', default_value=True)
+        self.enable_velocity_gate_prop = self.add_option('enable_velocity_gate', widget_type='checkbox', default_value=True)
         self.enable_kf_smoothing_prop = self.add_option('enable_kf_smoothing', widget_type='checkbox', default_value=True)
         self.kf_responsiveness_prop = self.add_option('kf_responsiveness', widget_type='drag_float', default_value=10.0)
         self.kf_smoothness_prop = self.add_option('kf_smoothness', widget_type='drag_float', default_value=1.0)
@@ -1891,14 +1890,13 @@ class SMPLTorqueNode(SMPLNode):
                 floor_height=self.floor_height_prop() if hasattr(self, 'floor_height_prop') else 0.0,
                 floor_tolerance=self.floor_tol_prop() if hasattr(self, 'floor_tol_prop') else 0.15,
                 heel_toe_bias=self.heel_toe_bias_prop() if hasattr(self, 'heel_toe_bias_prop') else 0.0,
-                enable_impact_mitigation=self.impact_mitigation_prop() if hasattr(self, 'impact_mitigation_prop') else True,
                 contact_method=self.contact_method_prop() if hasattr(self, 'contact_method_prop') else 'fusion',
-                contact_refinement_iterations=self.contact_refine_prop() if hasattr(self, 'contact_refine_prop') else 1,
                 
                 # Rate Limiting
                 enable_rate_limiting=self.enable_rate_limiting_prop() if hasattr(self, 'enable_rate_limiting_prop') else True,
                 rate_limit_strength=self.rate_limit_strength_prop() if hasattr(self, 'rate_limit_strength_prop') else 1.0,
                 enable_jitter_damping=self.enable_jitter_damping_prop() if hasattr(self, 'enable_jitter_damping_prop') else True,
+                enable_velocity_gate=self.enable_velocity_gate_prop() if hasattr(self, 'enable_velocity_gate_prop') else True,
                 enable_kf_smoothing=self.enable_kf_smoothing_prop() if hasattr(self, 'enable_kf_smoothing_prop') else True,
                 kf_responsiveness=self.kf_responsiveness_prop() if hasattr(self, 'kf_responsiveness_prop') else 10.0,
                 kf_smoothness=self.kf_smoothness_prop() if hasattr(self, 'kf_smoothness_prop') else 1.0,

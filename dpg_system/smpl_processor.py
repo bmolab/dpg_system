@@ -339,14 +339,13 @@ class SMPLProcessingOptions:
     floor_height: float = 0.0
     floor_tolerance: float = 0.15
     heel_toe_bias: float = 0.0
-    enable_impact_mitigation: bool = True
     contact_method: str = 'fusion'  # 'fusion', 'stability', 'com_driven', or 'consensus'
-    contact_refinement_iterations: int = 1  # Torque-feedback refinement passes (0=disabled)
     
     # --- Torque Rate Limiting ---
     enable_rate_limiting: bool = True
     rate_limit_strength: float = 1.0  # Multiplier for per-joint rate limits
     enable_jitter_damping: bool = True  # Pass 4: sign-flip oscillation damping
+    enable_velocity_gate: bool = True   # Suppress dynamic torque at low angular velocity
     enable_kf_smoothing: bool = True  # SmartClampKF filter for dynamic torque
     kf_responsiveness: float = 10.0   # How quickly KF tracks changes (higher = faster)
     kf_smoothness: float = 1.0        # Process noise (higher = trusts new data more)
@@ -3147,116 +3146,104 @@ class SMPLProcessor:
         limb_lengths = self.limb_data['lengths']
         
         # 1. Compute Individual Segment Properties (Mass & CoM)
-        # We store weighted position sum (M*r) and Total Mass per node
-        # Initialize with SEGMENT values
         node_masses = np.zeros((F, J_full))
         node_weighted_com = np.zeros((F, J_full, 3))
         
-        # Mapping Logic (Simplified from _compute_subtree_com)
-        # We can pre-calculate the scalar mass for each joint index once?
-        # Yes, mass is constant across frames.
+        # Cache segment masses and children (constant across frames)
+        if not hasattr(self, '_grav_seg_masses') or self._grav_seg_masses is None:
+            joint_segment_masses = np.zeros(24)
+            for idx in range(24):
+                name = self.joint_names[idx]
+                m = 0.0
+                if 'pelvis' in name: m = limb_masses['pelvis']
+                elif 'hip' in name: m = limb_masses['upper_leg']
+                elif 'knee' in name: m = limb_masses['lower_leg']
+                elif 'ankle' in name: m = limb_masses['foot']
+                elif 'spine' in name: m = limb_masses['spine']
+                elif 'neck' in name: m = limb_masses.get('head', 1.0)*0.2
+                elif 'head' in name: m = limb_masses['head']*0.8
+                elif 'collar' in name: m = limb_masses['upper_arm']*0.2
+                elif 'shoulder' in name: m = limb_masses['upper_arm']*0.8
+                elif 'elbow' in name: m = limb_masses['lower_arm']
+                elif 'wrist' in name: m = limb_masses['hand']
+                joint_segment_masses[idx] = m
+            
+            children_list = [[] for _ in range(24)]
+            for c in range(len(parents)):
+                p = parents[c]
+                if 0 <= p < 24:
+                    children_list[p].append(c)
+            
+            # Classify joints for vectorized CoM
+            self._grav_seg_masses = joint_segment_masses
+            self._grav_children = children_list
+            self._grav_nonleaf = [idx for idx in range(24) if joint_segment_masses[idx] > 0 and len(children_list[idx]) > 0]
+            self._grav_leaf = [idx for idx in range(24) if joint_segment_masses[idx] > 0 and len(children_list[idx]) == 0]
         
-        joint_segment_masses = np.zeros(24)
-        # Identify constant segment masses
-        for idx in range(24):
-            name = self.joint_names[idx]
-            m = 0.0
-            if 'pelvis' in name: m = limb_masses['pelvis']
-            elif 'hip' in name: m = limb_masses['upper_leg']
-            elif 'knee' in name: m = limb_masses['lower_leg']
-            elif 'ankle' in name: m = limb_masses['foot']
-            elif 'spine' in name: m = limb_masses['spine']
-            elif 'neck' in name: m = limb_masses.get('head', 1.0)*0.2
-            elif 'head' in name: m = limb_masses['head']*0.8
-            elif 'collar' in name: m = limb_masses['upper_arm']*0.2
-            elif 'shoulder' in name: m = limb_masses['upper_arm']*0.8
-            elif 'elbow' in name: m = limb_masses['lower_arm']
-            elif 'wrist' in name: m = limb_masses['hand']
-            joint_segment_masses[idx] = m
+        joint_segment_masses = self._grav_seg_masses
+        children_list = self._grav_children
         
-        # Iterate to compute Segment CoMs
-        for idx in range(24):
+        # Non-leaf joints: seg_com = midpoint(joint, mean(children))
+        for idx in self._grav_nonleaf:
             m = joint_segment_masses[idx]
-            if m <= 0: continue
-            
-            # Segment CoM: Midpoint between Joint and Mean(Children)
-            
-            child_nodes = [c for c, p in enumerate(parents) if p == idx]
-            
             joint_pos = world_pos[:, idx, :]
-            if len(child_nodes) > 0:
-                # Vectorized Mean of Children
-                child_pos_sum = np.zeros((F, 3))
-                for c in child_nodes:
-                    child_pos_sum += world_pos[:, c, :]
+            child_nodes = children_list[idx]
+            child_positions = world_pos[:, child_nodes, :]  # (F, n_children, 3)
+            end_pos = np.mean(child_positions, axis=1)  # (F, 3)
+            seg_com = (joint_pos + end_pos) * 0.5
+            node_masses[:, idx] = m
+            node_weighted_com[:, idx, :] = seg_com * m
+        
+        # Leaf joints: need special CoM handling (tips, rotation, parent vector)
+        for idx in self._grav_leaf:
+            m = joint_segment_masses[idx]
+            joint_pos = world_pos[:, idx, :]
+            seg_com = joint_pos.copy()
+            
+            # Priority 1: Virtual Tip (Best for Hands/Feet)
+            if tips is not None and idx in tips:
+                tip_pos = tips[idx]
+                if tip_pos.shape[0] == F:
+                     seg_com = (joint_pos + tip_pos) * 0.5
                 
-                end_pos = child_pos_sum / len(child_nodes)
-                seg_com = (joint_pos + end_pos) * 0.5
-            else:
-                # Leaf Logic (Head, Hands, Feet)
-                # To create a non-zero lever arm for gravity, we must estimate where the
-                # mass is relative to the joint pivot.
-                
-                seg_com = joint_pos.copy() # Default
-                
-                # Priority 1: Virtual Tip (Best for Hands/Feet)
-                if tips is not None and idx in tips:
-                    # tip is (F, 3)
-                    tip_pos = tips[idx] # Might need broadcasting if F mismatch?
-                    if tip_pos.shape[0] == F:
-                         seg_com = (joint_pos + tip_pos) * 0.5
-                    
-                # Priority 2: Joint Rotation (Best for Head / Leaves without tips)
-                elif global_rots is not None:
-                      # global_rots is List[R] or (F, 24, 4)?
-                      # _compute_forward_kinematics returns 'quats' (F,24,4) usually if we check signature?
-                      # But docstring says List[R]. 
-                      # Let's handle list of R objects.
-                      
-                      # Identify extension length
-                      name = self.joint_names[idx]
-                      ext_len = 0.0
-                      if 'head' in name: ext_len = limb_lengths.get('head', 0.20)
-                      elif 'hand' in name: ext_len = limb_lengths.get('hand', 0.18)
-                      elif 'foot' in name: ext_len = limb_lengths.get('foot', 0.20)
-                      
-                      if ext_len > 0:
-                          # Project along LOCAL Y-axis (Standard Bone Axis)
-                          local_axis = np.array([0.0, 1.0, 0.0]) # Shape (3,)
-                          
-                          # Rotate to World
-                          # If global_rots is list of R
-                          if isinstance(global_rots, list):
-                               r_obj = global_rots[idx] # (F,) rotation object
-                               axis_world = r_obj.apply(local_axis) # (F, 3)
-                               seg_com = joint_pos + axis_world * (ext_len * 0.5)
-                          elif hasattr(global_rots, 'shape') and global_rots.ndim == 3 and global_rots.shape[-1] == 4:
-                               # Quats (T, J, 4) -> (F, 4)
-                               # Just in case caller passed raw quats
-                               r_obj = R.from_quat(global_rots[:, idx, :])
-                               axis_world = r_obj.apply(local_axis)
-                               seg_com = joint_pos + axis_world * (ext_len * 0.5)
+            # Priority 2: Joint Rotation (Best for Head / Leaves without tips)
+            elif global_rots is not None:
+                  name = self.joint_names[idx]
+                  ext_len = 0.0
+                  if 'head' in name: ext_len = limb_lengths.get('head', 0.20)
+                  elif 'hand' in name: ext_len = limb_lengths.get('hand', 0.18)
+                  elif 'foot' in name: ext_len = limb_lengths.get('foot', 0.20)
+                  
+                  if ext_len > 0:
+                      local_axis = np.array([0.0, 1.0, 0.0])
+                      if isinstance(global_rots, list):
+                           r_obj = global_rots[idx]
+                           axis_world = r_obj.apply(local_axis)
+                           seg_com = joint_pos + axis_world * (ext_len * 0.5)
+                      elif hasattr(global_rots, 'shape') and global_rots.ndim == 3 and global_rots.shape[-1] == 4:
+                           r_obj = R.from_quat(global_rots[:, idx, :])
+                           axis_world = r_obj.apply(local_axis)
+                           seg_com = joint_pos + axis_world * (ext_len * 0.5)
 
-                # Priority 3: Fallback to Parent Vector (Better than nothing)
-                else: 
-                     parent_idx = parents[idx]
-                     if parent_idx >= 0:
-                         parent_pos = world_pos[:, parent_idx, :]
-                         bone_vec = joint_pos - parent_pos
-                         norm = np.linalg.norm(bone_vec, axis=-1, keepdims=True)
-                         
-                         valid_norm = norm > 1e-6
-                         direction = np.zeros_like(bone_vec)
-                         np.divide(bone_vec, norm, out=direction, where=valid_norm)
-                         
-                         name = self.joint_names[idx]
-                         ext_len = 0.0
-                         if 'head' in name: ext_len = limb_lengths.get('head', 0.20)
-                         elif 'hand' in name: ext_len = limb_lengths.get('hand', 0.18)
-                         elif 'foot' in name: ext_len = limb_lengths.get('foot', 0.20)
-                         
-                         seg_com = joint_pos + direction * (ext_len * 0.5)
-                
+            # Priority 3: Fallback to Parent Vector
+            else: 
+                 parent_idx = parents[idx]
+                 if parent_idx >= 0:
+                     parent_pos = world_pos[:, parent_idx, :]
+                     bone_vec = joint_pos - parent_pos
+                     norm = np.linalg.norm(bone_vec, axis=-1, keepdims=True)
+                     valid_norm = norm > 1e-6
+                     direction = np.zeros_like(bone_vec)
+                     np.divide(bone_vec, norm, out=direction, where=valid_norm)
+                     
+                     name = self.joint_names[idx]
+                     ext_len = 0.0
+                     if 'head' in name: ext_len = limb_lengths.get('head', 0.20)
+                     elif 'hand' in name: ext_len = limb_lengths.get('hand', 0.18)
+                     elif 'foot' in name: ext_len = limb_lengths.get('foot', 0.20)
+                     
+                     seg_com = joint_pos + direction * (ext_len * 0.5)
+            
             node_masses[:, idx] = m
             node_weighted_com[:, idx, :] = seg_com * m
             
@@ -4721,37 +4708,44 @@ class SMPLProcessor:
         mesh_com_offsets = self.limb_data.get('segment_com_offsets', None)
         use_mesh_com = mesh_com_offsets is not None and len(mesh_com_offsets) >= n_joints
         
-        # Compute per-SEGMENT CoM world positions
+    # Compute per-SEGMENT CoM world positions (vectorized)
         com_pos = np.zeros((F, n_joints, 3))
-        for f in range(F):
-            seg_com = np.zeros((n_joints, 3))
+        if use_mesh_com:
+            # Batch matmul: rotate all T-pose offsets by global rotations
+            # global_rots: (F, J, 3, 3), mesh_com_offsets: (J, 3)
+            offsets = np.array([mesh_com_offsets[j] for j in range(n_joints)])  # (J, 3)
+            # einsum: (F, J, 3, 3) @ (J, 3) → (F, J, 3)
+            offset_world = np.einsum('fjik,jk->fji', global_rots[:, :n_joints], offsets)
+            seg_com = world_pos[:, :n_joints] + offset_world
+        else:
+            seg_com = world_pos[:, :n_joints].copy()
             for j in range(n_joints):
-                joint_pos = world_pos[f, j]
-                if use_mesh_com:
-                    # Rotate T-pose CoM offset by joint's global rotation
-                    R = global_rots[f, j]  # (3, 3)
-                    offset_world = R @ mesh_com_offsets[j]
-                    seg_com[j] = joint_pos + offset_world
-                else:
-                    # Fallback: midpoint approximation
-                    if children_list[j]:
-                        child_pos = world_pos[f, children_list[j][0]]
-                        seg_com[j] = 0.5 * (joint_pos + child_pos)
-                    elif j in tip_map and tip_map[j] < world_pos.shape[1]:
-                        tip_pos = world_pos[f, tip_map[j]]
-                        seg_com[j] = 0.5 * (joint_pos + tip_pos)
-                    else:
-                        seg_com[j] = joint_pos
-            
-            # Subtree CoM = mass-weighted average of segment CoMs
-            for j in range(n_joints):
-                if subtree_mass[j] < 1e-8:
-                    com_pos[f, j, :] = world_pos[f, j]
-                else:
-                    st = subtrees[j]
-                    positions = seg_com[st]
-                    com_pos[f, j, :] = np.average(positions, axis=0, weights=subtree_weights[j])
+                if children_list[j]:
+                    child_pos = world_pos[:, children_list[j][0]]
+                    seg_com[:, j] = 0.5 * (world_pos[:, j] + child_pos)
+                elif j in tip_map and tip_map[j] < world_pos.shape[1]:
+                    seg_com[:, j] = 0.5 * (world_pos[:, j] + world_pos[:, tip_map[j]])
         
+        # Subtree CoM = mass-weighted average (vectorized with pre-built arrays)
+        if not hasattr(self, '_com_subtree_idx') or self._com_subtree_idx is None:
+            # Build padded index array for vectorized gathering
+            max_st = max(len(st) for st in subtrees)
+            st_idx = np.zeros((n_joints, max_st), dtype=int)
+            st_mask = np.zeros((n_joints, max_st))
+            st_w = np.zeros((n_joints, max_st))
+            for j in range(n_joints):
+                st = subtrees[j]
+                n = len(st)
+                st_idx[j, :n] = st
+                st_mask[j, :n] = 1.0
+                st_w[j, :n] = subtree_weights[j]
+            self._com_subtree_idx = st_idx
+            self._com_subtree_w = st_w
+        
+        # Gather segment CoMs for all subtrees: (F, J, max_st, 3)
+        gathered = seg_com[:, self._com_subtree_idx]  # (F, J, max_st, 3)
+        # Weighted sum: (F, J, max_st, 3) * (J, max_st, 1) → sum → (F, J, 3)
+        com_pos[:, :n_joints] = np.einsum('fjsk,js->fj k', gathered, self._com_subtree_w).reshape(F, n_joints, 3)
         
         t_dyn_com = np.zeros((F, max(24, n_joints), 3))
         
@@ -4854,11 +4848,10 @@ class SMPLProcessor:
                 raw_acc.flatten()
             ).reshape(n_joints, 3)
             
-            # Torque = r × (m × a)
-            for j in range(n_joints):
-                r = smooth_pos[j] - world_pos[0, j]
-                F_inertial = subtree_mass[j] * acc[j]
-                t_dyn_com[0, j, :] = np.cross(r, F_inertial)
+            # Vectorized torque = r × (m × a)
+            r = smooth_pos - world_pos[0, :n_joints]  # (J, 3)
+            F_inertial = subtree_mass[:, np.newaxis] * acc  # (J, 3)
+            t_dyn_com[0, :n_joints, :] = np.cross(r, F_inertial)
             
             self._com_prev_smooth_pos = smooth_pos.copy()
             self._com_prev_smooth_vel = smooth_vel.copy()
@@ -4916,7 +4909,7 @@ class SMPLProcessor:
         
         return t_dyn_com
 
-    def _compute_joint_torques(self, F, ang_acc, world_pos, parents, global_rots, pose_data_aa, tips, options, contact_forces=None, _frame_cache=None, skip_rate_limiting=False):
+    def _compute_joint_torques(self, F, ang_acc, world_pos, parents, global_rots, pose_data_aa, tips, options, contact_forces=None, _frame_cache=None, skip_rate_limiting=False, dyn_override_world=None):
         """
         Computes Joint Torques, Efforts, and Inertias.
         Iterates through joints to calculate dynamic vs gravity torques.
@@ -5039,10 +5032,21 @@ class SMPLProcessor:
                 vel_gate[j] = 1.0 - np.exp(-(self._vel_envelope[j] / VEL_GATE_SIGMA) ** 2)
         
         # --- Apply Rate Limiting to Raw Dynamic Torques ---
-        # Skip rate limiting on refinement-loop calls: those torques are only used
-        # for contact discontinuity detection, not output. Running the rate limiter
-        # would corrupt its temporal state before the final (output) call.
-        if skip_rate_limiting:
+        if dyn_override_world is not None:
+            # CoM-based dynamic torque provided — convert from world to local frame
+            # and skip I×α rate limiting and velocity gate entirely.
+            n_override = min(self.target_joint_count, dyn_override_world.shape[1])
+            t_dyn_limited = np.zeros_like(t_dyn_raw)
+            parents_list = self._get_hierarchy()
+            for j in range(n_override):
+                parent_idx = parents_list[j] if j < len(parents_list) else -1
+                if parent_idx >= 0 and parent_idx < len(global_rot_invs):
+                    t_dyn_limited[:, j, :] = global_rot_invs[parent_idx].apply(
+                        dyn_override_world[:, j, :].reshape(-1, 3)
+                    ).reshape(F, 3)
+                else:
+                    t_dyn_limited[:, j, :] = dyn_override_world[:, j, :]
+        elif skip_rate_limiting:
             t_dyn_limited = t_dyn_raw.copy()
         else:
             t_dyn_limited = self._apply_torque_rate_limiting(t_dyn_raw, options)
@@ -5051,119 +5055,82 @@ class SMPLProcessor:
             # Suppress dynamic torque when angular velocity is near-zero (stationary
             # joints). Applied AFTER rate limiting so the rate limiter can ramp up
             # properly during motion onset from the raw signal.
-            if vel_gate is not None:
+            if vel_gate is not None and getattr(options, 'enable_velocity_gate', True):
                 for j in range(min(self.target_joint_count, t_dyn_limited.shape[1])):
                     t_dyn_limited[:, j, :] *= vel_gate[j]
         
         # --- PASS 2: Compute Net Torques, Passive, and Efforts using Limited Dynamic ---
-        for j in range(self.target_joint_count):
-            name = self.joint_names[j]
-            
-            # Use rate-limited dynamic torque
-            torque_dyn = t_dyn_limited[:, j, :]
-            t_dyn_vecs[:, j, :] = torque_dyn
-            
-            torque_grav = t_grav_vecs[:, j, :]
-            torque_contact = t_contact_vecs[:, j, :]
-            
-            # Frame Correction:
-            # torque_dyn is LOCAL/PARENT Frame (derived from Local AA).
-            # torque_grav is WORLD Frame.
-            # We must convert Gravity to Local before subtracting.
-            
-            # --- Transform to Parent Frame ---
-            parent_idx = parents[j]
-            if parent_idx != -1:
-                # Inverse of Parent Rotation (Cached)
-                r_parent_inv = global_rot_invs[parent_idx]
-                
-                # Transform Gravity to Local
-                t_grav_local = r_parent_inv.apply(torque_grav)
-                t_contact_local = r_parent_inv.apply(torque_contact)
-                
-                # Dynamic is already Local
-                t_dyn_local = torque_dyn
-                
-                # Net Local
-                t_net_local = t_dyn_local - t_grav_local - t_contact_local
-                
+        # Vectorized world-to-local frame transform using cached numpy rotation matrices
+        parents_arr = np.array(self._get_hierarchy())
+        
+        # Build parent inverse rotation matrices as numpy arrays (cached in _frame_cache)
+        if 'parent_inv_mats' not in _frame_cache:
+            # global_rots is (F, J, 3, 3) or list of scipy Rotation
+            if hasattr(global_rots, 'shape') and global_rots.ndim == 4:
+                # Direct numpy rotation matrices
+                parent_inv_mats = np.zeros((F, self.target_joint_count, 3, 3))
+                for j in range(self.target_joint_count):
+                    p = parents_arr[j]
+                    if p >= 0 and p < global_rots.shape[1]:
+                        parent_inv_mats[:, j] = np.transpose(global_rots[:, p], (0, 2, 1))
+                    else:
+                        parent_inv_mats[:, j] = np.eye(3)
             else:
-                # Root: Parent is World (Identity)
-                t_net_local = torque_dyn - torque_grav - torque_contact
-                t_dyn_local = torque_dyn
-                t_grav_local = torque_grav
-                t_contact_local = torque_contact
-            
-            # Store transformed vectors for debug outputs if needed?
-            # t_dyn_vecs is pre-filled with torque_dyn (Local)
-            # t_grav_vecs is pre-filled with World.
-            # We might want to return consistent frames? 
-            # The return dict has 'torques_vec' (Net Local). 
-            # 'torques_dyn_vec' (Currently Local).
-            # 'torques_grav_vec' (Currently World).
-            # Ideally debugging vectors should be in the same frame as Net?
-            # But changing return types might break other viz. 
-            # Let's keep t_grav_vecs (World) in the output for now, as it's "Raw Gravity".
-            
-            # --- Passive Limits ---
-            t_passive_local = np.zeros_like(t_net_local)
-            if options.enable_passive_limits:
-                 # Current local pose for this joint
-                 curr_pose_aa = pose_data_aa[:, j, :]
-                 t_passive_local = self._compute_passive_torque(name, t_net_local, curr_pose_aa)
-                 
-                 # --- OPTIMAL PASSIVE SUPPORT (Minimizing Active Effort) ---
-                 # Treat the calculated Passive Torque (t_passive_local) as a "Capacity".
-                 # The structure CAN provide up to this amount, but only if needed to resist Net Load.
-                 # It never pushes "actively" against the load (unless bouncing, which we ignore for effort).
-                 # P_effective = clip(Net, min(0, P_model), max(0, P_model)).
-                 
-                 # Components where P_model is Negative (Extension Stop, Gravity Support, etc)
-                 mask_neg = t_passive_local < 0
-                 # For these components, P_eff is in [P_model, 0].
-                 # We clip Net to this range.
-                 t_passive_local[mask_neg] = np.clip(t_net_local[mask_neg], t_passive_local[mask_neg], 0)
-                 
-                 # Components where P_model is Positive (Flexion Stop, etc)
-                 mask_pos = t_passive_local >= 0
-                 # For these components, P_eff is in [0, P_model].
-                 t_passive_local[mask_pos] = np.clip(t_net_local[mask_pos], 0, t_passive_local[mask_pos])
-                 
-                 # Result: 
-                 # If Net is 0 (Sideways): P_eff = clip(0, [P,0]) = 0. Active = 0.
-                 # If Net opposes P: e.g. Net=+2, P=-6. P_eff = clip(2, [-6,0]) = 0. Active = +2.
-                 # If Net matches P (within): Net=-2, P=-6. P_eff = clip(-2, [-6,0]) = -2. Active = 0.
-                 # If Net exceeds P: Net=-10, P=-6. P_eff = clip(-10, [-6,0]) = -6. Active = -4.
-            
-            # Active Active (Net - Passive)
-            t_active_local = t_net_local - t_passive_local
-            
-            torques_vec[:, j, :] = t_active_local
-            
-            # --- Effort Calculation (Normalized) ---
-            # Max torque for this joint (Vector)
-            t_max_vec = self.max_torque_array[j] # (3,)
-            
-            # Use abs(torque) / vector_limit elementwise
-            # Add epsilon to prevent div by zero
-            denom = t_max_vec + 1e-6
-            
-            eff_net_vec = np.abs(t_active_local) / denom # (F, 3) 
-            eff_dyn_vec = np.abs(t_dyn_local) / denom
-            eff_grav_vec = np.abs(t_grav_local) / denom
-            
-            # Scalar Effort: L2 Norm of the normalized vector
-            # If t_max was isotropic (L), this is norm(t/L) = norm(t)/L. Compatible.
-            efforts_net[:, j] = np.linalg.norm(eff_net_vec, axis=1)
-            efforts_dyn[:, j] = np.linalg.norm(eff_dyn_vec, axis=1)
-            efforts_grav[:, j] = np.linalg.norm(eff_grav_vec, axis=1)
-            
-            # Store vectors (in Local Frame?)
-            # t_net_vecs was accumulating t_net_local (which is post-passive subtraction: Active)
-            t_net_vecs[:, j, :] = t_active_local
-            t_dyn_vecs[:, j, :] = t_dyn_local
-            t_grav_vecs[:, j, :] = t_grav_local # Updated: Now Local Frame (Summable)
-            t_passive_vecs[:, j, :] = t_passive_local
+                # scipy Rotation objects
+                parent_inv_mats = np.zeros((F, self.target_joint_count, 3, 3))
+                for j in range(self.target_joint_count):
+                    p = parents_arr[j]
+                    if p >= 0:
+                        parent_inv_mats[:, j] = global_rot_invs[p].as_matrix().reshape(F, 3, 3)
+                    else:
+                        parent_inv_mats[:, j] = np.eye(3)
+            _frame_cache['parent_inv_mats'] = parent_inv_mats
+        
+        parent_inv_mats = _frame_cache['parent_inv_mats']
+        
+        # Batch transform gravity and contact to local frame: (F, J, 3, 3) @ (F, J, 3, 1) -> (F, J, 3)
+        t_grav_local_all = np.einsum('fjik,fjk->fji', parent_inv_mats, t_grav_vecs[:, :self.target_joint_count])
+        t_contact_local_all = np.einsum('fjik,fjk->fji', parent_inv_mats, t_contact_vecs[:, :self.target_joint_count])
+        
+        # Dynamic is already in local frame
+        t_dyn_vecs[:, :self.target_joint_count] = t_dyn_limited[:, :self.target_joint_count]
+        
+        # Net local = dyn - grav_local - contact_local
+        t_net_all = t_dyn_limited[:, :self.target_joint_count] - t_grav_local_all - t_contact_local_all
+        
+        # Store local-frame gravity for output consistency
+        t_grav_vecs[:, :self.target_joint_count] = t_grav_local_all
+        
+        # Passive limits (per-joint, can't easily vectorize due to name-based lookup)
+        t_passive_all = np.zeros_like(t_net_all)
+        if options.enable_passive_limits:
+            for j in range(self.target_joint_count):
+                name = self.joint_names[j]
+                curr_pose_aa = pose_data_aa[:, j, :]
+                t_p = self._compute_passive_torque(name, t_net_all[:, j], curr_pose_aa)
+                
+                # Optimal passive support clipping
+                mask_neg = t_p < 0
+                t_p[mask_neg] = np.clip(t_net_all[:, j][mask_neg], t_p[mask_neg], 0)
+                mask_pos = t_p >= 0
+                t_p[mask_pos] = np.clip(t_net_all[:, j][mask_pos], 0, t_p[mask_pos])
+                t_passive_all[:, j] = t_p
+        
+        t_passive_vecs[:, :self.target_joint_count] = t_passive_all
+        
+        # Active = net - passive
+        t_active_all = t_net_all - t_passive_all
+        torques_vec[:, :self.target_joint_count] = t_active_all
+        
+        # Efforts (vectorized over all joints)
+        max_torque = self.max_torque_array[:self.target_joint_count]  # (J, 3)
+        denom = max_torque + 1e-6  # (J, 3)
+        efforts_net[:, :self.target_joint_count] = np.linalg.norm(
+            np.abs(t_active_all) / denom[np.newaxis, :, :], axis=-1)
+        efforts_dyn[:, :self.target_joint_count] = np.linalg.norm(
+            np.abs(t_dyn_limited[:, :self.target_joint_count]) / denom[np.newaxis, :, :], axis=-1)
+        efforts_grav[:, :self.target_joint_count] = np.linalg.norm(
+            np.abs(t_grav_local_all) / denom[np.newaxis, :, :], axis=-1)
 
         return torques_vec, inertias, efforts_net, efforts_dyn, efforts_grav, t_dyn_vecs, t_grav_vecs, t_passive_vecs
 
@@ -5543,9 +5510,8 @@ class SMPLProcessor:
         _frame_cache = {}
         
         working_probs = contact_probs_fusion.copy()
-        max_refine_iters = max(1, 1 + options.contact_refinement_iterations)
         
-        for refine_iter in range(max_refine_iters):
+        if True:  # Single pass (refinement loop removed)
             # --- Weighted Mass Distribution (for RNE GRF) ---
             self.contact_pressure = np.zeros((F, world_pos.shape[1]))
             
@@ -5741,32 +5707,12 @@ class SMPLProcessor:
             # --- Stability Pressure Override ---
             # When using inverse statics, the stability method computes
             # physics-based pressure directly. Replace the probability-
-            # derived pressure entirely — consensus pressure uses p²
-            # weighting and height penalties, which contradict the
-            # physics-only principle of the stability method.
+            # derived pressure entirely.
             if options.contact_method == 'stability':
                 stab_press = getattr(self, '_stability_computed_pressure', None)
                 if stab_press is not None and len(stab_press) == self.contact_pressure.shape[1]:
                     for f in range(F):
                         self.contact_pressure[f] = stab_press
-            
-            # --- Joint Torque & Effort Calculation ---
-            torques_vec, inertias, efforts_net, efforts_dyn, efforts_grav, t_dyn_vecs, t_grav_vecs, t_passive_vecs = self._compute_joint_torques(
-                F, ang_acc_for_effort, world_pos, parents, global_rots,
-                pose_data_aa, tips, options, contact_forces=None,
-                _frame_cache=_frame_cache, skip_rate_limiting=True
-            )
-            
-            # --- Refinement check (skip on last iteration) ---
-            if refine_iter < max_refine_iters - 1 and options.contact_refinement_iterations > 0:
-                refined = self._refine_contacts_from_torque_discontinuity(
-                    working_probs, torques_vec, world_pos, parents, options, tips
-                )
-                
-                if np.allclose(refined, working_probs, atol=0.005):
-                    break
-                
-                working_probs = refined
         
         # --- Contact Pressure Smoothing (Asymmetric + Rate Clamp) ---
         # Runs OUTSIDE the refinement loop so it always applies.
@@ -5810,50 +5756,18 @@ class SMPLProcessor:
             else:
                 self.prev_contact_pressure_smooth[f] = smoothed
         
+        # --- Compute CoM dynamic torque (before final torque call) ---
+        t_dyn_com_world = None
+        if options.world_frame_dynamics:
+            t_dyn_com_world = self._compute_com_dynamic_torque(F, world_pos, global_rots, tips, options)
+        
         # Recompute torques with the smoothed contact pressure
         torques_vec, inertias, efforts_net, efforts_dyn, efforts_grav, t_dyn_vecs, t_grav_vecs, t_passive_vecs = self._compute_joint_torques(
             F, ang_acc_for_effort, world_pos, parents, global_rots,
             pose_data_aa, tips, options, contact_forces=None,
-            _frame_cache=_frame_cache, skip_rate_limiting=False
+            _frame_cache=_frame_cache, skip_rate_limiting=False,
+            dyn_override_world=t_dyn_com_world
         )
-        
-        # --- CoM-based dynamic torque override ---
-        # When world_frame_dynamics is enabled, replace I×α dynamic torque
-        # with τ = r × (m × a_com) from subtree center-of-mass acceleration.
-        # This naturally gives zero torque when a limb's CoM is stationary
-        # (e.g. arms hanging during torso rotation), regardless of joint rotation.
-        if options.world_frame_dynamics:
-            t_dyn_com = self._compute_com_dynamic_torque(F, world_pos, global_rots, tips, options)
-            n_j = min(t_dyn_vecs.shape[1], t_dyn_com.shape[1])
-            
-            # Convert world-frame CoM torques to local (parent) frame
-            # to match the frame used by _compute_joint_torques output.
-            parents_list = self._get_hierarchy()
-            global_rot_invs = _frame_cache.get('global_rot_invs', None)
-            if global_rot_invs is None:
-                from scipy.spatial.transform import Rotation as R_scipy
-                global_rot_invs = [R_scipy.from_matrix(global_rots[0, j]).inv()
-                                   for j in range(global_rots.shape[1])]
-            
-            for j in range(n_j):
-                parent_idx = parents_list[j] if j < len(parents_list) else -1
-                if parent_idx >= 0 and parent_idx < len(global_rot_invs):
-                    t_dyn_vecs[:, j, :] = global_rot_invs[parent_idx].apply(
-                        t_dyn_com[:, j, :].reshape(-1, 3)
-                    ).reshape(F, 3)
-                else:
-                    # Root joint: parent is world (identity)
-                    t_dyn_vecs[:, j, :] = t_dyn_com[:, j, :]
-            
-            # Recompute net torque from components so decomposition is exact:
-            # torques_vec = t_dyn + t_grav + t_passive  (active = net - passive already done,
-            #   but we need to recompute since dyn changed)
-            # The RNE computed: active = dyn - grav - contact - passive
-            # With world_frame_dynamics, we replaced dyn, so recompute:
-            # active = new_dyn - grav - passive  (contact_local is zero since contact_forces=None)
-            torques_vec[:, :n_j, :] = (t_dyn_vecs[:, :n_j, :]
-                                        - t_grav_vecs[:, :n_j, :]
-                                        - t_passive_vecs[:, :n_j, :])
         
         # --- Contact Torque KF Smoothing ---
         # Smooth only the contact torque component to preserve dynamic fidelity.
