@@ -1309,14 +1309,15 @@ class App:
                     self.hovered_item.node.increment_widget(self.hovered_item)
                     if self.hovered_item.callback is not None:
                         self.hovered_item.callback_because_edit()
-        if not handled and self.not_focussed_on_widget():
-            if dpg.does_item_exist(self.active_widget):
-                widget = dpg.get_item_user_data(self.active_widget)
-                if widget is not None:
-                    if widget.node is not None:
-                        widget.node.increment_widget(widget)
-                        if widget.callback is not None:
-                            widget.callback_because_edit()
+        if not handled:
+            if not self.not_focussed_on_widget():
+                if dpg.does_item_exist(self.active_widget):
+                    widget = dpg.get_item_user_data(self.active_widget)
+                    if widget is not None:
+                        if widget.node is not None:
+                            widget.node.increment_widget(widget)
+                            if widget.callback is not None:
+                                widget.callback_because_edit()
 
     def create_gui(self):
         pass
@@ -1331,14 +1332,15 @@ class App:
                     self.hovered_item.node.decrement_widget(self.hovered_item)
                     if self.hovered_item.callback is not None:
                         self.hovered_item.callback_because_edit()
-        if not handled and self.not_focussed_on_widget():
-            if dpg.does_item_exist(self.active_widget):
-                widget = dpg.get_item_user_data(self.active_widget)
-                if widget is not None:
-                    if widget.node is not None:
-                        widget.node.decrement_widget(widget)
-                        if widget.callback is not None:
-                            widget.callback_because_edit()
+        if not handled:
+            if not self.not_focussed_on_widget():
+                if dpg.does_item_exist(self.active_widget):
+                    widget = dpg.get_item_user_data(self.active_widget)
+                    if widget is not None:
+                        if widget.node is not None:
+                            widget.node.decrement_widget(widget)
+                            if widget.callback is not None:
+                                widget.callback_because_edit()
 
 
     def new_handler(self, name=None):

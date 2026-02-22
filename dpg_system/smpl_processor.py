@@ -339,13 +339,17 @@ class SMPLProcessingOptions:
     floor_tolerance: float = 0.15
     heel_toe_bias: float = 0.0
     enable_impact_mitigation: bool = True
-    contact_method: str = 'fusion'  # 'fusion', 'com_driven', or 'consensus'
+    contact_method: str = 'fusion'  # 'fusion', 'stability', 'com_driven', or 'consensus'
     contact_refinement_iterations: int = 1  # Torque-feedback refinement passes (0=disabled)
     
     # --- Torque Rate Limiting ---
     enable_rate_limiting: bool = True
     rate_limit_strength: float = 1.0  # Multiplier for per-joint rate limits
+    enable_jitter_damping: bool = True  # Pass 4: sign-flip oscillation damping
     enable_kf_smoothing: bool = True  # SmartClampKF filter for dynamic torque
+    kf_responsiveness: float = 10.0   # How quickly KF tracks changes (higher = faster)
+    kf_smoothness: float = 1.0        # Process noise (higher = trusts new data more)
+    kf_clamp_radius: float = 15.0     # Max innovation per frame (Nm)
     
     # --- World-Frame Dynamics ---
     world_frame_dynamics: bool = False  # CoM-based dynamic torque (off by default for A/B comparison)
@@ -1244,6 +1248,343 @@ class SMPLProcessor:
             contact_probs[f, j] = self.prob_contact_probs_fusion[j]
             
         return contact_probs
+
+    def _compute_probabilistic_contacts_stability(self, F, J, world_pos, options):
+        """Dynamics-aware inverse statics contact determination.
+        
+        Uses the consensus method as a base prior for contact *candidates*,
+        then determines contact *pressure* via inverse statics:
+        
+        1. F_required = M × (a_com - g)  →  how much support is needed
+        2. Candidate contacts from consensus (prob > threshold)
+        3. Partition F_required among candidates using inverse-distance
+           from CoM and height proximity to floor
+        4. Consolidate toes into feet (no toe rotation measured)
+        5. Normalize total pressure to body_mass × support_fraction
+        6. Store computed pressure and return boosted probabilities
+        
+        Physics (CoM dynamics) determines whether contacts are needed.
+        Probability is only used for candidate selection.
+        Apparent gravity is handled separately in _compute_com_for_zmp.
+        """
+        # Step 1: Get consensus probabilities as candidate detector
+        consensus_probs = self._compute_probabilistic_contacts_consensus(
+            F, J, world_pos, options
+        )
+        
+        # Axis setup
+        if options.input_up_axis == 'Y':
+            y_dim = 1
+            plane_dims = [0, 2]
+        else:
+            y_dim = 2
+            plane_dims = [0, 1]
+        
+        floor_height = options.floor_height
+        g_mag = 9.81
+        total_mass = self.total_mass_kg
+        
+        # Contact candidate joint indices
+        # Toes (24, 25) are EXCLUDED — consolidated into feet (10, 11)
+        # since we don't measure toe rotation. Heels remain separate
+        # because foot/heel distribution affects ankle torque.
+        contact_joints = [7, 8, 10, 11]  # L/R ankles and feet
+        for vi in [28, 29]:  # heels only (no toes)
+            if vi < J:
+                contact_joints.append(vi)
+        # Hands for crawling/all-fours
+        if J > 21:
+            contact_joints.extend([20, 21])
+        
+        # Toe-to-foot consolidation map
+        toe_to_foot = {}
+        if J > 24: toe_to_foot[24] = 10  # L_toe → L_foot
+        if J > 25: toe_to_foot[25] = 11  # R_toe → R_foot
+        
+        # Need previous frame data
+        prev_com = getattr(self, '_prev_com_for_stability', None)
+        com_acc = getattr(self, 'prob_prev_com_acc', None)
+        
+        if prev_com is None or com_acc is None:
+            return consensus_probs
+        
+        if prev_com.ndim > 1:
+            com = prev_com[0]
+        else:
+            com = prev_com
+        
+        # Step 2: Compute required total support force
+        # F_required = M × (a_com - g)
+        g_vec = np.zeros(3)
+        g_vec[y_dim] = -g_mag
+        
+        F_required = total_mass * (com_acc - g_vec)  # (3,)
+        F_support_up = F_required[y_dim]  # Positive = upward = contacts needed
+        
+        # Raw support fraction: 0 = freefall, 1 = static/grounded
+        # Capped at 1.0 because landing dynamics (>1× body weight) are
+        # already handled by apparent gravity in _compute_com_for_zmp
+        support_fraction = np.clip(F_support_up / (total_mass * g_mag), 0.0, 1.0)
+        
+        # --- Airborne detection for adaptive alpha ---
+        # Check minimum joint height across all contact candidates
+        min_joint_height = float('inf')
+        for j in contact_joints:
+            if j >= J:
+                continue
+            if hasattr(self, 'temp_tips') and j in self.temp_tips:
+                h = self.temp_tips[j][0, y_dim] if self.temp_tips[j].ndim > 1 else self.temp_tips[j][y_dim]
+            else:
+                h = world_pos[0, j, y_dim] if world_pos.ndim > 2 else world_pos[j, y_dim]
+            min_joint_height = min(min_joint_height, h - floor_height)
+        
+        # Also check toe heights (even though toes are consolidated)
+        for toe_j in toe_to_foot:
+            if toe_j < J:
+                if hasattr(self, 'temp_tips') and toe_j in self.temp_tips:
+                    h = self.temp_tips[toe_j][0, y_dim] if self.temp_tips[toe_j].ndim > 1 else self.temp_tips[toe_j][y_dim]
+                else:
+                    h = world_pos[0, toe_j, y_dim]
+                min_joint_height = min(min_joint_height, h - floor_height)
+        
+        AIRBORNE_HEIGHT_THRESH = 0.08  # 8cm — if ALL joints above this, likely airborne
+        
+        # Adaptive alpha: fast when airborne indicators present, slow when grounded
+        airborne_indicators = 0.0
+        if support_fraction < 0.3:
+            airborne_indicators += 0.5  # Physics says low support
+        if min_joint_height > AIRBORNE_HEIGHT_THRESH:
+            airborne_indicators += 0.5  # All joints above floor
+        # Hard override: if literally nothing is near the floor, force airborne
+        if min_joint_height > 0.20:
+            airborne_indicators = 1.0
+        
+        # Alpha: 0.15 (grounded, stable) → 0.8 (airborne, responsive)
+        alpha_sf = 0.15 + 0.65 * airborne_indicators
+        
+        # Init smoothed support fraction
+        if not hasattr(self, '_stability_support_frac') or self._stability_support_frac is None:
+            self._stability_support_frac = support_fraction
+        self._stability_support_frac = (
+            self._stability_support_frac * (1 - alpha_sf) + support_fraction * alpha_sf
+        )
+        smoothed_support = self._stability_support_frac
+        
+        if smoothed_support < 0.05:
+            # Airborne — decay existing pressure and return
+            if hasattr(self, '_stability_pressure') and self._stability_pressure is not None:
+                self._stability_pressure *= 0.7  # Fast decay
+            self._stability_computed_pressure = getattr(self, '_stability_pressure', np.zeros(J))
+            return consensus_probs
+        
+        # Init smoothed contact pressure state
+        if not hasattr(self, '_stability_pressure') or self._stability_pressure is None or len(self._stability_pressure) != J:
+            self._stability_pressure = np.zeros(J)
+        
+        # --- Horizontal velocity EMA (for candidate exclusion) ---
+        # A joint with sustained horizontal velocity can't be in floor contact.
+        # EMA filters out transient mocap drift spikes (planted foot drift can
+        # peak at ~1 m/s but is random; swinging is sustained at 3+ m/s).
+        HZ_THRESH = 0.2     # m/s — safe with EMA (planted median ≈ 0.04)
+        HZ_EMA_ATTACK = 0.7  # Fast attack — track rising velocity quickly
+        HZ_EMA_DECAY = 0.9   # Faster decay — release quickly on landing
+        
+        if not hasattr(self, '_stability_hz_vel_ema') or self._stability_hz_vel_ema is None or len(self._stability_hz_vel_ema) != J:
+            self._stability_hz_vel_ema = np.zeros(J)
+        
+        vel = getattr(self, 'prob_smoothed_vel', None)
+        if vel is not None:
+            for j in contact_joints:
+                if j < J and j < vel.shape[0]:
+                    v_hz = np.sqrt(vel[j, plane_dims[0]]**2 + vel[j, plane_dims[1]]**2)
+                    # Asymmetric EMA: fast attack, faster decay
+                    if v_hz > self._stability_hz_vel_ema[j]:
+                        alpha = HZ_EMA_ATTACK
+                    else:
+                        alpha = HZ_EMA_DECAY
+                    self._stability_hz_vel_ema[j] = (
+                        self._stability_hz_vel_ema[j] * (1 - alpha) +
+                        v_hz * alpha
+                    )
+        
+        # CoM horizontal position (from previous frame, same as used in inverse statics)
+        com_hz = com[plane_dims]
+        
+        for f in range(F):
+            # Step 3: Identify candidate contacts
+            CANDIDATE_THRESH = 0.01
+            candidates = []
+            for j in contact_joints:
+                if j >= J:
+                    continue
+                if consensus_probs[f, j] < CANDIDATE_THRESH:
+                    continue
+                # Get position
+                if hasattr(self, 'temp_tips') and j in self.temp_tips:
+                    pos = self.temp_tips[j][f]
+                else:
+                    pos = world_pos[f, j]
+                h = pos[y_dim] - floor_height
+                if h > 0.35:
+                    continue
+                candidates.append({
+                    'j': j,
+                    'pos': pos,
+                    'pos_hz': pos[plane_dims],
+                    'h': h,
+                })
+            
+            # Also check toes as candidate evidence for their parent foot
+            # If a toe has consensus prob, add the foot as candidate if not already
+            foot_in_candidates = {c['j'] for c in candidates}
+            for toe_j, foot_j in toe_to_foot.items():
+                if toe_j >= J or foot_j >= J:
+                    continue
+                if foot_j in foot_in_candidates:
+                    continue  # Already there
+                if consensus_probs[f, toe_j] < CANDIDATE_THRESH:
+                    continue
+                # Toe detected contact → add foot as candidate
+                if hasattr(self, 'temp_tips') and foot_j in self.temp_tips:
+                    pos = self.temp_tips[foot_j][f]
+                else:
+                    pos = world_pos[f, foot_j]
+                h = pos[y_dim] - floor_height
+                if h > 0.35:
+                    continue
+                candidates.append({
+                    'j': foot_j,
+                    'pos': pos,
+                    'pos_hz': pos[plane_dims],
+                    'h': h,
+                })
+                foot_in_candidates.add(foot_j)
+            
+            if not candidates:
+                continue
+            
+            # Step 4: Partition body mass among candidates
+            com_hz = com[plane_dims]
+            
+            dists = np.array([np.linalg.norm(c['pos_hz'] - com_hz) for c in candidates])
+            
+            SIGMA_DIST = 0.15
+            inv_dist_weights = 1.0 / (dists + SIGMA_DIST)
+            
+            height_factors = np.array([
+                np.exp(-(max(0, c['h']) / 0.15)**2) for c in candidates
+            ])
+            
+            # Pure geometry — no probability bias
+            combined = inv_dist_weights * height_factors
+            w_sum = np.sum(combined)
+            
+            if w_sum < 1e-8:
+                continue
+            
+            mass_fractions = combined / w_sum
+            
+            # Step 5: Compute raw pressure with horizontal velocity attenuation
+            # Velocity and CoM distance interact multiplicatively:
+            # - High velocity + far from CoM → strong attenuation (swinging)
+            # - Low velocity + near CoM → minimal attenuation (planted)
+            # - High velocity + near CoM → moderate (mid-swing or drift)
+            # Velocity is squared to suppress drift-level speeds (~1 m/s)
+            # while strongly attenuating at walking/swinging speeds (3+ m/s).
+            HZ_REF = 3.0     # m/s — reference velocity (~walking speed)
+            COM_REF = 0.3     # m — reference CoM distance (~stance width)
+            
+            target_pressure = np.zeros(J)
+            for idx, c in enumerate(candidates):
+                target_pressure[c['j']] = mass_fractions[idx] * total_mass * smoothed_support
+            
+            # Normalize: total equals total_mass × support_fraction
+            raw_total = np.sum(target_pressure)
+            desired_total = total_mass * smoothed_support
+            if raw_total > 1e-6:
+                target_pressure *= (desired_total / raw_total)
+            
+            # Apply horizontal velocity attenuation AFTER normalization.
+            # This reduction represents load not on the floor (swinging limb
+            # mass), so the total decreases — that load is airborne.
+            for idx, c in enumerate(candidates):
+                j = c['j']
+                hz_v = self._stability_hz_vel_ema[j] if j < len(self._stability_hz_vel_ema) else 0.0
+                if hz_v > 0.01:
+                    com_d = dists[idx]
+                    velocity_signal = (hz_v / HZ_REF) ** 2
+                    distance_signal = com_d / COM_REF
+                    interaction = velocity_signal * distance_signal
+                    attenuation = 1.0 / (1.0 + interaction)
+                    target_pressure[j] *= attenuation
+            
+            # Step 6: Smooth pressure with adaptive alpha
+            # Three signals drive fast decay:
+            #   1. Vertical velocity — joint rising = losing contact
+            #   2. Non-candidate — joint dropped out of candidacy
+            #   3. Horizontal velocity × CoM distance — same multiplicative
+            #      interaction as Step 5, draining old accumulated pressure
+            
+            ALPHA_SLOW = 0.15   # Grounded, near CoM — smooth
+            ALPHA_FAST = 1.0    # Full evidence — instant tracking, no residual
+            VEL_THRESH = 0.05   # m/s — vertical velocity above which we speed up
+            VEL_SCALE = 1.5     # m/s — vertical velocity at which alpha is fully fast
+            
+            vel = getattr(self, 'prob_smoothed_vel', None)
+            
+            # Build per-joint CoM distance map from candidates
+            candidate_com_dist = {}
+            for c in candidates:
+                candidate_com_dist[c['j']] = np.linalg.norm(c['pos_hz'] - com_hz)
+            
+            for j in range(J):
+                if target_pressure[j] > 0 or self._stability_pressure[j] > 0:
+                    # --- Signal 1: Vertical velocity ---
+                    if vel is not None and j < vel.shape[0]:
+                        v_up = vel[j, y_dim]  # Positive = rising
+                    else:
+                        v_up = 0.0
+                    
+                    vel_factor = 0.0
+                    if v_up > VEL_THRESH:
+                        vel_factor = min(1.0, (v_up - VEL_THRESH) / VEL_SCALE)
+                    
+                    # --- Signal 2: Non-candidate with lingering pressure ---
+                    orphan_factor = 0.0
+                    if self._stability_pressure[j] > 0 and target_pressure[j] == 0:
+                        orphan_factor = 1.0
+                    
+                    # --- Signal 3: Horizontal velocity × CoM distance ---
+                    # Same multiplicative interaction as target_pressure
+                    # attenuation: convert to a 0→1 release factor
+                    hz_com_factor = 0.0
+                    hz_v = self._stability_hz_vel_ema[j] if j < len(self._stability_hz_vel_ema) else 0.0
+                    if hz_v > 0.01:
+                        com_d = candidate_com_dist.get(j, 0.5)  # default ~stance width for non-candidates
+                        interaction = ((hz_v / HZ_REF) ** 2) * (com_d / COM_REF)
+                        hz_com_factor = interaction / (1.0 + interaction)
+                    
+                    # Combine: any signal can trigger fast decay
+                    release_factor = max(vel_factor, orphan_factor, hz_com_factor)
+                    alpha_j = ALPHA_SLOW + (ALPHA_FAST - ALPHA_SLOW) * release_factor
+                    
+                    self._stability_pressure[j] = (
+                        self._stability_pressure[j] * (1 - alpha_j) +
+                        target_pressure[j] * alpha_j
+                    )
+            
+            # Step 7: Convert pressure to probabilities for consensus override
+            for idx, c in enumerate(candidates):
+                j = c['j']
+                computed_mass = self._stability_pressure[j]
+                if computed_mass > 0.5:
+                    boost_prob = min(0.95, computed_mass / (total_mass * 0.3))
+                    consensus_probs[f, j] = max(consensus_probs[f, j], boost_prob)
+        
+        # Store computed pressure for downstream override
+        self._stability_computed_pressure = self._stability_pressure.copy()
+        
+        return consensus_probs
 
     def _compute_probabilistic_contacts_com_driven(self, F, J, world_pos, floor_height, options):
         """
@@ -4838,11 +5179,6 @@ class SMPLProcessor:
         Returns:
             t_dyn_limited (F, J, 3): Rate-limited dynamic torque vectors.
         """
-        if not options.enable_rate_limiting:
-            # Update state but don't limit
-            self.prev_dynamic_torque = t_dyn_vecs[-1].copy() if t_dyn_vecs.shape[0] > 0 else t_dyn_vecs.copy()
-            return t_dyn_vecs
-        
         F = t_dyn_vecs.shape[0]
         t_dyn_limited = t_dyn_vecs.copy()
         
@@ -4854,25 +5190,12 @@ class SMPLProcessor:
         if self.prev_dynamic_torque.shape[0] != t_dyn_vecs.shape[1]:
             self.prev_dynamic_torque = np.zeros((t_dyn_vecs.shape[1], 3))
         
-        # Ensure rate limits exist
-        if not hasattr(self, 'torque_rate_limits') or self.torque_rate_limits is None:
-            self.torque_rate_limits = self._compute_torque_rate_limits()
+        num_joints = min(self.target_joint_count, t_dyn_vecs.shape[1])
         
-        # Scale rate limits by framerate and strength parameter
-        fps_scale = self.framerate / 60.0
-        strength = max(0.01, options.rate_limit_strength)
-        effective_limits = (self.torque_rate_limits / fps_scale) * strength  # (J,)
-        
-        # Spike/neighbor thresholds
-        SPIKE_MULTIPLIER = 1.5
-        NEIGHBOR_MULTIPLIER = 1.0
-        
-        # Jitter detection parameters
+        # Jitter detection parameters (needed for state init regardless)
         JITTER_WINDOW = 8
         JITTER_THRESHOLD = 0.3
         JITTER_DAMPING = 0.3
-        
-        num_joints = min(self.target_joint_count, t_dyn_vecs.shape[1])
         
         # Initialize jitter detection state if needed
         if self.torque_sign_history is None:
@@ -4883,131 +5206,137 @@ class SMPLProcessor:
             self.torque_sign_history = np.zeros((JITTER_WINDOW, num_joints, 3))
             self.jitter_history_idx = 0
         
-        # Pre-build parent/children arrays for vectorized neighbor propagation
-        parents_arr = np.array(self._get_hierarchy()[:num_joints])  # (J,)
-        children_list = [[] for _ in range(num_joints)]
-        for j in range(num_joints):
-            p = parents_arr[j]
-            if 0 <= p < num_joints:
-                children_list[p].append(j)
-        
-        # Pre-compute effective limits reshaped for broadcasting: (J, 1) for per-axis clip
-        eff_lim_col = effective_limits[:num_joints, np.newaxis]  # (J, 1)
-        spike_thresholds = effective_limits[:num_joints] * SPIKE_MULTIPLIER  # (J,)
-        neighbor_thresholds = effective_limits[:num_joints] * NEIGHBOR_MULTIPLIER  # (J,)
+        # Rate limiting setup (only needed if rate limiting is on)
+        if options.enable_rate_limiting:
+            if not hasattr(self, 'torque_rate_limits') or self.torque_rate_limits is None:
+                self.torque_rate_limits = self._compute_torque_rate_limits()
+            
+            fps_scale = self.framerate / 60.0
+            strength = max(0.01, options.rate_limit_strength)
+            effective_limits = (self.torque_rate_limits / fps_scale) * strength
+            
+            SPIKE_MULTIPLIER = 1.5
+            NEIGHBOR_MULTIPLIER = 1.0
+            
+            # Pre-build parent/children arrays for neighbor propagation
+            parents_arr = np.array(self._get_hierarchy()[:num_joints])
+            children_list = [[] for _ in range(num_joints)]
+            for j in range(num_joints):
+                p = parents_arr[j]
+                if 0 <= p < num_joints:
+                    children_list[p].append(j)
+            
+            eff_lim_col = effective_limits[:num_joints, np.newaxis]
+            spike_thresholds = effective_limits[:num_joints] * SPIKE_MULTIPLIER
+            neighbor_thresholds = effective_limits[:num_joints] * NEIGHBOR_MULTIPLIER
         
         for f in range(F):
-            curr_torque = t_dyn_vecs[f, :num_joints]  # (J, 3)
-            prev_torque = self.prev_dynamic_torque[:num_joints]  # (J, 3)
+            curr_torque = t_dyn_vecs[f, :num_joints]
+            prev_torque = self.prev_dynamic_torque[:num_joints]
             
-            # Vectorized delta computation
-            delta = curr_torque - prev_torque  # (J, 3)
-            delta_mags = np.linalg.norm(delta, axis=1)  # (J,)
-            curr_mags = np.linalg.norm(curr_torque, axis=1)  # (J,)
-            prev_mags = np.linalg.norm(prev_torque, axis=1)  # (J,)
+            n_spikes = 0
+            frame_rate_limits = 0
             
-            # --- PASS 1: Detect primary spikes (vectorized) ---
-            is_increasing = curr_mags > prev_mags  # (J,)
-            spike_mask = (delta_mags > spike_thresholds) & is_increasing  # (J,) bool
-            
-            # Accumulate noise stats for spikes
-            n_spikes = int(np.sum(spike_mask))
-            if n_spikes > 0:
-                spike_indices = np.where(spike_mask)[0]
-                excess = delta_mags[spike_mask] - spike_thresholds[spike_mask]  # (n_spikes,)
-                self.noise_stats.spike_severity += float(np.sum(excess))
-                self.noise_stats.joint_spike_counts[spike_indices] += 1
-                self.noise_stats.joint_spike_severity[spike_indices] += excess
-                max_excess = float(np.max(excess))
-                if max_excess > self.noise_stats.max_spike_severity:
-                    self.noise_stats.max_spike_severity = max_excess
-                self.noise_stats.spike_severity_list.extend(excess.tolist())
-            
-            # --- PASS 2: Propagate to neighbors (vectorized) ---
-            neighbor_mask = np.zeros(num_joints, dtype=bool)
-            if n_spikes > 0:
-                spike_indices = np.where(spike_mask)[0]
-                # Parents of spike joints
-                spike_parents = parents_arr[spike_indices]
-                valid_parents = spike_parents[(spike_parents >= 0) & (spike_parents < num_joints)]
-                if len(valid_parents) > 0:
-                    neighbor_mask[valid_parents] = True
-                # Children of spike joints
-                for j in spike_indices:
-                    for child in children_list[j]:
-                        neighbor_mask[child] = True
-                # Exclude primary spikes from neighbor set
-                neighbor_mask &= ~spike_mask
-            
-            # --- PASS 3: Apply suppression (vectorized) ---
-            # Default: vectorized rate-limited clip for ALL joints
-            clamped = prev_torque + np.clip(delta, -eff_lim_col, eff_lim_col)  # (J, 3)
-            
-            # Track rate limit clamps: where positive delta exceeded limit
-            exceeded_pos = delta > eff_lim_col  # (J, 3) bool
-            if np.any(exceeded_pos):
-                clamped_amounts = delta[exceeded_pos] - np.broadcast_to(eff_lim_col, delta.shape)[exceeded_pos]
-                self.noise_stats.rate_limit_severity += float(np.sum(clamped_amounts))
-                # Per-joint rate limit counts: count joints that had any axis clamped positively
-                joints_clamped = np.any(exceeded_pos, axis=1)  # (J,)
-                self.noise_stats.joint_rate_limit_counts[np.where(joints_clamped)[0]] += 1
-            
-            # Count rate limit events (number of joint-axis pairs clamped positively)
-            frame_rate_limits = int(np.sum(exceeded_pos))
-            
-            # Start with rate-limited values for all joints
-            result = clamped.copy()
-            
-            # Override: primary spikes get full suppression (hold at previous)
-            if n_spikes > 0:
-                result[spike_mask] = prev_torque[spike_mask]
-            
-            # Override: neighbors that exceed stricter threshold AND are increasing → suppress
-            if np.any(neighbor_mask):
-                neighbor_exceeded = (delta_mags > neighbor_thresholds) & is_increasing & neighbor_mask
-                result[neighbor_exceeded] = prev_torque[neighbor_exceeded]
-                # Neighbors that DON'T exceed threshold get normal rate limiting (already in result)
-            
-            t_dyn_limited[f, :num_joints] = result
+            if options.enable_rate_limiting:
+                # --- PASSES 1-3: Spike detection, neighbor propagation, rate clipping ---
+                delta = curr_torque - prev_torque
+                delta_mags = np.linalg.norm(delta, axis=1)
+                curr_mags = np.linalg.norm(curr_torque, axis=1)
+                prev_mags = np.linalg.norm(prev_torque, axis=1)
+                
+                # PASS 1: Detect primary spikes
+                is_increasing = curr_mags > prev_mags
+                spike_mask = (delta_mags > spike_thresholds) & is_increasing
+                
+                n_spikes = int(np.sum(spike_mask))
+                if n_spikes > 0:
+                    spike_indices = np.where(spike_mask)[0]
+                    excess = delta_mags[spike_mask] - spike_thresholds[spike_mask]
+                    self.noise_stats.spike_severity += float(np.sum(excess))
+                    self.noise_stats.joint_spike_counts[spike_indices] += 1
+                    self.noise_stats.joint_spike_severity[spike_indices] += excess
+                    max_excess = float(np.max(excess))
+                    if max_excess > self.noise_stats.max_spike_severity:
+                        self.noise_stats.max_spike_severity = max_excess
+                    self.noise_stats.spike_severity_list.extend(excess.tolist())
+                
+                # PASS 2: Propagate to neighbors
+                neighbor_mask = np.zeros(num_joints, dtype=bool)
+                if n_spikes > 0:
+                    spike_indices = np.where(spike_mask)[0]
+                    spike_parents = parents_arr[spike_indices]
+                    valid_parents = spike_parents[(spike_parents >= 0) & (spike_parents < num_joints)]
+                    if len(valid_parents) > 0:
+                        neighbor_mask[valid_parents] = True
+                    for j in spike_indices:
+                        for child in children_list[j]:
+                            neighbor_mask[child] = True
+                    neighbor_mask &= ~spike_mask
+                
+                # PASS 3: Apply suppression
+                clamped = prev_torque + np.clip(delta, -eff_lim_col, eff_lim_col)
+                
+                exceeded_pos = delta > eff_lim_col
+                if np.any(exceeded_pos):
+                    clamped_amounts = delta[exceeded_pos] - np.broadcast_to(eff_lim_col, delta.shape)[exceeded_pos]
+                    self.noise_stats.rate_limit_severity += float(np.sum(clamped_amounts))
+                    joints_clamped = np.any(exceeded_pos, axis=1)
+                    self.noise_stats.joint_rate_limit_counts[np.where(joints_clamped)[0]] += 1
+                
+                frame_rate_limits = int(np.sum(exceeded_pos))
+                
+                result = clamped.copy()
+                if n_spikes > 0:
+                    result[spike_mask] = prev_torque[spike_mask]
+                if np.any(neighbor_mask):
+                    neighbor_exceeded = (delta_mags > neighbor_thresholds) & is_increasing & neighbor_mask
+                    result[neighbor_exceeded] = prev_torque[neighbor_exceeded]
+                
+                t_dyn_limited[f, :num_joints] = result
             
             # --- PASS 4: Jitter Detection and Damping (vectorized) ---
-            curr_signs = np.sign(t_dyn_limited[f, :num_joints])  # (J, 3)
-            self.torque_sign_history[self.jitter_history_idx] = curr_signs
-            self.jitter_history_idx = (self.jitter_history_idx + 1) % JITTER_WINDOW
-            
-            # Sign-flip rate per joint (already vectorized in original)
-            sign_changes = np.sum(np.abs(np.diff(self.torque_sign_history, axis=0)) > 0, axis=(0, 2))  # (J,)
-            flip_rate = sign_changes / (JITTER_WINDOW - 1)
-            
-            # Vectorized jitter damping
-            jittery = flip_rate > JITTER_THRESHOLD  # (J,) bool
-            if np.any(jittery):
-                jitter_excess = np.clip(
-                    (flip_rate[jittery] - JITTER_THRESHOLD) / (1.0 - JITTER_THRESHOLD + 1e-6),
-                    0.0, 1.0
-                )  # (n_jittery,)
-                damping = 1.0 - jitter_excess * (1.0 - JITTER_DAMPING)  # (n_jittery,)
-                # Apply damping: blend between current and previous
-                t_dyn_limited[f, np.where(jittery)[0]] = (
-                    damping[:, np.newaxis] * t_dyn_limited[f, np.where(jittery)[0]] +
-                    (1.0 - damping[:, np.newaxis]) * prev_torque[jittery]
-                )
-                frame_jitter = int(np.sum(jittery))
-                self.noise_stats.joint_jitter_counts[np.where(jittery)[0]] += 1
+            if options.enable_jitter_damping:
+                curr_signs = np.sign(t_dyn_limited[f, :num_joints])  # (J, 3)
+                self.torque_sign_history[self.jitter_history_idx] = curr_signs
+                self.jitter_history_idx = (self.jitter_history_idx + 1) % JITTER_WINDOW
+                
+                # Sign-flip rate per joint (already vectorized in original)
+                sign_changes = np.sum(np.abs(np.diff(self.torque_sign_history, axis=0)) > 0, axis=(0, 2))  # (J,)
+                flip_rate = sign_changes / (JITTER_WINDOW - 1)
+                
+                # Vectorized jitter damping
+                jittery = flip_rate > JITTER_THRESHOLD  # (J,) bool
+                if np.any(jittery):
+                    jitter_excess = np.clip(
+                        (flip_rate[jittery] - JITTER_THRESHOLD) / (1.0 - JITTER_THRESHOLD + 1e-6),
+                        0.0, 1.0
+                    )  # (n_jittery,)
+                    damping = 1.0 - jitter_excess * (1.0 - JITTER_DAMPING)  # (n_jittery,)
+                    # Apply damping: blend between current and previous
+                    t_dyn_limited[f, np.where(jittery)[0]] = (
+                        damping[:, np.newaxis] * t_dyn_limited[f, np.where(jittery)[0]] +
+                        (1.0 - damping[:, np.newaxis]) * prev_torque[jittery]
+                    )
+                    frame_jitter = int(np.sum(jittery))
+                    self.noise_stats.joint_jitter_counts[np.where(jittery)[0]] += 1
+                else:
+                    frame_jitter = 0
             else:
                 frame_jitter = 0
             
             # --- PASS 5: SmartClampKF Filtering (unchanged) ---
             frame_innovation_clamps = 0
             if options.enable_kf_smoothing:
-                RESPONSIVENESS = 10.0
-                SMOOTHNESS = 1.0
-                CLAMP_RADIUS = 15.0
+                dt = 1.0 / self.framerate
                 
                 if self.dynamic_torque_kf is None:
-                    dt = 1.0 / self.framerate
                     self.dynamic_torque_kf = NumpySmartClampKF(dt, num_joints, 3)
-                    self.dynamic_torque_kf.update_params(RESPONSIVENESS, SMOOTHNESS, CLAMP_RADIUS, dt)
+                
+                # Update params each frame so widget changes take effect
+                self.dynamic_torque_kf.update_params(
+                    options.kf_responsiveness, options.kf_smoothness,
+                    options.kf_clamp_radius, dt
+                )
                 
                 self.dynamic_torque_kf.predict()
                 
@@ -5015,11 +5344,11 @@ class SMPLProcessor:
                 t_dyn_limited[f] = self.dynamic_torque_kf.update(t_dyn_limited[f])
                 
                 innovation_mag = np.linalg.norm(pre_update - t_dyn_limited[f], axis=1)
-                clamped_mask = innovation_mag > CLAMP_RADIUS * 0.9
+                clamped_mask = innovation_mag > options.kf_clamp_radius * 0.9
                 clamp_count = int(np.sum(clamped_mask))
                 frame_innovation_clamps = clamp_count
                 if clamp_count > 0:
-                    excess_innovations = innovation_mag[clamped_mask] - CLAMP_RADIUS * 0.9
+                    excess_innovations = innovation_mag[clamped_mask] - options.kf_clamp_radius * 0.9
                     self.noise_stats.innovation_severity += float(np.sum(excess_innovations))
             
             # Update prev for next frame
@@ -5096,6 +5425,8 @@ class SMPLProcessor:
         )
         
         # Reset Per-Frame Caches
+        # Save previous CoM for stability contact method (which runs before new CoM is computed)
+        self._prev_com_for_stability = getattr(self, 'current_com', None)
         self.current_com = None
         self.current_total_mass = None
         
@@ -5185,6 +5516,10 @@ class SMPLProcessor:
              )
         elif options.contact_method == 'consensus':
              contact_probs_fusion = self._compute_probabilistic_contacts_consensus(
+                  F, world_pos.shape[1], world_pos, options
+             )
+        elif options.contact_method == 'stability':
+             contact_probs_fusion = self._compute_probabilistic_contacts_stability(
                   F, world_pos.shape[1], world_pos, options
              )
         else:  # Default: 'fusion'
@@ -5328,7 +5663,7 @@ class SMPLProcessor:
                  
                  for j in range(probs.shape[0]):
                       p = probs[j]
-                      if p < 0.01: continue
+                      if p < 0.001: continue
                       
                       # Per-joint upward velocity suppression:
                       # If this joint is moving upward, it's lifting off —
@@ -5338,7 +5673,7 @@ class SMPLProcessor:
                           # Exponential suppression: vy=0.15 → 37%, vy=0.30 → 14%, vy=0.5 → 4%
                           vel_suppress = np.exp(-vy_j / 0.15)
                           p = p * vel_suppress
-                          if p < 0.01: continue
+                          if p < 0.001: continue
                       
                       if j in tips: pos = tips[j][f]
                       else: pos = world_pos[f, j]
@@ -5348,10 +5683,10 @@ class SMPLProcessor:
                       
                       SIGMA_PRESS = 0.60  # Wide Gaussian — reduces sensitivity to CoM jitter
                       gauss_weight = np.exp(-0.5 * (dist / SIGMA_PRESS)**2)
-                      # Use p² to strongly suppress weak contacts:
-                      # p=0.95 → 0.90 (barely changed)
-                      # p=0.05 → 0.0025 (97% suppressed)
-                      w_dist[j] = (p * p) * gauss_weight
+                      # Use linear p for stability-boosted contacts, p² for standard
+                      # This prevents the squaring from crushing boosted contacts
+                      p_weight = p if (options.contact_method == 'stability' and hasattr(self, '_stability_boost') and self._stability_boost[j] > 0.05) else (p * p)
+                      w_dist[j] = p_weight * gauss_weight
                       
                  w_sum = np.sum(w_dist)
                  
@@ -5365,8 +5700,10 @@ class SMPLProcessor:
                                 h = tips[j][f][yd] - inferred_floor
                            else:
                                 h = world_pos[f, j, yd] - inferred_floor
-                           if h > 0.25:
-                                weights[j] = 0.0
+                           # Soft height penalty instead of hard cutoff
+                           if h > 0.15:
+                                height_fade = np.exp(-((h - 0.15) / 0.10)**2)
+                                weights[j] *= height_fade
                       
                       w_sum_2 = np.sum(weights)
                       if w_sum_2 > 0:
@@ -5396,6 +5733,18 @@ class SMPLProcessor:
                            self.contact_pressure[f] = 0.0
                  else:
                       self.contact_pressure[f] = 0.0
+            
+            # --- Stability Pressure Override ---
+            # When using inverse statics, the stability method computes
+            # physics-based pressure directly. Replace the probability-
+            # derived pressure entirely — consensus pressure uses p²
+            # weighting and height penalties, which contradict the
+            # physics-only principle of the stability method.
+            if options.contact_method == 'stability':
+                stab_press = getattr(self, '_stability_computed_pressure', None)
+                if stab_press is not None and len(stab_press) == self.contact_pressure.shape[1]:
+                    for f in range(F):
+                        self.contact_pressure[f] = stab_press
             
             # --- Joint Torque & Effort Calculation ---
             torques_vec, inertias, efforts_net, efforts_dyn, efforts_grav, t_dyn_vecs, t_grav_vecs, t_passive_vecs = self._compute_joint_torques(

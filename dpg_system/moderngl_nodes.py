@@ -34,6 +34,7 @@ def register_moderngl_nodes():
     Node.app.register_node('mgl_disk', MGLDiskNode.factory)
     Node.app.register_node('mgl_body', MGLBodyNode.factory)
     Node.app.register_node('mgl_surface', MGLSurfaceNode.factory)
+    Node.app.register_node('mgl_line', MGLLineNode.factory)
     Node.app.register_node('mgl_smpl_mesh', MGLSMPLMeshNode.factory)
 
 
@@ -1839,6 +1840,94 @@ class MGLSurfaceNode(MGLShapeNode):
         if self.ctx is not None and 'M' in self.prog:
             model = self.ctx.get_model_matrix()
             self.prog['M'].write(model.astype('f4').T.tobytes())
+
+
+class MGLLineNode(MGLNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        return MGLLineNode(name, data, args)
+
+    def __init__(self, label, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        super().initialize(args)
+        self.vector_input = self.add_input('vector', triggers_execution=True)
+        self.vector_data = None
+        self.vbo = None
+        self.vao = None
+        self.prog = None
+
+    def execute(self):
+        if self.vector_input.fresh_input:
+            data = self.vector_input()
+            if data is not None:
+                if isinstance(data, list):
+                    data = np.array(data, dtype=np.float32)
+                elif isinstance(data, np.ndarray):
+                    data = data.astype(np.float32).flatten()
+                elif self.app.torch_available and isinstance(data, torch.Tensor):
+                    data = data.detach().cpu().numpy().astype(np.float32).flatten()
+
+                if data.size == 3:
+                    self.vector_data = data
+                elif data.size == 6:
+                    # start + end packed as 6 values
+                    self.vector_data = data
+
+        super().execute()
+
+    def draw(self):
+        if self.ctx is not None and self.vector_data is not None:
+            inner_ctx = self.ctx.ctx
+
+            if self.vector_data.size == 3:
+                # Line from origin to vector
+                start = np.array([0.0, 0.0, 0.0], dtype=np.float32)
+                end = self.vector_data
+            else:
+                # 6 values: start xyz, end xyz
+                start = self.vector_data[:3]
+                end = self.vector_data[3:6]
+
+            # Direction for dummy normal
+            direction = end - start
+            length = np.linalg.norm(direction)
+            if length > 1e-10:
+                normal = direction / length
+            else:
+                normal = np.array([0.0, 1.0, 0.0], dtype=np.float32)
+
+            # Build two vertices: [x,y,z, nx,ny,nz, u,v]
+            vertices = np.array([
+                *start, *normal, 0.0, 0.0,
+                *end,   *normal, 1.0, 0.0,
+            ], dtype='f4')
+
+            self.vbo = inner_ctx.buffer(vertices.tobytes())
+            self.prog = self.ctx.default_shader
+            self.vao = inner_ctx.vertex_array(self.prog, [(self.vbo, '3f 3f 2f', 'in_position', 'in_normal', 'in_texcoord')])
+
+            # Set uniforms
+            if 'M' in self.prog:
+                model = self.ctx.get_model_matrix()
+                self.prog['M'].write(model.astype('f4').T.tobytes())
+            if 'V' in self.prog:
+                self.prog['V'].write(self.ctx.view_matrix.tobytes())
+            if 'P' in self.prog:
+                self.prog['P'].write(self.ctx.projection_matrix.tobytes())
+            if 'color' in self.prog:
+                c = self.ctx.current_color
+                self.prog['color'].value = tuple(c)
+
+            self.ctx.update_lights(self.prog)
+            self.ctx.update_material(self.prog)
+
+            if 'has_texture' in self.prog:
+                self.prog['has_texture'].value = False
+
+            inner_ctx.disable(moderngl.CULL_FACE)
+            self.vao.render(mode=moderngl.LINES)
 
 
 class MGLModelNode(MGLShapeNode):

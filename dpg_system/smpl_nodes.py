@@ -1659,6 +1659,7 @@ class SMPLTorqueNode(SMPLNode):
         self.output_limb_lengths = self.add_output('limb_lengths')
         self.noise_score_output = self.add_output('noise_score')
         self.noise_report_output = self.add_output('noise_report')
+        self.floor_level_output = self.add_output('floor_level')
         
         # Noise stats controls
         self.reset_noise_stats_input = self.add_input('reset_noise_stats', widget_type='button', callback=self._reset_noise_stats)
@@ -1691,13 +1692,17 @@ class SMPLTorqueNode(SMPLNode):
         
         # Contact Method Selection
         self.contact_method_prop = self.add_option('contact_method', widget_type='combo', default_value='fusion')
-        self.contact_method_prop.widget.combo_items = ['fusion', 'com_driven', 'consensus']
+        self.contact_method_prop.widget.combo_items = ['fusion', 'stability', 'com_driven', 'consensus']
         self.contact_refine_prop = self.add_option('contact_refinement_iters', widget_type='drag_int', default_value=1)
         
         # --- Rate Limiting ---
         self.enable_rate_limiting_prop = self.add_option('enable_rate_limiting', widget_type='checkbox', default_value=True)
         self.rate_limit_strength_prop = self.add_option('rate_limit_strength', widget_type='drag_float', default_value=1.0)
+        self.enable_jitter_damping_prop = self.add_option('enable_jitter_damping', widget_type='checkbox', default_value=True)
         self.enable_kf_smoothing_prop = self.add_option('enable_kf_smoothing', widget_type='checkbox', default_value=True)
+        self.kf_responsiveness_prop = self.add_option('kf_responsiveness', widget_type='drag_float', default_value=10.0)
+        self.kf_smoothness_prop = self.add_option('kf_smoothness', widget_type='drag_float', default_value=1.0)
+        self.kf_clamp_radius_prop = self.add_option('kf_clamp_radius', widget_type='drag_float', default_value=15.0)
         
         # --- World-Frame Dynamics ---
         self.world_frame_dynamics_prop = self.add_option('world_frame_dynamics', widget_type='checkbox', default_value=False)
@@ -1893,7 +1898,11 @@ class SMPLTorqueNode(SMPLNode):
                 # Rate Limiting
                 enable_rate_limiting=self.enable_rate_limiting_prop() if hasattr(self, 'enable_rate_limiting_prop') else True,
                 rate_limit_strength=self.rate_limit_strength_prop() if hasattr(self, 'rate_limit_strength_prop') else 1.0,
+                enable_jitter_damping=self.enable_jitter_damping_prop() if hasattr(self, 'enable_jitter_damping_prop') else True,
                 enable_kf_smoothing=self.enable_kf_smoothing_prop() if hasattr(self, 'enable_kf_smoothing_prop') else True,
+                kf_responsiveness=self.kf_responsiveness_prop() if hasattr(self, 'kf_responsiveness_prop') else 10.0,
+                kf_smoothness=self.kf_smoothness_prop() if hasattr(self, 'kf_smoothness_prop') else 1.0,
+                kf_clamp_radius=self.kf_clamp_radius_prop() if hasattr(self, 'kf_clamp_radius_prop') else 15.0,
                 world_frame_dynamics=self.world_frame_dynamics_prop() if hasattr(self, 'world_frame_dynamics_prop') else False,
                 com_pos_min_cutoff=self.com_pos_mc_prop() if hasattr(self, 'com_pos_mc_prop') else 8.0,
                 com_pos_beta=self.com_pos_beta_prop() if hasattr(self, 'com_pos_beta_prop') else 0.05,
@@ -2013,6 +2022,11 @@ class SMPLTorqueNode(SMPLNode):
                      
                 self.output_com.send(com_out)
                 self.output_zmp.send(zmp_out)
+                
+                # Send inferred floor level
+                floor_level = getattr(self.processor, '_inferred_floor_height', None)
+                if floor_level is not None:
+                    self.floor_level_output.send(float(floor_level))
                 
                 # Send noise statistics
                 noise_score = self.processor.get_noise_score()
