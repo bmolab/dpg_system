@@ -327,6 +327,7 @@ class SMPLProcessingOptions:
     add_gravity: bool = False
     enable_passive_limits: bool = True # Enabled for Structural Support
     enable_apparent_gravity: bool = True
+    torque_output_frame: str = 'local'  # 'local' (parent frame) or 'world'
     
     # --- Filtering / Signal Processing ---
     enable_one_euro_filter: bool = True
@@ -1412,12 +1413,12 @@ class SMPLProcessor:
         
         for f in range(F):
             # Step 3: Identify candidate contacts
-            CANDIDATE_THRESH = 0.01
+            # Use height threshold only — do NOT gate on consensus_probs,
+            # which uses the tight floor_tolerance and excludes joints that
+            # the stability method's own weight distribution can handle.
             candidates = []
             for j in contact_joints:
                 if j >= J:
-                    continue
-                if consensus_probs[f, j] < CANDIDATE_THRESH:
                     continue
                 # Get position
                 if hasattr(self, 'temp_tips') and j in self.temp_tips:
@@ -1436,6 +1437,7 @@ class SMPLProcessor:
             
             # Also check toes as candidate evidence for their parent foot
             # If a toe has consensus prob, add the foot as candidate if not already
+            CANDIDATE_THRESH = 0.01
             foot_in_candidates = {c['j'] for c in candidates}
             for toe_j, foot_j in toe_to_foot.items():
                 if toe_j >= J or foot_j >= J:
@@ -1464,6 +1466,10 @@ class SMPLProcessor:
                 continue
             
             # Step 4: Partition body mass among candidates
+            # Weight distribution is purely geometric (inverse statics):
+            # closer to CoM → more weight. Height is already screened by
+            # the 0.35m candidacy threshold; once a joint is a candidate,
+            # height should not bias its share (unreliable due to mocap error).
             com_hz = com[plane_dims]
             
             dists = np.array([np.linalg.norm(c['pos_hz'] - com_hz) for c in candidates])
@@ -1471,12 +1477,8 @@ class SMPLProcessor:
             SIGMA_DIST = 0.15
             inv_dist_weights = 1.0 / (dists + SIGMA_DIST)
             
-            height_factors = np.array([
-                np.exp(-(max(0, c['h']) / 0.15)**2) for c in candidates
-            ])
-            
-            # Pure geometry — no probability bias
-            combined = inv_dist_weights * height_factors
+            # Pure geometry — no height bias
+            combined = inv_dist_weights
             w_sum = np.sum(combined)
             
             if w_sum < 1e-8:
@@ -2334,6 +2336,7 @@ class SMPLProcessor:
 
 
 
+
     def _compute_max_torque_array(self):
         """
         Convert dictionary profile to per-joint max torque array.
@@ -2634,6 +2637,7 @@ class SMPLProcessor:
         self._prev_torque_vecs = None
         self._prev_active_torques = None
         self._prev_contact_probs = None
+
         self._prev_joint_heights = None
         self._inferred_floor_height = None
         if hasattr(self, '_consensus'):
@@ -5759,9 +5763,8 @@ class SMPLProcessor:
                     working_probs, torques_vec, world_pos, parents, options, tips
                 )
                 
-                # Check if anything changed
                 if np.allclose(refined, working_probs, atol=0.005):
-                    break  # Converged, no more refinement needed
+                    break
                 
                 working_probs = refined
         
@@ -5822,12 +5825,70 @@ class SMPLProcessor:
         if options.world_frame_dynamics:
             t_dyn_com = self._compute_com_dynamic_torque(F, world_pos, global_rots, tips, options)
             n_j = min(t_dyn_vecs.shape[1], t_dyn_com.shape[1])
-            t_dyn_vecs[:, :n_j, :] = t_dyn_com[:, :n_j, :]
+            
+            # Convert world-frame CoM torques to local (parent) frame
+            # to match the frame used by _compute_joint_torques output.
+            parents_list = self._get_hierarchy()
+            global_rot_invs = _frame_cache.get('global_rot_invs', None)
+            if global_rot_invs is None:
+                from scipy.spatial.transform import Rotation as R_scipy
+                global_rot_invs = [R_scipy.from_matrix(global_rots[0, j]).inv()
+                                   for j in range(global_rots.shape[1])]
+            
+            for j in range(n_j):
+                parent_idx = parents_list[j] if j < len(parents_list) else -1
+                if parent_idx >= 0 and parent_idx < len(global_rot_invs):
+                    t_dyn_vecs[:, j, :] = global_rot_invs[parent_idx].apply(
+                        t_dyn_com[:, j, :].reshape(-1, 3)
+                    ).reshape(F, 3)
+                else:
+                    # Root joint: parent is world (identity)
+                    t_dyn_vecs[:, j, :] = t_dyn_com[:, j, :]
+            
+            # Recompute net torque from components so decomposition is exact:
+            # torques_vec = t_dyn + t_grav + t_passive  (active = net - passive already done,
+            #   but we need to recompute since dyn changed)
+            # The RNE computed: active = dyn - grav - contact - passive
+            # With world_frame_dynamics, we replaced dyn, so recompute:
+            # active = new_dyn - grav - passive  (contact_local is zero since contact_forces=None)
+            torques_vec[:, :n_j, :] = (t_dyn_vecs[:, :n_j, :]
+                                        - t_grav_vecs[:, :n_j, :]
+                                        - t_passive_vecs[:, :n_j, :])
+        
+        # --- Contact Torque KF Smoothing ---
+        # Smooth only the contact torque component to preserve dynamic fidelity.
+        # τ_contact = τ_total - τ_dyn - τ_grav - τ_passive (the residual from floor forces)
+        # Apply KF to τ_contact, then recombine: τ_output = τ_dyn + τ_grav + τ_passive + τ_contact_smoothed
+        if options.enable_kf_smoothing and F == 1:
+            dt = 1.0 / self.framerate
+            n_j = min(torques_vec.shape[1], t_dyn_vecs.shape[1],
+                      t_grav_vecs.shape[1], t_passive_vecs.shape[1])
+            
+            # Extract contact torque
+            t_contact = (torques_vec[0, :n_j] - t_dyn_vecs[0, :n_j]
+                         - t_grav_vecs[0, :n_j] - t_passive_vecs[0, :n_j])
+            
+            # Lazy-init a dedicated KF for contact torque
+            if not hasattr(self, 'contact_torque_kf') or self.contact_torque_kf is None:
+                self.contact_torque_kf = NumpySmartClampKF(dt, n_j, 3)
+            
+            self.contact_torque_kf.update_params(
+                options.kf_responsiveness, options.kf_smoothness,
+                options.kf_clamp_radius, dt
+            )
+            
+            self.contact_torque_kf.predict()
+            t_contact_smoothed = self.contact_torque_kf.update(t_contact)
+            
+            # Recombine: smoothed contact + unmodified dynamic/gravity/passive
+            torques_vec[0, :n_j] = (t_dyn_vecs[0, :n_j] + t_grav_vecs[0, :n_j]
+                                     + t_passive_vecs[0, :n_j] + t_contact_smoothed)
         
         # Store active torques and contact probs for next frame's comparison
         if F == 1 and torques_vec.shape[1] >= 22:
             self._prev_active_torques = torques_vec[0, :self.target_joint_count, :].copy()
             self._prev_contact_probs = working_probs[0, :self.target_joint_count].copy()
+
         
         # Store for consensus contact feedback (uses previous frame's torques)
         if F == 1 and t_dyn_vecs.shape[1] >= 22:
@@ -5869,6 +5930,29 @@ class SMPLProcessor:
 
             'contact_pressure': self.contact_pressure
         }
+        
+        # --- Optional World-Frame Output Conversion ---
+        # Internal computation is in local (parent) frame.
+        # If user requests world frame, rotate all vectors to world.
+        if getattr(options, 'torque_output_frame', 'local') == 'world':
+            parents_list = self._get_hierarchy()
+            global_rot_fwd = _frame_cache.get('global_rot_fwd', None)
+            if global_rot_fwd is None:
+                from scipy.spatial.transform import Rotation as R_scipy
+                global_rot_fwd = [R_scipy.from_matrix(global_rots[0, j])
+                                  for j in range(global_rots.shape[1])]
+                _frame_cache['global_rot_fwd'] = global_rot_fwd
+            
+            for vec_key in ['torques_vec', 'torques_dyn_vec', 'torques_grav_vec', 'torques_passive_vec']:
+                arr = res[vec_key]
+                n_out = min(arr.shape[1], len(parents_list))
+                for j in range(n_out):
+                    parent_idx = parents_list[j] if j < len(parents_list) else -1
+                    if parent_idx >= 0 and parent_idx < len(global_rot_fwd):
+                        arr[:, j, :] = global_rot_fwd[parent_idx].apply(
+                            arr[:, j, :].reshape(-1, 3)
+                        ).reshape(arr.shape[0], 3)
+                    # Root: already in world frame (parent = identity)
         
         return res
 
