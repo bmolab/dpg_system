@@ -715,10 +715,12 @@ class SMPLProcessor:
         model_data = self._compute_limb_properties_from_model()
         
         offsets = None
+        segment_com_offsets = None
         if model_data is not None:
              if 'lengths' in model_data:
                  lengths = model_data['lengths']
                  offsets = model_data.get('offsets')
+                 segment_com_offsets = model_data.get('segment_com_offsets')
              else:
                  # Legacy fallback if I missed something (unlikely)
                  lengths = model_data
@@ -788,6 +790,8 @@ class SMPLProcessor:
         result = {'lengths': lengths, 'masses': masses}
         if offsets is not None:
              result['offsets'] = offsets
+        if segment_com_offsets is not None:
+             result['segment_com_offsets'] = segment_com_offsets
         return result
 
     def _compute_skeleton_offsets(self):
@@ -4713,9 +4717,16 @@ class SMPLProcessor:
         if use_mesh_com:
             # Batch matmul: rotate all T-pose offsets by global rotations
             # global_rots: (F, J, 3, 3), mesh_com_offsets: (J, 3)
-            offsets = np.array([mesh_com_offsets[j] for j in range(n_joints)])  # (J, 3)
+            offsets = np.asarray(mesh_com_offsets)[:n_joints]  # (J, 3)
+            # global_rots is a list of scipy Rotation objects — convert to matrices
+            rot_mats = np.zeros((F, n_joints, 3, 3))
+            for j in range(n_joints):
+                if global_rots[j] is not None:
+                    rot_mats[:, j] = global_rots[j].as_matrix()
+                else:
+                    rot_mats[:, j] = np.eye(3)
             # einsum: (F, J, 3, 3) @ (J, 3) → (F, J, 3)
-            offset_world = np.einsum('fjik,jk->fji', global_rots[:, :n_joints], offsets)
+            offset_world = np.einsum('fjik,jk->fji', rot_mats, offsets)
             seg_com = world_pos[:, :n_joints] + offset_world
         else:
             seg_com = world_pos[:, :n_joints].copy()
