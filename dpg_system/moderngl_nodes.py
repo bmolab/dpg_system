@@ -9,7 +9,11 @@ import threading
 import math
 from ctypes import c_void_p
 from dpg_system.matrix_utils import *
-from dpg_system.body_base import BodyData, t_PelvisAnchor, t_ActiveJointCount
+from dpg_system.body_base import BodyData, t_PelvisAnchor, t_ActiveJointCount, quaternion_to_R3_rotation, rotation_matrix_from_vectors
+try:
+    from pyquaternion import Quaternion
+except ImportError:
+    Quaternion = None
 from dpg_system.body_defs import *
 
 def register_moderngl_nodes():
@@ -36,6 +40,11 @@ def register_moderngl_nodes():
     Node.app.register_node('mgl_surface', MGLSurfaceNode.factory)
     Node.app.register_node('mgl_line', MGLLineNode.factory)
     Node.app.register_node('mgl_text', MGLTextNode.factory)
+    Node.app.register_node('mgl_line_array', MGLLineArrayNode.factory)
+    Node.app.register_node('mgl_quaternion_rotate', MGLQuaternionRotateNode.factory)
+    Node.app.register_node('mgl_axis_angle_rotate', MGLAxisAngleRotateNode.factory)
+    Node.app.register_node('mgl_billboard', MGLBillboardNode.factory)
+    Node.app.register_node('mgl_partial_disk', MGLPartialDiskNode.factory)
     Node.app.register_node('mgl_smpl_mesh', MGLSMPLMeshNode.factory)
 
 
@@ -2200,6 +2209,295 @@ class MGLTextNode(MGLNode):
         inner_ctx.disable(moderngl.DEPTH_TEST)
         self.vao.render()
         inner_ctx.enable(moderngl.DEPTH_TEST)
+
+
+class MGLLineArrayNode(MGLNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        return MGLLineArrayNode(name, data, args)
+
+    def __init__(self, label, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        super().initialize(args)
+        self.array_input = self.add_input('array', triggers_execution=True)
+        self.line_width_input = self.add_input('line_width', widget_type='drag_float', default_value=1.0, min_value=1.0)
+        self.line_array = None
+        self.vbo = None
+        self.vao = None
+        self.prog = None
+        self.line_shader = None
+
+    def get_line_shader(self):
+        """Simple unlit shader for colored lines."""
+        if self.line_shader is None:
+            ctx = MGLContext.get_instance().ctx
+            self.line_shader = ctx.program(
+                vertex_shader='''
+                    #version 330
+                    uniform mat4 M;
+                    uniform mat4 V;
+                    uniform mat4 P;
+                    in vec3 in_position;
+                    in vec4 in_color;
+                    out vec4 v_color;
+                    void main() {
+                        gl_Position = P * V * M * vec4(in_position, 1.0);
+                        v_color = in_color;
+                    }
+                ''',
+                fragment_shader='''
+                    #version 330
+                    in vec4 v_color;
+                    out vec4 f_color;
+                    void main() {
+                        f_color = v_color;
+                    }
+                '''
+            )
+        return self.line_shader
+
+    def execute(self):
+        if self.array_input.fresh_input:
+            incoming = self.array_input()
+            if incoming is not None:
+                if isinstance(incoming, list):
+                    incoming = np.array(incoming, dtype=np.float32)
+                elif isinstance(incoming, np.ndarray):
+                    incoming = incoming.astype(np.float32)
+                elif self.app.torch_available and isinstance(incoming, torch.Tensor):
+                    incoming = incoming.detach().cpu().numpy().astype(np.float32)
+
+                if incoming.ndim == 2 and incoming.shape[1] == 3:
+                    # Single line strip: (N, 3) -> (N, 1, 3)
+                    incoming = incoming[:, np.newaxis, :]
+                if incoming.ndim == 3 and incoming.shape[2] == 3:
+                    self.line_array = incoming
+
+        super().execute()
+
+    def draw(self):
+        if self.ctx is None or self.line_array is None:
+            return
+
+        inner_ctx = self.ctx.ctx
+        prog = self.get_line_shader()
+        color = self.ctx.current_color
+        num_points, num_lines, _ = self.line_array.shape
+
+        if 'M' in prog:
+            model = self.ctx.get_model_matrix()
+            prog['M'].write(model.astype('f4').T.tobytes())
+        if 'V' in prog:
+            prog['V'].write(self.ctx.view_matrix.tobytes())
+        if 'P' in prog:
+            prog['P'].write(self.ctx.projection_matrix.tobytes())
+
+        inner_ctx.disable(moderngl.CULL_FACE)
+
+        for i in range(num_lines):
+            line = self.line_array[:, i, :]  # (N, 3)
+            n = line.shape[0]
+            # Build vertices with per-vertex color: [x,y,z, r,g,b,a]
+            colors = np.tile(np.array(color, dtype=np.float32), (n, 1))
+            verts = np.hstack([line, colors]).flatten().astype(np.float32)
+
+            vbo = inner_ctx.buffer(verts.tobytes())
+            vao = inner_ctx.vertex_array(prog, [(vbo, '3f 4f', 'in_position', 'in_color')])
+            vao.render(mode=moderngl.LINE_STRIP)
+            vbo.release()
+            vao.release()
+
+
+class MGLQuaternionRotateNode(MGLTransformNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        return MGLQuaternionRotateNode(name, data, args)
+
+    def __init__(self, label, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        super().initialize(args)
+        self.quat_input = self.add_input('quaternion')
+
+    def perform_transformation(self):
+        if self.ctx is None:
+            return
+        input_ = self.quat_input()
+        if input_ is None:
+            return
+
+        if isinstance(input_, list):
+            input_ = np.array(input_, dtype=np.float32)
+        if isinstance(input_, np.ndarray):
+            input_ = input_.flatten()
+            if input_.size == 4:
+                # Build 4x4 rotation matrix from quaternion
+                transform = quaternion_to_R3_rotation(input_)
+                # quaternion_to_R3_rotation returns a flat 16-element list (row-major for legacy GL)
+                mat = np.array(transform, dtype=np.float32).reshape(4, 4).T  # transpose for our column-major convention
+                self.ctx.multiply_matrix(mat)
+
+
+class MGLAxisAngleRotateNode(MGLTransformNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        return MGLAxisAngleRotateNode(name, data, args)
+
+    def __init__(self, label, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        super().initialize(args)
+        self.rotvec_input = self.add_input('rotation vector')
+
+    def perform_transformation(self):
+        if self.ctx is None:
+            return
+        input_ = self.rotvec_input()
+        if input_ is None:
+            return
+
+        if isinstance(input_, list):
+            input_ = np.array(input_, dtype=np.float32)
+        if isinstance(input_, np.ndarray):
+            input_ = input_.flatten()
+            if input_.size >= 3:
+                axis = input_[:3]
+                up_vector = np.array([0.0, 0.0, 1.0])
+                # rotation_matrix_from_vectors returns flat 16-element array (already transposed for GL)
+                alignment_flat = rotation_matrix_from_vectors(up_vector, axis)
+                mat = np.array(alignment_flat, dtype=np.float32).reshape(4, 4)
+                self.ctx.multiply_matrix(mat)
+
+
+class MGLBillboardNode(MGLTransformNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        return MGLBillboardNode(name, data, args)
+
+    def __init__(self, label, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        super().initialize(args)
+        # No extra inputs needed - billboard just cancels view rotation
+
+    def perform_transformation(self):
+        if self.ctx is None:
+            return
+        # Extract the rotation part of the view matrix and invert it
+        # This makes child geometry always face the camera
+        view = self.ctx.view_matrix
+        # The upper-left 3x3 of the view matrix is the rotation
+        rot3x3 = view[:3, :3].copy()
+        # Inverse of a rotation matrix is its transpose
+        inv_rot = np.identity(4, dtype=np.float32)
+        inv_rot[:3, :3] = rot3x3.T
+        self.ctx.multiply_matrix(inv_rot)
+
+
+class MGLPartialDiskNode(MGLShapeNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        return MGLPartialDiskNode(name, data, args)
+
+    def __init__(self, label, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        super().initialize(args)
+        inner_r = 0.0
+        outer_r = 0.5
+        slices = 32
+        start = 0.0
+        sweep = 90.0
+
+        self.outer_radius = self.add_input('outer radius', widget_type='drag_float', default_value=outer_r, callback=self.geometry_changed)
+        self.inner_radius = self.add_input('inner radius', widget_type='drag_float', default_value=inner_r, callback=self.geometry_changed)
+        self.slices_input = self.add_input('slices', widget_type='drag_int', default_value=slices, callback=self.geometry_changed)
+        self.start_angle = self.add_input('start angle', widget_type='drag_float', default_value=start, callback=self.geometry_changed)
+        self.start_angle.widget.speed = 1
+        self.sweep_angle = self.add_input('sweep angle', widget_type='drag_float', default_value=sweep, callback=self.geometry_changed)
+        self.sweep_angle.widget.speed = 1
+        self.end_initialization()
+
+    def create_geometry(self):
+        vertices = []
+        indices = []
+
+        inner_r = max(0.0, self.inner_radius())
+        outer_r = max(inner_r + 0.001, self.outer_radius())
+        slices = max(3, self.slices_input())
+        start_deg = self.start_angle()
+        sweep_deg = self.sweep_angle()
+
+        start_rad = math.radians(start_deg)
+        sweep_rad = math.radians(sweep_deg)
+
+        # Normal facing +Y (disk lies in XZ plane)
+        nx, ny, nz = 0.0, 1.0, 0.0
+
+        # Generate vertices: two rings (inner and outer) with slices+1 points each
+        # Top face
+        for i in range(slices + 1):
+            angle = start_rad + sweep_rad * i / slices
+            cos_a = math.cos(angle)
+            sin_a = math.sin(angle)
+            u = i / slices
+
+            # Inner vertex
+            x_in = inner_r * cos_a
+            z_in = inner_r * sin_a
+            vertices.extend([x_in, 0.0, z_in, nx, ny, nz, u, 0.0])
+
+            # Outer vertex
+            x_out = outer_r * cos_a
+            z_out = outer_r * sin_a
+            vertices.extend([x_out, 0.0, z_out, nx, ny, nz, u, 1.0])
+
+        # Top face indices
+        for i in range(slices):
+            inner_idx = i * 2
+            outer_idx = i * 2 + 1
+            next_inner = (i + 1) * 2
+            next_outer = (i + 1) * 2 + 1
+            indices.extend([inner_idx, next_inner, outer_idx])
+            indices.extend([outer_idx, next_inner, next_outer])
+
+        # Bottom face (reversed winding, negated normals)
+        offset = (slices + 1) * 2
+        for i in range(slices + 1):
+            angle = start_rad + sweep_rad * i / slices
+            cos_a = math.cos(angle)
+            sin_a = math.sin(angle)
+            u = i / slices
+
+            x_in = inner_r * cos_a
+            z_in = inner_r * sin_a
+            vertices.extend([x_in, 0.0, z_in, -nx, -ny, -nz, u, 0.0])
+
+            x_out = outer_r * cos_a
+            z_out = outer_r * sin_a
+            vertices.extend([x_out, 0.0, z_out, -nx, -ny, -nz, u, 1.0])
+
+        for i in range(slices):
+            inner_idx = offset + i * 2
+            outer_idx = offset + i * 2 + 1
+            next_inner = offset + (i + 1) * 2
+            next_outer = offset + (i + 1) * 2 + 1
+            # Reversed winding
+            indices.extend([inner_idx, outer_idx, next_inner])
+            indices.extend([outer_idx, next_outer, next_inner])
+
+        return vertices, indices
+
+    def handle_shape_params(self):
+        if self.ctx is not None and 'M' in self.prog:
+            model = self.ctx.get_model_matrix()
+            self.prog['M'].write(model.astype('f4').T.tobytes())
 
 
 class MGLModelNode(MGLShapeNode):
