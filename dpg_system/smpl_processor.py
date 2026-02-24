@@ -360,8 +360,81 @@ class SMPLProcessingOptions:
     com_acc_min_cutoff: float = 2.0    # Base One Euro min_cutoff for CoM acceleration filter (999 = disabled)
     com_acc_beta: float = 0.8          # Base One Euro beta — high for adaptive responsiveness during impacts
     smooth_input_window: int = 0       # Causal moving average window for pose+trans input (0 = off, 3 = recommended for 33Hz cadence removal)
+    
+    # --- Spine Geometry ---
+    use_s_curve_spine: bool = True      # Use biomechanical S-curve spine instead of SMPL cantilevered spine
 
 class SMPLProcessor:
+    @staticmethod
+    def _spine_s_curve_positions(pelvis_pos, neck_pos, bone_offsets=None):
+        """
+        Compute biomechanical S-curve spine positions between pelvis and neck.
+        
+        Models lumbar lordosis (forward curve at spine1) and thoracic kyphosis
+        (backward curve at spine3). Returns dict of {joint_idx: position}.
+        
+        Args:
+            pelvis_pos: (3,) pelvis position
+            neck_pos: (3,) neck position
+            bone_offsets: optional dict {3: offset_3, 6: offset_6, 9: offset_9, 12: offset_12}
+                          Original SMPL bone offsets for proportional t-value computation.
+                          If None, uses even spacing (0.25 intervals).
+        """
+        spine_dir = neck_pos - pelvis_pos
+        spine_len = np.linalg.norm(spine_dir)
+        if spine_len < 1e-4:
+            # Degenerate case — return straight positions
+            return {0: pelvis_pos, 3: pelvis_pos, 6: pelvis_pos,
+                    9: pelvis_pos, 12: neck_pos}
+        
+        spine_unit = spine_dir / spine_len
+        
+        # Forward direction: perpendicular to spine in the sagittal plane.
+        # In SMPL T-pose (y-up), forward/anterior is +z.
+        # Compute as: world_forward projected perpendicular to spine_unit.
+        world_fwd = np.array([0.0, 0.0, 1.0])  # SMPL T-pose: face/anterior is +z
+        fwd = world_fwd - np.dot(world_fwd, spine_unit) * spine_unit
+        fwd_len = np.linalg.norm(fwd)
+        if fwd_len < 1e-4:
+            # Spine is horizontal — use y as forward
+            world_fwd = np.array([0.0, 1.0, 0.0])
+            fwd = world_fwd - np.dot(world_fwd, spine_unit) * spine_unit
+            fwd_len = np.linalg.norm(fwd)
+        fwd = fwd / fwd_len if fwd_len > 1e-4 else np.zeros(3)
+        
+        # Compute t-values: proportional to original bone lengths if available
+        spine_joints = [0, 3, 6, 9, 12]
+        if bone_offsets is not None:
+            bone_lengths = [np.linalg.norm(bone_offsets[sj]) for sj in [3, 6, 9, 12]]
+            total_path = sum(bone_lengths)
+            if total_path > 1e-4:
+                cumul = 0.0
+                t_values = [0.0]
+                for bl in bone_lengths:
+                    cumul += bl
+                    t_values.append(cumul / total_path)
+            else:
+                t_values = [0.0, 0.25, 0.50, 0.75, 1.0]
+        else:
+            t_values = [0.0, 0.25, 0.50, 0.75, 1.0]
+        
+        # Anterior displacement (positive = forward, lordosis; negative = kyphosis)
+        # sin(2π*t) gives S-curve: 0 at endpoints, lordosis/kyphosis in between
+        lordosis_amp = 0.020   # 2.0 cm peak lumbar lordosis
+        kyphosis_amp = 0.015   # 1.5 cm peak thoracic kyphosis
+        
+        positions = {}
+        for sj, t in zip(spine_joints, t_values):
+            straight = pelvis_pos + t * spine_dir
+            s_disp = np.sin(2 * np.pi * t)
+            if s_disp > 0:
+                disp = s_disp * lordosis_amp   # forward (lordosis)
+            else:
+                disp = s_disp * kyphosis_amp   # backward (kyphosis)
+            positions[sj] = straight + fwd * disp
+        
+        return positions
+    
     def __init__(self, framerate, betas=None, gender='neutral', model_path=None, total_mass_kg=75.0):
         """
         Initialize the SMPLProcessor.
@@ -424,6 +497,7 @@ class SMPLProcessor:
         # We are interested in the first 22 joints (indices 0-21)
         self.target_joint_count = 22
         
+        self.use_s_curve_spine = True  # Default; toggled by options at runtime
         self.limb_data = self._compute_limb_properties()
         self.skeleton_offsets = self._compute_skeleton_offsets()
         self.max_torques = self._compute_max_torque_profile()
@@ -668,6 +742,92 @@ class SMPLProcessor:
                 
                 # print(f"  Computed {n_body_joints} segment CoM offsets from mesh ({len(vertices)} vertices)")
                 
+                # ── Correct spine CoM offsets for S-curve spine ────────────
+                # SMPL spine positions serve mesh deformation, not biomechanics.
+                # Recompute spine CoM offsets relative to biomechanical S-curve
+                # positions (lumbar lordosis + thoracic kyphosis).
+                if self.use_s_curve_spine:
+                    spine_chain = [0, 3, 6, 9, 12]
+                    if len(joints) > max(spine_chain):
+                        # Build bone_offsets dict from original SMPL joints
+                        bone_offsets = {}
+                        for sj in [3, 6, 9, 12]:
+                            parent = {3: 0, 6: 3, 9: 6, 12: 9}[sj]
+                            bone_offsets[sj] = joints[sj] - joints[parent]
+                        s_curve = SMPLProcessor._spine_s_curve_positions(
+                            joints[0], joints[12], bone_offsets)
+                        for sj in spine_chain:
+                            # Mesh CoM world position = actual_pos + actual_offset
+                            com_world = joints[sj] + segment_com_offsets[sj]
+                            # Recompute offset relative to S-curve position
+                            segment_com_offsets[sj] = com_world - s_curve[sj]
+                
+                # ── Clamp limb CoM offsets to biomechanical norms ──────────
+                # LBS vertex assignment inflates limb segment CoMs because mesh
+                # blending assigns distant vertices to joints. Clamp limb offsets
+                # to de Leva (1996) proximal CoM fractions along the bone.
+                # Spine/trunk joints are LEFT UNTOUCHED — their perpendicular
+                # offsets capture the cantilever geometry we need.
+                
+                # SMPL parent indices
+                smpl_parents = [-1, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8,
+                                9, 9, 9, 12, 13, 14, 16, 17, 18, 19, 20, 21]
+                
+                # Spine/trunk joints: preserve offsets as-is
+                trunk_joints = {0, 3, 6, 9, 12, 15}
+                
+                # De Leva proximal CoM fractions (from parent joint toward child)
+                # Conservative max — real is ~0.43-0.58, use 0.50 as cap
+                max_com_fraction = 0.50
+                
+                # Build children map
+                children_map = {}
+                for ci in range(n_body_joints):
+                    pi = smpl_parents[ci] if ci < len(smpl_parents) else -1
+                    if pi >= 0:
+                        children_map.setdefault(pi, []).append(ci)
+                
+                for j in range(n_body_joints):
+                    if j in trunk_joints:
+                        continue  # preserve spine/trunk offsets
+                    
+                    kids = children_map.get(j, [])
+                    if not kids:
+                        # Leaf joint (hands, feet, head) — clamp magnitude
+                        mag = np.linalg.norm(segment_com_offsets[j])
+                        if mag > 0.05:
+                            segment_com_offsets[j] *= 0.05 / mag
+                        continue
+                    
+                    # Use first child to define bone direction
+                    child_j = kids[0]
+                    if child_j >= n_body_joints:
+                        continue
+                    bone_vec = joints[child_j] - joints[j]
+                    bone_len = np.linalg.norm(bone_vec)
+                    if bone_len < 1e-4:
+                        continue
+                    
+                    bone_dir = bone_vec / bone_len
+                    max_offset = max_com_fraction * bone_len
+                    
+                    # Project CoM offset onto bone direction
+                    offset = segment_com_offsets[j]
+                    proj = np.dot(offset, bone_dir)
+                    
+                    # Clamp projection along bone
+                    proj_clamped = np.clip(proj, 0, max_offset)
+                    
+                    # Keep small perpendicular component for realism,
+                    # but clamp it to avoid LBS artifacts
+                    perp = offset - proj * bone_dir
+                    perp_mag = np.linalg.norm(perp)
+                    max_perp = 0.02  # 2cm max perpendicular offset for limbs
+                    if perp_mag > max_perp:
+                        perp = perp * (max_perp / perp_mag)
+                    
+                    segment_com_offsets[j] = proj_clamped * bone_dir + perp
+                
                 # Debug: print spine segment CoMs
                 spine_names = {0: 'Pelvis', 3: 'Spine1', 6: 'Spine2', 9: 'Spine3', 12: 'Neck'}
                 for idx, name in spine_names.items():
@@ -810,6 +970,30 @@ class SMPLProcessor:
                 offsets[:model_offsets.shape[0]] = model_offsets
             else:
                 offsets = model_offsets.copy()  # Copy to avoid mutating cached data
+            
+            # ── Replace SMPL spine with biomechanical S-curve ──────────
+            # SMPL spine is cantilevered (for mesh deformation), not suitable
+            # for torque computation. Replace with anatomical S-curve:
+            # lumbar lordosis + thoracic kyphosis.
+            if self.use_s_curve_spine:
+                spine_chain = [3, 6, 9, 12]  # spine1, spine2, spine3, neck
+                parents_map = {3: 0, 6: 3, 9: 6, 12: 9}
+                
+                # Reconstruct actual spine positions to get pelvis→neck endpoints
+                spine_positions = {0: np.zeros(3)}  # pelvis at origin
+                for sj in spine_chain:
+                    pj = parents_map[sj]
+                    spine_positions[sj] = spine_positions[pj] + offsets[sj]
+                
+                # Compute S-curve target positions (proportional to original bone lengths)
+                bone_offsets = {sj: offsets[sj].copy() for sj in spine_chain}
+                s_curve = SMPLProcessor._spine_s_curve_positions(
+                    spine_positions[0], spine_positions[12], bone_offsets)
+                
+                # Convert S-curve positions back to parent-relative offsets
+                for sj in spine_chain:
+                    pj = parents_map[sj]
+                    offsets[sj] = s_curve[sj] - s_curve[pj]
             
             # Add virtual joint offsets if missing (zeros)
             if model_offsets.shape[0] <= 24 or np.allclose(offsets[24], 0):
@@ -1289,21 +1473,23 @@ class SMPLProcessor:
         total_mass = self.total_mass_kg
         
         # Contact candidate joint indices
-        # Toes (24, 25) are EXCLUDED — consolidated into feet (10, 11)
-        # since we don't measure toe rotation. Heels remain separate
-        # because foot/heel distribution affects ankle torque.
-        contact_joints = [7, 8, 10, 11]  # L/R ankles and feet
-        for vi in [28, 29]:  # heels only (no toes)
+        # ANY body joint can be a contact point (floor work, crawling, etc.).
+        # Height threshold (0.35m) and velocity gating naturally filter
+        # non-contact joints regardless of posture.
+        # Excluded from direct candidacy:
+        #   - Toes (24, 25): consolidated into feet (10, 11) — no toe rotation measured
+        #   - Fingers (26, 27): consolidated into hands (22, 23) — no finger deflection measured
+        contact_joints = list(range(min(J, 24)))  # All 24 SMPL body joints
+        for vi in [28, 29]:  # heels (virtual)
             if vi < J:
                 contact_joints.append(vi)
-        # Hands for crawling/all-fours
-        if J > 21:
-            contact_joints.extend([20, 21])
         
-        # Toe-to-foot consolidation map
-        toe_to_foot = {}
-        if J > 24: toe_to_foot[24] = 10  # L_toe → L_foot
-        if J > 25: toe_to_foot[25] = 11  # R_toe → R_foot
+        # Consolidation maps: unmeasured extremities → parent joints
+        consolidate_to_parent = {}
+        if J > 24: consolidate_to_parent[24] = 10  # L_toe → L_foot
+        if J > 25: consolidate_to_parent[25] = 11  # R_toe → R_foot
+        if J > 26: consolidate_to_parent[26] = 22  # L_finger → L_hand
+        if J > 27: consolidate_to_parent[27] = 23  # R_finger → R_hand
         
         # Need previous frame data
         prev_com = getattr(self, '_prev_com_for_stability', None)
@@ -1342,13 +1528,13 @@ class SMPLProcessor:
                 h = world_pos[0, j, y_dim] if world_pos.ndim > 2 else world_pos[j, y_dim]
             min_joint_height = min(min_joint_height, h - floor_height)
         
-        # Also check toe heights (even though toes are consolidated)
-        for toe_j in toe_to_foot:
-            if toe_j < J:
-                if hasattr(self, 'temp_tips') and toe_j in self.temp_tips:
-                    h = self.temp_tips[toe_j][0, y_dim] if self.temp_tips[toe_j].ndim > 1 else self.temp_tips[toe_j][y_dim]
+        # Also check consolidated joint heights (toes, fingers)
+        for child_j in consolidate_to_parent:
+            if child_j < J:
+                if hasattr(self, 'temp_tips') and child_j in self.temp_tips:
+                    h = self.temp_tips[child_j][0, y_dim] if self.temp_tips[child_j].ndim > 1 else self.temp_tips[child_j][y_dim]
                 else:
-                    h = world_pos[0, toe_j, y_dim]
+                    h = world_pos[0, child_j, y_dim]
                 min_joint_height = min(min_joint_height, h - floor_height)
         
         AIRBORNE_HEIGHT_THRESH = 0.08  # 8cm — if ALL joints above this, likely airborne
@@ -1438,32 +1624,32 @@ class SMPLProcessor:
                     'h': h,
                 })
             
-            # Also check toes as candidate evidence for their parent foot
-            # If a toe has consensus prob, add the foot as candidate if not already
+            # Also check consolidated joints (toes→feet, fingers→hands)
+            # If a child joint has consensus prob, add parent as candidate
             CANDIDATE_THRESH = 0.01
-            foot_in_candidates = {c['j'] for c in candidates}
-            for toe_j, foot_j in toe_to_foot.items():
-                if toe_j >= J or foot_j >= J:
+            parent_in_candidates = {c['j'] for c in candidates}
+            for child_j, parent_j in consolidate_to_parent.items():
+                if child_j >= J or parent_j >= J:
                     continue
-                if foot_j in foot_in_candidates:
+                if parent_j in parent_in_candidates:
                     continue  # Already there
-                if consensus_probs[f, toe_j] < CANDIDATE_THRESH:
+                if consensus_probs[f, child_j] < CANDIDATE_THRESH:
                     continue
-                # Toe detected contact → add foot as candidate
-                if hasattr(self, 'temp_tips') and foot_j in self.temp_tips:
-                    pos = self.temp_tips[foot_j][f]
+                # Child detected contact → add parent as candidate
+                if hasattr(self, 'temp_tips') and parent_j in self.temp_tips:
+                    pos = self.temp_tips[parent_j][f]
                 else:
-                    pos = world_pos[f, foot_j]
+                    pos = world_pos[f, parent_j]
                 h = pos[y_dim] - floor_height
                 if h > 0.35:
                     continue
                 candidates.append({
-                    'j': foot_j,
+                    'j': parent_j,
                     'pos': pos,
                     'pos_hz': pos[plane_dims],
                     'h': h,
                 })
-                foot_in_candidates.add(foot_j)
+                parent_in_candidates.add(parent_j)
             
             if not candidates:
                 continue
@@ -1509,6 +1695,45 @@ class SMPLProcessor:
             if raw_total > 1e-6:
                 target_pressure *= (desired_total / raw_total)
             
+            # Step 4b: Multi-contact torque-aware reweighting
+            # With 3+ contacts, the inverse-distance weighting from CoM
+            # under-loads joints that must support most of the body mass.
+            # Fix: redistribute pressure proportional to each contact's
+            # ability to counteract the body's gravitational moment.
+            # Contacts closer to the CoM's ground projection carry more load.
+            n_candidates = len(candidates)
+            if n_candidates >= 3:
+                # Proximity-weighted pressure: contacts near CoM ground
+                # projection carry more gravitational load. σ=0.25m spreads
+                # weight broadly enough to support distributed contacts
+                # (e.g. both knees in kneeling) without starving distant ones.
+                SIGMA_PROX = 0.25
+                prox_weights = np.zeros(J)
+                for c in candidates:
+                    j = c['j']
+                    d_hz = np.linalg.norm(c['pos_hz'] - com_hz)
+                    prox_weights[j] = np.exp(-0.5 * (d_hz / SIGMA_PROX)**2)
+                
+                prox_total = np.sum(prox_weights)
+                if prox_total > 1e-6:
+                    prox_pressure = (prox_weights / prox_total) * desired_total
+                    # Blend factor increases with contact count
+                    # 3 contacts → 0.3, 6 → 0.5, 10+ → 0.6
+                    blend = min(0.6, 0.15 + 0.05 * (n_candidates - 2))
+                    target_pressure = (1.0 - blend) * target_pressure + blend * prox_pressure
+            
+            # Step 4c: Minimum pressure floor for grounded joints
+            # Any joint clearly on the floor (height < -2cm below floor_height)
+            # should receive meaningful support pressure regardless of CoM
+            # proximity, preventing torque flickering on secondary contacts.
+            MIN_PRESSURE_FRAC = 0.05  # 5% of desired_total per grounded joint
+            GROUNDED_DEPTH = -0.02    # 2cm below floor = definitely on floor
+            min_pressure = MIN_PRESSURE_FRAC * desired_total if desired_total > 0 else 0
+            for c in candidates:
+                j = c['j']
+                if c['h'] < GROUNDED_DEPTH and target_pressure[j] < min_pressure:
+                    target_pressure[j] = min_pressure
+            
             # Apply horizontal velocity attenuation AFTER normalization.
             # This reduction represents load not on the floor (swinging limb
             # mass), so the total decreases — that load is airborne.
@@ -1530,7 +1755,16 @@ class SMPLProcessor:
             #   3. Horizontal velocity × CoM distance — same multiplicative
             #      interaction as Step 5, draining old accumulated pressure
             
-            ALPHA_SLOW = 0.15   # Grounded, near CoM — smooth
+            # Multi-contact smoothing: with 3+ contacts the pressure distribution
+            # is over-determined. Small pose changes shouldn't cause large
+            # redistributions, so increase smoothing (reduce alpha) proportionally.
+            n_contacts = len(candidates)
+            if n_contacts <= 2:
+                ALPHA_SLOW = 0.15   # Normal walking — responsive
+            else:
+                # Scale down: 3 contacts → 0.12, 6 → 0.075, 10+ → 0.05
+                ALPHA_SLOW = 0.15 / (1.0 + 0.25 * (n_contacts - 2))
+            
             ALPHA_FAST = 1.0    # Full evidence — instant tracking, no residual
             VEL_THRESH = 0.05   # m/s — vertical velocity above which we speed up
             VEL_SCALE = 1.5     # m/s — vertical velocity at which alpha is fully fast
@@ -5345,6 +5579,222 @@ class SMPLProcessor:
         
         return t_dyn_limited
 
+    def _compute_balance_stability(self, world_pos, tips, options):
+        """
+        Compute continuous balance stability metrics.
+
+        Combines CoM, ZMP, and the support polygon (convex hull of active
+        contact points) into a 0–1 stability score, signed margins, an
+        imbalance direction vector, and the polygon vertices.
+
+        Returns:
+            dict with keys:
+                stability_score (float): 0 = falling/airborne, 1 = centered.
+                com_margin (float): Signed distance of CoM to polygon edge (m).
+                zmp_margin (float): Signed distance of ZMP to polygon edge (m).
+                imbalance_vector (np.array (3,)): World-space direction from
+                    polygon centroid toward ZMP. Magnitude = distance from
+                    center.  Lies on the ground plane (y_dim = 0).
+                support_polygon (np.array (N, 2)): Ordered convex hull vertices.
+                support_radius (float): Inscribed radius of support polygon (m).
+        """
+        y_dim = getattr(self, 'internal_y_dim', 1)
+        plane_dims = [0, 2] if y_dim == 1 else [0, 1]
+        floor_h = getattr(self, '_inferred_floor_height', options.floor_height)
+
+        # Defaults for the airborne / no-contact case
+        zero3 = np.zeros(3)
+        default = {
+            'stability_score': 0.0,
+            'com_margin': 0.0,
+            'zmp_margin': 0.0,
+            'imbalance_vector': zero3.copy(),
+            'support_polygon': np.zeros((0, 2)),
+            'support_radius': 0.0,
+        }
+
+        # --- 1. Collect active support points ---
+        pressure = self.contact_pressure  # (F, J)
+        if pressure is None or pressure.size == 0:
+            return default
+
+        f = 0  # streaming: single frame
+        p_f = pressure[f] if pressure.ndim > 1 else pressure
+        PRESSURE_THRESH = 0.5  # kg — minimum load to count as support
+
+        pts_2d = []
+        J = p_f.shape[0] if hasattr(p_f, 'shape') else len(p_f)
+        for j in range(J):
+            if p_f[j] < PRESSURE_THRESH:
+                continue
+            if tips is not None and j in tips:
+                pos = tips[j][0] if tips[j].ndim > 1 else tips[j]
+            elif j < world_pos.shape[1]:
+                pos = world_pos[0, j]
+            else:
+                continue
+            pts_2d.append(pos[plane_dims])
+
+        if len(pts_2d) < 1:
+            return default
+
+        pts_2d = np.array(pts_2d)  # (N, 2)
+
+        # --- 2. Build support polygon (convex hull) ---
+        from scipy.spatial import ConvexHull
+
+        if len(pts_2d) == 1:
+            # Single contact: treat as small circle
+            centroid = pts_2d[0]
+            support_radius = 0.05  # ~5 cm effective radius for a foot point
+            hull_verts = pts_2d
+        elif len(pts_2d) == 2:
+            # Line segment: use perpendicular distance
+            centroid = np.mean(pts_2d, axis=0)
+            support_radius = np.linalg.norm(pts_2d[1] - pts_2d[0]) * 0.5
+            hull_verts = pts_2d
+        else:
+            try:
+                hull = ConvexHull(pts_2d)
+                hull_verts = pts_2d[hull.vertices]
+                centroid = np.mean(hull_verts, axis=0)
+
+                # Inscribed radius: min distance from centroid to each edge
+                n_v = len(hull_verts)
+                min_edge_dist = np.inf
+                for i in range(n_v):
+                    a = hull_verts[i]
+                    b = hull_verts[(i + 1) % n_v]
+                    edge = b - a
+                    edge_len = np.linalg.norm(edge)
+                    if edge_len < 1e-8:
+                        continue
+                    edge_n = np.array([-edge[1], edge[0]]) / edge_len  # outward normal
+                    d = abs(np.dot(centroid - a, edge_n))
+                    if d < min_edge_dist:
+                        min_edge_dist = d
+                support_radius = min_edge_dist if np.isfinite(min_edge_dist) else 0.05
+            except Exception:
+                # Degenerate hull (collinear points etc)
+                centroid = np.mean(pts_2d, axis=0)
+                support_radius = 0.05
+                hull_verts = pts_2d
+
+        # --- 3. Signed distance of CoM and ZMP to polygon boundary ---
+        com = self.current_com
+        if com is not None:
+            com_hz = (com[0] if com.ndim > 1 else com)[plane_dims]
+        else:
+            com_hz = centroid.copy()
+
+        zmp = self.current_zmp
+        if zmp is not None:
+            zmp_hz = (zmp[0] if zmp.ndim > 1 else zmp)[plane_dims]
+        else:
+            zmp_hz = com_hz.copy()
+
+        def signed_distance_to_polygon(point, verts):
+            """Positive = inside, negative = outside."""
+            n_v = len(verts)
+            if n_v < 2:
+                return np.linalg.norm(point - verts[0]) * -1.0 if n_v == 1 else 0.0
+            if n_v == 2:
+                # Line segment: perpendicular distance (always "outside")
+                a, b = verts[0], verts[1]
+                seg = b - a
+                seg_len = np.linalg.norm(seg)
+                if seg_len < 1e-8:
+                    return -np.linalg.norm(point - a)
+                t = np.clip(np.dot(point - a, seg) / (seg_len**2), 0, 1)
+                proj = a + t * seg
+                return -np.linalg.norm(point - proj)
+
+            # Full polygon: min distance to each edge, sign from winding
+            min_dist = np.inf
+            all_positive = True
+            for i in range(n_v):
+                a = verts[i]
+                b = verts[(i + 1) % n_v]
+                edge = b - a
+                edge_len = np.linalg.norm(edge)
+                if edge_len < 1e-8:
+                    continue
+                # Outward normal (CCW hull → left normal is outward)
+                normal = np.array([-edge[1], edge[0]]) / edge_len
+                d = np.dot(point - a, normal)
+                if d > 0:
+                    all_positive = False
+                abs_d = abs(d)
+                if abs_d < min_dist:
+                    min_dist = abs_d
+
+            # For CCW-ordered convex hull, all normals should point outward.
+            # Point is inside if dot products with ALL outward normals are ≤ 0.
+            # scipy ConvexHull returns CCW vertices, so outward normal = left normal.
+            # d ≤ 0 for ALL edges → inside.
+            if all_positive:
+                # All cross products > 0 → outside (depends on winding)
+                return -min_dist
+            elif not all_positive and min_dist < np.inf:
+                # Check: inside = all d ≤ 0 for outward normals
+                # With left normal as outward, inside → d ≤ 0
+                # Let's do proper inside check
+                pass
+
+            # Robust inside check: use winding-based approach
+            inside = self._point_in_convex_polygon(point, verts)
+            return min_dist if inside else -min_dist
+
+        com_margin = signed_distance_to_polygon(com_hz, hull_verts)
+        zmp_margin = signed_distance_to_polygon(zmp_hz, hull_verts)
+
+        # --- 4. Stability score ---
+        # Sigmoid scoring: gives continuous feedback even near/outside polygon edge.
+        # margin=0 (on edge)  → 0.5
+        # margin=+3cm (inside) → ~0.73
+        # margin=+10cm         → ~0.96
+        # margin=-3cm (outside) → ~0.27
+        # margin=-10cm          → ~0.04
+        # Falloff of 3cm matches typical contact polygon noise level.
+        FALLOFF = 0.03  # meters — characteristic transition width
+        stability_score = float(1.0 / (1.0 + np.exp(-zmp_margin / FALLOFF)))
+
+        # --- 5. Imbalance direction vector (3D, on ground plane) ---
+        offset_2d = zmp_hz - centroid
+        imbalance = np.zeros(3)
+        imbalance[plane_dims[0]] = offset_2d[0]
+        imbalance[plane_dims[1]] = offset_2d[1]
+        # y_dim stays 0 (lies on ground plane)
+
+        return {
+            'stability_score': stability_score,
+            'com_margin': float(com_margin),
+            'zmp_margin': float(zmp_margin),
+            'imbalance_vector': imbalance,
+            'support_polygon': hull_verts,
+            'support_radius': float(support_radius),
+        }
+
+    @staticmethod
+    def _point_in_convex_polygon(point, verts):
+        """Check if 2D point is inside a convex polygon using cross-product test."""
+        n = len(verts)
+        if n < 3:
+            return False
+        sign = None
+        for i in range(n):
+            a = verts[i]
+            b = verts[(i + 1) % n]
+            cross = (b[0] - a[0]) * (point[1] - a[1]) - (b[1] - a[1]) * (point[0] - a[0])
+            if abs(cross) < 1e-10:
+                continue
+            s = cross > 0
+            if sign is None:
+                sign = s
+            elif s != sign:
+                return False
+        return True
+
     def process_frame(self, pose_data, trans_data, options, effort_pose_data=None):
         """
         Process a single frame or batch of frames.
@@ -5352,6 +5802,15 @@ class SMPLProcessor:
         quat_format: 'xyzw' (default, Scipy) or 'wxyz' (Scalar first). Only used if input_type='quat'.
         effort_pose_data: Optional separate pose stream for Calculation of Effort (AngAcc).
         """
+        # --- S-Curve Spine Toggle Detection ---
+        # If use_s_curve_spine changed since last call, recompute geometry
+        new_s_curve = getattr(options, 'use_s_curve_spine', True)
+        if new_s_curve != self.use_s_curve_spine:
+            self.use_s_curve_spine = new_s_curve
+            self.limb_data = self._compute_limb_properties()
+            self.skeleton_offsets = self._compute_skeleton_offsets()
+            self.reset_physics_state()  # Prevent torque spikes from geometry change
+        
         # --- Optional Input Smoothing ---
         # Causal moving average on both pose and trans to remove sensor cadence artifacts.
         # Applied BEFORE _prepare_trans_and_pose so FK and all downstream use consistently smoothed data.
@@ -5834,6 +6293,9 @@ class SMPLProcessor:
         if hasattr(self, 'temp_tips') and self.temp_tips:
              self.last_tip_positions = {k: v[-1].copy() for k, v in self.temp_tips.items()}
 
+        # --- Balance Stability ---
+        balance = self._compute_balance_stability(world_pos, tips, options)
+
         # --- Output Dictionary ---
         # --- Output Dictionary ---
         res = {
@@ -5853,7 +6315,8 @@ class SMPLProcessor:
             'efforts_net': efforts_net,
             'positions': world_pos,
 
-            'contact_pressure': self.contact_pressure
+            'contact_pressure': self.contact_pressure,
+            'balance': balance,
         }
         
         # --- Optional World-Frame Output Conversion ---

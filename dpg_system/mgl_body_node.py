@@ -59,6 +59,7 @@ class MGLBodyNode(MGLNode):
         self.limb_lengths_input = self.add_input('limb_lengths')
         self.skeleton_mode_input = self.add_input('skeleton_mode', widget_type='combo', default_value='shadow', callback=self._on_skeleton_mode_changed)
         self.skeleton_mode_input.widget.combo_items = ['shadow', 'smpl']
+        self.use_s_curve_spine_input = self.add_input('s_curve_spine', widget_type='checkbox', default_value=True, callback=self._on_skeleton_mode_changed)
         self.color_input = self.add_input('color', widget_type='color_picker', default_value=[1.0, 1.0, 1.0, 1.0])
         self.instanced_display_mode_input = self.add_input('instanced_mode', widget_type='combo', default_value='solid')
         self.instanced_display_mode_input.widget.combo_items = ['solid', 'wireframe', 'points']
@@ -983,6 +984,29 @@ class MGLBodyNode(MGLNode):
         # Virtual extension indices — preserve Shadow geometry for these
         # (toes and heels only; fingertips get SMPL offsets applied directly)
         VIRTUAL_INDICES = {24, 25, 28, 29}
+
+        # Apply S-curve spine correction if enabled
+        use_s_curve = self.use_s_curve_spine_input()
+        if use_s_curve:
+            offsets = offsets.copy()  # Don't mutate the original
+            spine_chain = [3, 6, 9, 12]
+            parents_map = {3: 0, 6: 3, 9: 6, 12: 9}
+            # Reconstruct spine positions from offsets
+            spine_positions = {0: np.zeros(3)}
+            for sj in spine_chain:
+                pj = parents_map[sj]
+                spine_positions[sj] = spine_positions[pj] + offsets[sj]
+            # Proportionally distribute joints along S-curve (preserving bone ratios)
+            try:
+                from dpg_system.smpl_processor import SMPLProcessor
+                bone_offsets = {sj: offsets[sj].copy() for sj in spine_chain}
+                s_curve = SMPLProcessor._spine_s_curve_positions(
+                    spine_positions[0], spine_positions[12], bone_offsets)
+                for sj in spine_chain:
+                    pj = parents_map[sj]
+                    offsets[sj] = s_curve[sj] - s_curve[pj]
+            except ImportError:
+                pass  # smpl_processor not available, skip
 
         # offsets is (30, 3) in SMPL joint order
         for smpl_i in range(min(offsets.shape[0], 30)):

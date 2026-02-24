@@ -2490,28 +2490,14 @@ class DictExtractNode(Node):
         received_dict = self.input()
         if len(self.extract_keys) == 0:
             self.adjust_keys(received_dict)
-            # self.extract_keys = list(received_dict.keys())
-            # for i in range(self.output_count):
-            #     if i < len(self.extract_keys):
-            #         key = self.extract_keys[i]
-            #         self.outputs[i].set_label(key)
-            #         self.outputs[i].send(received_dict[key])
-            #         self.extract_opt[i].set(key)
-            #         dpg.show_item(self.outputs[i].uuid)
-            #     else:
-            #         self.extract_opt[i].set('')
-            #         dpg.show_item(self.outputs[i].uuid)
-            # for i in range(self.output_count, 32):
-            #     dpg.hide_item(self.outputs[i].uuid)
-            #     self.extract_opt[i].set('')
-            # self.unparsed_args = self.extract_keys
         include_key = self.include_key_in_output_option()
-        for index, key in enumerate(self.extract_keys):
+        for index, key in enumerate(reversed(self.extract_keys)):
+            rev_index = len(self.extract_keys) - index - 1
             if key in received_dict:
                 if include_key:
-                    self.outputs[index].send([key, received_dict[key]])
+                    self.outputs[rev_index].send([key, received_dict[key]])
                 else:
-                    self.outputs[index].send(received_dict[key])
+                    self.outputs[rev_index].send(received_dict[key])
 
 
 class DictRetrieveNode(Node):

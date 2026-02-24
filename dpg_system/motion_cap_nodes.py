@@ -476,7 +476,10 @@ class OpenTakeNode(MoCapNode):
 
     def stop_button_clicked(self):
         if self.streaming:
-            self.play_button_clicked()
+            self.streaming = False
+            self.stop_playing()
+            self.play_pause_button.set_label('play')
+            self.play_pause_button.widget.set_active_theme(Node.active_theme_green)
             self.current_frame = 0
         elif self.recording:
             self.record_button_clicked()
@@ -484,8 +487,8 @@ class OpenTakeNode(MoCapNode):
     def play_button_clicked(self):
         if not self.streaming and self.frame_count > 0:
             self.last_frame_out = -1
-            self.current_frame = self.speed() * -1.0
-#            print('play_button_clicked', self.current_frame)
+            if self.play_pause_button.get_label() == 'play':
+                self.current_frame = self.speed() * -1.0
             self.start_playing()
             self.streaming = True
             self.play_pause_button.set_label('pause')
@@ -494,7 +497,7 @@ class OpenTakeNode(MoCapNode):
             if self.streaming:
                 self.streaming = False
                 self.stop_playing()
-                self.play_pause_button.set_label('play')
+                self.play_pause_button.set_label('resume')
                 self.play_pause_button.widget.set_active_theme(Node.active_theme_green)
 
     def record_button_clicked(self):

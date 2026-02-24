@@ -59,6 +59,37 @@ SMPL_JOINT_NAMES = [
     'left_hand', 'right_hand'
 ]
 
+# Per-joint threshold multipliers based on physical inertia.
+# High-inertia joints (pelvis, spine) keep 1.0× thresholds.
+# Low-inertia joints (wrists, hands, feet) can physically move faster,
+# so they get higher multipliers (= less sensitive to noise flagging).
+JOINT_TOLERANCE = np.array([
+    1.0,   # 0  pelvis        — heavy, low-speed
+    1.0,   # 1  left_hip      — heavy
+    1.0,   # 2  right_hip     — heavy
+    1.0,   # 3  spine1        — heavy, central
+    1.2,   # 4  left_knee     — moderate
+    1.2,   # 5  right_knee    — moderate
+    1.0,   # 6  spine2        — heavy, central
+    1.5,   # 7  left_ankle    — lighter
+    1.5,   # 8  right_ankle   — lighter
+    1.0,   # 9  spine3        — heavy, central
+    2.0,   # 10 left_foot     — light, fast
+    2.0,   # 11 right_foot    — light, fast
+    1.0,   # 12 neck          — moderate, central
+    1.2,   # 13 left_collar   — moderate
+    1.2,   # 14 right_collar  — moderate
+    1.2,   # 15 head          — moderate
+    1.2,   # 16 left_shoulder — moderate
+    1.2,   # 17 right_shoulder— moderate
+    1.5,   # 18 left_elbow    — lighter
+    1.5,   # 19 right_elbow   — lighter
+    2.5,   # 20 left_wrist    — very light, fast
+    2.5,   # 21 right_wrist   — very light, fast
+    3.0,   # 22 left_hand     — lightest
+    3.0,   # 23 right_hand    — lightest
+])
+
 
 @dataclass
 class FrameScore:
@@ -112,24 +143,38 @@ def compute_frame_scores(poses, trans, fps, n_joints=24):
     T = poses.shape[0]
     aa = poses.reshape(T, -1, 3)[:, :n_joints]
     
+    # Per-joint tolerance (broadcast-ready)
+    tol = JOINT_TOLERANCE[:n_joints][np.newaxis, :]  # (1, J)
+    
     # Angular velocity (rad/s)
     ang_disp = np.linalg.norm(np.diff(aa, axis=0), axis=-1)  # (T-1, J)
     ang_vel = np.vstack([np.zeros((1, n_joints)), ang_disp * fps])
     
-    max_av = np.max(ang_vel, axis=1)
-    worst_j = np.argmax(ang_vel, axis=1)
+    # Normalize by joint tolerance: fast wrist motion → lower effective value
+    ang_vel_norm = ang_vel / tol
+    
+    max_av = np.max(ang_vel_norm, axis=1)       # effective (tolerance-adjusted)
+    worst_j = np.argmax(ang_vel_norm, axis=1)
+    max_av_raw = np.array([ang_vel[f, worst_j[f]] for f in range(T)])  # raw for reporting
     
     # Angular acceleration (rad/s²)
     ang_acc = np.abs(np.diff(ang_vel, axis=0)) * fps   # (T-1, J)
-    max_aa = np.max(ang_acc, axis=1) if ang_acc.shape[0] > 0 else np.zeros(0)
+    ang_acc_norm = ang_acc / tol[:, :ang_acc.shape[1]] if ang_acc.shape[0] > 0 else ang_acc
+    max_aa = np.max(ang_acc_norm, axis=1) if ang_acc_norm.shape[0] > 0 else np.zeros(0)
     max_aa = np.concatenate([np.zeros(1), max_aa])
+    
+    # Raw ang_acc for reporting
+    max_aa_raw = np.zeros(T)
+    if ang_acc.shape[0] > 0:
+        aa_worst = np.argmax(ang_acc_norm, axis=1)
+        max_aa_raw[1:] = np.array([ang_acc[f, aa_worst[f]] for f in range(ang_acc.shape[0])])
     
     # Translation acceleration (m/s²)
     tv = np.linalg.norm(np.diff(trans, axis=0), axis=-1) * fps
     ta_raw = np.abs(np.diff(tv)) * fps
     ta = np.concatenate([np.zeros(2), ta_raw])
     
-    # Score
+    # Score (using tolerance-adjusted values against thresholds)
     s_av = np.maximum(0, (max_av - AV_WARN) / AV_WARN) * W_AV
     s_aa = np.maximum(0, (max_aa - AA_WARN) / AA_WARN) * W_AA
     s_ta = np.maximum(0, (ta - TA_WARN) / TA_WARN) * W_TA
@@ -147,8 +192,8 @@ def compute_frame_scores(poses, trans, fps, n_joints=24):
         name = SMPL_JOINT_NAMES[wj] if wj < len(SMPL_JOINT_NAMES) else f'j{wj}'
         scores.append(FrameScore(
             frame=f, score=round(float(total[f]), 4),
-            ang_vel=round(float(max_av[f]), 2),
-            ang_acc=round(float(max_aa[f]), 1),
+            ang_vel=round(float(max_av_raw[f]), 2),
+            ang_acc=round(float(max_aa_raw[f]), 1),
             trans_acc=round(float(ta[f]), 2),
             worst_joint=wj, worst_joint_name=name,
         ))

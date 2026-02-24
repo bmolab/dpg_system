@@ -1660,6 +1660,9 @@ class SMPLTorqueNode(SMPLNode):
         self.noise_score_output = self.add_output('noise_score')
         self.noise_report_output = self.add_output('noise_report')
         self.floor_level_output = self.add_output('floor_level')
+        self.balance_score_output = self.add_output('balance_score')
+        self.imbalance_vector_output = self.add_output('imbalance_vector')
+        self.support_polygon_output = self.add_output('support_polygon')
         
         # Noise stats controls
         self.reset_noise_stats_input = self.add_input('reset_noise_stats', widget_type='button', callback=self._reset_noise_stats)
@@ -1712,6 +1715,9 @@ class SMPLTorqueNode(SMPLNode):
         self.com_acc_mc_prop = self.add_option('com_acc_min_cutoff', widget_type='drag_float', default_value=2.0)
         self.com_acc_beta_prop = self.add_option('com_acc_beta', widget_type='drag_float', default_value=0.8)
         self.smooth_input_window_prop = self.add_property('smooth_input_window', widget_type='drag_int', default_value=0)
+        
+        # --- Spine Geometry ---
+        self.use_s_curve_spine_prop = self.add_option('use_s_curve_spine', widget_type='checkbox', default_value=True)
         
         # Calibrated default for Subject_81: [0.0, -0.14, 0.05]
 
@@ -1909,6 +1915,7 @@ class SMPLTorqueNode(SMPLNode):
                 com_acc_min_cutoff=self.com_acc_mc_prop() if hasattr(self, 'com_acc_mc_prop') else 2.0,
                 com_acc_beta=self.com_acc_beta_prop() if hasattr(self, 'com_acc_beta_prop') else 0.8,
                 smooth_input_window=self.smooth_input_window_prop() if hasattr(self, 'smooth_input_window_prop') else 0,
+                use_s_curve_spine=self.use_s_curve_spine_prop() if hasattr(self, 'use_s_curve_spine_prop') else True,
             )
             
             # Process
@@ -2031,6 +2038,13 @@ class SMPLTorqueNode(SMPLNode):
                 noise_report = self.processor.get_noise_report()
                 self.noise_score_output.send(noise_score)
                 self.noise_report_output.send(noise_report)
+                
+                # Send balance stability
+                if 'balance' in res:
+                    bal = res['balance']
+                    self.balance_score_output.send(bal['stability_score'])
+                    self.imbalance_vector_output.send(bal['imbalance_vector'])
+                    self.support_polygon_output.send(bal['support_polygon'])
             
             except Exception as e:
                 # Catch processing errors (e.g. shape mismatch on first frame)
