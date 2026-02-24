@@ -35,6 +35,7 @@ def register_moderngl_nodes():
     Node.app.register_node('mgl_body', MGLBodyNode.factory)
     Node.app.register_node('mgl_surface', MGLSurfaceNode.factory)
     Node.app.register_node('mgl_line', MGLLineNode.factory)
+    Node.app.register_node('mgl_text', MGLTextNode.factory)
     Node.app.register_node('mgl_smpl_mesh', MGLSMPLMeshNode.factory)
 
 
@@ -1928,6 +1929,277 @@ class MGLLineNode(MGLNode):
 
             inner_ctx.disable(moderngl.CULL_FACE)
             self.vao.render(mode=moderngl.LINES)
+
+
+class MGLTextNode(MGLNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        return MGLTextNode(name, data, args)
+
+    def __init__(self, label, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        super().initialize(args)
+        self.font_size = 48
+        self.font_path = 'Inconsolata-g.otf'
+        for i in range(len(args)):
+            v, t = decode_arg(args, i)
+            if t in [float, int]:
+                self.font_size = int(v)
+            elif t == str:
+                self.font_path = v
+
+        self.text_input = self.add_input('text', triggers_execution=True)
+        self.scale_input = self.add_input('scale', widget_type='drag_float', default_value=1.0, speed=0.01)
+        self.text_font = self.add_option('font', widget_type='text_input', default_value=self.font_path, callback=self.font_changed)
+        self.text_size = self.add_option('size', widget_type='drag_int', default_value=self.font_size, callback=self.size_changed)
+
+        self.face = None
+        self.characters = {}
+        self.glyph_shape = [0, 0]
+        self.atlas_texture = None
+        self.initialized = False
+        self.text_data = None
+        self.dirty = False
+        self.vbo = None
+        self.vao = None
+        self.prog = None
+        self.text_shader = None
+
+    def font_changed(self):
+        path = self.text_font()
+        if path != self.font_path:
+            self.font_path = path
+            self.initialized = False
+            self.dirty = True
+
+    def size_changed(self):
+        size = self.text_size()
+        if size != self.font_size:
+            self.font_size = size
+            self.initialized = False
+            self.dirty = True
+
+    def build_atlas(self):
+        """Build a glyph atlas texture using FreeType and moderngl."""
+        try:
+            import freetype
+        except ImportError:
+            print('mgl_text: freetype-py not installed')
+            return False
+
+        try:
+            if self.face is not None:
+                del self.face
+            self.face = freetype.Face(self.font_path)
+            self.face.set_char_size(int(self.font_size * 64))
+        except Exception as e:
+            print(f'mgl_text: failed to load font {self.font_path}: {e}')
+            return False
+
+        self.characters = {}
+
+        # Measure glyph extents
+        bottom = 1000
+        top = 0
+        left = 1000
+        right = 0
+
+        for i in range(32, 128):
+            c = chr(i)
+            if c.isprintable() or c == ' ':
+                self.face.load_char(c)
+                glyph = self.face.glyph
+                if glyph.bitmap_top > top:
+                    top = glyph.bitmap_top
+                if glyph.bitmap_left < left:
+                    left = glyph.bitmap_left
+                bw = glyph.bitmap.width + glyph.bitmap_left
+                if bw > right:
+                    right = bw
+                bb = glyph.bitmap_top - glyph.bitmap.rows
+                if bb < bottom:
+                    bottom = bb
+
+        self.glyph_shape = [max(1, right - left), max(1, top - bottom)]
+        gw, gh = self.glyph_shape
+        atlas_w = gw * 16
+        atlas_h = gh * 8  # 128 - 32 = 96 chars, fits in 16 x 6, use 16 x 8
+        atlas = np.zeros((atlas_h, atlas_w, 4), dtype=np.float32)
+
+        for i in range(32, 128):
+            c = chr(i)
+            if c.isprintable() or c == ' ':
+                self.face.load_char(c)
+                glyph = self.face.glyph
+                bm = glyph.bitmap
+
+                cell_x = (i - 32) % 16
+                cell_y = (i - 32) // 16
+                ox = cell_x * gw + glyph.bitmap_left
+                oy = cell_y * gh + (gh - glyph.bitmap_top + bottom)
+
+                for row in range(bm.rows):
+                    for col in range(bm.width):
+                        py = oy + row
+                        px = ox + col
+                        if 0 <= py < atlas_h and 0 <= px < atlas_w:
+                            alpha = bm.buffer[row * bm.width + col] / 255.0
+                            atlas[py, px] = [1.0, 1.0, 1.0, alpha]
+
+                # Store texture coords and metrics
+                tc_left = (cell_x * gw) / atlas_w
+                tc_right = ((cell_x + 1) * gw) / atlas_w
+                tc_top = (cell_y * gh) / atlas_h
+                tc_bottom = ((cell_y + 1) * gh) / atlas_h
+
+                self.characters[c] = {
+                    'tc': [tc_left, tc_top, tc_right, tc_bottom],
+                    'bearing': (glyph.bitmap_left, glyph.bitmap_top),
+                    'advance': glyph.advance.x >> 6,
+                }
+
+        # Upload to moderngl texture
+        if self.atlas_texture is not None:
+            self.atlas_texture.release()
+
+        ctx = MGLContext.get_instance().ctx
+        # Flip vertically for OpenGL convention
+        atlas_flipped = np.flipud(atlas).copy()
+        self.atlas_texture = ctx.texture((atlas_w, atlas_h), 4, atlas_flipped.tobytes(), dtype='f4')
+        self.atlas_texture.filter = (moderngl.LINEAR, moderngl.LINEAR)
+
+        self.initialized = True
+        return True
+
+    def execute(self):
+        if self.text_input.fresh_input:
+            data = self.text_input()
+            if data is not None:
+                if not isinstance(data, str):
+                    data = str(data)
+                self.text_data = data
+                self.dirty = True
+
+        super().execute()
+
+    def get_text_shader(self):
+        """Create a simple text shader that discards transparent fragments."""
+        if self.text_shader is None:
+            ctx = MGLContext.get_instance().ctx
+            self.text_shader = ctx.program(
+                vertex_shader='''
+                    #version 330
+                    uniform mat4 M;
+                    uniform mat4 V;
+                    uniform mat4 P;
+                    in vec3 in_position;
+                    in vec3 in_normal;
+                    in vec2 in_texcoord;
+                    out vec2 v_texcoord;
+                    void main() {
+                        gl_Position = P * V * M * vec4(in_position, 1.0);
+                        v_texcoord = in_texcoord;
+                    }
+                ''',
+                fragment_shader='''
+                    #version 330
+                    uniform vec4 color;
+                    uniform sampler2D diffuse_map;
+                    in vec2 v_texcoord;
+                    out vec4 f_color;
+                    void main() {
+                        vec4 texColor = texture(diffuse_map, v_texcoord);
+                        if (texColor.a < 0.01) discard;
+                        f_color = vec4(color.rgb * texColor.a, texColor.a * color.a);
+                    }
+                '''
+            )
+        return self.text_shader
+
+    def draw(self):
+        if self.ctx is None:
+            return
+        if not self.initialized:
+            if not self.build_atlas():
+                return
+            self.dirty = True
+
+        if self.text_data is None or len(self.text_data) == 0:
+            return
+
+        inner_ctx = self.ctx.ctx
+        scale = self.scale_input() / 100.0
+        gw, gh = self.glyph_shape
+
+        # Build quad vertices for each character
+        vertices = []
+        x_cursor = 0.0
+
+        for c in self.text_data:
+            if c not in self.characters:
+                continue
+            ch = self.characters[c]
+            tc = ch['tc']  # [left, top, right, bottom]
+            width = gw * scale
+            height = gh * scale
+
+            # Quad as two triangles in XY plane (z=0)
+            x0 = x_cursor
+            x1 = x_cursor + width
+            y0 = 0.0
+            y1 = height
+
+            # tc: [left, top, right, bottom]
+            u0, v0_top, u1, v1_bot = tc
+            v0 = 1.0 - v1_bot
+            v1 = 1.0 - v0_top
+
+            nx, ny, nz = 0.0, 0.0, 1.0
+
+            # Triangle 1: bottom-left, top-left, top-right
+            vertices.extend([x0, y0, 0.0, nx, ny, nz, u0, v0])
+            vertices.extend([x0, y1, 0.0, nx, ny, nz, u0, v1])
+            vertices.extend([x1, y1, 0.0, nx, ny, nz, u1, v1])
+            # Triangle 2: bottom-left, top-right, bottom-right
+            vertices.extend([x0, y0, 0.0, nx, ny, nz, u0, v0])
+            vertices.extend([x1, y1, 0.0, nx, ny, nz, u1, v1])
+            vertices.extend([x1, y0, 0.0, nx, ny, nz, u1, v0])
+
+            x_cursor += ch['advance'] * scale
+
+        if len(vertices) == 0:
+            return
+
+        prog = self.get_text_shader()
+
+        vert_data = np.array(vertices, dtype='f4')
+        self.vbo = inner_ctx.buffer(vert_data.tobytes())
+        self.vao = inner_ctx.vertex_array(prog, [(self.vbo, '3f 12x 2f', 'in_position', 'in_texcoord')])
+
+        # Set uniforms
+        if 'M' in prog:
+            model = self.ctx.get_model_matrix()
+            prog['M'].write(model.astype('f4').T.tobytes())
+        if 'V' in prog:
+            prog['V'].write(self.ctx.view_matrix.tobytes())
+        if 'P' in prog:
+            prog['P'].write(self.ctx.projection_matrix.tobytes())
+        if 'color' in prog:
+            c = self.ctx.current_color
+            prog['color'].value = tuple(c)
+
+        # Enable texturing with the atlas
+        self.atlas_texture.use(location=0)
+        if 'diffuse_map' in prog:
+            prog['diffuse_map'].value = 0
+
+        # Disable culling and depth for text overlay
+        inner_ctx.disable(moderngl.CULL_FACE)
+        inner_ctx.disable(moderngl.DEPTH_TEST)
+        self.vao.render()
+        inner_ctx.enable(moderngl.DEPTH_TEST)
 
 
 class MGLModelNode(MGLShapeNode):
