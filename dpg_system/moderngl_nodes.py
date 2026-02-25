@@ -45,7 +45,9 @@ def register_moderngl_nodes():
     Node.app.register_node('mgl_axis_angle_rotate', MGLAxisAngleRotateNode.factory)
     Node.app.register_node('mgl_billboard', MGLBillboardNode.factory)
     Node.app.register_node('mgl_partial_disk', MGLPartialDiskNode.factory)
+    Node.app.register_node('mgl_torque_arc', MGLTorqueArcNode.factory)
     Node.app.register_node('mgl_smpl_mesh', MGLSMPLMeshNode.factory)
+    Node.app.register_node('mgl_smpl_heatmap', MGLSMPLHeatmapNode.factory)
 
 
 class MGLNode(Node):
@@ -2500,6 +2502,182 @@ class MGLPartialDiskNode(MGLShapeNode):
             self.prog['M'].write(model.astype('f4').T.tobytes())
 
 
+class MGLTorqueArcNode(MGLNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        return MGLTorqueArcNode(name, data, args)
+
+    def __init__(self, label, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        super().initialize(args)
+        self.torques_input = self.add_input('torques', triggers_execution=True)
+        self.positions_input = self.add_input('positions')
+        self.scale_input = self.add_input('scale', widget_type='drag_float', default_value=0.01, speed=0.001)
+        self.threshold_input = self.add_input('threshold', widget_type='drag_float', default_value=0.1, speed=0.01)
+        self.sweep_input = self.add_input('sweep', widget_type='drag_float', default_value=270.0, speed=1.0)
+        self.segments_input = self.add_input('segments', widget_type='drag_int', default_value=24, min_value=6, max_value=64)
+        self.arrow_size_input = self.add_input('arrow size', widget_type='drag_float', default_value=0.3, speed=0.01)
+
+        self.torques_data = None
+        self.positions_data = None
+        self.arc_shader = None
+
+    def get_arc_shader(self):
+        if self.arc_shader is None:
+            ctx = MGLContext.get_instance().ctx
+            self.arc_shader = ctx.program(
+                vertex_shader='''
+                    #version 330
+                    uniform mat4 M;
+                    uniform mat4 V;
+                    uniform mat4 P;
+                    in vec3 in_position;
+                    in vec4 in_color;
+                    out vec4 v_color;
+                    void main() {
+                        gl_Position = P * V * M * vec4(in_position, 1.0);
+                        v_color = in_color;
+                    }
+                ''',
+                fragment_shader='''
+                    #version 330
+                    in vec4 v_color;
+                    out vec4 f_color;
+                    void main() {
+                        f_color = v_color;
+                    }
+                '''
+            )
+        return self.arc_shader
+
+    def execute(self):
+        if self.torques_input.fresh_input:
+            data = self.torques_input()
+            if data is not None:
+                if isinstance(data, list):
+                    data = np.array(data, dtype=np.float32)
+                elif isinstance(data, np.ndarray):
+                    data = data.astype(np.float32)
+                if data.ndim == 2 and data.shape[1] == 3:
+                    self.torques_data = data
+
+        if self.positions_input.fresh_input:
+            data = self.positions_input()
+            if data is not None:
+                if isinstance(data, list):
+                    data = np.array(data, dtype=np.float32)
+                elif isinstance(data, np.ndarray):
+                    data = data.astype(np.float32)
+                if data.ndim == 2 and data.shape[1] == 3:
+                    self.positions_data = data
+
+        super().execute()
+
+    def _build_arc_geometry(self, torque_vec, position, scale, threshold, sweep_deg, segments, arrow_size, color):
+        """Build arc + arrowhead vertices for a single joint torque.
+        Returns list of (verts, mode) tuples where mode is moderngl.LINE_STRIP or moderngl.TRIANGLES.
+        """
+        magnitude = np.linalg.norm(torque_vec)
+        if magnitude < threshold:
+            return []
+
+        radius = magnitude * scale
+        axis = torque_vec / magnitude  # Normalized torque axis
+
+        # Build a coordinate frame perpendicular to the torque axis
+        # Choose a reference vector not parallel to axis
+        if abs(axis[1]) < 0.9:
+            ref = np.array([0.0, 1.0, 0.0], dtype=np.float32)
+        else:
+            ref = np.array([1.0, 0.0, 0.0], dtype=np.float32)
+
+        # Perpendicular vectors (standard right-hand rule basis)
+        u = np.cross(axis, ref)
+        u /= np.linalg.norm(u) + 1e-10
+        v = np.cross(axis, u)
+        v /= np.linalg.norm(v) + 1e-10
+
+        # Negate sweep to reverse arc + arrowhead direction (show resistive torque)
+        sweep_rad = -math.radians(sweep_deg)
+        result = []
+
+        # --- Arc line strip ---
+        arc_verts = []
+        for i in range(segments + 1):
+            angle = sweep_rad * i / segments
+            point = position + radius * (math.cos(angle) * u + math.sin(angle) * v)
+            arc_verts.extend([point[0], point[1], point[2], color[0], color[1], color[2], color[3]])
+        result.append((np.array(arc_verts, dtype='f4'), moderngl.LINE_STRIP))
+
+        # --- Arrowhead triangle at the end of the arc ---
+        end_angle = sweep_rad
+        end_point = position + radius * (math.cos(end_angle) * u + math.sin(end_angle) * v)
+
+        # Tangent direction at the arc endpoint (derivative of the arc parametric equation)
+        tangent = radius * (-math.sin(end_angle) * u + math.cos(end_angle) * v)
+        tangent_norm = tangent / (np.linalg.norm(tangent) + 1e-10)
+
+        # Radial direction at the endpoint (outward from center)
+        radial = (end_point - position)
+        radial_norm = radial / (np.linalg.norm(radial) + 1e-10)
+
+        # Arrow size proportional to radius
+        arrow_len = radius * arrow_size
+
+        # Three points of the arrowhead triangle
+        tip = end_point - tangent_norm * arrow_len
+        left = end_point + radial_norm * arrow_len * 0.4
+        right = end_point - radial_norm * arrow_len * 0.4
+
+        arrow_verts = []
+        for p in [tip, left, right]:
+            arrow_verts.extend([p[0], p[1], p[2], color[0], color[1], color[2], color[3]])
+        result.append((np.array(arrow_verts, dtype='f4'), moderngl.TRIANGLES))
+
+        return result
+
+    def draw(self):
+        if self.ctx is None or self.torques_data is None or self.positions_data is None:
+            return
+
+        inner_ctx = self.ctx.ctx
+        prog = self.get_arc_shader()
+        color = self.ctx.current_color
+
+        scale = self.scale_input()
+        threshold = self.threshold_input()
+        sweep_deg = self.sweep_input()
+        segments = self.segments_input()
+        arrow_size = self.arrow_size_input()
+
+        if 'M' in prog:
+            model = self.ctx.get_model_matrix()
+            prog['M'].write(model.astype('f4').T.tobytes())
+        if 'V' in prog:
+            prog['V'].write(self.ctx.view_matrix.tobytes())
+        if 'P' in prog:
+            prog['P'].write(self.ctx.projection_matrix.tobytes())
+
+        inner_ctx.disable(moderngl.CULL_FACE)
+
+        num_joints = min(self.torques_data.shape[0], self.positions_data.shape[0])
+
+        for j in range(num_joints):
+            pieces = self._build_arc_geometry(
+                self.torques_data[j],
+                self.positions_data[j],
+                scale, threshold, sweep_deg, segments, arrow_size, color
+            )
+            for verts, mode in pieces:
+                vbo = inner_ctx.buffer(verts.tobytes())
+                vao = inner_ctx.vertex_array(prog, [(vbo, '3f 4f', 'in_position', 'in_color')])
+                vao.render(mode=mode)
+                vbo.release()
+                vao.release()
+
+
 class MGLModelNode(MGLShapeNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -2759,3 +2937,4 @@ class MGLCameraNode(MGLNode):
 
 from dpg_system.mgl_body_node import MGLBodyNode
 from dpg_system.mgl_smpl_mesh_node import MGLSMPLMeshNode
+from dpg_system.mgl_smpl_heatmap_node import MGLSMPLHeatmapNode

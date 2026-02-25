@@ -148,10 +148,11 @@ class MGLContext:
                 void main() {
                     vec4 world_pos = M * vec4(in_position, 1.0);
                     gl_Position = P * V * world_pos;
+                    float perspective_size = point_size / gl_Position.w;
                     if (point_size > 1.5) {
-                        gl_PointSize = point_size + 2.0;
+                        gl_PointSize = perspective_size + 2.0;
                     } else {
-                        gl_PointSize = max(1.0, point_size);
+                        gl_PointSize = max(1.0, perspective_size);
                     }
                     mat3 normal_matrix = transpose(inverse(mat3(M)));
                     v_normal = normal_matrix * in_normal;

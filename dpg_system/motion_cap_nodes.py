@@ -417,7 +417,8 @@ class OpenTakeNode(MoCapNode):
         self.temp_save_name = ''
         self.last_frame_out = -1
         self.recording = False
-
+        self.force_frame = False
+        self.pending_frame = 0
         self.message_handlers['load'] = self.load_take_message
         self.new_positions = False
         self.load_take_task = -1
@@ -637,6 +638,11 @@ class OpenTakeNode(MoCapNode):
 
     def frame_task(self):
         self.step()
+        if self.force_frame:
+            print('frame_task - force_frame')
+            self.force_frame = False
+            self.remove_frame_tasks()
+            self.streaming = False
 
     def external_play(self):
         if self.external_clock_enable_input():
@@ -644,8 +650,12 @@ class OpenTakeNode(MoCapNode):
                 self.step()
 
     def step(self):
-        self.current_frame += self.speed()
-        if int(self.current_frame) > self.last_frame_out:
+        if self.pending_frame == int(self.current_frame):
+            self.current_frame += self.speed()
+        else:
+            self.current_frame = self.pending_frame
+        self.pending_frame = int(self.current_frame)
+        if int(self.current_frame) > self.last_frame_out or self.force_frame:
             if self.current_frame > self.clip_end:
                 if self.loop_input():
                     self.current_frame = self.clip_start
@@ -654,8 +664,8 @@ class OpenTakeNode(MoCapNode):
                 self.done_out.send('done')
                 if not self.loop_input():
                     return
-
-            self.frame_input.set(self.current_frame)
+            if not self.force_frame:
+                self.frame_input.set(self.current_frame)
             frame = int(self.current_frame)
 
             self.last_frame_out = frame
@@ -729,33 +739,14 @@ class OpenTakeNode(MoCapNode):
         data = self.frame_input()
         if data < 0:
             data = 0
-            self.current_frame = data
-            self.frame_input.set(self.current_frame)
-        if data < self.frame_count:
-            self.current_frame = data
-            frame_dict = {}
-            for key in self.sequence_keys:
-                frame_dict[key] = self.take_dict[key][self.current_frame]
-            self.frame_out.send(self.current_frame)
-            self.take_data_out.send(frame_dict)
-        else:
+        elif data >= self.frame_count:
             data = self.frame_count - 1
-            self.current_frame = data
-            self.frame_input.set(self.current_frame)
+        self.pending_frame = data
 
-    def execute(self):
-        if self.frame_input.fresh_input:
-            data = self.frame_input()
-            # handled, do_output = self.check_for_messages(data)
-            # if not handled:
-            t = type(data)
-            if t == int:
-                if data < self.frame_count:
-                    frame_dict = {}
-                    for key in self.sequence_keys:
-                        frame_dict[key] = frame_dict[key][self.current_frame]
-                    self.frame_out.send(self.current_frame)
-                    self.take_data_out.send(frame_dict)
+        if not self.streaming:
+            self.streaming = True
+            self.force_frame = True
+            self.add_frame_task()
 
     def load_take_message(self, message='', args=None):
         if args is not None:
