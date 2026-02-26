@@ -814,7 +814,7 @@ class TimeBetweenNode(Node):
 
         self.start_input = self.add_input('start', triggers_execution=True)
         self.end_input = self.add_input('end', triggers_execution=True)
-
+        self.time_display = self.add_property('##time_display', widget_type='drag_float')
         self.units_property = self.add_property('units', widget_type='combo', default_value=default_units, callback=self.set_units)
         self.units_property.widget.combo_items = ['seconds', 'milliseconds', 'minutes', 'hours']
         self.output = self.add_output("")
@@ -830,6 +830,7 @@ class TimeBetweenNode(Node):
         elif self.active_input == self.end_input:
             self.end_time = time.time()
             elapsed = (self.end_time - self.start_time) * self.units
+            self.time_display.set(elapsed)
             self.output.send(elapsed)
 
 

@@ -121,6 +121,9 @@ class MGLContextNode(Node):
         self._pbo_width = 0
         self._pbo_height = 0
 
+        # Pre-allocated pixel buffer for zero-allocation readback
+        self._pixel_buf = None
+
         self.auto_render_input = self.add_input('auto_render', widget_type='checkbox', default_value=False, callback=self.toggle_auto_render)
         self.render_trigger = self.add_input('render', triggers_execution=True)
         self.mgl_chain_output = self.add_output('mgl_chain')
@@ -142,7 +145,10 @@ class MGLContextNode(Node):
         self.camera_fov_option = self.add_option('camera_fov', widget_type='drag_float', default_value=60.0)
         self.camera_pos_option = self.add_option('camera_pos', widget_type='drag_float_n', default_value=[0.0, 0.0, 3.0], columns=3)
         self.camera_target_option = self.add_option('camera_target', widget_type='drag_float_n', default_value=[0.0, 0.0, 0.0], columns=3)
-        
+
+        self.win_size_option = self.add_option('win_size', widget_type='drag_float_n', default_value=[self.width, self.height], columns=2)
+        self.win_pos_option = self.add_option('win_pos', widget_type='drag_float_n', default_value=[100, 100], columns=2)
+
 
     def toggle_auto_render(self):
         if self.auto_render_input():
@@ -166,6 +172,8 @@ class MGLContextNode(Node):
             dpg.delete_item(self.external_window)
         if self.fullscreen_window:
             dpg.delete_item(self.fullscreen_window)
+        # Hide pyglet window if it was shown
+        self.context.hide_window()
         if hasattr(self, 'render_target') and self.render_target:
             self.render_target.release()
         for pbo in self._pbo:
@@ -281,36 +289,42 @@ class MGLContextNode(Node):
                 self.fullscreen_window = None
 
     def execute(self):
+        mode = self.display_mode_option()
+
         # Escape Exits Fullscreen
-        if self.display_mode_option() == 'fullscreen' and dpg.is_key_pressed(dpg.mvKey_Escape):
+        if mode == 'fullscreen' and dpg.is_key_pressed(dpg.mvKey_Escape):
+            mode = 'window'
             self.display_mode_option.set('window')
             dpg.set_value(self.display_mode_option.widget.uuid, 'window')
-            self.update_display('window')
 
-        # 0. Sync Window Image Size (Stretch to fit)
-        if self.external_window and dpg.does_item_exist(self.external_window) and self.display_mode_option() == 'window':
-             win_w = dpg.get_item_width(self.external_window)
-             win_h = dpg.get_item_height(self.external_window)
-             
-             # Find image child and update its size to fill window
-             children = dpg.get_item_children(self.external_window, slot=1)
-             if children:
-                 for child in children:
-                     if dpg.get_item_type(child) == "mvAppItemType::mvImage":
-                         # Only update if different to avoid spamming commands
-                         if dpg.get_item_width(child) != win_w or dpg.get_item_height(child) != win_h:
-                             dpg.configure_item(child, width=win_w, height=win_h)
-        
+        # Determine if we can use direct-to-screen (pyglet window) for this mode
+        use_direct = (mode in ('window', 'fullscreen') and
+                      self.context.has_direct_window)
+
+        # 0. Sync DPG Window Image Size (only when using readback path)
+        if not use_direct:
+            if self.external_window and dpg.does_item_exist(self.external_window) and mode == 'window':
+                 win_w = dpg.get_item_width(self.external_window)
+                 win_h = dpg.get_item_height(self.external_window)
+                 children = dpg.get_item_children(self.external_window, slot=1)
+                 if children:
+                     for child in children:
+                         if dpg.get_item_type(child) == "mvAppItemType::mvImage":
+                             if dpg.get_item_width(child) != win_w or dpg.get_item_height(child) != win_h:
+                                 dpg.configure_item(child, width=win_w, height=win_h)
+
         # Update FBO size/Check
         try:
             samples = int(self.samples_option())
         except:
             samples = 4
-        
-        # Scope the ModernGL Context to avoid polluting global GL state (e.g. for legacy gl_nodes)
+
+        # --- Render Scene ---
+        # Scope the GL context: during DPG's frame, DPG's own context is current.
+        # We must make OUR context (pyglet's) current for all GL operations,
+        # then restore DPG's context on exit.
         with self.context.ctx:
-            # Create/update render target INSIDE the context scope —
-            # texture/FBO creation requires an active GL context.
+            # Create/update render target
             if self.render_target is None or self.render_target.width != self.width or self.render_target.height != self.height or self.render_target.samples != samples:
                 if self.render_target:
                     self.render_target.release()
@@ -318,7 +332,7 @@ class MGLContextNode(Node):
 
             # Activate Local Target
             self.context.use_render_target(self.render_target)
-            
+
             # Reset Context State
             self.context.current_color = (1.0, 1.0, 1.0, 1.0)
             self.context.lights = []
@@ -362,83 +376,169 @@ class MGLContextNode(Node):
                 self.context.set_view_matrix(look_at(cam_pos, cam_target, [0.0, 1.0, 0.0]))
                 if 'view_pos' in self.context.default_shader:
                     self.context.default_shader['view_pos'].value = tuple(cam_pos)
-            
+
             # Sync back actual samples if fallback occurred
             if self.render_target.samples != samples:
                 self.samples_option.set(str(self.render_target.samples))
-            
+
             # Clear
             self.context.clear(0.0, 0.0, 0.0, 1.0)
-            
+
             # Signal Downstream to Draw
             self.mgl_chain_output.send('draw')
-            
-            # --- PBO Double-Buffered Async Readback ---
-            # Resolve MSAA if needed (same as get_pixel_data but without the sync read)
-            rt = self.render_target
-            if rt.samples > 0 and rt.msaa_fbo:
-                self.context.ctx.copy_framebuffer(rt.fbo, rt.msaa_fbo)
-            
-            buf_size = self.width * self.height * 4  # RGBA uint8
-            
-            # Recreate PBOs if resolution changed
-            if self._pbo_width != self.width or self._pbo_height != self.height:
-                for i in range(2):
-                    if self._pbo[i] is not None:
-                        self._pbo[i].release()
-                    self._pbo[i] = self.context.ctx.buffer(reserve=buf_size)
-                self._pbo_width = self.width
-                self._pbo_height = self.height
-                self._pbo_ready = False
-                self._pbo_index = 0
-            
-            # Determine which PBO to write into (current) and which to read from (previous)
-            write_pbo = self._pbo[self._pbo_index]
-            read_pbo = self._pbo[1 - self._pbo_index]
-            
-            # Initiate async DMA transfer: FBO -> write_pbo
-            rt.fbo.read_into(write_pbo, components=4)
-            
-            # Read from the OTHER PBO (filled last frame)
-            if self._pbo_ready:
-                data = read_pbo.read()
+
+            # --- Display Path ---
+            if use_direct:
+                # === DIRECT-TO-SCREEN: blit FBO to pyglet window (zero readback) ===
+
+                # Read window size/position from options
+                win_size = self.win_size_option()
+                if np.isscalar(win_size):
+                    win_size = [win_size, win_size]
+                win_w = int(win_size[0]) if len(win_size) > 0 else self.width
+                win_h = int(win_size[1]) if len(win_size) > 1 else self.height
+                if win_w <= 0: win_w = self.width
+                if win_h <= 0: win_h = self.height
+
+                # Manage pyglet window visibility and size
+                if mode == 'fullscreen':
+                    self.context.show_window(win_w, win_h, fullscreen=True)
+                else:
+                    self.context.show_window(win_w, win_h)
+
+                    # Bidirectional position sync:
+                    # If user dragged the OS window → update widget.
+                    # If user changed the widget → move the window.
+                    actual_pos = self.context.get_window_pos()
+                    if actual_pos is not None:
+                        widget_pos = self.win_pos_option()
+                        if np.isscalar(widget_pos):
+                            widget_pos = [widget_pos, widget_pos]
+                        wx, wy = int(widget_pos[0]), int(widget_pos[1])
+                        ax, ay = actual_pos
+                        if wx != ax or wy != ay:
+                            # Widget differs from actual — did the user change the widget
+                            # or drag the window? Check against what we last pushed.
+                            last = getattr(self, '_last_win_pos', None)
+                            if last is not None and wx == last[0] and wy == last[1]:
+                                # Widget unchanged, window was dragged → update widget
+                                self.win_pos_option.widget.set([float(ax), float(ay)])
+                                self._last_win_pos = (ax, ay)
+                            else:
+                                # Widget changed → move window
+                                self.context.set_window_pos(wx, wy)
+                                self._last_win_pos = (wx, wy)
+                        else:
+                            self._last_win_pos = (ax, ay)
+                    else:
+                        # Window not yet visible, just push
+                        widget_pos = self.win_pos_option()
+                        if np.isscalar(widget_pos):
+                            widget_pos = [widget_pos, widget_pos]
+                        wx, wy = int(widget_pos[0]), int(widget_pos[1])
+                        self.context.set_window_pos(wx, wy)
+                        self._last_win_pos = (wx, wy)
+
+                # Clean up ALL DPG display elements (node image, external window, fullscreen)
+                if self.image_item and dpg.does_item_exist(self.image_item):
+                    dpg.delete_item(self.image_item)
+                    self.image_item = None
+                if hasattr(self, 'image_attribute') and self.image_attribute and dpg.does_item_exist(self.image_attribute):
+                    dpg.delete_item(self.image_attribute)
+                    self.image_attribute = None
+                if self.external_window and dpg.does_item_exist(self.external_window):
+                    dpg.delete_item(self.external_window)
+                    self.external_window = None
+                if self.fullscreen_window and dpg.does_item_exist(self.fullscreen_window):
+                    dpg.delete_item(self.fullscreen_window)
+                    self.fullscreen_window = None
+
+                # Blit FBO directly to screen
+                self.context.blit_to_window(self.render_target)
+
+                # Send texture_tag for downstream consumers that may exist
+                self.texture_output.send(self.texture_tag)
+
             else:
-                # First frame: fall back to synchronous read
-                data = write_pbo.read()
-                self._pbo_ready = True
-            
-            # Swap PBO index for next frame
-            self._pbo_index = 1 - self._pbo_index
-        
-        # OpenGL framebuffer origin is bottom-left, DPG textures expect top-left.
-        # Flip rows vertically to correct the orientation.
-        pixels = np.frombuffer(data, dtype=np.uint8).reshape(self.height, self.width, 4)
-        pixels = np.flipud(pixels).flatten().astype(np.float32) / 255.0
-        
-        if self.texture_tag is None or not dpg.does_item_exist(self.texture_tag):
-             with dpg.texture_registry(show=False):
-                # Let DPG generate ID to avoid alias collisions
-                self.texture_tag = dpg.add_dynamic_texture(self.width, self.height, pixels)
-             self.texture_output.send(self.texture_tag)
-        else:
-             # Check size
-            tex_w = dpg.get_item_width(self.texture_tag)
-            tex_h = dpg.get_item_height(self.texture_tag)
-            
-            if tex_w != self.width or tex_h != self.height:
-                 # Recreate texture
-                 dpg.delete_item(self.texture_tag)
+                # === READBACK PATH: PBO → CPU → DPG texture ===
+
+                # Hide pyglet window if it was previously visible
+                self.context.hide_window()
+
+                # Resolve MSAA if needed
+                rt = self.render_target
+                if rt.samples > 0 and rt.msaa_fbo:
+                    self.context.ctx.copy_framebuffer(rt.fbo, rt.msaa_fbo)
+
+                buf_size = self.width * self.height * 4  # RGBA uint8
+
+                # Recreate PBOs if resolution changed
+                if self._pbo_width != self.width or self._pbo_height != self.height:
+                    for i in range(2):
+                        if self._pbo[i] is not None:
+                            self._pbo[i].release()
+                        self._pbo[i] = self.context.ctx.buffer(reserve=buf_size)
+                    self._pbo_width = self.width
+                    self._pbo_height = self.height
+                    self._pbo_ready = False
+                    self._pbo_index = 0
+
+                # Determine which PBO to write into (current) and which to read from (previous)
+                write_pbo = self._pbo[self._pbo_index]
+                read_pbo = self._pbo[1 - self._pbo_index]
+
+                # Initiate async DMA transfer: FBO -> write_pbo
+                rt.fbo.read_into(write_pbo, components=4)
+
+                # Read from the OTHER PBO (filled last frame)
+                if self._pbo_ready:
+                    data = read_pbo.read()
+                else:
+                    # First frame: fall back to synchronous read
+                    data = write_pbo.read()
+                    self._pbo_ready = True
+
+                # Swap PBO index for next frame
+                self._pbo_index = 1 - self._pbo_index
+
+        # --- CPU-side pixel processing (outside GL context scope) ---
+        if not use_direct:
+            raw = np.frombuffer(data, dtype=np.uint8).reshape(self.height, self.width, 4)[::-1]
+
+            n_pixels = self.height * self.width * 4
+            if self._pixel_buf is None or self._pixel_buf.size != n_pixels:
+                self._pixel_buf = np.empty(n_pixels, dtype=np.float32)
+
+            np.copyto(self._pixel_buf.reshape(self.height, self.width, 4),
+                      raw, casting='unsafe')
+            self._pixel_buf *= (1.0 / 255.0)
+            pixels = self._pixel_buf
+
+            if self.texture_tag is None or not dpg.does_item_exist(self.texture_tag):
                  with dpg.texture_registry(show=False):
-                    self.texture_tag = dpg.add_dynamic_texture(self.width, self.height, pixels)
-                 # Note: self.texture_tag is new ID now.
+                    self.texture_tag = dpg.add_raw_texture(self.width, self.height, pixels,
+                                                           format=dpg.mvFormat_Float_rgba)
+                 self.texture_output.send(self.texture_tag)
             else:
-                dpg.set_value(self.texture_tag, pixels)
-            
-            self.texture_output.send(self.texture_tag)
-        
-        # 2. Update Display
-        mode = self.display_mode_option()
-        self.update_display(mode)
+                tex_w = dpg.get_item_width(self.texture_tag)
+                tex_h = dpg.get_item_height(self.texture_tag)
+
+                if tex_w != self.width or tex_h != self.height:
+                     dpg.delete_item(self.texture_tag)
+                     self._pixel_buf = np.empty(self.width * self.height * 4, dtype=np.float32)
+                     pixels = self._pixel_buf
+                     np.copyto(pixels.reshape(self.height, self.width, 4), raw, casting='unsafe')
+                     pixels *= (1.0 / 255.0)
+                     with dpg.texture_registry(show=False):
+                        self.texture_tag = dpg.add_raw_texture(self.width, self.height, pixels,
+                                                               format=dpg.mvFormat_Float_rgba)
+                else:
+                    dpg.set_value(self.texture_tag, pixels)
+
+                self.texture_output.send(self.texture_tag)
+
+            # Update DPG display widgets
+            self.update_display(mode)
 
 
 class MGLDisplayNode(Node):

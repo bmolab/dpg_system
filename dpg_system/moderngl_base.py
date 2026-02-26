@@ -3,6 +3,12 @@ import moderngl
 import numpy as np
 from dpg_system.matrix_utils import *
 
+try:
+    import pyglet
+    _HAS_PYGLET = True
+except ImportError:
+    _HAS_PYGLET = False
+
 class MGLRenderTarget:
     def __init__(self, ctx, width, height, samples=4):
         self.ctx = ctx
@@ -99,14 +105,28 @@ class MGLContext:
         if MGLContext._instance is not None:
             raise Exception("This class is a singleton!")
         
+        self._pyglet_window = None
+
         try:
-            self.ctx = moderngl.create_context(standalone=True)
+            if _HAS_PYGLET:
+                # Create a tiny hidden pyglet window to own the GL context.
+                # This allows both offscreen FBO rendering AND direct-to-screen blit.
+                config = pyglet.gl.Config(
+                    double_buffer=True, depth_size=24,
+                    major_version=3, minor_version=3)
+                self._pyglet_window = pyglet.window.Window(
+                    width=1, height=1, visible=False, config=config,
+                    caption='MGL Output')
+                self.ctx = moderngl.create_context()  # wraps pyglet's active context
+            else:
+                self.ctx = moderngl.create_context(standalone=True)
+
             self.ctx.enable(moderngl.BLEND)
             self.ctx.enable(moderngl.DEPTH_TEST)
             # Use Premultiplied Alpha Blending to allow additive specular on transparent surfaces
             self.ctx.blend_func = (moderngl.ONE, moderngl.ONE_MINUS_SRC_ALPHA)
         except Exception as e:
-            print(f"Failed to create standalone context: {e}")
+            print(f"Failed to create context: {e}")
             return
 
         # Default Render State
@@ -444,4 +464,146 @@ class MGLContext:
 
     def set_projection_matrix(self, matrix):
         self.projection_matrix = matrix
+
+    # --- Pyglet Window Management ---
+    @property
+    def has_direct_window(self):
+        return self._pyglet_window is not None
+
+    def show_window(self, width, height, title='MGL Output', fullscreen=False):
+        """Show the pyglet window for direct-to-screen rendering.
+        Only modifies window state when it actually changes to avoid
+        focus-stealing on every frame."""
+        if not self._pyglet_window:
+            return
+        win = self._pyglet_window
+
+        # Track current state to avoid redundant calls
+        if not hasattr(self, '_win_visible'):
+            self._win_visible = False
+            self._win_fullscreen = False
+            self._win_width = 0
+            self._win_height = 0
+
+        needs_show = not self._win_visible
+
+        if fullscreen:
+            if not self._win_fullscreen:
+                # Use borderless window at screen size instead of native fullscreen.
+                # Native fullscreen on macOS takes over the display and blocks
+                # DPG from receiving keyboard events (can't ESC to exit).
+                screen = win.display.get_default_screen()
+                win.set_size(screen.width, screen.height)
+                win.set_location(0, 0)
+                self._win_fullscreen = True
+                self._win_width = screen.width
+                self._win_height = screen.height
+                needs_show = True
+        else:
+            if self._win_fullscreen:
+                self._win_fullscreen = False
+                needs_show = True
+            if self._win_width != width or self._win_height != height:
+                win.set_size(width, height)
+                self._win_width = width
+                self._win_height = height
+
+        if needs_show:
+            win.set_visible(True)
+            self._win_visible = True
+
+    def hide_window(self):
+        """Hide the pyglet window."""
+        if self._pyglet_window and getattr(self, '_win_visible', False):
+            self._pyglet_window.set_visible(False)
+            self._win_visible = False
+            self._win_fullscreen = False
+
+    def set_window_pos(self, x, y):
+        """Set the pyglet window position."""
+        if self._pyglet_window and getattr(self, '_win_visible', False):
+            self._pyglet_window.set_location(int(x), int(y))
+
+    def get_window_pos(self):
+        """Get the actual pyglet window position from the OS."""
+        if self._pyglet_window and getattr(self, '_win_visible', False):
+            return self._pyglet_window.get_location()
+        return None
+
+    @property
+    def screen_size(self):
+        """Get the screen dimensions."""
+        if self._pyglet_window:
+            screen = self._pyglet_window.display.get_default_screen()
+            return screen.width, screen.height
+        return 1920, 1080
+
+    def resize_window(self, width, height):
+        """Resize the pyglet window if visible."""
+        if self._pyglet_window and self._pyglet_window.visible:
+            self._pyglet_window.set_size(width, height)
+
+    def blit_to_window(self, render_target):
+        """Blit resolved FBO to the pyglet window via fullscreen quad — zero readback."""
+        if not self._pyglet_window:
+            return False
+
+        # Resolve MSAA if needed
+        if render_target.samples > 0 and render_target.msaa_fbo:
+            self.ctx.copy_framebuffer(render_target.fbo, render_target.msaa_fbo)
+
+        # Lazily create blit shader + fullscreen quad VAO
+        if not hasattr(self, '_blit_prog') or self._blit_prog is None:
+            self._blit_prog = self.ctx.program(
+                vertex_shader='''
+                    #version 330
+                    in vec2 in_pos;
+                    out vec2 v_uv;
+                    void main() {
+                        gl_Position = vec4(in_pos, 0.0, 1.0);
+                        v_uv = in_pos * 0.5 + 0.5;
+                    }
+                ''',
+                fragment_shader='''
+                    #version 330
+                    uniform sampler2D tex;
+                    in vec2 v_uv;
+                    out vec4 f_color;
+                    void main() {
+                        f_color = texture(tex, v_uv);
+                    }
+                '''
+            )
+            # Fullscreen triangle-strip quad: covers [-1, -1] to [1, 1]
+            verts = np.array([-1, -1, 1, -1, -1, 1, 1, 1], dtype='f4')
+            vbo = self.ctx.buffer(verts.tobytes())
+            self._blit_vao = self.ctx.simple_vertex_array(
+                self._blit_prog, vbo, 'in_pos')
+
+        # Bind resolved FBO texture to texture unit 0
+        render_target.texture.use(location=0)
+        self._blit_prog['tex'].value = 0
+
+        # Update viewport to match actual framebuffer size (Retina-aware).
+        # ctx.screen was created when the window was 1x1, so its viewport
+        # is stale. We must update it to the window's current backing size.
+        fb_w, fb_h = self._pyglet_window.get_framebuffer_size()
+        self.ctx.screen.viewport = (0, 0, fb_w, fb_h)
+        self.ctx.screen.use()
+
+        # Disable depth test for the blit
+        self.ctx.disable(moderngl.DEPTH_TEST)
+        self._blit_vao.render(moderngl.TRIANGLE_STRIP)
+        self.ctx.enable(moderngl.DEPTH_TEST)
+
+        # Swap buffers
+        self._pyglet_window.flip()
+
+        # NOTE: We intentionally do NOT call dispatch_events() here.
+        # Pyglet's dispatch_events() consumes macOS system events, stealing
+        # mouse/keyboard input from DPG. The window content updates via flip()
+        # alone; the window just won't process its own close/resize events,
+        # which is fine since we manage visibility and size programmatically.
+
+        return True
 

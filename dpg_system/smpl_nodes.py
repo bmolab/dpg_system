@@ -1715,6 +1715,7 @@ class SMPLTorqueNode(SMPLNode):
         self.com_acc_mc_prop = self.add_option('com_acc_min_cutoff', widget_type='drag_float', default_value=2.0)
         self.com_acc_beta_prop = self.add_option('com_acc_beta', widget_type='drag_float', default_value=0.8)
         self.smooth_input_window_prop = self.add_property('smooth_input_window', widget_type='drag_int', default_value=0)
+        self.magnetometer_cadence_prop = self.add_property('magnetometer_cadence', widget_type='drag_int', default_value=0)
         
         # --- Spine Geometry ---
         self.use_s_curve_spine_prop = self.add_option('use_s_curve_spine', widget_type='checkbox', default_value=True)
@@ -1915,6 +1916,7 @@ class SMPLTorqueNode(SMPLNode):
                 com_acc_min_cutoff=self.com_acc_mc_prop() if hasattr(self, 'com_acc_mc_prop') else 2.0,
                 com_acc_beta=self.com_acc_beta_prop() if hasattr(self, 'com_acc_beta_prop') else 0.8,
                 smooth_input_window=self.smooth_input_window_prop() if hasattr(self, 'smooth_input_window_prop') else 0,
+                magnetometer_cadence=self.magnetometer_cadence_prop() if hasattr(self, 'magnetometer_cadence_prop') else 0,
                 use_s_curve_spine=self.use_s_curve_spine_prop() if hasattr(self, 'use_s_curve_spine_prop') else True,
             )
             
