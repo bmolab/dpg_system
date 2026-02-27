@@ -1919,6 +1919,7 @@ class App:
             glfw.make_context_current(held_context)
 
     def run_loop(self):
+        import dpg_system.gl_nodes
         elapsed = 0
         do_gl = False
         do_osc_async = False
@@ -1968,7 +1969,7 @@ class App:
                     if not self.gl_on_separate_thread:
                         if opengl_active:
                             if do_gl:
-                                gl_nodes.GLContextNode.maintenance_loop()
+                                dpg_system.gl_nodes.GLContextNode.maintenance_loop()
                             self.restore_gl_context(hold_context)
 
                     elapsed = then - now
