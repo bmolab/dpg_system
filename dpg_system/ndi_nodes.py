@@ -1,3 +1,20 @@
+import ctypes
+import os
+import sys
+
+# On Linux, NDI|HX (H.264/H.265) decoding requires libavcodec.so.58 (FFmpeg 4.x).
+# OpenCV bundles its own libavcodec.so.59 which conflicts. Pre-loading the correct
+# version here (before opencv_nodes imports cv2) prevents the conflict.
+# See NDI_LINUX_SETUP.md for full details.
+if sys.platform == 'linux':
+    try:
+        if os.path.exists('/usr/local/lib/libavcodec.so.58'):
+            ctypes.CDLL('/usr/local/lib/libavutil.so.56', mode=ctypes.RTLD_GLOBAL)
+            ctypes.CDLL('/usr/local/lib/libswresample.so.3', mode=ctypes.RTLD_GLOBAL)
+            ctypes.CDLL('/usr/local/lib/libavcodec.so.58', mode=ctypes.RTLD_GLOBAL)
+    except Exception:
+        pass
+
 import dearpygui.dearpygui as dpg
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *

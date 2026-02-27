@@ -34,6 +34,7 @@ def register_moderngl_nodes():
     Node.app.register_node('mgl_light', MGLLightNode.factory)
     Node.app.register_node('mgl_material', MGLMaterialNode.factory)
     Node.app.register_node('mgl_texture', MGLTextureNode.factory)
+    Node.app.register_node('mgl_image', MGLImageNode.factory)
     Node.app.register_node('mgl_plane', MGLPlaneNode.factory)
     Node.app.register_node('mgl_disk', MGLDiskNode.factory)
     Node.app.register_node('mgl_body', MGLBodyNode.factory)
@@ -95,6 +96,128 @@ class MGLNode(Node):
     def handle_other_messages(self, message):
         pass
 
+
+class MGLImageNode(MGLNode):
+    """Renders a texture (or numpy/torch array) as a fullscreen quad filling the context."""
+
+    _image_vert_src = '''
+        #version 330
+        in vec2 in_position;
+        in vec2 in_texcoord;
+        out vec2 v_texcoord;
+        void main() {
+            gl_Position = vec4(in_position, 0.0, 1.0);
+            v_texcoord = in_texcoord;
+        }
+    '''
+    _image_frag_src = '''
+        #version 330
+        uniform sampler2D image;
+        in vec2 v_texcoord;
+        out vec4 fragColor;
+        void main() {
+            fragColor = texture(image, v_texcoord);
+        }
+    '''
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return MGLImageNode(name, data, args)
+
+    def __init__(self, label, data, args):
+        super().__init__(label, data, args)
+        self._prog = None
+        self._vao = None
+        self._internal_texture = None
+        self._int_tex_w = 0
+        self._int_tex_h = 0
+        self._int_tex_c = 0
+
+    def initialize(self, args):
+        super().initialize(args)
+        self.texture_input = self.add_input('texture', triggers_execution=True)
+
+    def _ensure_quad(self):
+        """Lazily create the fullscreen quad shader + VAO."""
+        if self._prog is not None:
+            return
+        ctx = MGLContext.get_instance().ctx
+        self._prog = ctx.program(
+            vertex_shader=self._image_vert_src,
+            fragment_shader=self._image_frag_src,
+        )
+        # Fullscreen quad: two triangles, positions in NDC [-1,1], texcoords [0,1]
+        # Flip V so top-left of image maps to top-left of screen
+        vertices = np.array([
+            # x,    y,   u,   v
+            -1.0, -1.0, 0.0, 1.0,
+            +1.0, -1.0, 1.0, 1.0,
+            -1.0, +1.0, 0.0, 0.0,
+            +1.0, +1.0, 1.0, 0.0,
+        ], dtype='f4')
+        vbo = ctx.buffer(vertices.tobytes())
+        self._vao = ctx.simple_vertex_array(self._prog, vbo, 'in_position', 'in_texcoord')
+
+    def _update_internal_texture(self, data):
+        """Convert a numpy array (or torch tensor) to an internal moderngl.Texture."""
+        if self.app.torch_available and isinstance(data, torch.Tensor):
+            data = data.detach().cpu().numpy()
+        if isinstance(data, list):
+            data = np.array(data, dtype=np.uint8)
+        if not isinstance(data, np.ndarray):
+            return None
+        if data.dtype == np.float32 or data.dtype == np.float64:
+            data = np.clip(data * 255, 0, 255).astype(np.uint8)
+        else:
+            data = data.astype(np.uint8)
+        if data.ndim == 2:
+            h, w = data.shape
+            c = 1
+        elif data.ndim == 3:
+            h, w, c = data.shape
+        else:
+            return None
+        if c not in (1, 3, 4):
+            return None
+        ctx = MGLContext.get_instance().ctx
+        if (self._internal_texture is None or
+                w != self._int_tex_w or h != self._int_tex_h or c != self._int_tex_c):
+            if self._internal_texture is not None:
+                self._internal_texture.release()
+            self._internal_texture = ctx.texture((w, h), c)
+            self._internal_texture.filter = (moderngl.LINEAR, moderngl.LINEAR)
+            self._int_tex_w = w
+            self._int_tex_h = h
+            self._int_tex_c = c
+        self._internal_texture.write(data.tobytes())
+        return self._internal_texture
+
+    def draw(self):
+        if self.ctx is None:
+            return
+        inner_ctx = self.ctx.ctx
+
+        # Resolve texture input
+        tex = self.texture_input()
+        if tex is None:
+            return
+        if not isinstance(tex, moderngl.Texture):
+            tex = self._update_internal_texture(tex)
+        if tex is None:
+            return
+
+        self._ensure_quad()
+        if self._vao is None or self._prog is None:
+            return
+
+        # Disable depth test so the quad always renders
+        inner_ctx.disable(moderngl.DEPTH_TEST)
+        tex.use(location=0)
+        if 'image' in self._prog:
+            self._prog['image'].value = 0
+        self._vao.render(moderngl.TRIANGLE_STRIP)
+        # Re-enable depth test for subsequent 3D nodes
+        inner_ctx.enable(moderngl.DEPTH_TEST)
 
 class MGLContextNode(Node):
     @staticmethod
@@ -1106,6 +1229,11 @@ class MGLShapeNode(MGLNode):
         self.ibo = None
         self.vao = None
         self.prog = None
+        # Internal texture for numpy/torch array input
+        self._internal_texture = None
+        self._int_tex_w = 0
+        self._int_tex_h = 0
+        self._int_tex_c = 0
 
     def geometry_changed(self):
         self.vao = None
@@ -1135,6 +1263,43 @@ class MGLShapeNode(MGLNode):
 
     def handle_shape_params(self):
         pass
+
+    def _update_internal_texture(self, data):
+        """Convert a numpy array (or torch tensor) to an internal moderngl.Texture."""
+        if self.ctx is None:
+            return None
+        if self.app.torch_available and isinstance(data, torch.Tensor):
+            data = data.detach().cpu().numpy()
+        if isinstance(data, list):
+            data = np.array(data, dtype=np.uint8)
+        if not isinstance(data, np.ndarray):
+            return None
+        if data.dtype == np.float32 or data.dtype == np.float64:
+            data = np.clip(data * 255, 0, 255).astype(np.uint8)
+        else:
+            data = data.astype(np.uint8)
+        if data.ndim == 2:
+            # Grayscale H×W → treat as single channel
+            h, w = data.shape
+            c = 1
+        elif data.ndim == 3:
+            h, w, c = data.shape
+        else:
+            return None
+        if c not in (1, 3, 4):
+            return None
+        inner_ctx = self.ctx.ctx
+        if (self._internal_texture is None or
+                w != self._int_tex_w or h != self._int_tex_h or c != self._int_tex_c):
+            if self._internal_texture is not None:
+                self._internal_texture.release()
+            self._internal_texture = inner_ctx.texture((w, h), c)
+            self._internal_texture.filter = (moderngl.LINEAR, moderngl.LINEAR)
+            self._int_tex_w = w
+            self._int_tex_h = h
+            self._int_tex_c = c
+        self._internal_texture.write(data.tobytes())
+        return self._internal_texture
 
     def draw(self):
         if self.ctx is not None:
@@ -1179,12 +1344,19 @@ class MGLShapeNode(MGLNode):
 
             # Texturing
             tex = self.texture_input()
-            if tex is not None and isinstance(tex, moderngl.Texture):
-                tex.use(location=0)
-                if 'diffuse_map' in self.prog:
-                    self.prog['diffuse_map'].value = 0
-                if 'has_texture' in self.prog:
-                    self.prog['has_texture'].value = True
+            if tex is not None:
+                # Convert numpy/torch array to internal texture if needed
+                if not isinstance(tex, moderngl.Texture):
+                    tex = self._update_internal_texture(tex)
+                if isinstance(tex, moderngl.Texture):
+                    tex.use(location=0)
+                    if 'diffuse_map' in self.prog:
+                        self.prog['diffuse_map'].value = 0
+                    if 'has_texture' in self.prog:
+                        self.prog['has_texture'].value = True
+                else:
+                    if 'has_texture' in self.prog:
+                        self.prog['has_texture'].value = False
             else:
                 if 'has_texture' in self.prog:
                     self.prog['has_texture'].value = False

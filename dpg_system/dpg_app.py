@@ -41,6 +41,7 @@ to_import = [
 
 optional_import = [
     'gl_nodes',
+    'ndi_nodes',
     'opencv_nodes',
     'elevenlabs_nodes',
     'movesense_nodes',
@@ -66,7 +67,6 @@ optional_import = [
     'sampler_nodes',
     'visca_nodes',
     'pjlink_nodes',
-    'ndi_nodes',
     'moderngl_nodes',
     'vision_describe_nodes'
 ]
