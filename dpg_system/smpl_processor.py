@@ -5850,9 +5850,9 @@ class SMPLProcessor:
         # Output containers
         torques_vec = np.zeros((F, self.target_joint_count, 3))
         inertias = np.zeros((F, self.target_joint_count))
-        efforts_net = np.zeros((F, self.target_joint_count))
-        efforts_dyn = np.zeros((F, self.target_joint_count))
-        efforts_grav = np.zeros((F, self.target_joint_count))
+        efforts_net = np.zeros((F, self.target_joint_count, 3))
+        efforts_dyn = np.zeros((F, self.target_joint_count, 3))
+        efforts_grav = np.zeros((F, self.target_joint_count, 3))
         
         # Vectors debugging arrays
         t_net_vecs = np.zeros((F, self.target_joint_count, 3))
@@ -6045,12 +6045,9 @@ class SMPLProcessor:
         # Efforts (vectorized over all joints)
         max_torque = self.max_torque_array[:self.target_joint_count]  # (J, 3)
         denom = max_torque + 1e-6  # (J, 3)
-        efforts_net[:, :self.target_joint_count] = np.linalg.norm(
-            np.abs(t_active_all) / denom[np.newaxis, :, :], axis=-1)
-        efforts_dyn[:, :self.target_joint_count] = np.linalg.norm(
-            np.abs(t_dyn_limited[:, :self.target_joint_count]) / denom[np.newaxis, :, :], axis=-1)
-        efforts_grav[:, :self.target_joint_count] = np.linalg.norm(
-            np.abs(t_grav_local_all) / denom[np.newaxis, :, :], axis=-1)
+        efforts_net[:, :self.target_joint_count] = t_active_all / denom[np.newaxis, :, :]
+        efforts_dyn[:, :self.target_joint_count] = t_dyn_limited[:, :self.target_joint_count] / denom[np.newaxis, :, :]
+        efforts_grav[:, :self.target_joint_count] = t_grav_local_all / denom[np.newaxis, :, :]
 
         return torques_vec, inertias, efforts_net, efforts_dyn, efforts_grav, t_dyn_vecs, t_grav_vecs, t_passive_vecs
 

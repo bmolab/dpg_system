@@ -84,6 +84,9 @@ class MGLSMPLHeatmapNode(Node):
         self.faces_np = None
         self.n_verts = 0
         self.skinning_weights = None  # (V, 24) numpy
+        self.sigma_axial = None       # (24,) per-joint axial spread
+        self.sigma_radial = None      # (24,) per-joint radial spread
+        self.tpose_bone_dirs = None   # (24, 3) T-pose bone directions
         self.betas_tensor = None
         self.current_gender = None
 
@@ -115,12 +118,14 @@ class MGLSMPLHeatmapNode(Node):
                                              default_value=0.5, speed=0.01)
         self.min_opacity_prop = self.add_option('min opacity', widget_type='drag_float',
                                                  default_value=0.15, speed=0.01)
-        self.weight_mode_prop = self.add_option('weight mode', widget_type='combo', default_value='directional')
-        self.weight_mode_prop.widget.combo_items = ['directional', 'proximity', 'skinning']
+        self.weight_mode_prop = self.add_option('weight mode', widget_type='combo', default_value='iso directional')
+        self.weight_mode_prop.widget.combo_items = ['iso directional', 'iso proximity', 'directional', 'proximity', 'skinning']
         self.spread_prop = self.add_option('spread', widget_type='drag_float',
                                            default_value=0.08, speed=0.005)
         self.dir_bias_prop = self.add_option('dir bias', widget_type='drag_float',
                                               default_value=0.7, speed=0.01)
+        self.muscle_offset_prop = self.add_option('muscle offset', widget_type='drag_float',
+                                                   default_value=0.4, speed=0.01)
         self.gender_prop = self.add_property('gender', widget_type='combo', default_value='male')
         self.gender_prop.widget.combo_items = ['male', 'female']
         self.model_path_prop = self.add_property('model_path', widget_type='text_input',
@@ -159,6 +164,9 @@ class MGLSMPLHeatmapNode(Node):
             # Extract skinning weights for body joints only (first 24 of 52)
             weights_full = self.smpl_model.lbs_weights.cpu().numpy()  # (V, 52)
             self.skinning_weights = weights_full[:, :24].copy()  # (V, 24)
+
+            # Compute per-joint anisotropic covariance from T-pose geometry
+            self._compute_joint_scales(verts, output.joints[0, :24].cpu().numpy())
 
             self.current_gender = self.gender_prop()
             return True
@@ -274,36 +282,73 @@ class MGLSMPLHeatmapNode(Node):
         normals /= np.maximum(lengths, 1e-8)
         return normals
 
-    def _compute_proximity_weights(self, vertices, joint_positions):
-        """Compute per-vertex weights based on proximity to joints using Gaussian falloff."""
-        sigma = max(self.spread_prop(), 0.01)
-        n_joints = joint_positions.shape[0]
+    def _compute_joint_scales(self, t_pose_verts, t_pose_joints):
+        """Compute per-joint anisotropic scales from T-pose mesh.
 
-        # (V, 1, 3) - (1, J, 3) -> (V, J, 3) -> (V, J)
-        diffs = vertices[:, np.newaxis, :] - joint_positions[np.newaxis, :, :]
-        dists_sq = np.sum(diffs ** 2, axis=2)  # (V, J)
-
-        weights = np.exp(-dists_sq / (2.0 * sigma * sigma))  # (V, J)
-
-        # Normalize per vertex
-        weight_sums = weights.sum(axis=1, keepdims=True)
-        weights /= np.maximum(weight_sums, 1e-10)
-
-        return weights
-
-    def _compute_directional_weights(self, vertices, joint_positions, torques):
-        """Compute proximity weights biased toward agonist muscle direction.
-
-        For each joint, computes muscle_dir = cross(torque_axis, bone_dir).
-        This naturally points toward the muscles producing the torque:
-        - Knee flexion torque -> hamstrings (posterior)
-        - Knee extension torque -> quadriceps (anterior)
+        For each joint, computes two characteristic scales:
+        - sigma_axial: spread along the bone direction (large for limbs)
+        - sigma_radial: spread perpendicular to the bone (small for limbs, large for torso)
         """
-        sigma = max(self.spread_prop(), 0.01)
-        dir_bias = self.dir_bias_prop()
-        n_joints = min(len(joint_positions), len(torques), 24)
+        n_joints = min(24, len(t_pose_joints))
 
-        # Compute bone directions: parent -> child
+        # Compute T-pose bone directions
+        self.tpose_bone_dirs = np.zeros((n_joints, 3), dtype=np.float32)
+        for j in range(n_joints):
+            parent_idx = SMPL_PARENT[j] if j < len(SMPL_PARENT) else -1
+            if 0 <= parent_idx < n_joints:
+                d = t_pose_joints[j] - t_pose_joints[parent_idx]
+                length = np.linalg.norm(d)
+                if length > 1e-6:
+                    self.tpose_bone_dirs[j] = d / length
+                else:
+                    self.tpose_bone_dirs[j] = np.array([0, 1, 0])
+            else:
+                self.tpose_bone_dirs[j] = np.array([0, 1, 0])
+
+        # Compute per-joint axial and radial standard deviations
+        self.sigma_axial = np.full(n_joints, 0.05, dtype=np.float32)
+        self.sigma_radial = np.full(n_joints, 0.05, dtype=np.float32)
+
+        for j in range(n_joints):
+            wj = self.skinning_weights[:, j]
+            mask = wj > 0.05
+            n_masked = mask.sum()
+            if n_masked < 10:
+                continue
+
+            wj_masked = wj[mask]
+            wj_norm = wj_masked / wj_masked.sum()
+            v_centered = t_pose_verts[mask] - t_pose_joints[j]  # (N, 3)
+
+            bone_dir = self.tpose_bone_dirs[j]
+
+            # Axial projection (along bone)
+            axial = v_centered @ bone_dir  # (N,)
+            # Radial distance (perpendicular to bone)
+            radial_sq = np.sum(v_centered ** 2, axis=1) - axial ** 2
+            radial_sq = np.maximum(radial_sq, 0.0)
+
+            # Weighted standard deviations
+            sa = max(np.sqrt(np.sum(wj_norm * axial ** 2)), 0.02)
+            sr = max(np.sqrt(np.sum(wj_norm * radial_sq)), 0.02)
+            # Ensure radial spread is at least as wide as axial (wider than long)
+            sr = max(sr, sa)
+            self.sigma_axial[j] = sa
+            self.sigma_radial[j] = sr
+
+    def _compute_aniso_dist_sq(self, diffs, joint_positions, spread):
+        """Compute anisotropic squared distance for all (V, J) pairs.
+
+        Uses bone-aligned decomposition: axial²/σ_axial² + radial²/σ_radial².
+        Much faster than full Mahalanobis (no matrix multiply, just dot products).
+        """
+        n_joints = diffs.shape[1]
+
+        if self.sigma_axial is None or self.sigma_radial is None:
+            # Fallback to isotropic
+            return np.sum(diffs ** 2, axis=2) / (spread * 0.05) ** 2
+
+        # Get bone directions for active joints — use current pose directions
         bone_dirs = np.zeros((n_joints, 3), dtype=np.float32)
         for j in range(n_joints):
             parent_idx = SMPL_PARENT[j] if j < len(SMPL_PARENT) else -1
@@ -313,9 +358,63 @@ class MGLSMPLHeatmapNode(Node):
                 if length > 1e-6:
                     bone_dirs[j] = d / length
                 else:
-                    bone_dirs[j] = np.array([0, 1, 0])  # fallback
+                    bone_dirs[j] = self.tpose_bone_dirs[j] if j < len(self.tpose_bone_dirs) else np.array([0, 1, 0])
             else:
-                bone_dirs[j] = np.array([0, 1, 0])  # root: default up
+                bone_dirs[j] = self.tpose_bone_dirs[j] if j < len(self.tpose_bone_dirs) else np.array([0, 1, 0])
+
+        # Axial projection: dot(diffs, bone_dir) for each joint
+        # diffs: (V, J, 3), bone_dirs: (J, 3) -> axial: (V, J)
+        axial = np.sum(diffs * bone_dirs[np.newaxis, :, :], axis=2)  # (V, J)
+
+        # Radial² = total² - axial²
+        total_sq = np.sum(diffs ** 2, axis=2)  # (V, J)
+        radial_sq = np.maximum(total_sq - axial ** 2, 0.0)  # (V, J)
+
+        # Scale by per-joint sigmas
+        sa = self.sigma_axial[:n_joints] * spread  # (J,)
+        sr = self.sigma_radial[:n_joints] * spread  # (J,)
+
+        aniso_sq = (axial ** 2) / (sa[np.newaxis, :] ** 2) + radial_sq / (sr[np.newaxis, :] ** 2)
+        return aniso_sq
+
+    def _compute_proximity_weights(self, vertices, joint_positions):
+        """Compute per-vertex weights using bone-aligned anisotropic Gaussian."""
+        spread = max(self.spread_prop(), 0.01)
+        n_joints = joint_positions.shape[0]
+
+        diffs = vertices[:, np.newaxis, :] - joint_positions[np.newaxis, :, :]
+        aniso_sq = self._compute_aniso_dist_sq(diffs, joint_positions, spread)
+
+        weights = np.exp(-0.5 * aniso_sq)
+
+        # Normalize per vertex
+        weight_sums = weights.sum(axis=1, keepdims=True)
+        weights /= np.maximum(weight_sums, 1e-10)
+
+        return weights
+
+    def _compute_directional_weights(self, vertices, joint_positions, torques):
+        """Compute anisotropic proximity weights biased toward agonist muscle direction.
+
+        Uses bone-aligned anisotropic Gaussian + directional bias from torque.
+        """
+        spread = max(self.spread_prop(), 0.01)
+        dir_bias = self.dir_bias_prop()
+        n_joints = min(len(joint_positions), len(torques), 24)
+
+        # Compute bone directions from current pose
+        bone_dirs = np.zeros((n_joints, 3), dtype=np.float32)
+        for j in range(n_joints):
+            parent_idx = SMPL_PARENT[j] if j < len(SMPL_PARENT) else -1
+            if 0 <= parent_idx < n_joints:
+                d = joint_positions[j] - joint_positions[parent_idx]
+                length = np.linalg.norm(d)
+                if length > 1e-6:
+                    bone_dirs[j] = d / length
+                else:
+                    bone_dirs[j] = np.array([0, 1, 0])
+            else:
+                bone_dirs[j] = np.array([0, 1, 0])
 
         # Compute muscle direction for each joint: cross(torque_axis, bone_dir)
         muscle_dirs = np.zeros((n_joints, 3), dtype=np.float32)
@@ -328,19 +427,18 @@ class MGLSMPLHeatmapNode(Node):
                 if md_len > 1e-6:
                     muscle_dirs[j] = md / md_len
 
-        # Vectorized proximity: (V, J)
+        # Anisotropic proximity
         diffs = vertices[:, np.newaxis, :] - joint_positions[np.newaxis, :n_joints, :]
-        dists_sq = np.sum(diffs ** 2, axis=2)
-        proximity = np.exp(-dists_sq / (2.0 * sigma * sigma))
+        aniso_sq = self._compute_aniso_dist_sq(diffs, joint_positions, spread)
+        proximity = np.exp(-0.5 * aniso_sq)
 
         # Directional bias: cosine similarity of (v - j) with muscle_dir
-        dists = np.sqrt(dists_sq + 1e-10)
-        dir_dots = np.sum(diffs * muscle_dirs[np.newaxis, :, :], axis=2)  # (V, J)
-        dir_cos = dir_dots / dists  # cosine similarity [-1, 1]
+        dists = np.sqrt(np.sum(diffs ** 2, axis=2) + 1e-10)
+        dir_dots = np.sum(diffs * muscle_dirs[np.newaxis, :, :], axis=2)
+        dir_cos = dir_dots / dists
 
-        # Bias: ramp from (1-dir_bias) on antagonist side to (1+dir_bias) on agonist side
         directional_bias = 1.0 + dir_bias * dir_cos
-        directional_bias = np.maximum(directional_bias, 0.05)  # don't fully suppress
+        directional_bias = np.maximum(directional_bias, 0.05)
 
         weights = proximity * directional_bias
 
@@ -348,6 +446,61 @@ class MGLSMPLHeatmapNode(Node):
         weight_sums = weights.sum(axis=1, keepdims=True)
         weights /= np.maximum(weight_sums, 1e-10)
 
+        return weights
+
+    def _compute_iso_proximity_weights(self, vertices, joint_positions):
+        """Compute per-vertex weights using simple isotropic Gaussian."""
+        sigma = max(self.spread_prop(), 0.001)
+        diffs = vertices[:, np.newaxis, :] - joint_positions[np.newaxis, :, :]
+        dists_sq = np.sum(diffs ** 2, axis=2)
+        weights = np.exp(-dists_sq / (2.0 * sigma * sigma))
+        weight_sums = weights.sum(axis=1, keepdims=True)
+        weights /= np.maximum(weight_sums, 1e-10)
+        return weights
+
+    def _compute_iso_directional_weights(self, vertices, joint_positions, torques):
+        """Compute isotropic proximity weights biased toward agonist muscle direction."""
+        sigma = max(self.spread_prop(), 0.001)
+        dir_bias = self.dir_bias_prop()
+        n_joints = min(len(joint_positions), len(torques), 24)
+
+        bone_dirs = np.zeros((n_joints, 3), dtype=np.float32)
+        for j in range(n_joints):
+            parent_idx = SMPL_PARENT[j] if j < len(SMPL_PARENT) else -1
+            if 0 <= parent_idx < n_joints:
+                d = joint_positions[j] - joint_positions[parent_idx]
+                length = np.linalg.norm(d)
+                if length > 1e-6:
+                    bone_dirs[j] = d / length
+                else:
+                    bone_dirs[j] = np.array([0, 1, 0])
+            else:
+                bone_dirs[j] = np.array([0, 1, 0])
+
+        muscle_dirs = np.zeros((n_joints, 3), dtype=np.float32)
+        for j in range(n_joints):
+            tau_mag = np.linalg.norm(torques[j])
+            if tau_mag > 1e-6:
+                tau_axis = torques[j] / tau_mag
+                md = np.cross(tau_axis, bone_dirs[j])
+                md_len = np.linalg.norm(md)
+                if md_len > 1e-6:
+                    muscle_dirs[j] = md / md_len
+
+        diffs = vertices[:, np.newaxis, :] - joint_positions[np.newaxis, :n_joints, :]
+        dists_sq = np.sum(diffs ** 2, axis=2)
+        proximity = np.exp(-dists_sq / (2.0 * sigma * sigma))
+
+        dists = np.sqrt(dists_sq + 1e-10)
+        dir_dots = np.sum(diffs * muscle_dirs[np.newaxis, :, :], axis=2)
+        dir_cos = dir_dots / dists
+
+        directional_bias = 1.0 + dir_bias * dir_cos
+        directional_bias = np.maximum(directional_bias, 0.05)
+
+        weights = proximity * directional_bias
+        weight_sums = weights.sum(axis=1, keepdims=True)
+        weights /= np.maximum(weight_sums, 1e-10)
         return weights
 
     def _compute_vertex_colors(self, torques):
@@ -361,16 +514,41 @@ class MGLSMPLHeatmapNode(Node):
         """
         mode = self.weight_mode_prop()
 
-        if mode == 'directional' and self.last_vertices is not None and self.last_joint_positions is not None:
-            n_joints = min(torques.shape[0], self.last_joint_positions.shape[0])
+        # Offset joint centers toward parent segment (where actuating muscles are)
+        offset = self.muscle_offset_prop()
+        if self.last_joint_positions is not None and offset > 0.0:
+            jpos = self.last_joint_positions.copy()
+            n_j = len(jpos)
+            for j in range(n_j):
+                parent_idx = SMPL_PARENT[j] if j < len(SMPL_PARENT) else -1
+                if 0 <= parent_idx < n_j:
+                    jpos[j] = jpos[j] + offset * (self.last_joint_positions[parent_idx] - jpos[j])
+        elif self.last_joint_positions is not None:
+            jpos = self.last_joint_positions
+        else:
+            jpos = None
+
+        if mode == 'iso directional' and self.last_vertices is not None and jpos is not None:
+            n_joints = min(torques.shape[0], jpos.shape[0])
+            magnitudes = np.linalg.norm(torques[:n_joints], axis=1)
+            weights = self._compute_iso_directional_weights(
+                self.last_vertices, jpos[:n_joints], torques[:n_joints])
+            vert_magnitudes = weights @ magnitudes
+        elif mode == 'iso proximity' and self.last_vertices is not None and jpos is not None:
+            n_joints = min(torques.shape[0], jpos.shape[0])
+            magnitudes = np.linalg.norm(torques[:n_joints], axis=1)
+            weights = self._compute_iso_proximity_weights(self.last_vertices, jpos[:n_joints])
+            vert_magnitudes = weights @ magnitudes
+        elif mode == 'directional' and self.last_vertices is not None and jpos is not None:
+            n_joints = min(torques.shape[0], jpos.shape[0])
             magnitudes = np.linalg.norm(torques[:n_joints], axis=1)
             weights = self._compute_directional_weights(
-                self.last_vertices, self.last_joint_positions[:n_joints], torques[:n_joints])
+                self.last_vertices, jpos[:n_joints], torques[:n_joints])
             vert_magnitudes = weights @ magnitudes
-        elif mode == 'proximity' and self.last_vertices is not None and self.last_joint_positions is not None:
-            n_joints = min(torques.shape[0], self.last_joint_positions.shape[0])
+        elif mode == 'proximity' and self.last_vertices is not None and jpos is not None:
+            n_joints = min(torques.shape[0], jpos.shape[0])
             magnitudes = np.linalg.norm(torques[:n_joints], axis=1)
-            weights = self._compute_proximity_weights(self.last_vertices, self.last_joint_positions[:n_joints])
+            weights = self._compute_proximity_weights(self.last_vertices, jpos[:n_joints])
             vert_magnitudes = weights @ magnitudes
         elif self.skinning_weights is not None:
             n_joints = min(torques.shape[0], self.skinning_weights.shape[1])

@@ -1641,7 +1641,6 @@ class SMPLTorqueNode(SMPLNode):
         self.output_root = self.add_output('root_torque')
         
         self.message_handlers['set_max_torque'] = self.set_max_torque_handler
-        self.message_handlers['set_max_torque'] = self.set_max_torque_handler
         self.message_handlers['print_max_torque'] = self.print_max_torque
         
         self.torque_ratios = {} # Format: {generic_joint_key: ratio_vector}

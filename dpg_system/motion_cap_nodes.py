@@ -491,6 +491,7 @@ class OpenTakeNode(MoCapNode):
             self.last_frame_out = -1
             if self.play_pause_button.get_label() == 'play':
                 self.current_frame = self.speed() * -1.0
+                self.pending_frame = self.current_frame
             self.start_playing()
             self.streaming = True
             self.play_pause_button.set_label('pause')
