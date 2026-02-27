@@ -2624,6 +2624,7 @@ class Node:
                         for option in self.options:
                             if option.widget:
                                 a_label = dpg.get_item_label(option.widget.uuid)
+                                a_label = a_label.strip('#')
                                 if a_label == property_label:
                                     if 'value' in property_container:
                                         value = property_container['value']

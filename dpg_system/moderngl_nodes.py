@@ -114,6 +114,9 @@ class MGLContextNode(Node):
         self.fullscreen_window = None
         self.render_target = None
 
+        # Per-node native window for direct-to-screen display on Linux
+        self._native_win = None
+
         # PBO double-buffer state for async readback
         self._pbo = [None, None]   # two Buffer objects
         self._pbo_index = 0        # which PBO to read INTO this frame
@@ -172,7 +175,11 @@ class MGLContextNode(Node):
             dpg.delete_item(self.external_window)
         if self.fullscreen_window:
             dpg.delete_item(self.fullscreen_window)
-        # Hide pyglet window if it was shown
+        # Hide/destroy native window if this node owns one
+        if self._native_win:
+            self._native_win.destroy()
+            self._native_win = None
+        # Hide pyglet window if it was shown (macOS/Windows)
         self.context.hide_window()
         if hasattr(self, 'render_target') and self.render_target:
             self.render_target.release()
@@ -297,9 +304,15 @@ class MGLContextNode(Node):
             self.display_mode_option.set('window')
             dpg.set_value(self.display_mode_option.widget.uuid, 'window')
 
-        # Determine if we can use direct-to-screen (pyglet window) for this mode
-        use_direct = (mode in ('window', 'fullscreen') and
-                      self.context.has_direct_window)
+        # Determine if we can use direct-to-screen for this mode.
+        # On Linux, native windows are created lazily inside `with self.context`,
+        # so we don't need to pre-check has_direct_window.
+        import sys as _sys
+        if _sys.platform.startswith('linux'):
+            use_direct = mode in ('window', 'fullscreen')
+        else:
+            use_direct = (mode in ('window', 'fullscreen') and
+                          self.context.has_direct_window)
 
         # 0. Sync DPG Window Image Size (only when using readback path)
         if not use_direct:
@@ -323,7 +336,7 @@ class MGLContextNode(Node):
         # Scope the GL context: during DPG's frame, DPG's own context is current.
         # We must make OUR context (pyglet's) current for all GL operations,
         # then restore DPG's context on exit.
-        with self.context.ctx:
+        with self.context:
             # Create/update render target
             if self.render_target is None or self.render_target.width != self.width or self.render_target.height != self.height or self.render_target.samples != samples:
                 if self.render_target:
@@ -389,55 +402,99 @@ class MGLContextNode(Node):
 
             # --- Display Path ---
             if use_direct:
-                # === DIRECT-TO-SCREEN: blit FBO to pyglet window (zero readback) ===
+                # === DIRECT-TO-SCREEN: blit FBO to per-node native window (zero readback) ===
+                import sys as _sys
 
-                # Read window size/position from options
-                win_size = self.win_size_option()
-                if np.isscalar(win_size):
-                    win_size = [win_size, win_size]
-                win_w = int(win_size[0]) if len(win_size) > 0 else self.width
-                win_h = int(win_size[1]) if len(win_size) > 1 else self.height
-                if win_w <= 0: win_w = self.width
-                if win_h <= 0: win_h = self.height
+                if _sys.platform.startswith('linux'):
+                    # --- Linux: per-node MGLNativeWindow ---
+                    from dpg_system.moderngl_base import MGLNativeWindow
 
-                # Manage pyglet window visibility and size
-                if mode == 'fullscreen':
-                    self.context.show_window(win_w, win_h, fullscreen=True)
+                    # Lazily create this node's own native window
+                    if self._native_win is None:
+                        dpg_handle = getattr(self.context, '_dpg_glfw_win', None)
+                        if dpg_handle:
+                            self._native_win = MGLNativeWindow(dpg_handle)
+                            print(f'[MGLContextNode] Created per-node native window: {self._native_win.available}')
+
+                    if self._native_win and self._native_win.available:
+                        win_size = self.win_size_option()
+                        if np.isscalar(win_size):
+                            win_size = [win_size, win_size]
+                        win_w = int(win_size[0]) if len(win_size) > 0 else self.width
+                        win_h = int(win_size[1]) if len(win_size) > 1 else self.height
+                        if win_w <= 0: win_w = self.width
+                        if win_h <= 0: win_h = self.height
+
+                        self._native_win.show(win_w, win_h,
+                                              title=f'MGL Output ({self.label})',
+                                              fullscreen=(mode == 'fullscreen'))
+
+                        # Position sync (non-fullscreen)
+                        if mode != 'fullscreen':
+                            actual_pos = self._native_win.get_pos()
+                            if actual_pos is not None:
+                                widget_pos = self.win_pos_option()
+                                if np.isscalar(widget_pos):
+                                    widget_pos = [widget_pos, widget_pos]
+                                wx, wy = int(widget_pos[0]), int(widget_pos[1])
+                                ax, ay = actual_pos
+                                if wx != ax or wy != ay:
+                                    last = getattr(self, '_last_win_pos', None)
+                                    if last is not None and wx == last[0] and wy == last[1]:
+                                        self.win_pos_option.widget.set([float(ax), float(ay)])
+                                        self._last_win_pos = (ax, ay)
+                                    else:
+                                        self._native_win.set_pos(wx, wy)
+                                        self._last_win_pos = (wx, wy)
+                                else:
+                                    self._last_win_pos = (ax, ay)
+
+                        # MSAA resolve + blit
+                        if self.render_target.samples > 0 and self.render_target.msaa_fbo:
+                            self.context.ctx.copy_framebuffer(
+                                self.render_target.fbo, self.render_target.msaa_fbo)
+                        self._native_win.blit(self.render_target)
+
                 else:
-                    self.context.show_window(win_w, win_h)
+                    # --- macOS/Windows: delegate to MGLContext (pyglet) ---
+                    win_size = self.win_size_option()
+                    if np.isscalar(win_size):
+                        win_size = [win_size, win_size]
+                    win_w = int(win_size[0]) if len(win_size) > 0 else self.width
+                    win_h = int(win_size[1]) if len(win_size) > 1 else self.height
+                    if win_w <= 0: win_w = self.width
+                    if win_h <= 0: win_h = self.height
 
-                    # Bidirectional position sync:
-                    # If user dragged the OS window → update widget.
-                    # If user changed the widget → move the window.
-                    actual_pos = self.context.get_window_pos()
-                    if actual_pos is not None:
-                        widget_pos = self.win_pos_option()
-                        if np.isscalar(widget_pos):
-                            widget_pos = [widget_pos, widget_pos]
-                        wx, wy = int(widget_pos[0]), int(widget_pos[1])
-                        ax, ay = actual_pos
-                        if wx != ax or wy != ay:
-                            # Widget differs from actual — did the user change the widget
-                            # or drag the window? Check against what we last pushed.
-                            last = getattr(self, '_last_win_pos', None)
-                            if last is not None and wx == last[0] and wy == last[1]:
-                                # Widget unchanged, window was dragged → update widget
-                                self.win_pos_option.widget.set([float(ax), float(ay)])
-                                self._last_win_pos = (ax, ay)
-                            else:
-                                # Widget changed → move window
-                                self.context.set_window_pos(wx, wy)
-                                self._last_win_pos = (wx, wy)
-                        else:
-                            self._last_win_pos = (ax, ay)
+                    if mode == 'fullscreen':
+                        self.context.show_window(win_w, win_h, fullscreen=True)
                     else:
-                        # Window not yet visible, just push
-                        widget_pos = self.win_pos_option()
-                        if np.isscalar(widget_pos):
-                            widget_pos = [widget_pos, widget_pos]
-                        wx, wy = int(widget_pos[0]), int(widget_pos[1])
-                        self.context.set_window_pos(wx, wy)
-                        self._last_win_pos = (wx, wy)
+                        self.context.show_window(win_w, win_h)
+                        actual_pos = self.context.get_window_pos()
+                        if actual_pos is not None:
+                            widget_pos = self.win_pos_option()
+                            if np.isscalar(widget_pos):
+                                widget_pos = [widget_pos, widget_pos]
+                            wx, wy = int(widget_pos[0]), int(widget_pos[1])
+                            ax, ay = actual_pos
+                            if wx != ax or wy != ay:
+                                last = getattr(self, '_last_win_pos', None)
+                                if last is not None and wx == last[0] and wy == last[1]:
+                                    self.win_pos_option.widget.set([float(ax), float(ay)])
+                                    self._last_win_pos = (ax, ay)
+                                else:
+                                    self.context.set_window_pos(wx, wy)
+                                    self._last_win_pos = (wx, wy)
+                            else:
+                                self._last_win_pos = (ax, ay)
+                        else:
+                            widget_pos = self.win_pos_option()
+                            if np.isscalar(widget_pos):
+                                widget_pos = [widget_pos, widget_pos]
+                            wx, wy = int(widget_pos[0]), int(widget_pos[1])
+                            self.context.set_window_pos(wx, wy)
+                            self._last_win_pos = (wx, wy)
+
+                    self.context.blit_to_window(self.render_target)
 
                 # Clean up ALL DPG display elements (node image, external window, fullscreen)
                 if self.image_item and dpg.does_item_exist(self.image_item):
@@ -453,17 +510,15 @@ class MGLContextNode(Node):
                     dpg.delete_item(self.fullscreen_window)
                     self.fullscreen_window = None
 
-                # Blit FBO directly to screen
-                self.context.blit_to_window(self.render_target)
-
                 # Send texture_tag for downstream consumers that may exist
                 self.texture_output.send(self.texture_tag)
 
             else:
                 # === READBACK PATH: PBO → CPU → DPG texture ===
 
-                # Hide pyglet window if it was previously visible
-                self.context.hide_window()
+                # Hide this node's native window if switching away from direct mode
+                if self._native_win:
+                    self._native_win.hide()
 
                 # Resolve MSAA if needed
                 rt = self.render_target
