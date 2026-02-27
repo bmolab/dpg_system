@@ -2,6 +2,92 @@ import NDIlib as ndi
 import numpy as np
 import time
 import sys
+#  N O T E   F O R   I N S T A L L I N G   O N   L I N U X
+
+# NDI Receiver Setup on Ubuntu 24.04
+'''
+These instructions set up the `ndi_receiver_node` for dpg_system on a fresh Ubuntu 24.04 machine.
+## 1. Install System Dependencies
+```bash
+sudo apt-get update
+sudo apt-get install -y avahi-daemon libavahi-client-dev yasm
+sudo systemctl enable --now avahi-daemon
+```
+- **avahi-daemon**: NDI uses mDNS (Bonjour) for network source discovery
+- **yasm**: needed to compile FFmpeg in step 3
+## 2. Install Python NDI Bindings
+With your conda environment activated (`dpg_system_2025_3`):
+```bash
+pip install ndi-python
+```
+> **Note:** `ndi-python` supports Python 3.7–3.10 on Linux. It bundles `libndi.so.5.1.1` — do NOT replace this with a newer version (v6 has incompatible codec requirements).
+## 3. Compile FFmpeg 4.4.5 from Source
+NDI|HX sources (PTZ cameras, phone apps, hardware encoders) send H.264/H.265 video. The bundled `libndi.so.5` needs `libavcodec.so.58` (FFmpeg 4.x) to decode these streams. Ubuntu 24.04 ships FFmpeg 6/7 which provides `.so.60`/`.so.61` — the wrong version.
+```bash
+cd /tmp
+wget https://ffmpeg.org/releases/ffmpeg-4.4.5.tar.bz2
+tar -xjf ffmpeg-4.4.5.tar.bz2
+cd ffmpeg-4.4.5
+./configure --enable-shared --disable-static --disable-programs --disable-doc
+make -j$(nproc)
+```
+Then install the compiled libraries system-wide:
+```bash
+sudo cp libavcodec/libavcodec.so.58* /usr/local/lib/
+sudo cp libavutil/libavutil.so.56* /usr/local/lib/
+sudo cp libswresample/libswresample.so.3* /usr/local/lib/
+sudo ldconfig
+```
+## 4. Preload Libraries in ndi_nodes.py
+OpenCV (`cv2`) bundles its own `libavcodec.so.59`. If it's imported before NDI tries to use `libavcodec.so.58`, the wrong version gets loaded and NDI silently fails (rendering a "Video decoder not found" error frame instead of actual video).
+`ndi_nodes` must be listed **before** `opencv_nodes` in the optional import list so the preload runs first.
+The following block is already at the **very top** of `ndi_nodes.py`:
+```python
+import ctypes
+import os
+import sys
+if sys.platform == 'linux':
+    try:
+        if os.path.exists('/usr/local/lib/libavcodec.so.58'):
+            ctypes.CDLL('/usr/local/lib/libavutil.so.56', mode=ctypes.RTLD_GLOBAL)
+            ctypes.CDLL('/usr/local/lib/libswresample.so.3', mode=ctypes.RTLD_GLOBAL)
+            ctypes.CDLL('/usr/local/lib/libavcodec.so.58', mode=ctypes.RTLD_GLOBAL)
+    except Exception:
+        pass
+```
+## Verification
+To verify the decoder works, save a received frame as an image and check it's real video (not the NDI error frame):
+```python
+import ctypes, os
+ctypes.CDLL('/usr/local/lib/libavutil.so.56', mode=ctypes.RTLD_GLOBAL)
+ctypes.CDLL('/usr/local/lib/libswresample.so.3', mode=ctypes.RTLD_GLOBAL)
+ctypes.CDLL('/usr/local/lib/libavcodec.so.58', mode=ctypes.RTLD_GLOBAL)
+import NDIlib as ndi, numpy as np, cv2
+ndi.initialize()
+recv = ndi.recv_create_v3()
+find = ndi.find_create_v2()
+for _ in range(10):
+    ndi.find_wait_for_sources(find, 1000)
+    sources = ndi.find_get_current_sources(find)
+    if sources: break
+ndi.recv_connect(recv, sources[0])
+for _ in range(30):
+    t, v, a, m = ndi.recv_capture_v2(recv, 1000)
+    if t == ndi.FRAME_TYPE_VIDEO:
+        frame = np.copy(np.frombuffer(v.data, dtype=np.uint8)).reshape((v.yres, v.xres, 4))
+        cv2.imwrite('/tmp/ndi_test.png', cv2.cvtColor(frame, cv2.COLOR_RGBA2BGR))
+        ndi.recv_free_video_v2(recv, v)
+        print("Saved /tmp/ndi_test.png — open it and verify it's real video, not the error message")
+        break
+```
+## Troubleshooting
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| "Video decoder not found" error frame | `libavcodec.so.58` not installed or not preloaded | Compile FFmpeg 4.4.5 and add the preload block |
+| No NDI sources found | Avahi not running or firewall blocking mDNS | `sudo systemctl start avahi-daemon`, check firewall |
+| `ModuleNotFoundError: NDIlib` | `ndi-python` not installed in active env | `pip install ndi-python` |
+| Works standalone but not in app | OpenCV's bundled libavcodec conflicts | Ensure the `ctypes.CDLL` preload is at the very top of the entry point |'''
+
 
 # Optional: Torch for tensor output
 try:
