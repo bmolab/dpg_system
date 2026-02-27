@@ -1641,7 +1641,6 @@ class SMPLTorqueNode(SMPLNode):
         self.output_root = self.add_output('root_torque')
         
         self.message_handlers['set_max_torque'] = self.set_max_torque_handler
-        self.message_handlers['set_max_torque'] = self.set_max_torque_handler
         self.message_handlers['print_max_torque'] = self.print_max_torque
         
         self.torque_ratios = {} # Format: {generic_joint_key: ratio_vector}
@@ -1679,9 +1678,9 @@ class SMPLTorqueNode(SMPLNode):
         
         self.enable_passive_limits = self.add_option('enable_passive_limits', widget_type='checkbox', default_value=True)
         
-        self.enable_one_euro_prop = self.add_option('enable_one_euro_filter', widget_type='checkbox', default_value=True)
+        self.enable_one_euro_prop = self.add_option('enable_one_euro_filter', widget_type='checkbox', default_value=False)
         self.min_cutoff_prop = self.add_option('one_euro_min_cutoff', widget_type='drag_float', default_value=1.0)
-        self.beta_prop = self.add_option('one_euro_beta', widget_type='drag_float', default_value=0.05)
+        self.beta_prop = self.add_option('one_euro_beta', widget_type='drag_float', default_value=0.001)
         
 
         self.floor_enable_prop = self.add_option('floor_contact_enable', widget_type='checkbox', default_value=True)
@@ -1690,29 +1689,29 @@ class SMPLTorqueNode(SMPLNode):
         self.reset_floor_input = self.add_input('reset_floor', widget_type='button', callback=self._reset_floor)
         
         # Bias: Negative = Toe Preference, Positive = Heel Preference
-        self.heel_toe_bias_prop = self.add_option('heel_toe_bias', widget_type='drag_float', default_value=0.02)
+        self.heel_toe_bias_prop = self.add_option('heel_toe_bias', widget_type='drag_float', default_value=0.0)
         
         # Contact Method Selection
-        self.contact_method_prop = self.add_option('contact_method', widget_type='combo', default_value='fusion')
-        self.contact_method_prop.widget.combo_items = ['fusion', 'stability', 'com_driven', 'consensus']
+        self.contact_method_prop = self.add_option('contact_method', widget_type='combo', default_value='stability_v2')
+        self.contact_method_prop.widget.combo_items = ['fusion', 'stability', 'stability_v2', 'com_driven', 'consensus']
         
         # --- Rate Limiting ---
-        self.enable_rate_limiting_prop = self.add_option('enable_rate_limiting', widget_type='checkbox', default_value=True)
+        self.enable_rate_limiting_prop = self.add_option('enable_rate_limiting', widget_type='checkbox', default_value=False)
         self.rate_limit_strength_prop = self.add_option('rate_limit_strength', widget_type='drag_float', default_value=1.0)
-        self.enable_jitter_damping_prop = self.add_option('enable_jitter_damping', widget_type='checkbox', default_value=True)
-        self.enable_velocity_gate_prop = self.add_option('enable_velocity_gate', widget_type='checkbox', default_value=True)
-        self.enable_kf_smoothing_prop = self.add_option('enable_kf_smoothing', widget_type='checkbox', default_value=True)
+        self.enable_jitter_damping_prop = self.add_option('enable_jitter_damping', widget_type='checkbox', default_value=False)
+        self.enable_velocity_gate_prop = self.add_option('enable_velocity_gate', widget_type='checkbox', default_value=False)
+        self.enable_kf_smoothing_prop = self.add_option('enable_kf_smoothing', widget_type='checkbox', default_value=False)
         self.kf_responsiveness_prop = self.add_option('kf_responsiveness', widget_type='drag_float', default_value=10.0)
         self.kf_smoothness_prop = self.add_option('kf_smoothness', widget_type='drag_float', default_value=1.0)
         self.kf_clamp_radius_prop = self.add_option('kf_clamp_radius', widget_type='drag_float', default_value=15.0)
         
         # --- World-Frame Dynamics ---
-        self.world_frame_dynamics_prop = self.add_option('world_frame_dynamics', widget_type='checkbox', default_value=False)
-        self.com_pos_mc_prop = self.add_option('com_pos_min_cutoff', widget_type='drag_float', default_value=8.0)
-        self.com_pos_beta_prop = self.add_option('com_pos_beta', widget_type='drag_float', default_value=0.05)
-        self.com_vel_mc_prop = self.add_option('com_vel_min_cutoff', widget_type='drag_float', default_value=3.0)
-        self.com_vel_beta_prop = self.add_option('com_vel_beta', widget_type='drag_float', default_value=0.05)
-        self.com_acc_mc_prop = self.add_option('com_acc_min_cutoff', widget_type='drag_float', default_value=2.0)
+        self.world_frame_dynamics_prop = self.add_option('world_frame_dynamics', widget_type='checkbox', default_value=True)
+        self.com_pos_mc_prop = self.add_option('com_pos_min_cutoff', widget_type='drag_float', default_value=999.0)
+        self.com_pos_beta_prop = self.add_option('com_pos_beta', widget_type='drag_float', default_value=1.0)
+        self.com_vel_mc_prop = self.add_option('com_vel_min_cutoff', widget_type='drag_float', default_value=20.0)
+        self.com_vel_beta_prop = self.add_option('com_vel_beta', widget_type='drag_float', default_value=0.1)
+        self.com_acc_mc_prop = self.add_option('com_acc_min_cutoff', widget_type='drag_float', default_value=5.0)
         self.com_acc_beta_prop = self.add_option('com_acc_beta', widget_type='drag_float', default_value=0.8)
         self.smooth_input_window_prop = self.add_property('smooth_input_window', widget_type='drag_int', default_value=0)
         self.magnetometer_cadence_prop = self.add_property('magnetometer_cadence', widget_type='drag_int', default_value=0)
