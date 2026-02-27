@@ -259,7 +259,19 @@ class SensoryPrior:
         # ── Lift-off / landing state machine ──
         p_lift = np.ones(J)
         
+        # Height-based lift-state escape: a joint near the floor cannot
+        # be in a "lifted" state regardless of velocity history.
+        # This prevents the lift-state from getting stuck during rapid
+        # hop sequences where the foot returns to floor but vy never
+        # settles for 3 consecutive frames.
+        LIFT_ESCAPE_HEIGHT = 0.08  # 8cm — if below this, force clear lift state
+        
         for j in range(J):
+            # Height escape: near-floor joints can't be lifted
+            if self._lift_state[j] and heights[j] < LIFT_ESCAPE_HEIGHT:
+                self._lift_state[j] = False
+                self._lift_frames[j] = 0
+            
             if self._lift_state[j]:
                 if vy[j] < -0.05 and heights[j] < ceilings[j]:
                     self._lift_frames[j] += 1

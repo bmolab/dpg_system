@@ -339,7 +339,7 @@ class SMPLProcessingOptions:
     floor_height: float = 0.0
     floor_tolerance: float = 0.15
     heel_toe_bias: float = 0.0
-    contact_method: str = 'fusion'  # 'fusion', 'stability', 'com_driven', or 'consensus'
+    contact_method: str = 'fusion'  # 'fusion', 'stability', 'stability_v2', 'com_driven', or 'consensus'
     
     # --- Torque Rate Limiting ---
     enable_rate_limiting: bool = True
@@ -1962,8 +1962,10 @@ class SMPLProcessor:
                         v_y = vel_for_seeking[j, y_dim] if vel_for_seeking is not None and j < vel_for_seeking.shape[0] else 0.0
                         velocity_settled = abs(v_y) < 0.05
                         height_at_or_below_ref = delta_h <= REF_ADAPT_TOLERANCE
+                        hz_v_seek = self._stability_hz_vel_ema[j] if j < len(self._stability_hz_vel_ema) else 0.0
+                        hz_settled = hz_v_seek < 0.30  # Must also stop horizontally
                         
-                        if velocity_settled and height_at_or_below_ref:
+                        if velocity_settled and height_at_or_below_ref and hz_settled:
                             non_seeking_joints.append(j)
                         elif body_needs_support:
                             non_seeking_joints.append(j)
@@ -2082,7 +2084,7 @@ class SMPLProcessor:
                     # If a grounded joint has traveled >10cm horizontally with
                     # sustained velocity >0.3 m/s, it can't be in contact.
                     # Walking swing covers 30-50cm; drift accumulates <2cm.
-                    HZ_DIST_THRESH = 0.10  # 10cm cumulative travel
+                    HZ_DIST_THRESH = 0.05  # 5cm cumulative travel
                     HZ_VEL_SUSTAINED = 0.30  # 0.3 m/s sustained velocity
                     
                     hz_v_j = self._stability_hz_vel_ema[j] if j < len(self._stability_hz_vel_ema) else 0.0
@@ -2157,6 +2159,371 @@ class SMPLProcessor:
         self._stability_computed_pressure = self._stability_pressure.copy()
         
         return consensus_probs
+
+    def _compute_probabilistic_contacts_stability_v2(self, F, J, world_pos, options):
+        """Consensus-driven contact determination with crisp state machine.
+        
+        Architecture:
+          Layer 1: Consensus probabilities (existing) → soft per-joint confidence
+          Layer 2: Foot-group state machine with hysteresis → crisp ON/OFF
+          Layer 3: Immediate weight distribution → pressure from CoM proximity
+        
+        No EMA on pressure, no redistribution, no overlapping signals.
+        """
+        # --- Layer 1: Get consensus probabilities ---
+        consensus_probs = self._compute_probabilistic_contacts_consensus(
+            F, J, world_pos, options
+        )
+        
+        # Axis setup
+        if options.input_up_axis == 'Y':
+            y_dim = 1
+            plane_dims = [0, 2]
+        else:
+            y_dim = 2
+            plane_dims = [0, 1]
+        
+        floor_height = options.floor_height
+        g_mag = 9.81
+        total_mass = self.total_mass_kg
+        
+        # --- Compute support fraction from CoM acceleration ---
+        prev_com = getattr(self, '_prev_com_for_stability', None)
+        com_acc = getattr(self, 'prob_prev_com_acc', None)
+        
+        if prev_com is None or com_acc is None:
+            return consensus_probs
+        
+        com = prev_com[0] if prev_com.ndim > 1 else prev_com
+        
+        g_vec = np.zeros(3)
+        g_vec[y_dim] = -g_mag
+        F_required = total_mass * (com_acc - g_vec)
+        F_support_up = F_required[y_dim]
+        support_fraction = np.clip(F_support_up / (total_mass * g_mag), 0.0, 1.0)
+        
+        # Smooth support fraction via one-euro filter
+        # (adaptive: smooth when stable, responsive during rapid hops)
+        if not hasattr(self, '_v2_support_oef') or self._v2_support_oef is None:
+            self._v2_support_oef = OneEuroFilter(
+                min_cutoff=0.8, beta=0.2, d_cutoff=1.0,
+                framerate=self.framerate
+            )
+            self._v2_support_frac = support_fraction
+        self._v2_support_frac = float(self._v2_support_oef(support_fraction))
+        smoothed_support = self._v2_support_frac
+        
+        if smoothed_support < 0.05:
+            # Airborne — zero all pressure
+            self._stability_computed_pressure = np.zeros(J)
+            if hasattr(self, '_stability_pressure'):
+                self._stability_pressure = np.zeros(J)
+            return consensus_probs
+        
+        # --- Layer 2: Foot-group state machine with hysteresis ---
+        
+        # Define contact groups
+        # Each group: (name, joint_indices)
+        FOOT_GROUPS = {
+            'LF': [7, 10],   # L_ankle, L_foot  (heels handled in split)
+            'RF': [8, 11],   # R_ankle, R_foot
+        }
+        HAND_GROUPS = {
+            'LH': [20, 22],  # L_wrist, L_hand
+            'RH': [21, 23],  # R_wrist, R_hand
+        }
+        # Other joints are individual
+        GROUPED_JOINTS = set()
+        for joints in FOOT_GROUPS.values():
+            GROUPED_JOINTS.update(joints)
+        for joints in HAND_GROUPS.values():
+            GROUPED_JOINTS.update(joints)
+        # Heels are part of foot groups for pressure split but not for detection
+        # Toes (24, 25) are ignored entirely
+        
+        ALL_GROUPS = {}
+        ALL_GROUPS.update(FOOT_GROUPS)
+        ALL_GROUPS.update(HAND_GROUPS)
+        # Add individual joints (knees, elbows, etc.) as single-member groups
+        for j in range(min(J, 24)):
+            if j not in GROUPED_JOINTS:
+                ALL_GROUPS[f'J{j}'] = [j]
+        
+        # State init
+        if not hasattr(self, '_v2_group_state') or self._v2_group_state is None:
+            self._v2_group_state = {}      # group_name → bool (on/off)
+            self._v2_group_frames = {}     # group_name → frames in transition
+        
+        # Hysteresis thresholds
+        THRESH_ON  = 0.45  # consensus must exceed this to turn ON (primary)
+        THRESH_OFF = 0.30  # consensus must drop below this to turn OFF
+        FRAMES_ON  = 1     # consecutive frames above threshold to confirm ON
+        FRAMES_OFF = 3     # consecutive frames below threshold to confirm OFF
+        
+        # Backup threshold: any non-zero probability + near floor = backup candidate
+        THRESH_BACKUP = 0.01  # minimum consensus to be a backup candidate
+        BACKUP_MAX_HEIGHT = 0.12  # max height (above floor) to be a backup
+        
+        # Height gate: even with high consensus, if ALL joints in group
+        # are above 35cm, don't engage
+        HEIGHT_GATE = 0.35
+        
+        confirmed_groups = {}  # group_name → True if ON
+        backup_groups = {}     # group_name → True if eligible as backup
+        group_min_heights = {} # group_name → minimum joint height above floor
+        group_positions = {}   # group_name → representative hz position
+        
+        for gname, joints in ALL_GROUPS.items():
+            # Get max consensus prob across group joints
+            valid_joints = [j for j in joints if j < J]
+            if not valid_joints:
+                continue
+            
+            group_prob = max(consensus_probs[0, j] for j in valid_joints)
+            
+            # Height gate: lowest joint in group
+            min_h = float('inf')
+            best_pos = None
+            for j in valid_joints:
+                if hasattr(self, 'temp_tips') and j in self.temp_tips:
+                    pos_j = self.temp_tips[j][0] if self.temp_tips[j].ndim > 1 else self.temp_tips[j]
+                    h = pos_j[y_dim]
+                else:
+                    pos_j = world_pos[0, j]
+                    h = pos_j[y_dim]
+                h_above = h - floor_height
+                if h_above < min_h:
+                    min_h = h_above
+                    best_pos = pos_j[plane_dims].copy()
+            
+            group_min_heights[gname] = min_h
+            if best_pos is not None:
+                group_positions[gname] = best_pos
+            
+            prev_state = self._v2_group_state.get(gname, False)
+            prev_frames = self._v2_group_frames.get(gname, 0)
+            
+            # Primary state machine (same as before)
+            if prev_state:  # Currently ON
+                if group_prob < THRESH_OFF or min_h > HEIGHT_GATE:
+                    prev_frames += 1
+                    if prev_frames >= FRAMES_OFF:
+                        self._v2_group_state[gname] = False
+                        self._v2_group_frames[gname] = 0
+                    else:
+                        self._v2_group_frames[gname] = prev_frames
+                else:
+                    self._v2_group_frames[gname] = 0
+
+            else:  # Currently OFF
+                if group_prob > THRESH_ON and min_h < HEIGHT_GATE:
+                    prev_frames += 1
+                    if prev_frames >= FRAMES_ON:
+                        self._v2_group_state[gname] = True
+                        self._v2_group_frames[gname] = 0
+                    else:
+                        self._v2_group_frames[gname] = prev_frames
+                else:
+                    self._v2_group_frames[gname] = 0
+            
+            confirmed_groups[gname] = self._v2_group_state.get(gname, False)
+            
+            # Backup eligibility: near floor (raw height) + foot group only.
+            # No consensus dependency — handles cases where velocity penalties
+            # wrongly zero out a foot that's genuinely on the floor.
+            # Only foot groups (LF, RF, LA, RA) can be backups.
+            FOOT_GROUP_NAMES = {'LF', 'RF', 'LA', 'RA'}
+            if not confirmed_groups[gname] and gname in FOOT_GROUP_NAMES:
+                backup_groups[gname] = min_h < BACKUP_MAX_HEIGHT
+            else:
+                backup_groups[gname] = False
+        
+        # --- Backup promotion: check if confirmed support is adequate ---
+        # Only promote backups when:
+        # 1. Body needs significant support (support_frac > 0.3)
+        # 2. CoM is moving fast (high dynamic demand, not just walking)
+        # 3. CoM is far from confirmed support centroid
+        COM_SPEED_THRESH = 0.5  # m/s — below this, single-foot support is fine
+        
+        com_hz = com[plane_dims]
+        com_vel_tmp = getattr(self, 'prob_prev_com_vel', None)
+        com_speed_hz = 0.0
+        if com_vel_tmp is not None and com_vel_tmp.ndim >= 1:
+            cv_hz = com_vel_tmp[plane_dims] if com_vel_tmp.ndim == 1 else com_vel_tmp[0, plane_dims]
+            com_speed_hz = np.linalg.norm(cv_hz)
+            eff_com = com_hz + cv_hz * 0.05
+        else:
+            eff_com = com_hz
+        
+        if smoothed_support > 0.3 and com_speed_hz > COM_SPEED_THRESH:
+            # Centroid of confirmed contacts
+            confirmed_positions = []
+            for gname, is_on in confirmed_groups.items():
+                if is_on and gname in group_positions:
+                    confirmed_positions.append(group_positions[gname])
+            
+            if confirmed_positions:
+                support_centroid = np.mean(confirmed_positions, axis=0)
+                com_to_support = np.linalg.norm(eff_com - support_centroid)
+                
+                SUPPORT_GAP = 0.20
+                
+                if com_to_support > SUPPORT_GAP:
+                    # Find best backup group: closest to the effective CoM
+                    best_backup = None
+                    best_dist = float('inf')
+                    for gname, is_backup in backup_groups.items():
+                        if is_backup and gname in group_positions:
+                            d = np.linalg.norm(eff_com - group_positions[gname])
+                            if d < best_dist:
+                                best_dist = d
+                                best_backup = gname
+                    
+                    if best_backup is not None:
+                        confirmed_groups[best_backup] = True
+                        self._v2_group_state[best_backup] = True
+                        self._v2_group_frames[best_backup] = 0
+        
+        # --- No-foot-contact fallback ---
+        # A person cannot hover. If NO foot groups are confirmed but the
+        # body clearly needs support, promote the lowest near-floor foot.
+        # This handles extended dropouts during rapid footwork where
+        # consensus temporal smoothing can't recover fast enough.
+        FOOT_GROUPS_SET = {'LF', 'RF'}
+        any_foot_on = any(confirmed_groups.get(g, False) for g in FOOT_GROUPS_SET)
+        
+        if not any_foot_on and smoothed_support > 0.3:
+            # Find the lowest foot backup
+            best_foot = None
+            best_h = float('inf')
+            for gname in FOOT_GROUPS_SET:
+                if backup_groups.get(gname, False) and gname in group_min_heights:
+                    if group_min_heights[gname] < best_h:
+                        best_h = group_min_heights[gname]
+                        best_foot = gname
+            
+            if best_foot is not None:
+                confirmed_groups[best_foot] = True
+                self._v2_group_state[best_foot] = True
+                self._v2_group_frames[best_foot] = 0
+        
+        # --- Layer 3: Weight distribution among confirmed contacts ---
+        
+        # Effective CoM with velocity prediction
+        COM_LOOKAHEAD = 0.1
+        com_hz = com[plane_dims]
+        com_vel = getattr(self, 'prob_prev_com_vel', None)
+        if com_vel is not None and com_vel.ndim >= 1:
+            com_vel_hz = com_vel[plane_dims] if com_vel.ndim == 1 else com_vel[0, plane_dims]
+            effective_com_hz = com_hz + com_vel_hz * COM_LOOKAHEAD
+        else:
+            effective_com_hz = com_hz
+        
+        # Collect confirmed contact positions
+        candidates = []
+        for gname, is_on in confirmed_groups.items():
+            if not is_on:
+                continue
+            for j in ALL_GROUPS[gname]:
+                if j >= J:
+                    continue
+                if hasattr(self, 'temp_tips') and j in self.temp_tips:
+                    pos = self.temp_tips[j][0]
+                else:
+                    pos = world_pos[0, j]
+                h = pos[y_dim] - floor_height
+                if h < HEIGHT_GATE:  # Only include joints actually near floor
+                    candidates.append({
+                        'j': j,
+                        'pos_hz': pos[plane_dims],
+                        'h': h,
+                        'group': gname,
+                    })
+        
+        # Also add heel virtual joints for confirmed foot groups
+        for gname in ['LF', 'RF']:
+            if confirmed_groups.get(gname, False):
+                heel_j = 28 if gname == 'LF' else 29
+                if heel_j < J:
+                    if hasattr(self, 'temp_tips') and heel_j in self.temp_tips:
+                        pos = self.temp_tips[heel_j][0]
+                    else:
+                        pos = world_pos[0, heel_j]
+                    h = pos[y_dim] - floor_height
+                    candidates.append({
+                        'j': heel_j,
+                        'pos_hz': pos[plane_dims],
+                        'h': h,
+                        'group': gname,
+                    })
+        
+        target_pressure = np.zeros(J)
+        
+        if candidates:
+            # Distance-based mass fractions
+            SIGMA_DIST = 0.15
+            dists = np.array([np.linalg.norm(c['pos_hz'] - effective_com_hz) for c in candidates])
+            inv_dist_weights = 1.0 / (dists + SIGMA_DIST)
+            mass_fractions = inv_dist_weights / np.sum(inv_dist_weights)
+            
+            desired_total = total_mass * smoothed_support
+            for idx, c in enumerate(candidates):
+                target_pressure[c['j']] = mass_fractions[idx] * desired_total
+            
+            # Heel/Toe split: when heel lifts above foot, shift pressure to foot
+            HEEL_LIFT_BAND = 0.05
+            ankle_foot_pairs = [
+                (7, 10, 28),  # (L_ankle, L_foot, L_heel)
+                (8, 11, 29),  # (R_ankle, R_foot, R_heel)
+            ]
+            for ankle_j, foot_j, heel_j in ankle_foot_pairs:
+                if target_pressure[ankle_j] <= 0 and target_pressure[foot_j] <= 0:
+                    continue
+                
+                if hasattr(self, 'temp_tips') and heel_j in self.temp_tips:
+                    h_heel = self.temp_tips[heel_j][0, y_dim] if self.temp_tips[heel_j].ndim > 1 else self.temp_tips[heel_j][y_dim]
+                else:
+                    h_heel = world_pos[0, ankle_j, y_dim]
+                
+                if hasattr(self, 'temp_tips') and foot_j in self.temp_tips:
+                    h_foot = self.temp_tips[foot_j][0, y_dim] if self.temp_tips[foot_j].ndim > 1 else self.temp_tips[foot_j][y_dim]
+                else:
+                    h_foot = world_pos[0, foot_j, y_dim]
+                
+                diff = (h_heel - floor_height) - (h_foot - floor_height)
+                if diff <= 0:
+                    continue
+                
+                t_blend = min(1.0, diff / HEEL_LIFT_BAND)
+                combined = target_pressure[ankle_j] + target_pressure[foot_j]
+                current_r_foot = target_pressure[foot_j] / max(combined, 1e-8)
+                new_r_foot = current_r_foot + (1.0 - current_r_foot) * t_blend
+                target_pressure[foot_j] = combined * new_r_foot
+                target_pressure[ankle_j] = combined * (1.0 - new_r_foot)
+            
+            # Normalize to desired total
+            raw_total = np.sum(target_pressure)
+            if raw_total > 1e-6:
+                target_pressure *= (desired_total / raw_total)
+        
+        # Store as computed pressure (immediate — no EMA)
+        self._stability_computed_pressure = target_pressure.copy()
+        
+        # Also set _stability_pressure for compatibility with other code
+        if not hasattr(self, '_stability_pressure') or self._stability_pressure is None or len(self._stability_pressure) != J:
+            self._stability_pressure = np.zeros(J)
+        self._stability_pressure = target_pressure.copy()
+        
+        # Boost consensus probs for confirmed contacts
+        for gname, is_on in confirmed_groups.items():
+            if is_on:
+                for j in ALL_GROUPS[gname]:
+                    if j < J and target_pressure[j] > 1.0:
+                        boost = min(0.95, target_pressure[j] / (total_mass * 0.3))
+                        consensus_probs[0, j] = max(consensus_probs[0, j], boost)
+        
+        return consensus_probs
+
 
     def _compute_probabilistic_contacts_com_driven(self, F, J, world_pos, floor_height, options):
         """
@@ -6330,6 +6697,10 @@ class SMPLProcessor:
              contact_probs_fusion = self._compute_probabilistic_contacts_stability(
                   F, world_pos.shape[1], world_pos, options
              )
+        elif options.contact_method == 'stability_v2':
+             contact_probs_fusion = self._compute_probabilistic_contacts_stability_v2(
+                  F, world_pos.shape[1], world_pos, options
+             )
         else:  # Default: 'fusion'
              contact_probs_fusion = self._compute_probabilistic_contacts_fusion(
                   F, world_pos.shape[1], world_pos, vel_y_in, vel_h_in, options.floor_height, options
@@ -6545,7 +6916,7 @@ class SMPLProcessor:
             # When using inverse statics, the stability method computes
             # physics-based pressure directly. Replace the probability-
             # derived pressure entirely.
-            if options.contact_method == 'stability':
+            if options.contact_method in ('stability', 'stability_v2'):
                 stab_press = getattr(self, '_stability_computed_pressure', None)
                 if stab_press is not None and len(stab_press) == self.contact_pressure.shape[1]:
                     for f in range(F):
@@ -6554,7 +6925,12 @@ class SMPLProcessor:
         # --- Contact Pressure Smoothing (Asymmetric + Rate Clamp) ---
         # Runs OUTSIDE the refinement loop so it always applies.
         # Time-constant based smoothing (framerate-adaptive).
-        TAU_UP   = 0.150  # seconds — build-up time constant
+        # Stability methods compute physics-based pressure with their own
+        # hysteresis, so use faster build-up to avoid lagging.
+        if options.contact_method in ('stability', 'stability_v2'):
+            TAU_UP = 0.030    # seconds — fast build-up for physics-based pressure
+        else:
+            TAU_UP = 0.150    # seconds — slower build-up for probability methods
         TAU_DOWN = 0.050  # seconds — release time constant
         MAX_RATE = 5.0 * self.total_mass_kg  # kg/s — max pressure change rate per joint
         
