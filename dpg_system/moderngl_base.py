@@ -559,23 +559,7 @@ class MGLContext:
         self._pyglet_window = None   # set properly on macOS/Windows by _HAS_PYGLET path
 
         if _HAS_PYGLET:
-            try:
-                # macOS/Windows: Create a tiny hidden pyglet window to own
-                # the GL context (allows direct-to-screen blit).
-                config = pyglet.gl.Config(
-                    double_buffer=True, depth_size=24,
-                    major_version=3, minor_version=3)
-                self._pyglet_window = pyglet.window.Window(
-                    width=1, height=1, visible=False, config=config,
-                    caption='MGL Output')
-                self.ctx = moderngl.create_context()  # wraps pyglet's active context
-                self.ctx.enable(moderngl.BLEND)
-                self.ctx.enable(moderngl.DEPTH_TEST)
-                self.ctx.blend_func = (moderngl.ONE, moderngl.ONE_MINUS_SRC_ALPHA)
-                self._gl_initialized = True
-            except Exception as e:
-                print(f"Failed to create Pyglet/moderngl context: {e}")
-                return
+            self._try_create_pyglet_context()
         else:
             # Linux: ctx will be created lazily in _ensure_initialized().
             # All GL-requiring init is deferred.
@@ -605,7 +589,7 @@ class MGLContext:
         self.point_shader    = None
         self.current_shader  = None
 
-        if self.ctx is not None:
+        if self._gl_initialized:
             # macOS/Windows: GL context exists, do full init now.
             self._gl_init(init_width, init_height, init_samples)
 
@@ -801,6 +785,26 @@ class MGLContext:
             '''
         )
 
+    def _try_create_pyglet_context(self):
+        """Attempt to create the pyglet window + moderngl context (macOS/Windows).
+        Safe to call multiple times; does nothing once successful."""
+        if self._gl_initialized:
+            return
+        try:
+            config = pyglet.gl.Config(
+                double_buffer=True, depth_size=24,
+                major_version=3, minor_version=3)
+            self._pyglet_window = pyglet.window.Window(
+                width=1, height=1, visible=False, config=config,
+                caption='MGL Output')
+            self.ctx = moderngl.create_context()  # wraps pyglet's active context
+            self.ctx.enable(moderngl.BLEND)
+            self.ctx.enable(moderngl.DEPTH_TEST)
+            self.ctx.blend_func = (moderngl.ONE, moderngl.ONE_MINUS_SRC_ALPHA)
+            self._gl_initialized = True
+        except Exception as e:
+            print(f"Failed to create Pyglet/moderngl context: {e}")
+
     def _ensure_initialized(self):
         """On Linux: lazily wrap DPG's GLFW context with moderngl.
         Called from __enter__ when DPG's context is guaranteed current.
@@ -847,6 +851,11 @@ class MGLContext:
             # restore it for DPG after our render block.
             self._save_gl_state()
         else:
+            # Retry pyglet/moderngl context creation if it failed during __init__
+            if not self._gl_initialized:
+                self._try_create_pyglet_context()
+                if self._gl_initialized:
+                    self._gl_init()
             self._native_cm = NativeGLContextManager(self._pyglet_window)
             self._native_cm.__enter__()
         return self
@@ -930,6 +939,10 @@ class MGLContext:
     def samples(self, value): pass
 
     def create_render_target(self, width, height, samples=4):
+        if self.ctx is None:
+            raise RuntimeError(
+                "MGLContext.ctx is None — GL context was never created. "
+                "Ensure rendering happens inside 'with self.context:' block.")
         return MGLRenderTarget(self.ctx, width, height, samples)
 
     def use_render_target(self, target):
