@@ -122,27 +122,44 @@ class MGLNativeWindow:
             print('[MGLNativeWindow] GLFW not available — direct mode disabled')
             return
 
-        # Set up GLFW hints: share context with DPG, start hidden
-        gfw.glfwWindowHint(self._GLFW_VISIBLE, 0)           # hidden initially
+        gfw.glfwCreateWindow.restype  = ctypes.c_void_p
+        gfw.glfwCreateWindow.argtypes = [
+            ctypes.c_int, ctypes.c_int, ctypes.c_char_p,
+            ctypes.c_void_p, ctypes.c_void_p,
+        ]
+
+        # Helper: reset GLFW hints so DPG's state isn't polluted
+        _GLFW_DEFAULT_HINTS = 0x00065002  # GLFW_ANY_POSITION or ignore
+        def _reset_hints():
+            try:
+                gfw.glfwDefaultWindowHints()
+            except Exception:
+                pass
+
+        # --- Attempt 1: GL 3.3 Core Profile (ideal) ---
+        gfw.glfwWindowHint(self._GLFW_VISIBLE, 0)
         gfw.glfwWindowHint(self._GLFW_RESIZABLE, 1)
         gfw.glfwWindowHint(self._GLFW_DOUBLEBUFFER, 1)
         gfw.glfwWindowHint(self._GLFW_CONTEXT_VERSION_MAJOR, 3)
         gfw.glfwWindowHint(self._GLFW_CONTEXT_VERSION_MINOR, 3)
         gfw.glfwWindowHint(self._GLFW_OPENGL_PROFILE, self._GLFW_OPENGL_CORE_PROFILE)
 
-        gfw.glfwCreateWindow.restype  = ctypes.c_void_p
-        gfw.glfwCreateWindow.argtypes = [
-            ctypes.c_int, ctypes.c_int, ctypes.c_char_p,
-            ctypes.c_void_p, ctypes.c_void_p,
-        ]
         self._win = gfw.glfwCreateWindow(
-            800, 600,
-            b'MGL Output',
-            None,               # monitor (None = windowed)
-            self._dpg_win,      # share — DPG's context
-        )
+            800, 600, b'MGL Output', None, self._dpg_win)
+        _reset_hints()
+
+        # --- Attempt 2: fallback without Core Profile constraint ---
         if not self._win:
-            print('[MGLNativeWindow] glfwCreateWindow failed')
+            print('[MGLNativeWindow] GL 3.3 Core failed, trying fallback...')
+            gfw.glfwWindowHint(self._GLFW_VISIBLE, 0)
+            gfw.glfwWindowHint(self._GLFW_RESIZABLE, 1)
+            gfw.glfwWindowHint(self._GLFW_DOUBLEBUFFER, 1)
+            self._win = gfw.glfwCreateWindow(
+                800, 600, b'MGL Output', None, self._dpg_win)
+            _reset_hints()
+
+        if not self._win:
+            print('[MGLNativeWindow] glfwCreateWindow failed (all attempts)')
             return
 
         # Make our window current to compile blit shader
