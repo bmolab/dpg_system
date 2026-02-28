@@ -360,7 +360,7 @@ class SMPLProcessingOptions:
     com_acc_min_cutoff: float = 2.0    # Base One Euro min_cutoff for CoM acceleration filter (999 = disabled)
     com_acc_beta: float = 0.8          # Base One Euro beta — high for adaptive responsiveness during impacts
     smooth_input_window: int = 0       # Causal moving average window for pose+trans input (0 = off, 3 = recommended for 33Hz cadence removal)
-    magnetometer_cadence: int = 0      # Magnetometer update cadence in frames (0 = off, 3 = Shadow IMU). Uses quaternion slerp between keyframes — no phase lag.
+
     
     # --- Spine Geometry ---
     use_s_curve_spine: bool = True      # Use biomechanical S-curve spine instead of SMPL cantilevered spine
@@ -1236,6 +1236,9 @@ class SMPLProcessor:
                  
             # Acceleration
             raw_acc = (com_vel - self.prob_prev_com_vel) / dt
+            
+            # Store raw acceleration for plausibility (unfiltered, captures true free-fall)
+            self._raw_com_acc = raw_acc.copy()
             
             if not hasattr(self, 'com_acc_filter'):
                 self.com_acc_filter = OneEuroFilter(min_cutoff=0.3, beta=0.1, d_cutoff=1.0)  # Lower cutoff
@@ -2202,6 +2205,20 @@ class SMPLProcessor:
         F_support_up = F_required[y_dim]
         support_fraction = np.clip(F_support_up / (total_mass * g_mag), 0.0, 1.0)
         
+        # --- Dedicated RAW CoM acceleration (no One-Euro filter) ---
+        # Computed from finite differences of the CoM position available here.
+        # This bypasses ALL filtering to capture true free-fall acceleration.
+        dt_s = 1.0 / max(self.framerate, 1.0)
+        if not hasattr(self, '_v2_raw_prev_com') or self._v2_raw_prev_com is None:
+            self._v2_raw_prev_com = com.copy()
+            self._v2_raw_prev_vel = np.zeros(3)
+            self._v2_raw_com_acc = np.zeros(3)
+        else:
+            raw_vel = (com - self._v2_raw_prev_com) / max(dt_s, 1e-6)
+            self._v2_raw_com_acc = (raw_vel - self._v2_raw_prev_vel) / max(dt_s, 1e-6)
+            self._v2_raw_prev_com = com.copy()
+            self._v2_raw_prev_vel = raw_vel.copy()
+        
         # Smooth support fraction via one-euro filter
         # (adaptive: smooth when stable, responsive during rapid hops)
         if not hasattr(self, '_v2_support_oef') or self._v2_support_oef is None:
@@ -2225,8 +2242,8 @@ class SMPLProcessor:
         # Define contact groups
         # Each group: (name, joint_indices)
         FOOT_GROUPS = {
-            'LF': [7, 10],   # L_ankle, L_foot  (heels handled in split)
-            'RF': [8, 11],   # R_ankle, R_foot
+            'LF': [10],   # L_foot  (heels 28/29 added in weight distribution)
+            'RF': [11],   # R_foot  (ankle rotation positions heel, but ankle is not a contact point)
         }
         HAND_GROUPS = {
             'LH': [20, 22],  # L_wrist, L_hand
@@ -2238,7 +2255,10 @@ class SMPLProcessor:
             GROUPED_JOINTS.update(joints)
         for joints in HAND_GROUPS.values():
             GROUPED_JOINTS.update(joints)
-        # Heels are part of foot groups for pressure split but not for detection
+        # Ankles (7, 8) are NOT contact candidates — heel virtual joints (28, 29)
+        # are the actual rear contact points, positioned by ankle rotation.
+        # Exclude ankles from becoming individual groups.
+        GROUPED_JOINTS.update({7, 8})
         # Toes (24, 25) are ignored entirely
         
         ALL_GROUPS = {}
@@ -2253,6 +2273,9 @@ class SMPLProcessor:
         if not hasattr(self, '_v2_group_state') or self._v2_group_state is None:
             self._v2_group_state = {}      # group_name → bool (on/off)
             self._v2_group_frames = {}     # group_name → frames in transition
+            self._v2_group_planted_h = {}  # group_name → lowest height while ON
+            self._v2_group_prev_min_h = {} # group_name → previous frame's min_h
+            self._v2_group_settled_frames = {} # group_name → frames at settled height
         
         # Hysteresis thresholds
         THRESH_ON  = 0.45  # consensus must exceed this to turn ON (primary)
@@ -2268,20 +2291,36 @@ class SMPLProcessor:
         # are above 35cm, don't engage
         HEIGHT_GATE = 0.35
         
+        # Liftoff plausibility parameters
+        LIFT_HEIGHT_BAND = 0.05   # m — delta_h range for lift_height signal (0.0→0.05 maps to 0→1)
+        LIFT_VEL_SCALE = 0.3      # m/s — upward velocity for full lift_velocity signal
+        SETTLED_VEL_THRESH = 0.02 # m/s — velocity below this = settled
+        SETTLED_FRAMES_REQ = 5    # frames at settled velocity to declare settled
+        PLAUS_HEIGHT_GATE_MIN = 0.02  # m — HEIGHT_GATE floor at max plausibility
+        
+        # Foot group names for plausibility (only foot groups participate)
+        FOOT_PLAUS_GROUPS = {'LF', 'RF'}
+        
+        # Heel joint mapping for push-off detection
+        HEEL_MAP = {'LF': 28, 'RF': 29}
+        FOOT_MAP = {'LF': 10, 'RF': 11}
+        
+        dt = 1.0 / max(self.framerate, 1.0)
+        
         confirmed_groups = {}  # group_name → True if ON
         backup_groups = {}     # group_name → True if eligible as backup
         group_min_heights = {} # group_name → minimum joint height above floor
         group_positions = {}   # group_name → representative hz position
         
+        # First pass: compute min heights for all groups (needed for alt_support check)
+        group_data = {}  # gname → (group_prob, min_h, best_pos, valid_joints)
         for gname, joints in ALL_GROUPS.items():
-            # Get max consensus prob across group joints
             valid_joints = [j for j in joints if j < J]
             if not valid_joints:
                 continue
             
             group_prob = max(consensus_probs[0, j] for j in valid_joints)
             
-            # Height gate: lowest joint in group
             min_h = float('inf')
             best_pos = None
             for j in valid_joints:
@@ -2299,17 +2338,138 @@ class SMPLProcessor:
             group_min_heights[gname] = min_h
             if best_pos is not None:
                 group_positions[gname] = best_pos
-            
+            group_data[gname] = (group_prob, min_h, best_pos, valid_joints)
+        
+        # Second pass: state machine with plausibility
+        for gname, (group_prob, min_h, best_pos, valid_joints) in group_data.items():
             prev_state = self._v2_group_state.get(gname, False)
             prev_frames = self._v2_group_frames.get(gname, 0)
             
-            # Primary state machine (same as before)
+            # --- Liftoff plausibility (foot groups only, when ON) ---
+            plausibility = 0.0
+            if prev_state and gname in FOOT_PLAUS_GROUPS:
+                planted_h = self._v2_group_planted_h.get(gname, min_h)
+                prev_min_h = self._v2_group_prev_min_h.get(gname, min_h)
+                settled_frames = self._v2_group_settled_frames.get(gname, 0)
+                
+                # Update planted height (track minimum while ON)
+                planted_h = min(planted_h, min_h)
+                
+                # Vertical velocity of lowest joint
+                v_up = (min_h - prev_min_h) / max(dt, 1e-6)
+                
+                # Settled detection: foot rose but velocity → 0
+                delta_h = min_h - planted_h
+                if delta_h > 0.01 and abs(v_up) < SETTLED_VEL_THRESH:
+                    settled_frames += 1
+                    if settled_frames >= SETTLED_FRAMES_REQ:
+                        # Accept new baseline — foot has settled (tiptoe/pointe)
+                        planted_h = min_h
+                        settled_frames = 0
+                else:
+                    settled_frames = 0
+                
+                # Lifting evidence
+                if delta_h > 0.005 and v_up > 0.01:
+                    # Foot is above planted AND still rising
+                    lift_height = min(1.0, max(0.0, delta_h / LIFT_HEIGHT_BAND))
+                    lift_velocity = min(1.0, max(0.0, v_up / LIFT_VEL_SCALE))
+                    lifting = max(lift_height, lift_velocity)
+                else:
+                    lifting = 0.0
+                
+                # Heel-lifted context (push-off indicator)
+                heel_j = HEEL_MAP.get(gname)
+                foot_j = FOOT_MAP.get(gname)
+                heel_lifted = 0.0
+                if heel_j is not None and foot_j is not None:
+                    if hasattr(self, 'temp_tips') and heel_j in self.temp_tips:
+                        h_heel = self.temp_tips[heel_j][0, y_dim] if self.temp_tips[heel_j].ndim > 1 else self.temp_tips[heel_j][y_dim]
+                    else:
+                        h_heel = world_pos[0, min(heel_j, world_pos.shape[1]-1), y_dim]
+                    if hasattr(self, 'temp_tips') and foot_j in self.temp_tips:
+                        h_foot = self.temp_tips[foot_j][0, y_dim] if self.temp_tips[foot_j].ndim > 1 else self.temp_tips[foot_j][y_dim]
+                    else:
+                        h_foot = world_pos[0, foot_j, y_dim]
+                    heel_diff = (h_heel - floor_height) - (h_foot - floor_height)
+                    if heel_diff > 0.02:  # heel is > 2cm above foot
+                        heel_lifted = min(1.0, heel_diff / 0.08)  # full at 8cm
+                
+                # Boost lifting signal when heel is lifted (push-off context)
+                lifting = lifting * (0.5 + 0.5 * heel_lifted)
+                
+                # No-support-needed: during free fall / bouncing, the body
+                # doesn't need full ground support — liftoff is more plausible.
+                # Uses RAW (unfiltered) CoM acceleration to capture true free-fall
+                # that the filtered signal misses during short airborne phases.
+                # Safety: this value is multiplied by `lifting`, so noise in the raw
+                # signal only affects decisions when the foot IS kinematically rising.
+                raw_com_acc = getattr(self, '_v2_raw_com_acc', None)
+                if raw_com_acc is not None:
+                    g_vec_y = -9.81
+                    raw_F_up = self.total_mass_kg * (raw_com_acc[y_dim] - g_vec_y)
+                    raw_sf = np.clip(raw_F_up / (self.total_mass_kg * 9.81), 0.0, 1.5)
+                    no_support_needed = max(0.0, min(1.0, (0.95 - raw_sf) / 0.45))
+                else:
+                    no_support_needed = 0.0
+                
+                # Alternative support: is the OTHER foot group ON and grounded?
+                # Also considers the other foot's descent velocity (incoming foot).
+                alt_support = 0.0
+                other_group = 'RF' if gname == 'LF' else 'LF'
+                other_state = self._v2_group_state.get(other_group, False)
+                other_h = group_min_heights.get(other_group, float('inf'))
+                other_prev_h = self._v2_group_prev_min_h.get(other_group, other_h)
+                other_vel = (other_h - other_prev_h) / max(dt, 1e-6)
+                
+                if other_state and other_h < 0.05:
+                    # Other foot is ON and well grounded
+                    alt_support = 1.0
+                elif other_state and other_h < 0.12:
+                    # Other foot is ON but somewhat elevated
+                    alt_support = 0.5
+                elif not other_state and other_h < 0.05:
+                    # Other foot is OFF but very near floor — likely about to land
+                    alt_support = 0.7
+                elif not other_state and other_h < 0.20 and other_vel < -0.15:
+                    # Other foot is OFF, below 20cm, and descending toward floor
+                    # Estimate time to arrival: h / |vel|
+                    time_to_floor = other_h / max(abs(other_vel), 0.01)
+                    if time_to_floor < 0.10:  # Arrives in <100ms
+                        alt_support = 0.9
+                    elif time_to_floor < 0.25:  # Arrives in <250ms
+                        alt_support = 0.7
+                    elif time_to_floor < 0.50:  # Arrives in <500ms
+                        alt_support = 0.4
+                elif not other_state and other_h < 0.12:
+                    # Other foot is OFF but approaching floor (no strong velocity)
+                    alt_support = 0.3
+                
+                plausibility = lifting * max(alt_support, no_support_needed)
+                
+                # Store updated tracking
+                self._v2_group_planted_h[gname] = planted_h
+                self._v2_group_settled_frames[gname] = settled_frames
+            
+            # Store current min_h for next frame's velocity computation
+            self._v2_group_prev_min_h[gname] = min_h
+            
+            # --- State machine with plausibility-modulated thresholds ---
+            # Modulate HEIGHT_GATE, FRAMES_OFF, and THRESH_OFF based on plausibility
+            eff_height_gate = HEIGHT_GATE - (HEIGHT_GATE - PLAUS_HEIGHT_GATE_MIN) * plausibility
+            eff_frames_off = max(1, int(round(FRAMES_OFF * (1.0 - 0.67 * plausibility))))
+            # Raise THRESH_OFF: at max plausibility, even moderate consensus isn't
+            # enough to hold the contact ON (the body doesn't need it)
+            eff_thresh_off = THRESH_OFF + (0.65 - THRESH_OFF) * plausibility
+            
             if prev_state:  # Currently ON
-                if group_prob < THRESH_OFF or min_h > HEIGHT_GATE:
+                if group_prob < eff_thresh_off or min_h > eff_height_gate:
                     prev_frames += 1
-                    if prev_frames >= FRAMES_OFF:
+                    if prev_frames >= eff_frames_off:
                         self._v2_group_state[gname] = False
                         self._v2_group_frames[gname] = 0
+                        # Don't delete planted tracking here — it may re-engage
+                        # next frame. Tracking is re-initialized on fresh ON transitions.
                     else:
                         self._v2_group_frames[gname] = prev_frames
                 else:
@@ -2321,6 +2481,9 @@ class SMPLProcessor:
                     if prev_frames >= FRAMES_ON:
                         self._v2_group_state[gname] = True
                         self._v2_group_frames[gname] = 0
+                        # Initialize planted tracking on ON transition
+                        self._v2_group_planted_h[gname] = min_h
+                        self._v2_group_settled_frames[gname] = 0
                     else:
                         self._v2_group_frames[gname] = prev_frames
                 else:
@@ -2460,30 +2623,65 @@ class SMPLProcessor:
         target_pressure = np.zeros(J)
         
         if candidates:
-            # Distance-based mass fractions
-            SIGMA_DIST = 0.15
-            dists = np.array([np.linalg.norm(c['pos_hz'] - effective_com_hz) for c in candidates])
-            inv_dist_weights = 1.0 / (dists + SIGMA_DIST)
-            mass_fractions = inv_dist_weights / np.sum(inv_dist_weights)
+            # --- Two-stage weight distribution ---
+            # Stage 1: Group-level split (how much total pressure per foot group)
+            # Uses centroid of each group's candidates vs CoM projection
+            SIGMA_GROUP = 0.12  # 12cm — sharp group-level falloff
+            # At centroids 15cm each from CoM: 50/50
+            # At 0cm vs 30cm: 94%/6%
+            # At 0cm vs 50cm: 100%/0%
             
+            # Collect group centroids from candidates
+            group_candidates = {}  # gname -> list of candidate indices
+            group_centroids = {}   # gname -> mean horizontal position
+            for idx, c in enumerate(candidates):
+                g = c['group']
+                if g not in group_candidates:
+                    group_candidates[g] = []
+                group_candidates[g].append(idx)
+            
+            for g, idxs in group_candidates.items():
+                positions = np.array([candidates[i]['pos_hz'] for i in idxs])
+                group_centroids[g] = np.mean(positions, axis=0)
+            
+            # Gaussian weight per group based on centroid distance to CoM
+            group_weights = {}
+            for g, centroid in group_centroids.items():
+                dist = np.linalg.norm(centroid - effective_com_hz)
+                group_weights[g] = np.exp(-0.5 * (dist / SIGMA_GROUP)**2)
+            
+            total_group_weight = sum(group_weights.values())
+            if total_group_weight > 1e-12:
+                group_fractions = {g: w / total_group_weight for g, w in group_weights.items()}
+            else:
+                group_fractions = {g: 1.0 / len(group_weights) for g in group_weights}
+            
+            # Stage 2: Within each group, distribute equally among candidate joints
             desired_total = total_mass * smoothed_support
+            mass_fractions = np.zeros(len(candidates))
+            for g, idxs in group_candidates.items():
+                per_joint = group_fractions[g] / max(len(idxs), 1)
+                for i in idxs:
+                    mass_fractions[i] = per_joint
+            
             for idx, c in enumerate(candidates):
                 target_pressure[c['j']] = mass_fractions[idx] * desired_total
             
             # Heel/Toe split: when heel lifts above foot, shift pressure to foot
             HEEL_LIFT_BAND = 0.05
-            ankle_foot_pairs = [
-                (7, 10, 28),  # (L_ankle, L_foot, L_heel)
-                (8, 11, 29),  # (R_ankle, R_foot, R_heel)
+            foot_heel_pairs = [
+                (10, 28, 7),  # (L_foot, L_heel, L_ankle for fallback height)
+                (11, 29, 8),  # (R_foot, R_heel, R_ankle for fallback height)
             ]
-            for ankle_j, foot_j, heel_j in ankle_foot_pairs:
-                if target_pressure[ankle_j] <= 0 and target_pressure[foot_j] <= 0:
+            for foot_j, heel_j, ankle_j_fallback in foot_heel_pairs:
+                combined = target_pressure[foot_j] + target_pressure[heel_j]
+                if combined <= 0:
                     continue
                 
                 if hasattr(self, 'temp_tips') and heel_j in self.temp_tips:
                     h_heel = self.temp_tips[heel_j][0, y_dim] if self.temp_tips[heel_j].ndim > 1 else self.temp_tips[heel_j][y_dim]
                 else:
-                    h_heel = world_pos[0, ankle_j, y_dim]
+                    h_heel = world_pos[0, ankle_j_fallback, y_dim]
                 
                 if hasattr(self, 'temp_tips') and foot_j in self.temp_tips:
                     h_foot = self.temp_tips[foot_j][0, y_dim] if self.temp_tips[foot_j].ndim > 1 else self.temp_tips[foot_j][y_dim]
@@ -2494,17 +2692,77 @@ class SMPLProcessor:
                 if diff <= 0:
                     continue
                 
+                # t_blend: 0 at diff=0, 1.0 when diff >= HEEL_LIFT_BAND
                 t_blend = min(1.0, diff / HEEL_LIFT_BAND)
-                combined = target_pressure[ankle_j] + target_pressure[foot_j]
-                current_r_foot = target_pressure[foot_j] / max(combined, 1e-8)
-                new_r_foot = current_r_foot + (1.0 - current_r_foot) * t_blend
-                target_pressure[foot_j] = combined * new_r_foot
-                target_pressure[ankle_j] = combined * (1.0 - new_r_foot)
+                
+                # Shift pressure from heel toward foot as heel lifts
+                # At t_blend=1.0, all pressure goes to foot
+                foot_frac = target_pressure[foot_j] / max(combined, 1e-8)
+                heel_frac = target_pressure[heel_j] / max(combined, 1e-8)
+                target_pressure[foot_j] = combined * (t_blend + (1.0 - t_blend) * foot_frac)
+                target_pressure[heel_j] = combined * (1.0 - t_blend) * heel_frac
             
             # Normalize to desired total
             raw_total = np.sum(target_pressure)
             if raw_total > 1e-6:
                 target_pressure *= (desired_total / raw_total)
+        
+        # --- Direct pressure scaling by raw support fraction ---
+        # Physics: if the body is in free fall, GRF must be zero regardless of
+        # what the state machine thinks. Use a lightly-filtered raw support
+        # fraction (3-frame moving average) to scale pressure directly.
+        #
+        # Corroboration: the raw CoM acceleration can be noisy (especially from
+        # lateral motion coupling in sidestepping). True free fall requires:
+        #   1. raw_acc_y ≈ -9.81 (acceleration consistent with gravity only)
+        #   2. Contact joints actually elevated above the floor
+        # If the acceleration is wildly different from -g, or feet are on the
+        # ground, the "free fall" signal is noise — don't scale pressure.
+        raw_com_acc = getattr(self, '_v2_raw_com_acc', None)
+        if raw_com_acc is not None:
+            raw_acc_y = raw_com_acc[y_dim]
+            
+            # Free-fall trajectory consistency: how close is the acceleration to -g?
+            # True free fall: raw_acc_y ≈ -9.81 → deviation ≈ 0
+            # Noise from lateral motion: raw_acc_y = -30 → deviation = 20
+            # Consistency is 1.0 within ±3 m/s², drops to 0 beyond ±8 m/s²
+            deviation = abs(raw_acc_y - (-g_mag))
+            freefall_consistency = np.clip(1.0 - (deviation - 3.0) / 5.0, 0.0, 1.0)
+            
+            # Compute raw support fraction, constrained by consistency
+            raw_sf_instant = np.clip(
+                (raw_acc_y + g_mag) / g_mag,
+                0.0, 1.5
+            )
+            # When consistency is low, pull raw_sf toward 1.0 (no effect)
+            effective_sf = raw_sf_instant + (1.0 - freefall_consistency) * (1.0 - raw_sf_instant)
+            
+            # 3-frame moving average to guard against momentary glitches
+            if not hasattr(self, '_raw_sf_history') or self._raw_sf_history is None:
+                self._raw_sf_history = [effective_sf] * 3
+            self._raw_sf_history.append(effective_sf)
+            if len(self._raw_sf_history) > 3:
+                self._raw_sf_history.pop(0)
+            filtered_raw_sf = np.mean(self._raw_sf_history)
+            
+            # Foot-height corroboration: how high are the contact joints?
+            # If feet are on the floor, don't trust the free-fall signal.
+            min_contact_h = float('inf')
+            for gname in ['LF', 'RF']:
+                for j in ALL_GROUPS[gname]:
+                    if j < J:
+                        jh = world_pos[0, j, y_dim] - floor_height
+                        min_contact_h = min(min_contact_h, jh)
+            if min_contact_h == float('inf'):
+                min_contact_h = 0.0
+            # Corroboration: 0 when feet at floor (<1cm), 1.0 when all feet >4cm
+            height_corroboration = np.clip((min_contact_h - 0.01) / 0.03, 0.0, 1.0)
+            
+            # Blend: at full corroboration, use filtered_raw_sf for scaling.
+            # At zero corroboration (feet on ground), pressure_scale = 1.0 (no scaling).
+            raw_pressure_scale = min(1.0, max(0.0, filtered_raw_sf / 0.5))
+            pressure_scale = 1.0 - height_corroboration * (1.0 - raw_pressure_scale)
+            target_pressure *= pressure_scale
         
         # Store as computed pressure (immediate — no EMA)
         self._stability_computed_pressure = target_pressure.copy()
@@ -2616,9 +2874,12 @@ class SMPLProcessor:
             load_factors = np.zeros(J)
             total_weight = 0.0
             
-            # Use Gaussian weighting with large sigma for soft falloff
-            # This prevents small CoM offsets from causing dramatic weight differences
-            SIGMA_LOAD = 0.50  # 50cm - very soft falloff
+            # Use Gaussian weighting with tight sigma for crisp single-leg dominance
+            # When CoM is over one foot, the distant foot gets very little weight
+            SIGMA_LOAD = 0.15  # 15cm — sharp falloff
+            # At feet 15cm each from CoM: 50/50 (balanced standing)
+            # At 0cm vs 30cm: 88%/12% (clear single-leg)
+            # At 0cm vs 50cm: 99.6%/0.4% (essentially single-leg)
             
             for j in range(J):
                 # Only compute for potential contact joints
@@ -2641,7 +2902,7 @@ class SMPLProcessor:
                 weight = np.exp(-0.5 * (dist / SIGMA_LOAD)**2)
                 load_factors[j] = weight
                 total_weight += weight
-            
+
             # Normalize load factors
             if total_weight > 1e-6:
                 load_factors = load_factors / total_weight
@@ -6484,69 +6745,12 @@ class SMPLProcessor:
             self.reset_physics_state()  # Prevent torque spikes from geometry change
         
         # --- Optional Input Smoothing ---
-        # Two modes (mutually exclusive; magnetometer_cadence takes priority):
-        #   1. magnetometer_cadence: quaternion slerp between keyframes — targets known IMU cadence
-        #   2. smooth_input_window: causal moving average — general-purpose smoothing
-        cadence = options.magnetometer_cadence
+        # Causal moving average for general-purpose smoothing.
+        # A 3-frame window naturally nulls the 33.3Hz magnetometer cadence
+        # artifact present in Shadow IMU data.
         win = options.smooth_input_window
         
-        if cadence >= 2:
-            # --- Magnetometer Yaw-Only Filter ---
-            # The magnetometer primarily corrects yaw (heading around gravity axis).
-            # Pitch/roll come from the accelerometer at full 100 Hz.
-            # Decompose each joint's rotation into yaw + tilt, smooth only yaw.
-            # This removes the cadence artifact with ZERO lag on pitch/roll dynamics.
-            pose_data = np.array(pose_data, dtype=np.float64)
-            trans_data = np.array(trans_data, dtype=np.float64)
-            
-            p_flat = pose_data.reshape(-1)
-            n_pose = p_flat.size
-            n_joints = n_pose // 3
-            
-            # Determine the up-axis index in the internal coordinate system.
-            # After axis_permutation, internal y_dim = up.
-            up_idx = getattr(self, 'internal_y_dim', 1)
-            
-            # Initialize yaw smoothing state
-            if not hasattr(self, '_yaw_smooth') or self._yaw_smooth is None \
-                    or self._yaw_smooth.get('cadence') != cadence \
-                    or self._yaw_smooth.get('n_joints') != n_joints:
-                self._yaw_smooth = {
-                    'cadence': cadence,
-                    'n_joints': n_joints,
-                    # Ring buffer for yaw components (per joint)
-                    'yaw_buf': np.zeros((cadence, n_joints)),
-                    'buf_idx': 0,
-                    'initialized': False,
-                }
-            
-            ys = self._yaw_smooth
-            aa = p_flat.reshape(n_joints, 3)
-            
-            # Extract yaw component for each joint:
-            # Project axis-angle vector onto the up axis.
-            # yaw_scalar = dot(aa, up_axis) = the rotation around the vertical.
-            yaw_scalars = aa[:, up_idx].copy()  # (n_joints,)
-            
-            # Store in ring buffer
-            idx = ys['buf_idx'] % cadence
-            ys['yaw_buf'][idx] = yaw_scalars
-            ys['buf_idx'] += 1
-            
-            if not ys['initialized']:
-                # Fill buffer with first frame's yaw to avoid averaging with zeros
-                ys['yaw_buf'][:] = yaw_scalars[np.newaxis, :]
-                ys['initialized'] = True
-            
-            # Causal moving average of yaw component only
-            smoothed_yaw = np.mean(ys['yaw_buf'], axis=0)  # (n_joints,)
-            
-            # Replace yaw component, keep tilt unchanged
-            aa[:, up_idx] = smoothed_yaw
-            pose_data = aa.reshape(pose_data.shape)
-            # Translation is left untouched — no smoothing needed
-            
-        elif win >= 2:
+        if win >= 2:
             pose_data = np.array(pose_data, dtype=np.float64)
             trans_data = np.array(trans_data, dtype=np.float64)
             
@@ -6960,6 +7164,13 @@ class SMPLProcessor:
             delta = smoothed - prev
             delta = np.clip(delta, -max_change_per_frame, max_change_per_frame)
             smoothed = prev + delta
+            
+            # For stability methods: when target pressure is zero (group OFF),
+            # zero immediately — the state machine already handles hysteresis,
+            # so slow decay just creates lingering ghost pressure on lifted joints.
+            if options.contact_method in ('stability', 'stability_v2'):
+                smoothed = np.where(curr <= 0, 0.0, smoothed)
+            
             self.contact_pressure[f] = smoothed
             if F == 1:
                 self.prev_contact_pressure_smooth = smoothed[np.newaxis, :].copy()

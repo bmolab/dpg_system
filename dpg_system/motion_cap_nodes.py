@@ -367,6 +367,7 @@ class OpenTakeNode(MoCapNode):
         self.buffer = None
         self.frame_count = 0
         self.current_frame = 0
+        self.pending_frame = 0
         self.clip_start = 0
         self.clip_end = -1
 
@@ -418,7 +419,6 @@ class OpenTakeNode(MoCapNode):
         self.last_frame_out = -1
         self.recording = False
         self.force_frame = False
-        self.pending_frame = 0
         self.message_handlers['load'] = self.load_take_message
         self.new_positions = False
         self.load_take_task = -1
@@ -530,6 +530,7 @@ class OpenTakeNode(MoCapNode):
                 key = list(self.take_dict.keys())[0]
                 self.frame_count = self.take_dict[key].shape[0]
                 self.current_frame = 0
+                self.pending_frame = 0
                 self.frame_input.set(self.current_frame)
                 self.clip_start = 0
                 self.clip_end = self.frame_count - 1
@@ -641,7 +642,6 @@ class OpenTakeNode(MoCapNode):
     def frame_task(self):
         self.step()
         if self.force_frame:
-            print('frame_task - force_frame')
             self.force_frame = False
             self.remove_frame_tasks()
             self.streaming = False
@@ -737,6 +737,7 @@ class OpenTakeNode(MoCapNode):
             self.current_frame = 0
             self.frame_input.set(self.current_frame)
         self.current_frame = 0
+        self.pending_frame = self.current_frame
 
     def frame_widget_changed(self):
         data = self.frame_input()
