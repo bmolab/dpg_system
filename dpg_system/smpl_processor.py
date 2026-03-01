@@ -340,6 +340,7 @@ class SMPLProcessingOptions:
     floor_tolerance: float = 0.15
     heel_toe_bias: float = 0.0
     contact_method: str = 'fusion'  # 'fusion', 'stability', 'stability_v2', 'com_driven', or 'consensus'
+    enable_frame_evaluator: bool = False  # Run DynamicFrameEvaluator (read-only analysis alongside contact method)
     
     # --- Torque Rate Limiting ---
     enable_rate_limiting: bool = True
@@ -804,6 +805,39 @@ class SMPLProcessor:
                         segment_com_world[j] = joints[j]
                 
                 # print(f"  Computed {n_body_joints} segment CoM offsets from mesh ({len(vertices)} vertices)")
+                
+                # --- Per-joint directional surface extents ---
+                # For each joint, compute how far NEARBY mesh vertices extend
+                # in each direction (±X, ±Y, ±Z) from the joint center.
+                # Uses LBS weight threshold (not argmax) to avoid including
+                # distant vertices that inflate extents.
+                # Uses 95th percentile instead of absolute min/max for
+                # robustness against vertex outliers.
+                # Shape: (24, 3, 2) = [joint, axis, (min_extent, max_extent)]
+                LBS_WEIGHT_THRESH = 0.3
+                PERCENTILE = 95
+                
+                joint_surface_extents = np.zeros((n_body_joints, 3, 2))
+                for j in range(n_body_joints):
+                    # Select vertices strongly associated with this joint
+                    mask = lbs_weights[:, j] > LBS_WEIGHT_THRESH
+                    verts_j = vertices[mask]
+                    
+                    if len(verts_j) < 3:
+                        # Fall back to argmax assignment if too few vertices
+                        verts_j = vertices[seg_assignment == j]
+                    
+                    if len(verts_j) > 0:
+                        offsets = verts_j - joints[j]
+                        # Use percentile for robustness against outlier vertices
+                        joint_surface_extents[j, :, 0] = np.percentile(offsets, 100 - PERCENTILE, axis=0)
+                        joint_surface_extents[j, :, 1] = np.percentile(offsets, PERCENTILE, axis=0)
+                    else:
+                        # Default: ±3cm padding
+                        joint_surface_extents[j, :, 0] = -0.03
+                        joint_surface_extents[j, :, 1] = 0.03
+                
+                self._joint_surface_extents = joint_surface_extents
                 
                 # ── Correct spine CoM offsets for S-curve spine ────────────
                 # SMPL spine positions serve mesh deformation, not biomechanics.
@@ -2772,6 +2806,9 @@ class SMPLProcessor:
             self._stability_pressure = np.zeros(J)
         self._stability_pressure = target_pressure.copy()
         
+        # Store raw consensus probs (before boost) for frame evaluator
+        self._raw_consensus_probs = consensus_probs.copy()
+        
         # Boost consensus probs for confirmed contacts
         for gname, is_on in confirmed_groups.items():
             if is_on:
@@ -2781,6 +2818,362 @@ class SMPLProcessor:
                         consensus_probs[0, j] = max(consensus_probs[0, j], boost)
         
         return consensus_probs
+
+
+    def _evaluate_dynamic_frame(self, F, world_pos, tips, options, contact_probs=None):
+        """Run the DynamicFrameEvaluator on current contacts (read-only).
+        
+        Uses consensus sensory probabilities (soft, forgiving) to identify
+        candidates, then lets the physics evaluator determine which are
+        actually needed. Independent from V2's state machine decisions.
+        
+        Does NOT modify any contact decisions.
+        """
+        from dpg_system.dynamic_frame_evaluator import DynamicFrameEvaluator
+        
+        # Lazy initialization
+        if not hasattr(self, '_frame_evaluator') or self._frame_evaluator is None:
+            seg_masses = self._seg_mass if hasattr(self, '_seg_mass') else np.ones(24)
+            self._frame_evaluator = DynamicFrameEvaluator(
+                total_mass=self.total_mass_kg,
+                segment_masses=seg_masses,
+                num_joints=world_pos.shape[1]
+            )
+        
+        # Determine up axis and floor
+        if options.input_up_axis == 'Y':
+            y_dim = 1
+        else:
+            y_dim = 2
+        floor_height = getattr(self, '_inferred_floor_height', None)
+        if floor_height is None:
+            floor_height = getattr(options, 'floor_height', 0.0) or 0.0
+        
+        # --- Effective floor estimation ---
+        # If the body needs support (not in freefall), the floor cannot
+        # be lower than the lowest joint. Any gap between lowest joints
+        # and floor_height represents drift/calibration error.
+        # Compute from previous frame's data (available now); store for
+        # consensus to use on the next frame.
+        EFFECTIVE_FLOOR_CEILING = 0.5  # Only consider joints below 0.5m
+        eff_floor = getattr(self, '_effective_floor_height', None)
+        if eff_floor is not None:
+            floor_height = eff_floor
+        
+        J = world_pos.shape[1]
+        
+        # Get joint positions for frame 0 (single-frame mode)
+        pos = world_pos[0]  # (J, 3)
+        
+        # Use tip positions where available
+        positions = pos.copy()
+        if tips:
+            for j_idx, tip_pos in tips.items():
+                if j_idx < J:
+                    p = tip_pos[0] if tip_pos.ndim > 1 else tip_pos
+                    positions[j_idx] = p
+        
+        # Get CoM and acceleration
+        com = getattr(self, '_prev_com_for_stability', None)
+        if com is None:
+            com = getattr(self, 'current_com', None)
+        if com is not None and com.ndim > 1:
+            com = com[0]
+        if com is None:
+            # Fallback: compute from joint positions
+            com = np.mean(positions[:min(J, 24)], axis=0)
+        
+        # --- EMA-subtraction CoM acceleration (frame evaluator only) ---
+        # Uses the difference between fast and slow EMA of CoM position
+        # as a velocity proxy, then differentiates once for acceleration.
+        # This avoids double-differentiation noise amplification.
+        # Other systems (stability_v2, etc.) keep using prob_prev_com_acc.
+        ALPHA_FAST = 0.5
+        ALPHA_SLOW = 0.05
+        dt_s = getattr(self, '_dynamics_dt', 1.0 / max(self.framerate, 1.0))
+        
+        fe_state = getattr(self, '_fe_ema_state', None)
+        if fe_state is None:
+            self._fe_ema_state = {
+                'com_fast': com.copy(),
+                'com_slow': com.copy(),
+                'prev_vel_proxy': np.zeros(3),
+            }
+            com_acc = np.zeros(3)
+        else:
+            # Update EMAs
+            fe_state['com_fast'] = ALPHA_FAST * com + (1 - ALPHA_FAST) * fe_state['com_fast']
+            fe_state['com_slow'] = ALPHA_SLOW * com + (1 - ALPHA_SLOW) * fe_state['com_slow']
+            
+            # Velocity proxy = fast - slow (proportional to velocity)
+            vel_proxy = fe_state['com_fast'] - fe_state['com_slow']
+            
+            # Acceleration = d(vel_proxy)/dt (one differentiation only)
+            acc_proxy = (vel_proxy - fe_state['prev_vel_proxy']) / dt_s
+            fe_state['prev_vel_proxy'] = vel_proxy.copy()
+            
+            # Scale to physical units
+            # For EMA subtraction: scale = dt * ((1-α_s)/α_s - (1-α_f)/α_f)
+            scale = dt_s * ((1 - ALPHA_SLOW) / ALPHA_SLOW - (1 - ALPHA_FAST) / ALPHA_FAST)
+            com_acc = acc_proxy / scale if abs(scale) > 1e-10 else np.zeros(3)
+            
+            # Amplitude inflation: the EMA subtraction bandpass attenuates
+            # acceleration at walking frequency (~1Hz) by ~50%. This makes
+            # ZMP sit too close to CoM projection, distributing force too
+            # evenly. Inflate to restore ~90% of true ZMP displacement.
+            # This doesn't hurt noise rejection because noise is at much
+            # higher frequencies where the filter still attenuates strongly.
+            ACC_GAIN = 1.8
+            com_acc = com_acc * ACC_GAIN
+        
+        # --- Effective floor estimation ---
+        # If body needs support (not in freefall), the floor cannot be lower
+        # than the lowest joint. Compute from current positions + acceleration.
+        g_mag = 9.81
+        g_vec = np.zeros(3)
+        g_vec[y_dim] = -g_mag
+        f_required_up = (75.0 * (com_acc - g_vec))[y_dim]  # approx check
+        
+        if f_required_up > 0.1 * 75.0 * g_mag:
+            # Body needs support — find lowest joints
+            base_floor = getattr(options, 'floor_height', 0.0) or 0.0
+            low_heights = []
+            for j in range(min(J, 24)):
+                h = positions[j, y_dim]
+                if h - base_floor < EFFECTIVE_FLOOR_CEILING:
+                    low_heights.append(h)
+            if low_heights:
+                min_joint_h = min(low_heights)
+                new_eff = max(base_floor, min_joint_h)
+                prev_eff = getattr(self, '_effective_floor_height', None)
+                prev_min_h = getattr(self, '_eff_floor_prev_min_h', None)
+                
+                if prev_eff is not None:
+                    # Compute velocity of lowest joint
+                    min_h_velocity = 0.0
+                    if prev_min_h is not None:
+                        min_h_velocity = (min_joint_h - prev_min_h) / dt_s
+                    
+                    delta = new_eff - prev_eff
+                    if delta > 0:
+                        # Upward: only if lowest joint is stationary (drift).
+                        # A rising joint means the body is leaving the floor,
+                        # not the floor moving. Floors don't rise.
+                        if min_h_velocity < 0.1:  # m/s — essentially stationary
+                            new_eff = prev_eff + delta
+                        else:
+                            new_eff = prev_eff  # Don't update — body is lifting off
+                    # Downward: always allow — floor can't be above where joints are
+                
+                self._eff_floor_prev_min_h = min_joint_h
+                self._effective_floor_height = new_eff
+                floor_height = new_eff
+        
+        # --- Compute per-joint surface distances ---
+        # Transform T-pose surface extents into current pose to get
+        # direction-aware joint-to-skin distances for floor contact
+        surface_dists = None
+        extents = getattr(self, '_joint_surface_extents', None)
+        global_rots = getattr(self, '_prev_global_rots', None)
+        if extents is not None and global_rots is not None:
+            floor_normal = np.zeros(3)
+            floor_normal[y_dim] = 1.0
+            grots = global_rots[0] if global_rots.ndim == 4 else global_rots
+            surface_dists = DynamicFrameEvaluator.compute_effective_surface_distances(
+                extents, grots, floor_normal, num_joints=min(J, 24)
+            )
+            # Extend to virtual joints with defaults
+            if len(surface_dists) < J:
+                sd_full = np.full(J, 0.03)
+                sd_full[:len(surface_dists)] = surface_dists
+                surface_dists = sd_full
+        
+        # --- Gather candidate contacts ---
+        # Two independent sources, unioned together:
+        # 1. Consensus probability > low threshold (sensory evidence)
+        # 2. Joint surface close to floor (geometric plausibility,
+        #    using directional surface offsets to handle padding)
+        CANDIDATE_THRESHOLD = 0.05
+        
+        raw_probs = getattr(self, '_raw_consensus_probs', None)
+        if raw_probs is None and contact_probs is not None:
+            raw_probs = contact_probs
+        
+        candidate_joints = set()
+        # Exclude toes (24, 25) — IMU cannot measure toe bend, positions unreliable
+        # Exclude ankles (7, 8) — heel virtual joints (28, 29) serve as ankle's
+        # contact proxy. Having ankle + foot + heel as three co-located contacts
+        # causes jittery force flickering between them.
+        EXCLUDED_JOINTS = {7, 8, 24, 25}
+        
+        # Source 1: Consensus probability
+        if raw_probs is not None:
+            probs_1d = raw_probs[0] if raw_probs.ndim > 1 else raw_probs
+            for j in range(min(len(probs_1d), J)):
+                if probs_1d[j] > CANDIDATE_THRESHOLD and j not in EXCLUDED_JOINTS:
+                    candidate_joints.add(j)
+        
+        # Compute joint heights for evaluator use
+        joint_heights = np.zeros(J)
+        for j in range(J):
+            joint_heights[j] = positions[j, y_dim] - floor_height
+        
+        # --- Chain dominance pruning (soft) ---
+        # Within each kinematic chain, prune ancestors that are WELL ABOVE
+        # the chain's lowest contact. But keep ancestors near the floor —
+        # crawling has both knee and foot in contact simultaneously.
+        CHAINS = [
+            [16, 18, 20, 22],  # Left arm: shoulder → elbow → wrist → hand
+            [17, 19, 21, 23],  # Right arm: shoulder → elbow → wrist → hand
+            [1, 4, 7, 10, 28], # Left leg: hip → knee → ankle → foot → heel
+            [2, 5, 8, 11, 29], # Right leg: hip → knee → ankle → foot → heel
+            [0, 3, 6, 9],      # Spine: pelvis → spine1 → spine2 → spine3
+        ]
+        CHAIN_PRUNE_MARGIN = 0.15  # Only prune if >15cm above lowest contact
+        for chain in CHAINS:
+            chain_candidates = [j for j in chain if j in candidate_joints and j < J]
+            if len(chain_candidates) > 1:
+                lowest_height = min(joint_heights[j] for j in chain_candidates)
+                # Prune only joints well above the lowest contact point
+                for j in chain_candidates:
+                    if joint_heights[j] - lowest_height > CHAIN_PRUNE_MARGIN:
+                        candidate_joints.discard(j)
+        
+        # --- Clamp CoM acceleration to physical limits ---
+        # Prevents impossible force spikes from noisy data.
+        # ±3g = ±29.4 m/s² is generous; covers jumping/landing.
+        MAX_ACC = 3.0 * 9.81  # 3g
+        acc_mag = np.linalg.norm(com_acc)
+        if acc_mag > MAX_ACC:
+            com_acc = com_acc * (MAX_ACC / acc_mag)
+        
+        # --- Compute per-joint horizontal velocities ---
+        # Used by the evaluator to penalize moving joints (likely airborne)
+        plane_dims = [0, 2] if y_dim == 1 else [0, 1]
+        joint_velocities = np.zeros(J)
+        prev_pos = getattr(self, '_fe_prev_positions', None)
+        if prev_pos is not None and prev_pos.shape == positions.shape:
+            delta = positions - prev_pos
+            for j in range(J):
+                joint_velocities[j] = np.linalg.norm(delta[j][plane_dims]) / dt_s
+        self._fe_prev_positions = positions.copy()
+        
+        # --- Gather consensus probabilities ---
+        raw_probs = getattr(self, '_raw_consensus_probs', None)
+        consensus_1d = None
+        if raw_probs is not None:
+            consensus_1d = raw_probs[0] if raw_probs.ndim > 1 else raw_probs
+        
+        # --- Descent suppression ---
+        # Suppress contact probability for joints with sustained downward
+        # velocity, preventing premature detection during slow foot descent.
+        # Uses asymmetric EMA: slow tracking of descent (tau_down=80ms),
+        # fast recovery when velocity decreases (tau_up=15ms).
+        # Adaptive scale ensures recovery time is speed-independent.
+        # EMA is reset to 0 while a joint is in active contact.
+        DS_TAU_DOWN = 0.12   # slow EMA for descent tracking
+        DS_TAU_UP = 0.04     # fast EMA for recovery
+        DS_BASE_SCALE = 0.03 # m/s — minimum scale (transition width)
+        DS_FRAC = 0.5        # adaptive scale fraction
+        
+        ds_alpha_down = 1.0 - np.exp(-dt_s / DS_TAU_DOWN)
+        ds_alpha_up = 1.0 - np.exp(-dt_s / DS_TAU_UP)
+        
+        # Initialize per-joint state if needed
+        if not hasattr(self, '_ds_vy_ema'):
+            self._ds_vy_ema = np.zeros(J)
+        if not hasattr(self, '_ds_prev_heights'):
+            self._ds_prev_heights = None
+        # Resize if joint count changed
+        if len(self._ds_vy_ema) < J:
+            self._ds_vy_ema = np.zeros(J)
+        
+        if consensus_1d is not None and self._ds_prev_heights is not None:
+            consensus_1d = consensus_1d.copy()  # don't modify original
+            ds_suppressed = set()  # track which joints get suppressed
+            prev_active = getattr(self, '_fe_prev_contacts', None) or set()
+            for j in list(candidate_joints):
+                if j >= J:
+                    continue
+                # Compute raw vertical velocity
+                raw_vy = (joint_heights[j] - self._ds_prev_heights[j]) / dt_s
+                
+                # Impact detection: if velocity jumps sharply positive
+                # (e.g., jump landing: -2.0 → 0), reset EMA immediately
+                DS_IMPACT_DELTA = 0.5  # m/s — minimum velocity jump for impact
+                if raw_vy - self._ds_vy_ema[j] > DS_IMPACT_DELTA:
+                    self._ds_vy_ema[j] = raw_vy
+                else:
+                    # Asymmetric EMA update
+                    if raw_vy > self._ds_vy_ema[j]:
+                        alpha = ds_alpha_up    # fast recovery
+                    else:
+                        alpha = ds_alpha_down  # slow descent tracking
+                    self._ds_vy_ema[j] += alpha * (raw_vy - self._ds_vy_ema[j])
+                
+                # Skip suppression for joints active in previous frame
+                # (prevents post-landing flicker from velocity oscillation)
+                if j in prev_active:
+                    continue
+                
+                # Skip suppression for joints near or below the floor —
+                # but only if the descent didn't start from well above
+                # (EMA strongly negative means established descent from height)
+                DS_FLOOR_MARGIN = 0.03  # 3cm
+                if joint_heights[j] < DS_FLOOR_MARGIN and self._ds_vy_ema[j] > -2.0 * DS_BASE_SCALE:
+                    continue
+                
+                # Adaptive scale and suppression
+                vy_ema = self._ds_vy_ema[j]
+                adaptive_scale = max(DS_BASE_SCALE, DS_FRAC * abs(vy_ema))
+                suppression = np.clip(1.0 + vy_ema / adaptive_scale, 0.0, 1.0)
+                
+                consensus_1d[j] *= suppression
+                
+                # Remove from candidates if fully suppressed
+                if suppression < 0.01:
+                    candidate_joints.discard(j)
+                    ds_suppressed.add(j)
+        else:
+            ds_suppressed = set()
+        
+        # Store heights for next frame
+        self._ds_prev_heights = joint_heights.copy()
+        
+        # --- Previous frame's active contacts and seed ---
+        prev_active = getattr(self, '_fe_prev_contacts', None)
+        prev_seed = getattr(self, '_fe_prev_seed', None)
+        
+        # --- Run the evaluator ---
+        result = self._frame_evaluator.evaluate_and_refine(
+            candidate_joints=candidate_joints,
+            joint_positions=positions,
+            com=com,
+            com_acc=com_acc,
+            floor_height=floor_height,
+            up_axis=y_dim,
+            max_iterations=3,
+            all_joint_heights=joint_heights,
+            surface_distances=surface_dists,
+            consensus_probs=consensus_1d,
+            joint_velocities=joint_velocities,
+            prev_active_contacts=prev_active,
+            prev_seed=prev_seed,
+        )
+        
+        # Track active contacts and seed for next frame
+        self._fe_prev_contacts = set(
+            j for j, f in result.per_contact_force.items() if f > 0
+        )
+        self._fe_prev_seed = getattr(result, 'seed', None)
+        
+        # Reset descent EMA for active contacts that weren't suppressed
+        # (genuine grounded contacts — prevents post-landing flicker)
+        for j in self._fe_prev_contacts:
+            if j < len(self._ds_vy_ema) and j not in ds_suppressed:
+                self._ds_vy_ema[j] = 0.0
+        
+        self._frame_eval_result = result
 
 
     def _compute_probabilistic_contacts_com_driven(self, F, J, world_pos, floor_height, options):
@@ -3342,10 +3735,12 @@ class SMPLProcessor:
             return contact_probs
         
         # Build consensus options from processing options.
-        # Use adaptive inferred floor if available (from previous frame).
+        # Priority: effective floor (physics-derived) > inferred floor > static
         floor_for_consensus = options.floor_height
         if hasattr(self, '_inferred_floor_height') and self._inferred_floor_height is not None:
             floor_for_consensus = self._inferred_floor_height
+        if hasattr(self, '_effective_floor_height') and self._effective_floor_height is not None:
+            floor_for_consensus = self._effective_floor_height
         
         consensus_opts = ConsensusOptions(
             floor_height=floor_for_consensus,
@@ -6811,6 +7206,14 @@ class SMPLProcessor:
         # 1. Forward Kinematics (Vectorized)
         world_pos, global_rots, tips = self._compute_forward_kinematics(trans_data, quats)
         parents = self._get_hierarchy()
+        
+        # Store global rotation matrices for frame evaluator surface distance
+        n_rots = min(24, len(global_rots))
+        _global_rot_mats = np.eye(3)[np.newaxis].repeat(n_rots, axis=0)  # (24, 3, 3)
+        for j in range(n_rots):
+            if global_rots[j] is not None:
+                _global_rot_mats[j] = global_rots[j].as_matrix()
+        self._prev_global_rots = _global_rot_mats
 
 
 
@@ -6907,20 +7310,30 @@ class SMPLProcessor:
                   F, world_pos.shape[1], world_pos, vel_y_in, vel_h_in, options.floor_height, options
              )
         
-        # --- Torque-Aware Contact Refinement Loop ---
-        # Iteratively: compute floor pressure → torques → check for
-        # torque discontinuities → if a contact change explains the burst,
-        # refine the contacts → re-compute. Real torque bursts from genuine
-        # motion are left alone for downstream rate limiting.
+        # --- Dynamic Frame Evaluator (optional, read-only) ---
+        if getattr(options, 'enable_frame_evaluator', False):
+            self._evaluate_dynamic_frame(F, world_pos, tips, options, contact_probs_fusion)
         
-        # Per-frame cache: shared across repeated _compute_joint_torques calls.
-        # Avoids recomputing global_rot_invs, inertias, and t_dyn_raw which are
-        # identical between calls (only contact_pressure changes).
+        # --- Contact Pressure: Frame Eval vs Legacy ---
         _frame_cache = {}
-        
+        dt = options.dt if hasattr(options, 'dt') and options.dt > 0 else 1.0/30.0
+        fe_result = getattr(self, '_frame_eval_result', None)
+        _use_frame_eval = (getattr(options, 'enable_frame_evaluator', False)
+                           and fe_result is not None)
         working_probs = contact_probs_fusion.copy()
         
-        if True:  # Single pass (refinement loop removed)
+        if _use_frame_eval:
+            # Frame eval path: inject physics-based forces directly,
+            # bypassing legacy probability→pressure pipeline.
+            J_cp = world_pos.shape[1]
+            self.contact_pressure = np.zeros((F, J_cp))
+            fe_forces = fe_result.force_array
+            for f_idx in range(F):
+                n = min(len(fe_forces), J_cp)
+                self.contact_pressure[f_idx, :n] = fe_forces[:n]
+        else:
+            # --- Legacy Pressure Pipeline ---
+            working_probs = contact_probs_fusion.copy()
             # --- Weighted Mass Distribution (for RNE GRF) ---
             self.contact_pressure = np.zeros((F, world_pos.shape[1]))
             
@@ -7122,17 +7535,21 @@ class SMPLProcessor:
                 if stab_press is not None and len(stab_press) == self.contact_pressure.shape[1]:
                     for f in range(F):
                         self.contact_pressure[f] = stab_press
+            # end legacy pressure pipeline
         
         # --- Contact Pressure Smoothing (Asymmetric + Rate Clamp) ---
         # Runs OUTSIDE the refinement loop so it always applies.
         # Time-constant based smoothing (framerate-adaptive).
-        # Stability methods compute physics-based pressure with their own
-        # hysteresis, so use faster build-up to avoid lagging.
-        if options.contact_method in ('stability', 'stability_v2'):
+        if _use_frame_eval:
+            # Frame eval contacts are already temporally stable;
+            # use very fast time constants (just light jitter damping).
+            TAU_UP = 0.015    # seconds — minimal lag
+            TAU_DOWN = 0.025  # seconds — fast release
+        elif options.contact_method in ('stability', 'stability_v2'):
             TAU_UP = 0.030    # seconds — fast build-up for physics-based pressure
         else:
             TAU_UP = 0.150    # seconds — slower build-up for probability methods
-        TAU_DOWN = 0.050  # seconds — release time constant
+        TAU_DOWN = TAU_DOWN if _use_frame_eval else 0.050  # seconds — release time constant
         MAX_RATE = 5.0 * self.total_mass_kg  # kg/s — max pressure change rate per joint
         
         # Convert time constants to per-frame alphas
@@ -7165,10 +7582,10 @@ class SMPLProcessor:
             delta = np.clip(delta, -max_change_per_frame, max_change_per_frame)
             smoothed = prev + delta
             
-            # For stability methods: when target pressure is zero (group OFF),
-            # zero immediately — the state machine already handles hysteresis,
-            # so slow decay just creates lingering ghost pressure on lifted joints.
-            if options.contact_method in ('stability', 'stability_v2'):
+            # For physics-based methods (stability, frame_eval): when target
+            # pressure is zero (contact OFF), zero immediately — internal
+            # hysteresis already handles temporal continuity.
+            if _use_frame_eval or options.contact_method in ('stability', 'stability_v2'):
                 smoothed = np.where(curr <= 0, 0.0, smoothed)
             
             self.contact_pressure[f] = smoothed
@@ -7269,6 +7686,11 @@ class SMPLProcessor:
             'contact_pressure': self.contact_pressure,
             'balance': balance,
         }
+        
+        # Add frame evaluator results if available
+        frame_eval = getattr(self, '_frame_eval_result', None)
+        if frame_eval is not None:
+            res['frame_eval'] = frame_eval
         
         # --- Optional World-Frame Output Conversion ---
         # Internal computation is in local (parent) frame.

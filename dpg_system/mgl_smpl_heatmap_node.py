@@ -236,36 +236,55 @@ class MGLSMPLHeatmapNode(Node):
         if pose.shape[0] < 66:
             return None
 
-        global_orient = torch.tensor(pose[:3], dtype=torch.float32).unsqueeze(0)
-        body_pose = torch.tensor(pose[3:66], dtype=torch.float32).unsqueeze(0)
+        global_orient = pose[:3].copy()
+        body_pose = pose[3:66].copy()
 
         trans = any_to_array(trans_data)
         if trans is not None:
-            trans = trans.flatten().astype(np.float32)[:3]
-            transl = torch.tensor(trans, dtype=torch.float32).unsqueeze(0)
+            trans = trans.flatten().astype(np.float32)[:3].copy()
         else:
-            transl = torch.zeros(1, 3, dtype=torch.float32)
+            trans = np.zeros(3, dtype=np.float32)
+
+        # Apply axis permutation matching smpl_processor:
+        # Pre-rotate root orientation and permute translation BEFORE FK.
+        if self.up_axis_prop() == 'Y':
+            from scipy.spatial.transform import Rotation as R
+            # perm_basis for 'x, z, -y': new_x=old_x, new_y=old_z, new_z=-old_y
+            # det = +1 (proper rotation), no correction needed
+            basis = np.array([
+                [1,  0,  0],
+                [0,  0,  1],
+                [0, -1,  0],
+            ], dtype=np.float64)
+            
+            # Transform translation
+            trans = (basis @ trans.astype(np.float64)).astype(np.float32)
+            
+            # Transform root orientation
+            r_perm = R.from_matrix(basis)
+            r_root = R.from_rotvec(global_orient.astype(np.float64))
+            r_root_new = r_perm * r_root
+            global_orient = r_root_new.as_rotvec().astype(np.float32)
+
+        global_orient_t = torch.tensor(global_orient, dtype=torch.float32).unsqueeze(0)
+        body_pose_t = torch.tensor(body_pose, dtype=torch.float32).unsqueeze(0)
+        transl = torch.tensor(trans, dtype=torch.float32).unsqueeze(0)
 
         with torch.no_grad():
-            fwd_kwargs = dict(global_orient=global_orient, body_pose=body_pose, transl=transl)
+            fwd_kwargs = dict(global_orient=global_orient_t, body_pose=body_pose_t, transl=transl)
             if self.betas_tensor is not None:
                 fwd_kwargs['betas'] = self.betas_tensor
             output = self.smpl_model(**fwd_kwargs)
             vertices = output.vertices[0].cpu().numpy()
             joint_positions = output.joints[0, :24].cpu().numpy()  # (24, 3)
 
-        if self.up_axis_prop() == 'Y':
-            out = np.empty_like(vertices)
-            out[:, 0] = vertices[:, 0]
-            out[:, 1] = vertices[:, 2]
-            out[:, 2] = -vertices[:, 1]
-            vertices = out
-            # Same transform for joint positions
-            jp_out = np.empty_like(joint_positions)
-            jp_out[:, 0] = joint_positions[:, 0]
-            jp_out[:, 1] = joint_positions[:, 2]
-            jp_out[:, 2] = -joint_positions[:, 1]
-            joint_positions = jp_out
+        # Correct for SMPL template offset:
+        # smplx places pelvis at (J_regressor @ v_shaped + transl),
+        # smpl_processor places pelvis at just transl.
+        # Subtract the template offset so mesh aligns with processor skeleton.
+        pelvis_offset = joint_positions[0] - trans.astype(np.float64)
+        vertices -= pelvis_offset.astype(np.float32)
+        joint_positions -= pelvis_offset
 
         return vertices, joint_positions
 

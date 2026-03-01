@@ -1663,6 +1663,13 @@ class SMPLTorqueNode(SMPLNode):
         self.imbalance_vector_output = self.add_output('imbalance_vector')
         self.support_polygon_output = self.add_output('support_polygon')
         
+        # Frame Evaluator outputs
+        self.frame_eval_forces_output = self.add_output('frame_eval_forces')
+        self.frame_eval_necessity_output = self.add_output('frame_eval_necessity')
+        self.frame_eval_zmp_output = self.add_output('frame_eval_zmp')
+        self.frame_eval_f_required_output = self.add_output('frame_eval_f_required')
+        self.frame_eval_support_poly_output = self.add_output('frame_eval_support_poly')
+        
         # Noise stats controls
         self.reset_noise_stats_input = self.add_input('reset_noise_stats', widget_type='button', callback=self._reset_noise_stats)
         
@@ -1694,6 +1701,7 @@ class SMPLTorqueNode(SMPLNode):
         # Contact Method Selection
         self.contact_method_prop = self.add_option('contact_method', widget_type='combo', default_value='stability_v2')
         self.contact_method_prop.widget.combo_items = ['fusion', 'stability', 'stability_v2', 'com_driven', 'consensus']
+        self.enable_frame_eval_prop = self.add_option('enable_frame_evaluator', widget_type='checkbox', default_value=False)
         
         # --- Rate Limiting ---
         self.enable_rate_limiting_prop = self.add_option('enable_rate_limiting', widget_type='checkbox', default_value=False)
@@ -1922,6 +1930,7 @@ class SMPLTorqueNode(SMPLNode):
                 smooth_input_window=self.smooth_input_window_prop() if hasattr(self, 'smooth_input_window_prop') else 0,
 
                 use_s_curve_spine=self.use_s_curve_spine_prop() if hasattr(self, 'use_s_curve_spine_prop') else True,
+                enable_frame_evaluator=self.enable_frame_eval_prop() if hasattr(self, 'enable_frame_eval_prop') else False,
             )
             
             # Process
@@ -2051,6 +2060,25 @@ class SMPLTorqueNode(SMPLNode):
                     self.balance_score_output.send(bal['stability_score'])
                     self.imbalance_vector_output.send(bal['imbalance_vector'])
                     self.support_polygon_output.send(bal['support_polygon'])
+                
+                # Frame evaluator outputs
+                if 'frame_eval' in res:
+                    fe = res['frame_eval']
+                    self.frame_eval_forces_output.send(fe.force_array)
+                    self.frame_eval_necessity_output.send(fe.necessity_array)
+                    # ZMP as 3D point on the floor
+                    zmp_3d = np.zeros(3)
+                    up = 1 if self.up_axis_prop() == 'Y' else 2
+                    plane = [0, 2] if up == 1 else [0, 1]
+                    zmp_3d[plane[0]] = fe.zmp_approx[0]
+                    zmp_3d[plane[1]] = fe.zmp_approx[1]
+                    floor_h = getattr(self.processor, '_inferred_floor_height', 0.0)
+                    zmp_3d[up] = floor_h
+                    self.frame_eval_zmp_output.send(zmp_3d)
+                    self.frame_eval_f_required_output.send(fe.f_required)
+                    if fe.support_polygon:
+                        poly = np.array(fe.support_polygon)
+                        self.frame_eval_support_poly_output.send(poly)
             
             except Exception as e:
                 # Catch processing errors (e.g. shape mismatch on first frame)
