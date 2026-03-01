@@ -1950,6 +1950,9 @@ class App:
                             task.frame_task()
                         if not self.global_trace:
                             self.trace = False
+                    for node_editor in self.node_editors:
+                        if node_editor.is_first_frame:
+                            node_editor.first_frame()
                     if not self.global_trace:
                         self.trace = False
                     jobs = dpg.get_callback_queue()  # retrieves and clears queue

@@ -384,9 +384,6 @@ class OpenTakeNode(MoCapNode):
         self.save_button = self.add_input('save', widget_type='button', callback=self.save_sequence)
 
         self.file_name = self.add_label('')
-        load_path = ''
-        self.load_path = self.add_option('path', widget_type='text_input', default_value=load_path,
-                                         callback=self.load_from_load_path)
         self.record_button = self.add_input('record', widget_type='button', callback=self.record_button_clicked)
         self.record_button.name_archive.append('stop record')
         self.play_pause_button = self.add_input('play', widget_type='button', callback=self.play_button_clicked)
@@ -415,6 +412,12 @@ class OpenTakeNode(MoCapNode):
         self.take_data_out = self.add_output('take data out')
         self.frame_out = self.add_output('frame')
         self.done_out = self.add_output('done')
+
+        self.load_folder = './dpg_system'
+        self.load_folder_option = self.add_option('load folder', widget_type='text_input', width=200, default_value=self.load_folder)
+        load_path = ''
+        self.load_path = self.add_option('path', widget_type='text_input', width=300, default_value=load_path,
+                                         callback=self.load_from_load_path)
         self.temp_save_name = ''
         self.last_frame_out = -1
         self.recording = False
@@ -476,7 +479,8 @@ class OpenTakeNode(MoCapNode):
         self.clip_end_input.set(self.clip_end)
 
     def stop_button_clicked(self):
-        if self.streaming:
+
+        if self.streaming or self.play_pause_button.get_label() == 'resume':
             self.streaming = False
             self.stop_playing()
             self.play_pause_button.set_label('play')
@@ -686,6 +690,11 @@ class OpenTakeNode(MoCapNode):
             except Exception as e:
                 print('no take file found:', path)
 
+    def first_frame(self):
+        if len(self.global_dict) > 0:
+            self.global_params_out.send(self.global_dict)
+            self.force_frame = False
+
     def load_take_from_npz(self, path):
         if self.streaming:
             self.stop_button_clicked()
@@ -770,7 +779,7 @@ class OpenTakeNode(MoCapNode):
                 except Exception as e:
                     print('load_npz_callback: error loading take file:', e, arg)
                 return
-        LoadDialog(self, self.load_npz_callback, extensions=['.npz'])
+        LoadDialog(self, self.load_npz_callback, extensions=['.npz'], default_path=self.load_folder_option())
 
     def load_npz_callback(self, load_path):
         if load_path != '':
@@ -1203,12 +1212,10 @@ class DiffQuaternionsNode(Node):
         self.normalized_axes_out.send(self.normalized_axes)
 
     def restart_cal(self):
-        print('DiffQuaternionsNode armed reset')
         self.smoothed_quaternions_a = None
 
     def calc_diff_quaternions(self, incoming_quats):
         if self.smoothed_quaternions_a is None:
-            print('DiffQuaternionsNode reset')
             self.smoothed_quaternions_a = np.copy(incoming_quats)
             self.smoothed_quaternions_b = np.copy(incoming_quats)
         else:

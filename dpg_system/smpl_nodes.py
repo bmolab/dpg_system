@@ -1685,9 +1685,6 @@ class SMPLTorqueNode(SMPLNode):
         
         self.enable_passive_limits = self.add_option('enable_passive_limits', widget_type='checkbox', default_value=True)
         
-        self.enable_one_euro_prop = self.add_option('enable_one_euro_filter', widget_type='checkbox', default_value=False)
-        self.min_cutoff_prop = self.add_option('one_euro_min_cutoff', widget_type='drag_float', default_value=1.0)
-        self.beta_prop = self.add_option('one_euro_beta', widget_type='drag_float', default_value=0.001)
         
 
         self.floor_enable_prop = self.add_option('floor_contact_enable', widget_type='checkbox', default_value=True)
@@ -1701,17 +1698,8 @@ class SMPLTorqueNode(SMPLNode):
         # Contact Method Selection
         self.contact_method_prop = self.add_option('contact_method', widget_type='combo', default_value='stability_v2')
         self.contact_method_prop.widget.combo_items = ['fusion', 'stability', 'stability_v2', 'com_driven', 'consensus']
-        self.enable_frame_eval_prop = self.add_option('enable_frame_evaluator', widget_type='checkbox', default_value=False)
+        self.enable_frame_eval_prop = self.add_option('enable_frame_evaluator', widget_type='checkbox', default_value=True)
         
-        # --- Rate Limiting ---
-        self.enable_rate_limiting_prop = self.add_option('enable_rate_limiting', widget_type='checkbox', default_value=False)
-        self.rate_limit_strength_prop = self.add_option('rate_limit_strength', widget_type='drag_float', default_value=1.0)
-        self.enable_jitter_damping_prop = self.add_option('enable_jitter_damping', widget_type='checkbox', default_value=False)
-        self.enable_velocity_gate_prop = self.add_option('enable_velocity_gate', widget_type='checkbox', default_value=False)
-        self.enable_kf_smoothing_prop = self.add_option('enable_kf_smoothing', widget_type='checkbox', default_value=False)
-        self.kf_responsiveness_prop = self.add_option('kf_responsiveness', widget_type='drag_float', default_value=10.0)
-        self.kf_smoothness_prop = self.add_option('kf_smoothness', widget_type='drag_float', default_value=1.0)
-        self.kf_clamp_radius_prop = self.add_option('kf_clamp_radius', widget_type='drag_float', default_value=15.0)
         
         # --- World-Frame Dynamics ---
         self.world_frame_dynamics_prop = self.add_option('world_frame_dynamics', widget_type='checkbox', default_value=True)
@@ -1898,10 +1886,6 @@ class SMPLTorqueNode(SMPLNode):
                 enable_passive_limits=self.enable_passive_limits(),
                 enable_apparent_gravity=self.enable_app_gravity_prop(),
                 
-                # Filtering
-                enable_one_euro_filter=self.enable_one_euro_prop(),
-                filter_min_cutoff=self.min_cutoff_prop() if hasattr(self, 'min_cutoff_prop') else 1.0,
-                filter_beta=self.beta_prop() if hasattr(self, 'beta_prop') else 0.05,
                 
                 
                 # Floor
@@ -1911,15 +1895,7 @@ class SMPLTorqueNode(SMPLNode):
                 heel_toe_bias=self.heel_toe_bias_prop() if hasattr(self, 'heel_toe_bias_prop') else 0.0,
                 contact_method=self.contact_method_prop() if hasattr(self, 'contact_method_prop') else 'fusion',
                 
-                # Rate Limiting
-                enable_rate_limiting=self.enable_rate_limiting_prop() if hasattr(self, 'enable_rate_limiting_prop') else True,
-                rate_limit_strength=self.rate_limit_strength_prop() if hasattr(self, 'rate_limit_strength_prop') else 1.0,
-                enable_jitter_damping=self.enable_jitter_damping_prop() if hasattr(self, 'enable_jitter_damping_prop') else True,
-                enable_velocity_gate=self.enable_velocity_gate_prop() if hasattr(self, 'enable_velocity_gate_prop') else True,
-                enable_kf_smoothing=self.enable_kf_smoothing_prop() if hasattr(self, 'enable_kf_smoothing_prop') else True,
-                kf_responsiveness=self.kf_responsiveness_prop() if hasattr(self, 'kf_responsiveness_prop') else 10.0,
-                kf_smoothness=self.kf_smoothness_prop() if hasattr(self, 'kf_smoothness_prop') else 1.0,
-                kf_clamp_radius=self.kf_clamp_radius_prop() if hasattr(self, 'kf_clamp_radius_prop') else 15.0,
+
                 world_frame_dynamics=self.world_frame_dynamics_prop() if hasattr(self, 'world_frame_dynamics_prop') else False,
                 com_pos_min_cutoff=self.com_pos_mc_prop() if hasattr(self, 'com_pos_mc_prop') else 8.0,
                 com_pos_beta=self.com_pos_beta_prop() if hasattr(self, 'com_pos_beta_prop') else 0.05,
@@ -2070,10 +2046,12 @@ class SMPLTorqueNode(SMPLNode):
                     zmp_3d = np.zeros(3)
                     up = 1 if self.up_axis_prop() == 'Y' else 2
                     plane = [0, 2] if up == 1 else [0, 1]
-                    zmp_3d[plane[0]] = fe.zmp_approx[0]
-                    zmp_3d[plane[1]] = fe.zmp_approx[1]
+                    zmp_2d = fe.zmp_approx
+                    if zmp_2d is not None and not np.any(np.isnan(zmp_2d)):
+                        zmp_3d[plane[0]] = zmp_2d[0]
+                        zmp_3d[plane[1]] = zmp_2d[1]
                     floor_h = getattr(self.processor, '_inferred_floor_height', 0.0)
-                    zmp_3d[up] = floor_h
+                    zmp_3d[up] = floor_h if floor_h is not None else 0.0
                     self.frame_eval_zmp_output.send(zmp_3d)
                     self.frame_eval_f_required_output.send(fe.f_required)
                     if fe.support_polygon:

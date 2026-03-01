@@ -324,36 +324,36 @@ class SMPLProcessingOptions:
     
     # --- Physics / Dynamics ---
     dt: float = 1.0/60.0
-    add_gravity: bool = False
+    add_gravity: bool = True
     enable_passive_limits: bool = True # Enabled for Structural Support
     enable_apparent_gravity: bool = True
     torque_output_frame: str = 'local'  # 'local' (parent frame) or 'world'
     
     # --- Filtering / Signal Processing ---
-    enable_one_euro_filter: bool = True
+    enable_one_euro_filter: bool = False
     filter_min_cutoff: float = 1.0
     filter_beta: float = 0.0
     
     # --- Floor / Environment ---
-    floor_enable: bool = False
+    floor_enable: bool = True
     floor_height: float = 0.0
     floor_tolerance: float = 0.15
     heel_toe_bias: float = 0.0
     contact_method: str = 'fusion'  # 'fusion', 'stability', 'stability_v2', 'com_driven', or 'consensus'
-    enable_frame_evaluator: bool = False  # Run DynamicFrameEvaluator (read-only analysis alongside contact method)
+    enable_frame_evaluator: bool = True  # Run DynamicFrameEvaluator (read-only analysis alongside contact method)
     
     # --- Torque Rate Limiting ---
-    enable_rate_limiting: bool = True
+    enable_rate_limiting: bool = False
     rate_limit_strength: float = 1.0  # Multiplier for per-joint rate limits
-    enable_jitter_damping: bool = True  # Pass 4: sign-flip oscillation damping
-    enable_velocity_gate: bool = True   # Suppress dynamic torque at low angular velocity
-    enable_kf_smoothing: bool = True  # SmartClampKF filter for dynamic torque
+    enable_jitter_damping: bool = False  # Pass 4: sign-flip oscillation damping
+    enable_velocity_gate: bool = False   # Suppress dynamic torque at low angular velocity
+    enable_kf_smoothing: bool = False  # SmartClampKF filter for dynamic torque (disabled: corrupts torques_vec after re-init)
     kf_responsiveness: float = 10.0   # How quickly KF tracks changes (higher = faster)
     kf_smoothness: float = 1.0        # Process noise (higher = trusts new data more)
     kf_clamp_radius: float = 15.0     # Max innovation per frame (Nm)
     
     # --- World-Frame Dynamics ---
-    world_frame_dynamics: bool = False  # CoM-based dynamic torque (off by default for A/B comparison)
+    world_frame_dynamics: bool = True  # CoM-based dynamic torque
     com_pos_min_cutoff: float = 8.0    # Base One Euro min_cutoff for CoM position filter (scaled by 1/√mass)
     com_pos_beta: float = 0.05         # Base One Euro beta for CoM position filter
     com_vel_min_cutoff: float = 3.0    # Base One Euro min_cutoff for CoM velocity filter (scaled by 1/√mass)
@@ -1104,9 +1104,9 @@ class SMPLProcessor:
             
             # Always override heel offsets — model values target calcaneus center,
             # not the ground contact point. We need the bottom of the heel.
-            # Calibrated so heel ≈ foot height when flat-footed (ankle ~14cm above ground).
+            # Calibrated so heel ≈ floor level when flat-footed (ankle ~3.5cm above ground).
             heel_dir = np.array([0.0, -0.9, -0.4])  # Primarily downward, slightly backward
-            heel_dir = heel_dir / np.linalg.norm(heel_dir) * 0.08  # ~8cm (calibrated)
+            heel_dir = heel_dir / np.linalg.norm(heel_dir) * 0.05  # ~5cm (ankle-to-heel ground)
             offsets[28] = heel_dir  # L_heel from L_ankle
             offsets[29] = heel_dir  # R_heel from R_ankle
             return offsets
@@ -1136,7 +1136,7 @@ class SMPLProcessor:
             # Virtual Extensions
             elif 'toe' in node_name: length = 0.15
             elif 'fingertip' in node_name: length = 0.08
-            elif 'heel' in node_name: length = 0.12
+            elif 'heel' in node_name: length = 0.05
 
             # Define Base Local Position (unrotated)
             lx, ly, lz = 0.0, -1.0, 0.0 # Down
@@ -1180,7 +1180,7 @@ class SMPLProcessor:
             
             elif 'heel' in node_name:
                 # Heel: primarily Downward (-Y) with slight Backward (-Z) from ankle
-                # Ankle joint center is ~10-12cm above heel ground contact point
+                # Ankle joint center is ~3.5cm above heel ground contact point
                 lx, ly, lz = 0.0, -0.9, -0.4
             
             base_vec = np.array([lx, ly, lz])
@@ -3079,37 +3079,83 @@ class SMPLProcessor:
         ds_alpha_down = 1.0 - np.exp(-dt_s / DS_TAU_DOWN)
         ds_alpha_up = 1.0 - np.exp(-dt_s / DS_TAU_UP)
         
+        # Deceleration detection: a separate symmetric EMA pair.
+        # The asymmetric suppression EMA's fast recovery (tau_up=40ms) masks
+        # deceleration. Two symmetric EMAs with different taus produce a clean
+        # decel signal: positive during sustained deceleration (contact),
+        # near-zero during gradual velocity changes (slow descent).
+        DS_TAU_DECEL_SLOW = 0.080  # 80ms — moderate lag
+        DS_TAU_DECEL_FAST = 0.020  # 20ms — tracks quickly
+        DS_DECEL_SCALE = 0.10  # m/s difference to fully disable suppression
+        ds_alpha_decel_slow = 1.0 - np.exp(-dt_s / DS_TAU_DECEL_SLOW)
+        ds_alpha_decel_fast = 1.0 - np.exp(-dt_s / DS_TAU_DECEL_FAST)
+        
         # Initialize per-joint state if needed
         if not hasattr(self, '_ds_vy_ema'):
             self._ds_vy_ema = np.zeros(J)
-        if not hasattr(self, '_ds_prev_heights'):
-            self._ds_prev_heights = None
+        if not hasattr(self, '_ds_decel_slow'):
+            self._ds_decel_slow = np.zeros(J)
+        if not hasattr(self, '_ds_decel_fast'):
+            self._ds_decel_fast = np.zeros(J)
+        if not hasattr(self, '_ds_prev_abs_heights'):
+            self._ds_prev_abs_heights = None
         # Resize if joint count changed
         if len(self._ds_vy_ema) < J:
             self._ds_vy_ema = np.zeros(J)
+        if len(self._ds_decel_slow) < J:
+            self._ds_decel_slow = np.zeros(J)
+        if len(self._ds_decel_fast) < J:
+            self._ds_decel_fast = np.zeros(J)
         
-        if consensus_1d is not None and self._ds_prev_heights is not None:
+        # Absolute heights (not floor-relative) for velocity computation
+        # — immune to effective floor height drift between frames
+        abs_heights = np.array([positions[j, y_dim] for j in range(J)])
+        
+        if consensus_1d is not None and self._ds_prev_abs_heights is not None:
             consensus_1d = consensus_1d.copy()  # don't modify original
             ds_suppressed = set()  # track which joints get suppressed
             prev_active = getattr(self, '_fe_prev_contacts', None) or set()
             for j in list(candidate_joints):
                 if j >= J:
                     continue
-                # Compute raw vertical velocity
-                raw_vy = (joint_heights[j] - self._ds_prev_heights[j]) / dt_s
+                # Compute raw vertical velocity from absolute positions
+                # (not floor-relative, to avoid phantom velocity from floor drift)
+                raw_vy = (abs_heights[j] - self._ds_prev_abs_heights[j]) / dt_s
                 
-                # Impact detection: if velocity jumps sharply positive
-                # (e.g., jump landing: -2.0 → 0), reset EMA immediately
+                # Impact detection: if velocity jumps sharply positive FROM
+                # a descending state (e.g., landing: -2.0 → 0), reset EMA.
+                # Only trigger when EMA was negative (joint was descending),
+                # NOT for spikes from ~0 (push-off noise).
                 DS_IMPACT_DELTA = 0.5  # m/s — minimum velocity jump for impact
-                if raw_vy - self._ds_vy_ema[j] > DS_IMPACT_DELTA:
+                if (raw_vy - self._ds_vy_ema[j] > DS_IMPACT_DELTA and
+                        self._ds_vy_ema[j] < -0.1):
                     self._ds_vy_ema[j] = raw_vy
+                    self._ds_decel_slow[j] = raw_vy
+                    self._ds_decel_fast[j] = raw_vy
                 else:
-                    # Asymmetric EMA update
+                    # Asymmetric EMA update (for suppression)
                     if raw_vy > self._ds_vy_ema[j]:
                         alpha = ds_alpha_up    # fast recovery
                     else:
                         alpha = ds_alpha_down  # slow descent tracking
                     self._ds_vy_ema[j] += alpha * (raw_vy - self._ds_vy_ema[j])
+                    # Symmetric decel pair (for deceleration detection)
+                    self._ds_decel_slow[j] += ds_alpha_decel_slow * (raw_vy - self._ds_decel_slow[j])
+                    self._ds_decel_fast[j] += ds_alpha_decel_fast * (raw_vy - self._ds_decel_fast[j])
+                
+                # Ascent ejection: if the joint is moving upward rapidly
+                # and sustainedly, it cannot be in contact — eject.
+                # Require BOTH fast and slow decel EMAs to agree on ascent
+                # to avoid false ejection from single-frame velocity glitches
+                # (e.g., noisy mocap during push-off).
+                DS_ASCENT_THRESHOLD = 0.5  # m/s — minimum upward velocity to eject
+                DS_ASCENT_SLOW_THRESHOLD = 0.25  # m/s — slow EMA must also confirm
+                if (self._ds_decel_fast[j] > DS_ASCENT_THRESHOLD and
+                        self._ds_decel_slow[j] > DS_ASCENT_SLOW_THRESHOLD):
+                    consensus_1d[j] = 0.0
+                    candidate_joints.discard(j)
+                    ds_suppressed.add(j)
+                    continue
                 
                 # Skip suppression for joints active in previous frame
                 # (prevents post-landing flicker from velocity oscillation)
@@ -3128,6 +3174,14 @@ class SMPLProcessor:
                 adaptive_scale = max(DS_BASE_SCALE, DS_FRAC * abs(vy_ema))
                 suppression = np.clip(1.0 + vy_ema / adaptive_scale, 0.0, 1.0)
                 
+                # Deceleration detection: if the fast decel EMA is significantly
+                # less negative than the slow one, a sustained deceleration is
+                # happening (contact imminent). Scale down suppression.
+                decel_signal = self._ds_decel_fast[j] - self._ds_decel_slow[j]
+                if decel_signal > 0 and vy_ema < 0:
+                    decel_factor = np.clip(decel_signal / DS_DECEL_SCALE, 0.0, 1.0)
+                    suppression = 1.0 - (1.0 - suppression) * (1.0 - decel_factor)
+                
                 consensus_1d[j] *= suppression
                 
                 # Remove from candidates if fully suppressed
@@ -3137,14 +3191,14 @@ class SMPLProcessor:
         else:
             ds_suppressed = set()
         
-        # Store heights for next frame
-        self._ds_prev_heights = joint_heights.copy()
+        # Store absolute heights for next frame's velocity computation
+        self._ds_prev_abs_heights = abs_heights.copy()
         
         # --- Previous frame's active contacts and seed ---
         prev_active = getattr(self, '_fe_prev_contacts', None)
         prev_seed = getattr(self, '_fe_prev_seed', None)
         
-        # --- Run the evaluator ---
+        # --- Run the evaluator (pass 1: normal candidates) ---
         result = self._frame_evaluator.evaluate_and_refine(
             candidate_joints=candidate_joints,
             joint_positions=positions,
@@ -3159,7 +3213,60 @@ class SMPLProcessor:
             joint_velocities=joint_velocities,
             prev_active_contacts=prev_active,
             prev_seed=prev_seed,
+            excluded_joints=EXCLUDED_JOINTS,
         )
+        
+        # --- Contact recovery: residual-jump detection ---
+        # If a previously-active contact dropped from the candidate set and
+        # the residual jumped, try adding it back. This catches cases where
+        # consensus briefly dips below the candidate threshold but the contact
+        # is still physically needed.
+        RECOVERY_PROB_THRESHOLD = 0.01  # minimum consensus to consider recovery
+        RECOVERY_RESIDUAL_RATIO = 0.70  # recovered contact must reduce residual to 70%
+        
+        current_residual = np.linalg.norm(result.residual)
+        prev_residual = getattr(self, '_fe_prev_residual', current_residual)
+        current_active_reps = set(result.per_contact_force.keys())
+        
+        # Find previously-active contacts that dropped out
+        if prev_active is not None:
+            dropped = prev_active - current_active_reps - ds_suppressed
+            
+            if dropped and current_residual > prev_residual * 1.3:
+                # Residual jumped — try recovering dropped contacts
+                recovery_candidates = set()
+                probs_1d = raw_probs[0] if raw_probs is not None and raw_probs.ndim > 1 else raw_probs
+                for j in dropped:
+                    if j not in EXCLUDED_JOINTS and j < J:
+                        p = probs_1d[j] if probs_1d is not None and j < len(probs_1d) else 0
+                        if p > RECOVERY_PROB_THRESHOLD:
+                            recovery_candidates.add(j)
+                
+                if recovery_candidates:
+                    # Re-run with the dropped contacts added back
+                    expanded = candidate_joints | recovery_candidates
+                    test_result = self._frame_evaluator.evaluate_and_refine(
+                        candidate_joints=expanded,
+                        joint_positions=positions,
+                        com=com,
+                        com_acc=com_acc,
+                        floor_height=floor_height,
+                        up_axis=y_dim,
+                        max_iterations=3,
+                        all_joint_heights=joint_heights,
+                        surface_distances=surface_dists,
+                        consensus_probs=consensus_1d,
+                        joint_velocities=joint_velocities,
+                        prev_active_contacts=prev_active,
+                        prev_seed=prev_seed,
+                        excluded_joints=EXCLUDED_JOINTS,
+                    )
+                    test_residual = np.linalg.norm(test_result.residual)
+                    # Accept recovery if it substantially reduces the residual
+                    if test_residual < current_residual * RECOVERY_RESIDUAL_RATIO:
+                        result = test_result
+        
+        self._fe_prev_residual = np.linalg.norm(result.residual)
         
         # Track active contacts and seed for next frame
         self._fe_prev_contacts = set(
@@ -3953,21 +4060,21 @@ class SMPLProcessor:
             # Start with isotropic or specific vector
             val = default_t
             
-            if 'pelvis' in name: val = [500.0, 200.0, 500.0] # Core is strong in all axes
-            elif 'hip' in name: val = [300.0, 50.0, 150.0] # Flex, Twist, Abd
-            elif 'knee' in name: val = [250.0, 20.0, 20.0] # Hinge (Primary X)
-            elif 'ankle' in name: val = [150.0, 20.0, 40.0] # Dorsi/Plantar strong
-            elif 'foot' in name: val = [40.0, 10.0, 10.0]
+            if 'pelvis' in name: val = [500.0, 500.0, 500.0]
+            elif 'hip' in name: val = [300.0, 300.0, 300.0]
+            elif 'knee' in name: val = [250.0, 250.0, 250.0]
+            elif 'ankle' in name: val = [100.0, 100.0, 100.0]
+            elif 'foot' in name: val = [40.0, 40.0, 40.0]
             
-            elif 'spine' in name: val = [400.0, 100.0, 300.0] # Flex, Twist, Bend
-            elif 'neck' in name: val = [50.0, 20.0, 40.0]
-            elif 'head' in name: val = [30.0, 10.0, 20.0]
+            elif 'spine' in name: val = [250.0, 250.0, 250.0]
+            elif 'neck' in name: val = [50.0, 50.0, 50.0]
+            elif 'head' in name: val = [50.0, 50.0, 50.0]
             
-            elif 'collar' in name: val = [100.0, 100.0, 500.0] # Structural Z support
-            elif 'shoulder' in name: val = [60.0, 120.0, 100.0] # Twist, Flex, Abd
-            elif 'elbow' in name: val = [20.0, 100.0, 20.0] # Hinge (Primary Y)
-            elif 'wrist' in name: val = [10.0, 30.0, 20.0]
-            elif 'hand' in name: val = [10.0, 10.0, 10.0]
+            elif 'collar' in name: val = [300.0, 300.0, 300.0]
+            elif 'shoulder' in name: val = [100.0, 100.0, 100.0]
+            elif 'elbow' in name: val = [80.0, 80.0, 80.0]
+            elif 'wrist' in name: val = [30.0, 30.0, 30.0]
+            elif 'hand' in name: val = [30.0, 30.0, 30.0]
             
             # Feature: User Overrides via set_max_torque (stored in dict)
             # If user set a value in self.max_torques, use it.
@@ -4009,19 +4116,19 @@ class SMPLProcessor:
         # Spine: Bone Y. X=Flex/Ext, Y=Twist, Z=LatBend.
 
         max_t = {
-            'pelvis': [500.0, 300.0, 500.0],
-            'spine': [400.0, 100.0, 300.0],
-            'hip': [300.0, 150.0, 200.0], 
-            'knee': [250.0, 100.0, 100.0], # Hinge
-            'ankle': [200.0, 60.0, 80.0],
-            'foot': [80.0, 20.0, 20.0],
-            'neck': [50.0, 20.0, 40.0],
-            'head': [30.0, 10.0, 20.0],
-            'collar': [100.0, 100.0, 500.0], # Z support
-            'shoulder': [60.0, 120.0, 100.0],
-            'elbow': [20.0, 100.0, 20.0], # Hinge
-            'wrist': [10.0, 30.0, 20.0],
-            'hand': [10.0, 10.0, 10.0]
+            'pelvis': [500.0, 500.0, 500.0],
+            'spine': [250.0, 250.0, 250.0],
+            'hip': [300.0, 300.0, 300.0],
+            'knee': [250.0, 250.0, 250.0],
+            'ankle': [100.0, 100.0, 100.0],
+            'foot': [40.0, 40.0, 40.0],
+            'neck': [50.0, 50.0, 50.0],
+            'head': [50.0, 50.0, 50.0],
+            'collar': [300.0, 300.0, 300.0],
+            'shoulder': [100.0, 100.0, 100.0],
+            'elbow': [80.0, 80.0, 80.0],
+            'wrist': [30.0, 30.0, 30.0],
+            'hand': [30.0, 30.0, 30.0]
         }
         
         scale = 1.0

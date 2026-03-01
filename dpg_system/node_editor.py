@@ -53,6 +53,7 @@ class NodeEditor:
         self.duplicated_subpatch_nodes = {}
         self.saving_preset = False
         self.presenting = False
+        self.is_first_frame = True
 
     def set_name(self, name):
         self.patch_name = name
@@ -438,6 +439,11 @@ class NodeEditor:
         self._nodes.append(node)
         self.num_nodes = len(self._nodes)
         self.modified = True
+
+    def first_frame(self):
+        for node in self._nodes:
+            node.first_frame()
+        self.is_first_frame = False
 
     def remove_all_nodes(self):
         self.app.clear_remembered_ids()
@@ -1034,6 +1040,7 @@ class NodeEditor:
         # dpg.configure_viewport(0, height=height, width=width, x_pos=int(position[0]), y_pos=int(position[1]))
         # dpg.set_viewport_pos(position)
         self.modified = False
+        self.is_first_frame = True
 
     def load_(self, patch_container, path='', name=''):
         self.file_path = path
@@ -1044,6 +1051,7 @@ class NodeEditor:
             Node.app.new_patcher_index += 1
         self.app.set_current_tab_title(self.patch_name)
         self.modified = False
+        self.is_first_frame = True
 
     def load(self, path=''):
         try:
@@ -1068,6 +1076,7 @@ class NodeEditor:
                                 self.patch_name = parts[0]
                     self.app.set_current_tab_title(self.patch_name)
                     self.modified = False
+                    self.is_first_frame = True
         except:
             print('exception occurred during load')
             pass

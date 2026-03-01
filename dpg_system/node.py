@@ -1911,6 +1911,9 @@ class Node:
         if Node.active_theme is None:
             self.create_button_themes()
 
+    def first_frame(self):
+        pass
+
     def custom_cleanup(self) -> None:
         pass
 
