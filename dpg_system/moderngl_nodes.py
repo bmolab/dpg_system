@@ -272,6 +272,8 @@ class MGLContextNode(Node):
         self.camera_pos_option = self.add_option('camera_pos', widget_type='drag_float_n', default_value=[0.0, 0.0, 3.0], columns=3)
         self.camera_target_option = self.add_option('camera_target', widget_type='drag_float_n', default_value=[0.0, 0.0, 0.0], columns=3)
 
+        self.clear_color_option = self.add_option('clear_color', widget_type='drag_float_n', default_value=[0.0, 0.0, 0.0, 1.0], columns=4)
+
         self.win_size_option = self.add_option('win_size', widget_type='drag_float_n', default_value=[self.width, self.height], columns=2)
         self.win_pos_option = self.add_option('win_pos', widget_type='drag_float_n', default_value=[100, 100], columns=2)
 
@@ -518,7 +520,14 @@ class MGLContextNode(Node):
                 self.samples_option.set(str(self.render_target.samples))
 
             # Clear
-            self.context.clear(0.0, 0.0, 0.0, 1.0)
+            cc = self.clear_color_option()
+            if np.isscalar(cc):
+                cc = [float(cc), 0.0, 0.0, 1.0]
+            else:
+                cc = list(cc)
+                while len(cc) < 4:
+                    cc.append(1.0 if len(cc) == 3 else 0.0)
+            self.context.clear(*cc[:4])
 
             # Signal Downstream to Draw
             self.mgl_chain_output.send('draw')
