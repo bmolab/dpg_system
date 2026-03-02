@@ -239,6 +239,12 @@ class MGLSMPLHeatmapNode(Node):
         self.ibo = None
         self.vao = None
         self.heatmap_shader = None
+        # GPU muscle_v2 resources
+        self.v2_shader = None
+        self.v2_atlas_tex = None
+        self.v2_vbo = None
+        self.v2_vao = None
+        self.v2_atlas_uploaded_spread = -1.0
         self.initialize(args)
 
     def initialize(self, args):
@@ -381,6 +387,154 @@ class MGLSMPLHeatmapNode(Node):
                 '''
             )
         return self.heatmap_shader
+
+    def _get_muscle_v2_shader(self):
+        """GPU shader for muscle_v2: atlas multiply + colormap in vertex shader."""
+        if self.v2_shader is None:
+            ctx = MGLContext.get_instance().ctx
+            n_muscles = len(MUSCLE_GROUP_DEFS)
+            self.v2_shader = ctx.program(
+                vertex_shader=f'''
+                    #version 330
+                    uniform mat4 M;
+                    uniform mat4 V;
+                    uniform mat4 P;
+
+                    // Muscle uniforms
+                    uniform sampler2D u_atlas;       // (n_verts, n_muscles) R32F texture
+                    uniform vec3 u_torques[22];      // per-joint torque vectors
+                    uniform vec3 u_flex_axes[{n_muscles}]; // per-muscle flex axis
+                    uniform int u_muscle_joints[{n_muscles}]; // joint index per muscle
+                    uniform float u_dir_bias;
+                    uniform float u_max_torque;
+                    uniform float u_opacity;
+                    uniform float u_min_opacity;
+                    uniform int u_color_mode;        // 0=heatmap, 1=grayscale, 2=hot, 3=viridis
+                    uniform int u_n_muscles;
+                    uniform int u_atlas_width;       // texture width (n_muscles)
+
+                    in vec3 in_position;
+                    in vec3 in_normal;
+
+                    out vec3 v_normal;
+                    out vec3 v_frag_pos;
+                    out vec4 v_color;
+
+                    // Colormap functions
+                    vec3 colormap_heatmap(float t) {{
+                        if (t < 0.25) {{ float s = t / 0.25; return vec3(0.0, s, 1.0); }}
+                        else if (t < 0.5) {{ float s = (t - 0.25) / 0.25; return vec3(0.0, 1.0, 1.0 - s); }}
+                        else if (t < 0.75) {{ float s = (t - 0.5) / 0.25; return vec3(s, 1.0, 0.0); }}
+                        else {{ float s = (t - 0.75) / 0.25; return vec3(1.0, 1.0 - s, 0.0); }}
+                    }}
+
+                    vec3 colormap_hot(float t) {{
+                        if (t < 0.33) {{ float s = t / 0.33; return vec3(s, 0.0, 0.0); }}
+                        else if (t < 0.66) {{ float s = (t - 0.33) / 0.33; return vec3(1.0, s, 0.0); }}
+                        else {{ float s = (t - 0.66) / 0.34; return vec3(1.0, 1.0, s); }}
+                    }}
+
+                    vec3 colormap_viridis(float t) {{
+                        if (t < 0.25) {{
+                            float s = t / 0.25;
+                            return vec3(mix(0.267, 0.283, s), mix(0.004, 0.141, s), mix(0.329, 0.575, s));
+                        }} else if (t < 0.5) {{
+                            float s = (t - 0.25) / 0.25;
+                            return vec3(mix(0.283, 0.127, s), mix(0.141, 0.566, s), mix(0.575, 0.551, s));
+                        }} else if (t < 0.75) {{
+                            float s = (t - 0.5) / 0.25;
+                            return vec3(mix(0.127, 0.529, s), mix(0.566, 0.762, s), mix(0.551, 0.285, s));
+                        }} else {{
+                            float s = (t - 0.75) / 0.25;
+                            return vec3(mix(0.529, 0.993, s), mix(0.762, 0.906, s), mix(0.285, 0.144, s));
+                        }}
+                    }}
+
+                    void main() {{
+                        vec4 world_pos = M * vec4(in_position, 1.0);
+                        gl_Position = P * V * world_pos;
+                        v_frag_pos = world_pos.xyz;
+                        v_normal = normalize(mat3(M) * in_normal);
+
+                        // Compute muscle activation: atlas @ magnitudes
+                        float intensity = 0.0;
+                        int vid = gl_VertexID;
+                        for (int m = 0; m < u_n_muscles; m++) {{
+                            int j = u_muscle_joints[m];
+                            if (j >= 22) continue;
+                            vec3 tau = u_torques[j];
+                            float tau_mag = length(tau);
+                            if (tau_mag < 1e-8) continue;
+
+                            float mag = tau_mag;
+                            if (u_dir_bias > 0.0 && length(u_flex_axes[m]) > 0.5) {{
+                                float flex = clamp(dot(tau, u_flex_axes[m]) / tau_mag, -1.0, 1.0);
+                                mag = tau_mag * max(0.0, 1.0 + u_dir_bias * flex);
+                            }}
+
+                            float w = texelFetch(u_atlas, ivec2(m, vid), 0).r;
+                            intensity += w * mag;
+                        }}
+
+                        // Normalize and clamp
+                        float t = clamp(intensity / max(u_max_torque, 0.01), 0.0, 1.0);
+
+                        // Apply colormap
+                        vec3 col;
+                        if (u_color_mode == 1) col = vec3(t);           // grayscale
+                        else if (u_color_mode == 2) col = colormap_hot(t);     // hot
+                        else if (u_color_mode == 3) col = colormap_viridis(t); // viridis
+                        else col = colormap_heatmap(t);                        // heatmap
+
+                        // Alpha
+                        float alpha = u_min_opacity + (u_opacity - u_min_opacity) * clamp(t * 2.0, 0.0, 1.0);
+                        v_color = vec4(col, alpha);
+                    }}
+                ''',
+                fragment_shader='''
+                    #version 330
+                    uniform vec3 light_dir;
+                    uniform float u_ambient;
+                    uniform float u_emissive;
+
+                    in vec3 v_normal;
+                    in vec3 v_frag_pos;
+                    in vec4 v_color;
+
+                    out vec4 f_color;
+
+                    void main() {
+                        if (u_emissive > 0.5) {
+                            f_color = v_color;
+                        } else {
+                            vec3 norm = normalize(v_normal);
+                            float diff = max(dot(norm, normalize(light_dir)), 0.0);
+                            float lighting = u_ambient + (1.0 - u_ambient) * diff;
+                            vec3 lit_color = v_color.rgb * lighting;
+                            f_color = vec4(lit_color, v_color.a);
+                        }
+                    }
+                '''
+            )
+        return self.v2_shader
+
+    def _upload_atlas_texture(self):
+        """Upload the (V, M) atlas to GPU as an R32F 2D texture."""
+        if self._v2_atlas is None:
+            return
+        inner_ctx = MGLContext.get_instance().ctx
+        n_verts, n_muscles = self._v2_atlas.shape
+        # Release old texture
+        if self.v2_atlas_tex is not None:
+            self.v2_atlas_tex.release()
+        # Create R32F texture: width=n_muscles, height=n_verts
+        self.v2_atlas_tex = inner_ctx.texture(
+            (n_muscles, n_verts), 1,
+            data=self._v2_atlas.astype('f4').tobytes(),
+            dtype='f4'
+        )
+        self.v2_atlas_tex.filter = (moderngl.NEAREST, moderngl.NEAREST)
+        self.v2_atlas_uploaded_spread = self._v2_cached_spread
 
     def _run_forward(self, pose_data, trans_data):
         if self.smpl_model is None:
@@ -1190,6 +1344,131 @@ class MGLSMPLHeatmapNode(Node):
             return
 
         inner_ctx = self.ctx.ctx
+        mode = self.weight_mode_prop()
+
+        if mode == 'muscle_v2' and hasattr(self, '_v2_tpose_verts'):
+            self._draw_muscle_v2(inner_ctx)
+        else:
+            self._draw_cpu_path(inner_ctx)
+
+    def _draw_muscle_v2(self, inner_ctx):
+        """GPU-accelerated draw path for muscle_v2 mode."""
+        prog = self._get_muscle_v2_shader()
+
+        # Ensure atlas is built and uploaded
+        spread = max(self.spread_prop(), 0.01)
+        if self._v2_atlas is None or abs(spread - self._v2_cached_spread) > 1e-4:
+            self._v2_atlas = self._build_v2_atlas(spread)
+            self._v2_cached_spread = spread
+        if self.v2_atlas_tex is None or abs(spread - self.v2_atlas_uploaded_spread) > 1e-4:
+            self._upload_atlas_texture()
+
+        # Build pos+normal VBO (6 floats per vertex, no color)
+        vertices = self.last_vertices
+        normals = self._compute_normals(vertices, self.faces_np)
+        vbo_data = np.hstack([vertices, normals]).astype('f4')
+        vbo_bytes = vbo_data.tobytes()
+
+        if self.v2_vbo is None or self.v2_vbo.size != len(vbo_bytes):
+            if self.v2_vbo is not None:
+                self.v2_vbo.release()
+            self.v2_vbo = inner_ctx.buffer(vbo_bytes)
+            # Reuse IBO from main path or create
+            if self.ibo is None:
+                idx_data = self.faces_np.flatten().astype(np.int32)
+                self.ibo = inner_ctx.buffer(idx_data.tobytes())
+            if self.v2_vao is not None:
+                self.v2_vao.release()
+            self.v2_vao = inner_ctx.vertex_array(
+                prog,
+                [(self.v2_vbo, '3f 3f', 'in_position', 'in_normal')],
+                self.ibo
+            )
+        else:
+            self.v2_vbo.write(vbo_bytes)
+
+        # Set MVP uniforms
+        if 'M' in prog:
+            model = self.ctx.get_model_matrix()
+            prog['M'].write(model.astype('f4').T.tobytes())
+        if 'V' in prog:
+            prog['V'].write(self.ctx.view_matrix.tobytes())
+        if 'P' in prog:
+            prog['P'].write(self.ctx.projection_matrix.tobytes())
+
+        # Lighting uniforms
+        if 'light_dir' in prog:
+            prog['light_dir'].value = (0.3, 1.0, 0.5)
+        if 'u_ambient' in prog:
+            prog['u_ambient'].value = self.ambient_prop()
+        if 'u_emissive' in prog:
+            prog['u_emissive'].value = 1.0 if self.lighting_mode_prop() == 'emissive' else 0.0
+
+        # Muscle uniforms — torques (per-frame)
+        torques = self.torques_data
+        n_j = min(torques.shape[0], 22)
+        padded = np.zeros((22, 3), dtype='f4')
+        padded[:n_j] = torques[:n_j]
+        # Try both write() for whole array and element-by-element
+        try:
+            prog['u_torques'].write(padded.tobytes())
+        except Exception:
+            for j in range(22):
+                key = f'u_torques[{j}]'
+                if key in prog:
+                    prog[key].value = tuple(padded[j])
+
+        # Muscle uniforms — static (flex_axes, joints)
+        n_muscles = len(MUSCLE_GROUP_DEFS)
+        try:
+            prog['u_flex_axes'].write(self._v2_flex_axes.astype('f4').tobytes())
+        except Exception:
+            for m in range(n_muscles):
+                fa_key = f'u_flex_axes[{m}]'
+                if fa_key in prog:
+                    prog[fa_key].value = tuple(self._v2_flex_axes[m])
+
+        try:
+            prog['u_muscle_joints'].write(self.muscle_joints.astype('i4').tobytes())
+        except Exception:
+            for m in range(n_muscles):
+                mj_key = f'u_muscle_joints[{m}]'
+                if mj_key in prog:
+                    prog[mj_key].value = int(self.muscle_joints[m])
+
+        # Scalar uniforms
+        if 'u_dir_bias' in prog:
+            prog['u_dir_bias'].value = self.dir_bias_prop()
+        if 'u_max_torque' in prog:
+            prog['u_max_torque'].value = max(self.max_torque_prop(), 0.01)
+        if 'u_opacity' in prog:
+            prog['u_opacity'].value = self.opacity_prop()
+        if 'u_min_opacity' in prog:
+            prog['u_min_opacity'].value = self.min_opacity_prop()
+        if 'u_n_muscles' in prog:
+            prog['u_n_muscles'].value = n_muscles
+
+        # Color mode: 0=heatmap, 1=grayscale, 2=hot, 3=viridis
+        color_modes = {'heatmap': 0, 'grayscale': 1, 'hot': 2, 'viridis': 3}
+        if 'u_color_mode' in prog:
+            prog['u_color_mode'].value = color_modes.get(self.color_mode_prop(), 0)
+
+        # Bind atlas texture to unit 0
+        if self.v2_atlas_tex is not None:
+            self.v2_atlas_tex.use(0)
+            if 'u_atlas' in prog:
+                prog['u_atlas'].value = 0
+
+        # Render
+        inner_ctx.enable(moderngl.BLEND)
+        inner_ctx.blend_func = moderngl.SRC_ALPHA, moderngl.ONE_MINUS_SRC_ALPHA
+        inner_ctx.disable(moderngl.CULL_FACE)
+        inner_ctx.enable(moderngl.DEPTH_TEST)
+        self.v2_vao.render()
+        inner_ctx.disable(moderngl.BLEND)
+
+    def _draw_cpu_path(self, inner_ctx):
+        """CPU-side draw path for all non-muscle_v2 modes."""
         prog = self._get_heatmap_shader()
 
         vertices = self.last_vertices
@@ -1247,3 +1526,4 @@ class MGLSMPLHeatmapNode(Node):
         self.vao.render()
 
         inner_ctx.disable(moderngl.BLEND)
+
