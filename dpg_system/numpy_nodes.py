@@ -59,6 +59,7 @@ def register_numpy_nodes():
     Node.app.register_node('np.reshape', NumpyReshapeNode.factory)
     Node.app.register_node('np.any', NumpyAnyNode.factory)
     Node.app.register_node('np.all', NumpyAllNode.factory)
+    Node.app.register_node('rotate_position', RotatePositionNode.factory)
 
 class NumpyGeneratorNode(Node):
     operations = {'np.rand': np.random.Generator.random, 'np.ones': np.ones, 'np.zeros': np.zeros}
@@ -1676,3 +1677,45 @@ class NumpyAllNode(Node):
             a_arr = a_arr.astype(bool)
         result = bool(np.all(a_arr))
         self.result_out.send(result)
+
+
+class RotatePositionNode(Node):
+    """Rotates an xyz position around X, Y, or Z axis by a given angle (degrees)."""
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return RotatePositionNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('position', triggers_execution=True)
+        self.angle_input = self.add_input('angle', widget_type='drag_float', default_value=0.0)
+        self.axis_prop = self.add_property('axis', widget_type='combo', default_value='Y', callback=self.execute)
+        self.axis_prop.widget.combo_items = ['X', 'Y', 'Z']
+
+        self.output = self.add_output('rotated')
+
+    def execute(self):
+        raw = self.input()
+        if raw is None:
+            return
+        pos = any_to_array(raw).astype(np.float64)
+        angle_deg = float(self.angle_input())
+        angle = np.radians(angle_deg)
+        c, s = np.cos(angle), np.sin(angle)
+
+        axis = self.axis_prop()
+        if axis == 'X':
+            mat = np.array([[1, 0, 0], [0, c, -s], [0, s, c]])
+        elif axis == 'Y':
+            mat = np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]])
+        else:  # Z
+            mat = np.array([[c, -s, 0], [s, c, 0], [0, 0, 1]])
+
+        if pos.ndim == 1 and pos.size == 3:
+            self.output.send((mat @ pos).astype(np.float32))
+        elif pos.ndim == 2 and pos.shape[-1] == 3:
+            self.output.send((pos @ mat.T).astype(np.float32))
+        else:
+            self.output.send(pos.astype(np.float32))
