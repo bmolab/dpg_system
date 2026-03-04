@@ -2755,14 +2755,21 @@ class ShadowToSMPLNode(Node):
         else:
             self.pose_output.send(smpl_quats.astype(np.float32))
 
-        # Extract root position from Shadow positions[4], convert Y-up → Z-up
+        # Extract root position, convert Y-up → Z-up
         raw_positions = self.positions_input()
         if raw_positions is not None:
             positions = any_to_array(raw_positions)
-            if positions.ndim == 1 and positions.size >= 15:
+            p = None
+            if positions.ndim == 1 and positions.size == 3:
+                # Direct [3] translation vector (Y-up)
+                p = positions
+            elif positions.ndim == 1 and positions.size >= 15:
                 positions = positions.reshape(-1, 3)
-            if positions.ndim == 2 and positions.shape[0] > 4:
+                if positions.shape[0] > 4:
+                    p = positions[4]
+            elif positions.ndim == 2 and positions.shape[0] > 4:
                 p = positions[4]
+            if p is not None:
                 # Y-up → Z-up: [x, y, z] → [x, -z, y]
                 trans = np.array([p[0], -p[2], p[1]], dtype=np.float32)
                 self.trans_output.send(trans)
