@@ -2711,18 +2711,25 @@ class ShadowToSMPLNode(Node):
 
         shadow_data = any_to_array(raw_pose)
 
-        # Reshape flattened input (37 Shadow joints × 4 wxyz quaternion)
+        # Reshape flattened input
         if shadow_data.ndim == 1:
             if shadow_data.size == 37 * 4:
                 shadow_data = shadow_data.reshape(37, 4)
+            elif shadow_data.size == 20 * 4:
+                shadow_data = shadow_data.reshape(20, 4)
             else:
                 return
 
-        if shadow_data.shape[0] != 37 or shadow_data.shape[-1] != 4:
+        if shadow_data.shape[-1] != 4:
             return
 
-        # Re-order from Shadow (37) to SMPL (22) joint order
-        smpl_quats = JointTranslator.translate_from_shadow_to_smpl(shadow_data)
+        # Re-order to SMPL (22) joint order based on input format
+        if shadow_data.shape[0] == 37:
+            smpl_quats = JointTranslator.translate_from_shadow_to_smpl(shadow_data)
+        elif shadow_data.shape[0] == 20:
+            smpl_quats = JointTranslator.translate_from_bmolab_active_to_smpl(shadow_data)
+        else:
+            return
 
         # Optional rest-pose corrections (C_i)
         if self.corrections_prop():
