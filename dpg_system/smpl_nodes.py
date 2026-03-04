@@ -2755,13 +2755,6 @@ class ShadowToSMPLNode(Node):
         root_rot = Rotation.from_quat(smpl_quats[0], scalar_first=True)
         smpl_quats[0] = (R_yup_to_zup * root_rot).as_quat(scalar_first=True)
 
-        # Output format
-        if self.output_format_prop() == 'axis_angle':
-            rots = Rotation.from_quat(smpl_quats, scalar_first=True)
-            self.pose_output.send(rots.as_rotvec().astype(np.float32))
-        else:
-            self.pose_output.send(smpl_quats.astype(np.float32))
-
         # Extract root position, convert Y-up → Z-up
         raw_positions = self.positions_input()
         if raw_positions is not None:
@@ -2781,5 +2774,11 @@ class ShadowToSMPLNode(Node):
                 trans = np.array([p[0], -p[2], p[1]], dtype=np.float32)
                 self.trans_output.send(trans)
 
+        # Output format
+        if self.output_format_prop() == 'axis_angle':
+            rots = Rotation.from_quat(smpl_quats, scalar_first=True)
+            self.pose_output.send(rots.as_rotvec().astype(np.float32))
+        else:
+            self.pose_output.send(smpl_quats.astype(np.float32))
 
 
