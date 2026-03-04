@@ -1,3 +1,5 @@
+from dpg_system.shadow_to_smpl import SHADOW_TO_SMPL
+
 print('in')
 
 import numpy as np
@@ -524,6 +526,52 @@ class JointTranslator():
         28: t_LeftHeel,              # left_heel
         29: t_RightHeel,             # right_heel
     }
+
+    SHADOW_TO_SMPL_INDEX = {
+        1: 'spine3',
+        2: 'head',
+        4: 'pelvis',
+        5: 'left_shoulder',
+        8: 'left_ankle',
+        9: 'left_elbow',
+        10: 'left_wrist',
+        12: 'left_knee',
+        13: 'left_collar',
+        14: 'left_hip',
+        15: 'left_foot',
+        17: 'neck',
+        19: 'right_shoulder',
+        22: 'right_ankle',
+        23: 'right_elbow',
+        24: 'right_wrist',
+        26: 'right_knee',
+        27: 'right_collar',
+        28: 'right_hip',
+        29: 'right_foot',
+        31: 'spine1',
+        32: 'spine2'
+    }
+
+    @staticmethod
+    def translate_from_shadow_to_smpl(shadow_pose):  # expects 20 x 3 in, outputs 20 x 3
+        output_size = len(JointTranslator.SHADOW_TO_SMPL_INDEX)
+        smpl_pose = np.zeros((output_size, shadow_pose.shape[-1]), dtype=np.float32)
+
+        empty = [1.0, 0.0, 0.0, 0.0]
+        if shadow_pose.shape[1] == 3:
+            empty = [0.0, 0.0, 0.0]
+        elif shadow_pose.shape[1] == 4:
+            empty = [1.0, 0.0, 0.0, 0.0]
+        elif shadow_pose.shape[1] == 2:
+            empty = [0.0, 0.0]
+        elif shadow_pose.shape[1] == 2:
+            empty = [0.0]
+
+        for shadow_index in JointTranslator.SHADOW_TO_SMPL_INDEX:
+            smpl_name = JointTranslator.SHADOW_TO_SMPL_INDEX[shadow_index]
+            smpl_index = JointTranslator.smpl_joints[smpl_name]
+            smpl_pose[smpl_index] = shadow_pose[shadow_index]
+        return smpl_pose
 
     @staticmethod
     def translate_from_smpl_to_body_joints(smpl_pose):

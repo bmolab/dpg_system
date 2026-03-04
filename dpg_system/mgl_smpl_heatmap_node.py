@@ -196,6 +196,298 @@ MUSCLE_GROUP_DEFS = [
     {'name': 'HeadRotR',   'joint': 15, 'bone_from': 12, 'bone_to': 15, 't': 0.5, 'offset': [-0.02,-0.02, 0],'sa': 0.04, 'sc': 0.03},
 ]
 
+# Muscle V3: polyline-based definitions for anatomically precise mapping.
+# Each muscle is defined by:
+#   joint: which torque joint activates it
+#   segments: skinning joints whose weights mask this muscle to the correct body part
+#   points: list of control points [bone_from, bone_to, t, [offset_x,y,z]]
+#           Each point is placed at lerp(jpos[bone_from], jpos[bone_to], t) + offset
+#   radius: Gaussian falloff distance from the polyline
+MUSCLE_V3_DEFS = [
+    # ===== THIGH (Knee torque) =====
+    # L_Quad — runs from hip down the anterior thigh to the knee
+    {'name': 'L_Quad',     'joint': 4,  'segments': [1, 4],
+     'points': [[0,1, 0.9, [0, 0.05, 0]], [1,4, 0.3, [0, 0.05, 0]], [1,4, 0.7, [0, 0.04, 0]], [1,4, 0.95, [0, 0.02, 0]]],
+     'radius': 0.05},
+    # L_Hamstr — runs from ischium down the posterior thigh
+    {'name': 'L_Hamstr',   'joint': 4,  'segments': [1, 4],
+     'points': [[0,1, 0.9, [0,-0.06, 0]], [1,4, 0.3, [0,-0.05, 0]], [1,4, 0.7, [0,-0.04, 0]], [1,4, 0.95, [0,-0.02, 0]]],
+     'radius': 0.05},
+    {'name': 'R_Quad',     'joint': 5,  'segments': [2, 5],
+     'points': [[0,2, 0.9, [0, 0.05, 0]], [2,5, 0.3, [0, 0.05, 0]], [2,5, 0.7, [0, 0.04, 0]], [2,5, 0.95, [0, 0.02, 0]]],
+     'radius': 0.05},
+    {'name': 'R_Hamstr',   'joint': 5,  'segments': [2, 5],
+     'points': [[0,2, 0.9, [0,-0.06, 0]], [2,5, 0.3, [0,-0.05, 0]], [2,5, 0.7, [0,-0.04, 0]], [2,5, 0.95, [0,-0.02, 0]]],
+     'radius': 0.05},
+
+    # ===== LOWER LEG (Ankle torque) =====
+    # L_Calf — gastrocnemius + soleus + Achilles: posterior lower leg from knee to heel
+    {'name': 'L_Calf',     'joint': 7,  'segments': [4, 7, 10],
+     'points': [[4,7, 0.05, [0,-0.08, 0]], [4,7, 0.15, [0,-0.12, 0]], [4,7, 0.35, [0,-0.10, 0]], [4,7, 0.6, [0,-0.06, 0]], [4,7, 0.85, [0,-0.04, 0]], [7,10, 0.3, [0,-0.03, 0]]],
+     'radius': 0.06},
+    # L_TibAnt — tibialis anterior: anterior shin, below knee to above ankle
+    {'name': 'L_TibAnt',   'joint': 7,  'segments': [4, 7],
+     'points': [[4,7, 0.25, [0, 0.05, 0]], [4,7, 0.4, [0, 0.05, 0]], [4,7, 0.55, [0, 0.04, 0]]],
+     'radius': 0.04},
+    {'name': 'R_Calf',     'joint': 8,  'segments': [5, 8, 11],
+     'points': [[5,8, 0.05, [0,-0.08, 0]], [5,8, 0.15, [0,-0.12, 0]], [5,8, 0.35, [0,-0.10, 0]], [5,8, 0.6, [0,-0.06, 0]], [5,8, 0.85, [0,-0.04, 0]], [8,11, 0.3, [0,-0.03, 0]]],
+     'radius': 0.06},
+    {'name': 'R_TibAnt',   'joint': 8,  'segments': [5, 8],
+     'points': [[5,8, 0.25, [0, 0.05, 0]], [5,8, 0.4, [0, 0.05, 0]], [5,8, 0.55, [0, 0.04, 0]]],
+     'radius': 0.04},
+
+    # ===== HIP — Sagittal =====
+    {'name': 'L_Glute',    'joint': 1,  'segments': [0, 1],
+     'points': [[0,1, 0.6, [0,-0.08,-0.03]], [0,1, 0.85, [0,-0.10,-0.02]], [0,1, 1.0, [0,-0.08, 0]]],
+     'radius': 0.07},
+    {'name': 'L_HipFlex',  'joint': 1,  'segments': [0, 1],
+     'points': [[0,1, 0.7, [0, 0.06,-0.05]], [0,1, 1.0, [0, 0.05,-0.04]]],
+     'radius': 0.05},
+    {'name': 'R_Glute',    'joint': 2,  'segments': [0, 2],
+     'points': [[0,2, 0.6, [0,-0.08,-0.03]], [0,2, 0.85, [0,-0.10,-0.02]], [0,2, 1.0, [0,-0.08, 0]]],
+     'radius': 0.07},
+    {'name': 'R_HipFlex',  'joint': 2,  'segments': [0, 2],
+     'points': [[0,2, 0.7, [0, 0.06,-0.05]], [0,2, 1.0, [0, 0.05,-0.04]]],
+     'radius': 0.05},
+    # HIP — Frontal
+    {'name': 'L_HipAbduct','joint': 1,  'segments': [0, 1],
+     'points': [[0,1, 0.7, [+0.07,-0.02, 0]], [0,1, 1.0, [+0.06, 0, 0]]],
+     'radius': 0.05},
+    {'name': 'L_HipAdduct','joint': 1,  'segments': [0, 1],
+     'points': [[0,1, 0.8, [-0.04, 0.02, 0]], [0,1, 1.1, [-0.04, 0, 0]]],
+     'radius': 0.04},
+    {'name': 'R_HipAbduct','joint': 2,  'segments': [0, 2],
+     'points': [[0,2, 0.7, [-0.07,-0.02, 0]], [0,2, 1.0, [-0.06, 0, 0]]],
+     'radius': 0.05},
+    {'name': 'R_HipAdduct','joint': 2,  'segments': [0, 2],
+     'points': [[0,2, 0.8, [+0.04, 0.02, 0]], [0,2, 1.1, [+0.04, 0, 0]]],
+     'radius': 0.04},
+    # HIP — Transverse
+    {'name': 'L_HipExtRot','joint': 1,  'segments': [0, 1],
+     'points': [[0,1, 0.8, [+0.04,-0.04, 0]], [0,1, 1.0, [+0.03,-0.03, 0]]],
+     'radius': 0.04},
+    {'name': 'L_HipIntRot','joint': 1,  'segments': [0, 1],
+     'points': [[0,1, 0.8, [-0.04, 0.04, 0]], [0,1, 1.0, [-0.03, 0.03, 0]]],
+     'radius': 0.04},
+    {'name': 'R_HipExtRot','joint': 2,  'segments': [0, 2],
+     'points': [[0,2, 0.8, [-0.04,-0.04, 0]], [0,2, 1.0, [-0.03,-0.03, 0]]],
+     'radius': 0.04},
+    {'name': 'R_HipIntRot','joint': 2,  'segments': [0, 2],
+     'points': [[0,2, 0.8, [+0.04, 0.04, 0]], [0,2, 1.0, [+0.03, 0.03, 0]]],
+     'radius': 0.04},
+
+    # ===== UPPER ARM (Elbow torque) =====
+    {'name': 'L_Biceps',   'joint': 18, 'segments': [16, 18],
+     'points': [[16,18, 0.2, [0, 0.03, 0]], [16,18, 0.5, [0, 0.04, 0]], [16,18, 0.8, [0, 0.02, 0]]],
+     'radius': 0.04},
+    {'name': 'L_Triceps',  'joint': 18, 'segments': [16, 18],
+     'points': [[16,18, 0.2, [0,-0.03, 0]], [16,18, 0.5, [0,-0.04, 0]], [16,18, 0.8, [0,-0.02, 0]]],
+     'radius': 0.04},
+    {'name': 'R_Biceps',   'joint': 19, 'segments': [17, 19],
+     'points': [[17,19, 0.2, [0, 0.03, 0]], [17,19, 0.5, [0, 0.04, 0]], [17,19, 0.8, [0, 0.02, 0]]],
+     'radius': 0.04},
+    {'name': 'R_Triceps',  'joint': 19, 'segments': [17, 19],
+     'points': [[17,19, 0.2, [0,-0.03, 0]], [17,19, 0.5, [0,-0.04, 0]], [17,19, 0.8, [0,-0.02, 0]]],
+     'radius': 0.04},
+
+    # ===== COLLAR =====
+    {'name': 'L_Trap',     'joint': 14, 'segments': [9, 14],
+     'points': [[9,14, 0.3, [0, 0.04,-0.02]], [9,14, 0.7, [0, 0.04,-0.02]]],
+     'radius': 0.04},
+    {'name': 'L_Subclav',  'joint': 14, 'segments': [9, 14],
+     'points': [[9,14, 0.3, [0,-0.03, 0.02]], [9,14, 0.7, [0,-0.03, 0.02]]],
+     'radius': 0.03},
+    {'name': 'R_Trap',     'joint': 13, 'segments': [9, 13],
+     'points': [[9,13, 0.3, [0, 0.04,-0.02]], [9,13, 0.7, [0, 0.04,-0.02]]],
+     'radius': 0.04},
+    {'name': 'R_Subclav',  'joint': 13, 'segments': [9, 13],
+     'points': [[9,13, 0.3, [0,-0.03, 0.02]], [9,13, 0.7, [0,-0.03, 0.02]]],
+     'radius': 0.03},
+
+    # ===== SHOULDER — Sagittal =====
+    {'name': 'L_AntDelt',  'joint': 16, 'segments': [14, 16],
+     'points': [[14,16, 0.5, [0, 0, -0.04]], [14,16, 0.9, [0, 0, -0.03]]],
+     'radius': 0.04},
+    {'name': 'L_PostDelt', 'joint': 16, 'segments': [14, 16],
+     'points': [[14,16, 0.5, [0, 0, +0.04]], [14,16, 0.9, [0, 0, +0.03]]],
+     'radius': 0.04},
+    {'name': 'L_Pec',      'joint': 16, 'segments': [9, 14, 16],
+     'points': [[9,14, 0.2, [0, 0.04,-0.04]], [14,16, 0.3, [-0.03, 0, -0.03]], [14,16, 0.6, [-0.02, 0, -0.03]]],
+     'radius': 0.05},
+    {'name': 'R_AntDelt',  'joint': 17, 'segments': [13, 17],
+     'points': [[13,17, 0.5, [0, 0, -0.04]], [13,17, 0.9, [0, 0, -0.03]]],
+     'radius': 0.04},
+    {'name': 'R_PostDelt', 'joint': 17, 'segments': [13, 17],
+     'points': [[13,17, 0.5, [0, 0, +0.04]], [13,17, 0.9, [0, 0, +0.03]]],
+     'radius': 0.04},
+    {'name': 'R_Pec',      'joint': 17, 'segments': [9, 13, 17],
+     'points': [[9,13, 0.2, [0, 0.04,-0.04]], [13,17, 0.3, [+0.03, 0, -0.03]], [13,17, 0.6, [+0.02, 0, -0.03]]],
+     'radius': 0.05},
+    # SHOULDER — Frontal
+    {'name': 'L_LatDelt',  'joint': 16, 'segments': [14, 16],
+     'points': [[14,16, 0.5, [0, +0.05, 0]], [14,16, 0.9, [0, +0.04, 0]]],
+     'radius': 0.04},
+    {'name': 'L_Lat',      'joint': 16, 'segments': [9, 14, 16],
+     'points': [[9,14, 0.3, [0,-0.04, 0]], [14,16, 0.3, [0,-0.04, 0]], [14,16, 0.6, [0,-0.03, 0]]],
+     'radius': 0.05},
+    {'name': 'R_LatDelt',  'joint': 17, 'segments': [13, 17],
+     'points': [[13,17, 0.5, [0, +0.05, 0]], [13,17, 0.9, [0, +0.04, 0]]],
+     'radius': 0.04},
+    {'name': 'R_Lat',      'joint': 17, 'segments': [9, 13, 17],
+     'points': [[9,13, 0.3, [0,-0.04, 0]], [13,17, 0.3, [0,-0.04, 0]], [13,17, 0.6, [0,-0.03, 0]]],
+     'radius': 0.05},
+    # SHOULDER — Transverse
+    {'name': 'L_InfSpin',  'joint': 16, 'segments': [14, 16],
+     'points': [[14,16, 0.3, [0, 0, +0.04]], [14,16, 0.6, [0, 0, +0.03]]],
+     'radius': 0.04},
+    {'name': 'L_Subscap',  'joint': 16, 'segments': [14, 16],
+     'points': [[14,16, 0.3, [0, 0, -0.04]], [14,16, 0.6, [0, 0, -0.03]]],
+     'radius': 0.04},
+    {'name': 'R_InfSpin',  'joint': 17, 'segments': [13, 17],
+     'points': [[13,17, 0.3, [0, 0, +0.04]], [13,17, 0.6, [0, 0, +0.03]]],
+     'radius': 0.04},
+    {'name': 'R_Subscap',  'joint': 17, 'segments': [13, 17],
+     'points': [[13,17, 0.3, [0, 0, -0.04]], [13,17, 0.6, [0, 0, -0.03]]],
+     'radius': 0.04},
+
+    # ===== FOREARM — Sagittal =====
+    {'name': 'L_ForeFlx',  'joint': 20, 'segments': [18, 20],
+     'points': [[18,20, 0.3, [0, 0, +0.04]], [18,20, 0.6, [0, 0, +0.03]], [18,20, 0.85, [0, 0, +0.02]]],
+     'radius': 0.03},
+    {'name': 'L_ForeExt',  'joint': 20, 'segments': [18, 20],
+     'points': [[18,20, 0.3, [0, 0, -0.04]], [18,20, 0.6, [0, 0, -0.03]], [18,20, 0.85, [0, 0, -0.02]]],
+     'radius': 0.03},
+    {'name': 'R_ForeFlx',  'joint': 21, 'segments': [19, 21],
+     'points': [[19,21, 0.3, [0, 0, +0.04]], [19,21, 0.6, [0, 0, +0.03]], [19,21, 0.85, [0, 0, +0.02]]],
+     'radius': 0.03},
+    {'name': 'R_ForeExt',  'joint': 21, 'segments': [19, 21],
+     'points': [[19,21, 0.3, [0, 0, -0.04]], [19,21, 0.6, [0, 0, -0.03]], [19,21, 0.85, [0, 0, -0.02]]],
+     'radius': 0.03},
+    # FOREARM — Frontal
+    {'name': 'L_RadDev',   'joint': 20, 'segments': [18, 20],
+     'points': [[18,20, 0.4, [0, +0.03, 0]], [18,20, 0.7, [0, +0.02, 0]]],
+     'radius': 0.025},
+    {'name': 'L_UlnDev',   'joint': 20, 'segments': [18, 20],
+     'points': [[18,20, 0.4, [0, -0.03, 0]], [18,20, 0.7, [0, -0.02, 0]]],
+     'radius': 0.025},
+    {'name': 'R_RadDev',   'joint': 21, 'segments': [19, 21],
+     'points': [[19,21, 0.4, [0, +0.03, 0]], [19,21, 0.7, [0, +0.02, 0]]],
+     'radius': 0.025},
+    {'name': 'R_UlnDev',   'joint': 21, 'segments': [19, 21],
+     'points': [[19,21, 0.4, [0, -0.03, 0]], [19,21, 0.7, [0, -0.02, 0]]],
+     'radius': 0.025},
+    # FOREARM — Transverse
+    {'name': 'L_Pronatr',  'joint': 20, 'segments': [18, 20],
+     'points': [[18,20, 0.25, [0, -0.02, +0.03]], [18,20, 0.55, [0, -0.02, +0.02]]],
+     'radius': 0.025},
+    {'name': 'L_Supinatr', 'joint': 20, 'segments': [18, 20],
+     'points': [[18,20, 0.25, [0, +0.02, -0.03]], [18,20, 0.55, [0, +0.02, -0.02]]],
+     'radius': 0.025},
+    {'name': 'R_Pronatr',  'joint': 21, 'segments': [19, 21],
+     'points': [[19,21, 0.25, [0, -0.02, +0.03]], [19,21, 0.55, [0, -0.02, +0.02]]],
+     'radius': 0.025},
+    {'name': 'R_Supinatr', 'joint': 21, 'segments': [19, 21],
+     'points': [[19,21, 0.25, [0, +0.02, -0.03]], [19,21, 0.55, [0, +0.02, -0.02]]],
+     'radius': 0.025},
+
+    # ===== SPINE — Lower =====
+    {'name': 'LowAbs',     'joint': 3,  'segments': [0, 3],
+     'points': [[0,3, 0.3, [0, 0.08, 0]], [0,3, 0.7, [0, 0.08, 0]]],
+     'radius': 0.06},
+    {'name': 'LowBack',    'joint': 3,  'segments': [0, 3],
+     'points': [[0,3, 0.3, [0,-0.06, 0]], [0,3, 0.7, [0,-0.06, 0]]],
+     'radius': 0.06},
+    {'name': 'LowOblL',    'joint': 3,  'segments': [0, 3],
+     'points': [[0,3, 0.3, [+0.10, 0.03, 0]], [0,3, 0.7, [+0.10, 0.02, 0]]],
+     'radius': 0.05},
+    {'name': 'LowOblR',    'joint': 3,  'segments': [0, 3],
+     'points': [[0,3, 0.3, [-0.10, 0.03, 0]], [0,3, 0.7, [-0.10, 0.02, 0]]],
+     'radius': 0.05},
+    {'name': 'LowRotL',    'joint': 3,  'segments': [0, 3],
+     'points': [[0,3, 0.3, [+0.06,-0.04, 0]], [0,3, 0.7, [+0.06,-0.04, 0]]],
+     'radius': 0.04},
+    {'name': 'LowRotR',    'joint': 3,  'segments': [0, 3],
+     'points': [[0,3, 0.3, [-0.06,-0.04, 0]], [0,3, 0.7, [-0.06,-0.04, 0]]],
+     'radius': 0.04},
+    # SPINE — Mid
+    {'name': 'MidAbs',     'joint': 6,  'segments': [3, 6],
+     'points': [[3,6, 0.3, [0, 0.08, 0]], [3,6, 0.7, [0, 0.08, 0]]],
+     'radius': 0.06},
+    {'name': 'MidBack',    'joint': 6,  'segments': [3, 6],
+     'points': [[3,6, 0.3, [0,-0.06, 0]], [3,6, 0.7, [0,-0.06, 0]]],
+     'radius': 0.06},
+    {'name': 'MidOblL',    'joint': 6,  'segments': [3, 6],
+     'points': [[3,6, 0.3, [+0.09, 0.03, 0]], [3,6, 0.7, [+0.09, 0.02, 0]]],
+     'radius': 0.05},
+    {'name': 'MidOblR',    'joint': 6,  'segments': [3, 6],
+     'points': [[3,6, 0.3, [-0.09, 0.03, 0]], [3,6, 0.7, [-0.09, 0.02, 0]]],
+     'radius': 0.05},
+    {'name': 'MidRotL',    'joint': 6,  'segments': [3, 6],
+     'points': [[3,6, 0.3, [+0.05,-0.04, 0]], [3,6, 0.7, [+0.05,-0.04, 0]]],
+     'radius': 0.04},
+    {'name': 'MidRotR',    'joint': 6,  'segments': [3, 6],
+     'points': [[3,6, 0.3, [-0.05,-0.04, 0]], [3,6, 0.7, [-0.05,-0.04, 0]]],
+     'radius': 0.04},
+    # SPINE — Upper
+    {'name': 'UpAbs',      'joint': 9,  'segments': [6, 9],
+     'points': [[6,9, 0.3, [0, 0.08, 0]], [6,9, 0.7, [0, 0.07, 0]]],
+     'radius': 0.06},
+    {'name': 'UpBack',     'joint': 9,  'segments': [6, 9],
+     'points': [[6,9, 0.3, [0,-0.06, 0]], [6,9, 0.7, [0,-0.06, 0]]],
+     'radius': 0.06},
+    {'name': 'UpOblL',     'joint': 9,  'segments': [6, 9],
+     'points': [[6,9, 0.3, [+0.08, 0.03, 0]], [6,9, 0.7, [+0.08, 0.02, 0]]],
+     'radius': 0.05},
+    {'name': 'UpOblR',     'joint': 9,  'segments': [6, 9],
+     'points': [[6,9, 0.3, [-0.08, 0.03, 0]], [6,9, 0.7, [-0.08, 0.02, 0]]],
+     'radius': 0.05},
+    {'name': 'UpRotL',     'joint': 9,  'segments': [6, 9],
+     'points': [[6,9, 0.3, [+0.05,-0.04, 0]], [6,9, 0.7, [+0.05,-0.04, 0]]],
+     'radius': 0.04},
+    {'name': 'UpRotR',     'joint': 9,  'segments': [6, 9],
+     'points': [[6,9, 0.3, [-0.05,-0.04, 0]], [6,9, 0.7, [-0.05,-0.04, 0]]],
+     'radius': 0.04},
+
+    # ===== NECK =====
+    {'name': 'NeckFront',  'joint': 12, 'segments': [9, 12],
+     'points': [[9,12, 0.3, [0, 0.03, 0]], [9,12, 0.7, [0, 0.03, 0]]],
+     'radius': 0.03},
+    {'name': 'NeckBack',   'joint': 12, 'segments': [9, 12],
+     'points': [[9,12, 0.3, [0,-0.04, 0]], [9,12, 0.7, [0,-0.04, 0]]],
+     'radius': 0.04},
+    {'name': 'NeckLatL',   'joint': 12, 'segments': [9, 12],
+     'points': [[9,12, 0.3, [+0.04, 0.01, 0]], [9,12, 0.7, [+0.03, 0.01, 0]]],
+     'radius': 0.03},
+    {'name': 'NeckLatR',   'joint': 12, 'segments': [9, 12],
+     'points': [[9,12, 0.3, [-0.04, 0.01, 0]], [9,12, 0.7, [-0.03, 0.01, 0]]],
+     'radius': 0.03},
+    {'name': 'NeckRotL',   'joint': 12, 'segments': [9, 12],
+     'points': [[9,12, 0.3, [+0.03,-0.02, 0]], [9,12, 0.7, [+0.03,-0.02, 0]]],
+     'radius': 0.03},
+    {'name': 'NeckRotR',   'joint': 12, 'segments': [9, 12],
+     'points': [[9,12, 0.3, [-0.03,-0.02, 0]], [9,12, 0.7, [-0.03,-0.02, 0]]],
+     'radius': 0.03},
+
+    # ===== HEAD =====
+    {'name': 'HeadFlx',    'joint': 15, 'segments': [12, 15],
+     'points': [[12,15, 0.3, [0, 0.02, 0]], [12,15, 0.6, [0, 0.02, 0]]],
+     'radius': 0.03},
+    {'name': 'HeadExt',    'joint': 15, 'segments': [12, 15],
+     'points': [[12,15, 0.3, [0,-0.03, 0]], [12,15, 0.6, [0,-0.03, 0]]],
+     'radius': 0.03},
+    {'name': 'HeadLatL',   'joint': 15, 'segments': [12, 15],
+     'points': [[12,15, 0.3, [+0.03, 0, 0]], [12,15, 0.6, [+0.03, 0, 0]]],
+     'radius': 0.025},
+    {'name': 'HeadLatR',   'joint': 15, 'segments': [12, 15],
+     'points': [[12,15, 0.3, [-0.03, 0, 0]], [12,15, 0.6, [-0.03, 0, 0]]],
+     'radius': 0.025},
+    {'name': 'HeadRotL',   'joint': 15, 'segments': [12, 15],
+     'points': [[12,15, 0.3, [+0.02,-0.02, 0]], [12,15, 0.6, [+0.02,-0.02, 0]]],
+     'radius': 0.025},
+    {'name': 'HeadRotR',   'joint': 15, 'segments': [12, 15],
+     'points': [[12,15, 0.3, [-0.02,-0.02, 0]], [12,15, 0.6, [-0.02,-0.02, 0]]],
+     'radius': 0.025},
+]
 
 class MGLSMPLHeatmapNode(Node):
     """
@@ -263,7 +555,7 @@ class MGLSMPLHeatmapNode(Node):
         self.min_opacity_prop = self.add_option('min opacity', widget_type='drag_float',
                                                  default_value=0.15, speed=0.01)
         self.weight_mode_prop = self.add_option('weight mode', widget_type='combo', default_value='muscle')
-        self.weight_mode_prop.widget.combo_items = ['muscle', 'muscle_v2', 'iso directional', 'iso proximity', 'directional', 'proximity', 'skinning']
+        self.weight_mode_prop.widget.combo_items = ['muscle', 'muscle_v2', 'muscle_v3', 'iso directional', 'iso proximity', 'directional', 'proximity', 'skinning']
         self.color_mode_prop = self.add_option('color mode', widget_type='combo', default_value='heatmap')
         self.color_mode_prop.widget.combo_items = ['heatmap', 'grayscale', 'hot', 'viridis']
         self.lighting_mode_prop = self.add_option('lighting', widget_type='combo', default_value='diffuse')
@@ -272,6 +564,8 @@ class MGLSMPLHeatmapNode(Node):
                                             default_value=0.45, speed=0.01)
         self.spread_prop = self.add_option('spread', widget_type='drag_float',
                                            default_value=0.08, speed=0.005)
+        self.edge_threshold_prop = self.add_option('edge threshold', widget_type='drag_float',
+                                                    default_value=0.15, speed=0.01)
         self.dir_bias_prop = self.add_option('dir bias', widget_type='drag_float',
                                               default_value=0.7, speed=0.01)
         self.muscle_offset_prop = self.add_option('muscle offset', widget_type='drag_float',
@@ -325,6 +619,7 @@ class MGLSMPLHeatmapNode(Node):
             # muscle_v2: use RAW native T-pose data (Z-up) with native offsets.
             # No Y-up conversion — everything is in the same SMPL native frame.
             self._init_muscle_v2(verts, tpose_jpos)
+            self._init_muscle_v3(verts, tpose_jpos)
 
             self.current_gender = self.gender_prop()
             return True
@@ -469,7 +764,9 @@ class MGLSMPLHeatmapNode(Node):
                             float mag = tau_mag;
                             if (u_dir_bias > 0.0 && length(u_flex_axes[m]) > 0.5) {{
                                 float flex = clamp(dot(tau, u_flex_axes[m]) / tau_mag, -1.0, 1.0);
-                                mag = tau_mag * max(0.0, 1.0 + u_dir_bias * flex);
+                                // When dir_bias is 1.0, only activate along flex axis (perpendicular = 0)
+                                // Multiplied by 2.0 to match peak brightness of the old formula
+                                mag = tau_mag * mix(1.0, max(0.0, flex) * 2.0, u_dir_bias);
                             }}
 
                             float w = texelFetch(u_atlas, ivec2(m, vid), 0).r;
@@ -1088,6 +1385,229 @@ class MGLSMPLHeatmapNode(Node):
         # Do NOT normalize here — natural Gaussian falloff must be preserved.
         return weights.astype(np.float32)
 
+    # ===================== Muscle V3 (anatomy-driven pre-baked atlas) =====================
+
+    def _init_muscle_v3(self, tpose_verts, tpose_jpos):
+        """Load pre-baked anatomy-driven muscle atlas from .npy files."""
+        self._v3_atlas = None
+        self._v3_atlas_tex = None
+        self._v3_atlas_uploaded_spread = -1.0
+        self._v3_cached_spread = -1.0
+        self._v3_cached_edge_threshold = -1.0
+
+        # Load pre-baked atlas
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        atlas_path = os.path.join(script_dir, 'muscle_atlas_v3.npy')
+        meta_path = os.path.join(script_dir, 'muscle_atlas_v3_meta.npy')
+
+        if not os.path.exists(atlas_path) or not os.path.exists(meta_path):
+            print(f"[V3] Atlas files not found at {script_dir}")
+            print(f"[V3] Run: python generate_muscle_atlas.py --model_path <path>")
+            self._v3_prebaked_atlas = None
+            self._v3_muscle_joints = np.zeros(0, dtype=np.int32)
+            self._v3_flex_axes = np.zeros((0, 3), dtype=np.float32)
+            return
+
+        self._v3_prebaked_atlas = np.load(atlas_path)  # (6890, N_muscles)
+        meta = np.load(meta_path, allow_pickle=True).item()
+        self._v3_muscle_joints = meta['muscle_joints']  # (N_muscles,)
+        self._v3_flex_axes = meta['flex_axes']           # (N_muscles, 3)
+        n_muscles = meta['n_muscles']
+        names = meta['muscle_names']
+
+        print(f"[V3] Loaded pre-baked atlas: {self._v3_prebaked_atlas.shape}, "
+              f"{n_muscles} muscles")
+        for i, name in enumerate(names[:5]):
+            n_active = np.sum(self._v3_prebaked_atlas[:, i] > 0.01)
+            print(f"  {i}: {name} ({n_active} verts)")
+        if n_muscles > 5:
+            print(f"  ... and {n_muscles - 5} more")
+
+    def _build_v3_atlas(self, spread, edge_threshold):
+        """Re-bake the atlas via subprocess with mesh smoothing + edge subtraction."""
+        # Map spread to smooth iterations: 0→0, 0.5→5, 1.0→10
+        smooth_iters = int(round(spread * 10))
+        
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        script_path = os.path.join(script_dir, 'generate_muscle_atlas.py')
+        
+        model_path = self.model_path_prop()
+        if not model_path:
+            model_path = '.'  # fallback
+
+        import sys
+        cmd = [
+            sys.executable, script_path, 
+            '--model_path', model_path,
+            '--smooth_iters', str(smooth_iters),
+            '--edge_threshold', str(edge_threshold)
+        ]
+        print(f"[V3] Re-baking: smooth_iters={smooth_iters}, edge_threshold={edge_threshold:.2f}")
+        import subprocess
+        try:
+            result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+            lines = result.stdout.strip().split('\n')
+            for line in lines[-3:]:
+                print(f"  {line}")
+        except subprocess.CalledProcessError as e:
+            print(f"[V3] FAILED: {e.stderr}")
+            
+        # Re-load the newly baked atlas
+        atlas_path = os.path.join(script_dir, 'muscle_atlas_v3.npy')
+        meta_path = os.path.join(script_dir, 'muscle_atlas_v3_meta.npy')
+        if os.path.exists(atlas_path):
+            self._v3_prebaked_atlas = np.load(atlas_path)
+            meta = np.load(meta_path, allow_pickle=True).item()
+            self._v3_muscle_joints = meta['muscle_joints']
+            self._v3_flex_axes = meta['flex_axes']
+            n_active = np.sum(self._v3_prebaked_atlas[:, 0] > 0.01)
+            print(f"[V3] Reloaded atlas: shape={self._v3_prebaked_atlas.shape}, L_Calf={n_active} verts")
+        
+        if self._v3_prebaked_atlas is None:
+            return np.zeros((6890, 1), dtype=np.float32)
+
+        return self._v3_prebaked_atlas.astype(np.float32)
+
+    def _draw_muscle_v3(self, inner_ctx):
+        """GPU-accelerated draw path for muscle_v3 mode (pre-baked atlas)."""
+        # Reuse the v2 GPU shader — same atlas texture interface
+        prog = self._get_muscle_v2_shader()
+
+        # Ensure atlas is built and uploaded
+        spread = max(self.spread_prop(), 0.01)
+        edge_threshold = max(self.edge_threshold_prop(), 0.0)
+        needs_rebuild = (self._v3_atlas is None or 
+                        abs(spread - self._v3_cached_spread) > 1e-4 or
+                        abs(edge_threshold - self._v3_cached_edge_threshold) > 1e-4)
+        if needs_rebuild:
+            self._v3_atlas = self._build_v3_atlas(spread, edge_threshold)
+            self._v3_cached_spread = spread
+            self._v3_cached_edge_threshold = edge_threshold
+            # One-shot diagnostic
+            if self._v3_atlas is not None:
+                print(f"\n[V3 DRAW] Atlas loaded: shape={self._v3_atlas.shape}")
+                print(f"  n_muscles={self._v3_prebaked_atlas.shape[1]}")
+                print(f"  joints[:5] = {self._v3_muscle_joints[:5]}")
+                print(f"  flex_axes[:5] =")
+                for i in range(min(5, len(self._v3_flex_axes))):
+                    fa = self._v3_flex_axes[i]
+                    print(f"    [{i}]: [{fa[0]:+.3f}, {fa[1]:+.3f}, {fa[2]:+.3f}]")
+                # Check atlas content
+                for mi in [0, 1]:  # L_Calf, L_TibAnt
+                    col = self._v3_atlas[:, mi]
+                    n_active = np.sum(col > 0.01)
+                    print(f"  muscle[{mi}]: {n_active} active verts, max={col.max():.3f}")
+        if self._v3_atlas_tex is None or needs_rebuild:
+            # Upload v3 atlas as texture
+            n_verts, n_muscles = self._v3_atlas.shape
+            if self._v3_atlas_tex is not None:
+                self._v3_atlas_tex.release()
+            self._v3_atlas_tex = inner_ctx.texture(
+                (n_muscles, n_verts), 1,
+                data=self._v3_atlas.astype('f4').tobytes(),
+                dtype='f4'
+            )
+            self._v3_atlas_tex.filter = (moderngl.NEAREST, moderngl.NEAREST)
+            self._v3_atlas_uploaded_spread = self._v3_cached_spread
+
+        # Build pos+normal VBO (6 floats per vertex)
+        vertices = self.last_vertices
+        normals = self._compute_normals(vertices, self.faces_np)
+        vbo_data = np.hstack([vertices, normals]).astype('f4')
+        vbo_bytes = vbo_data.tobytes()
+
+        if self.v2_vbo is None or self.v2_vbo.size != len(vbo_bytes):
+            if self.v2_vbo is not None:
+                self.v2_vbo.release()
+            self.v2_vbo = inner_ctx.buffer(vbo_bytes)
+            if self.ibo is None:
+                idx_data = self.faces_np.flatten().astype(np.int32)
+                self.ibo = inner_ctx.buffer(idx_data.tobytes())
+            if self.v2_vao is not None:
+                self.v2_vao.release()
+            self.v2_vao = inner_ctx.vertex_array(
+                prog,
+                [(self.v2_vbo, '3f 3f', 'in_position', 'in_normal')],
+                self.ibo
+            )
+        else:
+            self.v2_vbo.write(vbo_bytes)
+
+        # Set MVP uniforms
+        if 'M' in prog:
+            model = self.ctx.get_model_matrix()
+            prog['M'].write(model.astype('f4').T.tobytes())
+        if 'V' in prog:
+            prog['V'].write(self.ctx.view_matrix.tobytes())
+        if 'P' in prog:
+            prog['P'].write(self.ctx.projection_matrix.tobytes())
+
+        # Lighting
+        if 'light_dir' in prog:
+            prog['light_dir'].value = (0.3, 1.0, 0.5)
+        if 'u_ambient' in prog:
+            prog['u_ambient'].value = self.ambient_prop()
+        if 'u_emissive' in prog:
+            prog['u_emissive'].value = 1.0 if self.lighting_mode_prop() == 'emissive' else 0.0
+
+        # Torques
+        torques = self.torques_data
+        n_j = min(torques.shape[0], 22)
+        padded = np.zeros((22, 3), dtype='f4')
+        padded[:n_j] = torques[:n_j]
+        try:
+            prog['u_torques'].write(padded.tobytes())
+        except Exception:
+            pass
+
+        # V3 flex axes and joints — pad to shader size (84 = MUSCLE_GROUP_DEFS)
+        if self._v3_prebaked_atlas is None:
+            return
+        n_muscles = self._v3_prebaked_atlas.shape[1]
+        n_shader = len(MUSCLE_GROUP_DEFS)  # shader compiled with this size (84)
+        try:
+            padded_axes = np.zeros((n_shader, 3), dtype='f4')
+            padded_axes[:n_muscles] = self._v3_flex_axes[:n_muscles]
+            prog['u_flex_axes'].write(padded_axes.tobytes())
+        except Exception:
+            pass
+        try:
+            padded_joints = np.zeros(n_shader, dtype='i4')
+            padded_joints[:n_muscles] = self._v3_muscle_joints[:n_muscles]
+            prog['u_muscle_joints'].write(padded_joints.tobytes())
+        except Exception:
+            pass
+
+        # Scalar uniforms
+        if 'u_dir_bias' in prog:
+            prog['u_dir_bias'].value = self.dir_bias_prop()
+        if 'u_max_torque' in prog:
+            prog['u_max_torque'].value = max(self.max_torque_prop(), 0.01)
+        if 'u_opacity' in prog:
+            prog['u_opacity'].value = self.opacity_prop()
+        if 'u_min_opacity' in prog:
+            prog['u_min_opacity'].value = self.min_opacity_prop()
+        if 'u_n_muscles' in prog:
+            prog['u_n_muscles'].value = n_muscles
+
+        color_modes = {'heatmap': 0, 'grayscale': 1, 'hot': 2, 'viridis': 3}
+        if 'u_color_mode' in prog:
+            prog['u_color_mode'].value = color_modes.get(self.color_mode_prop(), 0)
+
+        # Bind v3 atlas texture
+        if self._v3_atlas_tex is not None:
+            self._v3_atlas_tex.use(0)
+            if 'u_atlas' in prog:
+                prog['u_atlas'].value = 0
+
+        # Render
+        inner_ctx.enable(moderngl.BLEND)
+        inner_ctx.blend_func = moderngl.SRC_ALPHA, moderngl.ONE_MINUS_SRC_ALPHA
+        inner_ctx.disable(moderngl.CULL_FACE)
+        inner_ctx.enable(moderngl.DEPTH_TEST)
+        self.v2_vao.render()
+        inner_ctx.disable(moderngl.BLEND)
+
     def _compute_muscle_weights_v2(self, torques):
         """Fast muscle_v2: pre-computed atlas + flex_axis dot product.
 
@@ -1348,6 +1868,8 @@ class MGLSMPLHeatmapNode(Node):
 
         if mode == 'muscle_v2' and hasattr(self, '_v2_tpose_verts'):
             self._draw_muscle_v2(inner_ctx)
+        elif mode == 'muscle_v3' and hasattr(self, '_v3_prebaked_atlas') and self._v3_prebaked_atlas is not None:
+            self._draw_muscle_v3(inner_ctx)
         else:
             self._draw_cpu_path(inner_ctx)
 

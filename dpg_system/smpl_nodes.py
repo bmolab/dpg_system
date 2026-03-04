@@ -2441,14 +2441,14 @@ class SMPLBetaEditorNode(Node):
 
 class ShadowToSMPLNode(Node):
     """
-    Converts Shadow mocap rotations to SMPL format so that the
-    SMPL skeleton reproduces the same physical world-space pose.
+    Converts raw Shadow mocap data (37 joints) to SMPL format (22 joints).
 
-    Uses per-joint correction: q_smpl_i = C_parent(i) * q_shadow_i * C_i^-1
-    where C_i maps joint i's children's Shadow offset directions to SMPL.
+    Input:  37 local quaternions (wxyz) from Shadow suit.
+            37 positions (Y-up) — positions[4] is extracted as root translation.
+    Output: 22x4 quaternions (wxyz) or 22x3 axis-angle in SMPL joint order.
 
-    Accepts quaternion (20x4, wxyz) or axis-angle (20x3) input.
-    Outputs quaternion (24x4, wxyz) or axis-angle (22x3) in SMPL joint order.
+    Applies per-joint rest-pose correction: q_smpl_i = C_parent(i) * q_shadow_i * C_i^-1
+    and Y-up → Z-up coordinate conversion on root orientation and translation only.
     """
 
     # SMPL parent indices
@@ -2477,11 +2477,12 @@ class ShadowToSMPLNode(Node):
         super().__init__(label, data, args)
 
         self.pose_input = self.add_input('pose', triggers_execution=True)
-        self.trans_input = self.add_input('trans')
+        self.positions_input = self.add_input('positions')
         self.config_input = self.add_input('config')
 
         self.output_format_prop = self.add_property('output_format', widget_type='combo', default_value='quaternions')
         self.output_format_prop.widget.combo_items = ['quaternions', 'axis_angle']
+        self.corrections_prop = self.add_property('rest_pose_corrections', widget_type='checkbox', default_value=False)
 
         self.pose_output = self.add_output('pose')
         self.trans_output = self.add_output('trans')
@@ -2683,7 +2684,7 @@ class ShadowToSMPLNode(Node):
         return Rotation.from_rotvec(axis * angle)
 
     def execute(self):
-        # Handle config changes (betas/gender affect SMPL offsets)
+        # Handle config changes
         if self.config_input.fresh_input:
             cfg = self.config_input()
             if isinstance(cfg, dict):
@@ -2708,68 +2709,63 @@ class ShadowToSMPLNode(Node):
         if raw_pose is None:
             return
 
-        bmolab_data = any_to_array(raw_pose)
+        shadow_data = any_to_array(raw_pose)
 
-        # Reshape flattened input
-        if bmolab_data.ndim == 1:
-            if bmolab_data.size == 80:
-                bmolab_data = bmolab_data.reshape(20, 4)
-            elif bmolab_data.size == 60:
-                bmolab_data = bmolab_data.reshape(20, 3)
+        # Reshape flattened input (37 Shadow joints × 4 wxyz quaternion)
+        if shadow_data.ndim == 1:
+            if shadow_data.size == 37 * 4:
+                shadow_data = shadow_data.reshape(37, 4)
             else:
                 return
 
-        is_quat = bmolab_data.shape[-1] == 4
+        if shadow_data.shape[0] != 37 or shadow_data.shape[-1] != 4:
+            return
 
-        # Build SMPL index → bmolab index map
-        s2b = self._smpl_to_bmolab_index()
-        parents = self.SMPL_PARENTS
-        C = self._C
-        C_inv = self._C_inv
+        # Re-order from Shadow (37) to SMPL (22) joint order
+        smpl_quats = JointTranslator.translate_from_shadow_to_smpl(shadow_data)
 
-        # Output: 24 joints × 4 (quaternion wxyz)
-        smpl_quats = np.zeros((24, 4))
-        smpl_quats[:, 0] = 1.0  # identity default
-
-        for smpl_i in range(24):
-            bmolab_i = s2b.get(smpl_i, -1)
-            if bmolab_i < 0 or bmolab_i >= bmolab_data.shape[0]:
-                # No Shadow data for this joint — apply T-pose correction only
+        # Optional rest-pose corrections (C_i)
+        if self.corrections_prop():
+            parents = self.SMPL_PARENTS
+            C = self._C
+            C_inv = self._C_inv
+            # Skip spine joints: SMPL's cantilevered spine geometry
+            # differs fundamentally from Shadow's straight spine
+            skip_corrections = {0, 3, 6, 9}  # pelvis, spine1, spine2, spine3
+            for smpl_i in range(22):
+                if smpl_i in skip_corrections:
+                    continue
+                q_local = Rotation.from_quat(smpl_quats[smpl_i], scalar_first=True)
                 parent_i = parents[smpl_i]
                 if parent_i >= 0:
-                    r = C[parent_i] * C_inv[smpl_i]
+                    q_corrected = C[parent_i] * q_local * C_inv[smpl_i]
                 else:
-                    r = C_inv[smpl_i]
-                smpl_quats[smpl_i] = r.as_quat(scalar_first=True)
-                continue
+                    q_corrected = q_local * C_inv[smpl_i]
+                smpl_quats[smpl_i] = q_corrected.as_quat(scalar_first=True)
 
-            # Get Shadow local rotation
-            if is_quat:
-                q_shadow = Rotation.from_quat(bmolab_data[bmolab_i], scalar_first=True)
-            else:
-                q_shadow = Rotation.from_rotvec(bmolab_data[bmolab_i])
-
-            # Apply correction: q_smpl = C_parent * q_shadow * C_self^-1
-            parent_i = parents[smpl_i]
-            if parent_i >= 0:
-                q_smpl = C[parent_i] * q_shadow * C_inv[smpl_i]
-            else:
-                # Root: no parent correction
-                q_smpl = q_shadow * C_inv[smpl_i]
-
-            smpl_quats[smpl_i] = q_smpl.as_quat(scalar_first=True)
+        # Y-up → Z-up: root orientation only (left-multiply 90° about X)
+        R_yup_to_zup = Rotation.from_euler('X', 90, degrees=True)
+        root_rot = Rotation.from_quat(smpl_quats[0], scalar_first=True)
+        smpl_quats[0] = (R_yup_to_zup * root_rot).as_quat(scalar_first=True)
 
         # Output format
         if self.output_format_prop() == 'axis_angle':
             rots = Rotation.from_quat(smpl_quats, scalar_first=True)
             self.pose_output.send(rots.as_rotvec().astype(np.float32))
         else:
-            self.pose_output.send(smpl_quats)
+            self.pose_output.send(smpl_quats.astype(np.float32))
 
-        # Pass through translation
-        trans = self.trans_input()
-        if trans is not None:
-            self.trans_output.send(any_to_array(trans))
+        # Extract root position from Shadow positions[4], convert Y-up → Z-up
+        raw_positions = self.positions_input()
+        if raw_positions is not None:
+            positions = any_to_array(raw_positions)
+            if positions.ndim == 1 and positions.size >= 15:
+                positions = positions.reshape(-1, 3)
+            if positions.ndim == 2 and positions.shape[0] > 4:
+                p = positions[4]
+                # Y-up → Z-up: [x, y, z] → [x, -z, y]
+                trans = np.array([p[0], -p[2], p[1]], dtype=np.float32)
+                self.trans_output.send(trans)
 
 
 
