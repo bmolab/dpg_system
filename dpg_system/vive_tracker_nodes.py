@@ -86,7 +86,8 @@ class ViveTrackerNode(Node):
                     self.previous_orientation = self.orientation
                     self.orientation_out.send(self.orientation)
                     self.position_out.send(self.position)
-
+        else:
+            print('tracker missing')
 
     # def execute(self):
     #     if self.enable_in():

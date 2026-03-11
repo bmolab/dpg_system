@@ -555,7 +555,7 @@ class MGLSMPLHeatmapNode(Node):
         self.min_opacity_prop = self.add_option('min opacity', widget_type='drag_float',
                                                  default_value=0.15, speed=0.01)
         self.weight_mode_prop = self.add_option('weight mode', widget_type='combo', default_value='muscle')
-        self.weight_mode_prop.widget.combo_items = ['muscle', 'muscle_v2', 'muscle_v3', 'iso directional', 'iso proximity', 'directional', 'proximity', 'skinning']
+        self.weight_mode_prop.widget.combo_items = ['muscle', 'muscle_v2', 'muscle_v3', 'muscle_v4', 'iso directional', 'iso proximity', 'directional', 'proximity', 'skinning']
         self.color_mode_prop = self.add_option('color mode', widget_type='combo', default_value='heatmap')
         self.color_mode_prop.widget.combo_items = ['heatmap', 'grayscale', 'hot', 'viridis']
         self.lighting_mode_prop = self.add_option('lighting', widget_type='combo', default_value='diffuse')
@@ -620,6 +620,7 @@ class MGLSMPLHeatmapNode(Node):
             # No Y-up conversion — everything is in the same SMPL native frame.
             self._init_muscle_v2(verts, tpose_jpos)
             self._init_muscle_v3(verts, tpose_jpos)
+            self._init_muscle_v4(verts, tpose_jpos)
 
             self.current_gender = self.gender_prop()
             return True
@@ -1423,6 +1424,40 @@ class MGLSMPLHeatmapNode(Node):
         if n_muscles > 5:
             print(f"  ... and {n_muscles - 5} more")
 
+    def _init_muscle_v4(self, tpose_verts, tpose_jpos):
+        """Load pre-baked contour-projection muscle atlas (v4) from .npy files."""
+        self._v4_atlas = None
+        self._v4_atlas_tex = None
+        self._v4_atlas_uploaded_spread = -1.0
+        self._v4_cached_spread = -1.0
+
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        atlas_path = os.path.join(script_dir, 'muscle_atlas_v4.npy')
+        meta_path = os.path.join(script_dir, 'muscle_atlas_v4_meta.npy')
+
+        if not os.path.exists(atlas_path) or not os.path.exists(meta_path):
+            print(f"[V4] Atlas files not found at {script_dir}")
+            print(f"[V4] Run: python generate_muscle_atlas_v4.py --model_path <path>")
+            self._v4_prebaked_atlas = None
+            self._v4_muscle_joints = np.zeros(0, dtype=np.int32)
+            self._v4_flex_axes = np.zeros((0, 3), dtype=np.float32)
+            return
+
+        self._v4_prebaked_atlas = np.load(atlas_path)  # (6890, N_muscles)
+        meta = np.load(meta_path, allow_pickle=True).item()
+        self._v4_muscle_joints = meta['muscle_joints']
+        self._v4_flex_axes = meta['flex_axes']
+        n_muscles = meta['n_muscles']
+        names = meta['muscle_names']
+
+        print(f"[V4] Loaded contour-projection atlas: {self._v4_prebaked_atlas.shape}, "
+              f"{n_muscles} muscles")
+        for i, name in enumerate(names[:5]):
+            n_active = np.sum(self._v4_prebaked_atlas[:, i] > 0.01)
+            print(f"  {i}: {name} ({n_active} verts)")
+        if n_muscles > 5:
+            print(f"  ... and {n_muscles - 5} more")
+
     def _build_v3_atlas(self, spread, edge_threshold):
         """Re-bake the atlas via subprocess with mesh smoothing + edge subtraction."""
         # Map spread to smooth iterations: 0→0, 0.5→5, 1.0→10
@@ -1599,6 +1634,125 @@ class MGLSMPLHeatmapNode(Node):
             self._v3_atlas_tex.use(0)
             if 'u_atlas' in prog:
                 prog['u_atlas'].value = 0
+
+        # Render
+        inner_ctx.enable(moderngl.BLEND)
+        inner_ctx.blend_func = moderngl.SRC_ALPHA, moderngl.ONE_MINUS_SRC_ALPHA
+        inner_ctx.disable(moderngl.CULL_FACE)
+        inner_ctx.enable(moderngl.DEPTH_TEST)
+        self.v2_vao.render()
+        inner_ctx.disable(moderngl.BLEND)
+
+    def _draw_muscle_v4(self, inner_ctx):
+        """GPU-accelerated draw path for muscle_v4 mode (contour-projected atlas).
+
+        Uses the same GPU shader as v2/v3 but with v4 atlas data.
+        No rebuild needed — atlas is static (contour-projected at generation time).
+        """
+        prog = self._get_muscle_v2_shader()
+
+        # Upload v4 atlas texture (once)
+        if self._v4_atlas_tex is None:
+            n_verts, n_muscles = self._v4_prebaked_atlas.shape
+            self._v4_atlas_tex = inner_ctx.texture(
+                (n_muscles, n_verts), 1,
+                data=self._v4_prebaked_atlas.astype('f4').tobytes(),
+                dtype='f4'
+            )
+            self._v4_atlas_tex.filter = (moderngl.NEAREST, moderngl.NEAREST)
+            print(f"[V4 DRAW] Atlas texture uploaded: {n_muscles}x{n_verts}")
+
+        # Build pos+normal VBO (6 floats per vertex)
+        vertices = self.last_vertices
+        normals = self._compute_normals(vertices, self.faces_np)
+        vbo_data = np.hstack([vertices, normals]).astype('f4')
+        vbo_bytes = vbo_data.tobytes()
+
+        if self.v2_vbo is None or self.v2_vbo.size != len(vbo_bytes):
+            if self.v2_vbo is not None:
+                self.v2_vbo.release()
+            self.v2_vbo = inner_ctx.buffer(vbo_bytes)
+            if self.ibo is None:
+                idx_data = self.faces_np.flatten().astype(np.int32)
+                self.ibo = inner_ctx.buffer(idx_data.tobytes())
+            if self.v2_vao is not None:
+                self.v2_vao.release()
+            self.v2_vao = inner_ctx.vertex_array(
+                prog,
+                [(self.v2_vbo, '3f 3f', 'in_position', 'in_normal')],
+                self.ibo
+            )
+        else:
+            self.v2_vbo.write(vbo_bytes)
+
+        # Set MVP uniforms
+        if 'M' in prog:
+            model = self.ctx.get_model_matrix()
+            prog['M'].write(model.astype('f4').T.tobytes())
+        if 'V' in prog:
+            prog['V'].write(self.ctx.view_matrix.tobytes())
+        if 'P' in prog:
+            prog['P'].write(self.ctx.projection_matrix.tobytes())
+
+        # Lighting
+        if 'light_dir' in prog:
+            prog['light_dir'].value = (0.3, 1.0, 0.5)
+        if 'u_ambient' in prog:
+            prog['u_ambient'].value = self.ambient_prop()
+        if 'u_emissive' in prog:
+            prog['u_emissive'].value = 1.0 if self.lighting_mode_prop() == 'emissive' else 0.0
+
+        # Torques
+        torques = self.torques_data
+        n_j = min(torques.shape[0], 22)
+        padded = np.zeros((22, 3), dtype='f4')
+        padded[:n_j] = torques[:n_j]
+        try:
+            prog['u_torques'].write(padded.tobytes())
+        except Exception:
+            pass
+
+        # V4 flex axes and joints
+        n_muscles = self._v4_prebaked_atlas.shape[1]
+        n_shader = len(MUSCLE_GROUP_DEFS)
+        try:
+            padded_axes = np.zeros((n_shader, 3), dtype='f4')
+            padded_axes[:n_muscles] = self._v4_flex_axes[:n_muscles]
+            prog['u_flex_axes'].write(padded_axes.tobytes())
+        except Exception:
+            pass
+        try:
+            padded_joints = np.zeros(n_shader, dtype='i4')
+            padded_joints[:n_muscles] = self._v4_muscle_joints[:n_muscles]
+            prog['u_muscle_joints'].write(padded_joints.tobytes())
+        except Exception:
+            pass
+
+        # Scalar uniforms
+        if 'u_dir_bias' in prog:
+            prog['u_dir_bias'].value = self.dir_bias_prop()
+        if 'u_max_torque' in prog:
+            prog['u_max_torque'].value = max(self.max_torque_prop(), 0.01)
+        if 'u_opacity' in prog:
+            prog['u_opacity'].value = self.opacity_prop()
+        if 'u_min_opacity' in prog:
+            prog['u_min_opacity'].value = self.min_opacity_prop()
+        if 'u_n_muscles' in prog:
+            prog['u_n_muscles'].value = n_muscles
+
+        color_modes = {'heatmap': 0, 'grayscale': 1, 'hot': 2, 'viridis': 3}
+        cm = color_modes.get(self.color_mode_prop(), 0)
+        if 'u_color_mode' in prog:
+            prog['u_color_mode'].value = cm
+
+        n_verts_atlas = self._v4_prebaked_atlas.shape[0]
+        if 'u_atlas_width' in prog:
+            prog['u_atlas_width'].value = n_muscles
+
+        # Bind atlas texture
+        self._v4_atlas_tex.use(location=0)
+        if 'u_atlas' in prog:
+            prog['u_atlas'].value = 0
 
         # Render
         inner_ctx.enable(moderngl.BLEND)
@@ -1870,6 +2024,8 @@ class MGLSMPLHeatmapNode(Node):
             self._draw_muscle_v2(inner_ctx)
         elif mode == 'muscle_v3' and hasattr(self, '_v3_prebaked_atlas') and self._v3_prebaked_atlas is not None:
             self._draw_muscle_v3(inner_ctx)
+        elif mode == 'muscle_v4' and hasattr(self, '_v4_prebaked_atlas') and self._v4_prebaked_atlas is not None:
+            self._draw_muscle_v4(inner_ctx)
         else:
             self._draw_cpu_path(inner_ctx)
 

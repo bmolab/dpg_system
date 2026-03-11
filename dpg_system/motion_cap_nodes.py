@@ -46,6 +46,7 @@ def register_motion_cap_nodes():
     Node.app.register_node('cadence_filter', CadenceFilterNode.factory)
     Node.app.register_node('json_npz_frame_picker', JsonRandomEventWindowNode.factory)
     Node.app.register_node('tracker_root_inference', TrackerRootInferenceNode.factory)
+    Node.app.register_node('sensor_to_root', SensorToRootNode.factory)
 
 def find_process_id(process_name):
     try:
@@ -2769,3 +2770,138 @@ class CadenceFilterNode(MoCapNode):
         
         smoothed = np.mean(ring, axis=0)
         return smoothed.reshape(data.shape)
+
+
+class SensorToRootNode(MoCapNode):
+    """
+    Transforms a lower-back sensor position into the SMPL root (pelvis) position.
+
+    The sensor is affixed to the performer's lower back at approximately belt-line.
+    The SMPL root is interior to the body, roughly at the center of the pelvis.
+    This node applies a configurable offset (in pelvis-local coordinates) rotated
+    by the pelvis orientation to convert sensor position to root position.
+
+    Inputs:
+        sensor_pos (3,): Tracker/sensor world position (Y-up, meters)
+        pelvis_quat (4,): Pelvis orientation quaternion (w, x, y, z)
+
+    Outputs:
+        root_pos (3,): Corrected SMPL root position
+    """
+
+    # Shadow indices for convenience
+    SHADOW_HIPS_INDEX = 4
+    SHADOW_TRACKER_INDICES = [33, 34, 35, 36]
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = SensorToRootNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        # Inputs
+        self.sensor_pos_input = self.add_input('sensor pos', triggers_execution=True)
+        self.pelvis_quat_input = self.add_input('pelvis quat')
+        self.positions_input = self.add_input('positions')  # optional: full Shadow positions array
+        self.pose_input = self.add_input('pose')             # optional: full pose array
+
+        # Offset from sensor to root in pelvis-local coordinates (meters)
+        # With Y-up: +X = right, +Y = up, +Z = forward
+        # Sensor is on the lower back, root is forward and slightly up
+        self.offset_x = self.add_property(
+            'offset_x', widget_type='drag_float', default_value=0.0)
+        self.offset_y = self.add_property(
+            'offset_y', widget_type='drag_float', default_value=0.0)
+        self.offset_z = self.add_property(
+            'offset_z', widget_type='drag_float', default_value=0.12)
+        self.tracker_index = self.add_property(
+            'tracker_index', widget_type='drag_int', default_value=0)
+        self.use_positions = self.add_property(
+            'use_positions', widget_type='checkbox', default_value=False)
+
+        # Outputs
+        self.root_pos_output = self.add_output('root pos')
+        self.corrected_positions_output = self.add_output('corrected positions')
+
+    @staticmethod
+    def _quat_rotate_vector(q_wxyz, v):
+        """Rotate vector v by quaternion q (w, x, y, z format)."""
+        w, x, y, z = q_wxyz
+        t = 2.0 * np.array([
+            y * v[2] - z * v[1],
+            z * v[0] - x * v[2],
+            x * v[1] - y * v[0]
+        ])
+        return v + w * t + np.cross(np.array([x, y, z]), t)
+
+    def execute(self):
+        if not self.sensor_pos_input.fresh_input:
+            return
+
+        # Get sensor position
+        sensor_pos = None
+        positions = None
+
+        if self.use_positions():
+            # Extract from full positions array
+            raw_positions = self.positions_input()
+            if raw_positions is not None:
+                positions = any_to_array(raw_positions)
+                if positions.ndim == 2 and positions.shape[0] >= 37:
+                    tidx = max(0, min(3, int(self.tracker_index())))
+                    tracker_shadow_idx = self.SHADOW_TRACKER_INDICES[tidx]
+                    sensor_pos = positions[tracker_shadow_idx].copy()
+
+        if sensor_pos is None:
+            raw = self.sensor_pos_input()
+            if raw is None:
+                return
+            sensor_pos = any_to_array(raw).flatten()
+            if sensor_pos.size != 3:
+                return
+
+        # Get pelvis quaternion (wxyz)
+        pelvis_q = None
+
+        # Try direct pelvis_quat input first
+        raw_q = self.pelvis_quat_input()
+        if raw_q is not None:
+            pelvis_q = any_to_array(raw_q).flatten()
+            if pelvis_q.size != 4:
+                pelvis_q = None
+
+        # Fall back to extracting from full pose array
+        if pelvis_q is None:
+            raw_pose = self.pose_input()
+            if raw_pose is not None:
+                pose = any_to_array(raw_pose)
+                if pose.ndim == 1:
+                    if pose.size == 80:
+                        pose = pose.reshape(20, 4)
+                    elif pose.size == 148:
+                        pose = pose.reshape(37, 4)
+                if pose.ndim == 2:
+                    if pose.shape[0] == 37:
+                        pelvis_q = pose[self.SHADOW_HIPS_INDEX].copy()
+                    elif pose.shape[0] == 20:
+                        pelvis_q = pose[self.active_joint_map['pelvis_anchor']].copy()
+
+        if pelvis_q is None:
+            # Without orientation, apply offset unrotated (approximate)
+            offset = np.array([self.offset_x(), self.offset_y(), self.offset_z()])
+            root_pos = sensor_pos + offset
+        else:
+            # Rotate the offset by the pelvis orientation
+            offset_local = np.array([self.offset_x(), self.offset_y(), self.offset_z()])
+            offset_world = self._quat_rotate_vector(pelvis_q, offset_local)
+            root_pos = sensor_pos + offset_world
+
+        self.root_pos_output.send(root_pos)
+
+        # If we have positions, build a corrected version
+        if positions is not None:
+            corrected = positions.copy()
+            corrected[self.SHADOW_HIPS_INDEX] = root_pos
+            self.corrected_positions_output.send(corrected)
