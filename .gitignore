@@ -1,0 +1,80 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+
+# Data directories
+AMASS/
+NEWER/
+VAE_train/
+older_takes/
+smpl-h_models/
+
+# Font files
+*.otf
+*.ttc
+
+# Motion capture data files (loose in root or dpg_system)
+*.npz
+*.npy
+*.npa
+
+# Misc data / temp files
+depth_sequence.npy
+point_cloud.npy
+burst_files.json
+collated_artist_list.json
+dpg_app_default_patcher.json
+dpg_app_recent_patchers.json
+kiss_intro_text.json
+sounds.json
+test_save_blab.json
+test_save_dict.json
+AMASS_specs.json
+AMASS_specs_2.json
+amass_specs_text.txt
+type_dic.txt
+test_text.txt
+test_output.txt
+aidan_oscquery.html
+osc_query_exaple.json
+token.json
+llama_output_*.txt
+
+# Client secrets (sensitive)
+client_secret_*.json
+
+# Other python dirs / scratch
+other\ python/
+train\ VAE/
+
+# Test / scratch scripts in root
+minimal_moderngl_example.py
+mock_visca_camera.py
+test_moderngl_graph.py
+test_visca_manual.py
+debug_flatten.py
+
+# dpg_system sub-items to ignore
+dpg_system/images/
+dpg_system/models/
+dpg_system/smplh/
+dpg_system/SMPL-Anthropometry/
+dpg_system/patch_library/
+dpg_system/wavelets_pytorch/
+dpg_system/*.npz
+dpg_system/*.npy
+dpg_system/*.png
+dpg_system/*.otf
+dpg_system/*.ttc
+dpg_system/*.json
+dpg_system/*.txt
+
+# Patches directory (user patch files)
+patches/
