@@ -33,18 +33,48 @@ class ViveTrackerNode(Node):
         self.output_format_in.widget.combo_items = ['quaternion', 'euler', 'matrix']
         self.orientation_out = self.add_output('orientation')
         self.position_out = self.add_output('position')
+        self.connected_out = self.add_output('connected')
         self.orientation = None
         self.previous_orientation = None
         self.position = None
+        self.connected = False
+        self.tracker_serial = None       # serial of the tracker we're bound to
+        self.tracker_device_name = None   # current name in open_vr.devices
         self.__mutex = threading.Lock()
-        self.thread = threading.Thread(target=self.vive_service_loop)
+        self.thread = threading.Thread(target=self.vive_service_loop, daemon=True)
         self.thread_started = False
         if not self.thread_started:
             self.thread.start()
             self.thread_started = True
 
+    def _cache_tracker_serial(self):
+        """Cache the serial number of the currently selected tracker so we can find it after reconnection."""
+        target_name = self.which_tracker_in()
+        if target_name in ViveTrackerNode.open_vr.devices:
+            device = ViveTrackerNode.open_vr.devices[target_name]
+            self.tracker_serial = device.get_serial()
+            self.tracker_device_name = target_name
+            self.connected = True
+            self.connected_out.send(1)
+            print(f'Tracker bound to "{target_name}" (serial: {self.tracker_serial})')
+            return True
+        return False
+
+    def _find_tracker_by_serial(self):
+        """Find the tracker in open_vr.devices by serial number, regardless of its current name."""
+        if self.tracker_serial is None:
+            return None
+        for name, device in ViveTrackerNode.open_vr.devices.items():
+            if device.device_class == "Tracker" and device.get_serial() == self.tracker_serial:
+                return name
+        return None
+
     def vive_service_loop(self):
         while True:
+            try:
+                ViveTrackerNode.open_vr.poll_vr_events()
+            except Exception as e:
+                print(f'poll_vr_events error (non-fatal): {e}')
             if self.enable_in():
                 self.get_data()
             time.sleep(self.interval)
@@ -57,16 +87,58 @@ class ViveTrackerNode(Node):
             self.thread.join(1)
 
     def get_data(self):
-        if self.which_tracker_in() in ViveTrackerNode.open_vr.devices:
+        target_name = self.which_tracker_in()
+
+        # First time: cache the serial of the selected tracker
+        if self.tracker_serial is None:
+            if not self._cache_tracker_serial():
+                # Tracker not yet available at all
+                if self.connected:
+                    self.connected = False
+                    self.connected_out.send(0)
+                return
+
+        # Check if the tracker is still under its known name
+        if self.tracker_device_name not in ViveTrackerNode.open_vr.devices:
+            # Tracker disappeared — try to find it by serial (it may have reconnected under a new name)
+            new_name = self._find_tracker_by_serial()
+            if new_name is not None:
+                self.tracker_device_name = new_name
+                if not self.connected:
+                    self.connected = True
+                    self.connected_out.send(1)
+                    print(f'Tracker reconnected as "{new_name}" (serial: {self.tracker_serial})')
+            else:
+                # Tracker is genuinely offline
+                if self.connected:
+                    self.connected = False
+                    self.connected_out.send(0)
+                    print(f'Tracker disconnected (serial: {self.tracker_serial})')
+                return
+
+        # If the user changed the tracker selection, re-cache
+        if target_name != self.tracker_device_name and target_name in ViveTrackerNode.open_vr.devices:
+            self._cache_tracker_serial()
+
+        try:
+            device = ViveTrackerNode.open_vr.devices[self.tracker_device_name]
+
             if self.output_format_in() == 'quaternion':
-                orientation = ViveTrackerNode.open_vr.devices[self.which_tracker_in()].get_pose_quaternion()
+                orientation = device.get_pose_quaternion()
                 if orientation is not None:
                     self.orientation = any_to_array(orientation[3:])
                     self.position = any_to_array(orientation[:3])
                     self.orientation_out.send(self.orientation)
                     self.position_out.send(self.position)
+                    if not self.connected:
+                        self.connected = True
+                        self.connected_out.send(1)
+                else:
+                    if self.connected:
+                        self.connected = False
+                        self.connected_out.send(0)
             elif self.output_format_in() == 'euler':
-                orientation = ViveTrackerNode.open_vr.devices[self.which_tracker_in()].get_pose_euler()
+                orientation = device.get_pose_euler()
                 if orientation is not None:
                     self.orientation = any_to_array(orientation[3:])
                     self.position = any_to_array(orientation[:3])
@@ -96,7 +168,18 @@ class ViveTrackerNode(Node):
     #     else:
     #         if self.has_frame_task:
     #             self.remove_frame_tasks()
-
+                    if not self.connected:
+                        self.connected = True
+                        self.connected_out.send(1)
+                else:
+                    if self.connected:
+                        self.connected = False
+                        self.connected_out.send(0)
+        except (ZeroDivisionError, KeyError, Exception) as e:
+            # ZeroDivisionError: degenerate pose matrix (r_w == 0 in quaternion conversion)
+            # KeyError: device removed from dict between our check and access
+            # Skip this frame silently — the tracker may be in a transient bad state
+            pass
 
 
 
