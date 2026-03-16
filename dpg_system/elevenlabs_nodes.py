@@ -8,7 +8,8 @@ import numpy as np
 import json
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
-from elevenlabs import client, stream, Voice, VoiceSettings
+from elevenlabs import stream
+from elevenlabs.types import VoiceSettings
 from elevenlabs.client import ElevenLabs
 from elevenlabs.play import play
 from queue import Queue
@@ -119,10 +120,9 @@ class ElevenLabsNode(Node):
 
         try:
             self.client = ElevenLabs(api_key=api_key)
-            print(response)
 
             self.voices = self.client.voices.get_all()
-            self.models = self.client.models.get_all()
+            self.models = self.client.models.list()
             self.voice_name = 'David'
             self.active = False
             self.streamer = Streamer()
@@ -131,6 +131,7 @@ class ElevenLabsNode(Node):
                 voice_name = any_to_string(args[0])
             else:
                 voice_name = self.voice_name
+            self.voice_id = None
             for voice in self.voices.voices:
                 if voice.name == voice_name:
                     self.voice_name = voice_name
@@ -157,10 +158,12 @@ class ElevenLabsNode(Node):
             self.active = False
             self.audio_stream = None
             self.voice_dict = {}
+            self.model_dict = {}
+            self.voice_id = None
 
         self.voice_name_input = self.add_input('voice', widget_type='combo', default_value=self.voice_name, callback=self.voice_changed)
         self.voice_name_input.widget.combo_items = voice_names
-        self.model_choice = self.add_input('model', widget_type='combo', widget_width=250, default_value="Eleven Turbo v2")
+        self.model_choice = self.add_input('model', widget_type='combo', widget_width=250, default_value="Eleven Turbo v2.5")
         if self.client is not None:
             self.model_choice.widget.combo_items = list(self.model_dict.keys())
         self.speed = self.add_input('speed', widget_type='drag_float', max=1.2, min=0.7, default_value=1.0)
@@ -178,23 +181,22 @@ class ElevenLabsNode(Node):
         self.voice_record = None
         self.previously_active = False
         self.backlog = False
-        self.voice_settings = VoiceSettings()
+        self.voice_settings = None
         ElevenLabsNode.instances.append(self)
         self.phrase_queue = Queue(16)
         self.thread = threading.Thread(target=service_eleven_labs)
         self.thread.start()
 
     def voice_changed(self):
-        self.voice_record = None
         current_voice_name = self.voice_name_input()
         if current_voice_name in self.voice_dict:
             if self.client is not None:
                 self.voice_id = self.voice_dict[current_voice_name]
-                self.voice_record = Voice(voice_id=self.voice_id, settings=VoiceSettings(stability=self.stability(), similarity_boost=self.similarity_boost(), style=self.style()))
+                self.voice_settings = VoiceSettings(stability=self.stability(), similarity_boost=self.similarity_boost(), style=self.style())
 
     def post_creation_callback(self):
-        if self.client is not None:
-            self.voice_record = Voice(voice_id=self.voice_id, settings=VoiceSettings(stability=self.stability(), similarity_boost=self.similarity_boost(), style=self.style()))
+        if self.client is not None and self.voice_id is not None:
+            self.voice_settings = VoiceSettings(stability=self.stability(), similarity_boost=self.similarity_boost(), style=self.style())
 
     def execute(self):
         if self.accept_input():
@@ -229,17 +231,24 @@ class ElevenLabsNode(Node):
             self.phrase_queue.task_done()
 
     def service_queue(self):
-        if not self.active and not self.phrase_queue.empty() and self.client is not None:
+        if not self.active and not self.phrase_queue.empty() and self.client is not None and self.voice_id is not None:
             self.active = True
             text = self.phrase_queue.get()
             if self.phrase_queue.qsize() == 0:
                 self.backlog = False
                 self.backlog_out.send(False)
-            model = self.model_dict[self.model_choice()]
+            model_name = self.model_choice()
+            model = self.model_dict.get(model_name, 'eleven_turbo_v2_5')
             latency = int(self.latency())
-            settings = VoiceSettings(stability=self.stability(), similarity_boost=self.similarity_boost(), style=self.style(), speed=self.speed(), latency=self.latency())
+            settings = VoiceSettings(stability=self.stability(), similarity_boost=self.similarity_boost(), style=self.style(), speed=self.speed())
 
-            self.audio_stream = self.client.generate(text=text, voice=self.voice_record, model=model, stream=True, optimize_streaming_latency=latency, voice_settings=settings)
+            self.audio_stream = self.client.text_to_speech.stream(
+                voice_id=self.voice_id,
+                text=text,
+                model_id=model,
+                voice_settings=settings,
+                optimize_streaming_latency=latency
+            )
             try:
                 audio = self.streamer.stream(self.audio_stream)
             except Exception as e:
