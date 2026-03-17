@@ -331,6 +331,7 @@ class SMPLProcessingOptions:
     
     # --- Filtering / Signal Processing ---
     enable_one_euro_filter: bool = False
+    acc_smooth_window: int = 0   # 0=off, 3/5/7 = Savitzky-Golay derivative window
     filter_min_cutoff: float = 1.0
     filter_beta: float = 0.0
     
@@ -6272,16 +6273,66 @@ class SMPLProcessor:
         else:
             smooth_vel = vel
         
-        # 6. Compute acceleration from FILTERED velocity differences
-        prev_vel = getattr(self, name_prev_vel, None)
-        if prev_vel is None or prev_vel.shape != smooth_vel.shape:
-            acc = np.zeros((n_joints, 3))
+        # 6. Compute acceleration from velocity differences
+        # If acc_smooth_window is set, use Savitzky-Golay derivative
+        # over a ring buffer of recent velocities.
+        sg_win = getattr(options, 'acc_smooth_window', 0)
+        if sg_win >= 3:
+            # Cached SG coefficients
+            cache_name = f'_ang_sg_cache{state_suffix}'
+            sg_cache = getattr(self, cache_name, None)
+            if sg_cache is None or sg_cache[0] != sg_win or sg_cache[1] != dt:
+                center = (sg_win - 1) / 2.0
+                denom = sum((k - center) ** 2 for k in range(sg_win)) * dt
+                coeffs = np.array([(k - center) / denom for k in range(sg_win)])
+                setattr(self, cache_name, (sg_win, dt, coeffs))
+            else:
+                coeffs = sg_cache[2]
+            
+            # Numpy ring buffer
+            arr_name = f'_ang_vel_ring_arr{state_suffix}'
+            ptr_name = f'_ang_vel_ring_ptr{state_suffix}'
+            cnt_name = f'_ang_vel_ring_cnt{state_suffix}'
+            ring_arr = getattr(self, arr_name, None)
+            ring_ptr = getattr(self, ptr_name, 0)
+            ring_cnt = getattr(self, cnt_name, 0)
+            
+            if ring_arr is None or ring_arr.shape[0] != sg_win or ring_arr.shape[1:] != smooth_vel.shape:
+                ring_arr = np.zeros((sg_win,) + smooth_vel.shape, dtype=smooth_vel.dtype)
+                ring_ptr = 0
+                ring_cnt = 0
+            
+            ring_arr[ring_ptr] = smooth_vel
+            ring_ptr = (ring_ptr + 1) % sg_win
+            ring_cnt = min(ring_cnt + 1, sg_win)
+            
+            setattr(self, arr_name, ring_arr)
+            setattr(self, ptr_name, ring_ptr)
+            setattr(self, cnt_name, ring_cnt)
+            
+            N = ring_cnt
+            if N >= 3:
+                if N == sg_win:
+                    ordered = np.roll(ring_arr, -ring_ptr, axis=0)
+                else:
+                    ordered = ring_arr[:N]
+                acc = np.tensordot(coeffs[:N], ordered, axes=([0], [0]))
+            else:
+                prev_vel = getattr(self, name_prev_vel, None)
+                if prev_vel is not None and prev_vel.shape == smooth_vel.shape:
+                    acc = (smooth_vel - prev_vel) / dt
+                else:
+                    acc = np.zeros((n_joints, 3))
         else:
-            acc = (smooth_vel - prev_vel) / dt
+            prev_vel = getattr(self, name_prev_vel, None)
+            if prev_vel is None or prev_vel.shape != smooth_vel.shape:
+                acc = np.zeros((n_joints, 3))
+            else:
+                acc = (smooth_vel - prev_vel) / dt
         
         # Update state
         setattr(self, name_prev_composed, composed_q.copy())
-        setattr(self, name_prev_vel, smooth_vel.copy())  # Store FILTERED velocity
+        setattr(self, name_prev_vel, smooth_vel.copy())
         
         # Pack to (1, 24, 3)
         ang_vel_out = np.zeros((1, 24, 3))
@@ -6523,8 +6574,51 @@ class SMPLProcessor:
                 raw_vel.flatten()
             ).reshape(n_joints, 3)
             
-            # Acceleration
-            raw_acc = (smooth_vel - self._com_prev_smooth_vel) / dt
+            # Acceleration: Savitzky-Golay derivative when acc_smooth_window > 0
+            sg_win = getattr(options, 'acc_smooth_window', 0)
+            if sg_win >= 3:
+                # --- Cached SG coefficients (only recomputed when N or dt changes) ---
+                sg_cache = getattr(self, '_com_sg_cache', None)
+                if sg_cache is None or sg_cache[0] != sg_win or sg_cache[1] != dt:
+                    center = (sg_win - 1) / 2.0
+                    denom = sum((k - center) ** 2 for k in range(sg_win)) * dt
+                    coeffs = np.array([(k - center) / denom for k in range(sg_win)])
+                    self._com_sg_cache = (sg_win, dt, coeffs)
+                else:
+                    coeffs = sg_cache[2]
+                
+                # --- Numpy ring buffer (fixed-size array + write pointer) ---
+                ring_arr = getattr(self, '_com_vel_ring_arr', None)
+                ring_ptr = getattr(self, '_com_vel_ring_ptr', 0)
+                ring_cnt = getattr(self, '_com_vel_ring_cnt', 0)
+                
+                if ring_arr is None or ring_arr.shape[0] != sg_win or ring_arr.shape[1:] != smooth_vel.shape:
+                    ring_arr = np.zeros((sg_win,) + smooth_vel.shape, dtype=smooth_vel.dtype)
+                    ring_ptr = 0
+                    ring_cnt = 0
+                
+                ring_arr[ring_ptr] = smooth_vel
+                ring_ptr = (ring_ptr + 1) % sg_win
+                ring_cnt = min(ring_cnt + 1, sg_win)
+                
+                self._com_vel_ring_arr = ring_arr
+                self._com_vel_ring_ptr = ring_ptr
+                self._com_vel_ring_cnt = ring_cnt
+                
+                N = ring_cnt
+                if N >= 3:
+                    # Reorder ring buffer oldest→newest for coefficient alignment
+                    if N == sg_win:
+                        ordered = np.roll(ring_arr, -ring_ptr, axis=0)
+                    else:
+                        # Buffer not full yet: entries 0..ring_ptr-1 are in order
+                        ordered = ring_arr[:N]
+                    # Vectorized: coeffs[:N] · ordered → (J, 3)
+                    raw_acc = np.tensordot(coeffs[:N], ordered, axes=([0], [0]))
+                else:
+                    raw_acc = (smooth_vel - self._com_prev_smooth_vel) / dt
+            else:
+                raw_acc = (smooth_vel - self._com_prev_smooth_vel) / dt
             
             # Acceleration: filter or pass-through
             acc = raw_acc if skip_acc else self._com_acc_filter(

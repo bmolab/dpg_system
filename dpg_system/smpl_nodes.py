@@ -1710,6 +1710,8 @@ class SMPLTorqueNode(SMPLNode):
         self.com_acc_mc_prop = self.add_option('com_acc_min_cutoff', widget_type='drag_float', default_value=5.0)
         self.com_acc_beta_prop = self.add_option('com_acc_beta', widget_type='drag_float', default_value=0.8)
         self.smooth_input_window_prop = self.add_property('smooth_input_window', widget_type='drag_int', default_value=0)
+        self.enable_one_euro_prop = self.add_option('enable_one_euro_filter', widget_type='checkbox', default_value=False)
+        self.acc_smooth_window_prop = self.add_property('acc_smooth_window', widget_type='drag_int', default_value=0)
 
         
         # --- Spine Geometry ---
@@ -1907,6 +1909,8 @@ class SMPLTorqueNode(SMPLNode):
 
                 use_s_curve_spine=self.use_s_curve_spine_prop() if hasattr(self, 'use_s_curve_spine_prop') else True,
                 enable_frame_evaluator=self.enable_frame_eval_prop() if hasattr(self, 'enable_frame_eval_prop') else False,
+                enable_one_euro_filter=self.enable_one_euro_prop() if hasattr(self, 'enable_one_euro_prop') else False,
+                acc_smooth_window=self.acc_smooth_window_prop() if hasattr(self, 'acc_smooth_window_prop') else 0,
             )
             
             # Process
