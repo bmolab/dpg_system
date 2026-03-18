@@ -548,20 +548,27 @@ class MGLSMPLHeatmapNode(Node):
         self.torques_input = self.add_input('torques')
         self.config_input = self.add_input('config', triggers_execution=True)
 
-        self.max_torque_prop = self.add_option('max torque', widget_type='drag_float',
+        self.max_torque_prop = self.add_input('max torque', widget_type='drag_float',
                                                 default_value=50.0, speed=1.0)
+        self.color_mode_prop = self.add_input('color mode', widget_type='combo', default_value='heatmap')
+        self.color_mode_prop.widget.combo_items = ['heatmap', 'grayscale', 'hot', 'viridis', 'viridis_bright']
+        self.lighting_mode_prop = self.add_input('lighting', widget_type='combo', default_value='diffuse')
+        self.lighting_mode_prop.widget.combo_items = ['diffuse', 'emissive']
+        self.ambient_prop = self.add_input('ambient', widget_type='drag_float',
+                                            default_value=0.45, speed=0.01)
+        self.gender_prop = self.add_input('gender', widget_type='combo', default_value='male')
+        self.gender_prop.widget.combo_items = ['male', 'female']
+        self.model_path_prop = self.add_input('model_path', widget_type='text_input',
+                                                  default_value='dpg_system/')
+        self.up_axis_prop = self.add_input('up_axis', widget_type='combo', default_value='Y')
+        self.up_axis_prop.widget.combo_items = ['Y', 'Z']
+
         self.opacity_prop = self.add_option('opacity', widget_type='drag_float',
                                              default_value=0.5, speed=0.01)
         self.min_opacity_prop = self.add_option('min opacity', widget_type='drag_float',
                                                  default_value=0.15, speed=0.01)
         self.weight_mode_prop = self.add_option('weight mode', widget_type='combo', default_value='muscle')
         self.weight_mode_prop.widget.combo_items = ['muscle', 'muscle_v2', 'muscle_v3', 'muscle_v4', 'iso directional', 'iso proximity', 'directional', 'proximity', 'skinning']
-        self.color_mode_prop = self.add_option('color mode', widget_type='combo', default_value='heatmap')
-        self.color_mode_prop.widget.combo_items = ['heatmap', 'grayscale', 'hot', 'viridis', 'viridis_bright']
-        self.lighting_mode_prop = self.add_option('lighting', widget_type='combo', default_value='diffuse')
-        self.lighting_mode_prop.widget.combo_items = ['diffuse', 'emissive']
-        self.ambient_prop = self.add_option('ambient', widget_type='drag_float',
-                                            default_value=0.45, speed=0.01)
         self.spread_prop = self.add_option('spread', widget_type='drag_float',
                                            default_value=0.08, speed=0.005)
         self.edge_threshold_prop = self.add_option('edge threshold', widget_type='drag_float',
@@ -571,12 +578,6 @@ class MGLSMPLHeatmapNode(Node):
         self.muscle_offset_prop = self.add_option('muscle offset', widget_type='drag_float',
                                                    default_value=0.4, speed=0.01)
         self.normalize_prop = self.add_option('normalize', widget_type='checkbox', default_value=True)
-        self.gender_prop = self.add_property('gender', widget_type='combo', default_value='male')
-        self.gender_prop.widget.combo_items = ['male', 'female']
-        self.model_path_prop = self.add_property('model_path', widget_type='text_input',
-                                                  default_value='.')
-        self.up_axis_prop = self.add_property('up_axis', widget_type='combo', default_value='Y')
-        self.up_axis_prop.widget.combo_items = ['Y', 'Z']
 
         self.gl_output = self.add_output('gl chain out')
 
