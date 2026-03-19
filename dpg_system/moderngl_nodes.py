@@ -2677,7 +2677,7 @@ class MGLQuaternionRotateNode(MGLTransformNode):
                 # Build 4x4 rotation matrix from quaternion
                 transform = quaternion_to_R3_rotation(input_)
                 # quaternion_to_R3_rotation returns a flat 16-element list (row-major for legacy GL)
-                mat = np.array(transform, dtype=np.float32).reshape(4, 4).T  # transpose for our column-major convention
+                mat = np.array(transform, dtype=np.float32).reshape(4, 4)  # already correct row-major R
                 self.ctx.multiply_matrix(mat)
 
 

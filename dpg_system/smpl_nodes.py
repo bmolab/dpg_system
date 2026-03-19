@@ -1712,6 +1712,9 @@ class SMPLTorqueNode(SMPLNode):
         self.smooth_input_window_prop = self.add_property('smooth_input_window', widget_type='drag_int', default_value=0)
         self.enable_one_euro_prop = self.add_option('enable_one_euro_filter', widget_type='checkbox', default_value=False)
         self.acc_smooth_window_prop = self.add_property('acc_smooth_window', widget_type='drag_int', default_value=0)
+        self.torque_smooth_window_prop = self.add_property('torque_smooth_window', widget_type='drag_int', default_value=0)
+        self.smooth_contact_forces_prop = self.add_option('smooth_contact_forces', widget_type='checkbox', default_value=False)
+        self.enable_velocity_gate_prop = self.add_option('enable_velocity_gate', widget_type='checkbox', default_value=False)
 
         
         # --- Spine Geometry ---
@@ -1911,6 +1914,9 @@ class SMPLTorqueNode(SMPLNode):
                 enable_frame_evaluator=self.enable_frame_eval_prop() if hasattr(self, 'enable_frame_eval_prop') else False,
                 enable_one_euro_filter=self.enable_one_euro_prop() if hasattr(self, 'enable_one_euro_prop') else False,
                 acc_smooth_window=self.acc_smooth_window_prop() if hasattr(self, 'acc_smooth_window_prop') else 0,
+                torque_smooth_window=self.torque_smooth_window_prop() if hasattr(self, 'torque_smooth_window_prop') else 0,
+                smooth_contact_forces=self.smooth_contact_forces_prop() if hasattr(self, 'smooth_contact_forces_prop') else False,
+                enable_velocity_gate=self.enable_velocity_gate_prop() if hasattr(self, 'enable_velocity_gate_prop') else False,
             )
             
             # Process
@@ -2320,11 +2326,11 @@ class SMPLBetaEditorNode(Node):
         'beta_2 arm_ratio',  # Arm length relative to body
         'beta_3 leg_ratio',  # Leg length relative to body
         'beta_4',
-        'beta_5',
+        'beta_5 upper lower ratio',
         'beta_6',
-        'beta_7',
-        'beta_8',
-        'beta_9',
+        'beta_7 torso length',
+        'beta_8 shoulders',
+        'beta_9 breadth',
     ]
 
     @staticmethod
@@ -2338,7 +2344,7 @@ class SMPLBetaEditorNode(Node):
         # Beta properties (all 10)
         self.beta_props = []
         for i in range(10):
-            prop = self.add_property(self.BETA_LABELS[i], widget_type='slider_float', default_value=0.0, min=-2.5, max=2.5, callback=self._on_param_changed)
+            prop = self.add_property(self.BETA_LABELS[i], widget_type='slider_float', width=150, default_value=0.0, min=-5,  max=5, callback=self._on_param_changed)
             self.beta_props.append(prop)
 
         # Body parameters

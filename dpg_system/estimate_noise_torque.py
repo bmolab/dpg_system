@@ -232,6 +232,24 @@ class JointNoiseProfile:
 
 
 @dataclass
+class StreamBreak:
+    frame: int
+    time_s: float
+    trans_jump: float        # root translation displacement (m)
+    pose_jump: float         # max per-joint angular displacement (rad)
+    worst_joint: str         # joint with largest angular jump
+    break_type: str          # 'translation', 'pose', or 'both'
+
+
+@dataclass
+class CadenceInfo:
+    detected: bool
+    period: int              # frames (e.g. 3 for Shadow)
+    strength: float          # mean autocorrelation at cadence lag
+    coverage: float          # fraction of windows showing cadence
+
+
+@dataclass
 class TorqueFileReport:
     filename: str
     n_frames: int
@@ -256,6 +274,34 @@ class TorqueFileReport:
     glitch_frames: List[FrameScore] = field(default_factory=list)
     glitch_clusters: List[Tuple[int, int]] = field(default_factory=list)
     clean_segments: List[CleanSegment] = field(default_factory=list)
+    stream_breaks: List[StreamBreak] = field(default_factory=list)
+    cadence: Optional[CadenceInfo] = None
+    motion_profile: Optional['MotionProfile'] = None
+    ground_contact: Optional['GroundContactInfo'] = None
+    classification_detail: str = ''    # multi-dimensional summary line
+    recommendations: Optional[dict] = None  # suggested filter params
+
+
+@dataclass
+class MotionProfile:
+    mean_vel: float          # mean total body angular velocity (rad/s)
+    p50_vel: float
+    p90_vel: float
+    p99_vel: float
+    max_vel: float
+    n_still: int             # frames below p25
+    n_active: int            # frames above p75
+    n_explosive: int         # frames above p95
+    complexity: str          # 'static', 'moderate', 'dynamic', 'explosive'
+
+
+@dataclass
+class GroundContactInfo:
+    ground_pct: float        # fraction of time on ground
+    n_phases: int            # number of distinct ground phases
+    longest_phase_s: float   # duration of longest ground phase
+    standing_height: float   # estimated standing height (m)
+    avg_ground_height: float # average root height during ground phases
 
 
 # ── Core analysis ─────────────────────────────────────────────────────────
@@ -306,6 +352,276 @@ def _compute_angular_velocity(poses_aa, fps, n_joints=22):
     # Pad first frame with zeros
     ang_vel = np.vstack([np.zeros((1, n_joints)), vel])
     return ang_vel
+
+
+# ── Stream break & cadence detection ──────────────────────────────────────
+
+STREAM_BREAK_TRANS_FACTOR = 20.0   # flag if root displacement > factor × median
+STREAM_BREAK_POSE_FACTOR = 15.0    # flag if max-joint angle change > factor × median
+STREAM_BREAK_RADIUS = 3            # frames around break to discount in scoring
+STREAM_BREAK_DISCOUNT = 0.1        # score multiplier for stream break frames
+
+def _detect_stream_breaks(poses, trans, fps):
+    """Detect single-frame discontinuities in root position or joint angles.
+    
+    Returns:
+        breaks: list of StreamBreak
+        break_mask: (T,) boolean array, True for frames near a break
+    """
+    T = poses.shape[0]
+    nj = poses.shape[1] // 3 if poses.ndim == 2 else poses.shape[1]
+    poses_3d = poses.reshape(T, -1, 3)[:, :min(nj, N_JOINTS), :]
+    
+    # Root translation displacement
+    trans_disp = np.linalg.norm(np.diff(trans, axis=0), axis=1)  # (T-1,)
+    trans_median = np.median(trans_disp) if len(trans_disp) > 0 else 0
+    
+    # Per-joint angular displacement, take max across joints
+    pose_disp = np.linalg.norm(np.diff(poses_3d, axis=0), axis=2)  # (T-1, J)
+    pose_max = np.max(pose_disp, axis=1)  # (T-1,)
+    pose_median = np.median(pose_max) if len(pose_max) > 0 else 0
+    
+    trans_thresh = max(trans_median * STREAM_BREAK_TRANS_FACTOR, 0.05)  # at least 5cm
+    pose_thresh = max(pose_median * STREAM_BREAK_POSE_FACTOR, 0.3)     # at least ~17°
+    
+    breaks = []
+    break_frames = set()
+    
+    for f in range(len(trans_disp)):
+        is_trans = trans_disp[f] > trans_thresh
+        is_pose = pose_max[f] > pose_thresh
+        
+        if is_trans or is_pose:
+            worst_j_idx = int(np.argmax(pose_disp[f]))
+            worst_j_name = SMPL_JOINT_NAMES[worst_j_idx] if worst_j_idx < len(SMPL_JOINT_NAMES) else f'j{worst_j_idx}'
+            
+            if is_trans and is_pose:
+                btype = 'both'
+            elif is_trans:
+                btype = 'translation'
+            else:
+                btype = 'pose'
+            
+            breaks.append(StreamBreak(
+                frame=f + 1,  # the discontinuity is AT frame f+1
+                time_s=round((f + 1) / fps, 2),
+                trans_jump=round(float(trans_disp[f]), 4),
+                pose_jump=round(float(pose_max[f]), 4),
+                worst_joint=worst_j_name,
+                break_type=btype,
+            ))
+            # Mark frames around the break
+            for ff in range(max(0, f + 1 - STREAM_BREAK_RADIUS),
+                           min(T, f + 1 + STREAM_BREAK_RADIUS + 1)):
+                break_frames.add(ff)
+    
+    break_mask = np.zeros(T, dtype=bool)
+    for ff in break_frames:
+        break_mask[ff] = True
+    
+    return breaks, break_mask
+
+
+def _detect_cadence(poses, fps, max_period=8):
+    """Detect repeating sub-sampling cadence via autocorrelation of velocity.
+    
+    Returns:
+        CadenceInfo or None
+    """
+    T = poses.shape[0]
+    if T < 200:
+        return CadenceInfo(detected=False, period=0, strength=0.0, coverage=0.0)
+    
+    nj = poses.shape[1] // 3 if poses.ndim == 2 else poses.shape[1]
+    poses_3d = poses.reshape(T, -1, 3)[:, :min(nj, N_JOINTS), :]
+    
+    # Velocity magnitude per joint
+    vel = np.linalg.norm(np.diff(poses_3d, axis=0), axis=2)  # (T-1, J)
+    vel_mean = np.mean(vel, axis=1)  # (T-1,) mean across joints
+    
+    # Windowed autocorrelation at each lag
+    window = 30
+    n_windows = max(1, (T - 1) // window)
+    
+    best_lag = 0
+    best_strength = 0
+    best_coverage = 0
+    
+    for lag in range(2, max_period + 1):
+        strengths = []
+        for w in range(n_windows):
+            s = w * window
+            e = min(s + window, T - 1)
+            if e - s < lag + 3:
+                continue
+            chunk = vel_mean[s:e]
+            chunk_c = chunk - np.mean(chunk)
+            var = np.var(chunk_c)
+            if var > 1e-10:
+                ac = np.mean(chunk_c[lag:] * chunk_c[:-lag]) / var
+                strengths.append(ac)
+        
+        if strengths:
+            mean_ac = np.mean(strengths)
+            coverage = np.mean([1 if s > 0.3 else 0 for s in strengths])
+            if mean_ac > best_strength:
+                best_strength = mean_ac
+                best_lag = lag
+                best_coverage = coverage
+    
+    detected = best_strength > 0.3 and best_coverage > 0.3
+    return CadenceInfo(
+        detected=detected,
+        period=best_lag,
+        strength=round(best_strength, 3),
+        coverage=round(best_coverage, 3),
+    )
+
+
+# Walking baseline reference values (from typical clean gait files)
+WALKING_BASELINE_MEAN_VEL = 25.0   # rad/s total body angular velocity
+WALKING_BASELINE_P90_VEL = 50.0
+
+def _compute_motion_profile(poses, fps):
+    """Compute body-level motion statistics from raw poses."""
+    T = poses.shape[0]
+    if T < 10:
+        return MotionProfile(0, 0, 0, 0, 0, 0, 0, 0, 'static')
+    
+    nj = poses.shape[1] // 3 if poses.ndim == 2 else poses.shape[1]
+    poses_3d = poses.reshape(T, -1, 3)[:, :min(nj, N_JOINTS), :]
+    dt = 1.0 / fps
+    
+    # Per-joint angular velocity magnitude, summed across joints
+    vel = np.linalg.norm(np.diff(poses_3d, axis=0), axis=2) / dt  # (T-1, J)
+    vel_total = np.sum(vel, axis=1)  # (T-1,)
+    
+    mean_v = float(np.mean(vel_total))
+    p50 = float(np.median(vel_total))
+    p90 = float(np.percentile(vel_total, 90))
+    p99 = float(np.percentile(vel_total, 99))
+    max_v = float(np.max(vel_total))
+    
+    p25_thresh = np.percentile(vel_total, 25)
+    p75_thresh = np.percentile(vel_total, 75)
+    p95_thresh = np.percentile(vel_total, 95)
+    
+    n_still = int(np.sum(vel_total < p25_thresh))
+    n_active = int(np.sum(vel_total > p75_thresh))
+    n_explosive = int(np.sum(vel_total > p95_thresh))
+    
+    # Classify overall complexity
+    if mean_v < 10:
+        complexity = 'static'
+    elif mean_v < 30:
+        complexity = 'moderate'
+    elif p90 < 100:
+        complexity = 'dynamic'
+    else:
+        complexity = 'explosive'
+    
+    return MotionProfile(
+        mean_vel=round(mean_v, 1), p50_vel=round(p50, 1),
+        p90_vel=round(p90, 1), p99_vel=round(p99, 1),
+        max_vel=round(max_v, 1),
+        n_still=n_still, n_active=n_active, n_explosive=n_explosive,
+        complexity=complexity,
+    )
+
+
+def _analyze_ground_contact(trans, fps):
+    """Analyze ground contact phases from root translation height."""
+    T = trans.shape[0]
+    if T < 10:
+        return GroundContactInfo(0, 0, 0, 0, 0)
+    
+    # SMPL pose files use Z-up
+    root_height = trans[:, 2]
+    standing_h = float(np.percentile(root_height, 90))
+    low_thresh = standing_h * 0.5
+    
+    is_low = root_height < low_thresh
+    
+    # Find sustained low phases (>0.5s)
+    phases = []
+    in_low = False
+    start = 0
+    for f in range(T):
+        if is_low[f] and not in_low:
+            in_low = True; start = f
+        elif not is_low[f] and in_low:
+            in_low = False
+            dur = (f - start) / fps
+            if dur > 0.5:
+                phases.append((start, f - 1, dur))
+    if in_low:
+        dur = (T - start) / fps
+        if dur > 0.5:
+            phases.append((start, T - 1, dur))
+    
+    total_low_frames = sum(e - s + 1 for s, e, _ in phases)
+    ground_pct = total_low_frames / T if T > 0 else 0
+    longest = max((d for _, _, d in phases), default=0)
+    
+    # Average height during ground phases
+    if phases:
+        low_heights = np.concatenate([root_height[s:e+1] for s, e, _ in phases])
+        avg_h = float(np.mean(low_heights))
+    else:
+        avg_h = standing_h
+    
+    return GroundContactInfo(
+        ground_pct=round(ground_pct, 3),
+        n_phases=len(phases),
+        longest_phase_s=round(longest, 1),
+        standing_height=round(standing_h, 3),
+        avg_ground_height=round(avg_h, 3),
+    )
+
+
+def _build_classification(report):
+    """Build multi-dimensional classification and filter recommendations."""
+    parts = []
+    recs = {}
+    
+    # Core noise classification
+    ic = {'clean': '✅', 'moderate': '⚠️', 'problematic': '❌'}
+    parts.append(f"{ic.get(report.classification, '')} {report.classification.upper()} capture")
+    
+    # Stream breaks
+    if report.stream_breaks:
+        parts.append(f"⚡ {len(report.stream_breaks)} stream break(s)")
+    
+    # Cadence
+    if report.cadence and report.cadence.detected:
+        parts.append(f"🔄 {report.cadence.period}-frame cadence")
+        recs['smooth_input_window'] = report.cadence.period
+    
+    # Ground work
+    if report.ground_contact and report.ground_contact.ground_pct > 0.4:
+        pct = int(report.ground_contact.ground_pct * 100)
+        parts.append(f"⬇️ {pct}% ground work")
+        recs['smooth_contact_forces'] = True
+    
+    # Motion complexity
+    if report.motion_profile:
+        mp = report.motion_profile
+        if mp.complexity == 'explosive':
+            parts.append(f"💥 explosive motion (p90={mp.p90_vel:.0f} rad/s)")
+        elif mp.complexity == 'dynamic':
+            parts.append(f"🏃 dynamic motion (mean={mp.mean_vel:.0f} rad/s)")
+    
+    # Velocity-adaptive smoothing recommendation
+    if report.classification in ('moderate', 'problematic'):
+        if report.motion_profile and report.motion_profile.complexity != 'static':
+            recs['enable_velocity_gate'] = True
+    
+    # acc_smooth as safe default for moderate+ noise
+    if report.classification in ('moderate', 'problematic'):
+        recs['acc_smooth_window'] = 5
+    
+    detail = '  '.join(parts)
+    return detail, recs
 
 
 def analyze_file(filepath, total_mass=75.0, gender_override=None, verbose=True):
@@ -359,6 +675,26 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None, verbose=True):
     if verbose:
         print(f"\n  Loading {os.path.basename(filepath)}: {T} frames @ {fps:.0f} fps, "
               f"gender={gender}, mass={total_mass}kg")
+    
+    # ── Detect stream breaks (before processing) ─────────────────────
+    stream_breaks, break_mask = _detect_stream_breaks(poses, trans, fps)
+    if verbose and stream_breaks:
+        print(f"  Detected {len(stream_breaks)} stream break(s)")
+    
+    # ── Detect cadence pattern ────────────────────────────────────────
+    cadence = _detect_cadence(poses, fps)
+    if verbose and cadence and cadence.detected:
+        print(f"  Detected {cadence.period}-frame cadence (strength={cadence.strength:.2f}, coverage={cadence.coverage:.0%})")
+    
+    # ── Motion profile ────────────────────────────────────────────────
+    motion_profile = _compute_motion_profile(poses, fps)
+    if verbose:
+        print(f"  Motion: {motion_profile.complexity} (mean={motion_profile.mean_vel:.0f}, p90={motion_profile.p90_vel:.0f} rad/s)")
+    
+    # ── Ground contact analysis ───────────────────────────────────────
+    ground_contact = _analyze_ground_contact(trans, fps)
+    if verbose and ground_contact.ground_pct > 0.1:
+        print(f"  Ground work: {ground_contact.ground_pct:.0%} of file ({ground_contact.n_phases} phases)")
     
     # ── Compute angular velocity from raw poses (before processing) ──
     ang_vel = _compute_angular_velocity(poses, fps)  # (T, J)
@@ -602,6 +938,12 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None, verbose=True):
     # Apply discount to ALL joints during airborne phases
     joint_scores[airborne_expanded] *= AIRBORNE_DISCOUNT
     
+    # ── Stream break discount ─────────────────────────────────────────
+    # Frames near detected stream breaks are data discontinuities, not noise.
+    # Discount their scores heavily so they don't inflate the file-level score.
+    if np.any(break_mask):
+        joint_scores[break_mask] *= STREAM_BREAK_DISCOUNT
+    
     # Apply joint importance weighting
     weighted_scores = joint_scores * JOINT_IMPORTANCE[np.newaxis, :]
     
@@ -697,7 +1039,14 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None, verbose=True):
         glitch_frames=glitch_list,
         glitch_clusters=clusters,
         clean_segments=clean,
+        stream_breaks=stream_breaks,
+        cadence=cadence,
+        motion_profile=motion_profile,
+        ground_contact=ground_contact,
     )
+    
+    # Build multi-dimensional classification
+    report.classification_detail, report.recommendations = _build_classification(report)
     
     if verbose:
         print_report(report)
@@ -787,9 +1136,62 @@ def print_report(r):
     print(f"  {r.n_frames} frames @ {r.fps:.0f} fps ({r.duration_s}s)")
     print(f"{'═' * 72}")
     print(f"  Classification: {ic.get(r.classification)} {r.classification.upper()}")
+    if r.classification_detail:
+        print(f"  Detail:         {r.classification_detail}")
     print(f"  Noise score:    {r.noise_score:.1f} / 100")
     print(f"  Glitch frames:  {r.n_glitch_frames} ({100 * r.glitch_fraction:.2f}%)")
     print(f"  Suspect frames: {r.n_suspect_frames}")
+    
+    # ── Recommendations ────────────────────────────────────────────────
+    if r.recommendations:
+        rec_str = ', '.join(f'{k}={v}' for k, v in r.recommendations.items())
+        print(f"  Recommended:    {rec_str}")
+    
+    # ── Stream breaks ──────────────────────────────────────────────────
+    if r.stream_breaks:
+        print(f"\n  ⚡ Stream breaks: {len(r.stream_breaks)} detected")
+        print(f"    {'Frame':>7s}  {'Time':>6s}  {'Type':>12s}  {'TransJump':>10s}  {'PoseJump':>10s}  Worst Joint")
+        for sb in r.stream_breaks:
+            print(f"    {sb.frame:7d}  {sb.time_s:5.1f}s  {sb.break_type:>12s}  "
+                  f"{sb.trans_jump:9.4f}m  {sb.pose_jump:9.4f}r  {sb.worst_joint}")
+        
+        # Show clean segments between breaks
+        break_frames = sorted(sb.frame for sb in r.stream_breaks)
+        seg_boundaries = [0] + break_frames + [r.n_frames]
+        print(f"\n    Continuous segments between breaks:")
+        for i in range(len(seg_boundaries) - 1):
+            s, e = seg_boundaries[i], seg_boundaries[i + 1]
+            if i < len(seg_boundaries) - 2:
+                e -= 1  # don't include the break frame
+            dur = (e - s) / r.fps
+            if dur > 0:
+                print(f"      [{s:>7d}–{e:>7d}]  {dur:6.1f}s  ({e-s:>6d} frames)")
+    
+    # ── Cadence ────────────────────────────────────────────────────────
+    if r.cadence and r.cadence.detected:
+        print(f"\n  🔄 Cadence: {r.cadence.period}-frame period detected "
+              f"(strength={r.cadence.strength:.2f}, {r.cadence.coverage:.0%} of file)")
+    elif r.cadence and not r.cadence.detected:
+        print(f"\n  ✓  No sub-sampling cadence detected")
+    
+    # ── Motion profile ─────────────────────────────────────────────────
+    if r.motion_profile:
+        mp = r.motion_profile
+        cplx_ic = {'static': '🧘', 'moderate': '🚶', 'dynamic': '🏃', 'explosive': '💥'}
+        print(f"\n  {cplx_ic.get(mp.complexity, '')} Motion: {mp.complexity}")
+        print(f"    Total body angular velocity (rad/s):  "
+              f"mean={mp.mean_vel:.0f}  p50={mp.p50_vel:.0f}  "
+              f"p90={mp.p90_vel:.0f}  p99={mp.p99_vel:.0f}  max={mp.max_vel:.0f}")
+        n_total = mp.n_still + mp.n_active + (mp.n_active)  # approx
+        print(f"    Frame activity:  "
+              f"still={mp.n_still}  active={mp.n_active}  explosive={mp.n_explosive}")
+    
+    # ── Ground contact ─────────────────────────────────────────────────
+    if r.ground_contact and r.ground_contact.ground_pct > 0.05:
+        gc = r.ground_contact
+        print(f"\n  ⬇️  Ground work: {gc.ground_pct:.0%} of file")
+        print(f"    {gc.n_phases} phases, longest={gc.longest_phase_s:.1f}s  "
+              f"standing_h={gc.standing_height:.3f}m  avg_ground_h={gc.avg_ground_height:.3f}m")
     print()
     print(f"  {'Metric':.<24s}  {'Max':>10s}  {'P95':>10s}  {'P99':>10s}")
     print(f"  {'─' * 24}  {'─' * 10}  {'─' * 10}  {'─' * 10}")
