@@ -29,6 +29,8 @@ def register_quaternion_nodes():
     Node.app.register_node('matrix_to_axis_angle', MatrixToAxisAngleNode.factory)
     Node.app.register_node('matrix_to_rotvec', MatrixToAxisAngleNode.factory)
     Node.app.register_node('quaternion_norm', NormalizeQuaternionNode.factory)
+    Node.app.register_node('quaternion_relative', QuaternionRelativeNode.factory)
+    Node.app.register_node('tracker_align', TrackerAlignNode.factory)
 
 
 class QuaternionToEulerNode(Node):
@@ -1028,6 +1030,206 @@ class QuaternionDiffNode(Node):
             diff = F.normalize(diff, p=2, dim=-1)
             self.output.send(diff)
             self.previous = data.clone()
+
+
+class QuaternionRelativeNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = QuaternionRelativeNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.q1_input = self.add_input('q1', triggers_execution=True)
+        self.q2_input = self.add_input('q2')
+        self.output = self.add_output('q_diff')
+
+    def execute(self):
+        q1 = self.q1_input()
+        q2 = self.q2_input()
+        if q1 is None or q2 is None:
+            return
+
+        if type(q1) is not torch.Tensor:
+            q1 = any_to_tensor(q1)
+        if type(q2) is not torch.Tensor:
+            q2 = any_to_tensor(q2)
+
+        if q1.device != q2.device:
+            q2 = q2.to(q1.device)
+
+        if q1.shape[-1] != 4 or q2.shape[-1] != 4:
+            return
+
+        # conjugate of q1: negate imaginary part [w, -x, -y, -z]
+        scaling = torch.tensor([1, -1, -1, -1], dtype=q1.dtype, device=q1.device)
+        q1_inv = q1 * scaling
+
+        # q_diff = q2 * q1_inv (rotation from q1 to q2)
+        q_diff = quaternion_multiply(q2, q1_inv)
+        q_diff = F.normalize(q_diff, p=2, dim=-1)
+        self.output.send(q_diff)
+
+
+class TrackerAlignNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        return TrackerAlignNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.tracker_pos_input = self.add_input('tracker pos', triggers_execution=True)  # [x, y, z]
+        self.tracker_quat_input = self.add_input('tracker quat')  # [x, y, z, w] scalar last
+        self.imu_root_input = self.add_input('imu root quat')  # [w, x, y, z] scalar first
+        self.body_offset_input = self.add_input('body offset')  # [x, y, z] offset from IMU root to tracker in body-local coords
+        self.calibrate_prop = self.add_property('calibrate', widget_type='button', callback=self.do_calibrate)
+        self.continuous_opt = self.add_option('continuous', widget_type='checkbox', default_value=True)
+        self.smoothing_opt = self.add_option('smoothing', widget_type='drag_float', default_value=0.95, min_value=0.0, max_value=0.999)
+
+        self.corrected_pos_output = self.add_output('corrected pos')
+        self.correction_quat_output = self.add_output('correction quat')
+        self.yaw_offset_output = self.add_output('yaw offset')
+
+        self.smoothed_yaw = 0.0
+        self.calibrated_yaw = 0.0
+        self.calibrated = False
+        self.initialized = False
+
+    def do_calibrate(self):
+        self.calibrated_yaw = self.smoothed_yaw
+        self.calibrated = True
+
+    @staticmethod
+    def quat_rotate_vector(q_wxyz, vec):
+        """Rotate a 3D vector by quaternion [w, x, y, z]."""
+        w, x, y, z = q_wxyz[0], q_wxyz[1], q_wxyz[2], q_wxyz[3]
+        R = np.array([
+            [1 - 2 * (y * y + z * z), 2 * (x * y - w * z), 2 * (x * z + w * y)],
+            [2 * (x * y + w * z), 1 - 2 * (x * x + z * z), 2 * (y * z - w * x)],
+            [2 * (x * z - w * y), 2 * (y * z + w * x), 1 - 2 * (x * x + y * y)]
+        ], dtype=np.float64)
+        return R @ vec
+
+    @staticmethod
+    def quat_conjugate(q):
+        """Conjugate of quaternion [w, x, y, z]."""
+        return np.array([q[0], -q[1], -q[2], -q[3]])
+
+    @staticmethod
+    def quat_multiply(a, b):
+        """Hamilton product of two quaternions [w, x, y, z]."""
+        aw, ax, ay, az = a[0], a[1], a[2], a[3]
+        bw, bx, by, bz = b[0], b[1], b[2], b[3]
+        return np.array([
+            aw * bw - ax * bx - ay * by - az * bz,
+            aw * bx + ax * bw + ay * bz - az * by,
+            aw * by - ax * bz + ay * bw + az * bx,
+            aw * bz + ax * by - ay * bx + az * bw
+        ])
+
+    @staticmethod
+    def extract_twist_around_y(q):
+        """Swing-twist decomposition: extract the twist (rotation around Y) from quaternion [w, x, y, z].
+        This is stable regardless of tilt around X or Z axes."""
+        # Project quaternion onto the Y twist axis: keep only w and y components
+        twist = np.array([q[0], 0.0, q[2], 0.0])
+        n = np.linalg.norm(twist)
+        if n < 1e-10:
+            return np.array([1.0, 0.0, 0.0, 0.0])  # identity
+        twist /= n
+        # Standardize so w >= 0
+        if twist[0] < 0:
+            twist = -twist
+        return twist
+
+    @staticmethod
+    def twist_to_angle(twist_quat):
+        """Convert a Y-axis twist quaternion to a signed angle in radians."""
+        return 2.0 * np.arctan2(twist_quat[2], twist_quat[0])
+
+    @staticmethod
+    def wrap_angle(a):
+        """Wrap angle to [-pi, pi]."""
+        return (a + np.pi) % (2 * np.pi) - np.pi
+
+    def execute(self):
+        pos = self.tracker_pos_input()
+        tracker_quat = self.tracker_quat_input()
+        imu_quat = self.imu_root_input()
+
+        if pos is None or tracker_quat is None or imu_quat is None:
+            return
+
+        pos = any_to_array(pos).astype(np.float64).flatten()[:3]
+        tracker_quat = any_to_array(tracker_quat).astype(np.float64).flatten()
+        imu_quat = any_to_array(imu_quat).astype(np.float64).flatten()
+
+        if tracker_quat.size < 4 or imu_quat.size < 4:
+            return
+
+        # Convert tracker quat from [x, y, z, w] scalar-last to [w, x, y, z] scalar-first
+        tracker_wxyz = np.array([tracker_quat[3], tracker_quat[0], tracker_quat[1], tracker_quat[2]])
+
+        # Normalize
+        tracker_wxyz /= np.linalg.norm(tracker_wxyz) + 1e-10
+        imu_wxyz = imu_quat[:4].copy()
+        imu_wxyz /= np.linalg.norm(imu_wxyz) + 1e-10
+
+        # Extract yaw (Y-twist) from each quaternion independently
+        # This is more stable than computing the relative quaternion first,
+        # because the mounting offset between sensors creates a large swing
+        # component in q_rel that destabilizes twist extraction under body tilt.
+        imu_twist = self.extract_twist_around_y(imu_wxyz)
+        tracker_twist = self.extract_twist_around_y(tracker_wxyz)
+
+        imu_yaw = self.twist_to_angle(imu_twist)
+        tracker_yaw = self.twist_to_angle(tracker_twist)
+
+        current_offset = self.wrap_angle(tracker_yaw - imu_yaw)
+
+        # Smooth the offset (handles angle wrapping via angular difference)
+        if not self.initialized:
+            self.smoothed_yaw = current_offset
+            self.initialized = True
+        else:
+            alpha = self.smoothing_opt()
+            diff = self.wrap_angle(current_offset - self.smoothed_yaw)
+            self.smoothed_yaw = self.wrap_angle(self.smoothed_yaw + (1.0 - alpha) * diff)
+
+        # Determine which offset to use
+        if self.continuous_opt():
+            active_offset = self.smoothed_yaw
+        elif self.calibrated:
+            active_offset = self.calibrated_yaw
+        else:
+            active_offset = self.smoothed_yaw
+
+        # Build correction quaternion: rotate around Y by -offset
+        cos_half = np.cos(-active_offset / 2.0)
+        sin_half = np.sin(-active_offset / 2.0)
+        q_correction = np.array([cos_half, 0.0, sin_half, 0.0])
+
+        # Apply yaw correction to tracker position
+        corrected_pos = self.quat_rotate_vector(q_correction, pos)
+
+        # Subtract the spatial offset: the tracker is displaced from the IMU root
+        # in body-local coordinates. Rotate the offset by yaw-only (not full orientation)
+        # so that X stays cleanly left/right and Z stays forward/back relative to heading.
+        body_offset_data = self.body_offset_input()
+        if body_offset_data is not None:
+            body_offset = any_to_array(body_offset_data).astype(np.float64).flatten()[:3]
+            # Use yaw-only: combine the yaw correction with the IMU's own yaw
+            imu_twist = self.extract_twist_around_y(imu_wxyz)
+            heading_quat = self.quat_multiply(q_correction, imu_twist)
+            # Rotate body-local offset by heading only (stays horizontal)
+            world_offset = self.quat_rotate_vector(heading_quat, body_offset)
+            corrected_pos = corrected_pos - world_offset
+
+        self.corrected_pos_output.send(corrected_pos.astype(np.float32))
+        self.correction_quat_output.send(q_correction.astype(np.float32))
+        self.yaw_offset_output.send(float(np.degrees(active_offset)))
 
 
 # def numpy_rotation_6d_to_matrix(d6: torch.Tensor) -> torch.Tensor:

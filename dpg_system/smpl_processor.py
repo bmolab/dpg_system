@@ -331,6 +331,9 @@ class SMPLProcessingOptions:
     
     # --- Filtering / Signal Processing ---
     enable_one_euro_filter: bool = False
+    acc_smooth_window: int = 0   # 0=off, 3/5/7 = Savitzky-Golay derivative window
+    torque_smooth_window: int = 0  # 0=off, 3/5/7 = SG output smoothing window
+    smooth_contact_forces: bool = False  # proximity-adaptive contact force smoothing
     filter_min_cutoff: float = 1.0
     filter_beta: float = 0.0
     
@@ -3279,6 +3282,47 @@ class SMPLProcessor:
         for j in self._fe_prev_contacts:
             if j < len(self._ds_vy_ema) and j not in ds_suppressed:
                 self._ds_vy_ema[j] = 0.0
+        
+        # --- Proximity-adaptive contact force smoothing ---
+        # When contacts are close together, the ZMP lever rule is
+        # ill-conditioned: small ZMP shifts → large force redistribution.
+        # Smooth the force distribution proportional to contact proximity.
+        if getattr(options, 'smooth_contact_forces', False):
+            active_force_joints = [j for j, fv in result.per_contact_force.items() if fv > 0.01]
+            if len(active_force_joints) >= 2:
+                # Minimum pairwise distance between active contacts
+                positions = world_pos[0] if world_pos.ndim > 2 else world_pos
+                min_dist = float('inf')
+                for i_idx in range(len(active_force_joints)):
+                    for j_idx in range(i_idx + 1, len(active_force_joints)):
+                        ji, jj = active_force_joints[i_idx], active_force_joints[j_idx]
+                        if ji < positions.shape[0] and jj < positions.shape[0]:
+                            d = np.linalg.norm(positions[ji] - positions[jj])
+                            min_dist = min(min_dist, d)
+                
+                # Adaptive alpha: close contacts → strong smoothing (low alpha)
+                D_REF = 0.3  # ~30cm — heel-to-foot is ~15-20cm
+                ALPHA_MIN = 0.15  # strongest smoothing (when contacts very close)
+                alpha = max(ALPHA_MIN, min(1.0, min_dist / D_REF))
+                
+                # EMA on force_array, then rescale to preserve total force
+                prev_forces = getattr(self, '_fe_smooth_forces', None)
+                raw_forces = result.force_array.copy()
+                total_raw = np.sum(raw_forces)
+                
+                if prev_forces is not None and prev_forces.shape == raw_forces.shape and total_raw > 0.01:
+                    smoothed = prev_forces + alpha * (raw_forces - prev_forces)
+                    # Rescale to preserve total force
+                    total_smooth = np.sum(smoothed)
+                    if total_smooth > 0.01:
+                        smoothed *= total_raw / total_smooth
+                    result.force_array = smoothed
+                    # Update per_contact_force dict to match
+                    for j in result.per_contact_force:
+                        if j < len(smoothed):
+                            result.per_contact_force[j] = max(0.0, float(smoothed[j]))
+                
+                self._fe_smooth_forces = result.force_array.copy()
         
         self._frame_eval_result = result
 
@@ -6272,16 +6316,66 @@ class SMPLProcessor:
         else:
             smooth_vel = vel
         
-        # 6. Compute acceleration from FILTERED velocity differences
-        prev_vel = getattr(self, name_prev_vel, None)
-        if prev_vel is None or prev_vel.shape != smooth_vel.shape:
-            acc = np.zeros((n_joints, 3))
+        # 6. Compute acceleration from velocity differences
+        # If acc_smooth_window is set, use Savitzky-Golay derivative
+        # over a ring buffer of recent velocities.
+        sg_win = getattr(options, 'acc_smooth_window', 0)
+        if sg_win >= 3:
+            # Cached SG coefficients
+            cache_name = f'_ang_sg_cache{state_suffix}'
+            sg_cache = getattr(self, cache_name, None)
+            if sg_cache is None or sg_cache[0] != sg_win or sg_cache[1] != dt:
+                center = (sg_win - 1) / 2.0
+                denom = sum((k - center) ** 2 for k in range(sg_win)) * dt
+                coeffs = np.array([(k - center) / denom for k in range(sg_win)])
+                setattr(self, cache_name, (sg_win, dt, coeffs))
+            else:
+                coeffs = sg_cache[2]
+            
+            # Numpy ring buffer
+            arr_name = f'_ang_vel_ring_arr{state_suffix}'
+            ptr_name = f'_ang_vel_ring_ptr{state_suffix}'
+            cnt_name = f'_ang_vel_ring_cnt{state_suffix}'
+            ring_arr = getattr(self, arr_name, None)
+            ring_ptr = getattr(self, ptr_name, 0)
+            ring_cnt = getattr(self, cnt_name, 0)
+            
+            if ring_arr is None or ring_arr.shape[0] != sg_win or ring_arr.shape[1:] != smooth_vel.shape:
+                ring_arr = np.zeros((sg_win,) + smooth_vel.shape, dtype=smooth_vel.dtype)
+                ring_ptr = 0
+                ring_cnt = 0
+            
+            ring_arr[ring_ptr] = smooth_vel
+            ring_ptr = (ring_ptr + 1) % sg_win
+            ring_cnt = min(ring_cnt + 1, sg_win)
+            
+            setattr(self, arr_name, ring_arr)
+            setattr(self, ptr_name, ring_ptr)
+            setattr(self, cnt_name, ring_cnt)
+            
+            N = ring_cnt
+            if N >= 3:
+                if N == sg_win:
+                    ordered = np.roll(ring_arr, -ring_ptr, axis=0)
+                else:
+                    ordered = ring_arr[:N]
+                acc = np.tensordot(coeffs[:N], ordered, axes=([0], [0]))
+            else:
+                prev_vel = getattr(self, name_prev_vel, None)
+                if prev_vel is not None and prev_vel.shape == smooth_vel.shape:
+                    acc = (smooth_vel - prev_vel) / dt
+                else:
+                    acc = np.zeros((n_joints, 3))
         else:
-            acc = (smooth_vel - prev_vel) / dt
+            prev_vel = getattr(self, name_prev_vel, None)
+            if prev_vel is None or prev_vel.shape != smooth_vel.shape:
+                acc = np.zeros((n_joints, 3))
+            else:
+                acc = (smooth_vel - prev_vel) / dt
         
         # Update state
         setattr(self, name_prev_composed, composed_q.copy())
-        setattr(self, name_prev_vel, smooth_vel.copy())  # Store FILTERED velocity
+        setattr(self, name_prev_vel, smooth_vel.copy())
         
         # Pack to (1, 24, 3)
         ang_vel_out = np.zeros((1, 24, 3))
@@ -6523,8 +6617,51 @@ class SMPLProcessor:
                 raw_vel.flatten()
             ).reshape(n_joints, 3)
             
-            # Acceleration
-            raw_acc = (smooth_vel - self._com_prev_smooth_vel) / dt
+            # Acceleration: Savitzky-Golay derivative when acc_smooth_window > 0
+            sg_win = getattr(options, 'acc_smooth_window', 0)
+            if sg_win >= 3:
+                # --- Cached SG coefficients (only recomputed when N or dt changes) ---
+                sg_cache = getattr(self, '_com_sg_cache', None)
+                if sg_cache is None or sg_cache[0] != sg_win or sg_cache[1] != dt:
+                    center = (sg_win - 1) / 2.0
+                    denom = sum((k - center) ** 2 for k in range(sg_win)) * dt
+                    coeffs = np.array([(k - center) / denom for k in range(sg_win)])
+                    self._com_sg_cache = (sg_win, dt, coeffs)
+                else:
+                    coeffs = sg_cache[2]
+                
+                # --- Numpy ring buffer (fixed-size array + write pointer) ---
+                ring_arr = getattr(self, '_com_vel_ring_arr', None)
+                ring_ptr = getattr(self, '_com_vel_ring_ptr', 0)
+                ring_cnt = getattr(self, '_com_vel_ring_cnt', 0)
+                
+                if ring_arr is None or ring_arr.shape[0] != sg_win or ring_arr.shape[1:] != smooth_vel.shape:
+                    ring_arr = np.zeros((sg_win,) + smooth_vel.shape, dtype=smooth_vel.dtype)
+                    ring_ptr = 0
+                    ring_cnt = 0
+                
+                ring_arr[ring_ptr] = smooth_vel
+                ring_ptr = (ring_ptr + 1) % sg_win
+                ring_cnt = min(ring_cnt + 1, sg_win)
+                
+                self._com_vel_ring_arr = ring_arr
+                self._com_vel_ring_ptr = ring_ptr
+                self._com_vel_ring_cnt = ring_cnt
+                
+                N = ring_cnt
+                if N >= 3:
+                    # Reorder ring buffer oldest→newest for coefficient alignment
+                    if N == sg_win:
+                        ordered = np.roll(ring_arr, -ring_ptr, axis=0)
+                    else:
+                        # Buffer not full yet: entries 0..ring_ptr-1 are in order
+                        ordered = ring_arr[:N]
+                    # Vectorized: coeffs[:N] · ordered → (J, 3)
+                    raw_acc = np.tensordot(coeffs[:N], ordered, axes=([0], [0]))
+                else:
+                    raw_acc = (smooth_vel - self._com_prev_smooth_vel) / dt
+            else:
+                raw_acc = (smooth_vel - self._com_prev_smooth_vel) / dt
             
             # Acceleration: filter or pass-through
             acc = raw_acc if skip_acc else self._com_acc_filter(
@@ -6682,42 +6819,52 @@ class SMPLProcessor:
             _frame_cache['inertias'] = inertias
             _frame_cache['t_dyn_raw'] = t_dyn_raw
         
-        # --- Update Velocity Envelope (for gating after rate limiting) ---
-        # Track the per-joint velocity envelope BEFORE rate limiting
-        # so it accurately reflects actual motion, but apply the gate AFTER
-        # rate limiting to avoid cascading suppression (gate zeroes quiet
-        # frames → rate limiter can't ramp up from zero fast enough).
-        VEL_GATE_SIGMA = 0.5    # rad/s — gate at 50% when envelope ≈ 29°/s
-        VEL_ENVELOPE_TAU = 0.10  # seconds — envelope decay time constant
+        # --- Velocity Envelope (for adaptive dynamic torque smoothing) ---
+        # Track per-joint angular velocity envelope. Used to set an adaptive
+        # EMA alpha: low velocity → heavy smoothing (suppress noise on
+        # stationary joints), high velocity → pass-through (preserve genuine
+        # motion). No hard gate — continuous shading via tanh ramp.
+        VEL_REF = 0.5           # rad/s — velocity at which smoothing is ~76% off
+        ALPHA_MIN = 0.08        # EMA alpha floor (strongest smoothing when still)
+        VEL_SMOOTH_ALPHA = 0.05 # EMA alpha for velocity tracking (slow, rejects spikes)
+        VEL_CAP = 3.0           # rad/s — cap per-frame velocity to reject glitches
         
-        ang_vel_for_gate = getattr(self, '_current_ang_vel', None)
-        vel_gate = None  # (target_joint_count,) gate values, computed now, applied later
+        # Use local-frame angular velocity (each joint's own rotation change)
+        # rather than world-frame (which includes inherited parent rotation).
+        # Local velocity gives true near-zero for stationary joints.
+        ang_vel_for_gate = getattr(self, '_local_ang_vel', None)
+        if ang_vel_for_gate is None:
+            ang_vel_for_gate = getattr(self, '_current_ang_vel', None)
+        vel_alpha = None  # (target_joint_count,) per-joint EMA alpha
         if ang_vel_for_gate is not None:
             if ang_vel_for_gate.ndim == 2:
                 ang_vel_for_gate = ang_vel_for_gate[np.newaxis, ...]
             
-            # Initialize or retrieve the velocity envelope
+            # Initialize or retrieve the smoothed velocity envelope
             if not hasattr(self, '_vel_envelope') or self._vel_envelope is None:
                 self._vel_envelope = np.zeros(self.target_joint_count)
             if self._vel_envelope.shape[0] != self.target_joint_count:
                 self._vel_envelope = np.zeros(self.target_joint_count)
             
-            gate_dt = options.dt if hasattr(options, 'dt') and options.dt > 0 else 1.0 / max(self.framerate, 1.0)
-            decay = np.exp(-gate_dt / VEL_ENVELOPE_TAU)  # ~0.920 at 120fps, ~0.717 at 30fps
-            
-            vel_gate = np.ones(self.target_joint_count)
+            vel_alpha = np.ones(self.target_joint_count)
             for j in range(self.target_joint_count):
-                vel_mag = np.linalg.norm(ang_vel_for_gate[:F, j, :], axis=-1)  # (F,)
+                vel_mag = np.linalg.norm(ang_vel_for_gate[:F, j, :], axis=-1)
                 for fi in range(F):
-                    # Leaky max: rise instantly, decay slowly
-                    self._vel_envelope[j] = max(vel_mag[fi], self._vel_envelope[j] * decay)
+                    # Cap extreme single-frame spikes before EMA to prevent
+                    # rare glitches (e.g., 22 rad/s during standing) from
+                    # inflating the envelope for many subsequent frames.
+                    v_capped = min(vel_mag[fi], VEL_CAP)
+                    # EMA-smoothed velocity: averages out noise spikes instead
+                    # of peaking on them. Tracks sustained motion accurately.
+                    self._vel_envelope[j] += VEL_SMOOTH_ALPHA * (v_capped - self._vel_envelope[j])
                 
-                vel_gate[j] = 1.0 - np.exp(-(self._vel_envelope[j] / VEL_GATE_SIGMA) ** 2)
+                # Smooth ramp: tanh gives gradual transition, no sharp edge
+                vel_frac = np.tanh(self._vel_envelope[j] / VEL_REF)
+                vel_alpha[j] = ALPHA_MIN + (1.0 - ALPHA_MIN) * vel_frac
         
         # --- Apply Rate Limiting to Raw Dynamic Torques ---
         if dyn_override_world is not None:
             # CoM-based dynamic torque provided — convert from world to local frame
-            # and skip I×α rate limiting and velocity gate entirely.
             n_override = min(self.target_joint_count, dyn_override_world.shape[1])
             t_dyn_limited = np.zeros_like(t_dyn_raw)
             parents_list = self._get_hierarchy()
@@ -6733,14 +6880,21 @@ class SMPLProcessor:
             t_dyn_limited = t_dyn_raw.copy()
         else:
             t_dyn_limited = self._apply_torque_rate_limiting(t_dyn_raw, options)
-            
-            # --- Apply Velocity Gate (post rate-limiting) ---
-            # Suppress dynamic torque when angular velocity is near-zero (stationary
-            # joints). Applied AFTER rate limiting so the rate limiter can ramp up
-            # properly during motion onset from the raw signal.
-            if vel_gate is not None and getattr(options, 'enable_velocity_gate', True):
+        
+        # --- Velocity-Adaptive Dynamic Torque Smoothing ---
+        # Applied to ALL paths (CoM and I×α). Instead of gating (which cuts),
+        # this smooths: at low velocity, dynamic torque changes slowly via
+        # heavy EMA. At high velocity, it passes through nearly unmodified.
+        if vel_alpha is not None and getattr(options, 'enable_velocity_gate', False):
+            if not hasattr(self, '_vel_smooth_dyn') or self._vel_smooth_dyn is None:
+                self._vel_smooth_dyn = t_dyn_limited.copy()
+            elif self._vel_smooth_dyn.shape != t_dyn_limited.shape:
+                self._vel_smooth_dyn = t_dyn_limited.copy()
+            else:
                 for j in range(min(self.target_joint_count, t_dyn_limited.shape[1])):
-                    t_dyn_limited[:, j, :] *= vel_gate[j]
+                    a = vel_alpha[j]
+                    self._vel_smooth_dyn[:, j, :] += a * (t_dyn_limited[:, j, :] - self._vel_smooth_dyn[:, j, :])
+                t_dyn_limited = self._vel_smooth_dyn.copy()
         
         # --- PASS 2: Compute Net Torques, Passive, and Efforts using Limited Dynamic ---
         # Vectorized world-to-local frame transform using cached numpy rotation matrices
@@ -7341,10 +7495,12 @@ class SMPLProcessor:
             )
             ang_acc = ang_acc_world
             self._current_ang_vel = ang_vel_world  # World-frame velocity for gating
+            self._local_ang_vel = ang_vel_local     # Local velocity for vel-adaptive smoothing
         else:
             # Legacy local-frame: parent-relative angular acceleration
             ang_acc = ang_acc_local
             self._current_ang_vel = ang_vel_local  # Local velocity for gating
+            self._local_ang_vel = ang_vel_local     # Same as above when local mode
         
         # --- Angular Kinematics (Dual Path: Effort) ---
         ang_acc_for_effort = ang_acc # Default to main path
@@ -7771,7 +7927,53 @@ class SMPLProcessor:
         # --- Balance Stability ---
         balance = self._compute_balance_stability(world_pos, tips, options)
 
-        # --- Output Dictionary ---
+        # --- SG Output Smoothing ---
+        # Apply Savitzky-Golay smoothing (zeroth derivative, quadratic fit)
+        # to the final active torque. Smooths ALL flicker sources (gravity,
+        # contact, dynamic) in one pass without affecting upstream physics.
+        tsw = getattr(options, 'torque_smooth_window', 0)
+        if tsw >= 3 and F == 1:
+            # Cached SG smoothing coefficients (quadratic fit, right-edge evaluation)
+            sg_s_cache = getattr(self, '_torque_sg_smooth_cache', None)
+            if sg_s_cache is None or sg_s_cache[0] != tsw:
+                x = np.arange(tsw) - (tsw - 1)  # oldest = -(N-1), newest = 0
+                V = np.column_stack([np.ones(tsw), x])  # linear fit
+                # Row 0 of pseudoinverse = weights for constant term at x=0
+                sg_coeffs = np.linalg.pinv(V)[0]
+                self._torque_sg_smooth_cache = (tsw, sg_coeffs)
+            else:
+                sg_coeffs = sg_s_cache[1]
+            
+            # Ring buffer for torque vectors
+            t_ring = getattr(self, '_torque_ring_arr', None)
+            t_ptr = getattr(self, '_torque_ring_ptr', 0)
+            t_cnt = getattr(self, '_torque_ring_cnt', 0)
+            
+            tv_shape = torques_vec[0].shape  # (J, 3)
+            if t_ring is None or t_ring.shape[0] != tsw or t_ring.shape[1:] != tv_shape:
+                t_ring = np.zeros((tsw,) + tv_shape, dtype=torques_vec.dtype)
+                t_ptr = 0
+                t_cnt = 0
+            
+            t_ring[t_ptr] = torques_vec[0]
+            t_ptr = (t_ptr + 1) % tsw
+            t_cnt = min(t_cnt + 1, tsw)
+            
+            self._torque_ring_arr = t_ring
+            self._torque_ring_ptr = t_ptr
+            self._torque_ring_cnt = t_cnt
+            
+            if t_cnt >= 3:
+                if t_cnt == tsw:
+                    ordered = np.roll(t_ring, -t_ptr, axis=0)
+                else:
+                    ordered = t_ring[:t_cnt]
+                    # Recompute coeffs for partial window
+                    x = np.arange(t_cnt) - (t_cnt - 1)
+                    V = np.column_stack([np.ones(t_cnt), x])  # linear fit
+                    sg_coeffs = np.linalg.pinv(V)[0]
+                torques_vec = np.tensordot(sg_coeffs[:t_cnt], ordered, axes=([0], [0]))[np.newaxis]
+
         # --- Output Dictionary ---
         res = {
             'pose': output_quats if options.return_quats else pose_data_aa[:, :self.target_joint_count, :],

@@ -122,57 +122,52 @@ class ViveTrackerNode(Node):
 
         try:
             device = ViveTrackerNode.open_vr.devices[self.tracker_device_name]
+            if device is not None:
+                if self.output_format_in() == 'quaternion':
+                    orientation = device.get_pose_quaternion()
+                    if orientation is not None:
+                        self.orientation = any_to_array(orientation[3:])
+                        self.position = any_to_array(orientation[:3])
+                        self.orientation_out.send(self.orientation)
+                        self.position_out.send(self.position)
+                        if not self.connected:
+                            self.connected = True
+                            self.connected_out.send(1)
+                    else:
+                        if self.connected:
+                            self.connected = False
+                            self.connected_out.send(0)
+                elif self.output_format_in() == 'euler':
+                    orientation = device.get_pose_euler()
+                    if orientation is not None:
+                        self.orientation = any_to_array(orientation[3:])
+                        self.position = any_to_array(orientation[:3])
+                        if self.previous_orientation is not None:
+                            if self.previous_orientation[0] - self.orientation[0] > 180:
+                                self.orientation[0] += 360
+                            elif self.previous_orientation[0] - self.orientation[0] < -180:
+                                self.orientation[0] -= 360
+                            if self.previous_orientation[1] - self.orientation[1] > 180:
+                                self.orientation[1] += 360
+                            elif self.previous_orientation[1] - self.orientation[1] < -180:
+                                self.orientation[1] -= 360
+                            if self.previous_orientation[2] - self.orientation[2] > 180:
+                                self.orientation[2] += 360
+                            elif self.previous_orientation[2] - self.orientation[2] < -180:
+                                self.orientation[2] -= 360
+                        self.previous_orientation = self.orientation
+                        self.orientation_out.send(self.orientation)
+                        self.position_out.send(self.position)
 
-            if self.output_format_in() == 'quaternion':
-                orientation = device.get_pose_quaternion()
-                if orientation is not None:
-                    self.orientation = any_to_array(orientation[3:])
-                    self.position = any_to_array(orientation[:3])
-                    self.orientation_out.send(self.orientation)
-                    self.position_out.send(self.position)
-                    if not self.connected:
-                        self.connected = True
-                        self.connected_out.send(1)
-                else:
-                    if self.connected:
-                        self.connected = False
-                        self.connected_out.send(0)
-            elif self.output_format_in() == 'euler':
-                orientation = device.get_pose_euler()
-                if orientation is not None:
-                    self.orientation = any_to_array(orientation[3:])
-                    self.position = any_to_array(orientation[:3])
-                    if self.previous_orientation is not None:
-                        if self.previous_orientation[0] - self.orientation[0] > 180:
-                            self.orientation[0] += 360
-                        elif self.previous_orientation[0] - self.orientation[0] < -180:
-                            self.orientation[0] -= 360
-                        if self.previous_orientation[1] - self.orientation[1] > 180:
-                            self.orientation[1] += 360
-                        elif self.previous_orientation[1] - self.orientation[1] < -180:
-                            self.orientation[1] -= 360
-                        if self.previous_orientation[2] - self.orientation[2] > 180:
-                            self.orientation[2] += 360
-                        elif self.previous_orientation[2] - self.orientation[2] < -180:
-                            self.orientation[2] -= 360
-                    self.previous_orientation = self.orientation
-                    self.orientation_out.send(self.orientation)
-                    self.position_out.send(self.position)
-
-    # def execute(self):
-    #     if self.enable_in():
-    #         if not self.has_frame_task:
-    #             self.add_frame_task()
-    #     else:
-    #         if self.has_frame_task:
-    #             self.remove_frame_tasks()
-                    if not self.connected:
-                        self.connected = True
-                        self.connected_out.send(1)
-                else:
-                    if self.connected:
-                        self.connected = False
-                        self.connected_out.send(0)
+                        if not self.connected:
+                            self.connected = True
+                            self.connected_out.send(1)
+                    else:
+                        if self.connected:
+                            self.connected = False
+                            self.connected_out.send(0)
+            else:
+                print('tracker not found')
         except (ZeroDivisionError, KeyError, Exception) as e:
             # ZeroDivisionError: degenerate pose matrix (r_w == 0 in quaternion conversion)
             # KeyError: device removed from dict between our check and access

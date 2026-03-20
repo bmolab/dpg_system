@@ -237,7 +237,9 @@ class MGLBodyNode(MGLNode):
             joint_data = joint_data.flatten()
         
         # Data arrives in body t_ index order (smpl_to_active outputs proper indices)
-        full_data = np.zeros(num_joints, dtype=np.float32)
+        temp_shape = list(joint_data.shape)
+        temp_shape[0] = num_joints
+        full_data = np.zeros(temp_shape, dtype=np.float32)
         for i in range(min(num_joints, len(joint_data))):
             full_data[i] = joint_data[i]
 

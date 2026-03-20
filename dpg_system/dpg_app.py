@@ -1,3 +1,7 @@
+# Suppress HuggingFace tokenizers fork warning (triggered by cv2.VideoCapture on macOS)
+import os
+os.environ['TOKENIZERS_PARALLELISM'] = 'false'
+
 # import dearpygui.dearpygui as dpg
 import time
 import numpy as np

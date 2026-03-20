@@ -49,6 +49,8 @@ def register_moderngl_nodes():
     Node.app.register_node('mgl_torque_arc', MGLTorqueArcNode.factory)
     Node.app.register_node('mgl_smpl_mesh', MGLSMPLMeshNode.factory)
     Node.app.register_node('mgl_smpl_heatmap', MGLSMPLHeatmapNode.factory)
+    Node.app.register_node('mgl_orientation_disks', MGLOrientationDisksNode.factory)
+    Node.app.register_node('mgl_body_orientation', MGLBodyOrientationNode.factory)
 
 
 class MGLNode(Node):
@@ -2675,7 +2677,7 @@ class MGLQuaternionRotateNode(MGLTransformNode):
                 # Build 4x4 rotation matrix from quaternion
                 transform = quaternion_to_R3_rotation(input_)
                 # quaternion_to_R3_rotation returns a flat 16-element list (row-major for legacy GL)
-                mat = np.array(transform, dtype=np.float32).reshape(4, 4).T  # transpose for our column-major convention
+                mat = np.array(transform, dtype=np.float32).reshape(4, 4)  # already correct row-major R
                 self.ctx.multiply_matrix(mat)
 
 
@@ -3271,6 +3273,334 @@ class MGLCameraNode(MGLNode):
             # in the chain for View/Proj to be set for them.
             pass
 
+class MGLOrientationDisksNode(MGLNode):
+    """Renders N independently-oriented annular disks with emissive (unlit) colors.
+
+    Replicates the legacy gl_orientation_disks node using moderngl.
+    Each disk is oriented by an axis-angle vector and rendered as an annular ring
+    whose outer radius is proportional to the angle magnitude.
+
+    Performance: uses instanced rendering. A unit annular ring is built once on
+    the GPU; each frame only a small per-instance buffer (model matrix + color)
+    is uploaded, and all disks are drawn in a single instanced draw call.
+    """
+
+    _default_colors = [
+        [0.0, 0.4, 1.0, 0.5],
+        [0.0, 1.0, 1.0, 0.5],
+        [0.0, 1.0, 0.2, 0.5],
+        [1.0, 1.0, 0.0, 0.5],
+        [1.0, 0.5, 0.0, 0.5],
+        [1.0, 0.0, 0.0, 0.5],
+        [0.9, 0.0, 1.0, 0.5],
+    ]
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return MGLOrientationDisksNode(name, data, args)
+
+    def __init__(self, label, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        super().initialize(args)
+
+        self.count = 6
+        if len(args) > 0:
+            self.count = int(args[0])
+
+        scale = 0.5
+        if len(args) > 1:
+            scale = float(args[1])
+        slices = 32
+        if len(args) > 2:
+            slices = int(args[2])
+
+        self.scale_input = self.add_input('scale', widget_type='drag_float', default_value=scale, speed=0.01)
+        self.slices_input = self.add_input('slices', widget_type='drag_int', default_value=slices, min_value=6, max_value=128, callback=self._invalidate_ring)
+        self.ring_width_input = self.add_input('ring_width', widget_type='drag_float', default_value=0.1, speed=0.01, callback=self._invalidate_ring)
+        self.axis_angle_input = self.add_input('axis-angle', triggers_execution=True)
+
+        self.color_inputs = []
+        self.colors = np.zeros((self.count, 4), dtype=np.float32)
+        for i in range(self.count):
+            default_c = self._default_colors[i % len(self._default_colors)]
+            self.colors[i] = np.array(default_c, dtype=np.float32)
+            self.color_inputs.append(
+                self.add_input('color ' + str(i), callback=self.colors_changed)
+            )
+
+        self.axis_angles = np.zeros((self.count, 4), dtype=np.float32)
+
+        # GPU resources (lazily created)
+        self._shader = None
+        self._ring_vbo = None       # unit ring geometry (stays on GPU)
+        self._ring_ibo = None       # index buffer for the ring
+        self._inst_vbo = None       # per-instance data (updated each frame)
+        self._vao = None
+        self._ring_vertex_count = 0
+        self._ring_index_count = 0
+        self._built_slices = 0
+        self._built_width = 0.0
+        self._inst_buf_capacity = 0  # current capacity of _inst_vbo in instances
+
+    def colors_changed(self):
+        for i in range(self.count):
+            val = self.color_inputs[i]()
+            if val is not None:
+                val = any_to_array(val)
+                if val.ndim == 1 and val.shape[0] == 4:
+                    self.colors[i] = val.astype(np.float32)
+
+    def _invalidate_ring(self):
+        """Called when slices or ring_width change — forces ring rebuild."""
+        self._vao = None
+        if self._ring_vbo is not None:
+            self._ring_vbo.release()
+            self._ring_vbo = None
+        if self._ring_ibo is not None:
+            self._ring_ibo.release()
+            self._ring_ibo = None
+
+    def _get_shader(self):
+        """Instanced shader: per-vertex position from unit ring, per-instance
+        model matrix (mat4 = 4 vec4 attribute slots) and color (vec4)."""
+        if self._shader is not None:
+            return self._shader
+        ctx = MGLContext.get_instance().ctx
+        self._shader = ctx.program(
+            vertex_shader='''
+                #version 330
+                uniform mat4 V;
+                uniform mat4 P;
+
+                // Per-vertex (from unit ring)
+                in vec3 in_position;
+
+                // Per-instance (model matrix as 4 column vectors + color)
+                in vec4 inst_m0;
+                in vec4 inst_m1;
+                in vec4 inst_m2;
+                in vec4 inst_m3;
+                in vec4 inst_color;
+
+                out vec4 v_color;
+
+                void main() {
+                    mat4 M = mat4(inst_m0, inst_m1, inst_m2, inst_m3);
+                    gl_Position = P * V * M * vec4(in_position, 1.0);
+                    v_color = inst_color;
+                }
+            ''',
+            fragment_shader='''
+                #version 330
+                in vec4 v_color;
+                out vec4 f_color;
+                void main() {
+                    f_color = v_color;
+                }
+            '''
+        )
+        return self._shader
+
+    def _build_unit_ring(self, slices, ring_width_frac):
+        """Build a unit annular ring (outer_r=1, inner_r=1-width_frac) in the XY plane.
+        Double-sided. Stored as indexed triangles. Only rebuilt when slices/width change."""
+        inner_r = max(0.0, 1.0 - ring_width_frac)
+        outer_r = 1.0
+
+        # Pre-compute all angles with numpy
+        angles = np.linspace(0, 2.0 * math.pi, slices + 1, dtype=np.float32)  # last == first
+        cos_a = np.cos(angles[:slices])
+        sin_a = np.sin(angles[:slices])
+
+        # Inner ring vertices: [x, y, 0]
+        inner_verts = np.stack([inner_r * cos_a, inner_r * sin_a, np.zeros(slices, dtype=np.float32)], axis=1)
+        # Outer ring vertices: [x, y, 0]
+        outer_verts = np.stack([outer_r * cos_a, outer_r * sin_a, np.zeros(slices, dtype=np.float32)], axis=1)
+
+        # Interleave: [inner0, outer0, inner1, outer1, ...]
+        verts = np.empty((slices * 2, 3), dtype=np.float32)
+        verts[0::2] = inner_verts
+        verts[1::2] = outer_verts
+        self._ring_vertex_count = slices * 2
+
+        # Indices for front face
+        s = np.arange(slices, dtype=np.int32)
+        s_next = (s + 1) % slices
+        inner_idx = s * 2
+        outer_idx = s * 2 + 1
+        next_inner = s_next * 2
+        next_outer = s_next * 2 + 1
+
+        # Front face (CCW): two triangles per segment
+        front = np.column_stack([inner_idx, next_inner, outer_idx,
+                                  outer_idx, next_inner, next_outer]).reshape(-1)
+        # Back face (reversed winding)
+        back_offset = slices * 2
+        back = np.column_stack([inner_idx + back_offset, outer_idx + back_offset, next_inner + back_offset,
+                                 outer_idx + back_offset, next_outer + back_offset, next_inner + back_offset]).reshape(-1)
+
+        indices = np.concatenate([front, back]).astype(np.int32)
+
+        # Duplicate verts for back face (same positions)
+        all_verts = np.vstack([verts, verts])
+
+        self._ring_index_count = len(indices)
+        self._built_slices = slices
+        self._built_width = ring_width_frac
+
+        return all_verts, indices
+
+    def _ensure_ring(self, inner_ctx, slices, ring_width_frac):
+        """Ensure the unit ring VBO/IBO exists and matches current params."""
+        if (self._ring_vbo is not None and
+                self._built_slices == slices and
+                abs(self._built_width - ring_width_frac) < 1e-6):
+            return  # already up to date
+
+        # Release old
+        if self._ring_vbo is not None:
+            self._ring_vbo.release()
+        if self._ring_ibo is not None:
+            self._ring_ibo.release()
+        self._vao = None  # must rebuild VAO
+
+        verts, indices = self._build_unit_ring(slices, ring_width_frac)
+        self._ring_vbo = inner_ctx.buffer(verts.tobytes())
+        self._ring_ibo = inner_ctx.buffer(indices.tobytes())
+
+    def _ensure_vao(self, inner_ctx, prog, num_instances):
+        """Build or rebuild the VAO with instanced attributes."""
+        # Per-instance data: mat4 (4×vec4 = 16 floats) + vec4 color (4 floats) = 20 floats
+        inst_floats = num_instances * 20
+        inst_bytes = inst_floats * 4
+
+        if self._inst_vbo is None or self._inst_buf_capacity < num_instances:
+            if self._inst_vbo is not None:
+                self._inst_vbo.release()
+            # Allocate with some headroom
+            capacity = max(num_instances, 16)
+            self._inst_vbo = inner_ctx.buffer(reserve=capacity * 20 * 4)
+            self._inst_buf_capacity = capacity
+            self._vao = None  # must rebuild
+
+        if self._vao is None:
+            self._vao = inner_ctx.vertex_array(prog, [
+                (self._ring_vbo, '3f', 'in_position'),
+                (self._inst_vbo, '4f 4f 4f 4f 4f/i', 'inst_m0', 'inst_m1', 'inst_m2', 'inst_m3', 'inst_color'),
+            ], self._ring_ibo)
+
+    def draw(self):
+        if self.ctx is None:
+            return
+
+        inner_ctx = self.ctx.ctx
+        prog = self._get_shader()
+
+        # Read axis-angle data
+        aa_data = self.axis_angle_input()
+        if aa_data is not None:
+            self.axis_angles = any_to_array(aa_data).astype(np.float32)
+
+        scale = self.scale_input()
+        slices = max(6, self.slices_input())
+        ring_width_frac = max(0.01, min(self.ring_width_input(), 1.0))
+
+        # Ensure unit ring geometry is on the GPU
+        self._ensure_ring(inner_ctx, slices, ring_width_frac)
+
+        up_vector = np.array([0.0, 0.0, 1.0])
+        model_base = self.ctx.get_model_matrix()
+
+        # Build per-instance data: [mat4 (16f) | color (4f)] per disk
+        # Pre-allocate for max count
+        inst_data = np.empty((self.count, 20), dtype=np.float32)
+        num_visible = 0
+
+        for i in range(self.count):
+            if i >= self.axis_angles.shape[0]:
+                break
+
+            axis = self.axis_angles[i]
+
+            if axis.shape[0] == 3:
+                angle = np.linalg.norm(axis)
+                if angle < 1e-6:
+                    continue
+                direction = axis / angle
+                size = angle * scale
+            elif axis.shape[0] == 4:
+                direction = axis[:3]
+                norm = np.linalg.norm(direction)
+                if norm < 1e-6:
+                    continue
+                direction = direction / norm
+                size = axis[3] * scale
+            else:
+                continue
+
+            if size < 1e-6:
+                continue
+
+            # Orientation matrix (aligns Z to direction)
+            orient_flat = rotation_matrix_from_vectors(up_vector, direction)
+            orient_4x4 = np.array(orient_flat, dtype=np.float32).reshape(4, 4)
+
+            # Scale the ring by 'size' (outer_r = size, ring is unit so multiply by size)
+            scale_mat = np.diag([size, size, size, 1.0]).astype(np.float32)
+
+            # Combined: model_base @ orient @ scale
+            combined = model_base @ orient_4x4 @ scale_mat
+
+            # Store column-major for GLSL mat4 (transpose of row-major numpy)
+            inst_data[num_visible, :16] = combined.T.flatten()
+            inst_data[num_visible, 16:20] = self.colors[i]
+            num_visible += 1
+
+        if num_visible == 0:
+            return
+
+        # Upload instance data
+        self._ensure_vao(inner_ctx, prog, num_visible)
+        self._inst_vbo.write(inst_data[:num_visible].tobytes())
+
+        # Set uniforms
+        if 'V' in prog:
+            prog['V'].write(self.ctx.view_matrix.tobytes())
+        if 'P' in prog:
+            prog['P'].write(self.ctx.projection_matrix.tobytes())
+
+        # Render
+        inner_ctx.enable(moderngl.BLEND)
+        inner_ctx.disable(moderngl.CULL_FACE)
+
+        self._vao.render(moderngl.TRIANGLES, instances=num_visible)
+
+        inner_ctx.enable(moderngl.CULL_FACE)
+
+    def custom_cleanup(self):
+        for buf in (self._ring_vbo, self._ring_ibo, self._inst_vbo):
+            if buf is not None:
+                buf.release()
+        if self._vao is not None:
+            self._vao.release()
+
+    def save_custom(self, container):
+        for i in range(self.count):
+            name = 'color_' + str(i)
+            container[name] = list(self.colors[i].tolist())
+
+    def load_custom(self, container):
+        for i in range(self.count):
+            name = 'color_' + str(i)
+            if name in container:
+                self.colors[i] = np.array(container[name], dtype=np.float32)
+                self.color_inputs[i].set(self.colors[i])
+        self.colors_changed()
+
+
 from dpg_system.mgl_body_node import MGLBodyNode
 from dpg_system.mgl_smpl_mesh_node import MGLSMPLMeshNode
 from dpg_system.mgl_smpl_heatmap_node import MGLSMPLHeatmapNode
+from dpg_system.mgl_body_orientation_node import MGLBodyOrientationNode

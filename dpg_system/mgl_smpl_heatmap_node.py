@@ -548,20 +548,27 @@ class MGLSMPLHeatmapNode(Node):
         self.torques_input = self.add_input('torques')
         self.config_input = self.add_input('config', triggers_execution=True)
 
-        self.max_torque_prop = self.add_option('max torque', widget_type='drag_float',
+        self.max_torque_prop = self.add_input('max torque', widget_type='drag_float',
                                                 default_value=50.0, speed=1.0)
+        self.color_mode_prop = self.add_input('color mode', widget_type='combo', default_value='heatmap')
+        self.color_mode_prop.widget.combo_items = ['heatmap', 'grayscale', 'hot', 'viridis', 'viridis_bright']
+        self.lighting_mode_prop = self.add_input('lighting', widget_type='combo', default_value='diffuse')
+        self.lighting_mode_prop.widget.combo_items = ['diffuse', 'emissive']
+        self.ambient_prop = self.add_input('ambient', widget_type='drag_float',
+                                            default_value=0.45, speed=0.01)
+        self.gender_prop = self.add_input('gender', widget_type='combo', default_value='male')
+        self.gender_prop.widget.combo_items = ['male', 'female']
+        self.model_path_prop = self.add_input('model_path', widget_type='text_input',
+                                                  default_value='dpg_system/')
+        self.up_axis_prop = self.add_input('up_axis', widget_type='combo', default_value='Y')
+        self.up_axis_prop.widget.combo_items = ['Y', 'Z']
+
         self.opacity_prop = self.add_option('opacity', widget_type='drag_float',
                                              default_value=0.5, speed=0.01)
         self.min_opacity_prop = self.add_option('min opacity', widget_type='drag_float',
                                                  default_value=0.15, speed=0.01)
         self.weight_mode_prop = self.add_option('weight mode', widget_type='combo', default_value='muscle')
         self.weight_mode_prop.widget.combo_items = ['muscle', 'muscle_v2', 'muscle_v3', 'muscle_v4', 'iso directional', 'iso proximity', 'directional', 'proximity', 'skinning']
-        self.color_mode_prop = self.add_option('color mode', widget_type='combo', default_value='heatmap')
-        self.color_mode_prop.widget.combo_items = ['heatmap', 'grayscale', 'hot', 'viridis']
-        self.lighting_mode_prop = self.add_option('lighting', widget_type='combo', default_value='diffuse')
-        self.lighting_mode_prop.widget.combo_items = ['diffuse', 'emissive']
-        self.ambient_prop = self.add_option('ambient', widget_type='drag_float',
-                                            default_value=0.45, speed=0.01)
         self.spread_prop = self.add_option('spread', widget_type='drag_float',
                                            default_value=0.08, speed=0.005)
         self.edge_threshold_prop = self.add_option('edge threshold', widget_type='drag_float',
@@ -571,12 +578,6 @@ class MGLSMPLHeatmapNode(Node):
         self.muscle_offset_prop = self.add_option('muscle offset', widget_type='drag_float',
                                                    default_value=0.4, speed=0.01)
         self.normalize_prop = self.add_option('normalize', widget_type='checkbox', default_value=True)
-        self.gender_prop = self.add_property('gender', widget_type='combo', default_value='male')
-        self.gender_prop.widget.combo_items = ['male', 'female']
-        self.model_path_prop = self.add_property('model_path', widget_type='text_input',
-                                                  default_value='.')
-        self.up_axis_prop = self.add_property('up_axis', widget_type='combo', default_value='Y')
-        self.up_axis_prop.widget.combo_items = ['Y', 'Z']
 
         self.gl_output = self.add_output('gl chain out')
 
@@ -705,7 +706,7 @@ class MGLSMPLHeatmapNode(Node):
                     uniform float u_max_torque;
                     uniform float u_opacity;
                     uniform float u_min_opacity;
-                    uniform int u_color_mode;        // 0=heatmap, 1=grayscale, 2=hot, 3=viridis
+                    uniform int u_color_mode;        // 0=heatmap, 1=grayscale, 2=hot, 3=viridis, 4=viridis_bright
                     uniform int u_n_muscles;
                     uniform int u_atlas_width;       // texture width (n_muscles)
 
@@ -746,6 +747,12 @@ class MGLSMPLHeatmapNode(Node):
                         }}
                     }}
 
+                    vec3 colormap_viridis_bright(float t) {{
+                        // Gamma remap to boost small values into visible range
+                        t = pow(clamp(t, 0.0, 1.0), 0.4);
+                        return colormap_viridis(t);
+                    }}
+
                     void main() {{
                         vec4 world_pos = M * vec4(in_position, 1.0);
                         gl_Position = P * V * world_pos;
@@ -782,6 +789,7 @@ class MGLSMPLHeatmapNode(Node):
                         if (u_color_mode == 1) col = vec3(t);           // grayscale
                         else if (u_color_mode == 2) col = colormap_hot(t);     // hot
                         else if (u_color_mode == 3) col = colormap_viridis(t); // viridis
+                        else if (u_color_mode == 4) col = colormap_viridis_bright(t); // viridis_bright
                         else col = colormap_heatmap(t);                        // heatmap
 
                         // Alpha
@@ -1625,7 +1633,7 @@ class MGLSMPLHeatmapNode(Node):
         if 'u_n_muscles' in prog:
             prog['u_n_muscles'].value = n_muscles
 
-        color_modes = {'heatmap': 0, 'grayscale': 1, 'hot': 2, 'viridis': 3}
+        color_modes = {'heatmap': 0, 'grayscale': 1, 'hot': 2, 'viridis': 3, 'viridis_bright': 4}
         if 'u_color_mode' in prog:
             prog['u_color_mode'].value = color_modes.get(self.color_mode_prop(), 0)
 
@@ -1740,7 +1748,7 @@ class MGLSMPLHeatmapNode(Node):
         if 'u_n_muscles' in prog:
             prog['u_n_muscles'].value = n_muscles
 
-        color_modes = {'heatmap': 0, 'grayscale': 1, 'hot': 2, 'viridis': 3}
+        color_modes = {'heatmap': 0, 'grayscale': 1, 'hot': 2, 'viridis': 3, 'viridis_bright': 4}
         cm = color_modes.get(self.color_mode_prop(), 0)
         if 'u_color_mode' in prog:
             prog['u_color_mode'].value = cm
@@ -1888,8 +1896,11 @@ class MGLSMPLHeatmapNode(Node):
             mask = t >= 0.66
             s = (t[mask] - 0.66) / 0.34
             r[mask] = 1.0; g[mask] = 1.0; b[mask] = s
-        elif color_mode == 'viridis':
+        elif color_mode in ('viridis', 'viridis_bright'):
             # Approximation of viridis: dark purple → blue → teal → green → yellow
+            if color_mode == 'viridis_bright':
+                # Gamma remap to boost small values into visible range
+                t = np.power(np.clip(t, 0.0, 1.0), 0.4)
             mask = t < 0.25
             s = t[mask] / 0.25
             r[mask] = 0.267*(1-s) + 0.283*s; g[mask] = 0.004*(1-s) + 0.141*s; b[mask] = 0.329*(1-s) + 0.575*s
@@ -2126,8 +2137,8 @@ class MGLSMPLHeatmapNode(Node):
         if 'u_n_muscles' in prog:
             prog['u_n_muscles'].value = n_muscles
 
-        # Color mode: 0=heatmap, 1=grayscale, 2=hot, 3=viridis
-        color_modes = {'heatmap': 0, 'grayscale': 1, 'hot': 2, 'viridis': 3}
+        # Color mode: 0=heatmap, 1=grayscale, 2=hot, 3=viridis, 4=viridis_bright
+        color_modes = {'heatmap': 0, 'grayscale': 1, 'hot': 2, 'viridis': 3, 'viridis_bright': 4}
         if 'u_color_mode' in prog:
             prog['u_color_mode'].value = color_modes.get(self.color_mode_prop(), 0)
 
