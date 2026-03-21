@@ -1,3 +1,4 @@
+from copy import deepcopy
 from pyexpat import features
 import dearpygui.dearpygui as dpg
 from dpg_system.node import Node, NodeInput, LoadDialog, SaveDialog
@@ -56,6 +57,7 @@ def register_numpy_nodes():
     Node.app.register_node('np.[]', NumpySubtensorNode.factory)
     Node.app.register_node('np.edit', NumpyEditNode.factory)
     Node.app.register_node('np.sequence', NumpySequenceNode.factory)
+    Node.app.register_node('np.load', NumpyLoadNode.factory)
     Node.app.register_node('np.reshape', NumpyReshapeNode.factory)
     Node.app.register_node('np.any', NumpyAnyNode.factory)
     Node.app.register_node('np.all', NumpyAllNode.factory)
@@ -1144,6 +1146,7 @@ class NumpyProximityTriggerNode(NumpyNodeWithAxisNode):
             container['target_x'] = float(self.target[0])
             container['target_y'] = float(self.target[1])
             container['target_z'] = float(self.target[2])
+
     def load_custom(self, container):
         if 'target_x' in container:
             x = float(container['target_x'])
@@ -1320,12 +1323,15 @@ class NumpySubtensorNode(Node):
         self.indices_input = self.add_input(
             'Indices',
             widget_type='text_input',
-            widget_width=200,
+            widget_width=120,
             default_value=index_string,
             callback=self.dim_changed
         )
         self.output = self.add_output('output')
+        self.width_option = self.add_option('indices field width', widget_type='drag_int', default_value=120, callback=self.resize_indices_field)
 
+    def resize_indices_field(self):
+        dpg.set_item_width(self.indices_input.widget.uuid, self.width_option())
         # Prime the slice_obj based on default value
 
     def custom_create(self, from_file=False):
@@ -1637,6 +1643,58 @@ class NumpySequenceNode(Node):
             self.sequence.append(numpy_array[frame_num].copy())
         self.num_frames = len(self.sequence)
         self.frame_input.set(-1)
+
+
+class NumpyLoadNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyLoadNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        default_path = ''
+        if len(args) > 0:
+            default_path = args[0]
+
+        self.dict = None
+        self.load_button = self.add_input('load', widget_type='button', callback=self.open_load_dialog)
+        self.add_input('send', widget_type='button', callback=self.send_dict)
+        self.path_option = self.add_option('path', widget_type='text_input', default_value=default_path)
+        self.data_output = self.add_output('dict out')
+
+    def send_dict(self):
+        print('trying to send dict')
+        if self.dict is not None:
+            print('sending dict', self.dict)
+            self.data_output.send(self.dict)
+
+    def custom_create(self, from_file=False):
+        if from_file:
+            path = self.path_option()
+            if path != '':
+                self.load_file(path)
+
+    def open_load_dialog(self):
+        LoadDialog(self, callback=self.load_dialog_callback, extensions=['.npz'])
+
+    def load_dialog_callback(self, load_path):
+        if load_path != '':
+            self.path_option.set(load_path)
+            self.load_file(load_path)
+        else:
+            print('no file chosen')
+
+    def load_file(self, path):
+        try:
+            npz_data = np.load(path, allow_pickle=True)
+            temp_dict = {key: npz_data[key] for key in npz_data.files}
+            self.dict = deepcopy(temp_dict)
+            npz_data.close()
+            print(self.dict)
+            self.data_output.send(self.dict)
+        except Exception as e:
+            print(f'np.load error: {e}')
 
 
 class NumpyAnyNode(Node):

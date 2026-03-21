@@ -1214,17 +1214,14 @@ class TrackerAlignNode(Node):
         # Apply yaw correction to tracker position
         corrected_pos = self.quat_rotate_vector(q_correction, pos)
 
-        # Subtract the spatial offset: the tracker is displaced from the IMU root
-        # in body-local coordinates. Rotate the offset by yaw-only (not full orientation)
-        # so that X stays cleanly left/right and Z stays forward/back relative to heading.
+        # Subtract body offset rotated by the IMU root orientation.
+        # Both corrected_pos and R(imu)*offset are in the IMU world frame.
+        # Using just imu_wxyz (not corrected_imu) aligns the offset axes with the
+        # body's visual orientation in the scene.
         body_offset_data = self.body_offset_input()
         if body_offset_data is not None:
             body_offset = any_to_array(body_offset_data).astype(np.float64).flatten()[:3]
-            # Use yaw-only: combine the yaw correction with the IMU's own yaw
-            imu_twist = self.extract_twist_around_y(imu_wxyz)
-            heading_quat = self.quat_multiply(q_correction, imu_twist)
-            # Rotate body-local offset by heading only (stays horizontal)
-            world_offset = self.quat_rotate_vector(heading_quat, body_offset)
+            world_offset = self.quat_rotate_vector(imu_wxyz, body_offset)
             corrected_pos = corrected_pos - world_offset
 
         self.corrected_pos_output.send(corrected_pos.astype(np.float32))

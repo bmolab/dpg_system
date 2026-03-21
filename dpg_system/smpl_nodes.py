@@ -2326,7 +2326,7 @@ class SMPLBetaEditorNode(Node):
         'beta_2 arm_ratio',  # Arm length relative to body
         'beta_3 leg_ratio',  # Leg length relative to body
         'beta_4',
-        'beta_5 upper lower ratio',
+        'beta_5 upper lower',
         'beta_6',
         'beta_7 torso length',
         'beta_8 shoulders',
@@ -2344,7 +2344,7 @@ class SMPLBetaEditorNode(Node):
         # Beta properties (all 10)
         self.beta_props = []
         for i in range(10):
-            prop = self.add_property(self.BETA_LABELS[i], widget_type='slider_float', width=150, default_value=0.0, min=-5,  max=5, callback=self._on_param_changed)
+            prop = self.add_property(self.BETA_LABELS[i], widget_type='slider_float', width=100, default_value=0.0, min=-5,  max=5, callback=self._on_param_changed)
             self.beta_props.append(prop)
 
         # Body parameters
