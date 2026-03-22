@@ -784,6 +784,8 @@ class App:
                 dpg.add_separator()
                 dpg.add_menu_item(label="Set As Presentation", callback=self.set_presentation)
                 self.presentation_edit_menu_item = dpg.add_menu_item(label="Presentation Mode", check=True, callback=self.toggle_presentation)
+                dpg.add_separator()
+                dpg.add_menu_item(label="Home (H)", callback=self.home_current_editor)
 
 
             with dpg.menu(label='Options'):
@@ -1218,6 +1220,15 @@ class App:
     def W_handler(self):
         if self.control_or_command_down():
             self.close_current_node_editor()
+
+    def H_handler(self):
+        if self.not_focussed_on_widget():
+            if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+                self.get_current_editor().home_nodes()
+
+    def home_current_editor(self):
+        if self.get_current_editor() is not None:
+            self.get_current_editor().home_nodes()
 
     def V_handler(self):
         if self.control_or_command_down():
@@ -1836,6 +1847,9 @@ class App:
             patcher = self.get_current_editor()
             if patcher.parent_patcher is None:
                 self.remove_node_editor(self.get_current_editor())
+                # If no editors remain, create a fresh empty one
+                if len(self.node_editors) == 0:
+                    self.add_node_editor()
 
     def add_node_editor(self):
         editor_name = 'patch ' + str(self.new_patcher_index)
@@ -1850,6 +1864,7 @@ class App:
                 self.node_editors.append(new_editor)
                 self.node_editors[len(self.node_editors) - 1].create(panel_uuid)
                 self.current_node_editor = len(self.node_editors) - 1
+                self.center_panel = panel_uuid
                 self.select_tab(tab)
         return new_editor
 
@@ -1898,6 +1913,7 @@ class App:
                             dpg.add_key_press_handler(dpg.mvKey_Y, callback=self.Y_handler)
                             dpg.add_key_press_handler(dpg.mvKey_P, callback=self.P_handler)
                             dpg.add_key_press_handler(dpg.mvKey_R, callback=self.R_handler)
+                            dpg.add_key_press_handler(dpg.mvKey_H, callback=self.H_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Plus, callback=self.plus_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Minus, callback=self.minus_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Spacebar, callback=self.space_handler)
@@ -1951,7 +1967,11 @@ class App:
                             if self.trace:
                                 self.trace_indent = ''
                                 print('node \'' + task.label + '\': frame task')
-                            task.frame_task()
+                            try:
+                                task.frame_task()
+                            except Exception as exc_:
+                                print(f"Exception in frame_task for node '{task.label}':")
+                                traceback.print_exception(exc_)
                         if not self.global_trace:
                             self.trace = False
                     for node_editor in self.node_editors:
@@ -1960,7 +1980,11 @@ class App:
                     if not self.global_trace:
                         self.trace = False
                     jobs = dpg.get_callback_queue()  # retrieves and clears queue
-                    dpg.run_callbacks(jobs)
+                    try:
+                        dpg.run_callbacks(jobs)
+                    except Exception as exc_:
+                        print('Exception in DPG callback:')
+                        traceback.print_exception(exc_)
                     self.frame_number += 1
                     self.frame_variable.set(self.frame_number)
                     self.frame_clock_conduit.transmit('bang')
@@ -1987,4 +2011,5 @@ class App:
             except Exception as exc_:
                 print('run_loop exception:')
                 traceback.print_exception(exc_)
+                continue
 

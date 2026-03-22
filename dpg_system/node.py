@@ -1565,7 +1565,12 @@ class NodeInput:
                 Node.app.increment_trace_indent()
                 # print(Node.app.trace_indent, end='')
                 # print('>> ' + self.node.label + ':[' + self.get_label() + ']')
-            self.node.execute()
+            try:
+                self.node.execute()
+            except Exception as exc_:
+                import traceback
+                print(f"Exception in node '{self.node.label}' execute:")
+                traceback.print_exception(exc_)
             if Node.app.trace:
                 Node.app.decrement_trace_indent()
             self.node.active_input = None
@@ -2375,6 +2380,8 @@ class Node:
         for option_att in self.options:
             dpg.hide_item(option_att.uuid)
             dpg.hide_item(option_att.widget.uuid)
+        if self.presentation_state != 'hidden':
+            self.set_visibility('show_all')
         self.created = True
 
     def show_hide_options(self) -> None:

@@ -1167,7 +1167,7 @@ class FloatNode(NumericValueNode):
     def setup_specific_ui(self, args):
         self.format = '%.3f'
         self.widget_type = 'drag_float'
-        self.widget_width = 100
+        self.widget_width = 60
 
         for i in range(len(args)):
             val, t = decode_arg(args, i)
@@ -1192,7 +1192,7 @@ class IntNode(NumericValueNode):
     def setup_specific_ui(self, args):
         self.format = '%d'
         self.widget_type = 'drag_int'
-        self.widget_width = 100
+        self.widget_width = 60
 
         for i in range(len(args)):
             val, t = decode_arg(args, i)
@@ -2107,9 +2107,10 @@ class Vector2DNode(Node):
         self.component_properties = []
         if dim2 > 8:
             dim2 = 8
+        self.component_widget_width = 45
         kwargs = {'columns': dim2}
         for i in range(self.max_component_count):
-            cp = self.add_input('[' + str(i) + ']', widget_type='drag_float_n', callback=self.component_changed, **kwargs)
+            cp = self.add_input('[' + str(i) + ']', widget_type='drag_float_n', widget_width=self.component_widget_width, callback=self.component_changed, **kwargs)
             cp.name_archive.append('row ' + str(i))
             self.component_properties.append(cp)
 
@@ -2124,6 +2125,7 @@ class Vector2DNode(Node):
         self.component_count_property = self.add_option('component count', widget_type='drag_int', default_value=self.current_dims[0], callback=self.component_count_changed)
         self.format_option = self.add_option(label='number format', widget_type='text_input', default_value=self.format, callback=self.change_format)
         self.all_inputs_trigger_option = self.add_option('all inputs trigger', widget_type='checkbox', default_value=True)
+        self.width_option = self.add_option('width', widget_type='drag_int', default_value=self.component_widget_width, callback=self.width_changed)
         self.output_vector = np.zeros(self.current_dims)
 
         self.first_component_input_index = -1
@@ -2234,6 +2236,12 @@ class Vector2DNode(Node):
         for i in range(self.max_component_count):
             for uuid in self.component_properties[i].widget.uuids:
                 dpg.configure_item(uuid, format=self.format)
+
+    def width_changed(self):
+        width = self.width_option()
+        for i in range(self.max_component_count):
+            for uuid in self.component_properties[i].widget.uuids:
+                dpg.configure_item(uuid, width=width)
 
     def send(self):
         output_array = np.ndarray(self.current_dims)

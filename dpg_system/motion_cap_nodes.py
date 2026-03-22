@@ -2954,7 +2954,8 @@ class PoseAdjustmentNode(MoCapNode):
         self.adj_inputs = []
         for i, name in enumerate(self.JOINT_NAMES):
             adj = self.add_input(name, widget_type='drag_float_n',
-                                default_value=[1.0, 0.0, 0.0, 0.0], columns=4)
+                                default_value=[1.0, 0.0, 0.0, 0.0], columns=4,
+                                widget_width=45)
             self.adj_inputs.append(adj)
 
         self.pose_output = self.add_output('pose out')
@@ -3092,7 +3093,7 @@ class MagYawCorrectionNode(MoCapNode):
         # Global yaw sliders (ongoing magnetometer error, pre-multiply around world Y)
         self.global_inputs = []
         for name in self.JOINT_NAMES:
-            inp = self.add_input(name + '_yaw', widget_type='drag_float',
+            inp = self.add_input(name, widget_type='drag_float',
                                 default_value=0.0, callback=self.on_global_changed)
             self.global_inputs.append(inp)
 
@@ -3112,8 +3113,10 @@ class MagYawCorrectionNode(MoCapNode):
     def custom_create(self, from_file):
         for inp in self.global_inputs:
             inp.widget.set_speed(1.0)
+            dpg.set_item_width(inp.widget.uuid, 45)
         for inp in self.local_inputs:
             inp.widget.set_speed(1.0)
+            dpg.set_item_width(inp.widget.uuid, 45)
 
     def reset_all(self):
         self._in_propagation = True

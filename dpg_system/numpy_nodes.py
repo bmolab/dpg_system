@@ -1332,17 +1332,27 @@ class NumpySubtensorNode(Node):
 
     def resize_indices_field(self):
         dpg.set_item_width(self.indices_input.widget.uuid, self.width_option())
-        # Prime the slice_obj based on default value
+
+    def auto_resize_indices_field(self):
+        width = self.indices_input.widget.get_text_width(pad=16, minimum_width=40)
+        if width is not None:
+            dpg.configure_item(self.indices_input.widget.uuid, width=int(width))
+            self.width_option.set(int(width))
 
     def custom_create(self, from_file=False):
         self.dim_changed()
+        self.auto_resize_indices_field()
 
     def dim_changed(self):
         # 1. Update the Plan
         raw_text = any_to_string(self.indices_input())
         self.slice_obj = self.parse_slice_string(raw_text)
 
-        # 2. Attempt Execute
+        # 2. Auto-resize widget to fit text
+        if self.created:
+            self.auto_resize_indices_field()
+
+        # 3. Attempt Execute
         # If no data exists, execute() will simply return, producing no output.
         self.execute()
 
