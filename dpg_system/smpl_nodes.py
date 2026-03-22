@@ -2355,12 +2355,118 @@ class SMPLBetaEditorNode(Node):
         # Optional input: full 10-element beta array overrides properties
         self.betas_input = self.add_input('betas_in', callback=self._on_betas_received)
 
-        # Reset button
+        # Reset / Save / Load buttons
         self.reset_input = self.add_input('reset', widget_type='button', callback=self._reset_betas)
+        self.save_input = self.add_input('save', widget_type='button', callback=self._save_betas)
+        self.load_input = self.add_input('load', widget_type='button', callback=self._load_betas)
+
+        # File path option (used by save/load if set, otherwise opens file dialog)
+        self.file_path_option = self.add_option('file_path', widget_type='text_input', width=200, default_value='')
 
         # Outputs
         self.config_output = self.add_output('config')
+        self.betas_output = self.add_output('betas')
         self.limb_lengths_output = self.add_output('limb_lengths')
+
+    # --- Preset Support ---
+    def get_preset_state(self):
+        """Return current state for the presets node."""
+        preset = {}
+        preset['betas'] = self._get_betas_array().tolist()
+        preset['gender'] = self.gender_prop()
+        preset['total_mass'] = self.total_mass_prop()
+        return preset
+
+    def set_preset_state(self, preset):
+        """Restore state from a preset dict."""
+        if 'betas' in preset:
+            b = preset['betas']
+            if isinstance(b, (list, np.ndarray)):
+                b = np.array(b).flatten()
+                for i in range(min(len(b), 10)):
+                    self.beta_props[i].widget.set(float(b[i]))
+        if 'gender' in preset:
+            self.gender_prop.widget.set(preset['gender'])
+        if 'total_mass' in preset:
+            self.total_mass_prop.widget.set(float(preset['total_mass']))
+        self._recompute_and_send()
+
+    # --- Save / Load ---
+    def _get_save_path(self):
+        """Return file path from option, or None to trigger file dialog."""
+        path = self.file_path_option()
+        if path and str(path).strip():
+            p = str(path).strip()
+            if not p.endswith('.npy'):
+                p += '.npy'
+            return p
+        return None
+
+    def _save_betas(self):
+        """Save betas + gender + mass to a numpy file."""
+        path = self._get_save_path()
+        if path:
+            self._do_save(path)
+        else:
+            with dpg.file_dialog(modal=True, directory_selector=False, show=True,
+                                 height=400, width=600, callback=self._save_file_callback,
+                                 cancel_callback=lambda s, a: None):
+                dpg.add_file_extension('.npy')
+
+    def _save_file_callback(self, sender, app_data):
+        """File dialog callback for save."""
+        if app_data and 'file_path_name' in app_data:
+            path = app_data['file_path_name']
+            if not path.endswith('.npy'):
+                path += '.npy'
+            self._do_save(path)
+
+    def _do_save(self, path):
+        """Write betas, gender, and mass to a .npy file."""
+        try:
+            betas = self._get_betas_array()
+            data = {
+                'betas': betas,
+                'gender': self.gender_prop(),
+                'total_mass': float(self.total_mass_prop()),
+            }
+            np.save(path, data)
+            print(f"SMPLBetaEditorNode: Saved betas to {path}")
+        except Exception as e:
+            print(f"SMPLBetaEditorNode: Error saving betas: {e}")
+
+    def _load_betas(self):
+        """Load betas + gender + mass from a numpy file."""
+        path = self._get_save_path()
+        if path and os.path.exists(path):
+            self._do_load(path)
+        else:
+            with dpg.file_dialog(modal=True, directory_selector=False, show=True,
+                                 height=400, width=600, callback=self._load_file_callback,
+                                 cancel_callback=lambda s, a: None):
+                dpg.add_file_extension('.npy')
+
+    def _load_file_callback(self, sender, app_data):
+        """File dialog callback for load."""
+        if app_data and 'file_path_name' in app_data:
+            self._do_load(app_data['file_path_name'])
+
+    def _do_load(self, path):
+        """Read betas, gender, and mass from a .npy file."""
+        try:
+            data = np.load(path, allow_pickle=True).item()
+            if 'betas' in data:
+                b = np.array(data['betas']).flatten()
+                for i in range(min(len(b), 10)):
+                    self.beta_props[i].widget.set(float(b[i]))
+            if 'gender' in data:
+                self.gender_prop.widget.set(data['gender'])
+            if 'total_mass' in data:
+                self.total_mass_prop.widget.set(float(data['total_mass']))
+            self._recompute_and_send()
+            print(f"SMPLBetaEditorNode: Loaded betas from {path}")
+        except Exception as e:
+            print(f"SMPLBetaEditorNode: Error loading betas: {e}")
 
     def _reset_betas(self):
         for prop in self.beta_props:
@@ -2389,6 +2495,8 @@ class SMPLBetaEditorNode(Node):
                     self.beta_props[i].widget.set(float(b[i]))
             if 'gender' in raw:
                 self.gender_prop.widget.set(raw['gender'])
+            if 'total_mass' in raw:
+                self.total_mass_prop.widget.set(float(raw['total_mass']))
         else:
             b = any_to_array(raw).flatten()
             for i in range(min(len(b), 10)):
@@ -2411,6 +2519,9 @@ class SMPLBetaEditorNode(Node):
             'gender': gender,
         }
         self.config_output.send(config)
+
+        # Send raw betas array
+        self.betas_output.send(betas.copy())
 
         # Compute limb lengths using SMPLProcessor
         try:
@@ -2493,6 +2604,8 @@ class ShadowToSMPLNode(Node):
         self.output_format_prop = self.add_property('output_format', widget_type='combo', default_value='quaternions')
         self.output_format_prop.widget.combo_items = ['quaternions', 'axis_angle']
         self.corrections_prop = self.add_property('rest_pose_corrections', widget_type='checkbox', default_value=False)
+        self.output_up_axis_prop = self.add_property('output_up_axis', widget_type='combo', default_value='Z-up')
+        self.output_up_axis_prop.widget.combo_items = ['Y-up', 'Z-up']
 
         self.pose_output = self.add_output('pose')
         self.trans_output = self.add_output('trans')
@@ -2760,18 +2873,19 @@ class ShadowToSMPLNode(Node):
                     q_corrected = q_local * C_inv[smpl_i]
                 smpl_quats[smpl_i] = q_corrected.as_quat(scalar_first=True)
 
-        # Y-up → Z-up: root orientation only (left-multiply 90° about X)
-        R_yup_to_zup = Rotation.from_euler('X', 90, degrees=True)
-        root_rot = Rotation.from_quat(smpl_quats[0], scalar_first=True)
-        smpl_quats[0] = (R_yup_to_zup * root_rot).as_quat(scalar_first=True)
+        # Coordinate conversion (root orientation + translation)
+        z_up = self.output_up_axis_prop() == 'Z-up'
+        if z_up:
+            R_yup_to_zup = Rotation.from_euler('X', 90, degrees=True)
+            root_rot = Rotation.from_quat(smpl_quats[0], scalar_first=True)
+            smpl_quats[0] = (R_yup_to_zup * root_rot).as_quat(scalar_first=True)
 
-        # Extract root position, convert Y-up → Z-up
+        # Extract root position
         raw_positions = self.positions_input()
         if raw_positions is not None:
             positions = any_to_array(raw_positions)
             p = None
             if positions.ndim == 1 and positions.size == 3:
-                # Direct [3] translation vector (Y-up)
                 p = positions
             elif positions.ndim == 1 and positions.size >= 15:
                 positions = positions.reshape(-1, 3)
@@ -2780,8 +2894,11 @@ class ShadowToSMPLNode(Node):
             elif positions.ndim == 2 and positions.shape[0] > 4:
                 p = positions[4]
             if p is not None:
-                # Y-up → Z-up: [x, y, z] → [x, -z, y]
-                trans = np.array([p[0], -p[2], p[1]], dtype=np.float32)
+                if z_up:
+                    # Y-up → Z-up: [x, y, z] → [x, -z, y]
+                    trans = np.array([p[0], -p[2], p[1]], dtype=np.float32)
+                else:
+                    trans = p.astype(np.float32)
                 self.trans_output.send(trans)
 
         # Output format

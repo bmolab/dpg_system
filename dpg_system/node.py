@@ -1206,6 +1206,8 @@ class DragFloatN(ScalarWidget):
                                default_value=val, speed=self.speed)
 
     def _convert_and_set(self, data):
+        if isinstance(data, np.ndarray):
+            data = data.flatten().tolist()
         if isinstance(data, list):
             if len(data) == 1 and is_number(data[0]):
                 self._apply_val_to_all(any_to_float(data[0]))

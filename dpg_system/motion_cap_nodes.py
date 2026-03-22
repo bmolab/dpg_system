@@ -23,6 +23,7 @@ import time
 import dpg_system.MotionSDK as shadow
 import random
 from dpg_system.smpl_nodes import SMPLNode
+from dpg_system.interface_nodes import Vector2DNode
 
 def register_motion_cap_nodes():
     Node.app.register_node('gl_body', MoCapGLBody.factory)
@@ -47,6 +48,9 @@ def register_motion_cap_nodes():
     Node.app.register_node('json_npz_frame_picker', JsonRandomEventWindowNode.factory)
     Node.app.register_node('tracker_root_inference', TrackerRootInferenceNode.factory)
     Node.app.register_node('sensor_to_root', SensorToRootNode.factory)
+    Node.app.register_node('pose_adjust', PoseAdjustmentNode.factory)
+    Node.app.register_node('active_pose', ActivePoseNode.factory)
+    Node.app.register_node('mag_yaw_correct', MagYawCorrectionNode.factory)
 
 def find_process_id(process_name):
     try:
@@ -373,6 +377,7 @@ class OpenTakeNode(MoCapNode):
         self.clip_end = -1
 
         self.streaming = False
+        self.paused_outputting = False
         self.take_dict = {}
         self.global_dict = {}
         self.sequence_keys = []
@@ -391,6 +396,7 @@ class OpenTakeNode(MoCapNode):
         self.play_pause_button.name_archive.append('pause')
         self.stop_button = self.add_input('stop', widget_type='button', callback=self.stop_button_clicked)
         self.loop_input = self.add_input('loop', widget_type='checkbox', default_value=True)
+        self.output_when_paused_input = self.add_input('output when paused', widget_type='checkbox', default_value=False)
         self.external_clock_enable_input = self.add_input('enable external clock', widget_type='checkbox', default_value=False)
         self.save_temp_input = self.add_input('save temp files', widget_type='checkbox', default_value=False)
         self.external_clock_input = self.add_input('external clock', callback=self.external_play)
@@ -481,9 +487,10 @@ class OpenTakeNode(MoCapNode):
 
     def stop_button_clicked(self):
 
-        if self.streaming or self.play_pause_button.get_label() == 'resume':
+        if self.streaming or self.paused_outputting or self.play_pause_button.get_label() == 'resume':
             self.streaming = False
-            self.stop_playing()
+            self.paused_outputting = False
+            self.remove_frame_tasks()
             self.play_pause_button.set_label('play')
             self.play_pause_button.widget.set_active_theme(Node.active_theme_green)
             self.current_frame = 0
@@ -497,14 +504,20 @@ class OpenTakeNode(MoCapNode):
             if self.play_pause_button.get_label() == 'play':
                 self.current_frame = self.speed() * -1.0
                 self.pending_frame = self.current_frame
-            self.start_playing()
+            if self.paused_outputting:
+                self.paused_outputting = False
+            else:
+                self.start_playing()
             self.streaming = True
             self.play_pause_button.set_label('pause')
             self.play_pause_button.widget.set_active_theme(Node.active_theme_yellow)
         else:
             if self.streaming:
                 self.streaming = False
-                self.stop_playing()
+                if self.output_when_paused_input():
+                    self.paused_outputting = True
+                else:
+                    self.stop_playing()
                 self.play_pause_button.set_label('resume')
                 self.play_pause_button.widget.set_active_theme(Node.active_theme_green)
 
@@ -645,6 +658,9 @@ class OpenTakeNode(MoCapNode):
             self.remove_frame_tasks()
 
     def frame_task(self):
+        if self.paused_outputting:
+            self.output_current_frame()
+            return
         self.step()
         if self.force_frame:
             self.force_frame = False
@@ -677,11 +693,15 @@ class OpenTakeNode(MoCapNode):
             frame = int(self.current_frame)
 
             self.last_frame_out = frame
-            frame_dict = {}
-            for key in self.sequence_keys:
-                frame_dict[key] = self.take_dict[key][frame]
-            self.frame_out.send(self.last_frame_out)
-            self.take_data_out.send(frame_dict)
+            self.output_current_frame()
+
+    def output_current_frame(self):
+        frame = int(self.current_frame)
+        frame_dict = {}
+        for key in self.sequence_keys:
+            frame_dict[key] = self.take_dict[key][frame]
+        self.frame_out.send(frame)
+        self.take_data_out.send(frame_dict)
 
     def load_from_load_path(self):
         path = self.load_path()
@@ -757,7 +777,9 @@ class OpenTakeNode(MoCapNode):
             data = self.frame_count - 1
         self.pending_frame = data
 
-        if not self.streaming:
+        if self.paused_outputting:
+            self.current_frame = data
+        elif not self.streaming:
             self.streaming = True
             self.force_frame = True
             self.add_frame_task()
@@ -2905,3 +2927,425 @@ class SensorToRootNode(MoCapNode):
             corrected = positions.copy()
             corrected[self.SHADOW_HIPS_INDEX] = root_pos
             self.corrected_positions_output.send(corrected)
+
+
+class PoseAdjustmentNode(MoCapNode):
+    """Applies per-joint quaternion adjustments to a 20-joint active pose."""
+
+    JOINT_NAMES = [
+        'head', 'neck', 'spine3', 'spine2', 'spine1',
+        'pelvis', 'l_hip', 'l_knee', 'l_ankle',
+        'r_hip', 'r_knee', 'r_ankle',
+        'l_collar', 'l_shoulder', 'l_elbow', 'l_wrist',
+        'r_collar', 'r_shoulder', 'r_elbow', 'r_wrist'
+    ]
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return PoseAdjustmentNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.pose_input = self.add_input('pose in', triggers_execution=True)
+        self.reset_input = self.add_input('reset', widget_type='button', callback=self.reset_adjustments)
+
+        # 20 quaternion adjustment widgets (wxyz, identity = [1, 0, 0, 0])
+        self.adj_inputs = []
+        for i, name in enumerate(self.JOINT_NAMES):
+            adj = self.add_input(name, widget_type='drag_float_n',
+                                default_value=[1.0, 0.0, 0.0, 0.0], columns=4)
+            self.adj_inputs.append(adj)
+
+        self.pose_output = self.add_output('pose out')
+
+    def reset_adjustments(self):
+        identity = [1.0, 0.0, 0.0, 0.0]
+        for adj in self.adj_inputs:
+            adj.set(identity)
+
+    def get_preset_state(self):
+        preset = {}
+        values = []
+        for adj in self.adj_inputs:
+            val = adj()
+            if val is None:
+                values.append([1.0, 0.0, 0.0, 0.0])
+            else:
+                values.append(list(any_to_array(val).flatten()))
+        preset['values'] = values
+        return preset
+
+    def set_preset_state(self, preset):
+        if 'values' in preset:
+            values = preset['values']
+            for i, val in enumerate(values):
+                if i < len(self.adj_inputs):
+                    self.adj_inputs[i].set(val)
+
+    def execute(self):
+        raw = self.pose_input()
+        if raw is None:
+            return
+        pose = any_to_array(raw)
+        if pose.ndim == 1 and pose.size == 80:
+            pose = pose.reshape(20, 4)
+        if pose.ndim != 2 or pose.shape[0] != 20 or pose.shape[1] != 4:
+            return
+
+        result = pose.copy()
+        for i in range(20):
+            adj_val = self.adj_inputs[i]()
+            if adj_val is None:
+                continue
+            adj_q = any_to_array(adj_val).flatten()
+            if adj_q.size != 4:
+                continue
+            # Skip if identity (optimization)
+            if abs(adj_q[0] - 1.0) < 1e-6 and np.linalg.norm(adj_q[1:]) < 1e-6:
+                continue
+            if i == 5:
+                # Root (pelvis_anchor): post-multiply so adjustment is in sensor-local frame
+                # This corrects calibration error that reorients with the body
+                result[i] = quaternion_multiply_wxyz(result[i], adj_q)
+            else:
+                # Child joints: pre-multiply (adjustment in parent frame)
+                result[i] = quaternion_multiply_wxyz(adj_q, result[i])
+
+        self.pose_output.send(result.astype(np.float32))
+
+
+class MagYawCorrectionNode(MoCapNode):
+    """Corrects magnetometer-induced yaw errors in IMU motion capture data.
+
+    Provides two independent corrections per sensor:
+      - Global yaw (pre-multiply around world Y): ongoing magnetometer error
+      - Local yaw (post-multiply in sensor body frame): calibration error baked
+        into the T-pose identity quaternion
+
+    The 'sync' checkbox keeps local = global (conjugation, correct when the
+    hard-iron bias produces the same yaw error at all orientations).
+    The 'symmetric' checkbox mirrors left↔right joint values.
+    """
+
+    JOINT_NAMES = [
+        'head', 'neck', 'spine3', 'spine2', 'spine1',
+        'pelvis', 'l_hip', 'l_knee', 'l_ankle',
+        'r_hip', 'r_knee', 'r_ankle',
+        'l_collar', 'l_shoulder', 'l_elbow', 'l_wrist',
+        'r_collar', 'r_shoulder', 'r_elbow', 'r_wrist'
+    ]
+
+    # Parent index for each of the 20 active joints (index into active pose array)
+    # -1 means root (no parent). Matches LocalToGlobalBodyNode hierarchy.
+    PARENT_INDEX = [
+        1,   # 0  base_of_skull   -> upper_vertebrae (1)
+        2,   # 1  upper_vertebrae -> mid_vertebrae (2)
+        3,   # 2  mid_vertebrae   -> lower_vertebrae (3)
+        4,   # 3  lower_vertebrae -> spine_pelvis (4)
+        5,   # 4  spine_pelvis    -> pelvis_anchor (5)
+        -1,  # 5  pelvis_anchor   -> root
+        5,   # 6  left_hip        -> pelvis_anchor (5)
+        6,   # 7  left_knee       -> left_hip (6)
+        7,   # 8  left_ankle      -> left_knee (7)
+        5,   # 9  right_hip       -> pelvis_anchor (5)
+        9,   # 10 right_knee      -> right_hip (9)
+        10,  # 11 right_ankle     -> right_knee (10)
+        2,   # 12 left_shoulder_blade  -> mid_vertebrae (2)
+        12,  # 13 left_shoulder   -> left_shoulder_blade (12)
+        13,  # 14 left_elbow      -> left_shoulder (13)
+        14,  # 15 left_wrist      -> left_elbow (14)
+        2,   # 16 right_shoulder_blade -> mid_vertebrae (2)
+        16,  # 17 right_shoulder  -> right_shoulder_blade (16)
+        17,  # 18 right_elbow     -> right_shoulder (17)
+        18,  # 19 right_wrist     -> right_elbow (18)
+    ]
+
+    # Topological order for forward kinematics (parents before children)
+    TOPO_ORDER = [5, 4, 3, 2, 1, 0, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+
+    # Symmetric joint pairs: (left_index, right_index)
+    SYMMETRIC_PAIRS = [
+        (6, 9),    # hip
+        (7, 10),   # knee
+        (8, 11),   # ankle
+        (12, 16),  # shoulder_blade
+        (13, 17),  # shoulder
+        (14, 18),  # elbow
+        (15, 19),  # wrist
+    ]
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return MagYawCorrectionNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.pose_input = self.add_input('pose in', triggers_execution=True)
+        self.symmetric_input = self.add_input('symmetric', widget_type='checkbox', default_value=True)
+        self.sync_input = self.add_input('sync local/global', widget_type='checkbox', default_value=True)
+        self.reset_input = self.add_input('reset', widget_type='button', callback=self.reset_all)
+
+        self._in_propagation = False
+
+        # Global yaw sliders (ongoing magnetometer error, pre-multiply around world Y)
+        self.global_inputs = []
+        for name in self.JOINT_NAMES:
+            inp = self.add_input(name + '_yaw', widget_type='drag_float',
+                                default_value=0.0, callback=self.on_global_changed)
+            self.global_inputs.append(inp)
+
+        # Local yaw sliders (calibration error, post-multiply in body frame)
+        self.local_inputs = []
+        for name in self.JOINT_NAMES:
+            inp = self.add_input(name + '_cal', widget_type='drag_float',
+                                default_value=0.0, callback=self.on_local_changed)
+            self.local_inputs.append(inp)
+
+        self.pose_output = self.add_output('pose out')
+
+        # Pre-allocated work arrays
+        self._world_quats = np.zeros((20, 4), dtype=np.float64)
+        self._world_quats[:, 0] = 1.0
+
+    def custom_create(self, from_file):
+        for inp in self.global_inputs:
+            inp.widget.set_speed(1.0)
+        for inp in self.local_inputs:
+            inp.widget.set_speed(1.0)
+
+    def reset_all(self):
+        self._in_propagation = True
+        for inp in self.global_inputs:
+            inp.set(0.0)
+        for inp in self.local_inputs:
+            inp.set(0.0)
+        self._in_propagation = False
+
+    def _find_input_index(self, input_list):
+        """Find which index in input_list matches self.active_input."""
+        for i, inp in enumerate(input_list):
+            if inp is self.active_input:
+                return i
+        return None
+
+    def _propagate_symmetric(self, input_list, changed_idx, value):
+        """Copy value to symmetric counterpart in the given input list."""
+        for left_idx, right_idx in self.SYMMETRIC_PAIRS:
+            if changed_idx == left_idx:
+                input_list[right_idx].set(value)
+                return
+            elif changed_idx == right_idx:
+                input_list[left_idx].set(value)
+                return
+
+    def on_global_changed(self):
+        if self._in_propagation:
+            return
+        idx = self._find_input_index(self.global_inputs)
+        if idx is None:
+            return
+
+        self._in_propagation = True
+        value = self.global_inputs[idx]()
+
+        # Sync: copy global -> local
+        if self.sync_input():
+            self.local_inputs[idx].set(value)
+
+        # Symmetric: mirror to other side
+        if self.symmetric_input():
+            self._propagate_symmetric(self.global_inputs, idx, value)
+            if self.sync_input():
+                # Also mirror the local side
+                self._propagate_symmetric(self.local_inputs, idx, value)
+
+        self._in_propagation = False
+
+    def on_local_changed(self):
+        if self._in_propagation:
+            return
+        idx = self._find_input_index(self.local_inputs)
+        if idx is None:
+            return
+
+        self._in_propagation = True
+        value = self.local_inputs[idx]()
+
+        # Sync: copy local -> global
+        if self.sync_input():
+            self.global_inputs[idx].set(value)
+
+        # Symmetric: mirror to other side
+        if self.symmetric_input():
+            self._propagate_symmetric(self.local_inputs, idx, value)
+            if self.sync_input():
+                # Also mirror the global side
+                self._propagate_symmetric(self.global_inputs, idx, value)
+
+        self._in_propagation = False
+
+    def get_preset_state(self):
+        return {
+            'global_yaw': [g() for g in self.global_inputs],
+            'local_cal': [l() for l in self.local_inputs],
+        }
+
+    def set_preset_state(self, preset):
+        self._in_propagation = True
+        if 'global_yaw' in preset:
+            for i, val in enumerate(preset['global_yaw']):
+                if i < len(self.global_inputs):
+                    self.global_inputs[i].set(float(val))
+        if 'local_cal' in preset:
+            for i, val in enumerate(preset['local_cal']):
+                if i < len(self.local_inputs):
+                    self.local_inputs[i].set(float(val))
+        # Backwards compatibility: old presets with 'yaw_angles'
+        if 'yaw_angles' in preset and 'global_yaw' not in preset:
+            for i, val in enumerate(preset['yaw_angles']):
+                if i < len(self.global_inputs):
+                    self.global_inputs[i].set(float(val))
+                if i < len(self.local_inputs):
+                    self.local_inputs[i].set(float(val))
+        self._in_propagation = False
+
+    @staticmethod
+    def _qmul(q1, q2):
+        """Multiply two quaternions in wxyz format. Returns normalized result."""
+        w1, x1, y1, z1 = q1[0], q1[1], q1[2], q1[3]
+        w2, x2, y2, z2 = q2[0], q2[1], q2[2], q2[3]
+        w = w1*w2 - x1*x2 - y1*y2 - z1*z2
+        x = w1*x2 + x1*w2 + y1*z2 - z1*y2
+        y = w1*y2 - x1*z2 + y1*w2 + z1*x2
+        z = w1*z2 + x1*y2 - y1*x2 + z1*w2
+        out = np.array([w, x, y, z], dtype=np.float64)
+        n = np.linalg.norm(out)
+        if n > 1e-12:
+            out /= n
+        return out
+
+    @staticmethod
+    def _qinv(q):
+        """Inverse of a unit quaternion in wxyz format: conjugate."""
+        return np.array([q[0], -q[1], -q[2], -q[3]], dtype=np.float64)
+
+    @staticmethod
+    def _yaw_quat(angle_deg):
+        """Create a quaternion for rotation around Y axis (up), wxyz format."""
+        half = np.radians(angle_deg) * 0.5
+        return np.array([np.cos(half), 0.0, np.sin(half), 0.0], dtype=np.float64)
+
+    def execute(self):
+        raw = self.pose_input()
+        if raw is None:
+            return
+        pose = any_to_array(raw)
+        if pose.ndim == 1 and pose.size == 80:
+            pose = pose.reshape(20, 4)
+        if pose.ndim != 2 or pose.shape[0] != 20 or pose.shape[1] != 4:
+            return
+
+        local = pose.astype(np.float64)
+        world = self._world_quats
+
+        # Read all correction angles
+        global_angles = [self.global_inputs[i]() for i in range(20)]
+        local_angles = [self.local_inputs[i]() for i in range(20)]
+        any_correction = (any(abs(a) > 0.001 for a in global_angles) or
+                          any(abs(a) > 0.001 for a in local_angles))
+
+        if not any_correction:
+            self.pose_output.send(pose)
+            return
+
+        # --- Step 1: Forward kinematics (local -> world) ---
+        for i in self.TOPO_ORDER:
+            p = self.PARENT_INDEX[i]
+            if p == -1:
+                world[i] = local[i]
+            else:
+                world[i] = self._qmul(world[p], local[i])
+
+        # --- Step 2: Apply corrections ---
+        # Q_corrected = Q_global(-alpha) * Q_world * Q_local(beta)
+        #   global: pre-multiply by yaw(-alpha) around world Y (ongoing error)
+        #   local:  post-multiply by yaw(beta) in body frame (calibration error)
+        for i in range(20):
+            g = global_angles[i]
+            l = local_angles[i]
+            q = world[i]
+            if abs(g) > 0.001:
+                q = self._qmul(self._yaw_quat(-g), q)
+            if abs(l) > 0.001:
+                q = self._qmul(q, self._yaw_quat(l))
+            world[i] = q
+
+        # --- Step 3: Inverse kinematics (world -> corrected local) ---
+        result = np.zeros((20, 4), dtype=np.float64)
+        for i in self.TOPO_ORDER:
+            p = self.PARENT_INDEX[i]
+            if p == -1:
+                result[i] = world[i]
+            else:
+                result[i] = self._qmul(self._qinv(world[p]), world[i])
+
+        self.pose_output.send(result.astype(np.float32))
+
+
+class ActivePoseNode(Vector2DNode):
+    """Pose editor for 20 bmolab active joints (wxyz quaternions)."""
+
+    JOINT_NAMES = [
+        'base_of_skull', 'upper_vertebrae', 'mid_vertebrae', 'lower_vertebrae',
+        'spine_pelvis', 'pelvis_anchor', 'left_hip', 'left_knee',
+        'left_ankle', 'right_hip', 'right_knee', 'right_ankle',
+        'left_shoulder_blade', 'left_shoulder', 'left_elbow', 'left_wrist',
+        'right_shoulder_blade', 'right_shoulder', 'right_elbow', 'right_wrist'
+    ]
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return ActivePoseNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        Vector2DNode.__init__(self, label, data, ['20', '4'])
+
+    def custom_create(self, from_file):
+        Vector2DNode.custom_create(self, from_file)
+        self.zero_input.set_label('reset')
+        for i in range(20):
+            inp = self.inputs[i + 1]  # +1 because inputs[0] is 'in'
+            dpg.configure_item(inp.widget.uuids[3], label=self.JOINT_NAMES[i])
+            for uid in inp.widget.uuids:
+                dpg.configure_item(uid, width=45)
+            inp.set([1.0, 0.0, 0.0, 0.0])
+            self.output_vector[i, 0] = 1.0
+
+    def zero(self):
+        """Reset all quaternions to identity [1, 0, 0, 0]."""
+        if self.vector_format_input() == 'numpy':
+            self.output_vector = np.zeros(self.current_dims)
+            self.output_vector[:, 0] = 1.0
+        elif self.vector_format_input() == 'torch':
+            self.output_vector = torch.zeros(self.current_dims)
+            self.output_vector[:, 0] = 1.0
+        else:
+            self.output_vector = [[1.0, 0.0, 0.0, 0.0]] * self.current_dims[0]
+        self.execute()
+
+    def get_preset_state(self):
+        preset = {}
+        values = []
+        for i in range(self.current_dims[0]):
+            values.append(list(self.output_vector[i]))
+        preset['values'] = values
+        return preset
+
+    def set_preset_state(self, preset):
+        if 'values' in preset:
+            values = preset['values']
+            self.input._data = values
+            self.input.fresh_input = True
+            self.execute()

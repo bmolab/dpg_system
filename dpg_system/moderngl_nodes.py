@@ -24,6 +24,7 @@ def register_moderngl_nodes():
     Node.app.register_node('mgl_rotate', MGLRotationNode.factory)
     Node.app.register_node('mgl_scale', MGLScaleNode.factory)
     Node.app.register_node('mgl_camera', MGLCameraNode.factory)
+    Node.app.register_node('mgl_orbit_camera', MGLOrbitCameraNode.factory)
     Node.app.register_node('mgl_display', MGLDisplayNode.factory)
     Node.app.register_node('mgl_sphere', MGLSphereNode.factory)
     Node.app.register_node('mgl_geo_sphere', MGLGeodesicSphereNode.factory)
@@ -3272,6 +3273,79 @@ class MGLCameraNode(MGLNode):
             # Just pass signal? Actually Camera should usually be BEFORE transform/geometry
             # in the chain for View/Proj to be set for them.
             pass
+
+
+class MGLOrbitCameraNode(MGLNode):
+    """Orbit camera that revolves around a target point.
+
+    The camera eye position is computed from spherical coordinates
+    (yaw, elevation, distance) centred on the target.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return MGLOrbitCameraNode(name, data, args)
+
+    def __init__(self, label, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        super().initialize(args)
+        self.fov = self.add_input('fov', widget_type='drag_float', default_value=60.0)
+        self.target = self.add_input('target', widget_type='drag_float_n', default_value=[0.0, 0.0, 0.0], speed=0.01, columns=3)
+        self.distance = self.add_input('distance', widget_type='drag_float', default_value=3.0)
+        self.yaw = self.add_input('yaw', widget_type='drag_float', default_value=0.0)
+        self.elevation = self.add_input('elevation', widget_type='drag_float', default_value=20.0)
+
+    def custom_create(self, from_file):
+        dpg.configure_item(self.fov.widget.uuids[0], speed=1.0)
+        dpg.configure_item(self.distance.widget.uuids[0], speed=0.05)
+        dpg.configure_item(self.yaw.widget.uuids[0], speed=1.0)
+        dpg.configure_item(self.elevation.widget.uuids[0], speed=1.0)
+        dpg.configure_item(self.target.widget.uuids[2], label='target')
+        dpg.configure_item(self.target.widget.uuids[0], width=45)
+        dpg.configure_item(self.target.widget.uuids[1], width=45)
+        dpg.configure_item(self.target.widget.uuids[2], width=45)
+
+    def draw(self):
+        if self.ctx is None:
+            return
+
+        # Read parameters
+        tgt = self.target()
+        tgt = np.array(tgt, dtype=np.float32)
+        dist = self.distance()
+        yaw_deg = self.yaw()
+        elev_deg = self.elevation()
+        fov_val = self.fov()
+
+        # Spherical to Cartesian offset from target
+        yaw_rad = math.radians(yaw_deg)
+        elev_rad = math.radians(elev_deg)
+        cos_elev = math.cos(elev_rad)
+
+        eye_x = tgt[0] + dist * cos_elev * math.sin(yaw_rad)
+        eye_y = tgt[1] + dist * math.sin(elev_rad)
+        eye_z = tgt[2] + dist * cos_elev * math.cos(yaw_rad)
+
+        eye = [eye_x, eye_y, eye_z]
+        up = [0.0, 1.0, 0.0]
+
+        # Projection
+        aspect = self.ctx.width / self.ctx.height
+        if aspect == 0:
+            aspect = 1.0
+        p = perspective(fov_val, aspect, 0.1, 100.0)
+        self.ctx.set_projection_matrix(p)
+
+        # View
+        v = look_at(eye, tgt.tolist(), up)
+        self.ctx.set_view_matrix(v)
+
+        # Update view_pos in default shader if available
+        if 'view_pos' in self.ctx.default_shader:
+            self.ctx.default_shader['view_pos'].value = tuple(eye)
+
 
 class MGLOrientationDisksNode(MGLNode):
     """Renders N independently-oriented annular disks with emissive (unlit) colors.
