@@ -401,19 +401,19 @@ class OpenTakeNode(MoCapNode):
         self.save_temp_input = self.add_input('save temp files', widget_type='checkbox', default_value=False)
         self.external_clock_input = self.add_input('external clock', callback=self.external_play)
         self.add_spacer()
-        self.frame_input = self.add_input('frame', widget_type='drag_int', callback=self.frame_widget_changed)
+        self.frame_input = self.add_input('frame', widget_type='drag_int', widget_width=50, callback=self.frame_widget_changed)
         self.length_property = self.add_input('length: 0', widget_type='label')
-        self.speed = self.add_input('play speed', widget_type='drag_float', default_value=speed)
+        self.speed = self.add_input('play speed', widget_type='drag_float', widget_width=50, default_value=speed)
         self.add_spacer()
 
-        self.clip_start_input = self.add_input('clip start frame', widget_type='drag_int', callback=self.clip_changed, trigger_button=True, trigger_callback=self.clip_start_set)
-        self.clip_end_input = self.add_input('clip end frame', widget_type='drag_int', callback=self.clip_changed, trigger_button=True, trigger_callback=self.clip_end_set)
+        self.clip_start_input = self.add_input('clip start', widget_type='drag_int', callback=self.clip_changed, widget_width=50, trigger_button=True, trigger_callback=self.clip_start_set)
+        self.clip_end_input = self.add_input('clip end', widget_type='drag_int', callback=self.clip_changed, widget_width=50, trigger_button=True, trigger_callback=self.clip_end_set)
         self.save_clip_button = self.add_input('save clip', widget_type='button', callback=self.save_clip)
 
         self.reset_clip_button = self.add_input('reset clip', widget_type='button', callback=self.reset_clip)
 
         self.add_spacer()
-        self.dump_button = self.add_input('dump', widget_type='button', callback=self.dump_take)
+        self.dump_button = self.add_input('dump', widget_type='button', widget_width=50, callback=self.dump_take)
         self.dump_out = self.add_output('dump')
         self.global_params_out = self.add_output('globals')
         self.take_data_out = self.add_output('take data out')
@@ -574,7 +574,7 @@ class OpenTakeNode(MoCapNode):
             save_path = arg
             if self.save_take(save_path):
                 return
-        SaveDialog(self, self.save_file_callback, extensions=['.npz'])
+        SaveDialog(self, self.save_file_callback, extensions=['.npz'], default_path=self.load_folder_option())
 
     def save_file_callback(self, save_path):
         if not self.save_take(save_path):
@@ -591,6 +591,7 @@ class OpenTakeNode(MoCapNode):
                     os.remove(self.load_path())
                 self.load_path.set(save_path)
                 self.file_name.set(save_path)
+                self.update_last_directory(save_path)
             except Exception as e:
                 print(e)
             return True
@@ -602,7 +603,7 @@ class OpenTakeNode(MoCapNode):
             save_path = arg
             if self.save_clip_only(save_path):
                 return
-        SaveDialog(self, self.save_clip_callback, extensions=['.npz'])
+        SaveDialog(self, self.save_clip_callback, extensions=['.npz'], default_path=self.load_folder_option())
 
     def save_clip_callback(self, save_path):
         if not self.save_clip_only(save_path):
@@ -618,6 +619,7 @@ class OpenTakeNode(MoCapNode):
             for key, value in self.global_dict.items():
                 clip_dict[key] = value
             np.savez(save_path, **clip_dict)
+            self.update_last_directory(save_path)
             return True
         return False
 
@@ -716,6 +718,10 @@ class OpenTakeNode(MoCapNode):
             self.global_params_out.send(self.global_dict)
             self.force_frame = False
 
+    def update_last_directory(self, path):
+        dir_path = os.path.dirname(os.path.abspath(path))
+        self.load_folder_option.set(dir_path)
+
     def load_take_from_npz(self, path):
         if self.streaming:
             self.stop_button_clicked()
@@ -723,6 +729,7 @@ class OpenTakeNode(MoCapNode):
         file_name = path.split('/')[-1]
         self.file_name.set(file_name)
         self.load_path.set(path)
+        self.update_last_directory(path)
         self.take_dict = dict(take_file)
         keys_list = list(self.take_dict.keys())
         # print('keys_list', keys_list)
