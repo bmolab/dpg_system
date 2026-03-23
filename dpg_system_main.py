@@ -19,4 +19,8 @@ try:
     dpg_thread.run()
 except KeyboardInterrupt:
     print('exiting')
+except Exception as e:
+    import traceback
+    print('dpg_system_main unhandled exception:')
+    traceback.print_exception(e)
 

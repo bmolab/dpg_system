@@ -54,6 +54,7 @@ class NodeEditor:
         self.saving_preset = False
         self.presenting = False
         self.is_first_frame = True
+        self._editor_padding = [0, 0]
 
     def set_name(self, name):
         self.patch_name = name
@@ -443,6 +444,19 @@ class NodeEditor:
     def first_frame(self):
         for node in self._nodes:
             node.first_frame()
+        # Capture the internal padding between editor widget and content area.
+        # On the first frame, panning is [0, 0] and origin is at [0, 0],
+        # so the difference in screen coords IS the padding.
+        if self.origin is not None:
+            try:
+                editor_screen = dpg.get_item_rect_min(self.uuid)
+                origin_screen = dpg.get_item_rect_min(self.origin.uuid)
+                self._editor_padding = [
+                    origin_screen[0] - editor_screen[0],
+                    origin_screen[1] - editor_screen[1]
+                ]
+            except Exception:
+                self._editor_padding = [0, 0]
         self.is_first_frame = False
 
     def remove_all_nodes(self):
@@ -521,6 +535,35 @@ class NodeEditor:
         else:
             dpg.configure_item(self.uuid, minimap=False)
             self.mini_map = False
+
+    def home_nodes(self):
+        """Shift all nodes so the origin node appears at the top-left of the editor.
+        All nodes keep their relative positions to each other."""
+        if self.origin is None or len(self._nodes) == 0:
+            return
+
+        try:
+            # Both are viewport screen coordinates — directly comparable
+            editor_screen = dpg.get_item_rect_min(self.uuid)
+            origin_screen = dpg.get_item_rect_min(self.origin.uuid)
+
+            # How far the origin is from the editor content area
+            # _editor_padding accounts for internal padding between editor rect and content
+            shift_x = origin_screen[0] - editor_screen[0] - self._editor_padding[0]
+            shift_y = origin_screen[1] - editor_screen[1] - self._editor_padding[1]
+
+            if abs(shift_x) < 1 and abs(shift_y) < 1:
+                return  # Already home
+
+            # Move all nodes so origin lands at editor top-left
+            for node in self._nodes:
+                try:
+                    pos = dpg.get_item_pos(node.uuid)
+                    dpg.set_item_pos(node.uuid, [pos[0] - shift_x, pos[1] - shift_y])
+                except Exception:
+                    pass
+        except Exception as e:
+            print(f'home_nodes error: {e}')
 
     def cut_selection(self):
         clip = self.copy_selection()
@@ -886,6 +929,17 @@ class NodeEditor:
             node_container = {}
             node.save(node_container, index)
             nodes_container[index] = node_container
+
+        # Correct saved positions to be relative to origin at [0, 0].
+        # The origin node may have accumulated an offset from home_nodes().
+        if self.origin is not None:
+            origin_offset = dpg.get_item_pos(self.origin.uuid)
+            if abs(origin_offset[0]) > 0.5 or abs(origin_offset[1]) > 0.5:
+                for node_key in nodes_container:
+                    nc = nodes_container[node_key]
+                    if 'position_x' in nc:
+                        nc['position_x'] -= origin_offset[0]
+                        nc['position_y'] -= origin_offset[1]
 
         patch_container['nodes'] = nodes_container
 

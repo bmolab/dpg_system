@@ -48,8 +48,7 @@ class MGLSMPLMeshNode(MGLShapeNode):
         
         # Pose input: (22*3,) or (24*3,) axis-angle, or (22,3) / (24,3)
         self.pose_input = self.add_input('pose', triggers_execution=True)
-        self.trans_input = self.add_input('trans', widget_type='drag_float_n',
-                                          default_value=[0.0, 0.0, 0.0], columns=3)
+        self.trans_input = self.add_input('trans')
         
         # Properties
         self.gender_prop = self.add_property('gender', widget_type='combo', default_value='male')
@@ -64,7 +63,10 @@ class MGLSMPLMeshNode(MGLShapeNode):
         self.config_input = self.add_input('config', triggers_execution=True)
         
         self.end_initialization()
-    
+
+    def custom_create(self, from_file):
+        self.trans_input._data = np.array([0.0, 0.0, 0.0])
+
     def _load_model(self):
         """Load the SMPL-H model."""
         if not SMPLX_AVAILABLE:

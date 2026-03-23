@@ -2860,15 +2860,15 @@ def string_to_int(input_string, validate=False):
 
 def string_to_float_or_int(input_string, validate=False):
     """
-    Parses a string into a number. Returns an int if the number is whole,
-    otherwise returns a float.
+    Parses a string into a number. Returns an int if the number is whole
+    AND the original string has no decimal point, otherwise returns a float.
 
     Examples:
     - "5" -> 5 (int)
-    - "5.0" -> 5 (int)
+    - "5.0" -> 5.0 (float)  -- decimal point present means float
     - "5.5" -> 5.5 (float)
     - "five" -> 5 (int)
-    - "[5.0]" -> 5 (int)
+    - "[5.0]" -> 5.0 (float)
     """
     # 1. Use the robust float parser (handles text, regex, brackets, scientific notation)
     # We set validate=True so we can detect failures explicitly (returns None)
@@ -2880,8 +2880,12 @@ def string_to_float_or_int(input_string, validate=False):
         return 0
 
     # 3. Determine Type
-    # Check if the float represents a whole integer (e.g., 5.0 vs 5.1)
-    # .is_integer() is a standard float method in Python
+    # If the original string contains a decimal point, the user explicitly
+    # wants a float, even if the value is whole (e.g. "1.0")
+    if isinstance(input_string, str) and '.' in input_string:
+        return val
+
+    # Otherwise, return int for whole numbers
     if val.is_integer():
         return int(val)
 

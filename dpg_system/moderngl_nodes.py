@@ -24,6 +24,7 @@ def register_moderngl_nodes():
     Node.app.register_node('mgl_rotate', MGLRotationNode.factory)
     Node.app.register_node('mgl_scale', MGLScaleNode.factory)
     Node.app.register_node('mgl_camera', MGLCameraNode.factory)
+    Node.app.register_node('mgl_orbit_camera', MGLOrbitCameraNode.factory)
     Node.app.register_node('mgl_display', MGLDisplayNode.factory)
     Node.app.register_node('mgl_sphere', MGLSphereNode.factory)
     Node.app.register_node('mgl_geo_sphere', MGLGeodesicSphereNode.factory)
@@ -922,9 +923,9 @@ class MGLTransformSingleNode(MGLTransformNode):
         self.values[1] = self.arg_as_float(index=1, default_value=0.0)
         self.values[2] = self.arg_as_float(index=2, default_value=0.0)
 
-        self.x = self.add_input('x', widget_type='drag_float', default_value=self.values[0], callback=self.receive_value)
-        self.y = self.add_input('y', widget_type='drag_float', default_value=self.values[1])
-        self.z = self.add_input('z', widget_type='drag_float', default_value=self.values[2])
+        self.x = self.add_input('x', widget_type='drag_float', widget_width=50, default_value=self.values[0], callback=self.receive_value)
+        self.y = self.add_input('y', widget_type='drag_float', widget_width=50, default_value=self.values[1])
+        self.z = self.add_input('z', widget_type='drag_float', widget_width=50, default_value=self.values[2])
 
         self.reset_button = self.add_property('reset', widget_type='button', callback=self.reset)
 
@@ -1233,7 +1234,7 @@ class MGLShapeNode(MGLNode):
         self.mode_input = self.add_input('mode', widget_type='combo', default_value='solid')
         self.mode_input.widget.combo_items = ['solid', 'wireframe', 'points']
         self.cull_input = self.add_input('cull', widget_type='checkbox', default_value=True)
-        self.point_size_input = self.add_input('point_size', widget_type='drag_float', default_value=4.0, min_value=1.0)
+        self.point_size_input = self.add_input('point_size', widget_type='drag_float', widget_width=50, default_value=4.0, min_value=1.0)
         self.round_input = self.add_input('round', widget_type='checkbox', default_value=True)
         self.texture_input = self.add_input('texture')
         self.vbo = None
@@ -1482,14 +1483,14 @@ class MGLSphereNode(MGLShapeNode):
 
     def initialize(self, args):
         super().initialize(args)
-        self.radius_input = self.add_input('radius', widget_type='drag_float', default_value=0.5, speed=0.01)
-        self.stacks_input = self.add_input('stacks', widget_type='drag_int', default_value=16, min_value=3, callback=self.geometry_changed)
-        self.sectors_input = self.add_input('sectors', widget_type='drag_int', default_value=32, min_value=3, callback=self.geometry_changed)
+        self.radius_input = self.add_input('radius', widget_type='drag_float', default_value=0.5, widget_width=50, speed=0.01)
+        self.stacks_input = self.add_input('stacks', widget_type='drag_int', default_value=16, widget_width=50, min_value=3, callback=self.geometry_changed)
+        self.sectors_input = self.add_input('sectors', widget_type='drag_int', default_value=32, widget_width=50, min_value=3, callback=self.geometry_changed)
         self.end_initialization()
 
-    def custom_create(self, from_file):
-        dpg.configure_item(self.stacks_input.widget.uuids[0], width=100)
-        dpg.configure_item(self.sectors_input.widget.uuids[0], width=100)
+    # def custom_create(self, from_file):
+    #     dpg.configure_item(self.stacks_input.widget.uuids[0], width=100)
+    #     dpg.configure_item(self.sectors_input.widget.uuids[0], width=100)
 
     def create_geometry(self):
         import math
@@ -1775,9 +1776,9 @@ class MGLPlaneNode(MGLShapeNode):
 
     def initialize(self, args):
         super().initialize(args)
-        self.width_input = self.add_input('width', widget_type='drag_float', default_value=1.0, speed=0.01)
-        self.depth_input = self.add_input('depth', widget_type='drag_float', default_value=1.0, speed=0.01)
-        self.subdivisions_input = self.add_input('subdivisions', widget_type='drag_int', default_value=1, min_value=1, max_value=256, callback=self.geometry_changed)
+        self.width_input = self.add_input('width', widget_type='drag_float', widget_width=50, default_value=1.0, speed=0.01)
+        self.depth_input = self.add_input('depth', widget_type='drag_float', widget_width=50, default_value=1.0, speed=0.01)
+        self.subdivisions_input = self.add_input('subdivisions', widget_type='drag_int', widget_width=50, default_value=1, min_value=1, max_value=256, callback=self.geometry_changed)
         self.end_initialization()
 
     def custom_create(self, from_file):
@@ -1850,15 +1851,11 @@ class MGLDiskNode(MGLShapeNode):
 
     def initialize(self, args):
         super().initialize(args)
-        self.radius_input = self.add_input('radius', widget_type='drag_float', default_value=0.5, speed=0.01)
-        self.hole_ratio_input = self.add_input('hole_ratio', widget_type='drag_float', default_value=0.0, speed=0.01, min_value=0.0, max_value=0.99, callback=self.geometry_changed)
-        self.segments_input = self.add_input('segments', widget_type='drag_int', default_value=32, min_value=3, max_value=256, callback=self.geometry_changed)
-        self.rings_input = self.add_input('rings', widget_type='drag_int', default_value=1, min_value=1, max_value=64, callback=self.geometry_changed)
+        self.radius_input = self.add_input('radius', widget_type='drag_float', widget_width=50, default_value=0.5, speed=0.01)
+        self.hole_ratio_input = self.add_input('hole_ratio', widget_type='drag_float', widget_width=50, default_value=0.0, speed=0.01, min_value=0.0, max_value=0.99, callback=self.geometry_changed)
+        self.segments_input = self.add_input('segments', widget_type='drag_int', widget_width=50, default_value=32, min_value=3, max_value=256, callback=self.geometry_changed)
+        self.rings_input = self.add_input('rings', widget_type='drag_int', widget_width=50, default_value=1, min_value=1, max_value=64, callback=self.geometry_changed)
         self.end_initialization()
-
-    def custom_create(self, from_file):
-        dpg.configure_item(self.segments_input.widget.uuids[0], width=100)
-        dpg.configure_item(self.rings_input.widget.uuids[0], width=100)
 
     def create_geometry(self):
         import math
@@ -2300,9 +2297,9 @@ class MGLTextNode(MGLNode):
                 self.font_path = v
 
         self.text_input = self.add_input('text', triggers_execution=True)
-        self.scale_input = self.add_input('scale', widget_type='drag_float', default_value=1.0, speed=0.01)
-        self.text_font = self.add_option('font', widget_type='text_input', default_value=self.font_path, callback=self.font_changed)
-        self.text_size = self.add_option('size', widget_type='drag_int', default_value=self.font_size, callback=self.size_changed)
+        self.scale_input = self.add_input('scale', widget_type='drag_float', widget_width=50, default_value=1.0, speed=0.01)
+        self.text_font = self.add_option('font', widget_type='text_input', widget_width=50, default_value=self.font_path, callback=self.font_changed)
+        self.text_size = self.add_option('size', widget_type='drag_int', widget_width=50, default_value=self.font_size, callback=self.size_changed)
 
         self.face = None
         self.characters = {}
@@ -2562,7 +2559,7 @@ class MGLLineArrayNode(MGLNode):
     def initialize(self, args):
         super().initialize(args)
         self.array_input = self.add_input('array', triggers_execution=True)
-        self.line_width_input = self.add_input('line_width', widget_type='drag_float', default_value=1.0, min_value=1.0)
+        self.line_width_input = self.add_input('line_width', widget_type='drag_float', widget_width=50, default_value=1.0, min_value=1.0)
         self.line_array = None
         self.vbo = None
         self.vao = None
@@ -2755,12 +2752,12 @@ class MGLPartialDiskNode(MGLShapeNode):
         start = 0.0
         sweep = 90.0
 
-        self.outer_radius = self.add_input('outer radius', widget_type='drag_float', default_value=outer_r, callback=self.geometry_changed)
-        self.inner_radius = self.add_input('inner radius', widget_type='drag_float', default_value=inner_r, callback=self.geometry_changed)
-        self.slices_input = self.add_input('slices', widget_type='drag_int', default_value=slices, callback=self.geometry_changed)
-        self.start_angle = self.add_input('start angle', widget_type='drag_float', default_value=start, callback=self.geometry_changed)
+        self.outer_radius = self.add_input('outer radius', widget_type='drag_float', widget_width=50, default_value=outer_r, callback=self.geometry_changed)
+        self.inner_radius = self.add_input('inner radius', widget_type='drag_float', widget_width=50, default_value=inner_r, callback=self.geometry_changed)
+        self.slices_input = self.add_input('slices', widget_type='drag_int', widget_width=50, default_value=slices, callback=self.geometry_changed)
+        self.start_angle = self.add_input('start angle', widget_type='drag_float', widget_width=50, default_value=start, callback=self.geometry_changed)
         self.start_angle.widget.speed = 1
-        self.sweep_angle = self.add_input('sweep angle', widget_type='drag_float', default_value=sweep, callback=self.geometry_changed)
+        self.sweep_angle = self.add_input('sweep angle', widget_type='drag_float', widget_width=50, default_value=sweep, callback=self.geometry_changed)
         self.sweep_angle.widget.speed = 1
         self.end_initialization()
 
@@ -2852,11 +2849,11 @@ class MGLTorqueArcNode(MGLNode):
         super().initialize(args)
         self.torques_input = self.add_input('torques', triggers_execution=True)
         self.positions_input = self.add_input('positions')
-        self.scale_input = self.add_input('scale', widget_type='drag_float', default_value=0.01, speed=0.001)
-        self.threshold_input = self.add_input('threshold', widget_type='drag_float', default_value=0.1, speed=0.01)
-        self.sweep_input = self.add_input('sweep', widget_type='drag_float', default_value=270.0, speed=1.0)
-        self.segments_input = self.add_input('segments', widget_type='drag_int', default_value=24, min_value=6, max_value=64)
-        self.arrow_size_input = self.add_input('arrow size', widget_type='drag_float', default_value=0.3, speed=0.01)
+        self.scale_input = self.add_input('scale', widget_type='drag_float', widget_width=50, default_value=0.01, speed=0.001)
+        self.threshold_input = self.add_input('threshold', widget_type='drag_float', widget_width=50, default_value=0.1, speed=0.01)
+        self.sweep_input = self.add_input('sweep', widget_type='drag_float', widget_width=50, default_value=270.0, speed=1.0)
+        self.segments_input = self.add_input('segments', widget_type='drag_int', widget_width=50, default_value=24, min_value=6, max_value=64)
+        self.arrow_size_input = self.add_input('arrow size', widget_type='drag_float', widget_width=50, default_value=0.3, speed=0.01)
 
         self.torques_data = None
         self.positions_data = None
@@ -3027,13 +3024,13 @@ class MGLModelNode(MGLShapeNode):
     def initialize(self, args):
         super().initialize(args)
         self.file_input = self.add_input('file_path', widget_type='text_input', default_value='', callback=self.reload_model)
-        self.scale_input = self.add_input('scale', widget_type='drag_float', default_value=1.0)
-        self.center_input = self.add_input('center', widget_type='checkbox', default_value=True)
+        self.scale_input = self.add_input('scale', widget_type='drag_float', widget_width=50, default_value=1.0)
+        self.center_input = self.add_input('center', widget_type='checkbox', widget_width=50, default_value=True)
         
         # UV Controls
         self.uv_mode_input = self.add_input('uv_mode', widget_type='combo', default_value='original')
         self.uv_mode_input.widget.combo_items = ['original', 'sphere', 'cylinder', 'plane_xy', 'plane_xz', 'box']
-        self.uv_scale_input = self.add_input('uv_scale', widget_type='drag_float', default_value=1.0)
+        self.uv_scale_input = self.add_input('uv_scale', widget_type='drag_float', widget_width=50, default_value=1.0)
         self.generate_uv_button = self.add_property('generate_uv', widget_type='button', callback=self.reload_model)
         
         self.loaded_geometry = None
@@ -3231,7 +3228,7 @@ class MGLCameraNode(MGLNode):
 
     def initialize(self, args):
         super().initialize(args)
-        self.fov = self.add_input('fov', widget_type='drag_float', default_value=60.0)
+        self.fov = self.add_input('fov', widget_type='drag_float', widget_width=50, default_value=60.0)
         self.pos = self.add_input('pos', widget_type='drag_float_n', default_value=[0.0, 0.0, 3.0], speed=0.1, columns=3)
         self.target = self.add_input('target', widget_type='drag_float_n', default_value=[0.0, 0.0, 0.0], speed=0.1, columns=3)
         self.up = self.add_input('up', widget_type='drag_float_n', default_value=[0.0, 1.0, 0.0], columns=3)
@@ -3272,6 +3269,79 @@ class MGLCameraNode(MGLNode):
             # Just pass signal? Actually Camera should usually be BEFORE transform/geometry
             # in the chain for View/Proj to be set for them.
             pass
+
+
+class MGLOrbitCameraNode(MGLNode):
+    """Orbit camera that revolves around a target point.
+
+    The camera eye position is computed from spherical coordinates
+    (yaw, elevation, distance) centred on the target.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return MGLOrbitCameraNode(name, data, args)
+
+    def __init__(self, label, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        super().initialize(args)
+        self.fov = self.add_input('fov', widget_type='drag_float', widget_width=50, default_value=60.0)
+        self.target = self.add_input('target', widget_type='drag_float_n', default_value=[0.0, 0.0, 0.0], speed=0.01, columns=3)
+        self.distance = self.add_input('distance', widget_type='drag_float', default_value=3.0)
+        self.yaw = self.add_input('yaw', widget_type='drag_float', widget_width=50, default_value=0.0)
+        self.elevation = self.add_input('elevation', widget_type='drag_float', widget_width=50, default_value=20.0)
+
+    def custom_create(self, from_file):
+        dpg.configure_item(self.fov.widget.uuids[0], speed=1.0)
+        dpg.configure_item(self.distance.widget.uuids[0], speed=0.05)
+        dpg.configure_item(self.yaw.widget.uuids[0], speed=1.0)
+        dpg.configure_item(self.elevation.widget.uuids[0], speed=1.0)
+        dpg.configure_item(self.target.widget.uuids[2], label='target')
+        dpg.configure_item(self.target.widget.uuids[0], width=45)
+        dpg.configure_item(self.target.widget.uuids[1], width=45)
+        dpg.configure_item(self.target.widget.uuids[2], width=45)
+
+    def draw(self):
+        if self.ctx is None:
+            return
+
+        # Read parameters
+        tgt = self.target()
+        tgt = np.array(tgt, dtype=np.float32)
+        dist = self.distance()
+        yaw_deg = self.yaw()
+        elev_deg = self.elevation()
+        fov_val = self.fov()
+
+        # Spherical to Cartesian offset from target
+        yaw_rad = math.radians(yaw_deg)
+        elev_rad = math.radians(elev_deg)
+        cos_elev = math.cos(elev_rad)
+
+        eye_x = tgt[0] + dist * cos_elev * math.sin(yaw_rad)
+        eye_y = tgt[1] + dist * math.sin(elev_rad)
+        eye_z = tgt[2] + dist * cos_elev * math.cos(yaw_rad)
+
+        eye = [eye_x, eye_y, eye_z]
+        up = [0.0, 1.0, 0.0]
+
+        # Projection
+        aspect = self.ctx.width / self.ctx.height
+        if aspect == 0:
+            aspect = 1.0
+        p = perspective(fov_val, aspect, 0.1, 100.0)
+        self.ctx.set_projection_matrix(p)
+
+        # View
+        v = look_at(eye, tgt.tolist(), up)
+        self.ctx.set_view_matrix(v)
+
+        # Update view_pos in default shader if available
+        if 'view_pos' in self.ctx.default_shader:
+            self.ctx.default_shader['view_pos'].value = tuple(eye)
+
 
 class MGLOrientationDisksNode(MGLNode):
     """Renders N independently-oriented annular disks with emissive (unlit) colors.
@@ -3316,9 +3386,9 @@ class MGLOrientationDisksNode(MGLNode):
         if len(args) > 2:
             slices = int(args[2])
 
-        self.scale_input = self.add_input('scale', widget_type='drag_float', default_value=scale, speed=0.01)
-        self.slices_input = self.add_input('slices', widget_type='drag_int', default_value=slices, min_value=6, max_value=128, callback=self._invalidate_ring)
-        self.ring_width_input = self.add_input('ring_width', widget_type='drag_float', default_value=0.1, speed=0.01, callback=self._invalidate_ring)
+        self.scale_input = self.add_input('scale', widget_type='drag_float', widget_width=50, default_value=scale, speed=0.01)
+        self.slices_input = self.add_input('slices', widget_type='drag_int', widget_width=50, default_value=slices, min_value=6, max_value=128, callback=self._invalidate_ring)
+        self.ring_width_input = self.add_input('ring_width', widget_type='drag_float', widget_width=50, default_value=0.1, speed=0.01, callback=self._invalidate_ring)
         self.axis_angle_input = self.add_input('axis-angle', triggers_execution=True)
 
         self.color_inputs = []
