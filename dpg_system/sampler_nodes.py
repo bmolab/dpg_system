@@ -12,6 +12,7 @@ import numpy as np
 import threading
 import os
 import torchaudio
+import math
 import time
 # Import our new engine
 from dpg_system.sampler import SamplerEngine, Sample
@@ -25,6 +26,7 @@ def register_sampler_nodes():
     Node.app.register_node('polyphonic_sampler', PolyphonicSamplerNode.factory)
     Node.app.register_node('granular_sampler', GranularSamplerNode.factory)
     Node.app.register_node('scratch_sampler', ScratchSamplerNode.factory)
+    Node.app.register_node('crossfade_scanner', CrossfadeScannerNode.factory)
 
 
 class SamplerEngineNode(Node):
@@ -1011,6 +1013,9 @@ class PolyphonicSamplerNode(Node):
         self.base_note_input = self.add_input('base_note', widget_type='drag_int', default_value=60, min=0, max=127)
         
         self.auto_stop_input = self.add_input('auto_stop', widget_type='checkbox', default_value=True)
+        self.fade_input = self.add_input('fade', callback=self.on_fade)
+        # Register 'fade' as a message handler so text/list messages route correctly
+        self.message_handlers['fade'] = self._fade_message
 
         # Output
         self.active_out = self.add_output('active_voices')
@@ -1425,33 +1430,63 @@ class PolyphonicSamplerNode(Node):
 
     def handle_fader_list(self, data):
         # Data: [[sid, fade], [sid, fade], ...]
-        # 1. Parse desired state
+        # Destructive mode: stops sounds not in the list
+        desired_state = self._parse_fader_data(data)
+        self._apply_fader_state(desired_state)
+        
+        # Stop sounds not in the list
+        for alloc in self.active_allocations:
+            if alloc["sid"] not in desired_state:
+                if SamplerEngineNode.engine:
+                    SamplerEngineNode.engine.stop_voice(alloc["idx"])
+
+    def _fade_message(self, message, args):
+        # Called when data arrives as a message like ["fade", [[0, 0.5], [1, 0.8]]]
+        # args = [[[0, 0.5], [1, 0.8]]] (remaining elements after "fade")
+        if len(args) == 1 and isinstance(args[0], list):
+            data = args[0]
+        else:
+            data = args
+        # Wrap single [sid, fade] as [[sid, fade]]
+        if len(data) > 0 and not isinstance(data[0], list):
+            data = [data]
+        desired_state = self._parse_fader_data(data)
+        self._apply_fader_state(desired_state)
+
+    def on_fade(self):
+        data = self.fade_input()
+        if not isinstance(data, list) or len(data) == 0:
+            return
+        # Wrap single [sid, fade] as [[sid, fade]]
+        if not isinstance(data[0], list):
+            data = [data]
+        desired_state = self._parse_fader_data(data)
+        self._apply_fader_state(desired_state)
+
+    def _parse_fader_data(self, data):
         desired_state = {}
         for item in data:
             if len(item) >= 2:
                 try:
-                    sid = int(item[0]) # Enforce int
+                    sid = int(item[0])
                     fade = float(item[1])
                     desired_state[sid] = fade
                 except:
                     pass
-        
-        # 2. Identify active SIDs
+        return desired_state
+
+    def _apply_fader_state(self, desired_state):
         active_sids = set()
         for alloc in self.active_allocations:
             active_sids.add(alloc["sid"])
-            
-        # 3. Update or Start
+
         for sid, fade in desired_state.items():
             if sid not in self.sounds: continue
-            
+
             if sid in active_sids:
-                # Update existing
                 for alloc in self.active_allocations:
                     if alloc["sid"] == sid:
-
                         idx = alloc["idx"]
-                        # Update fade tracking
                         alloc["fade"] = fade
                         if fade <= 0.001:
                             if self.auto_stop_input():
@@ -1461,35 +1496,28 @@ class PolyphonicSamplerNode(Node):
                                 alloc["fade_zero_since"] = None
                         else:
                             alloc["fade_zero_since"] = None
-                        
-                        # Apply volume
+
                         snd = self.sounds[sid]
                         eff_vol = snd.params["volume"] * fade
                         if SamplerEngineNode.engine:
                             SamplerEngineNode.engine.set_voice_volume(idx, eff_vol)
-            
             else:
-                # Start new voice (if fade > 0)
                 if fade > 0.0:
-
                     idx = self.find_free_voice()
                     if idx is not None and SamplerEngineNode.engine:
                         snd = self.sounds[sid]
                         voice_params = snd.params
-                        
+
                         eff_vol = voice_params["volume"] * fade
                         eff_pitch = voice_params["pitch"]
-                        
-                        # Start with 0 attack for fader mode?
-                        # User said: "ignoring the attack parameter"
-                        # We force attack to 0.0 for this trigger.
+
                         SamplerEngineNode.engine.set_voice_envelope(idx, 0.0, voice_params["decay"], voice_params["decay_curve"])
                         SamplerEngineNode.engine.play_voice(idx, snd.sample, eff_vol, eff_pitch)
-                        
+
                         alloc_record = {
                             "idx": idx,
                             "sid": sid,
-                            "pitch": 1.0, 
+                            "pitch": 1.0,
                             "time": time.time(),
                             "fade": fade,
                             "fade_zero_since": None,
@@ -1497,36 +1525,12 @@ class PolyphonicSamplerNode(Node):
                         }
                         self.active_allocations.append(alloc_record)
                         self.add_frame_task()
-                
-                # Check for zero fade timeout on START?
-                # If we start with 0.0, we should track timeout immediately.
+
                 if fade <= 0.001 and self.auto_stop_input():
-                    # Search for the alloc we just added or updated
                     for alloc in self.active_allocations:
                         if alloc["sid"] == sid and alloc["idx"] == idx:
                              if alloc.get("fade_zero_since") is None:
                                  alloc["fade_zero_since"] = time.time()
-
-        # 4. Stop missing
-        # "If there are currently playing sounds whose id is not in the list, they should stop playing."
-        # Note: This logic assumes we ONLY control voices via this list mode if we are using it.
-        # But normal triggers might also be active. 
-        # However, the user request implies this input list defines the *set* of playing sounds.
-        # We will stop ANY sound ID not in the desired_state keys?
-        # Or only those that were started via fader mode?
-        # User said "If there are currently playing sounds whose id is not in the list, they should stop playing."
-        # This is quite aggressive. It turns the trigger input into a state description.
-        # We will iterate and release those not in desired_state.
-        
-        for alloc in self.active_allocations:
-            # Only stop voices that were involved in fader logic (have 'fade' key?)
-            # Or just blindly stop? User said "currently playing sounds whose id is not in the list".
-            # Safest is to only stop those that match our active sounds logic.
-            # But let's assume this node is exclusive for these sounds if using fader mode.
-            if alloc["sid"] not in desired_state:
-                # Stop it
-                if SamplerEngineNode.engine:
-                    SamplerEngineNode.engine.stop_voice(alloc["idx"])
                 # We can mark it as effectively stopped so we don't re-stop it?
                 # Process in frame_task will clean it up.
 
@@ -2506,3 +2510,94 @@ class ScratchSamplerNode(PolyphonicSamplerNode):
                             self.active_allocations.append(alloc_record)
                             self.add_frame_task()
 
+
+class CrossfadeScannerNode(Node):
+    """
+    Takes a float input (0-1) and outputs [[sid, fade_level], ...] for n sounds,
+    creating a continuous crossfade chain suitable for the polyphonic sampler fade input.
+    
+    Crossfade behaviour:
+      v=0     : all levels are 0
+      v rising: output[0] fades up to 1
+      continue: output[0] crossfades down, output[1] crossfades up
+      ...       each successive pair crossfades in turn
+      v=1     : output[n-1] = 1, all others = 0
+    """
+    @staticmethod
+    def factory(name, data, args=None):
+        node = CrossfadeScannerNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.n = 4  # default number of sections
+        self.sound_ids = list(range(self.n))
+
+        self.value_input = self.add_input('value', widget_type='slider_float',
+                                          default_value=0.0, min=0.0, max=1.0,
+                                          widget_width=240, callback=self.on_value)
+        self.n_input = self.add_input('n', widget_type='input_int',
+                                      default_value=4, min=2, max=128,
+                                      callback=self.on_n_change)
+        self.ids_input = self.add_input('sound_ids', callback=self.on_ids)
+        self.equal_power_input = self.add_input('equal_power', widget_type='checkbox',
+                                                 default_value=False, callback=self.on_value)
+
+        self.fade_out = self.add_output('fade')
+
+    def on_n_change(self):
+        self.n = max(2, int(self.n_input()))
+        self.sound_ids = list(range(self.n))
+        self.on_value()
+
+    def on_ids(self):
+        data = self.ids_input()
+        if isinstance(data, list):
+            try:
+                self.sound_ids = [int(x) for x in data]
+                self.n = len(self.sound_ids)
+                self.n_input.set(self.n)
+            except:
+                pass
+        self.on_value()
+
+    def on_value(self):
+        v = float(self.value_input())
+        v = max(0.0, min(1.0, v))
+        n = self.n
+
+        levels = [0.0] * n
+        seg_width = 1.0 / n
+
+        # Which segment are we in?
+        seg = int(v / seg_width)
+        if seg >= n:
+            seg = n - 1
+
+        # Local position within segment (0-1)
+        t = (v - seg * seg_width) / seg_width
+        t = max(0.0, min(1.0, t))
+
+        if seg == 0:
+            # Fade-in of first sound
+            levels[0] = t
+        else:
+            # Crossfade: previous sound fades out, current fades in
+            levels[seg - 1] = 1.0 - t
+            levels[seg] = t
+
+        # Apply equal power curves if enabled
+        if self.equal_power_input():
+            half_pi = math.pi * 0.5
+            for i in range(n):
+                if levels[i] > 0.0:
+                    levels[i] = math.sin(levels[i] * half_pi)
+
+        # Build output: [[sid, level], ...]
+        result = []
+        for i in range(n):
+            sid = self.sound_ids[i] if i < len(self.sound_ids) else i
+            result.append([sid, round(levels[i], 4)])
+
+        self.fade_out.send(result)

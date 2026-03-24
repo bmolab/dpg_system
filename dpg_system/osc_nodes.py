@@ -84,6 +84,8 @@ def register_osc_nodes():
     Node.app.register_node('osc_cue', OSCCueNode.factory)
     Node.app.register_node('osc_query_json', OSCQueryJSONNode.factory)
     Node.app.register_node('osc_manager', OSCManagerNode.factory)
+    Node.app.register_node('pipo_motion_source', PipoMotionSourceNode.factory)
+    Node.app.register_node('pipo_motion', PipoMotionSourceNode.factory)
 
 
 class OSCBase:
@@ -1683,6 +1685,107 @@ class OSCSourceNode(OSCThreadingSource, OSCRegistrableMixin, Node):
     def cleanup(self):
         OSCSource.cleanup(self)
         self._registerable_cleanup()
+
+
+class PipoMotionSourceNode(Node):
+    """Receives OSC from a PiPo-Motion sensor and outputs yaw, pitch, roll as separate floats and acceleration as an np.array."""
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = PipoMotionSourceNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.server = None
+        self.server_thread = None
+        self.dispatcher = None
+        self.lock = threading.Lock()
+
+        # default port
+        self.source_port = 8000
+        if args is not None:
+            for i in range(len(args)):
+                arg, t = decode_arg(args, i)
+                if t == int:
+                    self.source_port = arg
+
+        self.port_property = self.add_property('port', widget_type='input_int', default_value=self.source_port, callback=self.port_changed)
+        self.yaw_output = self.add_output('yaw')
+        self.pitch_output = self.add_output('pitch')
+        self.roll_output = self.add_output('roll')
+        self.acc_output = self.add_output('acc')
+
+        self.acc = np.zeros(3, dtype=np.float32)
+
+        self.start_serving()
+
+    def port_changed(self):
+        port = any_to_int(self.port_property())
+        if port != self.source_port:
+            self.destroy_server()
+            self.source_port = port
+            self.start_serving()
+
+    def osc_handler(self, address, *args):
+        if self.lock.acquire(blocking=True):
+            try:
+                if len(args) > 0:
+                    value = float(args[0])
+                else:
+                    value = 0.0
+
+                if address == '/motion/yaw':
+                    self.yaw_output.send(value)
+                elif address == '/motion/pitch':
+                    self.pitch_output.send(value)
+                elif address == '/motion/roll':
+                    self.roll_output.send(value)
+                elif address == '/motion/accX':
+                    self.acc[0] = value
+                elif address == '/motion/accY':
+                    self.acc[1] = value
+                elif address == '/motion/accZ':
+                    self.acc[2] = value
+                    self.acc_output.send(self.acc.copy())
+            finally:
+                self.lock.release()
+
+    def start_serving(self):
+        try:
+            self.dispatcher = Dispatcher()
+            self.dispatcher.map('/motion/yaw', self.osc_handler)
+            self.dispatcher.map('/motion/pitch', self.osc_handler)
+            self.dispatcher.map('/motion/roll', self.osc_handler)
+            self.dispatcher.map('/motion/accX', self.osc_handler)
+            self.dispatcher.map('/motion/accY', self.osc_handler)
+            self.dispatcher.map('/motion/accZ', self.osc_handler)
+            self.server = osc_server.ThreadingOSCUDPServer(('0.0.0.0', self.source_port), self.dispatcher)
+            self.server_thread = threading.Thread(target=self.server.serve_forever)
+            self.server_thread.start()
+        except Exception as e:
+            print(f'PipoMotionSourceNode: failed to start server on port {self.source_port}: {e}')
+            if self.server:
+                self.server.shutdown()
+            if self.server_thread:
+                self.server_thread.join()
+                self.server_thread = None
+            self.server = None
+            self.dispatcher = None
+
+    def destroy_server(self):
+        if self.dispatcher:
+            self.dispatcher = None
+        if self.server is not None:
+            self.server.shutdown()
+        if self.server_thread is not None:
+            self.server_thread.join()
+        self.server = None
+        self.server_thread = None
+
+    def cleanup(self):
+        self.destroy_server()
 
 
 class OSCAsyncIOSourceNode(OSCAsyncIOSource, OSCRegistrableMixin, Node):
