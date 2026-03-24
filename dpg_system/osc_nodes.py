@@ -85,6 +85,7 @@ def register_osc_nodes():
     Node.app.register_node('osc_query_json', OSCQueryJSONNode.factory)
     Node.app.register_node('osc_manager', OSCManagerNode.factory)
     Node.app.register_node('pipo_motion_source', PipoMotionSourceNode.factory)
+    Node.app.register_node('pipo_range', PipoRangeSourceNode.factory)
     Node.app.register_node('pipo_motion', PipoMotionSourceNode.factory)
 
 
@@ -1564,7 +1565,7 @@ class OSCThreadingSource(OSCSource):
         try:
             self.create_dispatcher()
             self.server = osc_server.ThreadingOSCUDPServer(('0.0.0.0', self.source_port), self.dispatcher)
-            self.server_thread = threading.Thread(target=self.server.serve_forever)
+            self.server_thread = threading.Thread(target=self.server.serve_forever, daemon=True)
             self.server_thread.start()
 
         except Exception as e:
@@ -1600,7 +1601,7 @@ def stop_server():
 
 def start_async():
     loop = asyncio.new_event_loop()
-    threading.Thread(target=loop.run_forever).start()
+    threading.Thread(target=loop.run_forever, daemon=True).start()
     return loop
 
 
@@ -1762,14 +1763,14 @@ class PipoMotionSourceNode(Node):
             self.dispatcher.map('/motion/accY', self.osc_handler)
             self.dispatcher.map('/motion/accZ', self.osc_handler)
             self.server = osc_server.ThreadingOSCUDPServer(('0.0.0.0', self.source_port), self.dispatcher)
-            self.server_thread = threading.Thread(target=self.server.serve_forever)
+            self.server_thread = threading.Thread(target=self.server.serve_forever, daemon=True)
             self.server_thread.start()
         except Exception as e:
             print(f'PipoMotionSourceNode: failed to start server on port {self.source_port}: {e}')
             if self.server:
                 self.server.shutdown()
             if self.server_thread:
-                self.server_thread.join()
+                self.server_thread.join(timeout=2.0)
                 self.server_thread = None
             self.server = None
             self.dispatcher = None
@@ -1777,15 +1778,103 @@ class PipoMotionSourceNode(Node):
     def destroy_server(self):
         if self.dispatcher:
             self.dispatcher = None
-        if self.server is not None:
-            self.server.shutdown()
-        if self.server_thread is not None:
-            self.server_thread.join()
+        server = self.server
+        thread = self.server_thread
         self.server = None
         self.server_thread = None
+        if server is not None:
+            server.shutdown()
+        if thread is not None:
+            thread.join(timeout=2.0)
 
     def cleanup(self):
-        self.destroy_server()
+        def _stop():
+            self.destroy_server()
+        stop_thread = threading.Thread(target=_stop, daemon=True)
+        stop_thread.start()
+
+
+class PipoRangeSourceNode(Node):
+    """Receives OSC from a PiPo range sensor and outputs distance as a float."""
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = PipoRangeSourceNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.server = None
+        self.server_thread = None
+        self.dispatcher = None
+        self.lock = threading.Lock()
+
+        self.source_port = 8001
+        if args is not None:
+            for i in range(len(args)):
+                arg, t = decode_arg(args, i)
+                if t == int:
+                    self.source_port = arg
+
+        self.port_property = self.add_property('port', widget_type='input_int', default_value=self.source_port, callback=self.port_changed)
+        self.dist_output = self.add_output('dist')
+
+        self.start_serving()
+
+    def port_changed(self):
+        port = any_to_int(self.port_property())
+        if port != self.source_port:
+            self.destroy_server()
+            self.source_port = port
+            self.start_serving()
+
+    def osc_handler(self, address, *args):
+        if self.lock.acquire(blocking=True):
+            try:
+                if len(args) > 0:
+                    value = float(args[0])
+                else:
+                    value = 0.0
+                if address == '/range/dist':
+                    self.dist_output.send(value)
+            finally:
+                self.lock.release()
+
+    def start_serving(self):
+        try:
+            self.dispatcher = Dispatcher()
+            self.dispatcher.map('/range/dist', self.osc_handler)
+            self.server = osc_server.ThreadingOSCUDPServer(('0.0.0.0', self.source_port), self.dispatcher)
+            self.server_thread = threading.Thread(target=self.server.serve_forever, daemon=True)
+            self.server_thread.start()
+        except Exception as e:
+            print(f'PipoRangeSourceNode: failed to start server on port {self.source_port}: {e}')
+            if self.server:
+                self.server.shutdown()
+            if self.server_thread:
+                self.server_thread.join(timeout=2.0)
+                self.server_thread = None
+            self.server = None
+            self.dispatcher = None
+
+    def destroy_server(self):
+        if self.dispatcher:
+            self.dispatcher = None
+        server = self.server
+        thread = self.server_thread
+        self.server = None
+        self.server_thread = None
+        if server is not None:
+            server.shutdown()
+        if thread is not None:
+            thread.join(timeout=2.0)
+
+    def cleanup(self):
+        def _stop():
+            self.destroy_server()
+        stop_thread = threading.Thread(target=_stop, daemon=True)
+        stop_thread.start()
 
 
 class OSCAsyncIOSourceNode(OSCAsyncIOSource, OSCRegistrableMixin, Node):

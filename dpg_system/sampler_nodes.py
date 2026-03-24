@@ -2601,3 +2601,12 @@ class CrossfadeScannerNode(Node):
             result.append([sid, round(levels[i], 4)])
 
         self.fade_out.send(result)
+
+    def save_custom(self, container):
+        container['sound_ids'] = self.sound_ids
+
+    def load_custom(self, container):
+        if 'sound_ids' in container:
+            self.sound_ids = [int(x) for x in container['sound_ids']]
+            self.n = len(self.sound_ids)
+            self.n_input.set(self.n)
