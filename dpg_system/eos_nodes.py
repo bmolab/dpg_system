@@ -17,14 +17,17 @@ class EOSConsoleNode(OSCDeviceNode):
 
     def __init__(self, label: str, data, args):
         OSCDeviceNode.__init__(self, label, data, args)
+        self.ip = '10.1.3.11'
+        self.target_port = 1101
+        self.source_port = 1102
+        self.name = 'eos'
         self.target_ip_property.set_default_value('10.1.3.11')
         self.target_port_property.set_default_value('1101')
         self.source_port_property.set_default_value('1102')
         self.target_name_property.set_default_value('eos')
 
     def custom_create(self, from_file):
-        self.target_changed()
-        self.source_changed()
+        OSCDeviceNode.custom_create(self, from_file)
 
 
 class ColorSourceNode(OSCSender, Node):

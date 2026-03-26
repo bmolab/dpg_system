@@ -925,7 +925,9 @@ class App:
                     node.post_creation_callback()
         except Exception as e:
             # ideally create a ghost node (with connections?
+            import traceback
             print('create_node_from_model', name, 'failed', e)
+            traceback.print_exc()
             node = None
         return node
 

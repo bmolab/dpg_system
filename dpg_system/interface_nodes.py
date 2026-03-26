@@ -838,7 +838,7 @@ class ValueNode(Node):
             return StringNode(name, data, args)
 
     def __init__(self, label: str, data, args):
-        super().__init__(label, data, args)
+        Node.__init__(self, label, data, args)
 
         self.param_name = None
 
@@ -1117,7 +1117,7 @@ class NumericValueNode(ValueNode):
         self.max_property = None
         self.speed_property = None
         self.format_property = None
-        super().__init__(label, data, args)
+        ValueNode.__init__(self, label, data, args)
 
     def create_numeric_options(self):
         if self.widget_type in ['drag_float', 'slider_float', 'input_float', 'knob_float',
@@ -1139,7 +1139,7 @@ class NumericValueNode(ValueNode):
                                                    callback=self.options_changed)
 
     def options_changed(self):
-        super().options_changed()
+        ValueNode.options_changed(self)
         if self.min_property and self.max_property:
             self.min = self.min_property()
             self.max = self.max_property()
