@@ -8,6 +8,7 @@ dependencies:
   - ffmpeg
   - glfw
   - pkg-config
+  - portaudio
   - pyglfw
   - pyopengl
   - python==3.10
