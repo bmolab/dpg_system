@@ -1,0 +1,81 @@
+name: dpg_system_2026
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - ffmpeg
+  - glfw
+  - pyglfw
+  - pyopengl
+  - python==3.10
+  - pip
+  - pip:
+    # Core UI
+    - dearpygui==2.1.0
+
+    # Audio & Speech
+    - av
+    - ctranslate2
+    - elevenlabs
+    - faster-whisper
+    - pyaudio
+    - pydub
+    - pywhispercpp
+    - sounddevice
+    - soundfile
+
+    # MIDI
+    - mido
+    - rtmidi
+
+    # 3D / Graphics
+    - freetype-py
+    - moderngl
+    - pycairo
+    - pyglet
+    - smplx
+    - trimesh
+
+    # ML / Vision
+    - einops
+    - huggingface-hub
+    - kornia
+    - numba
+    - numpy
+    - numpy-quaternion
+    - onnxruntime
+    - opencv-python
+    - qwen-vl-utils
+    - scikit-learn
+    - scipy
+    - spacy
+    - timm
+    - tokenizers
+    - torch
+    - torch-kf
+    - torchaudio
+    - torchcodec
+    - torchvision
+    - transformers
+
+    # Networking & OSC
+    - ndi-python
+    - netifaces
+    - python-osc
+    - simplepyble
+    - websockets
+    - zeroconf
+
+    # Data / Math / Utils
+    - ffmpeg-python
+    - fuzzywuzzy
+    - matplotlib
+    - psutil
+    - pydantic
+    - pyquaternion
+    - pyyaml
+    - requests
+    - ssqueezepy
+    - sympy
+    - word2number
+prefix: dpg_system_2026
