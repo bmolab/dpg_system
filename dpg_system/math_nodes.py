@@ -47,6 +47,7 @@ def register_math_nodes():
     Node.app.register_node('perm', ArithmeticNode.factory)
     Node.app.register_node('combination', ArithmeticNode.factory)
     Node.app.register_node('continuous_rotation', ContinuousRotationNode.factory)
+    Node.app.register_node('accumulate', AccumulatorNode.factory)
 
 
 
@@ -768,3 +769,33 @@ class ContinuousRotationNode(Node):
                     rot[index] -= under_rot
         self.previous = rot.copy()
         self.output.send(rot)
+
+
+class AccumulatorNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = AccumulatorNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.accumulated_sum = 0
+
+        self.input = self.add_input('in', triggers_execution=True)
+        self.set_input = self.add_input('set', callback=self.set_value)
+        self.reset_input = self.add_input('reset', widget_type='button', callback=self.reset)
+        self.output = self.add_output('sum')
+
+    def set_value(self):
+        self.accumulated_sum = any_to_float_or_int(self.set_input())
+        self.output.send(self.accumulated_sum)
+
+    def reset(self):
+        self.accumulated_sum = 0
+        self.output.send(self.accumulated_sum)
+
+    def execute(self):
+        input_value = any_to_float_or_int(self.input())
+        self.accumulated_sum += input_value
+        self.output.send(self.accumulated_sum)

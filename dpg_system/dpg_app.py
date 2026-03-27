@@ -72,7 +72,9 @@ optional_import = [
     'visca_nodes',
     'pjlink_nodes',
     'moderngl_nodes',
-    'vision_describe_nodes'
+    'vision_describe_nodes',
+    'movie_nodes',
+    'whisper_nodes'
 ]
 
 imported = []
