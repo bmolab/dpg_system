@@ -3,8 +3,11 @@ channels:
   - defaults
   - conda-forge
 dependencies:
+  - cairo
+  - cmake
   - ffmpeg
   - glfw
+  - pkg-config
   - pyglfw
   - pyopengl
   - python==3.10
