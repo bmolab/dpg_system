@@ -57,8 +57,15 @@ class NodeEditor:
         self._editor_padding = [0, 0]
 
     def set_name(self, name):
+        old_name = getattr(self, 'patch_name', None)
         self.patch_name = name
         self.app.set_editor_tab_title(self, name)
+        
+        # Notify nodes of the rename so they can update namespaces or proxy targets
+        if old_name is not None and old_name != name:
+            for node in self._nodes:
+                if hasattr(node, 'patcher_name_changed'):
+                    node.patcher_name_changed(old_name, name)
 
     def set_path(self, path):
         self.file_path = path
@@ -769,7 +776,7 @@ class NodeEditor:
                 left_most = sort[0][1][0]
                 sort = sorted(self.app.drag_starts.items(), key=lambda item: item[1][1])
                 top_most = sort[0][1][1]
-                left_top = [left_most, top_most]
+                left_top = [left_most + 30, top_most + 10]
                 self.app.dragging_ref = self.editor_pos_to_global_pos(left_top)
                 self.modified = True
                 self.app.loading = False
@@ -980,6 +987,9 @@ class NodeEditor:
     def save(self, path=None):
         if path is None:
             return
+            
+        old_patch_name = getattr(self, 'patch_name', None)
+        
         self.patch_name = path.split('/')[-1]
         if '.' in self.patch_name:
             parts = self.patch_name.split('.')
@@ -987,6 +997,15 @@ class NodeEditor:
                 if parts[1] == 'json':
                     self.patch_name = parts[0]
         self.file_path = path
+        
+        # Broadcast the new name to nodes BEFORE we serialize their JSON state.
+        # This allows proxy widgets targeting the old patcher alias to organically rewrite their 
+        # internal `target_name_property`, meaning they save the *new* name to disk.
+        if old_patch_name is not None and old_patch_name != self.patch_name:
+            for node in self._nodes:
+                if hasattr(node, 'patcher_name_changed'):
+                    node.patcher_name_changed(old_patch_name, self.patch_name)
+
         with open(path, 'w') as f:
             file_container = self.containerize()
             # print(file_container)

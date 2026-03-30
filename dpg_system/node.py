@@ -899,11 +899,17 @@ class FloatWidget(NumericInteractionWidget):
             val = any_to_float(data)
             if val is not None:
                 val = self._clamp(val)
-            dpg.set_value(self.uuid, val)
+            if dpg.does_item_exist(self.uuid):
+                dpg.set_value(self.uuid, val)
+            else:
+                self.default_value = val
             self.value = val
         elif isinstance(data, bool):
             val = 1.0 if data else 0.0
-            dpg.set_value(self.uuid, val)
+            if dpg.does_item_exist(self.uuid):
+                dpg.set_value(self.uuid, val)
+            else:
+                self.default_value = val
             self.value = val
 
 
@@ -956,11 +962,17 @@ class IntWidget(NumericInteractionWidget):
             val = any_to_int(data)
             if val is not None:
                 val = self._clamp(val)
-            dpg.set_value(self.uuid, val)
+            if dpg.does_item_exist(self.uuid):
+                dpg.set_value(self.uuid, val)
+            else:
+                self.default_value = val
             self.value = val
         elif isinstance(data, bool):
             val = 1 if data else 0
-            dpg.set_value(self.uuid, val)
+            if dpg.does_item_exist(self.uuid):
+                dpg.set_value(self.uuid, val)
+            else:
+                self.default_value = val
             self.value = val
 
 
@@ -1009,7 +1021,10 @@ class CheckboxWidget(BasePropertyWidget):
             val = not self.value
         else:
             val = any_to_bool(data)
-        dpg.set_value(self.uuid, val)
+        if dpg.does_item_exist(self.uuid):
+            dpg.set_value(self.uuid, val)
+        else:
+            self.default_value = val
         self.value = val
 
     def increment(self):  # Toggle
@@ -1040,7 +1055,10 @@ class StringWidget(BasePropertyWidget):
             val = data
         else:
             val = any_to_string(data, strip_returns=strip)
-        dpg.set_value(self.uuid, val)
+        if dpg.does_item_exist(self.uuid):
+            dpg.set_value(self.uuid, val)
+        else:
+            self.default_value = val
         self.value = val
 
 
@@ -1071,7 +1089,10 @@ class SelectorWidget(StringWidget):
 
     def _convert_and_set(self, data):
         val = any_to_string(data)
-        dpg.set_value(self.uuid, val)
+        if dpg.does_item_exist(self.uuid):
+            dpg.set_value(self.uuid, val)
+        else:
+            self.default_value = val
         self.value = val
 
     def increment(self):
@@ -1129,7 +1150,10 @@ class ColorPicker(BasePropertyWidget):
             val = tuple(any_to_array(data))
         else:
             val = data
-        dpg.set_value(self.uuid, val)
+        if dpg.does_item_exist(self.uuid):
+            dpg.set_value(self.uuid, val)
+        else:
+            self.default_value = val
         self.value = val
 
 
@@ -1146,7 +1170,8 @@ class Label(BasePropertyWidget):
 
     def _convert_and_set(self, data):
         label_string = any_to_string(data)
-        dpg.set_value(self.uuid, label_string)
+        if dpg.does_item_exist(self.uuid):
+            dpg.set_value(self.uuid, label_string)
 
 
 class Spacer(BasePropertyWidget):
@@ -1217,7 +1242,10 @@ class DragFloatN(ScalarWidget):
                 for index, datum in enumerate(data):
                     if is_number(datum):
                         val = self._clamp(any_to_float(datum))
-                        dpg.set_value(self.uuids[index], val)
+                        if dpg.does_item_exist(self.uuids[index]):
+                            dpg.set_value(self.uuids[index], val)
+                        elif getattr(self, "default_value", None) and index < len(self.default_value):
+                            self.default_value[index] = val
                         vals.append(val)
                 self.value = vals
         elif is_number(data):
@@ -1227,8 +1255,11 @@ class DragFloatN(ScalarWidget):
 
     def _apply_val_to_all(self, val):
         clamped = self._clamp(val)
-        for uuid in self.uuids:
-            dpg.set_value(uuid, clamped)
+        for index, uuid in enumerate(self.uuids):
+            if dpg.does_item_exist(uuid):
+                dpg.set_value(uuid, clamped)
+            elif getattr(self, "default_value", None) and index < len(self.default_value):
+                self.default_value[index] = clamped
 
     def set_format(self, format: str) -> None:
         for uuid in self.uuids:
@@ -1928,11 +1959,35 @@ class Node:
         path = ''
         if self.my_editor is not None:
             patcher = self.my_editor
-            path = '/' + patcher.patch_name
-            while patcher.parent_patcher is not None:
-                parent_patcher = patcher.parent_patcher
-                path = '/' + parent_patcher.patch_name + path
-                patcher = patcher.parent_patcher
+            
+            # Build the path from this patcher up to the root
+            while True:
+                # Does this patcher have an oscq_host actively asserting a namespace?
+                host_name = None
+                for n in getattr(patcher, '_nodes', []):
+                    if getattr(n, '_is_oscq_host', False):
+                        if hasattr(n, '_service_name_property') and n._service_name_property is not None:
+                            val = n._service_name_property()
+                            if val and val != '':
+                                host_name = val
+                                break
+                        if hasattr(n, 'service_name') and n.service_name != '':
+                            host_name = n.service_name
+                            break
+                            
+                # If we found an explicit host naming claim, use it and terminate traversal
+                if host_name:
+                    path = '/' + host_name + path
+                    break
+                    
+                # Otherwise gracefully fallback to using the file name
+                path = '/' + patcher.patch_name + path
+                
+                if getattr(patcher, 'parent_patcher', None) is not None:
+                    patcher = patcher.parent_patcher
+                else:
+                    break
+                    
         return path
 
     def get_patcher_name(self):

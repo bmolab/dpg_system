@@ -30,5 +30,7 @@
   "ndi_nodes": true,
   "moderngl_nodes": true,
   "vision_describe_nodes": true,
+  "movie_nodes": true,
+  "whisper_nodes": true,
   "default_ip_base": "10.1.1.0"
 }
