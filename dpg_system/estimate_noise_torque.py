@@ -27,6 +27,28 @@ import json
 from dataclasses import dataclass, field, asdict
 from typing import List, Tuple, Optional
 
+
+def _to_jsonable(obj):
+    """Recursively convert numpy/scalar objects into JSON-safe Python types."""
+    if isinstance(obj, dict):
+        return {str(k): _to_jsonable(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_to_jsonable(v) for v in obj]
+    if isinstance(obj, tuple):
+        return [_to_jsonable(v) for v in obj]
+
+    if isinstance(obj, np.bool_):
+        return bool(obj)
+    if isinstance(obj, np.integer):
+        return int(obj)
+    if isinstance(obj, np.floating):
+        return float(obj)
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+
+    return obj
+
+
 # Ensure dpg_system is importable when running as a standalone script
 _this_dir = os.path.dirname(os.path.abspath(__file__))
 _parent_dir = os.path.dirname(_this_dir)
@@ -1327,7 +1349,8 @@ def main():
             d['glitch_frames'] = [asdict(s) for s in r.glitch_frames[:500]]
             d['clean_segments'] = [asdict(s) for s in r.clean_segments]
             d['joint_profiles'] = [asdict(jp) for jp in r.joint_profiles]
-            out.append(d)
+            # out.append(d)
+            out.append(_to_jsonable(d))
         with open(args.json, 'w') as f:
             json.dump(out, f, indent=2)
         print(f"\n  Saved to {args.json}")

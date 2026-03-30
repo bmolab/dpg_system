@@ -1,0 +1,274 @@
+Found original noise filter somewhat more accurate than torque noise filter (based on spot-check of results)
+1. original noise range more accurate and reflective
+   torque noise filter: noise scores generally a lot higher (filter more sensitive, might capture active movements)
+                        many noise score goes to 100 (upper bound), so hard to distinguish and find out real problematic files
+
+2. some files were flagged clean/moderate in one filter, and problematic in the other
+   problematic files flagged by original filter generally more accurate (no issue found yet)
+   some problematic files flagged by torque noise filter seems fine
+   see ---------Noise-Torque------------ comparisons below
+
+3. torque filter missing some glitches in "glitch_clusters", but "clean_segments" seems fine
+   no significant issue found in original filter yet
+
+4. torque noise detector having trouble distinguish real active movement vs noise
+    ex. active files in CMU, /home/bmolab/Projects/AMASS/SMPL_H/CMU/75/75_11_poses.npz---active, no issue, but noise score is 100
+
+5. if a file is mostly static, then have some sudden movement or start being active, torque noise detector seems to
+   treat that as noise, but usually these are reasonable human movements.
+   ex. some files in HUMAN4D
+   /home/bmolab/Projects/AMASS/SMPL_H/HUMAN4D/Subject2_Aude/RGB_PunchingKicking_S2_01_poses.npz
+       --> clean file, but labeled problematic by torque detector
+
+
+
+Analysis by AMASS folders:
+
+Transitions----------------------
+
+/home/bmolab/Projects/dpg_system/AMASS/Transitions/mazen_c3d/crawl_stand_poses.npz
+problematic
+frames 300-660
+
+
+/home/bmolab/Projects/dpg_system/AMASS/Transitions/mazen_c3d/crouchwalk_crawl_poses.npz
+problematic
+frames 400-900
+
+
+/home/bmolab/Projects/dpg_system/AMASS/Transitions/mazen_c3d/crawl_push_poses.npz
+problematic
+frames 150-550
+
+
+/home/bmolab/Projects/dpg_system/AMASS/Transitions/mazen_c3d/crawl_walkbackwards_poses.npz
+problematic
+frames 200-520
+
+
+/home/bmolab/Projects/dpg_system/AMASS/Transitions/mazen_c3d/sit_stand_poses.npz
+problematic
+frames 80-630
+
+
+/home/bmolab/Projects/dpg_system/AMASS/Transitions/mazen_c3d/crawl_jumpinplace_poses.npz
+problematic
+frames 250-500
+
+
+
+---------------------Noise-Torque-------------------------------------------------
+/home/bmolab/Projects/AMASS/SMPL_H/Transitions/mazen_c3d/crawl_runbackwards_poses.npz
+moderate, original filter problematic
+problematic frames: 140-510
+
+
+
+
+
+ACCAD------------------------------
+/home/bmolab/Projects/dpg_system/AMASS/ACCAD/Male2Running_c3d/C20 - run to pickup box_poses.npz
+problematic
+frames 0-50
+
+
+/home/bmolab/Projects/dpg_system/AMASS/ACCAD/Male2Running_c3d/C23 - put down box to run_poses.npz
+problematic
+frames 0-50
+
+
+/home/bmolab/Projects/dpg_system/AMASS/ACCAD/Male2Running_c3d/C3 - run_poses.npz
+problematic
+frames 0-50
+
+
+/home/bmolab/Projects/dpg_system/AMASS/ACCAD/Female1Running_c3d/C3 - Run_poses.npz
+unsure
+labeled "problematic" by script
+
+
+/home/bmolab/Projects/dpg_system/AMASS/ACCAD/Male2Running_c3d/C11 - run turn left 90_poses.npz
+problematic
+frames 0-20
+
+
+/home/bmolab/Projects/dpg_system/AMASS/ACCAD/Male2Running_c3d/C13 - run turn left 135_poses.npz
+problematic
+frames 0-50, 350-end
+
+
+
+/home/bmolab/Projects/dpg_system/AMASS/ACCAD/Male1General_c3d/General A11 -   Military Crawl Forward_poses.npz
+problematic
+frames 0-20
+
+
+/home/bmolab/Projects/dpg_system/AMASS/ACCAD/Male2Running_c3d/C19 - run to jump to walk_poses.npz
+problematic
+frames 350-end
+
+
+/home/bmolab/Projects/dpg_system/AMASS/ACCAD/Male2MartialArtsStances_c3d/D3 - run to ready_poses.npz
+problematic
+frames 0-30
+
+
+
+---------------------Noise-Torque-------------------------------------------------
+/home/bmolab/Projects/AMASS/SMPL_H/ACCAD/Male2MartialArtsPunches_c3d/E12 - backfist right_poses.npz
+problematic, original filter-moderate
+      "glitch_clusters": [
+        [
+          4,
+          4
+        ],
+        [
+          93,
+          123
+        ]
+      ],
+but seems fine
+
+
+/home/bmolab/Projects/AMASS/SMPL_H/ACCAD/Male2MartialArtsPunches_c3d/E16 - body jab left_poses.npz
+problematic, original filter-clean
+      "glitch_clusters": [
+        [
+          72,
+          92
+        ],
+        [
+          100,
+          100
+        ]
+      ],
+but seems fine
+
+
+/home/bmolab/Projects/AMASS/SMPL_H/ACCAD/Male2MartialArtsPunches_c3d/E1 -  Jab left_poses.npz
+problematic, original filter-moderate
+      "glitch_clusters": [
+        [
+          121,
+          147
+        ]
+      ],
+but seems fine
+
+
+
+/home/bmolab/Projects/AMASS/SMPL_H/ACCAD/Male2MartialArtsPunches_c3d/E2 -  Jab right_poses.npz
+problematic, original filter-clean
+      "glitch_clusters": [
+        [
+          76,
+          107
+        ]
+      ],
+but seems fine
+
+
+
+
+
+MPILimits / PosePrior-------------------
+
+/home/bmolab/Projects/dpg_system/AMASS/MPILimits/03101/ulr1d_poses.npz
+problematic
+frames 0-350, 1300-1700, 2400-end
+
+
+
+/home/bmolab/Projects/dpg_system/AMASS/MPILimits/03101/ulr1b_poses.npz
+problematic
+frames 0-350
+
+
+
+
+BioMotionLab_NTroje--------------------------
+multiple files in rub032 (also rub115, rub033, 005, 023) have the wrist problem
+                          some have shoulder issues (include moderate files)
+--> suggestion: use clean segments only
+
+/home/bmolab/Projects/dpg_system/AMASS/BioMotionLab_NTroje/rub032/0017_lifting_light1_poses.npz
+problematic
+frames: all
+
+
+/home/bmolab/Projects/dpg_system/AMASS/BioMotionLab_NTroje/rub032/0012_normal_jog4_poses.npz
+problematic
+frames: all
+
+
+/home/bmolab/Projects/dpg_system/AMASS/BioMotionLab_NTroje/rub032/0008_normal_walk4_poses.npz
+problematic
+frames: all
+
+/home/bmolab/Projects/dpg_system/AMASS/BioMotionLab_NTroje/rub032/0029_jumping2_poses.npz
+problematic
+frames: 50-end
+
+
+
+
+CMU---------------------------------------------
+
+/home/bmolab/Projects/AMASS/SMPL_H/CMU/75/75_11_poses.npz
+active file, no issue, but noise score is 100 (torque noise detector)
+
+
+/home/bmolab/Projects/AMASS/SMPL_H/CMU/79/79_07_poses.npz
+problematic
+frames: 120-329
+
+
+/home/bmolab/Projects/AMASS/SMPL_H/CMU/90/90_16_poses.npz
+active file, no issue, but noise score is 78 (torque noise detector)
+
+
+/home/bmolab/Projects/AMASS/SMPL_H/CMU/75/75_03_poses.npz
+active file, no issue, but noise score is 60 (torque noise detector)
+
+
+/home/bmolab/Projects/AMASS/SMPL_H/CMU/108/108_21_poses.npz
+problematic
+frames: 170-240, 410-420
+
+
+/home/bmolab/Projects/AMASS/SMPL_H/CMU/22_23_justin/22_03_poses.npz
+problematic
+frames: 260-280
+
+
+
+
+DanceDB------------------------------------------------
+only 3 clean files by torque noise detector
+
+/home/bmolab/Projects/AMASS/SMPL_H/DanceDB/20120731_StefanosTheodorou/Stefanos_2os_antrikos_karsilamas_C3D_poses.npz
+clean by torque noise detector
+BUT noise (wrist) starting at frame 2000
+
+
+
+/home/bmolab/Projects/AMASS/SMPL_H/DanceDB/20120807_CliodelaVara/Clio_Haniotikos_C3D_poses.npz
+clean by torque noise detector
+noise (wrist) at frames 10150-11000
+
+
+/home/bmolab/Projects/AMASS/SMPL_H/DanceDB/20131001_OliviaKyriakides/Olivia_Mix_C3D_poses.npz
+clean by torque noise detector, no issue
+
+
+
+
+HUMAN4D-------------------------------------------------
+
+/home/bmolab/Projects/AMASS/SMPL_H/HUMAN4D/Subject2_Aude/RGB_PunchingKicking_S2_01_poses.npz
+no issue, but labeled problematic by torque noise detector
+calibration first, sudden minor movements, then active movements
+
+
+/home/bmolab/Projects/AMASS/SMPL_H/HUMAN4D/Subject1_2_Aude/RGB_WatchingFootball_S1S2_02_poses.npz
+no issue, but labeled problematic by torque noise detector
