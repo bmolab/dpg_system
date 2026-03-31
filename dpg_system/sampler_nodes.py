@@ -1016,6 +1016,12 @@ class PolyphonicSamplerNode(Node):
         self.fade_input = self.add_input('fade', callback=self.on_fade)
         # Register 'fade' as a message handler so text/list messages route correctly
         self.message_handlers['fade'] = self._fade_message
+        
+        self.start_from_input = self.add_input('start_from', callback=self.on_start_from)
+        self.message_handlers['start_from'] = self._start_from_message
+        
+        self.mono_mode_input = self.add_input('mono', widget_type='checkbox', default_value=False)
+        self.stop_all_input = self.add_input('stop_all', widget_type='button', callback=self._stop_all_voices)
 
         # Output
         self.active_out = self.add_output('active_voices')
@@ -1277,6 +1283,12 @@ class PolyphonicSamplerNode(Node):
                  return i
         return None
 
+    def _stop_all_voices(self):
+        """Stop all currently active voices for this node (used for mono mode)."""
+        if SamplerEngineNode.engine:
+            for alloc in self.active_allocations:
+                SamplerEngineNode.engine.stop_voice(alloc["idx"])
+
     def on_trigger(self):
         data = self.trigger_input()
         # Format: sound_id, [pitch_mult], [velocity/vol]
@@ -1321,6 +1333,8 @@ class PolyphonicSamplerNode(Node):
         if len(data) > 2: vol_mult = float(data[2])
         
         # Allocate
+        if self.mono_mode_input():
+            self._stop_all_voices()
         idx = self.find_free_voice()
         if idx is not None:
              # Play
@@ -1393,6 +1407,8 @@ class PolyphonicSamplerNode(Node):
             eff_pitch = voice_params["pitch"] * pitch_ratio
             eff_vol = voice_params["volume"] * (vel / 127.0)
             
+            if self.mono_mode_input():
+                self._stop_all_voices()
             idx = self.find_free_voice()
             if idx is not None:
                 e = SamplerEngineNode.engine
@@ -1462,6 +1478,63 @@ class PolyphonicSamplerNode(Node):
             data = [data]
         desired_state = self._parse_fader_data(data)
         self._apply_fader_state(desired_state)
+
+    def _start_from_message(self, message, args):
+        # Message: ["start_from", sid, sample_pos] or ["start_from", [sid, sample_pos]]
+        if len(args) == 1 and isinstance(args[0], list):
+            data = args[0]
+        else:
+            data = args
+        self._do_start_from(data)
+
+    def on_start_from(self):
+        data = self.start_from_input()
+        if isinstance(data, list):
+            self._do_start_from(data)
+
+    def _do_start_from(self, data):
+        # data: [sound_id, sample_position, (opt pitch_mult), (opt vol_mult)]
+        if not isinstance(data, list) or len(data) < 2:
+            return
+        try:
+            sid = int(data[0])
+            start_pos = int(data[1])
+        except:
+            return
+
+        if sid not in self.sounds:
+            return
+
+        snd = self.sounds[sid]
+
+        pitch_mult = 1.0
+        if len(data) > 2: pitch_mult = float(data[2])
+
+        vol_mult = 1.0
+        if len(data) > 3: vol_mult = float(data[3])
+
+        if self.mono_mode_input():
+            self._stop_all_voices()
+        idx = self.find_free_voice()
+        if idx is not None:
+            voice_params = snd.params
+
+            eff_vol = voice_params["volume"] * vol_mult
+            eff_pitch = voice_params["pitch"] * pitch_mult
+
+            e = SamplerEngineNode.engine
+            if e:
+                e.set_voice_envelope(idx, voice_params["attack"], voice_params["decay"], voice_params["decay_curve"])
+                e.play_voice(idx, snd.sample, eff_vol, eff_pitch, start_pos=start_pos)
+
+                self.active_allocations.append({
+                    "idx": idx,
+                    "sid": sid,
+                    "pitch": pitch_mult,
+                    "midi_note": None,
+                    "time": time.time()
+                })
+                self.add_frame_task()
 
     def _parse_fader_data(self, data):
         desired_state = {}

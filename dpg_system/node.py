@@ -421,6 +421,7 @@ class NodeProperty:
         self.action = None
         self.edited = False
         self.node = node
+        self.name_archive = []
 
     def create(self, parent):
         self.node_attribute = dpg.node_attribute(parent=parent, attribute_type=dpg.mvNode_Attr_Static, user_data=self, id=self.uuid)
@@ -2692,7 +2693,13 @@ class Node:
                             if option.widget:
                                 a_label = dpg.get_item_label(option.widget.uuid)
                                 a_label = a_label.strip('#')
-                                if a_label == property_label:
+                                match = (a_label == property_label)
+                                if not match and option.name_archive:
+                                    for old_name in option.name_archive:
+                                        if old_name.strip('#') == property_label:
+                                            match = True
+                                            break
+                                if match:
                                     if 'value' in property_container:
                                         value = property_container['value']
                                         if option.widget.widget != 'button':

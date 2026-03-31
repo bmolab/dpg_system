@@ -849,8 +849,8 @@ class OSCQueryBrowseNode(Node, OSCBase):
                 if getattr(created_node, 'input', None) is not None:
                     created_node.input.widget.set(spec['value'], propagate=False)
             # Mark as proxy since this widget controls a remote service
-            if created_node and hasattr(created_node, 'proxy'):
-                created_node.proxy.set(True)
+            if created_node and hasattr(created_node, 'mode_option'):
+                created_node.mode_option.set('proxy')
             return created_node
         except Exception as e:
             osc_type = param_dict.get('TYPE', '?')
@@ -964,8 +964,8 @@ class OSCQueryBrowseNode(Node, OSCBase):
                     # Set initial visual value safely
                     created_node.input.widget.set(spec['value'], propagate=False)
             # Mark as proxy since this widget controls a remote service
-            if created_node and hasattr(created_node, 'proxy'):
-                created_node.proxy.set(True)
+            if created_node and hasattr(created_node, 'mode_option'):
+                created_node.mode_option.set('proxy')
             return created_node
         except Exception as e:
             print(f"oscq_browse: Failed to create {node_type} for {osc_path}: {e}")

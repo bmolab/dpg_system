@@ -22,6 +22,8 @@ dependencies:
     - ctranslate2
     - elevenlabs
     - faster-whisper
+    - librosa
+    - praat-parselmouth
     - pyaudio
     - pydub
     - pywhispercpp
@@ -76,6 +78,7 @@ dependencies:
     - matplotlib
     - psutil
     - pydantic
+    - python-levenshtein
     - pyquaternion
     - pyyaml
     - requests

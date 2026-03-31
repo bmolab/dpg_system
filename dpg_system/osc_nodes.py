@@ -1195,12 +1195,12 @@ class OSCRegistrableMixin:
     def _should_register_in_service(self):
         """Check if this node should register in any exported OSCQuery registry.
 
-        Proxy widgets (controlling external services) should NOT register
+        Non-local widgets (proxy/peer) should NOT register
         in local registries — they are remote controls, not local parameters.
         """
-        if hasattr(self, 'proxy'):
+        if hasattr(self, 'mode_option'):
             try:
-                if self.proxy():
+                if self.mode_option() != 'local':
                     return False
             except Exception:
                 pass
@@ -2920,6 +2920,7 @@ class OSCWidget(OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
     def custom_create(self, from_file):
         """Handles finding source/target and then triggers registration."""
         self._needs_deferred_connect = False
+        self._setup_mode_combo()
         
         # 1. Auto-assign service name as target if in a service-scoped editor
         if self.name == '' and hasattr(self, 'my_editor') and self.my_editor and self.osc_manager:
@@ -2962,18 +2963,34 @@ class OSCWidget(OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
 
     def cleanup(self):
         """Handles OSC cleanup and then triggers unregistration."""
+        self._stop_proxy_polling()
+        self._stop_peer_subscription()
         OSCSender.cleanup(self)
         OSCReceiver.cleanup(self)
         self._registerable_cleanup()  # This calls self.unregister()
 
     def post_load_callback(self):
         """Called after ALL nodes and links in all patchers are loaded."""
-        is_proxy = hasattr(self, 'proxy') and self.proxy()
+        # Backward compat: migrate old boolean proxy values to mode strings
+        if hasattr(self, 'mode_option'):
+            current = self.mode_option()
+            if current is True:
+                self.mode_option.widget.set('proxy')
+            elif current is False:
+                self.mode_option.widget.set('local')
+
+        is_remote = hasattr(self, 'mode_option') and self.mode_option() != 'local'
         
         # 1. Proxy isolation: unregister widgets that were incorrectly registered
-        if is_proxy:
+        if is_remote:
             if self.path:
                 self.unregister()
+            # Start appropriate remote feedback mechanism
+            mode = self.mode_option() if hasattr(self, 'mode_option') else 'proxy'
+            if mode == 'proxy':
+                self._start_proxy_polling()
+            elif mode == 'peer':
+                self._start_peer_subscription()
         else:
             # Non-proxy: ALWAYS unregister and re-register.
             # During custom_create, the widget may have registered in the GLOBAL
@@ -2993,10 +3010,159 @@ class OSCWidget(OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
             if self.source is None:
                 self.find_source_node(self.name)
 
+    # --- Proxy Polling ---
+
+    def _start_proxy_polling(self):
+        """Start background HTTP polling for remote value changes."""
+        self._stop_proxy_polling()  # Stop any existing polling
+        
+        if not self.osc_manager or not hasattr(self.osc_manager, 'oscquery_browser'):
+            return
+        svc = self.osc_manager.oscquery_browser.get_service(self.name)
+        if svc is None:
+            return
+        
+        self._proxy_poll_service = svc
+        self._proxy_poll_value = None
+        self._proxy_poll_has_new = False
+        self._proxy_poll_running = True
+        self._proxy_poll_thread = threading.Thread(
+            target=self._proxy_poll_loop, daemon=True
+        )
+        self._proxy_poll_thread.start()
+        self.add_frame_task()
+
+    def _stop_proxy_polling(self):
+        """Stop background HTTP polling."""
+        self._proxy_poll_running = False
+        if hasattr(self, '_proxy_poll_thread') and self._proxy_poll_thread is not None:
+            self._proxy_poll_thread = None
+        if hasattr(self, 'has_frame_task') and self.has_frame_task:
+            self.remove_frame_tasks()
+
+    def _proxy_poll_loop(self):
+        """Background thread: fetch remote VALUE periodically."""
+        import time
+        while getattr(self, '_proxy_poll_running', False):
+            try:
+                svc = getattr(self, '_proxy_poll_service', None)
+                if svc and self.address:
+                    param = svc.fetch_param(self.address)
+                    if param and 'VALUE' in param:
+                        raw = param['VALUE']
+                        # OSCQuery VALUE is always a list; extract scalar if single element
+                        if isinstance(raw, list) and len(raw) == 1:
+                            raw = raw[0]
+                        self._proxy_poll_value = raw
+                        self._proxy_poll_has_new = True
+            except Exception:
+                pass
+            time.sleep(0.1)  # ~10 Hz
+
+    def frame_task(self):
+        """Main-thread: apply polled value to the widget without triggering OSC send."""
+        if getattr(self, '_proxy_poll_has_new', False):
+            self._proxy_poll_has_new = False
+            value = self._proxy_poll_value
+            if value is not None and hasattr(self, 'input'):
+                try:
+                    current = self.input()
+                    if current != value:
+                        self.input.widget.set(value, propagate=False)
+                except Exception:
+                    pass
+
+    # --- Peer Subscription ---
+
+    def _start_peer_subscription(self):
+        """Subscribe to the remote service for OSC push updates."""
+        self._stop_peer_subscription()
+
+        if not self.osc_manager or not hasattr(self.osc_manager, 'oscquery_browser'):
+            return
+        svc = self.osc_manager.oscquery_browser.get_service(self.name)
+        if svc is None:
+            return
+
+        # Ensure the osc_device has a source (listening) port
+        source = self.osc_manager.sources.get(self.name)
+        if source is None:
+            return
+
+        local_port = getattr(source, 'source_port', None)
+        if local_port is None:
+            return
+
+        # Send subscribe request to remote HTTP server
+        try:
+            import socket as _socket
+            local_ip = self._get_local_ip()
+            url = f"http://{svc.ip}:{svc.http_port}/subscribe?ip={local_ip}&port={local_port}"
+            from urllib.request import urlopen
+            urlopen(url, timeout=3)
+            self._peer_subscribed_service = svc
+            self._peer_local_port = local_port
+        except Exception as e:
+            print(f"OSCWidget: Failed to subscribe to {self.name}: {e}")
+
+    def _stop_peer_subscription(self):
+        """Unsubscribe from the remote service."""
+        svc = getattr(self, '_peer_subscribed_service', None)
+        if svc is None:
+            return
+        local_port = getattr(self, '_peer_local_port', None)
+        if local_port is None:
+            return
+        try:
+            local_ip = self._get_local_ip()
+            url = f"http://{svc.ip}:{svc.http_port}/unsubscribe?ip={local_ip}&port={local_port}"
+            from urllib.request import urlopen
+            urlopen(url, timeout=2)
+        except Exception:
+            pass
+        self._peer_subscribed_service = None
+        self._peer_local_port = None
+
+    @staticmethod
+    def _get_local_ip():
+        """Get the local IP address of this machine."""
+        import socket as _socket
+        try:
+            s = _socket.socket(_socket.AF_INET, _socket.SOCK_DGRAM)
+            s.connect(("10.255.255.255", 1))
+            ip = s.getsockname()[0]
+            s.close()
+            return ip
+        except Exception:
+            return "127.0.0.1"
+
+    def _notify_peers(self, osc_address, value):
+        """Push a value change to all subscribed peer clients via the host's OSCQueryServer."""
+        if not self.osc_manager or not osc_address:
+            return
+        # Only local widgets should push to peers
+        if hasattr(self, 'mode_option') and self.mode_option() != 'local':
+            return
+        # Find the OSCQueryServer for the service this widget belongs to
+        svc_name = self.osc_manager.get_service_name_for_editor(self.my_editor) if hasattr(self, 'my_editor') and self.my_editor else None
+        if svc_name and svc_name in self.osc_manager.service_registries:
+            _, srv = self.osc_manager.service_registries[svc_name]
+            if srv and hasattr(srv, 'notify_subscribers'):
+                srv.notify_subscribers(osc_address, value)
+
+    # --- Mode Combo Setup ---
+
+    def _setup_mode_combo(self):
+        """Configure the mode combo items after widget creation."""
+        if hasattr(self, 'mode_option') and hasattr(self.mode_option, 'widget'):
+            self.mode_option.widget.combo_items = ['local', 'proxy', 'peer']
+            # Backward compat: old saved patches stored this as 'proxy' (checkbox, bool)
+            self.mode_option.name_archive = ['proxy']
+
     def patcher_name_changed(self, old_name, new_name):
         """Called by the editor when the patcher is saved under a new name."""
-        if hasattr(self, 'proxy') and hasattr(self, 'target_name_property'):
-            if self.proxy():
+        if hasattr(self, 'mode_option') and hasattr(self, 'target_name_property'):
+            if self.mode_option() != 'local':
                 # If we are a proxy, and we were specifically tracking the old patcher's service name,
                 # auto-update to the new patcher's service name so we don't disconnect.
                 if self.target_name_property() == old_name:
@@ -3177,13 +3343,13 @@ class OSCWidget(OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
             return registry.get_param_registry_container_for_path([patcher_path, self.name, self.address])
         return None
 
-    def proxy_changed(self):
+    def mode_changed(self):
         registry, _ = self._get_registry()
         if registry is None:
             return
             
-        # When proxy status changes, we might need to unregister from the 
-        # exported OSC registry since proxies shouldn't be publicly served.
+        # When mode changes, we might need to unregister from the 
+        # exported OSC registry since non-local widgets shouldn't be publicly served.
         old_path_components = None
         if hasattr(self, '_get_registry_path_components'):
             old_path_components = self._get_registry_path_components()
@@ -3191,18 +3357,27 @@ class OSCWidget(OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
         if hasattr(self, '_update_registration'):
             self._update_registration(old_path_components=old_path_components)
 
+        mode = self.mode_option()
         if hasattr(self, 'get_patcher_path'):
             patcher_path = self.get_patcher_path()
-            proxy = self.proxy()
-            if proxy:
+            if mode != 'local':
                 registry.set_flow([patcher_path, self.name, self.address], flow='PROXY')
             else:
                 registry.set_flow([patcher_path, self.name, self.address], flow='BOTH')
+
+        # Start/stop remote feedback based on mode
+        self._stop_proxy_polling()
+        self._stop_peer_subscription()
+        if mode == 'proxy':
+            self._start_proxy_polling()
+        elif mode == 'peer':
+            self._start_peer_subscription()
 
     def update_value_in_registry(self):
         """
         Updates the value for this widget's path in the OSCQueryRegistry.
         It calls the abstract _get_registry_value to get the current value.
+        Also notifies any subscribed peers via the host's OSCQueryServer.
         """
         if self.osc_manager and self.path:
             registry, _ = self._get_registry()
@@ -3211,6 +3386,8 @@ class OSCWidget(OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
             current_value = self._get_registry_value()
             if current_value is not None:
                 registry.set_value_for_path(self.path, current_value)
+                # Notify subscribed peers via OSCQueryServer
+                self._notify_peers(self.address, current_value)
 
     def _get_registry_value(self):
         """
@@ -3253,7 +3430,7 @@ class OSCValueNode(ValueNode, OSCWidget):
         if label == 'osc_string':
             self.space_replacement = self.add_option('replace spaces in osc messages', widget_type='checkbox',
                                                    default_value=True)
-        self.proxy = self.add_option('proxy', widget_type='checkbox', default_value=False, callback=self.proxy_changed)
+        self.mode_option = self.add_option('mode', widget_type='combo', default_value='local', callback=self.mode_changed)
         self._registerable_init()
 
     def setup_specific_ui(self, args):
@@ -3429,6 +3606,10 @@ class OSCButtonNode(ButtonNode, OSCWidget):
     def cleanup(self):
         OSCWidget.cleanup(self)
 
+    def frame_task(self):
+        ButtonNode.frame_task(self)
+        OSCWidget.frame_task(self)
+
     def execute(self):
         ButtonNode.execute(self)
         self.update_value_in_registry()
@@ -3449,7 +3630,7 @@ class OSCToggleNode(ToggleNode, OSCWidget):
         self.target_address_property = self.add_option('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
         self.source_name_property = self.target_name_property
         self.source_address_property = self.target_address_property
-        self.proxy = self.add_option('proxy', widget_type='checkbox', default_value=False, callback=self.proxy_changed)
+        self.mode_option = self.add_option('mode', widget_type='combo', default_value='local', callback=self.mode_changed)
         self._registerable_init()
 
     def _get_registry_value(self):
@@ -3517,7 +3698,7 @@ class OSCMenuNode(MenuNode, OSCWidget):
         self.target_address_property = self.add_option('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
         self.source_name_property = self.target_name_property
         self.source_address_property = self.target_address_property
-        self.proxy = self.add_option('proxy', widget_type='checkbox', default_value=False, callback=self.proxy_changed)
+        self.mode_option = self.add_option('mode', widget_type='combo', default_value='local', callback=self.mode_changed)
         self._registerable_init()
 
     def _get_registry_value(self):
@@ -3578,7 +3759,7 @@ class OSCRadioButtonsNode(RadioButtonsNode, OSCWidget):
         self.target_address_property = self.add_option('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
         self.source_name_property = self.target_name_property
         self.source_address_property = self.target_address_property
-        self.proxy = self.add_option('proxy', widget_type='checkbox', default_value=False, callback=self.proxy_changed)
+        self.mode_option = self.add_option('mode', widget_type='combo', default_value='local', callback=self.mode_changed)
         self._registerable_init()
 
     def _get_registry_value(self):

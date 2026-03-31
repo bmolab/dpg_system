@@ -229,14 +229,14 @@ class TorchAudioSourceNode(TorchNode):
         if channels != self.source.channels:
             changed = True
         sample_rate = self.sample_rate()
-        if sample_rate != self.source.sample_rate:
+        if sample_rate != self.source.samplerate:
             changed = True
         dtype_str = self.format_dict.get(self.format(), 'float32')
         if dtype_str != self.source.dtype:
             changed = True
 
         chunk = self.chunk_size()
-        if chunk != self.source.chunk:
+        if chunk != self.source.blocksize:
             changed = True
 
         streaming = self.streaming
@@ -250,9 +250,9 @@ class TorchAudioSourceNode(TorchNode):
             if self.source.check_format(sample_rate, channels, dtype_str):
                 self.source.stop()
                 self.source.channels = channels
-                self.source.sample_rate = sample_rate
-                self.source.format = dtype_str
-                self.source.chunk = chunk
+                self.source.samplerate = sample_rate
+                self.source.dtype = dtype_str
+                self.source.blocksize = chunk
                 if streaming:
                     self.streaming = self.source.start()
             else:
@@ -260,10 +260,10 @@ class TorchAudioSourceNode(TorchNode):
                 if self.source.check_format(sample_rate, channels, dtype_str):
                     self.source.stop()
                     self.source.channels = channels
-                    self.source.sample_rate = sample_rate
-                    self.sample_rate.set(self.source.rate)
-                    self.source.format = dtype_str
-                    self.source.chunk = chunk
+                    self.source.samplerate = sample_rate
+                    self.sample_rate.set(self.source.samplerate)
+                    self.source.dtype = dtype_str
+                    self.source.blocksize = chunk
                     if streaming:
                         self.streaming = self.source.start()
                 else:

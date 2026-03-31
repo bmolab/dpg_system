@@ -42,6 +42,13 @@ except Exception as e:
     print('pyaudio not found - torchaudio nodes not available')
     torchaudio_avail = False
 
+speech_analysis_avail = True
+try:
+    from dpg_system.speech_analysis_nodes import *
+except Exception as e:
+    print('speech analysis nodes not available:', e)
+    speech_analysis_avail = False
+
 from dpg_system.wavelet_nodes import *
 # import wavelets_pytorch.transform
 
@@ -70,6 +77,8 @@ def register_torch_nodes():
     register_torch_voxel_nodes()
     if torchaudio_avail:
         register_torchaudio_nodes()
+    if speech_analysis_avail:
+        register_speech_analysis_nodes()
     register_wavelet_nodes()
 
 

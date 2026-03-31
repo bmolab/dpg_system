@@ -123,14 +123,15 @@ class Voice:
     
     # --- Public API (Main Thread) ---
     
-    def trigger(self, sample, volume=None, pitch=None, mode=None):
+    def trigger(self, sample, volume=None, pitch=None, mode=None, start_pos=None):
         """Queue a trigger command."""
         self._command_queue.put({
             "type": "trigger",
             "sample": sample,
             "volume": volume,
             "pitch": pitch,
-            "mode": mode
+            "mode": mode,
+            "start_pos": start_pos
         })
 
     def release(self):
@@ -271,7 +272,11 @@ class Voice:
                 if self.play_start < 0: self.play_start = 0
                 
                 # Clamp position
-                self.position = float(self.play_start)
+                start_pos = cmd.get("start_pos")
+                if start_pos is not None:
+                    self.position = float(max(self.play_start, min(start_pos, self.play_end - 1)))
+                else:
+                    self.position = float(self.play_start)
                 
                 # Reset Granular State
                 self.grains = []
@@ -1026,10 +1031,10 @@ class SamplerEngine:
     def set_master_volume(self, vol):
         self.master_volume = max(0.0, float(vol))
 
-    def play_voice(self, voice_index, sample, volume=None, pitch=None, mode='normal'):
+    def play_voice(self, voice_index, sample, volume=None, pitch=None, mode='normal', start_pos=None):
         if 0 <= voice_index < 128:
             # We pass mode directly to trigger to ensure atomic reset
-            self.voices[voice_index].trigger(sample, volume, pitch, mode=mode)
+            self.voices[voice_index].trigger(sample, volume, pitch, mode=mode, start_pos=start_pos)
 
     def set_voice_pitch(self, voice_index, pitch):
         if 0 <= voice_index < 128:

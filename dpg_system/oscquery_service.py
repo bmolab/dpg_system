@@ -42,8 +42,37 @@ class OSCQueryHTTPHandler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         path = parsed.path
         query = parsed.query
+        query_params = dict(p.split('=') for p in query.split('&') if '=' in p) if query else {}
 
         server_data = self.server.oscquery_data  # set by OSCQueryServer
+
+        # Subscription management
+        if path == '/subscribe':
+            ip = query_params.get('ip', '')
+            port = query_params.get('port', '')
+            if ip and port:
+                subscribers = server_data.get('subscribers', [])
+                entry = (ip, int(port))
+                if entry not in subscribers:
+                    subscribers.append(entry)
+                    server_data['subscribers'] = subscribers
+                self._send_json({'status': 'subscribed', 'ip': ip, 'port': int(port)})
+            else:
+                self.send_error(400, "Missing ip or port parameter")
+            return
+
+        if path == '/unsubscribe':
+            ip = query_params.get('ip', '')
+            port = query_params.get('port', '')
+            if ip and port:
+                subscribers = server_data.get('subscribers', [])
+                entry = (ip, int(port))
+                if entry in subscribers:
+                    subscribers.remove(entry)
+                self._send_json({'status': 'unsubscribed', 'ip': ip, 'port': int(port)})
+            else:
+                self.send_error(400, "Missing ip or port parameter")
+            return
 
         # HOST_INFO request
         if query == 'HOST_INFO' or path == '/HOST_INFO':
@@ -146,8 +175,10 @@ class OSCQueryServer:
                     'VALUE': True,
                     'RANGE': True,
                     'DESCRIPTION': True,
+                    'LISTEN': True,
                 }
-            }
+            },
+            'subscribers': [],  # list of (ip, port) tuples for peer push
         }
         self.http_thread = threading.Thread(target=self.http_server.serve_forever, daemon=True)
         self.http_thread.start()
@@ -242,6 +273,31 @@ class OSCQueryServer:
         """Update a HOST_INFO field on the HTTP server."""
         if self.http_server and hasattr(self.http_server, 'oscquery_data'):
             self.http_server.oscquery_data['HOST_INFO'][key] = value
+
+    def get_subscribers(self):
+        """Return list of (ip, port) subscriber tuples."""
+        if self.http_server and hasattr(self.http_server, 'oscquery_data'):
+            return list(self.http_server.oscquery_data.get('subscribers', []))
+        return []
+
+    def notify_subscribers(self, osc_address, value):
+        """Push an OSC message to all subscribed peers."""
+        subscribers = self.get_subscribers()
+        if not subscribers:
+            return
+        try:
+            from pythonosc.udp_client import SimpleUDPClient
+        except ImportError:
+            return
+        for ip, port in subscribers:
+            try:
+                client = SimpleUDPClient(ip, port)
+                if isinstance(value, list):
+                    client.send_message(osc_address, value)
+                else:
+                    client.send_message(osc_address, [value])
+            except Exception:
+                pass
 
     def _find_free_port(self, start=9000, end=9099):
         """Find a free TCP port for the HTTP server."""
