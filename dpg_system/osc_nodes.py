@@ -3016,13 +3016,12 @@ class OSCWidget(OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
         """Start background HTTP polling for remote value changes."""
         self._stop_proxy_polling()  # Stop any existing polling
         
-        if not self.osc_manager or not hasattr(self.osc_manager, 'oscquery_browser'):
+        if not self.osc_manager or not self.osc_manager.oscquery_browser:
             return
-        svc = self.osc_manager.oscquery_browser.get_service(self.name)
-        if svc is None:
+        if not self.name:
             return
-        
-        self._proxy_poll_service = svc
+
+        self._proxy_poll_service = None
         self._proxy_poll_value = None
         self._proxy_poll_has_new = False
         self._proxy_poll_running = True
@@ -3041,22 +3040,39 @@ class OSCWidget(OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
             self.remove_frame_tasks()
 
     def _proxy_poll_loop(self):
-        """Background thread: fetch remote VALUE periodically."""
+        """Background thread: discover service, then fetch remote VALUE periodically."""
         import time
         while getattr(self, '_proxy_poll_running', False):
+            svc = getattr(self, '_proxy_poll_service', None)
+
+            # Phase 1: Wait for service discovery
+            if svc is None:
+                browser = getattr(self.osc_manager, 'oscquery_browser', None)
+                if browser:
+                    svc = browser.get_service(self.name)
+                    if svc:
+                        self._proxy_poll_service = svc
+                        print(f"OSCWidget: proxy poll connected to '{self.name}' at {svc.ip}:{svc.http_port}")
+                    else:
+                        time.sleep(2.0)  # Retry discovery every 2s
+                        continue
+                else:
+                    time.sleep(2.0)
+                    continue
+
+            # Phase 2: Poll value
             try:
-                svc = getattr(self, '_proxy_poll_service', None)
-                if svc and self.address:
+                if self.address:
                     param = svc.fetch_param(self.address)
                     if param and 'VALUE' in param:
                         raw = param['VALUE']
-                        # OSCQuery VALUE is always a list; extract scalar if single element
                         if isinstance(raw, list) and len(raw) == 1:
                             raw = raw[0]
                         self._proxy_poll_value = raw
                         self._proxy_poll_has_new = True
             except Exception:
-                pass
+                # Service may have gone away — reset and retry discovery
+                self._proxy_poll_service = None
             time.sleep(0.1)  # ~10 Hz
 
     def frame_task(self):
@@ -3344,28 +3360,28 @@ class OSCWidget(OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
         return None
 
     def mode_changed(self):
-        registry, _ = self._get_registry()
-        if registry is None:
-            return
-            
-        # When mode changes, we might need to unregister from the 
-        # exported OSC registry since non-local widgets shouldn't be publicly served.
-        old_path_components = None
-        if hasattr(self, '_get_registry_path_components'):
-            old_path_components = self._get_registry_path_components()
-            
-        if hasattr(self, '_update_registration'):
-            self._update_registration(old_path_components=old_path_components)
-
         mode = self.mode_option()
-        if hasattr(self, 'get_patcher_path'):
-            patcher_path = self.get_patcher_path()
-            if mode != 'local':
-                registry.set_flow([patcher_path, self.name, self.address], flow='PROXY')
-            else:
-                registry.set_flow([patcher_path, self.name, self.address], flow='BOTH')
 
-        # Start/stop remote feedback based on mode
+        # Registry operations (may be unavailable for remote-only widgets)
+        registry, _ = self._get_registry()
+        if registry is not None:
+            # When mode changes, we might need to unregister from the 
+            # exported OSC registry since non-local widgets shouldn't be publicly served.
+            old_path_components = None
+            if hasattr(self, '_get_registry_path_components'):
+                old_path_components = self._get_registry_path_components()
+                
+            if hasattr(self, '_update_registration'):
+                self._update_registration(old_path_components=old_path_components)
+
+            if hasattr(self, 'get_patcher_path'):
+                patcher_path = self.get_patcher_path()
+                if mode != 'local':
+                    registry.set_flow([patcher_path, self.name, self.address], flow='PROXY')
+                else:
+                    registry.set_flow([patcher_path, self.name, self.address], flow='BOTH')
+
+        # Start/stop remote feedback based on mode (ALWAYS runs)
         self._stop_proxy_polling()
         self._stop_peer_subscription()
         if mode == 'proxy':
