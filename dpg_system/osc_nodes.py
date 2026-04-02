@@ -1218,7 +1218,7 @@ class OSCRegistrableMixin:
         if registry is None:
             return
 
-        # Proxy widgets should not register in ANY exported OSC registries
+        # Proxy/peer widgets should not register in ANY exported OSC registries
         if not self._should_register_in_service():
             return
 
@@ -1241,33 +1241,48 @@ class OSCRegistrableMixin:
         # Use the composer to get the final, clean path string
         final_path_string = registry.compose_path_string(raw_path_components)
 
+        # Don't overwrite an existing entry at this path (protects the original
+        # widget when a proxy is being created before its mode is set)
+        existing = registry.get_param_registry_container_for_path(raw_path_components)
+        if existing is not None and 'TYPE' in existing:
+            # Path already registered — just adopt it without overwriting
+            self.path = final_path_string
+            self.path_option.set(self.path)
+            self._owns_registry_entry = False
+            return
+
+
         _, registered_path_string = self._create_registry_entry(raw_path_components)
 
         if registered_path_string:
             self.path = final_path_string
-            # This is the key fix for the UI widget.
+            self._owns_registry_entry = True
             self.path_option.set(self.path)
         else:
             self.path = ''
+            self._owns_registry_entry = False
             self.path_option.set('Registration Failed')
 
     def unregister(self):
         """Unregisters the node by removing its path from the registry."""
         if self.osc_manager and self.path:
-            registry, is_service_scoped = self._get_registry()
-            if registry:
-                path_components = self._get_registry_path_components()
-                if is_service_scoped and path_components:
-                    path_components = path_components[1:]
-                    if path_components:
-                        svc_name = None
-                        if hasattr(self, 'my_editor') and self.my_editor:
-                            svc_name = self.osc_manager.get_service_name_for_editor(self.my_editor)
-                        if svc_name and path_components[0] == svc_name:
-                            path_components = path_components[1:]
-                            
-                registry.remove_path_from_registry(path_components)
+            # Only remove the registry entry if this widget actually created it
+            if getattr(self, '_owns_registry_entry', True):
+                registry, is_service_scoped = self._get_registry()
+                if registry:
+                    path_components = self._get_registry_path_components()
+                    if is_service_scoped and path_components:
+                        path_components = path_components[1:]
+                        if path_components:
+                            svc_name = None
+                            if hasattr(self, 'my_editor') and self.my_editor:
+                                svc_name = self.osc_manager.get_service_name_for_editor(self.my_editor)
+                            if svc_name and path_components[0] == svc_name:
+                                path_components = path_components[1:]
+                                
+                    registry.remove_path_from_registry(path_components)
             self.path = None
+            self._owns_registry_entry = False
             self.path_option.set('Unregistered')
 
     # def _update_registration(self):
@@ -1281,7 +1296,8 @@ class OSCRegistrableMixin:
         registers the new one.
         """
         # --- Unregister Step ---
-        if self.osc_manager:
+        # Only remove the registry entry if this widget actually created it
+        if self.osc_manager and getattr(self, '_owns_registry_entry', True):
             registry, is_service_scoped = self._get_registry()
             if registry:
                 path_stuff = old_path_components if old_path_components is not None else self._get_registry_path_components()
