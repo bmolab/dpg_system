@@ -1192,34 +1192,19 @@ class OSCRegistrableMixin:
             return self.osc_manager.registry, False
         return None, False
 
-    def _should_register_in_service(self):
-        """Check if this node should register in any exported OSCQuery registry.
 
-        Non-local widgets (proxy/peer) should NOT register
-        in local registries — they are remote controls, not local parameters.
-        """
-        if hasattr(self, 'mode_option'):
-            try:
-                if self.mode_option() != 'local':
-                    return False
-            except Exception:
-                pass
-        return True
 
     def register(self):
         """
         Registers the node with the OSCQueryRegistry by calling the abstract
         _create_registry_entry method.
+        Only called for local widgets via _setup_local().
         """
         if self.osc_manager is None:
             return
 
         registry, is_service_scoped = self._get_registry()
         if registry is None:
-            return
-
-        # Proxy/peer widgets should not register in ANY exported OSC registries
-        if not self._should_register_in_service():
             return
 
         raw_path_components = self._get_registry_path_components()
@@ -1241,33 +1226,32 @@ class OSCRegistrableMixin:
         # Use the composer to get the final, clean path string
         final_path_string = registry.compose_path_string(raw_path_components)
 
-        # Don't overwrite an existing entry at this path (protects the original
-        # widget when a proxy is being created before its mode is set)
+        # If another widget already owns this path (e.g., original slider),
+        # adopt it without overwriting. This protects the original during the
+        # transient 'local' phase when a proxy is first created.
         existing = registry.get_param_registry_container_for_path(raw_path_components)
         if existing is not None and 'TYPE' in existing:
-            # Path already registered — just adopt it without overwriting
             self.path = final_path_string
             self.path_option.set(self.path)
-            self._owns_registry_entry = False
+            self._is_path_owner = False
             return
-
 
         _, registered_path_string = self._create_registry_entry(raw_path_components)
 
         if registered_path_string:
             self.path = final_path_string
-            self._owns_registry_entry = True
+            self._is_path_owner = True
             self.path_option.set(self.path)
         else:
             self.path = ''
-            self._owns_registry_entry = False
+            self._is_path_owner = False
             self.path_option.set('Registration Failed')
 
     def unregister(self):
         """Unregisters the node by removing its path from the registry."""
         if self.osc_manager and self.path:
-            # Only remove the registry entry if this widget actually created it
-            if getattr(self, '_owns_registry_entry', True):
+            # Only remove the registry entry if this widget created it
+            if getattr(self, '_is_path_owner', True):
                 registry, is_service_scoped = self._get_registry()
                 if registry:
                     path_components = self._get_registry_path_components()
@@ -1279,29 +1263,24 @@ class OSCRegistrableMixin:
                                 svc_name = self.osc_manager.get_service_name_for_editor(self.my_editor)
                             if svc_name and path_components[0] == svc_name:
                                 path_components = path_components[1:]
-                                
+
                     registry.remove_path_from_registry(path_components)
             self.path = None
-            self._owns_registry_entry = False
+            self._is_path_owner = False
             self.path_option.set('Unregistered')
-
-    # def _update_registration(self):
-    #     """A robust way to handle changes: unregister the old state, register the new."""
-    #     self.unregister()
-    #     self.register()
 
     def _update_registration(self, old_path_components: list = None):
         """
-        A robust way to handle changes. It unregisters the old state and
-        registers the new one.
+        For name/address changes on LOCAL widgets. Unregisters the old path
+        and registers with the new one.
+        Not used for mode transitions — _apply_mode handles those.
         """
         # --- Unregister Step ---
-        # Only remove the registry entry if this widget actually created it
-        if self.osc_manager and getattr(self, '_owns_registry_entry', True):
+        if self.osc_manager:
             registry, is_service_scoped = self._get_registry()
             if registry:
                 path_stuff = old_path_components if old_path_components is not None else self._get_registry_path_components()
-                
+
                 if is_service_scoped and path_stuff:
                     path_stuff = path_stuff[1:]
                     if path_stuff:
@@ -2932,43 +2911,114 @@ class OSCWidget(OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
     Template method for node creation. It orchestrates the setup process
     and calls a hook for subclass-specific logic.
     """
-
     def custom_create(self, from_file):
-        """Handles finding source/target and then triggers registration."""
-        self._needs_deferred_connect = False
+        """Handles initial setup. Delegates mode-specific logic to _apply_mode."""
         self._setup_mode_combo()
-        
-        # 1. Auto-assign service name as target if in a service-scoped editor
+
+        # Auto-assign service name if in a service-scoped editor
         if self.name == '' and hasattr(self, 'my_editor') and self.my_editor and self.osc_manager:
             svc_name = self.osc_manager.get_service_name_for_editor(self.my_editor)
             if svc_name:
                 self.name = svc_name
-                # Update the UI property
                 if hasattr(self, 'target_name_property') and self.target_name_property is not None:
                     self.target_name_property.set(self.name)
                 if hasattr(self, 'source_name_property') and self.source_name_property is not None:
                     self.source_name_property.set(self.name)
 
-        # 2. Connect to source/target
-        target_found = False
-        source_found = False
-        if self.name != '':
-            target_found = self.find_target_node(self.name)
-            source_found = self.find_source_node(self.name)
+        # Apply the current mode (always 'local' for fresh creation).
+        # For from_file loads, post_load_callback will re-apply with the restored mode.
+        self._apply_mode()
 
-        # If connections failed and we're loading from file, defer to post_load_callback
-        if from_file and self.name != '' and (not target_found or not source_found):
-            self._needs_deferred_connect = True
+    # --- Core Lifecycle: Mode State Machine ---
 
-        # 3. Trigger registration (from OSCRegistrableMixin)
-        self._registerable_custom_create()  # This calls self.register()
+    def _apply_mode(self, mode=None):
+        """Single entry point for ALL mode transitions. Idempotent: safe to call at any time.
 
-        # 4. Call the hook for subclass-specific post-registration logic
-        if self.path: # Only run the hook if registration was successful
-            self._on_registration_complete()
-        self.update_output_label()
+        Called from:
+          - custom_create()          (initial setup, always 'local')
+          - post_load_callback()     (re-apply with restored mode after all nodes loaded)
+          - mode_changed()           (user switches combo)
+          - browser creation         (after setting mode to 'proxy')
+        """
+        if mode is None:
+            mode = self.mode_option() if hasattr(self, 'mode_option') else 'local'
 
-    # --- New Hook Method ---
+        # --- Full teardown of previous state ---
+        self._teardown()
+
+        # --- Setup based on mode ---
+        if mode == 'local':
+            self._setup_local()
+        else:
+            self._setup_remote(mode)
+
+        # --- Common: ensure target/source connections ---
+        if self.name:
+            if self.target is None:
+                self.find_target_node(self.name)
+            if self.source is None:
+                self.find_source_node(self.name)
+
+    def _teardown(self):
+        """Tear down all mode-specific state: polling, subscription, registration."""
+        self._stop_proxy_polling()
+        self._stop_peer_subscription()
+        # Unregister from the registry if we have a path
+        if self.path:
+            self.unregister()
+
+    def _setup_local(self):
+        """Set up this widget as a local parameter: register in the service registry."""
+        self.register()
+        if self.path:
+            # Only sync value/range if we actually created the entry (not adopted)
+            if getattr(self, '_is_path_owner', True):
+                self._on_registration_complete()
+            self.update_output_label()
+
+    def _setup_remote(self, mode):
+        """Set up this widget for remote operation (proxy or peer)."""
+        # Ensure the osc_device exists and has the correct port
+        self._ensure_device_for_service()
+        # Start polling (handles discovery + reconnection)
+        self._start_proxy_polling()
+        if mode == 'peer':
+            self._start_peer_subscription()
+
+    def _ensure_device_for_service(self):
+        """Ensure an osc_device exists for our target service with the correct port.
+
+        This makes the widget self-healing: after a reload or service restart,
+        the device is created or updated automatically.
+        """
+        if not self.osc_manager or not hasattr(self.osc_manager, 'oscquery_browser'):
+            return
+        browser = self.osc_manager.oscquery_browser
+        if browser is None:
+            return
+        svc = browser.get_service(self.name)
+        if svc is None:
+            return  # polling thread will handle later via _update_device_port
+
+        target = self.osc_manager.targets.get(self.name)
+        if target is None:
+            # Create the device
+            args = [self.name, str(svc.ip), str(svc.osc_port)]
+            try:
+                device_node = Node.app.create_node_by_name('osc_device', None, args)
+                if device_node:
+                    device_node.set_visibility('hidden')
+            except Exception as e:
+                print(f"OSCWidget._ensure_device_for_service: failed to create device for {self.name}: {e}")
+        elif target.target_port != svc.osc_port or target.ip != svc.ip:
+            # Update stale device
+            print(f"OSCWidget: updating device '{self.name}' port {target.target_port}→{svc.osc_port}, ip {target.ip}→{svc.ip}")
+            target.destroy_client()
+            target.target_port = svc.osc_port
+            target.ip = svc.ip
+            target.create_client()
+
+    # --- Hook Method ---
     def _on_registration_complete(self):
         """
         Hook method for subclasses to implement. Called after the node has been
@@ -2978,15 +3028,14 @@ class OSCWidget(OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
         pass # Default implementation does nothing.
 
     def cleanup(self):
-        """Handles OSC cleanup and then triggers unregistration."""
-        self._stop_proxy_polling()
-        self._stop_peer_subscription()
+        """Handles full teardown: stop polling/subscription, OSC cleanup, unregistration."""
+        self._teardown()
         OSCSender.cleanup(self)
         OSCReceiver.cleanup(self)
-        self._registerable_cleanup()  # This calls self.unregister()
 
     def post_load_callback(self):
-        """Called after ALL nodes and links in all patchers are loaded."""
+        """Called after ALL nodes and links in all patchers are loaded.
+        Re-applies the mode now that all nodes (devices, sources, services) exist."""
         # Backward compat: migrate old boolean proxy values to mode strings
         if hasattr(self, 'mode_option'):
             current = self.mode_option()
@@ -2995,36 +3044,10 @@ class OSCWidget(OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
             elif current is False:
                 self.mode_option.widget.set('local')
 
-        is_remote = hasattr(self, 'mode_option') and self.mode_option() != 'local'
-        
-        # 1. Proxy isolation: unregister widgets that were incorrectly registered
-        if is_remote:
-            if self.path:
-                self.unregister()
-            # Start appropriate remote feedback mechanism
-            mode = self.mode_option() if hasattr(self, 'mode_option') else 'proxy'
-            if mode in ('proxy', 'peer'):
-                self._start_proxy_polling()
-            if mode == 'peer':
-                self._start_peer_subscription()
-        else:
-            # Non-proxy: ALWAYS unregister and re-register.
-            # During custom_create, the widget may have registered in the GLOBAL
-            # registry because oscq_host hadn't started its service yet. Now that
-            # all nodes are loaded, the service-scoped registry should be available.
-            if self.path:
-                self.unregister()
-            self._registerable_custom_create()
-            if self.path:
-                self._on_registration_complete()
-                self.update_output_label()
-
-        # 2. Re-attempt source/target connections
-        if self.name != '':
-            if self.target is None:
-                self.find_target_node(self.name)
-            if self.source is None:
-                self.find_source_node(self.name)
+        # Re-apply mode now that all nodes are loaded.
+        # This tears down any incorrect state from custom_create (which always
+        # registered as 'local') and sets up the correct state.
+        self._apply_mode()
 
     # --- Proxy Polling ---
 
@@ -3396,34 +3419,8 @@ class OSCWidget(OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
         return None
 
     def mode_changed(self):
-        mode = self.mode_option()
-
-        # Registry operations (may be unavailable for remote-only widgets)
-        registry, _ = self._get_registry()
-        if registry is not None:
-            # When mode changes, we might need to unregister from the 
-            # exported OSC registry since non-local widgets shouldn't be publicly served.
-            old_path_components = None
-            if hasattr(self, '_get_registry_path_components'):
-                old_path_components = self._get_registry_path_components()
-                
-            if hasattr(self, '_update_registration'):
-                self._update_registration(old_path_components=old_path_components)
-
-            if hasattr(self, 'get_patcher_path'):
-                patcher_path = self.get_patcher_path()
-                if mode != 'local':
-                    registry.set_flow([patcher_path, self.name, self.address], flow='PROXY')
-                else:
-                    registry.set_flow([patcher_path, self.name, self.address], flow='BOTH')
-
-        # Start/stop remote feedback based on mode (ALWAYS runs)
-        self._stop_proxy_polling()
-        self._stop_peer_subscription()
-        if mode in ('proxy', 'peer'):
-            self._start_proxy_polling()
-        if mode == 'peer':
-            self._start_peer_subscription()
+        """Called when the user switches the mode combo. Delegates to _apply_mode."""
+        self._apply_mode()
 
     def update_value_in_registry(self):
         """
@@ -3440,6 +3437,18 @@ class OSCWidget(OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
                 registry.set_value_for_path(self.path, current_value)
                 # Notify subscribed peers via OSCQueryServer
                 self._notify_peers(self.address, current_value)
+
+    def _update_registry_value_only(self):
+        """Update the registry value WITHOUT notifying peers.
+        Used by receive() to avoid feedback loops — the value already
+        came from the network, so re-notifying would create a cycle."""
+        if self.osc_manager and self.path:
+            registry, _ = self._get_registry()
+            if registry is None:
+                return
+            current_value = self._get_registry_value()
+            if current_value is not None:
+                registry.set_value_for_path(self.path, current_value)
 
     def _get_registry_value(self):
         """
@@ -3569,7 +3578,9 @@ class OSCValueNode(ValueNode, OSCWidget):
                 data = data.replace('_', ' ')
         self.inputs[0].receive_data(data)
         ValueNode.execute(self)
-        self.update_value_in_registry()
+        # Update registry directly — do NOT call _notify_peers() since
+        # this value arrived from the network (re-notifying creates a loop)
+        self._update_registry_value_only()
 
     def variable_update(self):
         if self.variable is not None:

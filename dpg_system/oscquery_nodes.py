@@ -851,7 +851,7 @@ class OSCQueryBrowseNode(Node, OSCBase):
             # Mark as proxy since this widget controls a remote service
             if created_node and hasattr(created_node, 'mode_option'):
                 created_node.mode_option.set('proxy')
-                created_node.mode_changed()  # .set() doesn't trigger DPG callbacks
+                created_node._apply_mode('proxy')  # canonical lifecycle entry point
             return created_node
         except Exception as e:
             osc_type = param_dict.get('TYPE', '?')
@@ -1214,8 +1214,9 @@ class OSCQueryHostNode(Node, OSCBase):
             self.port_label.widget.set(f'OSC port: {self.osc_port}')
             self.status_label.widget.set('active')
 
-            # Create osc_device for this service so widgets can find a target
-            if self.service_name not in self.osc_manager.targets:
+            # Ensure osc_device for this service exists and has the correct port
+            existing_target = self.osc_manager.targets.get(self.service_name)
+            if existing_target is None:
                 try:
                     # Pass port twice: first=target_port, second=source_port
                     device_args = [self.service_name, '127.0.0.1', str(self.osc_port), str(self.osc_port)]
@@ -1224,6 +1225,28 @@ class OSCQueryHostNode(Node, OSCBase):
                         device_node.set_visibility('hidden')
                 except Exception as e:
                     print(f"oscq_host: Failed to create device for {self.service_name}: {e}")
+            else:
+                # Device loaded from file with potentially stale port — update it
+                needs_update = False
+                if existing_target.target_port != self.osc_port:
+                    existing_target.destroy_client()
+                    existing_target.target_port = self.osc_port
+                    existing_target.ip = '127.0.0.1'
+                    existing_target.create_client()
+                    needs_update = True
+                # Also update the source (listener) port
+                if hasattr(existing_target, 'source_port') and existing_target.source_port != self.osc_port:
+                    existing_target.destroy_server()
+                    existing_target.source_port = self.osc_port
+                    existing_target.start_serving()
+                    needs_update = True
+                if needs_update:
+                    # Update UI properties if they exist
+                    if hasattr(existing_target, 'target_port_property'):
+                        existing_target.target_port_property.set(str(self.osc_port))
+                    if hasattr(existing_target, 'source_port_property'):
+                        existing_target.source_port_property.set(str(self.osc_port))
+                    print(f"oscq_host: Updated device '{self.service_name}' to port {self.osc_port}")
         else:
             self.service_label.widget.set(self.service_name)
             self.port_label.widget.set('—')
