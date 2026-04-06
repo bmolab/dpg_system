@@ -3518,6 +3518,7 @@ class SaveDialog:
 
     def save_callback(self, sender, app_data):
         try:
+            print(f"SaveDialog.save_callback: app_data = {app_data}")
             if app_data is not None and 'file_path_name' in app_data:
                 save_path = app_data['file_path_name']
                 self.callback(save_path)
