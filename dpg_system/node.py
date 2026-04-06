@@ -3529,9 +3529,10 @@ class SaveDialog:
             if self.filename_input is not None:
                 try:
                     typed_name = dpg.get_value(self.filename_input)
-                except Exception:
-                    pass
+                except Exception as ex:
+                    print(f"SaveDialog: failed to read input: {ex}")
 
+            print(f"SaveDialog: typed_name='{typed_name}', app_data={app_data}")
             if typed_name and typed_name not in ('', '.'):
                 # Build path from our input + the dialog's current directory
                 current_path = app_data.get('current_path', '') if app_data else ''
