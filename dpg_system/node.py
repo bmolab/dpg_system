@@ -3505,12 +3505,13 @@ class LoadDialog:
 
 
 class SaveDialog:
-    def __init__(self, parent, callback, extensions, default_path=''):
+    def __init__(self, parent, callback, extensions, default_path='', default_filename='untitled.json'):
         Node.app.active_widget = 1
         self.callback = callback
         self.parent = parent
         self.save_take_task = None
-        with dpg.file_dialog(modal=True, default_path=default_path, directory_selector=False, show=True, height=400, width=800,
+        with dpg.file_dialog(modal=True, default_path=default_path, default_filename=default_filename,
+                             directory_selector=False, show=True, height=400, width=800,
                              callback=self.save_callback, cancel_callback=dialog_cancel_callback,
                              tag='save_dialog') as self.save_take_task:
             for extension in extensions:
