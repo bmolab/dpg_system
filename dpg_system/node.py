@@ -3478,120 +3478,63 @@ def dialog_cancel_callback(sender, app_data):
         print(e)
     Node.app.active_widget = -1
 
-_TK_DIALOG_SCRIPT = r'''
-import tkinter as tk
-from tkinter import filedialog
-import json, sys, os
-
-root = tk.Tk()
-root.overrideredirect(True)
-root.geometry("0x0+0+0")
-root.withdraw()
-
-def bring_to_front():
-    if sys.platform == "darwin":
-        os.system(f"osascript -e 'tell application \"System Events\" to set frontmost of the first process whose unix id is {os.getpid()} to true'")
-    else:
-        root.attributes("-topmost", True)
-        root.update()
-        root.attributes("-topmost", False)
-
-for line in sys.stdin:
-    try:
-        cmd = json.loads(line.strip())
-    except Exception:
-        continue
-    action = cmd.get("action", "")
-    if action == "quit":
-        break
-    elif action == "save":
-        bring_to_front()
-        filetypes = [(d, p) for d, p in cmd.get("filetypes", [["JSON files", "*.json"]])]
-        filetypes.append(("All files", "*.*"))
-        path = filedialog.asksaveasfilename(
-            parent=root,
-            initialdir=cmd.get("initialdir", "."),
-            initialfile=cmd.get("initialfile", "untitled.json"),
-            defaultextension=cmd.get("defaultextension", ".json"),
-            filetypes=filetypes
-        )
-        print(json.dumps({"path": path or ""}), flush=True)
-    elif action == "open":
-        bring_to_front()
-        filetypes = [(d, p) for d, p in cmd.get("filetypes", [["JSON files", "*.json"]])]
-        filetypes.append(("All files", "*.*"))
-        path = filedialog.askopenfilename(
-            parent=root,
-            initialdir=cmd.get("initialdir", "."),
-            defaultextension=cmd.get("defaultextension", ".json"),
-            filetypes=filetypes
-        )
-        print(json.dumps({"path": path or ""}), flush=True)
-
-root.destroy()
+def _windows_file_dialog(action="open", target_dir=".", default_name="", extensions=None):
+    import subprocess
+    import os
+    
+    script = f'''
+[System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms") | Out-Null
+$dialog = New-Object System.Windows.Forms.{"SaveFileDialog" if action=="save" else "OpenFileDialog"}
+$dialog.InitialDirectory = "{os.path.abspath(target_dir)}"
+    '''
+    if action == "save":
+        script += f'$dialog.FileName = "{default_name}"\n'
+        
+    script += '''
+if($dialog.ShowDialog() -eq "OK") {
+    Write-Output $dialog.FileName
+}
 '''
-
-
-class TkDialogHelper:
-    """Persistent subprocess for native file dialogs."""
-    _instance = None
-    _process = None
-
-    @classmethod
-    def get(cls):
-        if cls._instance is None:
-            cls._instance = cls()
-        if cls._process is None or cls._process.poll() is not None:
-            cls._start()
-        return cls._instance
-
-    @classmethod
-    def _start(cls):
-        import subprocess as _sp
-        import sys as _sys
-        cls._process = _sp.Popen(
-            [_sys.executable, '-c', _TK_DIALOG_SCRIPT],
-            stdin=_sp.PIPE, stdout=_sp.PIPE, stderr=_sp.PIPE,
-            text=True, bufsize=1
-        )
-
-    @classmethod
-    def shutdown(cls):
-        if cls._process and cls._process.poll() is None:
-            try:
-                cls._process.stdin.write(json.dumps({"action": "quit"}) + "\n")
-                cls._process.stdin.flush()
-                cls._process.wait(timeout=3)
-            except Exception:
-                try:
-                    cls._process.kill()
-                except Exception:
-                    pass
-        cls._process = None
-
-    def request(self, cmd):
-        try:
-            self._process.stdin.write(json.dumps(cmd) + "\n")
-            self._process.stdin.flush()
-            line = self._process.stdout.readline()
-            return json.loads(line.strip()) if line else {}
-        except Exception as e:
-            print(f"TkDialogHelper error: {e}")
-            self.__class__._process = None
-            return {}
-
-import atexit
-atexit.register(TkDialogHelper.shutdown)
-
-def _get_viewport_rect():
     try:
-        x, y = dpg.get_viewport_pos()
-        w = dpg.get_viewport_width()
-        h = dpg.get_viewport_height()
-        return x, y, w, h
-    except Exception:
-        return 0, 0, 800, 600
+        result = subprocess.run(["powershell", "-Command", script], capture_output=True, text=True)
+        return result.stdout.strip()
+    except Exception as e:
+        print(f"Windows Dialog Exception: {e}")
+        return ""
 
+def _linux_file_dialog(action="open", target_dir=".", default_name="", extensions=None):
+    import subprocess
+    import os
+    import shutil
+    
+    target_posix = os.path.abspath(target_dir) if target_dir else os.getcwd()
+    if action == "save":
+        initial_path = os.path.join(target_posix, default_name)
+    else:
+        initial_path = target_posix + "/" if os.path.isdir(target_posix) else target_posix
+
+    if shutil.which("zenity"):
+        cmd = ["zenity", "--file-selection", f"--filename={initial_path}"]
+        if action == "save":
+            cmd.extend(["--save", "--confirm-overwrite"])
+    elif shutil.which("kdialog"):
+        cmd = ["kdialog"]
+        if action == "open":
+            cmd.extend(["--getopenfilename", initial_path])
+        else:
+            cmd.extend(["--getsavefilename", initial_path])
+    else:
+        print("Linux Dialog Error: zenity or kdialog not found. Cannot launch native dialog.")
+        return ""
+        
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode == 0:
+            return result.stdout.strip()
+        return ""
+    except Exception as e:
+        print(f"Linux Dialog Exception: {e}")
+        return ""
 
 def _macos_file_dialog(action="open", target_dir=".", default_name=""):
     import subprocess
@@ -3644,17 +3587,10 @@ class LoadDialog:
             import sys
             if sys.platform == "darwin":
                 load_path = _macos_file_dialog(action="open", target_dir=default_path)
+            elif sys.platform == "win32":
+                load_path = _windows_file_dialog(action="open", target_dir=default_path, extensions=extensions)
             else:
-                helper = TkDialogHelper.get()
-                x, y, w, h = _get_viewport_rect()
-                result = helper.request({
-                    "action": "open",
-                    "initialdir": os.path.abspath(default_path) if default_path else os.getcwd(),
-                    "defaultextension": extensions[0] if extensions else ".json",
-                    "filetypes": [["JSON files", "*.json"]],
-                    "x": x, "y": y, "w": w, "h": h
-                })
-                load_path = result.get("path", "")
+                load_path = _linux_file_dialog(action="open", target_dir=default_path, extensions=extensions)
             
             if load_path:
                 self.callback(load_path)
@@ -3674,18 +3610,10 @@ class SaveDialog:
             import sys
             if sys.platform == "darwin":
                 save_path = _macos_file_dialog(action="save", target_dir=default_path, default_name=default_filename)
+            elif sys.platform == "win32":
+                save_path = _windows_file_dialog(action="save", target_dir=default_path, default_name=default_filename, extensions=extensions)
             else:
-                helper = TkDialogHelper.get()
-                x, y, w, h = _get_viewport_rect()
-                result = helper.request({
-                    "action": "save",
-                    "initialdir": os.path.abspath(default_path) if default_path else os.getcwd(),
-                    "initialfile": default_filename,
-                    "defaultextension": extensions[0] if extensions else ".json",
-                    "filetypes": [["JSON files", "*.json"]],
-                    "x": x, "y": y, "w": w, "h": h
-                })
-                save_path = result.get("path", "")
+                save_path = _linux_file_dialog(action="save", target_dir=default_path, default_name=default_filename, extensions=extensions)
                 
             if save_path:
                 self.callback(save_path)
