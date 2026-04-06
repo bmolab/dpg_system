@@ -782,9 +782,10 @@ class OSCQueryBrowseNode(Node, OSCBase):
             self._create_widgets_for_subtree(svc_name, target_path, node_at_path, channels)
 
     def _ensure_device(self, service):
-        """Ensure osc_device exists for this service."""
+        """Ensure osc_device exists for this service, and its port is up to date."""
         device_name = service.name
-        if device_name not in self.osc_manager.targets:
+        existing = self.osc_manager.targets.get(device_name)
+        if existing is None:
             args = [device_name, str(service.ip), str(service.osc_port)]
             try:
                 device_node = Node.app.create_node_by_name('osc_device', None, args)
@@ -792,6 +793,15 @@ class OSCQueryBrowseNode(Node, OSCBase):
                     device_node.set_visibility('hidden')
             except Exception as e:
                 print(f"oscq_browse: Failed to create device for {device_name}: {e}")
+        elif existing.target_port != service.osc_port or existing.ip != service.ip:
+            # Device exists but port/ip is stale — update it
+            existing.destroy_client()
+            existing.target_port = service.osc_port
+            existing.ip = service.ip
+            existing.create_client()
+            if hasattr(existing, 'target_port_property'):
+                existing.target_port_property.set(str(service.osc_port))
+            print(f"oscq_browse: Updated device '{device_name}' to {service.ip}:{service.osc_port}")
 
     @staticmethod
     def _short_label_from_path(osc_path):
