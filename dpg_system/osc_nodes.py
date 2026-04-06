@@ -1642,6 +1642,7 @@ class OSCSource(OSCBase):
         # if self.lock.acquire(blocking=True):
         if type(args) == tuple:
             args = list(args)
+        print(f"OSCSource.osc_handler: received address='{address}' args={args} on source '{self.name}' (handle_in_loop={self.handle_in_loop})")
         if self.handle_in_loop:
             self.osc_manager.receive_pending_message(self, address, args)
             return
