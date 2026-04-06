@@ -471,8 +471,15 @@ class OSCQueryBrowseNode(Node, OSCBase):
 
     def update_navigation(self):
         """Update the list_box to show contents of current path."""
-        if self.current_service is None or self.current_service.json_tree is None:
+        if self.current_service is None:
             return
+        
+        # Lazy fetch: if the initial background fetch failed, retry now
+        if self.current_service.json_tree is None:
+            self.current_service.fetch_json(retries=2, delay=0.3)
+            if self.current_service.json_tree is None:
+                print(f"OSCQueryBrowse: Could not fetch tree from {self.current_service.name} ({self.current_service.ip}:{self.current_service.http_port})")
+                return
 
         if not HAS_CONVERTER:
             return

@@ -331,14 +331,12 @@ class OSCQueryServer:
 class DiscoveredService:
     """Represents a discovered OSCQuery service on the network."""
 
-    def __init__(self, name, ip, http_port, osc_port, properties=None, hostname=None, all_ips=None):
+    def __init__(self, name, ip, http_port, osc_port, properties=None):
         self.name = name
         self.ip = ip
         self.http_port = http_port
         self.osc_port = osc_port
         self.properties = properties or {}
-        self.hostname = hostname
-        self.all_ips = all_ips or [ip]
         self.json_tree = None
         self.last_fetch_error = None
 
@@ -347,57 +345,29 @@ class DiscoveredService:
         import time
         from urllib.request import urlopen
         
-        urls_to_try = []
-        for addr in self.all_ips:
-            if ':' in addr and not addr.startswith('['):
-                urls_to_try.append(f"http://[{addr}]:{self.http_port}/")
-            else:
-                urls_to_try.append(f"http://{addr}:{self.http_port}/")
+        # Build URL list: primary IP first, then localhost fallback
+        urls_to_try = [f"http://{self.ip}:{self.http_port}/"]
+        if self.ip not in ('127.0.0.1', 'localhost'):
+            urls_to_try.append(f"http://127.0.0.1:{self.http_port}/")
         
-        # Finally try the hostname/DNS as a fallback
-        if self.hostname:
-            urls_to_try.append(f"http://{self.hostname}:{self.http_port}/")
-            
-        # Guarantee localhost is tried if it wasn't there but we replaced it
-        if self.ip in ('127.0.0.1', 'localhost'):
-            urls_to_try.insert(0, f"http://127.0.0.1:{self.http_port}/")
-
-        # Deduplicate while preserving order
-        seen = set()
-        urls = []
-        for url in urls_to_try:
-            if url not in seen:
-                urls.append(url)
-                seen.add(url)
-
         last_exception = None
-        for attempt in range(retries):
-            for url in urls:
+        for url in urls_to_try:
+            for attempt in range(retries):
                 try:
-                    # Windows Defender often delays local network socket connections by 1-2s for heuristics.
-                    response = urlopen(url, timeout=3.0)
+                    response = urlopen(url, timeout=3)
                     self.json_tree = json.loads(response.read().decode('utf-8'))
                     self.last_fetch_error = None
-                    
-                    # Update active IP so future param fetches use the connection that succeeded
+                    # If localhost worked, remember it for future fetches
                     if '127.0.0.1' in url and self.ip != '127.0.0.1':
                         self.ip = '127.0.0.1'
-                    else:
-                        from urllib.parse import urlparse
-                        extracted_host = urlparse(url).hostname
-                        if extracted_host:
-                            # Re-wrap in brackets if it's an IPv6 address so future urlopen calls succeed
-                            self.ip = f"[{extracted_host}]" if ':' in extracted_host else extracted_host
-                        
                     return self.json_tree
                 except Exception as e:
                     last_exception = e
-                    
-            if attempt < retries - 1:
-                time.sleep(delay)
+                    if attempt < retries - 1:
+                        time.sleep(delay)
                     
         self.last_fetch_error = str(last_exception)
-        print(f"OSCQueryBrowser: Failed to fetch JSON from {self.name} after sweeping {urls} ({retries} sweeps): {last_exception}")
+        print(f"OSCQueryBrowser: Failed to fetch JSON from {self.name} ({self.ip}:{self.http_port}) after {retries} attempts: {last_exception}")
         return None
 
     def fetch_param(self, osc_path):
@@ -573,29 +543,28 @@ class OSCQueryBrowser:
         try:
             info = zeroconf.get_service_info(service_type, name, timeout=5000)
             if info is None:
+                print(f"OSCQueryBrowser: Could not resolve service info for '{service_name}'")
                 return
 
-            # Get IP address
+            # Get IP addresses - prefer IPv4 over IPv6
             addresses = info.parsed_addresses()
             if not addresses:
+                print(f"OSCQueryBrowser: No addresses found for '{service_name}'")
                 return
             
-            # Prefer IPv4 over IPv6 if possible for default IP binding
+            print(f"OSCQueryBrowser: '{service_name}' raw addresses from zeroconf: {addresses}, server: {info.server}")
+            
             ip = addresses[0]
             for addr in addresses:
-                if '.' in addr:
+                if '.' in addr:  # IPv4 addresses contain dots
                     ip = addr
                     break
-
-            all_ips = list(addresses)
-            hostname = info.server
 
             # If the discovered IP is our own machine, use 127.0.0.1 for reliable HTTP access
             local_ips = self._get_local_ips()
             if ip in local_ips:
+                print(f"OSCQueryBrowser: '{service_name}' IP {ip} is local, using 127.0.0.1")
                 ip = '127.0.0.1'
-                if '127.0.0.1' not in all_ips:
-                    all_ips.insert(0, '127.0.0.1')
 
             # Get HTTP port (the port advertised by the service)
             http_port = info.port
@@ -617,22 +586,23 @@ class OSCQueryBrowser:
                 ip=ip,
                 http_port=http_port,
                 osc_port=osc_port,
-                properties=properties,
-                hostname=hostname,
-                all_ips=all_ips
+                properties=properties
             )
 
-            # Fetch the JSON tree
+            # Try to fetch the JSON tree, but add service to catalog regardless
+            # so it always appears in the browse list
             service.fetch_json()
 
             with self._lock:
                 self.services[service_name] = service
 
-            print(f"OSCQueryBrowser: Discovered '{service_name}' at {ip}:{osc_port} (HTTP:{http_port})")
+            tree_status = "with tree" if service.json_tree else "NO tree (fetch failed)"
+            print(f"OSCQueryBrowser: Added '{service_name}' at {ip}:{osc_port} (HTTP:{http_port}) — {tree_status}")
             self._notify_callbacks('added', service_name)
 
         except Exception as e:
             print(f"OSCQueryBrowser: Failed to resolve '{service_name}': {e}")
+            traceback.print_exc()
 
     @staticmethod
     def _get_local_ips():
