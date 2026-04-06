@@ -3583,21 +3583,31 @@ class LoadDialog:
         Node.app.active_widget = 1
         self.callback = callback
         self.parent = parent
+        load_path = ""
         try:
-            import sys
-            if sys.platform == "darwin":
-                load_path = _macos_file_dialog(action="open", target_dir=default_path)
-            elif sys.platform == "win32":
-                load_path = _windows_file_dialog(action="open", target_dir=default_path, extensions=extensions)
-            else:
-                load_path = _linux_file_dialog(action="open", target_dir=default_path, extensions=extensions)
-            
+            import crossfiledialog
+            import os
+            start_dir = os.path.abspath(default_path) if default_path else ""
+            load_path = crossfiledialog.open_file(title="Open", start_dir=start_dir)
+        except ImportError:
+            try:
+                import sys
+                if sys.platform == "darwin":
+                    load_path = _macos_file_dialog(action="open", target_dir=default_path)
+                elif sys.platform == "win32":
+                    load_path = _windows_file_dialog(action="open", target_dir=default_path, extensions=extensions)
+                else:
+                    load_path = _linux_file_dialog(action="open", target_dir=default_path, extensions=extensions)
+            except Exception as e:
+                print(f'LoadDialog fallback error: {e}')
+                
+        try:
             if load_path:
                 self.callback(load_path)
             else:
                 print('Load cancelled')
         except Exception as e:
-            print(f'LoadDialog error: {e}')
+            print(f'LoadDialog callback error: {e}')
         Node.app.active_widget = -1
 
 
@@ -3606,19 +3616,29 @@ class SaveDialog:
         Node.app.active_widget = 1
         self.callback = callback
         self.parent = parent
+        save_path = ""
         try:
-            import sys
-            if sys.platform == "darwin":
-                save_path = _macos_file_dialog(action="save", target_dir=default_path, default_name=default_filename)
-            elif sys.platform == "win32":
-                save_path = _windows_file_dialog(action="save", target_dir=default_path, default_name=default_filename, extensions=extensions)
-            else:
-                save_path = _linux_file_dialog(action="save", target_dir=default_path, default_name=default_filename, extensions=extensions)
+            import crossfiledialog
+            import os
+            start = os.path.join(default_path, default_filename) if default_path else default_filename
+            save_path = crossfiledialog.save_file(title="Save As", start_dir=start)
+        except ImportError:
+            try:
+                import sys
+                if sys.platform == "darwin":
+                    save_path = _macos_file_dialog(action="save", target_dir=default_path, default_name=default_filename)
+                elif sys.platform == "win32":
+                    save_path = _windows_file_dialog(action="save", target_dir=default_path, default_name=default_filename, extensions=extensions)
+                else:
+                    save_path = _linux_file_dialog(action="save", target_dir=default_path, default_name=default_filename, extensions=extensions)
+            except Exception as e:
+                print(f'SaveDialog fallback error: {e}')
                 
+        try:
             if save_path:
                 self.callback(save_path)
             else:
                 print('Save cancelled')
         except Exception as e:
-            print(f'SaveDialog error: {e}')
+            print(f'SaveDialog callback error: {e}')
         Node.app.active_widget = -1
