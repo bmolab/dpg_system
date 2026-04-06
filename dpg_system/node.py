@@ -3510,17 +3510,37 @@ class SaveDialog:
         self.callback = callback
         self.parent = parent
         self.save_take_task = None
+        self.filename_input = None
         with dpg.file_dialog(modal=True, default_path=default_path, default_filename=default_filename,
                              directory_selector=False, show=True, height=400, width=800,
                              callback=self.save_callback, cancel_callback=dialog_cancel_callback,
                              tag='save_dialog') as self.save_take_task:
             for extension in extensions:
                 dpg.add_file_extension(extension)
+            # Dedicated filename input — immune to DPG's Enter-key navigation clearing
+            with dpg.group(horizontal=True):
+                dpg.add_text("Save as:")
+                self.filename_input = dpg.add_input_text(default_value=default_filename, width=300)
 
     def save_callback(self, sender, app_data):
         try:
-            print(f"SaveDialog.save_callback: app_data = {app_data}")
-            if app_data is not None and 'file_path_name' in app_data:
+            # Prefer our dedicated filename input over DPG's internal (broken) field
+            typed_name = ''
+            if self.filename_input is not None:
+                try:
+                    typed_name = dpg.get_value(self.filename_input)
+                except Exception:
+                    pass
+
+            if typed_name and typed_name not in ('', '.'):
+                # Build path from our input + the dialog's current directory
+                current_path = app_data.get('current_path', '') if app_data else ''
+                if not typed_name.endswith('.json'):
+                    typed_name += '.json'
+                save_path = os.path.join(current_path, typed_name)
+                self.callback(save_path)
+            elif app_data is not None and 'file_path_name' in app_data:
+                # Fallback to DPG's field (works fine on some platforms)
                 save_path = app_data['file_path_name']
                 self.callback(save_path)
             else:
