@@ -3122,6 +3122,7 @@ class OSCWidget(OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
 
     def frame_task(self):
         """Main-thread: apply polled value and update device port if needed."""
+        import time as _time
         # Update device target port when service (re)connects
         if getattr(self, '_proxy_device_needs_update', False):
             self._proxy_device_needs_update = False
@@ -3129,6 +3130,11 @@ class OSCWidget(OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
 
         if getattr(self, '_proxy_poll_has_new', False):
             self._proxy_poll_has_new = False
+            # Suppress poll overwrites briefly after the user moves the proxy,
+            # so the OSC send has time to reach the remote and be reflected back.
+            last_interact = getattr(self, '_proxy_user_interacted_at', 0)
+            if (_time.time() - last_interact) < 0.5:
+                return
             value = self._proxy_poll_value
             if value is not None and hasattr(self, 'input'):
                 try:
@@ -3618,6 +3624,7 @@ class OSCValueNode(ValueNode, OSCWidget):
         OSCWidget.cleanup(self)
 
     def execute(self):
+        import time as _time
         ValueNode.execute(self)
         data = dpg.get_value(self.value)
         t = type(data)
@@ -3632,6 +3639,8 @@ class OSCValueNode(ValueNode, OSCWidget):
             if hasattr(self, 'space_replacement') and self.space_replacement():
                 data = data.replace(' ', '_')
         if data is not None:
+            # Mark interaction time so proxy polling doesn't immediately overwrite
+            self._proxy_user_interacted_at = _time.time()
             self.update_value_in_registry()
             if self.target and self.address != '':
                 self.target.send_message(self.address, data)

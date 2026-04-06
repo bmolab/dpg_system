@@ -546,7 +546,7 @@ class OSCQueryBrowser:
                 print(f"OSCQueryBrowser: Could not resolve service info for '{service_name}'")
                 return
 
-            # Get IP addresses - prefer IPv4 over IPv6
+            # Get IP addresses - prefer routable IPv4 over loopback and IPv6
             addresses = info.parsed_addresses()
             if not addresses:
                 print(f"OSCQueryBrowser: No addresses found for '{service_name}'")
@@ -554,13 +554,21 @@ class OSCQueryBrowser:
             
             print(f"OSCQueryBrowser: '{service_name}' raw addresses from zeroconf: {addresses}, server: {info.server}")
             
-            ip = addresses[0]
-            for addr in addresses:
-                if '.' in addr:  # IPv4 addresses contain dots
+            # Filter out loopback addresses — they're only useful if the service is on THIS machine
+            routable = [a for a in addresses if a not in ('127.0.0.1', '::1', 'localhost')]
+            
+            # Pick the best IP: prefer IPv4 from routable addresses
+            ip = None
+            for addr in routable:
+                if '.' in addr:  # IPv4
                     ip = addr
                     break
+            if ip is None and routable:
+                ip = routable[0]  # Fall back to first routable (might be IPv6)
+            if ip is None:
+                ip = addresses[0]  # All addresses are loopback — use as-is
 
-            # If the discovered IP is our own machine, use 127.0.0.1 for reliable HTTP access
+            # If the chosen routable IP belongs to THIS machine, use loopback for reliable local access
             local_ips = self._get_local_ips()
             if ip in local_ips:
                 print(f"OSCQueryBrowser: '{service_name}' IP {ip} is local, using 127.0.0.1")
