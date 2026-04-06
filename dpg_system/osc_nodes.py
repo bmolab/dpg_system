@@ -1642,7 +1642,6 @@ class OSCSource(OSCBase):
         # if self.lock.acquire(blocking=True):
         if type(args) == tuple:
             args = list(args)
-        print(f"OSCSource.osc_handler: received address='{address}' args={args} on source '{self.name}' (handle_in_loop={self.handle_in_loop})")
         if self.handle_in_loop:
             self.osc_manager.receive_pending_message(self, address, args)
             return
@@ -1677,24 +1676,26 @@ class OSCSource(OSCBase):
             self.output.send(out_list)
 
     def relay_osc(self, address, args):
-        print(f"OSCSource.relay_osc: address='{address}', registered addresses={list(self.receive_nodes.keys())}")
         if address in self.receive_nodes:
             for rn in self.receive_nodes[address]:
-                print(f"  -> dispatching to {rn.__class__.__name__} ({getattr(rn, 'label', '?')})")
                 rn.receive(args, address)
             return
-        else:
-            if '/' in address:
-                sub_addresses = address.split('/')
-                length = len(sub_addresses)
-                for i in range(1, length):
-                    temp = '/'.join(sub_addresses[:-i])
-                    if temp in self.receive_nodes:
-                        sub = ['/' + '/'.join(sub_addresses[-i:])] + list(args)
-                        for rn in self.receive_nodes[temp]:
-                            rn.receive(sub)
-                        return
-        print(f"  -> NO MATCH for '{address}'")
+        # OSC addresses start with '/' but widgets may register without it
+        stripped = address.lstrip('/')
+        if stripped in self.receive_nodes:
+            for rn in self.receive_nodes[stripped]:
+                rn.receive(args, address)
+            return
+        if '/' in address:
+            sub_addresses = address.split('/')
+            length = len(sub_addresses)
+            for i in range(1, length):
+                temp = '/'.join(sub_addresses[:-i])
+                if temp in self.receive_nodes:
+                    sub = ['/' + '/'.join(sub_addresses[-i:])] + list(args)
+                    for rn in self.receive_nodes[temp]:
+                        rn.receive(sub)
+                    return
         self.output_message_directly(address, args)
 
     # def output_message_directly(self, address, args):
@@ -3647,10 +3648,7 @@ class OSCValueNode(ValueNode, OSCWidget):
             self._proxy_user_interacted_at = _time.time()
             self.update_value_in_registry()
             if self.target and self.address != '':
-                print(f"OSCValueNode.execute: SENDING {data} to target='{self.name}' address='{self.address}' ip={getattr(self.target, 'ip', '?')} port={getattr(self.target, 'target_port', '?')}")
                 self.target.send_message(self.address, data)
-            else:
-                print(f"OSCValueNode.execute: NO TARGET — target={self.target}, address='{self.address}', name='{self.name}'")
 
 
 class OSCButtonNode(ButtonNode, OSCWidget):
