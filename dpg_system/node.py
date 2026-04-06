@@ -3593,22 +3593,69 @@ def _get_viewport_rect():
         return 0, 0, 800, 600
 
 
+def _macos_file_dialog(action="open", target_dir=".", default_name=""):
+    import subprocess
+    import os
+    
+    target_posix = os.path.abspath(target_dir) if target_dir else os.getcwd()
+    location_str = ""
+    if os.path.isdir(target_posix):
+        location_str = f'default location POSIX file "{target_posix}"'
+        
+    if action == "save":
+        cmd_str = f'choose file name default name "{default_name}" {location_str}'
+    else:
+        cmd_str = f'choose file {location_str}'
+        
+    script = f'''
+    try
+        tell current application
+            activate
+            set myPath to {cmd_str}
+            return POSIX path of myPath
+        end tell
+    on error errMsg number errNum
+        if errNum is -128 then
+            return ""
+        else
+            return "ERROR: " & errMsg
+        end if
+    end try
+    '''
+    
+    try:
+        result = subprocess.run(['osascript', '-e', script], capture_output=True, text=True)
+        out = result.stdout.strip()
+        if out.startswith("ERROR:"):
+            print(f"macOS Dialog {out}")
+            return ""
+        return out
+    except Exception as e:
+        print(f"macOS Dialog Exception: {e}")
+        return ""
+
+
 class LoadDialog:
     def __init__(self, parent, callback, extensions, default_path=''):
         Node.app.active_widget = 1
         self.callback = callback
         self.parent = parent
         try:
-            helper = TkDialogHelper.get()
-            x, y, w, h = _get_viewport_rect()
-            result = helper.request({
-                "action": "open",
-                "initialdir": os.path.abspath(default_path) if default_path else os.getcwd(),
-                "defaultextension": extensions[0] if extensions else ".json",
-                "filetypes": [["JSON files", "*.json"]],
-                "x": x, "y": y, "w": w, "h": h
-            })
-            load_path = result.get("path", "")
+            import sys
+            if sys.platform == "darwin":
+                load_path = _macos_file_dialog(action="open", target_dir=default_path)
+            else:
+                helper = TkDialogHelper.get()
+                x, y, w, h = _get_viewport_rect()
+                result = helper.request({
+                    "action": "open",
+                    "initialdir": os.path.abspath(default_path) if default_path else os.getcwd(),
+                    "defaultextension": extensions[0] if extensions else ".json",
+                    "filetypes": [["JSON files", "*.json"]],
+                    "x": x, "y": y, "w": w, "h": h
+                })
+                load_path = result.get("path", "")
+            
             if load_path:
                 self.callback(load_path)
             else:
@@ -3624,17 +3671,22 @@ class SaveDialog:
         self.callback = callback
         self.parent = parent
         try:
-            helper = TkDialogHelper.get()
-            x, y, w, h = _get_viewport_rect()
-            result = helper.request({
-                "action": "save",
-                "initialdir": os.path.abspath(default_path) if default_path else os.getcwd(),
-                "initialfile": default_filename,
-                "defaultextension": extensions[0] if extensions else ".json",
-                "filetypes": [["JSON files", "*.json"]],
-                "x": x, "y": y, "w": w, "h": h
-            })
-            save_path = result.get("path", "")
+            import sys
+            if sys.platform == "darwin":
+                save_path = _macos_file_dialog(action="save", target_dir=default_path, default_name=default_filename)
+            else:
+                helper = TkDialogHelper.get()
+                x, y, w, h = _get_viewport_rect()
+                result = helper.request({
+                    "action": "save",
+                    "initialdir": os.path.abspath(default_path) if default_path else os.getcwd(),
+                    "initialfile": default_filename,
+                    "defaultextension": extensions[0] if extensions else ".json",
+                    "filetypes": [["JSON files", "*.json"]],
+                    "x": x, "y": y, "w": w, "h": h
+                })
+                save_path = result.get("path", "")
+                
             if save_path:
                 self.callback(save_path)
             else:
@@ -3642,4 +3694,3 @@ class SaveDialog:
         except Exception as e:
             print(f'SaveDialog error: {e}')
         Node.app.active_widget = -1
-
