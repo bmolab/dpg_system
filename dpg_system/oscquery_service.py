@@ -374,8 +374,8 @@ class DiscoveredService:
         for attempt in range(retries):
             for url in urls:
                 try:
-                    # Short timeout so we can aggressively zoom through dead virtual network interfaces
-                    response = urlopen(url, timeout=1.0)
+                    # Windows Defender often delays local network socket connections by 1-2s for heuristics.
+                    response = urlopen(url, timeout=3.0)
                     self.json_tree = json.loads(response.read().decode('utf-8'))
                     self.last_fetch_error = None
                     
