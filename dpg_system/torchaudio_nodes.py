@@ -45,6 +45,7 @@ def register_torchaudio_nodes():
     Node.app.register_node('t.audio.overdrive', TorchAudioOverdriveNode.factory)
     Node.app.register_node('audio_mixer', AudioMixerNode.factory)
     Node.app.register_node('t.audio.multiplayer', TorchAudioMultiPlayerNode.factory)
+    Node.app.register_node('t.audio.file_stream', TorchAudioFileStreamNode.factory)
     
     # Node.app.register_node('sampler_voice', SamplerVoiceNode.factory)
     # Node.app.register_node('sampler_engine', SamplerEngineNode.factory)
@@ -2012,3 +2013,247 @@ import soundfile as sf
 #
 #         # Sync UI for the current index
 #         self.sync_ui_to_state()
+
+
+class TorchAudioFileStreamNode(TorchNode):
+    """
+    Streams an audio file in real-time chunks, matching the output format
+    of t.audio_source (torch tensors of shape (channels, chunk_size)).
+
+    Supports play/pause/stop, looping, speed control, and clip start/end.
+    Connect to whisper.audio_in, speech_pitch, or any node expecting
+    streaming audio tensors.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return TorchAudioFileStreamNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.waveform = None       # (channels, total_samples) torch tensor
+        self.file_sample_rate = None
+        self.playing = False
+        self.play_pos = 0          # current sample position in waveform
+        self.last_emit_time = 0.0
+
+        # ── Inputs ──
+        self.play_input = self.add_input('play', widget_type='checkbox',
+                                         default_value=False,
+                                         callback=self.play_toggle)
+        self.path_input = self.add_input('path in', callback=self.load_from_input)
+        self.load_button = self.add_input('load file', widget_type='button',
+                                          callback=self.request_load_file)
+        self.file_label = self.add_label('')
+        self.rewind_button = self.add_input('rewind', widget_type='button',
+                                           callback=self.rewind)
+
+        # ── Properties ──
+        self.sample_rate_prop = self.add_input('sample_rate', widget_type='drag_int',
+                                               default_value=16000)
+        self.chunk_size_prop = self.add_input('chunk_size', widget_type='drag_int',
+                                              default_value=1024)
+        self.channels_prop = self.add_input('channels', widget_type='input_int',
+                                            default_value=1)
+        self.speed_prop = self.add_input('speed', widget_type='drag_float',
+                                         default_value=1.0)
+        self.loop_prop = self.add_input('loop', widget_type='checkbox',
+                                        default_value=False)
+        self.clip_start_prop = self.add_input('clip_start', widget_type='drag_float',
+                                              default_value=0.0)
+        self.clip_end_prop = self.add_input('clip_end', widget_type='drag_float',
+                                            default_value=0.0)
+
+        # ── Outputs ──
+        self.output = self.add_output('audio tensors')
+        self.sample_rate_out = self.add_output('sample_rate')
+        self.position_out = self.add_output('position')
+        self.done_out = self.add_output('done')
+
+    # ── File loading ──
+
+    def request_load_file(self):
+        LoadDialog(self, self.load_file_callback, extensions=['.aif', '.wav', '.mp3', '.flac', '.ogg'])
+
+    def load_file_callback(self, path):
+        self.path_input.set(path)
+        self._load_file(path)
+
+    def load_from_input(self):
+        path = any_to_string(self.path_input())
+        if path:
+            self._load_file(path)
+
+    def _load_file(self, filepath):
+        if not os.path.exists(filepath):
+            print(f'File not found: {filepath}')
+            return
+        try:
+            waveform, sr = torchaudio.load(filepath)
+            # waveform shape: (channels, samples)
+            if not waveform.is_cpu:
+                waveform = waveform.cpu()
+
+            self.file_sample_rate = sr
+
+            # Resample to the desired output sample rate if different
+            out_sr = int(self.sample_rate_prop())
+            if sr != out_sr:
+                resampler = torchaudio.transforms.Resample(orig_freq=sr, new_freq=out_sr)
+                waveform = resampler(waveform)
+
+            # Convert to desired channel count
+            out_channels = max(1, int(self.channels_prop()))
+            if waveform.shape[0] > out_channels:
+                # Downmix: take first N channels (or average for mono)
+                if out_channels == 1:
+                    waveform = waveform.mean(dim=0, keepdim=True)
+                else:
+                    waveform = waveform[:out_channels]
+            elif waveform.shape[0] < out_channels:
+                # Upmix: repeat channels
+                repeats = out_channels // waveform.shape[0] + 1
+                waveform = waveform.repeat(repeats, 1)[:out_channels]
+
+            self.waveform = waveform
+            self.play_pos = 0
+
+            file_name = os.path.basename(filepath)
+            duration = waveform.shape[1] / out_sr
+            self.file_label.set(f'{file_name} ({duration:.1f}s)')
+            self.sample_rate_out.send(out_sr)
+
+            print(f'Loaded: {file_name} → {waveform.shape[0]}ch, {out_sr}Hz, {duration:.1f}s')
+        except Exception as e:
+            print(f'Error loading audio file: {e}')
+            import traceback
+            traceback.print_exc()
+
+    # ── Playback control ──
+
+    def play_toggle(self):
+        should_play = self.play_input()
+        if should_play:
+            self._start_playback()
+        else:
+            self._stop_playback()
+
+    def _start_playback(self):
+        if self.waveform is None:
+            print('No audio file loaded')
+            return
+        self.playing = True
+        self.last_emit_time = time.time()
+        # Apply clip start
+        out_sr = int(self.sample_rate_prop())
+        clip_start = float(self.clip_start_prop())
+        if clip_start > 0:
+            self.play_pos = int(clip_start * out_sr)
+        self.add_frame_task()
+
+    def _stop_playback(self):
+        self.playing = False
+        self.remove_frame_tasks()
+
+    def rewind(self):
+        out_sr = int(self.sample_rate_prop())
+        clip_start = float(self.clip_start_prop())
+        self.play_pos = int(clip_start * out_sr) if clip_start > 0 else 0
+
+    # ── Streaming via frame_task ──
+
+    def frame_task(self):
+        if not self.playing or self.waveform is None:
+            return
+
+        now = time.time()
+        out_sr = int(self.sample_rate_prop())
+        chunk_size = int(self.chunk_size_prop())
+        speed = max(0.01, float(self.speed_prop()))
+
+        # Calculate how many samples we should have emitted since last frame
+        dt = now - self.last_emit_time
+        samples_due = int(dt * out_sr * speed)
+
+        if samples_due < chunk_size:
+            return  # not time for a chunk yet
+
+        self.last_emit_time = now
+
+        total_samples = self.waveform.shape[1]
+
+        # Apply clip boundaries
+        clip_start_samp = 0
+        clip_end_samp = total_samples
+        clip_start = float(self.clip_start_prop())
+        clip_end = float(self.clip_end_prop())
+        if clip_start > 0:
+            clip_start_samp = min(int(clip_start * out_sr), total_samples)
+        if clip_end > 0:
+            clip_end_samp = min(int(clip_end * out_sr), total_samples)
+        if clip_end_samp <= clip_start_samp:
+            clip_end_samp = total_samples
+
+        # Emit as many full chunks as are due
+        while samples_due >= chunk_size:
+            end_pos = self.play_pos + chunk_size
+
+            if end_pos <= clip_end_samp:
+                chunk = self.waveform[:, self.play_pos:end_pos]
+                self.play_pos = end_pos
+            else:
+                # Partial chunk at end
+                remaining = clip_end_samp - self.play_pos
+                if remaining > 0:
+                    partial = self.waveform[:, self.play_pos:clip_end_samp]
+                    if self.loop_prop():
+                        # Wrap around for seamless loop
+                        wrap_needed = chunk_size - remaining
+                        wrap = self.waveform[:, clip_start_samp:clip_start_samp + wrap_needed]
+                        chunk = torch.cat([partial, wrap], dim=1)
+                        self.play_pos = clip_start_samp + wrap_needed
+                    else:
+                        # Pad with zeros for the final chunk
+                        padding = torch.zeros(self.waveform.shape[0],
+                                              chunk_size - remaining)
+                        chunk = torch.cat([partial, padding], dim=1)
+                        self.play_pos = clip_end_samp
+                else:
+                    if self.loop_prop():
+                        self.play_pos = clip_start_samp
+                        chunk = self.waveform[:, self.play_pos:self.play_pos + chunk_size]
+                        self.play_pos += chunk_size
+                    else:
+                        # Playback complete
+                        self.playing = False
+                        self.play_input.set(False)
+                        self.done_out.send(1)
+                        self.remove_frame_tasks()
+                        return
+
+            # Ensure chunk is exactly chunk_size
+            if chunk.shape[1] < chunk_size:
+                padding = torch.zeros(chunk.shape[0], chunk_size - chunk.shape[1])
+                chunk = torch.cat([chunk, padding], dim=1)
+
+            self.output.send(chunk)
+            samples_due -= chunk_size
+
+        # Output position as fraction (0..1)
+        playable = clip_end_samp - clip_start_samp
+        if playable > 0:
+            pos_frac = (self.play_pos - clip_start_samp) / playable
+            self.position_out.send(float(pos_frac))
+
+        # Check if we've reached the end
+        if self.play_pos >= clip_end_samp and not self.loop_prop():
+            self.playing = False
+            self.play_input.set(False)
+            self.done_out.send(1)
+            self.remove_frame_tasks()
+
+    def custom_cleanup(self):
+        self.playing = False
+        self.remove_frame_tasks()
+        self.waveform = None

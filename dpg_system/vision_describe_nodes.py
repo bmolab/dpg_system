@@ -15,6 +15,7 @@ def register_vision_describe_nodes():
     Node.app.register_node('vision_describe', MoondreamDescribeNode.factory)
     Node.app.register_node('vision_describe_smol', SmolVLMDescribeNode.factory)
     Node.app.register_node('vision_describe_qwen', QwenVLDescribeNode.factory)
+    Node.app.register_node('vision_describe_gemma', GemmaVLDescribeNode.factory)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -473,4 +474,112 @@ class QwenVLDescribeNode(VisionDescribeBase):
         generated_ids = cls._model.generate(**inputs, max_new_tokens=max_tokens)
         generated_ids = generated_ids[:, inputs["input_ids"].shape[1]:]
         answer = cls._processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+        return answer.strip()
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  Gemma 4 — Google DeepMind multimodal VLM (E2B / E4B)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class GemmaVLDescribeNode(VisionDescribeBase):
+    """Vision description using Gemma 4 (google/gemma-4-*-it, E2B–E4B)."""
+
+    _model = None
+    _processor = None
+    _model_loaded = False
+    _model_lock = threading.Lock()
+    _device = None
+    _current_size = None
+
+    MODELS = {
+        'E2B': 'google/gemma-4-E2B-it',
+        'E4B': 'google/gemma-4-E4B-it',
+    }
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return GemmaVLDescribeNode(name, data, args)
+
+    def _add_options(self):
+        self.model_size_option = self.add_option(
+            'model_size', widget_type='combo', default_value='E4B',
+        )
+        self.model_size_option.widget.combo_items = ['E2B', 'E4B']
+
+    def _get_extra_params(self):
+        return {}
+
+    def _load_model(self, device, dtype):
+        import torch
+        cls = self.__class__
+        size = self.model_size_option()
+
+        # MPS does not support bfloat16; use float16 instead
+        if device == 'mps':
+            dtype = torch.float16
+
+        with cls._model_lock:
+            if cls._model_loaded and cls._current_size == size:
+                return
+            from transformers import AutoProcessor, AutoModelForImageTextToText
+
+            model_id = cls.MODELS.get(size, cls.MODELS['E4B'])
+            print(f'[Gemma4] Loading {model_id} ({size}) …')
+
+            load_kwargs = dict(torch_dtype=dtype)
+            # Use device_map='auto' on CUDA for multi-GPU, manual .to() otherwise
+            if device == 'cuda':
+                load_kwargs['device_map'] = 'auto'
+
+            try:
+                cls._processor = AutoProcessor.from_pretrained(model_id)
+                cls._model = AutoModelForImageTextToText.from_pretrained(
+                    model_id, **load_kwargs,
+                )
+                if device != 'cuda':  # device_map already handled placement
+                    cls._model = cls._model.to(device)
+            except (OSError, Exception) as e:
+                print(f'[Gemma4] Online load failed ({e}), trying HF cache …')
+                cls._processor = AutoProcessor.from_pretrained(model_id, local_files_only=True)
+                cls._model = AutoModelForImageTextToText.from_pretrained(
+                    model_id, local_files_only=True, **load_kwargs,
+                )
+                if device != 'cuda':
+                    cls._model = cls._model.to(device)
+
+            cls._model.eval()
+            cls._model_loaded = True
+            cls._current_size = size
+            print(f'[Gemma4] Model ready on {device} ({dtype})')
+
+    def _run_inference(self, pil_image, prompt, max_tokens):
+        import torch
+        cls = self.__class__
+
+        # Build Gemma 4 chat message format
+        messages = [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "image", "image": pil_image},
+                    {"type": "text", "text": prompt},
+                ],
+            }
+        ]
+
+        inputs = cls._processor.apply_chat_template(
+            messages,
+            add_generation_prompt=True,
+            tokenize=True,
+            return_dict=True,
+            return_tensors="pt",
+        ).to(cls._model.device)
+
+        input_len = inputs["input_ids"].shape[-1]
+
+        with torch.inference_mode():
+            generated_ids = cls._model.generate(**inputs, max_new_tokens=max_tokens, do_sample=False)
+
+        # Decode only the generated portion
+        answer = cls._processor.decode(generated_ids[0][input_len:], skip_special_tokens=True)
         return answer.strip()

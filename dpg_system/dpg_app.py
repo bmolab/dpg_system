@@ -74,7 +74,8 @@ optional_import = [
     'moderngl_nodes',
     'vision_describe_nodes',
     'movie_nodes',
-    'whisper_nodes'
+    'whisper_nodes',
+    'context_tracker_nodes'
 ]
 
 imported = []

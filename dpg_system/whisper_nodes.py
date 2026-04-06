@@ -356,6 +356,7 @@ class AudioCapture:
         self.new_audio = False
         self.pause_cleared_audio = False
         self.audio_ready = False
+        self.external_mode = False  # True when using external audio input
 
         # VAD
         self.voice_threshold = 0.02
@@ -582,6 +583,60 @@ class AudioCapture:
 
         if lapped:
             self.audio_start = (self.audio_pos + 1) % buf_size
+
+    def feed_external(self, audio: np.ndarray, sample_rate: int = 16000):
+        """Feed externally-sourced audio into the buffer (from a node input).
+        Handles downsampling to 16kHz, mono conversion, VAD, and gain."""
+        if not self.audio_ready and not self.external_mode:
+            # Auto-init in external mode (no mic needed)
+            self.external_mode = True
+            self.audio_ready = True
+
+        # Convert to mono float32 if needed
+        if audio.ndim > 1:
+            if audio.shape[0] <= audio.shape[-1]:
+                # (channels, samples) — take first channel
+                audio = audio[0]
+            else:
+                # (samples, channels) — take first channel
+                audio = audio[:, 0]
+        audio = audio.flatten().astype(np.float32)
+
+        # Downsample to 16kHz if needed
+        if sample_rate != WHISPER_SAMPLE_RATE and sample_rate > 0:
+            ratio = sample_rate / WHISPER_SAMPLE_RATE
+            if ratio > 1:
+                indices = np.arange(0, len(audio), ratio).astype(int)
+                indices = indices[indices < len(audio)]
+                audio = audio[indices]
+
+        # Apply gain
+        audio = audio * self.gain
+
+        if len(audio) == 0:
+            return
+
+        # VAD
+        channel_active = self._voice_active(audio)
+
+        with self.mutex:
+            if channel_active:
+                if self.silence_count > self.silence_period_threshold:
+                    if self.last_audio is not None and len(self.last_audio) > 0:
+                        self._insert_audio(self.last_audio)
+                self.silence_count = 0
+                self._insert_audio(audio)
+            else:
+                if self.silence_count < self.silence_period_threshold:
+                    self._insert_audio(audio)
+                else:
+                    self.new_audio = False
+                    self.audio_start = self.audio_pos = 0
+                    self.pause_cleared_audio = True
+                self.silence_count += 1
+                self.last_audio = audio.copy()
+
+            self.new_audio = True
 
     def fraction_full(self) -> float:
         length = (self.audio_pos - self.audio_start) % len(self.audio_buffer)
@@ -1346,6 +1401,10 @@ class WhisperNode(Node):
         self.on_off_input = self.add_input('on/off', widget_type='checkbox',
                                            default_value=False,
                                            triggers_execution=True)
+        self.audio_input = self.add_input('audio_in', triggers_execution=True)
+        self.sample_rate_in_prop = self.add_input('sample_rate_in',
+                                                   widget_type='drag_int',
+                                                   default_value=16000)
 
         # ── Properties ──
         self.model_property = self.add_input('model', widget_type='combo',
@@ -1448,6 +1507,7 @@ class WhisperNode(Node):
         self.stop_event = threading.Event()
         self.model_loaded = False
         self.last_progress_text = ""
+        self.using_external_audio = False
 
     def _create_backend(self, backend_name: str) -> WhisperBackend:
         if backend_name == "whisper.cpp":
@@ -1473,18 +1533,29 @@ class WhisperNode(Node):
         if self.thread is not None and self.thread.is_alive():
             return
 
-        # Init audio on main thread (safe — it's just sounddevice)
-        device_name = self.device_property()
-        device_idx = 0
-        for i, d in enumerate(self.audio_capture.devices):
-            if d['name'] == device_name:
-                device_idx = i
-                break
+        # Check if external audio is connected
+        self.using_external_audio = (self.audio_input is not None and
+                                      len(self.audio_input._parents) > 0)
 
-        if not self.audio_capture.audio_ready:
-            if not self.audio_capture.init(device_idx):
-                print("Failed to initialize audio capture")
-                return
+        if self.using_external_audio:
+            # External audio mode — no mic needed, just mark capture ready
+            self.audio_capture.external_mode = True
+            self.audio_capture.audio_ready = True
+            self.audio_capture.running = True
+            print("Whisper: using external audio input")
+        else:
+            # Init mic on main thread (safe — it's just sounddevice)
+            device_name = self.device_property()
+            device_idx = 0
+            for i, d in enumerate(self.audio_capture.devices):
+                if d['name'] == device_name:
+                    device_idx = i
+                    break
+
+            if not self.audio_capture.audio_ready:
+                if not self.audio_capture.init(device_idx):
+                    print("Failed to initialize audio capture")
+                    return
 
         # Start background thread which handles model loading + processing
         self.stop_event.clear()
@@ -1559,6 +1630,30 @@ class WhisperNode(Node):
     # ── Callbacks ──
 
     def execute(self):
+        # Check if this was triggered by audio_in
+        audio_data = self.audio_input()
+        if audio_data is not None and self.processor is not None:
+            # Feed external audio into the capture buffer
+            try:
+                if hasattr(audio_data, 'detach'):
+                    # Torch tensor
+                    audio_np = audio_data.detach().cpu().numpy()
+                elif isinstance(audio_data, np.ndarray):
+                    audio_np = audio_data
+                elif isinstance(audio_data, (list, tuple)):
+                    audio_np = np.array(audio_data, dtype=np.float32)
+                else:
+                    audio_np = None
+
+                if audio_np is not None:
+                    sr = int(self.sample_rate_in_prop())
+                    self.audio_capture.feed_external(audio_np, sample_rate=sr)
+            except Exception as e:
+                if self.processor and self.processor.debug:
+                    print(f"Whisper: audio_in error: {e}")
+            return
+
+        # On/off toggle
         on = self.on_off_input()
         if on:
             if self.thread is None or not self.thread.is_alive():
