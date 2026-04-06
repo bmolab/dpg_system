@@ -3478,29 +3478,148 @@ def dialog_cancel_callback(sender, app_data):
         print(e)
     Node.app.active_widget = -1
 
+_TK_DIALOG_SCRIPT = r'''
+import tkinter as tk
+from tkinter import filedialog
+import json, sys
+
+root = tk.Tk()
+root.overrideredirect(True)
+root.geometry("0x0+0+0")
+root.withdraw()
+
+def center_root(x, y, w, h):
+    cx = x + w // 2
+    cy = y + h // 2
+    root.geometry(f"0x0+{cx}+{cy}")
+
+for line in sys.stdin:
+    try:
+        cmd = json.loads(line.strip())
+    except Exception:
+        continue
+    action = cmd.get("action", "")
+    if action == "quit":
+        break
+    elif action == "save":
+        center_root(cmd.get("x", 0), cmd.get("y", 0), cmd.get("w", 800), cmd.get("h", 600))
+        root.attributes("-topmost", True)
+        root.update()
+        root.focus_force()
+        filetypes = [(d, p) for d, p in cmd.get("filetypes", [["JSON files", "*.json"]])]
+        filetypes.append(("All files", "*.*"))
+        path = filedialog.asksaveasfilename(
+            parent=root,
+            initialdir=cmd.get("initialdir", "."),
+            initialfile=cmd.get("initialfile", "untitled.json"),
+            defaultextension=cmd.get("defaultextension", ".json"),
+            filetypes=filetypes
+        )
+        root.attributes("-topmost", False)
+        print(json.dumps({"path": path or ""}), flush=True)
+    elif action == "open":
+        center_root(cmd.get("x", 0), cmd.get("y", 0), cmd.get("w", 800), cmd.get("h", 600))
+        root.attributes("-topmost", True)
+        root.update()
+        root.focus_force()
+        filetypes = [(d, p) for d, p in cmd.get("filetypes", [["JSON files", "*.json"]])]
+        filetypes.append(("All files", "*.*"))
+        path = filedialog.askopenfilename(
+            parent=root,
+            initialdir=cmd.get("initialdir", "."),
+            defaultextension=cmd.get("defaultextension", ".json"),
+            filetypes=filetypes
+        )
+        root.attributes("-topmost", False)
+        print(json.dumps({"path": path or ""}), flush=True)
+
+root.destroy()
+'''
+
+
+class TkDialogHelper:
+    """Persistent subprocess for native file dialogs."""
+    _instance = None
+    _process = None
+
+    @classmethod
+    def get(cls):
+        if cls._instance is None:
+            cls._instance = cls()
+        if cls._process is None or cls._process.poll() is not None:
+            cls._start()
+        return cls._instance
+
+    @classmethod
+    def _start(cls):
+        import subprocess as _sp
+        import sys as _sys
+        cls._process = _sp.Popen(
+            [_sys.executable, '-c', _TK_DIALOG_SCRIPT],
+            stdin=_sp.PIPE, stdout=_sp.PIPE, stderr=_sp.PIPE,
+            text=True, bufsize=1
+        )
+
+    @classmethod
+    def shutdown(cls):
+        if cls._process and cls._process.poll() is None:
+            try:
+                cls._process.stdin.write(json.dumps({"action": "quit"}) + "\n")
+                cls._process.stdin.flush()
+                cls._process.wait(timeout=3)
+            except Exception:
+                try:
+                    cls._process.kill()
+                except Exception:
+                    pass
+        cls._process = None
+
+    def request(self, cmd):
+        try:
+            self._process.stdin.write(json.dumps(cmd) + "\n")
+            self._process.stdin.flush()
+            line = self._process.stdout.readline()
+            return json.loads(line.strip()) if line else {}
+        except Exception as e:
+            print(f"TkDialogHelper error: {e}")
+            self.__class__._process = None
+            return {}
+
+import atexit
+atexit.register(TkDialogHelper.shutdown)
+
+def _get_viewport_rect():
+    try:
+        x, y = dpg.get_viewport_pos()
+        w = dpg.get_viewport_width()
+        h = dpg.get_viewport_height()
+        return x, y, w, h
+    except Exception:
+        return 0, 0, 800, 600
+
+
 class LoadDialog:
     def __init__(self, parent, callback, extensions, default_path=''):
         Node.app.active_widget = 1
         self.callback = callback
         self.parent = parent
-        self.load_take_task = None
-        with dpg.file_dialog(modal=True, default_path=default_path, directory_selector=False, show=True, height=400, width=800,
-                             callback=self.load_callback, cancel_callback=dialog_cancel_callback,
-                             tag='load_dialog') as self.save_take_task:
-            for extension in extensions:
-                dpg.add_file_extension(extension)
-
-    def load_callback(self, sender, app_data):
         try:
-            if app_data is not None and 'file_path_name' in app_data:
-                load_path = app_data['file_path_name']
+            helper = TkDialogHelper.get()
+            x, y, w, h = _get_viewport_rect()
+            result = helper.request({
+                "action": "open",
+                "initialdir": os.path.abspath(default_path) if default_path else os.getcwd(),
+                "defaultextension": extensions[0] if extensions else ".json",
+                "filetypes": [["JSON files", "*.json"]],
+                "x": x, "y": y, "w": w, "h": h
+            })
+            load_path = result.get("path", "")
+            if load_path:
                 self.callback(load_path)
             else:
-                print('no file chosen')
-            if sender is not None:
-                dpg.delete_item(sender)
+                print('Load cancelled')
         except Exception as e:
-            print(e)
+            print(f'LoadDialog error: {e}')
         Node.app.active_widget = -1
 
 
@@ -3509,46 +3628,23 @@ class SaveDialog:
         Node.app.active_widget = 1
         self.callback = callback
         self.parent = parent
-        self.save_take_task = None
-        self.filename_input = None
-        with dpg.file_dialog(modal=True, default_path=default_path, default_filename=default_filename,
-                             directory_selector=False, show=True, height=400, width=800,
-                             callback=self.save_callback, cancel_callback=dialog_cancel_callback,
-                             tag='save_dialog') as self.save_take_task:
-            for extension in extensions:
-                dpg.add_file_extension(extension)
-            # Dedicated filename input — immune to DPG's Enter-key navigation clearing
-            with dpg.group(horizontal=True):
-                dpg.add_text("Save as:")
-                self.filename_input = dpg.add_input_text(default_value=default_filename, width=300)
-
-    def save_callback(self, sender, app_data):
         try:
-            # Prefer our dedicated filename input over DPG's internal (broken) field
-            typed_name = ''
-            if self.filename_input is not None:
-                try:
-                    typed_name = dpg.get_value(self.filename_input)
-                except Exception as ex:
-                    print(f"SaveDialog: failed to read input: {ex}")
-
-            print(f"SaveDialog: typed_name='{typed_name}', app_data={app_data}")
-            if typed_name and typed_name not in ('', '.'):
-                # Build path from our input + the dialog's current directory
-                current_path = app_data.get('current_path', '') if app_data else ''
-                if not typed_name.endswith('.json'):
-                    typed_name += '.json'
-                save_path = os.path.join(current_path, typed_name)
-                self.callback(save_path)
-            elif app_data is not None and 'file_path_name' in app_data:
-                # Fallback to DPG's field (works fine on some platforms)
-                save_path = app_data['file_path_name']
+            helper = TkDialogHelper.get()
+            x, y, w, h = _get_viewport_rect()
+            result = helper.request({
+                "action": "save",
+                "initialdir": os.path.abspath(default_path) if default_path else os.getcwd(),
+                "initialfile": default_filename,
+                "defaultextension": extensions[0] if extensions else ".json",
+                "filetypes": [["JSON files", "*.json"]],
+                "x": x, "y": y, "w": w, "h": h
+            })
+            save_path = result.get("path", "")
+            if save_path:
                 self.callback(save_path)
             else:
-                print('no file chosen')
-            if sender is not None:
-                dpg.delete_item(sender)
+                print('Save cancelled')
         except Exception as e:
-            print(e)
+            print(f'SaveDialog error: {e}')
         Node.app.active_widget = -1
 

@@ -1742,7 +1742,14 @@ class App:
                 self.get_current_editor().save(filename)
 
     def save(self, default_directory='patches'):
-        SaveDialog(self, default_path=default_directory, callback=self.save_file_callback, extensions=['.json'])
+        default_name = 'untitled.json'
+        editor = self.get_current_editor()
+        if editor and hasattr(editor, 'patch_name') and editor.patch_name:
+            name = editor.patch_name
+            if not name.endswith('.json'):
+                name += '.json'
+            default_name = name
+        SaveDialog(self, default_path=default_directory, callback=self.save_file_callback, extensions=['.json'], default_filename=default_name)
 
     def save_file_callback(self, save_path):
         if save_path != '':
