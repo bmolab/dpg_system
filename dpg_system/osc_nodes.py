@@ -3084,21 +3084,26 @@ class OSCWidget(OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
         while getattr(self, '_proxy_poll_running', False):
             svc = getattr(self, '_proxy_poll_service', None)
 
-            # Phase 1: Wait for service discovery
-            if svc is None:
-                browser = getattr(self.osc_manager, 'oscquery_browser', None)
-                if browser:
-                    svc = browser.get_service(self.name)
-                    if svc:
-                        self._proxy_poll_service = svc
-                        self._proxy_device_needs_update = True
-                        print(f"OSCWidget: proxy poll connected to '{self.name}' at {svc.ip}:{svc.http_port} (OSC:{svc.osc_port})")
-                    else:
-                        time.sleep(2.0)  # Retry discovery every 2s
-                        continue
-                else:
+            # Phase 1: Discover or re-discover the service
+            browser = getattr(self.osc_manager, 'oscquery_browser', None)
+            if browser:
+                current_svc = browser.get_service(self.name)
+                if current_svc is None:
+                    # Service was removed — clear cache and wait
+                    if svc is not None:
+                        self._proxy_poll_service = None
+                        svc = None
                     time.sleep(2.0)
                     continue
+                elif current_svc is not svc or (svc and current_svc.osc_port != svc.osc_port):
+                    # Service was (re)discovered or port changed — update
+                    self._proxy_poll_service = current_svc
+                    svc = current_svc
+                    self._proxy_device_needs_update = True
+                    print(f"OSCWidget: proxy poll connected to '{self.name}' at {svc.ip}:{svc.http_port} (OSC:{svc.osc_port})")
+            elif svc is None:
+                time.sleep(2.0)
+                continue
 
             # Phase 2: Poll value
             try:
