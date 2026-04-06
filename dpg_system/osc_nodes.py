@@ -3643,7 +3643,10 @@ class OSCValueNode(ValueNode, OSCWidget):
             self._proxy_user_interacted_at = _time.time()
             self.update_value_in_registry()
             if self.target and self.address != '':
+                print(f"OSCValueNode.execute: SENDING {data} to target='{self.name}' address='{self.address}' ip={getattr(self.target, 'ip', '?')} port={getattr(self.target, 'target_port', '?')}")
                 self.target.send_message(self.address, data)
+            else:
+                print(f"OSCValueNode.execute: NO TARGET — target={self.target}, address='{self.address}', name='{self.name}'")
 
 
 class OSCButtonNode(ButtonNode, OSCWidget):
