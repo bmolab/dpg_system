@@ -1677,8 +1677,10 @@ class OSCSource(OSCBase):
             self.output.send(out_list)
 
     def relay_osc(self, address, args):
+        print(f"OSCSource.relay_osc: address='{address}', registered addresses={list(self.receive_nodes.keys())}")
         if address in self.receive_nodes:
             for rn in self.receive_nodes[address]:
+                print(f"  -> dispatching to {rn.__class__.__name__} ({getattr(rn, 'label', '?')})")
                 rn.receive(args, address)
             return
         else:
@@ -1692,6 +1694,7 @@ class OSCSource(OSCBase):
                         for rn in self.receive_nodes[temp]:
                             rn.receive(sub)
                         return
+        print(f"  -> NO MATCH for '{address}'")
         self.output_message_directly(address, args)
 
     # def output_message_directly(self, address, args):
