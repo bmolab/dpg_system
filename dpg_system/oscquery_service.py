@@ -331,42 +331,71 @@ class OSCQueryServer:
 class DiscoveredService:
     """Represents a discovered OSCQuery service on the network."""
 
-    def __init__(self, name, ip, http_port, osc_port, properties=None):
+    def __init__(self, name, ip, http_port, osc_port, properties=None, hostname=None, all_ips=None):
         self.name = name
         self.ip = ip
         self.http_port = http_port
         self.osc_port = osc_port
         self.properties = properties or {}
+        self.hostname = hostname
+        self.all_ips = all_ips or [ip]
         self.json_tree = None
         self.last_fetch_error = None
 
     def fetch_json(self, retries=3, delay=0.5):
         """Fetch the full OSCQuery JSON tree from this service, with retries."""
         import time
+        from urllib.request import urlopen
         
-        urls_to_try = [f"http://{self.ip}:{self.http_port}/"]
-        # If not already localhost, add a localhost fallback
-        if self.ip not in ('127.0.0.1', 'localhost'):
-            urls_to_try.append(f"http://127.0.0.1:{self.http_port}/")
+        urls_to_try = []
+        for addr in self.all_ips:
+            if ':' in addr and not addr.startswith('['):
+                urls_to_try.append(f"http://[{addr}]:{self.http_port}/")
+            else:
+                urls_to_try.append(f"http://{addr}:{self.http_port}/")
         
-        last_exception = None
+        # Finally try the hostname/DNS as a fallback
+        if self.hostname:
+            urls_to_try.append(f"http://{self.hostname}:{self.http_port}/")
+            
+        # Guarantee localhost is tried if it wasn't there but we replaced it
+        if self.ip in ('127.0.0.1', 'localhost'):
+            urls_to_try.insert(0, f"http://127.0.0.1:{self.http_port}/")
+
+        # Deduplicate while preserving order
+        seen = set()
+        urls = []
         for url in urls_to_try:
-            for attempt in range(retries):
+            if url not in seen:
+                urls.append(url)
+                seen.add(url)
+
+        last_exception = None
+        for attempt in range(retries):
+            for url in urls:
                 try:
-                    response = urlopen(url, timeout=2)
+                    # Short timeout so we can aggressively zoom through dead virtual network interfaces
+                    response = urlopen(url, timeout=1.0)
                     self.json_tree = json.loads(response.read().decode('utf-8'))
                     self.last_fetch_error = None
-                    # If localhost worked, remember it for future fetches
+                    
+                    # Update active IP so future param fetches use the connection that succeeded
                     if '127.0.0.1' in url and self.ip != '127.0.0.1':
                         self.ip = '127.0.0.1'
+                    else:
+                        from urllib.parse import urlparse
+                        netloc = urlparse(url).netloc
+                        self.ip = netloc.split(':')[0].strip('[]')
+                        
                     return self.json_tree
                 except Exception as e:
                     last_exception = e
-                    if attempt < retries - 1:
-                        time.sleep(delay)
+                    
+            if attempt < retries - 1:
+                time.sleep(delay)
                     
         self.last_fetch_error = str(last_exception)
-        print(f"OSCQueryBrowser: Failed to fetch JSON from {self.name} ({urls_to_try[0]}) after {retries} attempts: {last_exception}")
+        print(f"OSCQueryBrowser: Failed to fetch JSON from {self.name} after sweeping {urls} ({retries} sweeps): {last_exception}")
         return None
 
     def fetch_param(self, osc_path):
@@ -548,12 +577,23 @@ class OSCQueryBrowser:
             addresses = info.parsed_addresses()
             if not addresses:
                 return
+            
+            # Prefer IPv4 over IPv6 if possible for default IP binding
             ip = addresses[0]
+            for addr in addresses:
+                if '.' in addr:
+                    ip = addr
+                    break
+
+            all_ips = list(addresses)
+            hostname = info.server
 
             # If the discovered IP is our own machine, use 127.0.0.1 for reliable HTTP access
             local_ips = self._get_local_ips()
             if ip in local_ips:
                 ip = '127.0.0.1'
+                if '127.0.0.1' not in all_ips:
+                    all_ips.insert(0, '127.0.0.1')
 
             # Get HTTP port (the port advertised by the service)
             http_port = info.port
@@ -575,7 +615,9 @@ class OSCQueryBrowser:
                 ip=ip,
                 http_port=http_port,
                 osc_port=osc_port,
-                properties=properties
+                properties=properties,
+                hostname=hostname,
+                all_ips=all_ips
             )
 
             # Fetch the JSON tree
