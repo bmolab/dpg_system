@@ -384,8 +384,10 @@ class DiscoveredService:
                         self.ip = '127.0.0.1'
                     else:
                         from urllib.parse import urlparse
-                        netloc = urlparse(url).netloc
-                        self.ip = netloc.split(':')[0].strip('[]')
+                        extracted_host = urlparse(url).hostname
+                        if extracted_host:
+                            # Re-wrap in brackets if it's an IPv6 address so future urlopen calls succeed
+                            self.ip = f"[{extracted_host}]" if ':' in extracted_host else extracted_host
                         
                     return self.json_tree
                 except Exception as e:
