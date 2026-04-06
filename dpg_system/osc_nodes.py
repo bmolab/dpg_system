@@ -3629,14 +3629,7 @@ class OSCValueNode(ValueNode, OSCWidget):
         if data is not None:
             self.update_value_in_registry()
             if self.target and self.address != '':
-                target_ip = getattr(self.target, 'ip', '?')
-                target_port = getattr(self.target, 'target_port', '?')
-                mode = self.mode_option() if hasattr(self, 'mode_option') else '?'
-                print(f"OSCValueNode.execute: SEND '{self.address}' → {target_ip}:{target_port} (mode={mode}, data={data})")
                 self.target.send_message(self.address, data)
-            else:
-                mode = self.mode_option() if hasattr(self, 'mode_option') else '?'
-                print(f"OSCValueNode.execute: NO SEND - target={self.target}, address='{self.address}', mode={mode}")
 
 
 class OSCButtonNode(ButtonNode, OSCWidget):

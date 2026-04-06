@@ -1261,8 +1261,13 @@ class OSCQueryHostNode(Node, OSCBase):
         """When the user explicitly changes the service name option, dynamically restart the service."""
         new_name = self._service_name_property() if hasattr(self, '_service_name_property') else ''
         if new_name != self.service_name:
-            if self.service_name:
-                self.osc_manager.unregister_service(self.service_name)
+            old_name = self.service_name
+            # Rename the existing osc_device rather than orphaning it
+            if old_name and old_name in self.osc_manager.targets:
+                existing_device = self.osc_manager.targets[old_name]
+                self.osc_manager.rename_device(existing_device, new_name)
+            if old_name:
+                self.osc_manager.unregister_service(old_name)
             self._start_service()
 
     def patcher_name_changed(self, old_name, new_name):
