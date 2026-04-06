@@ -3481,17 +3481,20 @@ def dialog_cancel_callback(sender, app_data):
 _TK_DIALOG_SCRIPT = r'''
 import tkinter as tk
 from tkinter import filedialog
-import json, sys
+import json, sys, os
 
 root = tk.Tk()
 root.overrideredirect(True)
 root.geometry("0x0+0+0")
 root.withdraw()
 
-def center_root(x, y, w, h):
-    cx = x + w // 2
-    cy = y + h // 2
-    root.geometry(f"0x0+{cx}+{cy}")
+def bring_to_front():
+    if sys.platform == "darwin":
+        os.system(f"osascript -e 'tell application \"System Events\" to set frontmost of the first process whose unix id is {os.getpid()} to true'")
+    else:
+        root.attributes("-topmost", True)
+        root.update()
+        root.attributes("-topmost", False)
 
 for line in sys.stdin:
     try:
@@ -3502,10 +3505,7 @@ for line in sys.stdin:
     if action == "quit":
         break
     elif action == "save":
-        center_root(cmd.get("x", 0), cmd.get("y", 0), cmd.get("w", 800), cmd.get("h", 600))
-        root.attributes("-topmost", True)
-        root.update()
-        root.focus_force()
+        bring_to_front()
         filetypes = [(d, p) for d, p in cmd.get("filetypes", [["JSON files", "*.json"]])]
         filetypes.append(("All files", "*.*"))
         path = filedialog.asksaveasfilename(
@@ -3515,13 +3515,9 @@ for line in sys.stdin:
             defaultextension=cmd.get("defaultextension", ".json"),
             filetypes=filetypes
         )
-        root.attributes("-topmost", False)
         print(json.dumps({"path": path or ""}), flush=True)
     elif action == "open":
-        center_root(cmd.get("x", 0), cmd.get("y", 0), cmd.get("w", 800), cmd.get("h", 600))
-        root.attributes("-topmost", True)
-        root.update()
-        root.focus_force()
+        bring_to_front()
         filetypes = [(d, p) for d, p in cmd.get("filetypes", [["JSON files", "*.json"]])]
         filetypes.append(("All files", "*.*"))
         path = filedialog.askopenfilename(
@@ -3530,7 +3526,6 @@ for line in sys.stdin:
             defaultextension=cmd.get("defaultextension", ".json"),
             filetypes=filetypes
         )
-        root.attributes("-topmost", False)
         print(json.dumps({"path": path or ""}), flush=True)
 
 root.destroy()
