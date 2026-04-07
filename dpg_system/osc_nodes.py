@@ -1677,13 +1677,8 @@ class OSCSource(OSCBase):
 
     def relay_osc(self, address, args):
         if address in self.receive_nodes:
-            for rn in self.receive_nodes[address]:
-                rn.receive(args, address)
-            return
-        # OSC addresses start with '/' but widgets may register without it
-        stripped = address.lstrip('/')
-        if stripped in self.receive_nodes:
-            for rn in self.receive_nodes[stripped]:
+            nodes = self.receive_nodes[address]
+            for rn in nodes:
                 rn.receive(args, address)
             return
         if '/' in address:
@@ -1711,7 +1706,7 @@ class OSCSource(OSCBase):
                     self.receive_nodes[address] = []
                 if receive_node not in self.receive_nodes[address]:
                     self.receive_nodes[address].append(receive_node)
-        receive_node.set_source(self)  # would match OSCTarget
+        receive_node.set_source(self)
 
     def unregister_receive_node(self, receive_node):
         addresses = receive_node.get_addresses()
@@ -2339,14 +2334,23 @@ class OSCReceiver:
 
         if args is not None:
             if len(args) == 1: # assuming default source
-                self.name = Node.app.get_current_root_patch().patch_name.replace(' ', '_')
-                if not self.find_source_node(self.name):
-                    editor = Node.app.get_current_editor()
-                    self.osc_manager.create_source(self.name)
-                self.address = args[0]
+                self.address = args[0] if args[0].startswith('/') else '/' + args[0]
+                # Check if we're inside an oscq_host scope first
+                host_name = None
+                editor = Node.app.get_current_editor()
+                if editor is not None and self.osc_manager:
+                    host_name = self.osc_manager.get_service_name_for_editor(editor)
+                if host_name:
+                    self.name = host_name
+                    self.find_source_node(self.name)
+                else:
+                    # Legacy fallback: use root patcher name and create source if needed
+                    self.name = Node.app.get_current_root_patch().patch_name.replace(' ', '_')
+                    if not self.find_source_node(self.name):
+                        self.osc_manager.create_source(self.name)
             elif len(args) == 2:
                 self.name = args[0]
-                self.address = args[1]
+                self.address = args[1] if args[1].startswith('/') else '/' + args[1]
 
     def name_changed(self, force=False):
         if self.source_name_property is not None:
@@ -2384,6 +2388,7 @@ class OSCReceiver:
     def get_addresses(self):
         if self.source_address_property is not None:
             return self.source_address_property()
+        return self.address
 
     def set_source(self, source):
         self.source = source
@@ -2483,7 +2488,7 @@ class OSCReceiveNode(Node, OSCBase, OSCReceiver, OSCRegistrableMixin):
             # elif self.target is not None:
             #     self.target.unregister_send_node(self)  # For senders
 
-            self.address = new_address
+            self.address = new_address if new_address.startswith('/') else '/' + new_address
 
             # Re-register with the source/target under the new address
             if self.source is not None:
@@ -2546,12 +2551,12 @@ class OSCSender:
                 targets = list(self.osc_manager.targets.keys())
                 if len(targets) == 1:
                     self.name = targets[0]
-                self.address = args[0]
+                self.address = args[0] if args[0].startswith('/') else '/' + args[0]
             if len(args) >= 2:
                 if not is_number(args[0]):
                     self.name = args[0]
-                if not is_number(args[1]):
-                    self.address = args[1]
+                if len(args) > 1:
+                    self.address = args[1] if args[1].startswith('/') else '/' + args[1]
 
         self.osc_path = ''
         self.target_name_property = None
@@ -2669,7 +2674,7 @@ class OSCSendNode(Node, OSCBase, OSCSender, OSCRegistrableMixin):
             if self.target is not None:
                 self.target.unregister_send_node(self)  # For senders
 
-            self.address = new_address
+            self.address = new_address if new_address.startswith('/') else '/' + new_address
 
             # Re-register with the source/target under the new address
             if self.target is not None:
@@ -2731,7 +2736,7 @@ class OSCCueNode(Node, OSCBase, OSCSender, OSCRegistrableMixin):
         self.input = self.add_int_input('cue # to send', triggers_execution=True)
         self.target_name_property = self.add_input('target name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
         # self.target_address_property = self.add_input('address', widget_type='text_input', default_value=self.address)
-        self.address = 'cue'
+        self.address = '/cue'
         self._registerable_init()
 
     def name_changed(self, force=False):
@@ -2779,7 +2784,7 @@ class OSCCueNode(Node, OSCBase, OSCSender, OSCRegistrableMixin):
             if self.target is not None:
                 self.target.unregister_send_node(self)  # For senders
 
-            self.address = new_address
+            self.address = new_address if new_address.startswith('/') else '/' + new_address
 
             # Re-register with the source/target under the new address
             if self.target is not None:
@@ -3013,6 +3018,10 @@ class OSCWidget(OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
                 device_node = Node.app.create_node_by_name('osc_device', None, args)
                 if device_node:
                     device_node.set_visibility('hidden')
+                    try:
+                        dpg.set_item_pos(device_node.uuid, [-10000, -10000])
+                    except Exception:
+                        pass
             except Exception as e:
                 print(f"OSCWidget._ensure_device_for_service: failed to create device for {self.name}: {e}")
         elif target.target_port != svc.osc_port or target.ip != svc.ip:
@@ -3373,7 +3382,7 @@ class OSCWidget(OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
             elif self.target is not None:
                 self.target.unregister_send_node(self)  # For senders
 
-            self.address = new_address
+            self.address = new_address if new_address.startswith('/') else '/' + new_address
 
             # Re-register with the source/target under the new address
             if self.source is not None:
@@ -3649,7 +3658,6 @@ class OSCValueNode(ValueNode, OSCWidget):
             self.update_value_in_registry()
             if self.target and self.address != '':
                 self.target.send_message(self.address, data)
-
 
 class OSCButtonNode(ButtonNode, OSCWidget):
     @staticmethod

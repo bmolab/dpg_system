@@ -3620,8 +3620,12 @@ class SaveDialog:
         try:
             import crossfiledialog
             import os
-            start = os.path.join(default_path, default_filename) if default_path else default_filename
-            save_path = crossfiledialog.save_file(title="Save As", start_dir=start)
+            start_dir = os.path.abspath(default_path) if default_path else os.getcwd()
+            os.makedirs(start_dir, exist_ok=True)
+            try:
+                save_path = crossfiledialog.save_file(title="Save As", start_dir=start_dir)
+            except Exception:
+                save_path = ""
         except ImportError:
             try:
                 import sys

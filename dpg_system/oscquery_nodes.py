@@ -798,6 +798,10 @@ class OSCQueryBrowseNode(Node, OSCBase):
                 device_node = Node.app.create_node_by_name('osc_device', None, args)
                 if device_node:
                     device_node.set_visibility('hidden')
+                    try:
+                        dpg.set_item_pos(device_node.uuid, [-10000, -10000])
+                    except Exception:
+                        pass
             except Exception as e:
                 print(f"oscq_browse: Failed to create device for {device_name}: {e}")
         elif existing.target_port != service.osc_port or existing.ip != service.ip:
@@ -1180,6 +1184,7 @@ class OSCQueryHostNode(Node, OSCBase):
         self._is_oscq_host = True
         self.service_name = ''
         self.osc_port = 0
+        self._owned_device_node = None
 
         # Parse optional port and service_name from args
         if args:
@@ -1235,11 +1240,12 @@ class OSCQueryHostNode(Node, OSCBase):
             existing_target = self.osc_manager.targets.get(self.service_name)
             if existing_target is None:
                 try:
-                    # Pass port twice: first=target_port, second=source_port
                     device_args = [self.service_name, '127.0.0.1', str(self.osc_port), str(self.osc_port)]
-                    device_node = Node.app.create_node_by_name('osc_device', None, device_args)
+                    # Create at far off-screen position to prevent DPG focus handler crash
+                    device_node = Node.app.create_node_by_name('osc_device', None, device_args, pos=[-10000, -10000])
                     if device_node:
                         device_node.set_visibility('hidden')
+                        self._owned_device_node = device_node
                 except Exception as e:
                     print(f"oscq_host: Failed to create device for {self.service_name}: {e}")
             else:
