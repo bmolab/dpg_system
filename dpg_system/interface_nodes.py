@@ -1001,7 +1001,7 @@ class ValueNode(Node):
         Robust parsing for list/message nodes.
         Mimics string_to_list and space-splitting logic.
         """
-        if self.label in ['string', 'text']:
+        if 'string' in self.label or 'text' in self.label:
             return text_value
 
         if not text_value:
@@ -1341,9 +1341,9 @@ class StringNode(ValueNode):
             self.grow_mode = self.grow_option()
 
     def cast_value(self, value):
-        if self.label == 'string':
+        if 'string' in self.label:
             return any_to_string(value)
-        elif self.label in ['list', 'message']:
+        elif 'list' in self.label or 'message' in self.label:
             return any_to_list(value)
         return str(value)
 

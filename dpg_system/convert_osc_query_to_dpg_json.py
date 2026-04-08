@@ -65,16 +65,20 @@ def param_to_node_spec(osc_spec):
             spec['value'] = value[0]
 
     elif types == 's':
-        # String — check for VALS (menu choices)
+        # String — check for VALS (menu choices) or WIDGET extension
         vals = None
         if len(ranges) > 0 and 'VALS' in ranges[0]:
             vals = ranges[0]['VALS']
         elif 'VALS' in osc_spec:
             vals = osc_spec['VALS']
 
+        widget_hint = osc_spec.get('WIDGET', '')
+
         if vals and len(vals) > 0:
             spec['node_type'] = 'osc_menu'
             spec['choices'] = vals
+        elif widget_hint == 'message':
+            spec['node_type'] = 'osc_message'
         else:
             spec['node_type'] = 'osc_string'
 
@@ -98,24 +102,27 @@ def param_to_node_spec(osc_spec):
             spec['value'] = value[0]
 
     elif len(types) > 1 and all(c == 'f' for c in types):
-        # Multiple floats (ff, fff, ffff) — create multiple sliders or a vector
+        # Multiple floats (ff, fff, ffff) — use osc_vector
         count = len(types)
-        spec['node_type'] = 'osc_float'
+        spec['node_type'] = 'osc_vector'
         spec['value'] = value
+        # Use DIMENSIONS extension if present, otherwise default to 1 row × N cols
+        dims = osc_spec.get('DIMENSIONS', [1, count])
+        spec['args'] = [str(dims[0]), str(dims[1])] if len(dims) >= 2 else ['1', str(count)]
         if len(ranges) >= count:
             spec['min'] = [r.get('MIN', 0.0) for r in ranges]
             spec['max'] = [r.get('MAX', 1.0) for r in ranges]
-        spec['args'] = [str(count)]  # pass count as arg
 
     elif len(types) > 1 and all(c == 'i' for c in types):
-        # Multiple ints
+        # Multiple ints — use osc_vector
         count = len(types)
-        spec['node_type'] = 'osc_int'
+        spec['node_type'] = 'osc_vector'
         spec['value'] = value
+        dims = osc_spec.get('DIMENSIONS', [1, count])
+        spec['args'] = [str(dims[0]), str(dims[1])] if len(dims) >= 2 else ['1', str(count)]
         if len(ranges) >= count:
             spec['min'] = [r.get('MIN', 0) for r in ranges]
             spec['max'] = [r.get('MAX', 100) for r in ranges]
-        spec['args'] = [str(count)]
 
     else:
         # Unknown type — fall back to message/string

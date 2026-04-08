@@ -91,6 +91,7 @@ def register_osc_nodes():
     Node.app.register_node('osc_cue', OSCCueNode.factory)
     Node.app.register_node('osc_query_json', OSCQueryJSONNode.factory)
     Node.app.register_node('osc_manager', OSCManagerNode.factory)
+    Node.app.register_node('osc_vector', OSCVectorNode.factory)
     Node.app.register_node('pipo_range', PipoRangeSourceNode.factory)
     Node.app.register_node('pipo_motion', PipoMotionSourceNode.factory)
 
@@ -770,6 +771,44 @@ class OSCQueryRegistry:
         int_param_dict['RANGE'] = [{'MIN': min, 'MAX': max}]
         int_param_dict['VALUE'] = [value]
         return self.insert_param_dict_into_registry(int_param_dict)
+
+    def add_multi_float_to_registry(self, path_list, count=2, values=None, mins=None, maxs=None, dimensions=None):
+        """Register a multi-float parameter (TYPE 'ff', 'fff', etc.)."""
+        sanitized_path_list = self.sanitize_path_components(path_list)
+        type_str = 'f' * count
+        param_dict = self.prepare_basic_param_dict(type_str, sanitized_path_list)
+        if param_dict is None:
+            return
+        if values is None:
+            values = [0.0] * count
+        if mins is None:
+            mins = [0.0] * count
+        if maxs is None:
+            maxs = [1.0] * count
+        param_dict['VALUE'] = list(values)
+        param_dict['RANGE'] = [{'MIN': mins[i], 'MAX': maxs[i]} for i in range(count)]
+        if dimensions is not None:
+            param_dict['DIMENSIONS'] = list(dimensions)
+        return self.insert_param_dict_into_registry(param_dict)
+
+    def add_multi_int_to_registry(self, path_list, count=2, values=None, mins=None, maxs=None, dimensions=None):
+        """Register a multi-int parameter (TYPE 'ii', 'iii', etc.)."""
+        sanitized_path_list = self.sanitize_path_components(path_list)
+        type_str = 'i' * count
+        param_dict = self.prepare_basic_param_dict(type_str, sanitized_path_list)
+        if param_dict is None:
+            return
+        if values is None:
+            values = [0] * count
+        if mins is None:
+            mins = [0] * count
+        if maxs is None:
+            maxs = [100] * count
+        param_dict['VALUE'] = list(values)
+        param_dict['RANGE'] = [{'MIN': mins[i], 'MAX': maxs[i]} for i in range(count)]
+        if dimensions is not None:
+            param_dict['DIMENSIONS'] = list(dimensions)
+        return self.insert_param_dict_into_registry(param_dict)
 
     def add_bool_to_registry(self, path_list, value=False):
         sanitized_path_list = self.sanitize_path_components(path_list)
@@ -3176,7 +3215,10 @@ class OSCWidget(OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
     # --- Peer Subscription ---
 
     def _start_peer_subscription(self):
-        """Subscribe to the remote service for OSC push updates."""
+        """Subscribe to the remote service for OSC push updates.
+        If the remote server doesn't support /subscribe (e.g. TouchDesigner),
+        peer mode still works via direct OSC receiver registration on the
+        local osc_device source."""
         self._stop_peer_subscription()
 
         if not self.osc_manager or not hasattr(self.osc_manager, 'oscquery_browser'):
@@ -3194,17 +3236,19 @@ class OSCWidget(OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
         if local_port is None:
             return
 
-        # Send subscribe request to remote HTTP server
+        self._peer_subscribed_service = svc
+        self._peer_local_port = local_port
+
+        # Attempt HTTP subscribe — optional extension, not all servers support it
         try:
-            import socket as _socket
             local_ip = self._get_local_ip()
             url = f"http://{svc.ip}:{svc.http_port}/subscribe?ip={local_ip}&port={local_port}"
             from urllib.request import urlopen
             urlopen(url, timeout=3)
-            self._peer_subscribed_service = svc
-            self._peer_local_port = local_port
-        except Exception as e:
-            print(f"OSCWidget: Failed to subscribe to {self.name}: {e}")
+        except Exception:
+            # Server doesn't support /subscribe — peer mode still works via
+            # direct OSC if the remote is configured to send to our port.
+            pass
 
     def _stop_peer_subscription(self):
         """Unsubscribe from the remote service."""
@@ -3543,8 +3587,14 @@ class OSCValueNode(ValueNode, OSCWidget):
         NumericValueNode.create_numeric_options(self)
 
     def options_changed(self):
-        """Delegate to NumericValueNode for proper min/max/speed handling."""
-        NumericValueNode.options_changed(self)
+        """Delegate to the appropriate parent class for options handling."""
+        base_name = self.label.split('_')[-1] if self.label else ''
+        if base_name in ('string', 'message', 'list', 'text'):
+            ValueNode.options_changed(self)
+            if hasattr(self, 'grow_option') and self.grow_option:
+                self.grow_mode = self.grow_option()
+        else:
+            NumericValueNode.options_changed(self)
 
     def _create_registry_entry(self, path_components: list) -> str:
         """
@@ -3557,7 +3607,13 @@ class OSCValueNode(ValueNode, OSCWidget):
         elif widget_type in ['drag_int', 'slider_int', 'input_int']:
             return registry.add_int_to_registry(path_components)
         elif widget_type in ['text_input', 'text_editor']:
-            return registry.add_string_to_registry(path_components)
+            result = registry.add_string_to_registry(path_components)
+            # Tag osc_message so the browser creates the right node type
+            if self.label == 'osc_message':
+                param = registry.get_param_registry_container_for_path(path_components)
+                if param is not None:
+                    param['WIDGET'] = 'message'
+            return result
         elif widget_type in ['checkbox']:
             return registry.add_bool_to_registry(path_components)
         return None, ''  # Return None on failure
@@ -3591,6 +3647,10 @@ class OSCValueNode(ValueNode, OSCWidget):
         return self.input()
 
     def receive(self, data, address=None):
+        # Suppress echo from our own send
+        if getattr(self, '_suppress_next_receive', False):
+            self._suppress_next_receive = False
+            return
         data = any_to_list(data)
 
         if self.label not in ['osc_string', 'osc_message']:
@@ -3656,7 +3716,11 @@ class OSCValueNode(ValueNode, OSCWidget):
             # Mark interaction time so proxy polling doesn't immediately overwrite
             self._proxy_user_interacted_at = _time.time()
             self.update_value_in_registry()
+            # Ensure we have a target to send to
+            if self.target is None and hasattr(self, 'name') and self.name:
+                self.find_target_node(self.name)
             if self.target and self.address != '':
+                self._suppress_next_receive = True
                 self.target.send_message(self.address, data)
 
 class OSCButtonNode(ButtonNode, OSCWidget):
@@ -3673,19 +3737,43 @@ class OSCButtonNode(ButtonNode, OSCWidget):
         self.target_address_property = self.add_option('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
         self.source_name_property = self.target_name_property
         self.source_address_property = self.target_address_property
+        self.mode_option = self.add_option('mode', widget_type='combo', default_value='local', callback=self.mode_changed)
+        self.mode_option.widget.combo_items = ['local', 'proxy', 'peer']
         self._registerable_init()
 
     def _create_registry_entry(self, path_components: list) -> str:
         return self._get_registry()[0].add_button_to_registry(path_components)
 
+    def _get_registry_value(self):
+        """TYPE N (null/impulse) has no value."""
+        return None
+
+    def update_value_in_registry(self):
+        """No-op for stateless buttons."""
+        pass
+
+    def _setup_remote(self, mode):
+        """Buttons have no VALUE to poll. Just ensure the device exists and
+        optionally subscribe for peer (push) updates."""
+        self._ensure_device_for_service()
+        # No proxy polling — TYPE N parameters are stateless impulses.
+        if mode == 'peer':
+            self._start_peer_subscription()
+
     def receive(self, data, address=None):
+        # Suppress echo from our own send
+        if getattr(self, '_suppress_next_receive', False):
+            self._suppress_next_receive = False
+            return
         data = any_to_list(data)
+        # TYPE N (null/impulse) — any message triggers the button
+        if len(data) == 0:
+            ButtonNode.execute(self)
+            return
         if type(data[0]) == str:
             if data[0][0] == '/':
                 return
-        data = any_to_bool(data)
-        if data:
-            ButtonNode.execute(self)
+        ButtonNode.execute(self)
 
     def custom_create(self, from_file):
         ButtonNode.custom_create(self, from_file)
@@ -3698,14 +3786,21 @@ class OSCButtonNode(ButtonNode, OSCWidget):
         OSCWidget.cleanup(self)
 
     def frame_task(self):
+        """Buttons have no polled value — only run ButtonNode's frame_task."""
         ButtonNode.frame_task(self)
-        OSCWidget.frame_task(self)
+        # Update device port if service reconnected (from proxy polling infra)
+        if getattr(self, '_proxy_device_needs_update', False):
+            self._proxy_device_needs_update = False
+            self._update_device_port()
 
     def execute(self):
         ButtonNode.execute(self)
         self.update_value_in_registry()
         if self.target and self.address != '':
-            self.target.send_message(self.address, self.message())
+            # Suppress the echo that will come back from the relay
+            self._suppress_next_receive = True
+            # TYPE N (null/impulse) — send address with no arguments
+            self.target.send_message(self.address, None)
 
 
 class OSCToggleNode(ToggleNode, OSCWidget):
@@ -3748,13 +3843,20 @@ class OSCToggleNode(ToggleNode, OSCWidget):
 
 
     def receive(self, data, address):
+        # Suppress echo from our own send
+        if getattr(self, '_suppress_next_receive', False):
+            self._suppress_next_receive = False
+            return
         data = any_to_list(data)
         if type(data[0]) == str:
             if data[0] == '/':
                 return
         self.value = any_to_bool(data)
-        self.input.set(self.value)
-        ToggleNode.execute(self)
+        # Set widget without triggering the checkbox callback
+        self.input.set(self.value, propagate=False)
+        # Output the value directly — do NOT call execute() to avoid re-sending OSC
+        self.output.send(self.value)
+        self._update_registry_value_only()
 
     def custom_create(self, from_file):
         ToggleNode.custom_create(self, from_file)
@@ -3770,6 +3872,7 @@ class OSCToggleNode(ToggleNode, OSCWidget):
         ToggleNode.execute(self)
         self.update_value_in_registry()
         if self.target and self.address != '':
+            self._suppress_next_receive = True
             self.target.send_message(self.address, self.value)
 
 
@@ -3815,6 +3918,10 @@ class OSCMenuNode(MenuNode, OSCWidget):
                     param_container['VALS'] = self.choices
 
     def receive(self, data, address):
+        # Suppress echo from our own send
+        if getattr(self, '_suppress_next_receive', False):
+            self._suppress_next_receive = False
+            return
         data = any_to_list(data)
         if type(data[0]) == str:
             if data[0][0] == '/':
@@ -3833,10 +3940,39 @@ class OSCMenuNode(MenuNode, OSCWidget):
         OSCWidget.cleanup(self)
 
     def execute(self):
+        import time as _time
         MenuNode.execute(self)
         self.update_value_in_registry()
+        self._proxy_user_interacted_at = _time.time()
         if self.target and self.address != '':
+            self._suppress_next_receive = True
             self.target.send_message(self.address, self.choice())
+
+    def frame_task(self):
+        """Apply polled remote value to the choice combo (not self.input)."""
+        import time as _time
+        # Update device target port when service (re)connects
+        if getattr(self, '_proxy_device_needs_update', False):
+            self._proxy_device_needs_update = False
+            self._update_device_port()
+
+        if getattr(self, '_proxy_poll_has_new', False):
+            self._proxy_poll_has_new = False
+            # Suppress poll overwrites briefly after the user changes the menu,
+            # so the OSC send has time to reach the remote and be reflected back.
+            last_interact = getattr(self, '_proxy_user_interacted_at', 0)
+            if (_time.time() - last_interact) < 0.5:
+                return
+            value = self._proxy_poll_value
+            if value is not None:
+                try:
+                    current = self.choice()
+                    str_value = any_to_string(value)
+                    if current != str_value:
+                        self.choice.set(str_value)
+                        self.set_choice_internal()
+                except Exception:
+                    pass
 
 
 class OSCRadioButtonsNode(RadioButtonsNode, OSCWidget):
@@ -3877,6 +4013,10 @@ class OSCRadioButtonsNode(RadioButtonsNode, OSCWidget):
         OSCWidget.cleanup(self)
 
     def receive(self, data, address):
+        # Suppress echo from our own send
+        if getattr(self, '_suppress_next_receive', False):
+            self._suppress_next_receive = False
+            return
         data = any_to_list(data)
         if type(data[0]) == str:
             if data[0][0] == '/':
@@ -3889,6 +4029,301 @@ class OSCRadioButtonsNode(RadioButtonsNode, OSCWidget):
         RadioButtonsNode.execute(self)
         self.update_value_in_registry()
         if self.target and self.address != '':
+            self._suppress_next_receive = True
             self.target.send_message(self.address, self.radio_group())
 
 
+# ---------------------------------------------------------------------------
+# OSCVectorNode — multi-value OSC widget (ff, fff, ffff, ii, etc.)
+# ---------------------------------------------------------------------------
+
+class OSCVectorNode(Node, OSCWidget):
+    """
+    Grid of drag-float/int widgets bound to a single OSC address.
+    Sends all component values as a flat list when any component changes.
+    Receives multi-value OSC messages and distributes to the grid.
+
+    Usage:
+        osc_vector service /address rows cols
+        osc_vector td /my_effect/Controls/Myxy 1 2
+        osc_vector td /my_effect/Controls/My3d 1 3
+        osc_vector td /data 4 3        ← 4 rows × 3 columns = 12 values
+    """
+
+    MAX_ROWS = 64
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = OSCVectorNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        # --- Parse args: [service_name, address, rows, cols] ---
+        self.rows = 1
+        self.cols = 1
+        self.component_widget_width = 50
+        self.format = '%.3f'
+
+        # OSC args are consumed by OSCWidget.__init__, but we need to extract
+        # rows/cols from remaining args BEFORE calling it.
+        # Args layout: [name, address, rows, cols] or [address, rows, cols] etc.
+        remaining_args = list(args) if args else []
+
+        # Strip OSC-relevant args (name/address) — they start with '/' or are strings
+        osc_args = []
+        dim_args = []
+        for a in remaining_args:
+            if isinstance(a, str) and (a.startswith('/') or not a.isdigit()):
+                osc_args.append(a)
+            else:
+                dim_args.append(a)
+
+        if len(dim_args) >= 1:
+            self.rows = int(dim_args[0])
+        if len(dim_args) >= 2:
+            self.cols = int(dim_args[1])
+
+        self.cols = max(1, min(self.cols, 16))
+        self.rows = max(1, min(self.rows, self.MAX_ROWS))
+
+        OSCWidget.__init__(self, label, data, osc_args)
+
+        # --- OSC options ---
+        self.target_name_property = self.add_option('target name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
+        self.target_address_property = self.add_option('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
+        self.source_name_property = self.target_name_property
+        self.source_address_property = self.target_address_property
+        self.mode_option = self.add_option('mode', widget_type='combo', default_value='local', callback=self.mode_changed)
+        self.mode_option.widget.combo_items = ['local', 'proxy', 'peer']
+        self._registerable_init()
+
+        # --- Grid UI ---
+        self.input = self.add_input('in', triggers_execution=True, trigger_button=True)
+        self.input.bang_repeats_previous = False
+
+        self.component_properties = []
+        kwargs = {'columns': self.cols}
+        for i in range(self.MAX_ROWS):
+            cp = self.add_input('[' + str(i) + ']', widget_type='drag_float_n',
+                               widget_width=self.component_widget_width,
+                               callback=self.component_changed, **kwargs)
+            self.component_properties.append(cp)
+
+        self.output = self.add_output('out')
+
+        # --- Options ---
+        self.rows_option = self.add_option('rows', widget_type='drag_int', default_value=self.rows, callback=self.rows_changed)
+        self.cols_option = self.add_option('columns', widget_type='drag_int', default_value=self.cols, callback=self.cols_changed)
+        self.format_option = self.add_option('number format', widget_type='text_input', default_value=self.format, callback=self.format_changed)
+        self.width_option = self.add_option('width', widget_type='drag_int', default_value=self.component_widget_width, callback=self.width_changed)
+
+        self.first_component_input_index = -1
+
+    # --- Custom create / lifecycle ---
+
+    def custom_create(self, from_file):
+        self._update_row_visibility()
+        self.first_component_input_index = self.component_properties[0].input_index
+        OSCWidget.custom_create(self, from_file)
+
+    def post_load_callback(self):
+        OSCWidget.post_load_callback(self)
+
+    def cleanup(self):
+        OSCWidget.cleanup(self)
+
+    # --- Save / Load overrides ---
+
+    def store_properties(self, node_container):
+        """Save only the active rows (not all 64) plus properties and options."""
+        properties_container = {}
+        property_number = 0
+
+        # Save only active row inputs (the first self.rows component properties)
+        for i in range(self.rows):
+            cp = self.component_properties[i]
+            input_container = {}
+            if cp.save(input_container):
+                properties_container[property_number] = input_container
+                property_number += 1
+
+        # Save the 'in' input if it has a widget
+        if self.input.widget is not None:
+            input_container = {}
+            if self.input.save(input_container):
+                properties_container[property_number] = input_container
+                property_number += 1
+
+        # Save properties (non-input, non-option)
+        for _property in self.properties:
+            property_container = {}
+            _property.save(property_container)
+            properties_container[property_number] = property_container
+            property_number += 1
+
+        # Save options
+        for _option in self.options:
+            option_container = {}
+            _option.save(option_container)
+            properties_container[property_number] = option_container
+            property_number += 1
+
+        if property_number > 0:
+            node_container['properties'] = properties_container
+        self.save_custom(node_container)
+
+    def save_custom(self, container):
+        """Keep the init string in sync with current rows/cols."""
+        # Rebuild unparsed_args so the init string reflects the current dimensions.
+        # Original args: [service_name, /address, rows, cols]
+        # The OSC args (name, address) are non-digit strings; dims are digit strings.
+        osc_args = []
+        if self.unparsed_args:
+            for a in self.unparsed_args:
+                if isinstance(a, str) and (a.startswith('/') or not a.isdigit()):
+                    osc_args.append(a)
+        self.unparsed_args = osc_args + [str(self.rows), str(self.cols)]
+
+    def load_custom(self, container):
+        """Ensure row visibility is updated after properties are restored."""
+        # restore_properties already fired rows_changed/cols_changed via callbacks,
+        # but just in case, re-sync visibility from the current self.rows.
+        self._update_row_visibility()
+
+    # --- Row/column management ---
+
+    def _update_row_visibility(self):
+        for i in range(self.MAX_ROWS):
+            if i < self.rows:
+                dpg.show_item(self.component_properties[i].uuid)
+                for uuid in self.component_properties[i].widget.uuids:
+                    dpg.show_item(uuid)
+            else:
+                dpg.hide_item(self.component_properties[i].uuid)
+                for uuid in self.component_properties[i].widget.uuids:
+                    dpg.hide_item(uuid)
+
+    def rows_changed(self):
+        self.rows = max(1, min(int(self.rows_option()), self.MAX_ROWS))
+        self._update_row_visibility()
+
+    def cols_changed(self):
+        new_cols = max(1, min(int(self.cols_option()), 16))
+        if new_cols != self.cols:
+            self.cols = new_cols
+            # Column count changes require recreating the widgets — display a note
+            print(f"osc_vector: Column count changed to {self.cols}. Restart the node to apply.")
+
+    def format_changed(self):
+        self.format = self.format_option()
+        for i in range(self.MAX_ROWS):
+            for uuid in self.component_properties[i].widget.uuids:
+                dpg.configure_item(uuid, format=self.format)
+
+    def width_changed(self):
+        width = self.width_option()
+        for i in range(self.MAX_ROWS):
+            for uuid in self.component_properties[i].widget.uuids:
+                dpg.configure_item(uuid, width=width)
+
+    # --- Data flow ---
+
+    def component_changed(self):
+        """Called when any drag widget is edited by the user."""
+        import time as _time
+        self._proxy_user_interacted_at = _time.time()
+
+        values = self._collect_values()
+        self.output.send(values)
+
+        # Send via OSC
+        if self.target and self.address != '':
+            self._suppress_next_receive = True
+            self.target.send_message(self.address, values)
+
+    def _collect_values(self):
+        """Gather all component values into a flat list."""
+        values = []
+        for i in range(self.rows):
+            row_val = self.component_properties[i]()
+            if isinstance(row_val, (list, tuple)):
+                values.extend(row_val)
+            else:
+                values.append(row_val)
+        return values
+
+    def _distribute_values(self, flat_values):
+        """Set the grid widgets from a flat list of values."""
+        idx = 0
+        for i in range(self.rows):
+            row_data = []
+            for j in range(self.cols):
+                if idx < len(flat_values):
+                    row_data.append(any_to_float(flat_values[idx]))
+                else:
+                    row_data.append(0.0)
+                idx += 1
+            self.component_properties[i].widget.set(row_data, propagate=False)
+
+    def receive(self, data, address=None):
+        """Receive multi-value OSC message and distribute to grid."""
+        # Suppress echo from our own send
+        if getattr(self, '_suppress_next_receive', False):
+            self._suppress_next_receive = False
+            return
+        data = any_to_list(data)
+        if len(data) > 0 and isinstance(data[0], str) and data[0].startswith('/'):
+            return
+        self._distribute_values(data)
+        values = self._collect_values()
+        self.output.send(values)
+
+    def execute(self):
+        """Handle input from the 'in' port."""
+        if self.input.fresh_input:
+            data = self.input()
+            data = any_to_list(data)
+            if isinstance(data, str) and data == 'bang':
+                values = self._collect_values()
+                self.output.send(values)
+                return
+            self._distribute_values(data)
+            values = self._collect_values()
+            self.output.send(values)
+
+            # Send via OSC
+            if self.target and self.address != '':
+                self._suppress_next_receive = True
+                self.target.send_message(self.address, values)
+
+    # --- Registry ---
+
+    def _create_registry_entry(self, path_components: list) -> str:
+        registry, _ = self._get_registry()
+        if registry is None:
+            return None
+        total = self.rows * self.cols
+        values = self._collect_values()
+        # Pad values if needed
+        while len(values) < total:
+            values.append(0.0)
+        return registry.add_multi_float_to_registry(
+            path_components,
+            count=total,
+            values=values,
+            dimensions=[self.rows, self.cols],
+        )
+
+    def _on_registration_complete(self):
+        """Sync initial widget values to the registry."""
+        self.update_value_in_registry()
+
+    def _get_registry_value(self):
+        return self._collect_values()
+
+    def update_value_in_registry(self):
+        registration = self.get_registry_container()
+        if registration is not None:
+            registration['VALUE'] = self._collect_values()

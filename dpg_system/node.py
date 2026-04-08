@@ -578,7 +578,7 @@ class BasePropertyWidget:
             return
 
         # Specific widgets use 'clickable_changed', others 'value_changed'
-        clickable = ['checkbox', 'radio_group', 'button', 'combo', 'color_picker']
+        clickable = ['checkbox', 'radio_group', 'button', 'combo', 'color_picker', 'text_input']
 
         handler = self.clickable_changed if self.widget in clickable else \
             lambda s, a, u: self.value_changed(a)
@@ -699,7 +699,7 @@ class BasePropertyWidget:
             if self.node:
                 self.node.active_input = hold_active_input
 
-        if self.triggers_execution and self.node and not self.node.in_loading_process:
+        if self.triggers_execution and self.node and not getattr(self.node, 'in_loading_process', False):
             self.node.active_input = self.input
             self.node.execute()
             self.node.active_input = hold_active_input
@@ -1066,7 +1066,8 @@ class StringWidget(BasePropertyWidget):
 class TextInput(StringWidget):
     def _draw_widget(self):
         dpg.add_input_text(label=self._label, width=self.widget_width, tag=self.uuid,
-                           user_data=self.node, default_value=self.default_value, on_enter=True)
+                           user_data=self.node, default_value=self.default_value, on_enter=True,
+                           callback=self.clickable_changed)
 
     def _convert_and_set(self, data):
         super()._convert_and_set(data, strip=True)
@@ -2599,31 +2600,33 @@ class Node:
 
     def load(self, node_container: Optional[Dict[str, Any]], offset: Optional[List[float]] = None) -> None:
         self.in_loading_process = True
-        if offset is None:
-            offset = [0, 0]
-        if node_container is not None:
-            if 'init' in node_container:
-                arg_container = node_container['init']
-                self.unparsed_args = arg_container.split(' ')[1:]
-            if 'name' in node_container:
-                self.label = node_container['name']
-            if 'id' in node_container:
-                self.loaded_uuid = node_container['id']
-            if 'position_x' in node_container and 'position_y' in node_container:
-                pos = [0, 0]
-                pos[0] = node_container['position_x'] + offset[0]
-                pos[1] = node_container['position_y'] + offset[1]
-                dpg.set_item_pos(self.uuid, pos)
-            if 'protected' in node_container:
-                self.do_not_delete = True
-            if 'visibility' in node_container:
-                self.set_visibility(node_container['visibility'])
-            if 'draggable' in node_container:
-                self.set_draggable(node_container['draggable'])
-            if 'presentation_state' in node_container:
-                self.presentation_state = node_container['presentation_state']
-            self.restore_properties(node_container)
-        self.in_loading_process = False
+        try:
+            if offset is None:
+                offset = [0, 0]
+            if node_container is not None:
+                if 'init' in node_container:
+                    arg_container = node_container['init']
+                    self.unparsed_args = arg_container.split(' ')[1:]
+                if 'name' in node_container:
+                    self.label = node_container['name']
+                if 'id' in node_container:
+                    self.loaded_uuid = node_container['id']
+                if 'position_x' in node_container and 'position_y' in node_container:
+                    pos = [0, 0]
+                    pos[0] = node_container['position_x'] + offset[0]
+                    pos[1] = node_container['position_y'] + offset[1]
+                    dpg.set_item_pos(self.uuid, pos)
+                if 'protected' in node_container:
+                    self.do_not_delete = True
+                if 'visibility' in node_container:
+                    self.set_visibility(node_container['visibility'])
+                if 'draggable' in node_container:
+                    self.set_draggable(node_container['draggable'])
+                if 'presentation_state' in node_container:
+                    self.presentation_state = node_container['presentation_state']
+                self.restore_properties(node_container)
+        finally:
+            self.in_loading_process = False
 
     def store_properties(self, node_container: Dict[str, Any]) -> None:
         properties_container = {}

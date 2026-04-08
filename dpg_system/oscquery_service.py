@@ -460,6 +460,80 @@ class OSCQueryBrowser:
             return service.json_tree
         return None
 
+    def add_manual_service(self, url):
+        """
+        Manually add an OSCQuery service by HTTP URL.
+        Accepts formats like:
+            http://10.1.1.21:9000
+            10.1.1.21:9000
+        Fetches HOST_INFO to discover the service name and OSC port.
+        Returns the service name on success, or None on failure.
+        """
+        from urllib.request import urlopen
+        import json as _json
+
+        # Normalize URL
+        url = url.strip()
+        if not url.startswith('http'):
+            url = f'http://{url}'
+        url = url.rstrip('/')
+
+        try:
+            # Fetch HOST_INFO to get service name and OSC port
+            host_info_url = f"{url}?HOST_INFO"
+            try:
+                response = urlopen(host_info_url, timeout=5)
+                host_info = _json.loads(response.read().decode('utf-8'))
+            except Exception:
+                # Some servers don't support ?HOST_INFO at root, try the root tree
+                host_info = None
+
+            # Parse IP and HTTP port from URL
+            from urllib.parse import urlparse
+            parsed = urlparse(url)
+            ip = parsed.hostname
+            http_port = parsed.port or 80
+
+            # Extract name and OSC port from HOST_INFO
+            osc_port = 0
+            service_name = ip  # fallback name
+
+            if host_info:
+                if 'NAME' in host_info:
+                    service_name = host_info['NAME']
+                if 'OSC_PORT' in host_info:
+                    osc_port = int(host_info['OSC_PORT'])
+                elif 'OSC_TRANSPORT' in host_info:
+                    # Some implementations put port in extensions
+                    pass
+
+            # If no OSC port from HOST_INFO, try TXT-like fields or use HTTP port
+            if osc_port == 0:
+                osc_port = http_port
+
+            service = DiscoveredService(
+                name=service_name,
+                ip=ip,
+                http_port=http_port,
+                osc_port=osc_port,
+                properties={'manual': 'true'}
+            )
+
+            service.fetch_json()
+
+            with self._lock:
+                self.services[service_name] = service
+
+            tree_status = "with tree" if service.json_tree else "NO tree (fetch failed)"
+            print(f"OSCQueryBrowser: Manually added '{service_name}' at {ip}:{osc_port} (HTTP:{http_port}) — {tree_status}")
+            self._notify_callbacks('added', service_name)
+            return service_name
+
+        except Exception as e:
+            print(f"OSCQueryBrowser: Failed to manually add service from '{url}': {e}")
+            traceback.print_exc()
+            return None
+
     def search_param(self, query, case_insensitive=True):
         """
         Search for a parameter name across all discovered services.

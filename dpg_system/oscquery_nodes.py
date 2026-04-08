@@ -193,6 +193,12 @@ class OSCQueryBrowseNode(Node, OSCBase):
         self.refresh_button = self.add_input('refresh', widget_type='button',
                                              callback=self.refresh_services)
 
+        # Manual service URL input (for services not advertising via Zeroconf)
+        self.url_input = self.add_input(
+            'add url', widget_type='text_input', widget_width=200,
+            default_value='', callback=self.add_url_callback,
+        )
+
         # Subset filter (e.g. '1-3' to filter numbered entries)
         self.channel_input = self.add_input(
             'subset', widget_type='text_input', widget_width=100,
@@ -335,6 +341,19 @@ class OSCQueryBrowseNode(Node, OSCBase):
             else:
                 dpg.set_value(self.leaf_name_uuid, "")
 
+    def add_url_callback(self):
+        """Called when the user presses Enter in the 'add url' field."""
+        url = self.url_input()
+        if url and url.strip():
+            browser = self.osc_manager.oscquery_browser
+            if browser:
+                result = browser.add_manual_service(url.strip())
+                if result:
+                    self.url_input.set('')
+                    self.refresh_services()
+                else:
+                    print(f"oscq_browse: Failed to add service from '{url}'")
+
     def refresh_services(self, *args, **kwargs):
         """Refresh and show the services list."""
         self.viewing_services = True
@@ -433,6 +452,15 @@ class OSCQueryBrowseNode(Node, OSCBase):
                         self._last_click_index = index
         elif widget == self.search_input.widget:
             pass
+        elif widget == self.url_input.widget:
+            url = self.url_input()
+            if url and url.strip():
+                browser = self.osc_manager.oscquery_browser
+                if browser:
+                    result = browser.add_manual_service(url)
+                    if result:
+                        self.url_input.set('')
+                        self.refresh_services()
 
     def open_selected(self):
         """Drill down into the currently selected item or navigate via breadcrumb."""
@@ -845,7 +873,14 @@ class OSCQueryBrowseNode(Node, OSCBase):
                 param_dict = live_param
 
         spec = param_to_node_spec(param_dict)
-        if spec is None or spec['node_type'] is None:
+        if spec is None:
+            return
+
+        # Multi-component types (ff, fff, etc.) return a list of specs
+        if isinstance(spec, list):
+            return self._create_multi_component_widgets(service_name, osc_path, spec, offset_x, offset_y)
+
+        if spec['node_type'] is None:
             return
 
         node_type = spec['node_type']
@@ -855,6 +890,9 @@ class OSCQueryBrowseNode(Node, OSCBase):
         # osc_menu requires choices as additional args
         if node_type == 'osc_menu' and spec.get('choices'):
             args.extend(spec['choices'])
+        # osc_vector needs dimension args (rows, cols)
+        if spec.get('args'):
+            args.extend(spec['args'])
 
         # Calculate position
         try:
@@ -866,8 +904,10 @@ class OSCQueryBrowseNode(Node, OSCBase):
         try:
             created_node = Node.app.create_node_by_name(node_type, None, args, pos)
             # Set initial value safely without triggering an OSC broadcast
-            if created_node and spec.get('value') is not None:
-                if getattr(created_node, 'input', None) is not None:
+            if created_node and spec.get('value') is not None and node_type not in ('osc_button',):
+                if node_type == 'osc_vector' and hasattr(created_node, '_distribute_values'):
+                    created_node._distribute_values(spec['value'])
+                elif getattr(created_node, 'input', None) is not None and created_node.input.widget is not None:
                     created_node.input.widget.set(spec['value'], propagate=False)
             # Mark as proxy since this widget controls a remote service
             if created_node and hasattr(created_node, 'mode_option'):
@@ -878,6 +918,34 @@ class OSCQueryBrowseNode(Node, OSCBase):
             osc_type = param_dict.get('TYPE', '?')
             print(f"oscq_browse: Failed to create {node_type} for {osc_path} (TYPE={osc_type}): {e}")
             return None
+
+    def _create_multi_component_widgets(self, service_name, osc_path, component_specs, offset_x=0, offset_y=0):
+        """Create individual slider nodes for each component of a multi-value parameter (ff, fff, etc.)."""
+        created_nodes = []
+        for i, comp_spec in enumerate(component_specs):
+            node_type = comp_spec['node_type']
+            args = [service_name, osc_path]
+
+            try:
+                my_pos = dpg.get_item_pos(self.uuid)
+                pos = [my_pos[0] + offset_x + (i * 150), my_pos[1] + 300 + self._cumulative_y_offset + offset_y]
+            except Exception:
+                pos = None
+
+            try:
+                created_node = Node.app.create_node_by_name(node_type, None, args, pos)
+                if created_node and comp_spec.get('value') is not None:
+                    if getattr(created_node, 'input', None) is not None:
+                        created_node.input.widget.set(comp_spec['value'], propagate=False)
+                if created_node and hasattr(created_node, 'mode_option'):
+                    created_node.mode_option.set('proxy')
+                    created_node._apply_mode('proxy')
+                if created_node:
+                    created_nodes.append(created_node)
+            except Exception as e:
+                print(f"oscq_browse: Failed to create {node_type} for {osc_path}[{i}]: {e}")
+
+        return created_nodes[0] if created_nodes else None
 
     def _create_widgets_for_subtree(self, service_name, base_path, tree_node, channels=None):
         """Create widgets following the selected layout mode.
@@ -978,11 +1046,16 @@ class OSCQueryBrowseNode(Node, OSCBase):
         # osc_menu requires choices as additional args
         if node_type == 'osc_menu' and spec.get('choices'):
             args.extend(spec['choices'])
+        # osc_vector needs dimension args (rows, cols)
+        if spec.get('args'):
+            args.extend(spec['args'])
 
         try:
             created_node = Node.app.create_node_by_name(node_type, None, args, pos)
             if created_node and spec.get('value') is not None:
-                if getattr(created_node, 'input', None) is not None:
+                if node_type == 'osc_vector' and hasattr(created_node, '_distribute_values'):
+                    created_node._distribute_values(spec['value'])
+                elif getattr(created_node, 'input', None) is not None and created_node.input.widget is not None:
                     # Set initial visual value safely
                     created_node.input.widget.set(spec['value'], propagate=False)
             # Mark as proxy since this widget controls a remote service
