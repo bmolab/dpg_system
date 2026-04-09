@@ -49,10 +49,10 @@ except ImportError:
 
 def _best_available_backend():
     """Return the name of the best pitch backend that is actually importable."""
-    if _librosa_available:
-        return 'pyin'
     if _parselmouth_available:
         return 'parselmouth'
+    if _librosa_available:
+        return 'pyin'
     if _torchaudio_available:
         return 'kaldi'
     return 'none'
@@ -206,6 +206,7 @@ class F0RingBuffer:
 def register_speech_analysis_nodes():
     Node.app.register_node('speech_pitch', SpeechPitchNode.factory)
     Node.app.register_node('speech_prosody', SpeechProsodyNode.factory)
+    Node.app.register_node('speech_envelope', SpeechEnvelopeNode.factory)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -250,12 +251,12 @@ class SpeechPitchNode(TorchNode):
         self.sample_rate_prop = self.add_property('sample_rate', widget_type='drag_int',
                                                    default_value=16000)
         self.buffer_sec_prop = self.add_input('buffer_sec', widget_type='drag_float',
-                                               default_value=1.0,
+                                               default_value=0.14,
                                                callback=self._buffer_size_changed)
         self.min_freq_prop = self.add_input('min_freq', widget_type='drag_float',
                                              default_value=65.0)
         self.max_freq_prop = self.add_input('max_freq', widget_type='drag_float',
-                                             default_value=600.0)
+                                             default_value=800.0)
         self.output_mode = self.add_input('output_mode', widget_type='combo',
                                            default_value='summary')
         self.output_mode.widget.combo_items = ['summary', 'time_series']
@@ -266,7 +267,11 @@ class SpeechPitchNode(TorchNode):
         self.backend_prop.widget.combo_items = self._available_backends
 
         self.analysis_fps_prop = self.add_input('analysis_fps', widget_type='drag_float',
-                                                 default_value=20.0)
+                                                 default_value=60.0)
+        self.voiced_attack_prop = self.add_input('voiced_attack', widget_type='drag_float',
+                                                    default_value=0.3)  # seconds — slow-on: debounce onset
+        self.voiced_release_prop = self.add_input('voiced_release', widget_type='drag_float',
+                                                    default_value=0.05)  # seconds — fast-off: cut gate quickly
 
         # Status label
         self.status_label = self.add_label(f'backend: {default_backend}')
@@ -284,6 +289,9 @@ class SpeechPitchNode(TorchNode):
         self._active_backend = default_backend
         self._hop_length = 160  # 10 ms at 16 kHz
         self._last_analysis_time = 0.0
+        self._smoothed_voiced_prob = 0.0  # EMA-smoothed voicing probability
+        self._voiced_state = False  # hysteresis state
+        self._prev_mean_f0 = 0.0  # for pitch-drop detection
 
     def _buffer_size_changed(self):
         sr = int(self.sample_rate_prop())
@@ -344,30 +352,92 @@ class SpeechPitchNode(TorchNode):
         if f0 is None or len(f0) == 0:
             return
 
-        # Always send raw time-series for downstream prosody
-        self.f0_raw_output.send(f0)
+        # ── Asymmetric voiced gate with pitch-drop detection ──
+        # Compute instantaneous voiced fraction for this buffer
+        voiced_mask = voiced_flag.astype(bool)
+        instant_voiced_frac = float(np.mean(voiced_flag))  # 0.0–1.0
 
-        # Output based on mode
+        # Current mean f0 of voiced frames (for pitch-drop detection)
+        if np.any(voiced_mask):
+            current_mean_f0 = float(np.nanmean(f0[voiced_mask]))
+        else:
+            current_mean_f0 = 0.0
+
+        # Asymmetric EMA: slow attack (debounce onset), fast release (cut quickly)
+        dt = now - self._prev_time if hasattr(self, '_prev_time') else 1.0 / fps
+        self._prev_time = now
+        if instant_voiced_frac > self._smoothed_voiced_prob:
+            # Rising → use attack (slow)
+            tau = max(float(self.voiced_attack_prop()), 0.01)
+        else:
+            # Falling → use release (fast)
+            tau = max(float(self.voiced_release_prop()), 0.005)
+        alpha = 1.0 - np.exp(-dt / tau)
+        self._smoothed_voiced_prob = (alpha * instant_voiced_frac
+                                       + (1.0 - alpha) * self._smoothed_voiced_prob)
+
+        # Pitch-drop detection: if f0 drops sharply while voicing is already
+        # weakening, force immediate gate closure. At the end of voicing,
+        # pitch trackers often glitch downward as they lose harmonic lock.
+        pitch_drop_triggered = False
+        if (self._voiced_state
+                and self._prev_mean_f0 > 0.0
+                and current_mean_f0 > 0.0
+                and self._smoothed_voiced_prob < 0.5):
+            drop_ratio = current_mean_f0 / self._prev_mean_f0
+            if drop_ratio < 0.6:  # f0 dropped by more than 40%
+                pitch_drop_triggered = True
+
+        # Update f0 history (track with its own slow EMA so single-frame
+        # glitches don't poison the reference, but resets when unvoiced)
+        if current_mean_f0 > 0.0:
+            if self._prev_mean_f0 > 0.0:
+                # Slow EMA on reference pitch (tau ~0.2s)
+                f0_alpha = 1.0 - np.exp(-dt / 0.2)
+                self._prev_mean_f0 = (f0_alpha * current_mean_f0
+                                       + (1.0 - f0_alpha) * self._prev_mean_f0)
+            else:
+                self._prev_mean_f0 = current_mean_f0
+        elif not self._voiced_state:
+            # Reset reference when gate is closed and no voicing
+            self._prev_mean_f0 = 0.0
+
+        # Hysteresis with pitch-drop override
+        if self._voiced_state:
+            if pitch_drop_triggered:
+                # Pitch collapsed while voicing is weakening → immediate close
+                self._voiced_state = False
+                self._smoothed_voiced_prob = 0.0  # reset EMA to prevent sticking
+                self._prev_mean_f0 = 0.0
+            elif self._smoothed_voiced_prob < 0.3:
+                # Normal close: smoothed prob dropped below threshold
+                self._voiced_state = False
+        else:
+            # Currently unvoiced — rise above high threshold to open gate
+            if self._smoothed_voiced_prob > 0.55:
+                self._voiced_state = True
+
+        # ── Send outputs bottom-first (dpg_system convention) ──
         mode = self.output_mode()
         if mode == 'summary':
             # Summarize over voiced frames
-            voiced_mask = voiced_flag.astype(bool)
             if np.any(voiced_mask):
                 mean_f0 = float(np.nanmean(f0[voiced_mask]))
                 mean_vp = float(np.nanmean(voiced_prob[voiced_mask]))
             else:
                 mean_f0 = 0.0
                 mean_vp = 0.0
-            any_voiced = bool(np.any(voiced_mask))
 
-            self.f0_output.send(mean_f0)
-            self.voiced_prob_output.send(mean_vp)
-            self.voiced_output.send(any_voiced)
+            self.f0_raw_output.send(f0)                     # bottom
+            self.voiced_output.send(self._voiced_state)     # ↑
+            self.voiced_prob_output.send(mean_vp)           # ↑
+            self.f0_output.send(mean_f0)                    # top
         else:
             # time_series mode
-            self.f0_output.send(f0)
-            self.voiced_prob_output.send(voiced_prob)
-            self.voiced_output.send(voiced_flag)
+            self.f0_raw_output.send(f0)                     # bottom
+            self.voiced_output.send(voiced_flag)            # ↑
+            self.voiced_prob_output.send(voiced_prob)       # ↑
+            self.f0_output.send(f0)                         # top
 
     def _extract_pitch(self, audio, sr, fmin, fmax):
         """Dispatch to the active backend. Returns (f0, voiced_prob, voiced_flag)."""
@@ -683,3 +753,176 @@ class SpeechProsodyNode(Node):
         # Restore NaN where originally unvoiced
         result[nans] = np.nan
         return result
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SpeechEnvelopeNode
+# ─────────────────────────────────────────────────────────────────────────────
+
+class SpeechEnvelopeNode(TorchNode):
+    """
+    Combined adaptive envelope follower and slow volume tracker.
+
+    Envelope:  One Euro filter on per-frame RMS — smooth when stable,
+               responsive to real signal changes (speech onsets/offsets).
+    Volume:    One Euro filter on per-chunk RMS with low beta — very stable
+               baseline that tracks the ambient level over seconds.
+    Onset:     one-shot trigger when envelope exceeds slow volume
+               by more than onset_threshold_db.
+
+    Usage: t.audio_source → speech_envelope → [envelope, envelope_db, volume_db, crest_factor, onset]
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = SpeechEnvelopeNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        from dpg_system.one_euro_filter import OneEuroFilter
+
+        # Inputs
+        self.input = self.add_input('audio tensor in', triggers_execution=True)
+
+        # Properties
+        self.sample_rate_prop = self.add_property('sample_rate', widget_type='drag_int',
+                                                   default_value=16000)
+        self.frame_hop_prop = self.add_input('frame_hop', widget_type='drag_int',
+                                              default_value=256)  # samples per frame
+        self.env_min_cutoff_prop = self.add_input('env_min_cutoff', widget_type='drag_float',
+                                                   default_value=1.0)  # Hz — smoothing when stable
+        self.env_beta_prop = self.add_input('env_beta', widget_type='drag_float',
+                                             default_value=0.5)  # responsiveness to change
+        self.vol_min_cutoff_prop = self.add_input('vol_min_cutoff', widget_type='drag_float',
+                                                   default_value=0.1)  # Hz — very smooth baseline
+        self.vol_beta_prop = self.add_input('vol_beta', widget_type='drag_float',
+                                             default_value=0.01)  # almost non-responsive
+        self.onset_threshold_prop = self.add_input('onset_threshold_db', widget_type='drag_float',
+                                                     default_value=6.0)
+        self.output_mode = self.add_input('output_mode', widget_type='combo',
+                                           default_value='summary')
+        self.output_mode.widget.combo_items = ['summary', 'time_series']
+
+        # Outputs (ordered top to bottom; sent bottom-first)
+        self.envelope_output = self.add_output('envelope')          # top
+        self.envelope_db_output = self.add_output('envelope_db')
+        self.volume_db_output = self.add_output('volume_db')
+        self.crest_factor_output = self.add_output('crest_factor')
+        self.onset_output = self.add_output('onset')                # bottom
+
+        # Internal state
+        sr = 16000  # use default directly — property not readable during __init__
+        hop = 256
+        frame_rate = sr / hop  # ~62.5 fps at 16kHz/256
+
+        self._env_filter = OneEuroFilter(min_cutoff=1.0, beta=0.5,
+                                          d_cutoff=1.0, framerate=frame_rate)
+        self._vol_filter = OneEuroFilter(min_cutoff=0.1, beta=0.01,
+                                          d_cutoff=1.0, framerate=frame_rate)
+        self._leftover = np.zeros(0, dtype=np.float32)  # partial frame carry-over
+        self._onset_armed = True
+        self._prev_time = None
+
+    def execute(self):
+        data = self.input_to_tensor()
+        if data is None:
+            return
+
+        # Convert tensor to mono float32 numpy
+        audio_np = data.detach().cpu().numpy().astype(np.float32)
+        if audio_np.ndim > 1:
+            if audio_np.shape[0] <= audio_np.shape[-1]:
+                audio_np = audio_np[0]
+            else:
+                audio_np = audio_np[:, 0]
+        audio_np = audio_np.flatten()
+
+        if len(audio_np) == 0:
+            return
+
+        sr = int(self.sample_rate_prop())
+        hop = max(int(self.frame_hop_prop()), 16)
+        now = time.time()
+        if self._prev_time is None:
+            self._prev_time = now
+
+        # Update filter parameters if user changed them
+        self._env_filter._mincutoff = np.asarray(
+            max(float(self.env_min_cutoff_prop()), 0.01), dtype=np.float64)
+        self._env_filter._beta = np.asarray(
+            max(float(self.env_beta_prop()), 0.0), dtype=np.float64)
+        self._vol_filter._mincutoff = np.asarray(
+            max(float(self.vol_min_cutoff_prop()), 0.001), dtype=np.float64)
+        self._vol_filter._beta = np.asarray(
+            max(float(self.vol_beta_prop()), 0.0), dtype=np.float64)
+
+        # Prepend leftover from previous chunk
+        if len(self._leftover) > 0:
+            audio_np = np.concatenate([self._leftover, audio_np])
+
+        # ── Compute per-frame RMS ──
+        n_frames = len(audio_np) // hop
+        if n_frames == 0:
+            self._leftover = audio_np
+            return
+
+        # Save leftover for next chunk
+        used = n_frames * hop
+        self._leftover = audio_np[used:].copy()
+
+        # Frame-level RMS (vectorized)
+        frames = audio_np[:used].reshape(n_frames, hop)
+        rms_frames = np.sqrt(np.mean(frames ** 2, axis=1) + 1e-10).astype(np.float64)
+
+        # ── One Euro filter each frame ──
+        env_filtered = np.empty(n_frames, dtype=np.float64)
+        vol_filtered = np.empty(n_frames, dtype=np.float64)
+        frame_rate = sr / hop
+        self._env_filter._freq = frame_rate
+        self._vol_filter._freq = frame_rate
+
+        for i in range(n_frames):
+            env_filtered[i] = self._env_filter(rms_frames[i])
+            vol_filtered[i] = self._vol_filter(rms_frames[i])
+
+        # ── Summary values (end of chunk) ──
+        envelope_linear = float(env_filtered[-1])
+        envelope_db = float(20.0 * np.log10(envelope_linear + 1e-10))
+        volume_db = float(20.0 * np.log10(float(vol_filtered[-1]) + 1e-10))
+
+        # ── Crest factor (per chunk) ──
+        chunk_rms = float(np.sqrt(np.mean(audio_np[:used] ** 2) + 1e-10))
+        chunk_peak = float(np.max(np.abs(audio_np[:used])))
+        crest_factor = chunk_peak / chunk_rms if chunk_rms > 1e-10 else 0.0
+
+        # ── Onset detection (one-shot) ──
+        onset_threshold = float(self.onset_threshold_prop())
+        onset_fired = False
+        if self._onset_armed:
+            if envelope_db > volume_db + onset_threshold:
+                onset_fired = True
+                self._onset_armed = False
+        else:
+            if envelope_db < volume_db + onset_threshold * 0.3:
+                self._onset_armed = True
+
+        self._prev_time = now
+
+        # ── Send outputs bottom-first (dpg_system convention) ──
+        mode = self.output_mode()
+        if mode == 'summary':
+            self.onset_output.send(onset_fired)                 # bottom
+            self.crest_factor_output.send(crest_factor)         # ↑
+            self.volume_db_output.send(volume_db)               # ↑
+            self.envelope_db_output.send(envelope_db)           # ↑
+            self.envelope_output.send(envelope_linear)          # top
+        else:
+            # time_series: per-frame arrays for envelope, scalars for the rest
+            env_db_array = (20.0 * np.log10(env_filtered + 1e-10)).astype(np.float32)
+            self.onset_output.send(onset_fired)                 # bottom
+            self.crest_factor_output.send(crest_factor)         # ↑
+            self.volume_db_output.send(volume_db)               # ↑
+            self.envelope_db_output.send(env_db_array)          # ↑
+            self.envelope_output.send(env_filtered.astype(np.float32))  # top
