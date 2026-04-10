@@ -955,7 +955,8 @@ class OSCQueryBrowseNode(Node, OSCBase):
         return 'auto'
 
     def _create_receive_for_param(self, service_name, osc_path, param_dict, offset_x=0, offset_y=0):
-        """Create a headless osc_receive node for a parameter."""
+        """Create a headless osc_receive node for a parameter.
+        Activates HTTP polling so data is received cross-machine."""
         args = [service_name, osc_path]
 
         try:
@@ -966,6 +967,10 @@ class OSCQueryBrowseNode(Node, OSCBase):
 
         try:
             created_node = Node.app.create_node_by_name('osc_receive', None, args, pos)
+            # Start HTTP polling for cross-machine receive.
+            # For local services, OSC relay also works, so polling is a harmless backup.
+            if created_node and hasattr(created_node, 'start_polling'):
+                created_node.start_polling(osc_path)
             return created_node
         except Exception as e:
             print(f"oscq_browse: Failed to create osc_receive for {osc_path}: {e}")

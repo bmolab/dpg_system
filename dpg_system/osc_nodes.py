@@ -2473,6 +2473,15 @@ class OSCReceiveNode(Node, OSCBase, OSCReceiver, OSCRegistrableMixin):
         self._registerable_init()
         self.last = time.time()
 
+        # --- HTTP Polling (for cross-machine receive) ---
+        self._poll_running = False
+        self._poll_thread = None
+        self._poll_service = None
+        self._poll_address = ''        # OSCQuery path to poll (e.g. '/phrase')
+        self._poll_value = None
+        self._poll_has_new = False
+        self._poll_last_value = None   # track changes to avoid re-sending identical data
+
     # --- Simplified Change Handlers ---
     def name_changed(self, force=False):
         """
@@ -2573,7 +2582,85 @@ class OSCReceiveNode(Node, OSCBase, OSCReceiver, OSCRegistrableMixin):
         if not self.path:
             self._registerable_custom_create()
 
+    # --- HTTP Polling for cross-machine receive ---
+
+    def start_polling(self, poll_address):
+        """Start polling a remote service's HTTP endpoint for VALUE changes.
+
+        Args:
+            poll_address: The OSCQuery path to fetch (e.g. '/phrase')
+        """
+        self._poll_address = poll_address
+        self._poll_running = True
+        self._poll_thread = threading.Thread(
+            target=self._poll_loop, daemon=True
+        )
+        self._poll_thread.start()
+        self.add_frame_task()
+
+    def _stop_polling(self):
+        """Stop the background polling thread."""
+        self._poll_running = False
+        self._poll_thread = None
+        if hasattr(self, 'has_frame_task') and self.has_frame_task:
+            self.remove_frame_tasks()
+
+    def _poll_loop(self):
+        """Background thread: discover service, then fetch remote VALUE periodically."""
+        import time as _time
+        while self._poll_running:
+            svc = self._poll_service
+
+            # Phase 1: Discover or re-discover the service
+            browser = getattr(self.osc_manager, 'oscquery_browser', None)
+            if browser:
+                current_svc = browser.get_service(self.name)
+                if current_svc is None:
+                    if svc is not None:
+                        self._poll_service = None
+                        svc = None
+                    _time.sleep(2.0)
+                    continue
+                elif current_svc is not svc:
+                    self._poll_service = current_svc
+                    svc = current_svc
+                    print(f"osc_receive: poll connected to '{self.name}' at {svc.ip}:{svc.http_port}")
+            elif svc is None:
+                _time.sleep(2.0)
+                continue
+
+            # Phase 2: Poll value
+            try:
+                if self._poll_address:
+                    param = svc.fetch_param(self._poll_address)
+                    if param and 'VALUE' in param:
+                        raw = param['VALUE']
+                        # Unwrap single-element arrays
+                        if isinstance(raw, list) and len(raw) == 1:
+                            raw = raw[0]
+                        # Only flag new data if value actually changed
+                        if raw != self._poll_last_value:
+                            self._poll_value = raw
+                            self._poll_has_new = True
+                            self._poll_last_value = raw
+            except Exception:
+                self._poll_service = None
+            _time.sleep(0.1)  # ~10 Hz
+
+    def frame_task(self):
+        """Main-thread: deliver polled data via the output."""
+        if self._poll_has_new:
+            self._poll_has_new = False
+            value = self._poll_value
+            if value is not None and self.output:
+                # Wrap in list to match OSC receive convention
+                if isinstance(value, list):
+                    self.output.send(value)
+                else:
+                    self.output.send([value])
+
     def cleanup(self):
+        self._stop_polling()
         OSCReceiver.cleanup(self)
         self._registerable_cleanup()
 
