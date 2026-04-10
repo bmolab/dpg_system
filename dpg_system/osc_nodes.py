@@ -2399,6 +2399,7 @@ class OSCReceiver:
                     self.osc_manager.unregister_receive_node(self)
                 # self.name = new_name
                 self.find_source_node(new_name)
+                self._check_remote_service()
                 # self.find_source_node(self.name)
                 # self.osc_manager.connect_receive_node_to_source(self, self.source)
 
@@ -2583,12 +2584,57 @@ class OSCReceiveNode(Node, OSCBase, OSCReceiver, OSCRegistrableMixin):
 
     def post_load_callback(self):
         if not getattr(self, '_needs_deferred_connect', False):
-            return
+            pass
         self._needs_deferred_connect = False
         if self.name != '' and self.source is None:
             self.find_source_node(self.name)
         if not self.path:
             self._registerable_custom_create()
+        self._check_remote_service()
+
+    def _check_remote_service(self):
+        """Check if self.name resolves to a remote service.
+        If it does, ensure the local device exists and start polling automatically."""
+        if getattr(self, '_poll_running', False):
+            return  # Already polling
+
+        if not self.osc_manager or not hasattr(self.osc_manager, 'oscquery_browser'):
+            return
+        browser = self.osc_manager.oscquery_browser
+        if not browser:
+            return
+
+        svc = browser.get_service(self.name)
+        if svc is None:
+            return
+
+        # It's a remote service — ensure local device exists
+        target = self.osc_manager.targets.get(self.name)
+        if target is None:
+            args = [self.name, str(svc.ip), str(svc.osc_port)]
+            try:
+                device_node = Node.app.create_node_by_name('osc_device', None, args)
+                if device_node:
+                    device_node._is_browse_device = True
+                    device_node.set_visibility('hidden')
+                    try:
+                        import dearpygui.dearpygui as dpg
+                        dpg.set_item_pos(device_node.uuid, [-10000, -10000])
+                    except Exception:
+                        pass
+            except Exception as e:
+                pass
+        elif target.target_port != svc.osc_port or target.ip != svc.ip:
+            target.destroy_client()
+            target.target_port = svc.osc_port
+            target.ip = svc.ip
+            target.create_client()
+
+        if self.source is None:
+            self.find_source_node(self.name)
+
+        if self.address:
+            self.start_polling(self.address)
 
     # --- Remote receive (subscription + polling fallback) ---
 
