@@ -207,6 +207,8 @@ def register_speech_analysis_nodes():
     Node.app.register_node('speech_pitch', SpeechPitchNode.factory)
     Node.app.register_node('speech_prosody', SpeechProsodyNode.factory)
     Node.app.register_node('speech_envelope', SpeechEnvelopeNode.factory)
+    Node.app.register_node('speech_spectral', SpeechSpectralNode.factory)
+    Node.app.register_node('speech_voice_quality', SpeechVoiceQualityNode.factory)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -926,3 +928,408 @@ class SpeechEnvelopeNode(TorchNode):
             self.volume_db_output.send(volume_db)               # ↑
             self.envelope_db_output.send(env_db_array)          # ↑
             self.envelope_output.send(env_filtered.astype(np.float32))  # top
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SpeechSpectralNode — spectral shape descriptors for tonal quality
+# ─────────────────────────────────────────────────────────────────────────────
+
+class SpeechSpectralNode(TorchNode):
+    """
+    Real-time spectral shape analysis from streaming audio tensors.
+
+    Outputs characterise *where energy sits* in the spectrum:
+      - centroid   — brightness (Hz)
+      - bandwidth  — spread of energy around centroid (Hz)
+      - rolloff    — frequency below which rolloff_pct% of energy falls (Hz)
+      - flatness   — tonal vs. noisy (0 = pure tone, 1 = white noise)
+      - contrast   — peak-to-valley ratio across sub-bands (array)
+
+    Uses the same internal ring-buffer / sliding-window pattern as speech_pitch.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = SpeechSpectralNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        # Inputs
+        self.input = self.add_input('audio tensor in', triggers_execution=True)
+
+        # Properties
+        self.sample_rate_prop = self.add_property('sample_rate', widget_type='drag_int',
+                                                   default_value=16000)
+        self.buffer_sec_prop = self.add_input('buffer_sec', widget_type='drag_float',
+                                               default_value=0.5,
+                                               callback=self._buffer_size_changed)
+        self.n_fft_prop = self.add_input('n_fft', widget_type='drag_int',
+                                          default_value=2048)
+        self.rolloff_pct_prop = self.add_input('rolloff_pct', widget_type='drag_float',
+                                                default_value=0.85)
+        self.analysis_fps_prop = self.add_input('analysis_fps', widget_type='drag_float',
+                                                 default_value=20.0)
+        self.n_mfcc_prop = self.add_input('n_mfcc', widget_type='drag_int',
+                                           default_value=13)
+        self.output_mode = self.add_input('output_mode', widget_type='combo',
+                                           default_value='summary')
+        self.output_mode.widget.combo_items = ['summary', 'time_series']
+
+        # Outputs
+        self.centroid_output = self.add_output('centroid')
+        self.bandwidth_output = self.add_output('bandwidth')
+        self.rolloff_output = self.add_output('rolloff')
+        self.flatness_output = self.add_output('flatness')
+        self.contrast_output = self.add_output('contrast')
+        self.mfcc_output = self.add_output('mfcc')
+
+        # Internal state
+        sr = 16000
+        self._ring = AudioRingBuffer(int(0.5 * sr))
+        self._hop_length = 512
+        self._last_analysis_time = 0.0
+
+    def _buffer_size_changed(self):
+        sr = int(self.sample_rate_prop())
+        buf_sec = float(self.buffer_sec_prop())
+        new_size = max(int(buf_sec * sr), 4096)
+        self._ring.resize(new_size)
+
+    def execute(self):
+        data = self.input_to_tensor()
+        if data is None:
+            return
+
+        # Convert to mono float32 numpy
+        audio_np = data.detach().cpu().numpy().astype(np.float32)
+        if audio_np.ndim > 1:
+            if audio_np.shape[0] <= audio_np.shape[-1]:
+                audio_np = audio_np[0]
+            else:
+                audio_np = audio_np[:, 0]
+        audio_np = audio_np.flatten()
+
+        self._ring.push(audio_np)
+
+        # Throttle
+        now = time.time()
+        fps = max(float(self.analysis_fps_prop()), 1.0)
+        if now - self._last_analysis_time < 1.0 / fps:
+            return
+        self._last_analysis_time = now
+
+        sr = int(self.sample_rate_prop())
+        buf_sec = float(self.buffer_sec_prop())
+        n_samples = min(int(buf_sec * sr), self._ring.available())
+        n_fft = int(self.n_fft_prop())
+        if n_samples < n_fft:
+            return
+
+        audio = self._ring.get_last_n(n_samples)
+        hop = self._hop_length
+        rolloff_pct = float(self.rolloff_pct_prop())
+        n_mfcc = int(self.n_mfcc_prop())
+        mode = self.output_mode()
+
+        if _librosa_available:
+            self._analyse_librosa(audio, sr, n_fft, hop, rolloff_pct, n_mfcc, mode)
+        else:
+            self._analyse_numpy(audio, sr, n_fft, hop, rolloff_pct, mode)
+
+    def _analyse_librosa(self, audio, sr, n_fft, hop, rolloff_pct, n_mfcc, mode):
+        """Full spectral analysis using librosa."""
+        try:
+            S = np.abs(librosa.stft(audio, n_fft=n_fft, hop_length=hop))
+
+            centroid = librosa.feature.spectral_centroid(S=S, sr=sr, n_fft=n_fft)[0]
+            bandwidth = librosa.feature.spectral_bandwidth(S=S, sr=sr, n_fft=n_fft)[0]
+            rolloff = librosa.feature.spectral_rolloff(S=S, sr=sr, n_fft=n_fft,
+                                                        roll_percent=rolloff_pct)[0]
+            flatness = librosa.feature.spectral_flatness(S=S)[0]
+            contrast = librosa.feature.spectral_contrast(S=S, sr=sr, n_fft=n_fft,
+                                                          hop_length=hop)
+            mfcc = librosa.feature.mfcc(S=librosa.power_to_db(S**2), sr=sr,
+                                         n_mfcc=n_mfcc)
+
+            if mode == 'summary':
+                self.centroid_output.send(float(np.mean(centroid)))
+                self.bandwidth_output.send(float(np.mean(bandwidth)))
+                self.rolloff_output.send(float(np.mean(rolloff)))
+                self.flatness_output.send(float(np.mean(flatness)))
+                self.contrast_output.send(np.mean(contrast, axis=1).astype(np.float32))
+                self.mfcc_output.send(np.mean(mfcc, axis=1).astype(np.float32))
+            else:
+                self.centroid_output.send(centroid.astype(np.float32))
+                self.bandwidth_output.send(bandwidth.astype(np.float32))
+                self.rolloff_output.send(rolloff.astype(np.float32))
+                self.flatness_output.send(flatness.astype(np.float32))
+                self.contrast_output.send(contrast.astype(np.float32))
+                self.mfcc_output.send(mfcc.astype(np.float32))
+        except Exception as e:
+            print(f'speech_spectral librosa error: {e}')
+            traceback.print_exc()
+
+    def _analyse_numpy(self, audio, sr, n_fft, hop, rolloff_pct, mode):
+        """Fallback spectral analysis using only numpy (no librosa)."""
+        try:
+            # Manual STFT
+            n_frames = 1 + (len(audio) - n_fft) // hop
+            if n_frames < 1:
+                return
+            window = np.hanning(n_fft).astype(np.float32)
+            freqs = np.fft.rfftfreq(n_fft, d=1.0 / sr)
+
+            centroids = np.zeros(n_frames, dtype=np.float32)
+            bandwidths = np.zeros(n_frames, dtype=np.float32)
+            rolloffs = np.zeros(n_frames, dtype=np.float32)
+            flatnesses = np.zeros(n_frames, dtype=np.float32)
+
+            for i in range(n_frames):
+                start = i * hop
+                frame = audio[start:start + n_fft] * window
+                mag = np.abs(np.fft.rfft(frame))
+                mag_sum = mag.sum() + 1e-10
+
+                # Centroid
+                centroids[i] = np.sum(freqs * mag) / mag_sum
+
+                # Bandwidth
+                deviation = np.abs(freqs - centroids[i])
+                bandwidths[i] = np.sum(deviation * mag) / mag_sum
+
+                # Rolloff
+                cumsum = np.cumsum(mag)
+                threshold = rolloff_pct * cumsum[-1]
+                idx = np.searchsorted(cumsum, threshold)
+                rolloffs[i] = freqs[min(idx, len(freqs) - 1)]
+
+                # Flatness (geometric mean / arithmetic mean)
+                log_mag = np.log(mag + 1e-10)
+                geo_mean = np.exp(np.mean(log_mag))
+                arith_mean = np.mean(mag) + 1e-10
+                flatnesses[i] = geo_mean / arith_mean
+
+            if mode == 'summary':
+                self.centroid_output.send(float(np.mean(centroids)))
+                self.bandwidth_output.send(float(np.mean(bandwidths)))
+                self.rolloff_output.send(float(np.mean(rolloffs)))
+                self.flatness_output.send(float(np.mean(flatnesses)))
+                self.contrast_output.send(0.0)
+                self.mfcc_output.send(0.0)
+            else:
+                self.centroid_output.send(centroids)
+                self.bandwidth_output.send(bandwidths)
+                self.rolloff_output.send(rolloffs)
+                self.flatness_output.send(flatnesses)
+                self.contrast_output.send(0.0)
+                self.mfcc_output.send(0.0)
+        except Exception as e:
+            print(f'speech_spectral numpy error: {e}')
+            traceback.print_exc()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SpeechVoiceQualityNode — HNR, jitter, shimmer
+# ─────────────────────────────────────────────────────────────────────────────
+
+class SpeechVoiceQualityNode(TorchNode):
+    """
+    Clinical voice quality measures from streaming audio.
+
+    Uses parselmouth (Praat) when available for gold-standard measures:
+      - HNR         — Harmonic-to-Noise Ratio (dB). High = clear, low = breathy/rough
+      - Jitter      — Cycle-to-cycle pitch period variation (%). High = rough
+      - Shimmer     — Cycle-to-cycle amplitude variation (%). High = breathy
+      - HNR_smooth  — EMA-smoothed HNR for slow-moving voice quality tracking
+
+    Falls back to cepstral HNR estimate when parselmouth is not available.
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = SpeechVoiceQualityNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        # Inputs
+        self.input = self.add_input('audio tensor in', triggers_execution=True)
+
+        # Properties
+        self.sample_rate_prop = self.add_property('sample_rate', widget_type='drag_int',
+                                                   default_value=16000)
+        self.buffer_sec_prop = self.add_input('buffer_sec', widget_type='drag_float',
+                                               default_value=1.0,
+                                               callback=self._buffer_size_changed)
+        self.min_freq_prop = self.add_input('min_freq', widget_type='drag_float',
+                                             default_value=75.0)
+        self.max_freq_prop = self.add_input('max_freq', widget_type='drag_float',
+                                             default_value=500.0)
+        self.analysis_fps_prop = self.add_input('analysis_fps', widget_type='drag_float',
+                                                 default_value=10.0)
+        self.smoothing_prop = self.add_input('smoothing_sec', widget_type='drag_float',
+                                              default_value=2.0)
+
+        # Backend label
+        backend_name = 'parselmouth' if _parselmouth_available else 'cepstral (fallback)'
+        self.status_label = self.add_label(f'backend: {backend_name}')
+
+        # Outputs
+        self.hnr_output = self.add_output('hnr')
+        self.jitter_output = self.add_output('jitter')
+        self.shimmer_output = self.add_output('shimmer')
+        self.hnr_smooth_output = self.add_output('hnr_smooth')
+
+        # Internal state
+        sr = 16000
+        self._ring = AudioRingBuffer(int(1.0 * sr))
+        self._last_analysis_time = 0.0
+        self._hnr_smoothed = 0.0
+        self._first_hnr = True
+
+    def _buffer_size_changed(self):
+        sr = int(self.sample_rate_prop())
+        buf_sec = float(self.buffer_sec_prop())
+        self._ring.resize(max(int(buf_sec * sr), sr))
+
+    def execute(self):
+        data = self.input_to_tensor()
+        if data is None:
+            return
+
+        audio_np = data.detach().cpu().numpy().astype(np.float32)
+        if audio_np.ndim > 1:
+            if audio_np.shape[0] <= audio_np.shape[-1]:
+                audio_np = audio_np[0]
+            else:
+                audio_np = audio_np[:, 0]
+        audio_np = audio_np.flatten()
+
+        self._ring.push(audio_np)
+
+        # Throttle
+        now = time.time()
+        fps = max(float(self.analysis_fps_prop()), 1.0)
+        if now - self._last_analysis_time < 1.0 / fps:
+            return
+        elapsed = now - self._last_analysis_time if self._last_analysis_time > 0 else 0.1
+        self._last_analysis_time = now
+
+        sr = int(self.sample_rate_prop())
+        buf_sec = float(self.buffer_sec_prop())
+        n_samples = min(int(buf_sec * sr), self._ring.available())
+        if n_samples < max(sr // 4, 4096):
+            return
+
+        audio = self._ring.get_last_n(n_samples)
+        fmin = float(self.min_freq_prop())
+        fmax = float(self.max_freq_prop())
+
+        if _parselmouth_available:
+            hnr, jitter, shimmer = self._analyse_parselmouth(audio, sr, fmin, fmax)
+        else:
+            hnr, jitter, shimmer = self._analyse_cepstral(audio, sr, fmin, fmax)
+
+        if hnr is None:
+            return
+
+        # EMA smoothing for HNR
+        tau = max(float(self.smoothing_prop()), 0.01)
+        alpha = 1.0 - np.exp(-elapsed / tau)
+        if self._first_hnr:
+            self._hnr_smoothed = hnr
+            self._first_hnr = False
+        else:
+            self._hnr_smoothed = alpha * hnr + (1.0 - alpha) * self._hnr_smoothed
+
+        self.hnr_output.send(float(hnr))
+        self.jitter_output.send(float(jitter))
+        self.shimmer_output.send(float(shimmer))
+        self.hnr_smooth_output.send(float(self._hnr_smoothed))
+
+    def _analyse_parselmouth(self, audio, sr, fmin, fmax):
+        """Gold-standard voice quality via Praat."""
+        try:
+            snd = parselmouth.Sound(audio, sampling_frequency=sr)
+
+            # HNR
+            harmonicity = snd.to_harmonicity(minimum_pitch=fmin)
+            hnr_values = harmonicity.values[0]
+            # Filter out -200 dB (silence) frames
+            valid = hnr_values[hnr_values > -200]
+            hnr = float(np.mean(valid)) if len(valid) > 0 else 0.0
+
+            # Pitch object needed for jitter/shimmer
+            pitch = snd.to_pitch(pitch_floor=fmin, pitch_ceiling=fmax)
+            point_process = parselmouth.praat.call(
+                [snd, pitch], "To PointProcess (cc)")
+
+            # Jitter (local, relative)
+            jitter = parselmouth.praat.call(
+                point_process, "Get jitter (local)",
+                0.0, 0.0,   # time range (0=all)
+                0.0001, 0.02,  # period floor/ceiling
+                1.3)           # max period factor
+
+            # Shimmer (local, dB)
+            shimmer = parselmouth.praat.call(
+                [snd, point_process], "Get shimmer (local_dB)",
+                0.0, 0.0,
+                0.0001, 0.02,
+                1.3, 1.6)
+
+            # Praat returns undefined as nan for jitter/shimmer on silence
+            if np.isnan(jitter):
+                jitter = 0.0
+            if np.isnan(shimmer):
+                shimmer = 0.0
+
+            return hnr, jitter * 100.0, shimmer  # jitter as %, shimmer in dB
+
+        except Exception as e:
+            print(f'speech_voice_quality parselmouth error: {e}')
+            traceback.print_exc()
+            return None, None, None
+
+    def _analyse_cepstral(self, audio, sr, fmin, fmax):
+        """Fallback: cepstral HNR estimate (no jitter/shimmer without parselmouth)."""
+        try:
+            n_fft = 2048
+            hop = 512
+            n_frames = 1 + (len(audio) - n_fft) // hop
+            if n_frames < 1:
+                return None, None, None
+
+            min_lag = int(sr / fmax)
+            max_lag = int(sr / fmin)
+            window = np.hanning(n_fft).astype(np.float32)
+
+            hnr_accum = []
+            for i in range(n_frames):
+                start = i * hop
+                frame = audio[start:start + n_fft] * window
+                spectrum = np.fft.rfft(frame)
+                log_spectrum = np.log(np.abs(spectrum) + 1e-10)
+                cepstrum = np.abs(np.fft.irfft(log_spectrum))
+
+                # Find peak in pitch range of cepstrum
+                search_region = cepstrum[min_lag:min(max_lag, len(cepstrum))]
+                if len(search_region) == 0:
+                    continue
+                peak = np.max(search_region)
+                c0 = cepstrum[0]
+                if c0 > peak and peak > 0:
+                    hnr_db = 10.0 * np.log10(peak / (c0 - peak + 1e-10) + 1e-10)
+                    hnr_accum.append(hnr_db)
+
+            hnr = float(np.mean(hnr_accum)) if len(hnr_accum) > 0 else 0.0
+            # Jitter and shimmer not available without parselmouth
+            return hnr, 0.0, 0.0
+
+        except Exception as e:
+            print(f'speech_voice_quality cepstral error: {e}')
+            traceback.print_exc()
+            return None, None, None
