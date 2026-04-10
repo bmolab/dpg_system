@@ -2457,6 +2457,11 @@ class OSCReceiver:
 
 
 class OSCReceiveNode(Node, OSCBase, OSCReceiver, OSCRegistrableMixin):
+    # Class-level subscription reference counting.
+    # Key: (service_ip, service_http_port, local_ip, local_port)
+    # Value: number of OSCReceiveNode instances sharing that subscription.
+    _subscription_refcounts = {}
+
     @staticmethod
     def factory(name, data, args=None):
         node = OSCReceiveNode(name, data, args)
@@ -2603,7 +2608,8 @@ class OSCReceiveNode(Node, OSCBase, OSCReceiver, OSCRegistrableMixin):
 
     def _subscribe_to_service(self, svc):
         """Subscribe to the remote service so it pushes OSC to our local device.
-        This gives real-time streaming instead of polling-only."""
+        Uses reference counting so multiple osc_receive nodes sharing the
+        same device only create one subscription."""
         if self._subscribed_service is svc:
             return  # already subscribed
 
@@ -2624,32 +2630,52 @@ class OSCReceiveNode(Node, OSCBase, OSCReceiver, OSCRegistrableMixin):
         except Exception:
             local_ip = "127.0.0.1"
 
-        try:
-            from urllib.request import urlopen
-            url = f"http://{svc.ip}:{svc.http_port}/subscribe?ip={local_ip}&port={local_port}"
-            urlopen(url, timeout=3)
-            self._subscribed_service = svc
-            self._subscribed_port = local_port
-            self._subscribed_ip = local_ip
-            print(f"osc_receive: subscribed to '{self.name}' — push to {local_ip}:{local_port}")
-        except Exception:
-            # Remote doesn't support /subscribe — polling will be the data path
-            pass
+        sub_key = (svc.ip, svc.http_port, local_ip, local_port)
+        refcounts = OSCReceiveNode._subscription_refcounts
+
+        if sub_key not in refcounts or refcounts[sub_key] == 0:
+            # First subscriber for this endpoint — actually send HTTP /subscribe
+            try:
+                from urllib.request import urlopen
+                url = f"http://{svc.ip}:{svc.http_port}/subscribe?ip={local_ip}&port={local_port}"
+                urlopen(url, timeout=3)
+                print(f"osc_receive: subscribed to '{self.name}' — push to {local_ip}:{local_port}")
+            except Exception:
+                # Remote doesn't support /subscribe — polling will be the data path
+                pass
+            refcounts[sub_key] = 0
+
+        refcounts[sub_key] = refcounts.get(sub_key, 0) + 1
+        self._subscribed_service = svc
+        self._subscribed_port = local_port
+        self._subscribed_ip = local_ip
+        self._sub_key = sub_key
 
     def _unsubscribe(self):
-        """Unsubscribe from the remote service."""
+        """Decrement subscription refcount; only actually unsubscribe when last."""
         svc = getattr(self, '_subscribed_service', None)
         if svc is None:
             return
-        try:
-            from urllib.request import urlopen
-            ip = getattr(self, '_subscribed_ip', '')
-            port = getattr(self, '_subscribed_port', '')
-            url = f"http://{svc.ip}:{svc.http_port}/unsubscribe?ip={ip}&port={port}"
-            urlopen(url, timeout=2)
-        except Exception:
-            pass
+
+        sub_key = getattr(self, '_sub_key', None)
+        refcounts = OSCReceiveNode._subscription_refcounts
+
+        if sub_key and sub_key in refcounts:
+            refcounts[sub_key] -= 1
+            if refcounts[sub_key] <= 0:
+                # Last subscriber — actually send HTTP /unsubscribe
+                del refcounts[sub_key]
+                try:
+                    from urllib.request import urlopen
+                    ip = getattr(self, '_subscribed_ip', '')
+                    port = getattr(self, '_subscribed_port', '')
+                    url = f"http://{svc.ip}:{svc.http_port}/unsubscribe?ip={ip}&port={port}"
+                    urlopen(url, timeout=2)
+                except Exception:
+                    pass
+
         self._subscribed_service = None
+        self._sub_key = None
 
     def _stop_polling(self):
         """Stop the background polling thread and unsubscribe."""
