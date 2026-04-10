@@ -2593,22 +2593,28 @@ class OSCReceiveNode(Node, OSCBase, OSCReceiver, OSCRegistrableMixin):
         self._check_remote_service()
 
     def _check_remote_service(self):
-        """Check if self.name resolves to a remote service.
-        If it does, ensure the local device exists and start polling automatically."""
+        """Check if self.name might be a remote service and start the polling thread.
+        The thread will passively wait for discovery and connect/subscribe when ready."""
         if getattr(self, '_poll_running', False):
             return  # Already polling
 
-        if not self.osc_manager or not hasattr(self.osc_manager, 'oscquery_browser'):
-            return
-        browser = self.osc_manager.oscquery_browser
-        if not browser:
+        if not self.osc_manager:
             return
 
-        svc = browser.get_service(self.name)
+        # If it's a known local host spawned by this process, it's not remote
+        if self.name in getattr(self.osc_manager, 'oscquery_servers', {}):
+            return
+
+        if self.address:
+            self.start_polling(self.address)
+
+    def _update_device_for_service(self):
+        """Called by frame_task when the background thread flags that the service is discovered."""
+        svc = getattr(self, '_poll_service', None)
         if svc is None:
             return
 
-        # It's a remote service — ensure local device exists
+        # Ensure local device exists
         target = self.osc_manager.targets.get(self.name)
         if target is None:
             args = [self.name, str(svc.ip), str(svc.osc_port)]
@@ -2633,8 +2639,8 @@ class OSCReceiveNode(Node, OSCBase, OSCReceiver, OSCRegistrableMixin):
         if self.source is None:
             self.find_source_node(self.name)
 
-        if self.address:
-            self.start_polling(self.address)
+        # Now that we have a source, we can subscribe
+        self._subscribe_to_service(svc)
 
     # --- Remote receive (subscription + polling fallback) ---
 
@@ -2734,7 +2740,9 @@ class OSCReceiveNode(Node, OSCBase, OSCReceiver, OSCRegistrableMixin):
     def _poll_loop(self):
         """Background thread: subscribe for push, then poll as fallback."""
         import time as _time
-        while self._poll_running:
+        import threading
+        current_thread = threading.current_thread()
+        while self._poll_running and getattr(self, '_poll_thread', None) is current_thread:
             svc = self._poll_service
 
             # Phase 1: Discover or re-discover the service
@@ -2747,12 +2755,11 @@ class OSCReceiveNode(Node, OSCBase, OSCReceiver, OSCRegistrableMixin):
                         svc = None
                     _time.sleep(2.0)
                     continue
-                elif current_svc is not svc:
+                elif current_svc is not svc or (svc and current_svc.osc_port != svc.osc_port):
                     self._poll_service = current_svc
                     svc = current_svc
-                    print(f"osc_receive: connected to '{self.name}' at {svc.ip}:{svc.http_port}")
-                    # Subscribe for real-time OSC push (poll remains as fallback)
-                    self._subscribe_to_service(svc)
+                    self._poll_device_needs_update = True
+                    print(f"osc_receive: discovered remote '{self.name}' at {svc.ip}:{svc.http_port}")
             elif svc is None:
                 _time.sleep(2.0)
                 continue
@@ -2778,6 +2785,10 @@ class OSCReceiveNode(Node, OSCBase, OSCReceiver, OSCRegistrableMixin):
     def frame_task(self):
         """Main-thread: deliver polled data via the output.
         Suppressed when real-time push is active (to avoid duplicates)."""
+        if getattr(self, '_poll_device_needs_update', False):
+            self._poll_device_needs_update = False
+            self._update_device_for_service()
+
         if self._poll_has_new:
             self._poll_has_new = False
             # If we received real-time push data recently, skip poll output
@@ -3499,7 +3510,8 @@ class OSCWidget(OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
     def _proxy_poll_loop(self):
         """Background thread: discover service, then fetch remote VALUE periodically."""
         import time
-        while getattr(self, '_proxy_poll_running', False):
+        current_thread = threading.current_thread()
+        while getattr(self, '_proxy_poll_running', False) and self._proxy_poll_thread is current_thread:
             svc = getattr(self, '_proxy_poll_service', None)
 
             # Phase 1: Discover or re-discover the service
