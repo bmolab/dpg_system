@@ -2651,6 +2651,25 @@ class OSCSender:
 
 
 class OSCSendNode(Node, OSCBase, OSCSender, OSCRegistrableMixin):
+    """Headless OSC sender that also registers as a typed, discoverable parameter
+    in the OSCQuery registry.  Use this instead of an osc_* widget when the value
+    is generated programmatically and no UI widget is needed.
+
+    Usage:
+        osc_send target_name /address          — type auto-detected from first value
+        osc_send target_name /address type=s   — force string type
+        osc_send target_name /address type=f   — force float type
+        osc_send target_name /address type=i   — force int type
+    """
+
+    # Map user-facing type hints to OSCQuery TYPE codes
+    _TYPE_HINTS = {
+        's': 's', 'string': 's',
+        'f': 'f', 'float': 'f',
+        'i': 'i', 'int': 'i',
+        'b': 'F', 'bool': 'F',
+    }
+
     @staticmethod
     def factory(name, data, args=None):
         node = OSCSendNode(name, data, args)
@@ -2658,78 +2677,176 @@ class OSCSendNode(Node, OSCBase, OSCSender, OSCRegistrableMixin):
 
     def __init__(self, label: str, data, args):
         Node.__init__(self, label, data, args)
-        OSCSender.__init__(self, label, data, args)
+        # Pass ordered_args (key=value pairs already stripped by parse_args)
+        # so that e.g. 'type=s' isn't misinterpreted as a positional arg.
+        OSCSender.__init__(self, label, data, self.ordered_args)
+
+        self._last_value = None       # cached for registry VALUE
+        self._osc_type = None         # resolved OSCQuery TYPE code (e.g. 's', 'f', 'ff')
+        self._type_locked = False     # once set, don't re-infer
+
+        # Parse type= from parsed_args (key=value pairs)
+        type_hint = self.parsed_args.get('type', 'auto')
+        if type_hint != 'auto' and type_hint in self._TYPE_HINTS:
+            self._osc_type = self._TYPE_HINTS[type_hint]
+            self._type_locked = True
 
         self.input = self.add_input('osc to send', triggers_execution=True)
 
         self.target_name_property = self.add_input('target name', widget_type='text_input', default_value=self.name, callback=self.name_changed)
         self.target_address_property = self.add_input('address', widget_type='text_input', default_value=self.address, callback=self.address_changed)
+        self.type_option = self.add_option('type', widget_type='combo', default_value=type_hint, callback=self._type_option_changed)
+        self.type_option.widget.combo_items = ['auto', 'string', 'float', 'int', 'bool']
         self._registerable_init()
-        # self.path_option = self.add_option('path', widget_type='label')
 
-    # --- Simplified Change Handlers ---
+    # --- Type inference ---
+
+    def _infer_type_from_value(self, value):
+        """Infer the OSCQuery TYPE code from a Python value."""
+        if isinstance(value, str):
+            return 's'
+        elif isinstance(value, bool):
+            return 'F'
+        elif isinstance(value, float) or (hasattr(value, 'dtype') and 'float' in str(value.dtype)):
+            return 'f'
+        elif isinstance(value, int) or (hasattr(value, 'dtype') and 'int' in str(value.dtype)):
+            return 'i'
+        elif isinstance(value, (list, tuple)):
+            if len(value) == 0:
+                return 's'
+            first = value[0]
+            if isinstance(first, str):
+                return 's'
+            elif isinstance(first, float) or (hasattr(first, 'dtype') and 'float' in str(first.dtype)):
+                return 'f' * len(value)
+            elif isinstance(first, int) or (hasattr(first, 'dtype') and 'int' in str(first.dtype)):
+                return 'i' * len(value)
+            return 'f' * len(value)
+        return 's'  # fallback
+
+    def _type_option_changed(self):
+        """User changed the type combo."""
+        hint = self.type_option()
+        if hint == 'auto':
+            self._type_locked = False
+            # Re-infer from cached value if we have one
+            if self._last_value is not None:
+                self._osc_type = self._infer_type_from_value(self._last_value)
+        elif hint in self._TYPE_HINTS:
+            self._osc_type = self._TYPE_HINTS[hint]
+            self._type_locked = True
+        # Re-register with the new type
+        self._update_registration()
+
+    # --- Change handlers ---
+
     def name_changed(self, force=False):
         if self.target_name_property is not None:
             new_name = any_to_string(self.target_name_property())
             if new_name != self.name or force:
-                old_path_components = None
-                if isinstance(self, OSCRegistrableMixin):
-                    old_path_components = self._get_registry_path_components()
+                old_path_components = self._get_registry_path_components()
 
                 if self.target is not None:
                     self.osc_manager.unregister_send_node(self)
 
                 self.name = new_name
                 self.find_target_node(self.name)
-                if isinstance(self, OSCRegistrableMixin):
-                    self._update_registration(old_path_components=old_path_components)
-
-
-        # The base OSCReceiver logic to find the new source
-        super().name_changed(force)
-        # The registration logic is now just one call
-        self._update_registration()
+                self._update_registration(old_path_components=old_path_components)
 
     def address_changed(self):
-        """
-        Handles changes to the node's OSC address, ensuring the registry is
-        updated correctly.
-        """
-        address_property = None
-        if hasattr(self, 'target_address_property'):
-            address_property = self.target_address_property
-
+        """Handles changes to the node's OSC address, ensuring the registry is
+        updated correctly."""
+        address_property = self.target_address_property
         if address_property is None:
             return
 
         new_address = any_to_string(address_property())
 
         if new_address != self.address:
-            # 1. CAPTURE the old path components BEFORE changing the state.
             old_path_components = self._get_registry_path_components()
 
-            # 2. CHANGE the internal state.
-            # This is the logic that was in the base OSCReceiver/OSCSender.
             if self.target is not None:
-                self.target.unregister_send_node(self)  # For senders
+                self.target.unregister_send_node(self)
 
             self.address = new_address if new_address.startswith('/') else '/' + new_address
 
-            # Re-register with the source/target under the new address
             if self.target is not None:
                 self.target.register_send_node(self)
 
-            # 3. UPDATE the registry, passing in the captured old path.
             self._update_registration(old_path_components=old_path_components)
 
-    # --- Implement required methods from OSCRegistrableNode ---
+    # --- Registry ---
+
     def _get_registry_path_components(self) -> list:
         return [self.get_patcher_path(), self.name, self.address]
 
     def _create_registry_entry(self, path_components: list) -> str:
-        return self._get_registry()[0].add_generic_sender_to_registry(path_components)
+        """Register as a typed, valued parameter instead of a generic sender."""
+        registry, _ = self._get_registry()
+        if registry is None:
+            return None
+        osc_type = self._osc_type or 's'  # default to string until first value arrives
+
+        if osc_type == 's':
+            value = any_to_string(self._last_value) if self._last_value is not None else ''
+            return registry.add_string_to_registry(path_components, value=value)
+        elif osc_type == 'f':
+            value = any_to_float(self._last_value) if self._last_value is not None else 0.0
+            return registry.add_float_to_registry(path_components, value=value)
+        elif osc_type == 'i':
+            value = any_to_int(self._last_value) if self._last_value is not None else 0
+            return registry.add_int_to_registry(path_components, value=value)
+        elif osc_type == 'F':
+            value = any_to_bool(self._last_value) if self._last_value is not None else False
+            return registry.add_bool_to_registry(path_components, value=value)
+        elif len(osc_type) > 1 and osc_type[0] == 'f':
+            values = any_to_list(self._last_value) if self._last_value is not None else [0.0] * len(osc_type)
+            return registry.add_multi_float_to_registry(path_components, count=len(osc_type), values=values)
+        elif len(osc_type) > 1 and osc_type[0] == 'i':
+            values = any_to_list(self._last_value) if self._last_value is not None else [0] * len(osc_type)
+            return registry.add_multi_int_to_registry(path_components, count=len(osc_type), values=values)
+        else:
+            return registry.add_generic_sender_to_registry(path_components)
+
+    def _get_registry_value(self):
+        return self._last_value
+
+    def get_registry_container(self):
+        """Look up the registry dict for this node's path."""
+        if not self.path:
+            return None
+        registry, _ = self._get_registry()
+        if registry is None:
+            return None
+        # Use self.path (the stored, already-stripped path from register())
+        # rather than reconstructing path components, which would include
+        # patcher/service prefixes that were stripped during registration.
+        return registry.get_param_registry_container_for_path(self.path)
+
+    def update_value_in_registry(self):
+        """Push the cached value to the OSCQuery registry."""
+        if self._last_value is None:
+            return
+        registration = self.get_registry_container()
+        if registration is not None:
+            value = self._last_value
+            # OSCQuery VALUE is always an array — wrap scalars directly.
+            # Do NOT use any_to_list() here: it splits strings into tokens.
+            if not isinstance(value, list):
+                value = [value]
+            registration['VALUE'] = value
+
+    # --- Lifecycle ---
 
     def custom_create(self, from_file):
+        # Auto-assign service name from oscq_host scope (like widgets do)
+        if self.name == '' and hasattr(self, 'my_editor') and self.my_editor and self.osc_manager:
+            svc_name = self.osc_manager.get_service_name_for_editor(self.my_editor)
+            if svc_name:
+                self.name = svc_name
+                if self.target_name_property is not None:
+                    self.target_name_property.set(self.name)
+
         self._needs_deferred_connect = False
         if self.name != '':
             target_found = self.find_target_node(self.name)
@@ -2750,6 +2867,8 @@ class OSCSendNode(Node, OSCBase, OSCSender, OSCRegistrableMixin):
         OSCSender.cleanup(self)
         self._registerable_cleanup()
 
+    # --- Execution ---
+
     def execute(self):
         if self.input.fresh_input:
             data = self.input()
@@ -2757,7 +2876,17 @@ class OSCSendNode(Node, OSCBase, OSCSender, OSCRegistrableMixin):
             if t not in [str, int, float, bool, np.int64, np.double]:
                 data = list(data)
                 data, homogenous, types = list_to_hybrid_list(data)
+
             if data is not None:
+                # Auto-detect type on first value (or type change)
+                if not self._type_locked and self._osc_type is None:
+                    self._osc_type = self._infer_type_from_value(data)
+                    # Re-register with proper type now that we know it
+                    self._update_registration()
+
+                self._last_value = data
+                self.update_value_in_registry()
+
                 if self.target and self.address != '':
                     self.target.send_message(self.address, data)
 

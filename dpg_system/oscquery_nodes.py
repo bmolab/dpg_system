@@ -219,6 +219,12 @@ class OSCQueryBrowseNode(Node, OSCBase):
             default_value='horizontal',
         )
 
+        # Create-as mode: widget (full UI), receive (headless input), send (headless output)
+        self.create_as_selector = self.add_input(
+            'create as', widget_type='combo',
+            default_value='widget',
+        )
+
         # --- Outputs ---
         self.selected_path_out = self.add_output('selected path')
         self.service_info_out = self.add_output('service info')
@@ -250,6 +256,8 @@ class OSCQueryBrowseNode(Node, OSCBase):
     def custom_create(self, from_file):
         self.layout_selector.widget.combo_items = ['horizontal', 'vertical', 'tree']
         dpg.configure_item(self.layout_selector.widget.uuid, items=['horizontal', 'vertical', 'tree'])
+        self.create_as_selector.widget.combo_items = ['widget', 'receive', 'send']
+        dpg.configure_item(self.create_as_selector.widget.uuid, items=['widget', 'receive', 'send'])
         self.path_group_uuid = dpg.add_group(horizontal=True, before=self.nav_list.widget.uuid)
         self.refresh_services()
         
@@ -858,7 +866,18 @@ class OSCQueryBrowseNode(Node, OSCBase):
         return osc_path
 
     def _create_widget_for_param(self, service_name, osc_path, param_dict, offset_x=0, offset_y=0):
-        """Create an osc widget node for a parameter."""
+        """Create a node for a parameter. Dispatches based on create_as mode."""
+        create_mode = self.create_as_selector() if hasattr(self, 'create_as_selector') else 'widget'
+
+        if create_mode == 'receive':
+            return self._create_receive_for_param(service_name, osc_path, param_dict, offset_x, offset_y)
+        elif create_mode == 'send':
+            return self._create_send_for_param(service_name, osc_path, param_dict, offset_x, offset_y)
+        else:
+            return self._create_widget_for_param_impl(service_name, osc_path, param_dict, offset_x, offset_y)
+
+    def _create_widget_for_param_impl(self, service_name, osc_path, param_dict, offset_x=0, offset_y=0):
+        """Create an osc widget node for a parameter (original widget mode)."""
         if not HAS_CONVERTER:
             return
 
@@ -917,6 +936,59 @@ class OSCQueryBrowseNode(Node, OSCBase):
         except Exception as e:
             osc_type = param_dict.get('TYPE', '?')
             print(f"oscq_browse: Failed to create {node_type} for {osc_path} (TYPE={osc_type}): {e}")
+            return None
+
+    def _infer_osc_type_hint(self, param_dict):
+        """Map OSCQuery TYPE code to an osc_send type= hint."""
+        osc_type = param_dict.get('TYPE', '')
+        if not osc_type:
+            return 'auto'
+        first = osc_type[0] if osc_type else ''
+        if first == 's':
+            return 'string'
+        elif first == 'f':
+            return 'float'
+        elif first == 'i':
+            return 'int'
+        elif first == 'F' or first == 'T':
+            return 'bool'
+        return 'auto'
+
+    def _create_receive_for_param(self, service_name, osc_path, param_dict, offset_x=0, offset_y=0):
+        """Create a headless osc_receive node for a parameter."""
+        args = [service_name, osc_path]
+
+        try:
+            my_pos = dpg.get_item_pos(self.uuid)
+            pos = [my_pos[0] + offset_x, my_pos[1] + 300 + self._cumulative_y_offset + offset_y]
+        except Exception:
+            pos = None
+
+        try:
+            created_node = Node.app.create_node_by_name('osc_receive', None, args, pos)
+            return created_node
+        except Exception as e:
+            print(f"oscq_browse: Failed to create osc_receive for {osc_path}: {e}")
+            return None
+
+    def _create_send_for_param(self, service_name, osc_path, param_dict, offset_x=0, offset_y=0):
+        """Create a headless osc_send node for a parameter."""
+        type_hint = self._infer_osc_type_hint(param_dict)
+        args = [service_name, osc_path]
+        if type_hint != 'auto':
+            args.append(f'type={type_hint}')
+
+        try:
+            my_pos = dpg.get_item_pos(self.uuid)
+            pos = [my_pos[0] + offset_x, my_pos[1] + 300 + self._cumulative_y_offset + offset_y]
+        except Exception:
+            pos = None
+
+        try:
+            created_node = Node.app.create_node_by_name('osc_send', None, args, pos)
+            return created_node
+        except Exception as e:
+            print(f"oscq_browse: Failed to create osc_send for {osc_path}: {e}")
             return None
 
     def _create_multi_component_widgets(self, service_name, osc_path, component_specs, offset_x=0, offset_y=0):
