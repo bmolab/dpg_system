@@ -3513,8 +3513,11 @@ class OSCWidget(OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
                     current = self.input()
                     if current != value:
                         self.input.widget.set(value, propagate=False)
-                        # Output the new value downstream
-                        self.do_send(value)
+                        # Output downstream, but only if we haven't received
+                        # real-time push data recently (avoids double output)
+                        last_push = getattr(self, '_last_push_time', 0)
+                        if (time.time() - last_push) > 0.5:
+                            self.do_send(value)
                 except Exception:
                     pass
 
@@ -3987,6 +3990,8 @@ class OSCValueNode(ValueNode, OSCWidget):
         # Update registry directly — do NOT call _notify_peers() since
         # this value arrived from the network (re-notifying creates a loop)
         self._update_registry_value_only()
+        # Mark push arrival time to suppress duplicate poll output
+        self._last_push_time = time.time()
 
     def variable_update(self):
         if self.variable is not None:
