@@ -2481,6 +2481,7 @@ class OSCReceiveNode(Node, OSCBase, OSCReceiver, OSCRegistrableMixin):
         self._poll_value = None
         self._poll_has_new = False
         self._poll_last_value = None   # track changes to avoid re-sending identical data
+        self._subscribed_service = None # tracks active subscription for cleanup
 
     # --- Simplified Change Handlers ---
     def name_changed(self, force=False):
@@ -2572,6 +2573,8 @@ class OSCReceiveNode(Node, OSCBase, OSCReceiver, OSCRegistrableMixin):
         if self.output:
             self.output.send(list(data))
         self.last = time.time()
+        # Mark that we got real-time push — suppress poll duplicates
+        self._last_push_time = time.time()
 
     def post_load_callback(self):
         if not getattr(self, '_needs_deferred_connect', False):
@@ -2582,10 +2585,10 @@ class OSCReceiveNode(Node, OSCBase, OSCReceiver, OSCRegistrableMixin):
         if not self.path:
             self._registerable_custom_create()
 
-    # --- HTTP Polling for cross-machine receive ---
+    # --- Remote receive (subscription + polling fallback) ---
 
     def start_polling(self, poll_address):
-        """Start polling a remote service's HTTP endpoint for VALUE changes.
+        """Start remote receive: subscribe for real-time push + poll as fallback.
 
         Args:
             poll_address: The OSCQuery path to fetch (e.g. '/phrase')
@@ -2598,15 +2601,66 @@ class OSCReceiveNode(Node, OSCBase, OSCReceiver, OSCRegistrableMixin):
         self._poll_thread.start()
         self.add_frame_task()
 
+    def _subscribe_to_service(self, svc):
+        """Subscribe to the remote service so it pushes OSC to our local device.
+        This gives real-time streaming instead of polling-only."""
+        if self._subscribed_service is svc:
+            return  # already subscribed
+
+        source = self.osc_manager.sources.get(self.name) if self.osc_manager else None
+        if source is None:
+            return
+
+        local_port = getattr(source, 'source_port', None)
+        if local_port is None:
+            return
+
+        try:
+            import socket as _socket
+            s = _socket.socket(_socket.AF_INET, _socket.SOCK_DGRAM)
+            s.connect(("10.255.255.255", 1))
+            local_ip = s.getsockname()[0]
+            s.close()
+        except Exception:
+            local_ip = "127.0.0.1"
+
+        try:
+            from urllib.request import urlopen
+            url = f"http://{svc.ip}:{svc.http_port}/subscribe?ip={local_ip}&port={local_port}"
+            urlopen(url, timeout=3)
+            self._subscribed_service = svc
+            self._subscribed_port = local_port
+            self._subscribed_ip = local_ip
+            print(f"osc_receive: subscribed to '{self.name}' — push to {local_ip}:{local_port}")
+        except Exception:
+            # Remote doesn't support /subscribe — polling will be the data path
+            pass
+
+    def _unsubscribe(self):
+        """Unsubscribe from the remote service."""
+        svc = getattr(self, '_subscribed_service', None)
+        if svc is None:
+            return
+        try:
+            from urllib.request import urlopen
+            ip = getattr(self, '_subscribed_ip', '')
+            port = getattr(self, '_subscribed_port', '')
+            url = f"http://{svc.ip}:{svc.http_port}/unsubscribe?ip={ip}&port={port}"
+            urlopen(url, timeout=2)
+        except Exception:
+            pass
+        self._subscribed_service = None
+
     def _stop_polling(self):
-        """Stop the background polling thread."""
+        """Stop the background polling thread and unsubscribe."""
         self._poll_running = False
         self._poll_thread = None
+        self._unsubscribe()
         if hasattr(self, 'has_frame_task') and self.has_frame_task:
             self.remove_frame_tasks()
 
     def _poll_loop(self):
-        """Background thread: discover service, then fetch remote VALUE periodically."""
+        """Background thread: subscribe for push, then poll as fallback."""
         import time as _time
         while self._poll_running:
             svc = self._poll_service
@@ -2624,7 +2678,9 @@ class OSCReceiveNode(Node, OSCBase, OSCReceiver, OSCRegistrableMixin):
                 elif current_svc is not svc:
                     self._poll_service = current_svc
                     svc = current_svc
-                    print(f"osc_receive: poll connected to '{self.name}' at {svc.ip}:{svc.http_port}")
+                    print(f"osc_receive: connected to '{self.name}' at {svc.ip}:{svc.http_port}")
+                    # Subscribe for real-time OSC push (poll remains as fallback)
+                    self._subscribe_to_service(svc)
             elif svc is None:
                 _time.sleep(2.0)
                 continue
@@ -2648,9 +2704,14 @@ class OSCReceiveNode(Node, OSCBase, OSCReceiver, OSCRegistrableMixin):
             _time.sleep(0.1)  # ~10 Hz
 
     def frame_task(self):
-        """Main-thread: deliver polled data via the output."""
+        """Main-thread: deliver polled data via the output.
+        Suppressed when real-time push is active (to avoid duplicates)."""
         if self._poll_has_new:
             self._poll_has_new = False
+            # If we received real-time push data recently, skip poll output
+            last_push = getattr(self, '_last_push_time', 0)
+            if (time.time() - last_push) < 0.5:
+                return
             value = self._poll_value
             if value is not None and self.output:
                 # Wrap in list to match OSC receive convention
@@ -2911,7 +2972,7 @@ class OSCSendNode(Node, OSCBase, OSCSender, OSCRegistrableMixin):
         return registry.get_param_registry_container_for_path(self.path)
 
     def update_value_in_registry(self):
-        """Push the cached value to the OSCQuery registry."""
+        """Push the cached value to the OSCQuery registry and notify subscribers."""
         if self._last_value is None:
             return
         registration = self.get_registry_container()
@@ -2922,6 +2983,18 @@ class OSCSendNode(Node, OSCBase, OSCSender, OSCRegistrableMixin):
             if not isinstance(value, list):
                 value = [value]
             registration['VALUE'] = value
+            # Push to subscribed remote peers (cross-machine streaming)
+            self._notify_subscribers(self.address, value)
+
+    def _notify_subscribers(self, osc_address, value):
+        """Push value change to all subscribed peer clients via the host's OSCQueryServer."""
+        if not self.osc_manager or not osc_address:
+            return
+        svc_name = self.osc_manager.get_service_name_for_editor(self.my_editor) if hasattr(self, 'my_editor') and self.my_editor else None
+        if svc_name and svc_name in self.osc_manager.service_registries:
+            _, srv = self.osc_manager.service_registries[svc_name]
+            if srv and hasattr(srv, 'notify_subscribers'):
+                srv.notify_subscribers(osc_address, value)
 
     # --- Lifecycle ---
 
