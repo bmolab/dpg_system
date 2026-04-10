@@ -2761,9 +2761,12 @@ class OSCSender:
 
         if args is not None:
             if len(args) == 1:
-                targets = list(self.osc_manager.targets.keys())
-                if len(targets) == 1:
-                    self.name = targets[0]
+                # Auto-assign to a target only if there's exactly one LOCAL target
+                # (skip devices created by oscq_browse for remote services)
+                local_targets = [name for name, t in self.osc_manager.targets.items()
+                                 if not getattr(t, '_is_browse_device', False)]
+                if len(local_targets) == 1:
+                    self.name = local_targets[0]
                 self.address = args[0] if args[0].startswith('/') else '/' + args[0]
             if len(args) >= 2:
                 if not is_number(args[0]):
@@ -3371,6 +3374,7 @@ class OSCWidget(OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
             try:
                 device_node = Node.app.create_node_by_name('osc_device', None, args)
                 if device_node:
+                    device_node._is_browse_device = True  # mark as remote service device
                     device_node.set_visibility('hidden')
                     try:
                         dpg.set_item_pos(device_node.uuid, [-10000, -10000])
@@ -3509,6 +3513,8 @@ class OSCWidget(OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
                     current = self.input()
                     if current != value:
                         self.input.widget.set(value, propagate=False)
+                        # Output the new value downstream
+                        self.do_send(value)
                 except Exception:
                     pass
 
