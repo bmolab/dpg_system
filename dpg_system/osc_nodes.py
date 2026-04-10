@@ -3540,6 +3540,8 @@ class OSCWidget(OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
 
     def _start_peer_subscription(self):
         """Subscribe to the remote service for OSC push updates.
+        Uses the shared refcount registry so osc_receive nodes are not
+        disrupted when this widget unsubscribes.
         If the remote server doesn't support /subscribe (e.g. TouchDesigner),
         peer mode still works via direct OSC receiver registration on the
         local osc_device source."""
@@ -3560,37 +3562,54 @@ class OSCWidget(OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
         if local_port is None:
             return
 
+        local_ip = self._get_local_ip()
+        sub_key = (svc.ip, svc.http_port, local_ip, local_port)
+        refcounts = OSCReceiveNode._subscription_refcounts
+
+        if sub_key not in refcounts or refcounts[sub_key] == 0:
+            # First subscriber for this endpoint — actually send HTTP /subscribe
+            try:
+                from urllib.request import urlopen
+                url = f"http://{svc.ip}:{svc.http_port}/subscribe?ip={local_ip}&port={local_port}"
+                urlopen(url, timeout=3)
+            except Exception:
+                # Server doesn't support /subscribe — peer mode still works via
+                # direct OSC if the remote is configured to send to our port.
+                pass
+            refcounts[sub_key] = 0
+
+        refcounts[sub_key] = refcounts.get(sub_key, 0) + 1
         self._peer_subscribed_service = svc
         self._peer_local_port = local_port
-
-        # Attempt HTTP subscribe — optional extension, not all servers support it
-        try:
-            local_ip = self._get_local_ip()
-            url = f"http://{svc.ip}:{svc.http_port}/subscribe?ip={local_ip}&port={local_port}"
-            from urllib.request import urlopen
-            urlopen(url, timeout=3)
-        except Exception:
-            # Server doesn't support /subscribe — peer mode still works via
-            # direct OSC if the remote is configured to send to our port.
-            pass
+        self._peer_sub_key = sub_key
 
     def _stop_peer_subscription(self):
-        """Unsubscribe from the remote service."""
+        """Decrement subscription refcount; only unsubscribe when last."""
         svc = getattr(self, '_peer_subscribed_service', None)
         if svc is None:
             return
-        local_port = getattr(self, '_peer_local_port', None)
-        if local_port is None:
-            return
-        try:
-            local_ip = self._get_local_ip()
-            url = f"http://{svc.ip}:{svc.http_port}/unsubscribe?ip={local_ip}&port={local_port}"
-            from urllib.request import urlopen
-            urlopen(url, timeout=2)
-        except Exception:
-            pass
+
+        sub_key = getattr(self, '_peer_sub_key', None)
+        refcounts = OSCReceiveNode._subscription_refcounts
+
+        if sub_key and sub_key in refcounts:
+            refcounts[sub_key] -= 1
+            if refcounts[sub_key] <= 0:
+                # Last subscriber — actually send HTTP /unsubscribe
+                del refcounts[sub_key]
+                local_port = getattr(self, '_peer_local_port', None)
+                if local_port is not None:
+                    try:
+                        local_ip = self._get_local_ip()
+                        from urllib.request import urlopen
+                        url = f"http://{svc.ip}:{svc.http_port}/unsubscribe?ip={local_ip}&port={local_port}"
+                        urlopen(url, timeout=2)
+                    except Exception:
+                        pass
+
         self._peer_subscribed_service = None
         self._peer_local_port = None
+        self._peer_sub_key = None
 
     @staticmethod
     def _get_local_ip():
