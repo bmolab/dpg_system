@@ -56,6 +56,10 @@ def register_interface_nodes():
     Node.app.register_node('momentary', MomentarySliderNode.factory)
     Node.app.register_node('momentary_slider_int', MomentarySliderNode.factory)
     Node.app.register_node('momentary_int', MomentarySliderNode.factory)
+    Node.app.register_node('momentary_xy', XYPadNode.factory)
+    Node.app.register_node('momentary_2d', XYPadNode.factory)
+    Node.app.register_node('xy_pad', XYPadNode.factory)
+    Node.app.register_node('xy_2d', XYPadNode.factory)
 
 
 class ButtonNode(Node):
@@ -3147,3 +3151,160 @@ class MomentarySliderNode(Node):
         reset_val = 0 if self.is_int else 0.0
         self.slider_inputs[index].set(reset_val)
         self.slider_outputs[index].send(reset_val)
+
+
+class XYPadNode(Node):
+    """A 2D XY pad. Can be momentary (auto-returns to center) or persistent.
+
+    Uses a plot with a visual drag point marker. Click and drag to set position.
+
+    Usage:
+        xy_pad                - persistent, range -1.0 to 1.0
+        xy_pad 20             - persistent, range -20 to 20
+        momentary_xy          - momentary (snaps back to 0,0), range -1.0 to 1.0
+        momentary_xy 0.5      - momentary, range -0.5 to 0.5
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = XYPadNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.range_val = 1.0
+        self.pad_size = 150
+        self.dragging = False
+        self.last_x = 0.0
+        self.last_y = 0.0
+
+        # Detect momentary mode from node name
+        self.is_momentary = 'momentary' in label
+
+        # Parse args
+        if args is not None and len(args) > 0:
+            val, t = decode_arg(args, 0)
+            if t in [float, int]:
+                self.range_val = float(val)
+
+        # UUIDs for plot components
+        self.plot_tag = dpg.generate_uuid()
+        self.x_axis_tag = dpg.generate_uuid()
+        self.y_axis_tag = dpg.generate_uuid()
+        self.drag_point_tag = dpg.generate_uuid()
+        self.crosshair_h_tag = dpg.generate_uuid()
+        self.crosshair_v_tag = dpg.generate_uuid()
+
+        # Display for the plot
+        self.plot_display = self.add_display('')
+        self.plot_display.submit_callback = self.submit_display
+
+        # Outputs
+        self.xy_output = self.add_output('xy out')
+        self.x_output = self.add_output('x out')
+        self.y_output = self.add_output('y out')
+
+        # Options
+        self.momentary_option = self.add_option(
+            'momentary', widget_type='checkbox', default_value=self.is_momentary
+        )
+        self.range_option = self.add_option(
+            'range', widget_type='drag_float', default_value=self.range_val,
+            callback=self._range_changed
+        )
+        self.size_option = self.add_option(
+            'size', widget_type='drag_int', default_value=self.pad_size,
+            callback=self._size_changed
+        )
+
+    def submit_display(self):
+        with dpg.plot(
+            label='', tag=self.plot_tag,
+            height=self.pad_size, width=self.pad_size,
+            no_title=True, no_menus=True,
+            no_mouse_pos=True
+        ):
+            dpg.add_plot_axis(
+                dpg.mvXAxis, label='', tag=self.x_axis_tag,
+                no_tick_labels=True, no_gridlines=False
+            )
+            dpg.add_plot_axis(
+                dpg.mvYAxis, label='', tag=self.y_axis_tag,
+                no_tick_labels=True, no_gridlines=False
+            )
+            dpg.set_axis_limits(self.x_axis_tag, -self.range_val, self.range_val)
+            dpg.set_axis_limits(self.y_axis_tag, -self.range_val, self.range_val)
+
+            # Crosshair lines at origin
+            dpg.add_inf_line_series(
+                x=[0.0], parent=self.y_axis_tag, tag=self.crosshair_v_tag
+            )
+            dpg.add_hline_series(
+                x=[0.0], parent=self.y_axis_tag, tag=self.crosshair_h_tag
+            )
+
+            # Visual marker for current position (not interactive)
+            dpg.add_drag_point(
+                label='', tag=self.drag_point_tag,
+                default_value=(0.0, 0.0),
+                color=(255, 255, 0, 255),
+                parent=self.plot_tag,
+                no_inputs=True
+            )
+
+    def custom_create(self, from_file):
+        self.add_frame_task()
+
+    def frame_task(self):
+        try:
+            mouse_down = dpg.is_mouse_button_down(0)
+            is_hovered = dpg.is_item_hovered(self.plot_tag)
+
+            if mouse_down:
+                if is_hovered and not self.dragging:
+                    # Mouse just pressed on our plot — start dragging
+                    self.dragging = True
+
+                if self.dragging:
+                    # Read mouse position in plot data coordinates
+                    plot_pos = dpg.get_plot_mouse_pos()
+                    if plot_pos is not None:
+                        x = max(-self.range_val, min(self.range_val, plot_pos[0]))
+                        y = max(-self.range_val, min(self.range_val, plot_pos[1]))
+                        # Move the visual marker
+                        dpg.set_value(self.drag_point_tag, [x, y])
+                        self.last_x = x
+                        self.last_y = y
+                        self.y_output.send(y)
+                        self.x_output.send(x)
+                        self.xy_output.send([x, y])
+            else:
+                if self.dragging:
+                    self.dragging = False
+                    if self.momentary_option():
+                        # Momentary: snap back to center
+                        dpg.set_value(self.drag_point_tag, [0.0, 0.0])
+                        self.last_x = 0.0
+                        self.last_y = 0.0
+                        self.y_output.send(0.0)
+                        self.x_output.send(0.0)
+                        self.xy_output.send([0.0, 0.0])
+                    else:
+                        # Persistent: send final position once
+                        self.y_output.send(self.last_y)
+                        self.x_output.send(self.last_x)
+                        self.xy_output.send([self.last_x, self.last_y])
+        except Exception:
+            pass
+
+    def _range_changed(self):
+        self.range_val = self.range_option()
+        dpg.set_axis_limits(self.x_axis_tag, -self.range_val, self.range_val)
+        dpg.set_axis_limits(self.y_axis_tag, -self.range_val, self.range_val)
+
+    def _size_changed(self):
+        size = self.size_option()
+        self.pad_size = size
+        dpg.set_item_width(self.plot_tag, size)
+        dpg.set_item_height(self.plot_tag, size)
