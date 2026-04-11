@@ -52,6 +52,10 @@ def register_interface_nodes():
     Node.app.register_node('keys', KeyNode.factory)
 
     Node.app.register_node('table', TableNode.factory)
+    Node.app.register_node('momentary_slider', MomentarySliderNode.factory)
+    Node.app.register_node('momentary', MomentarySliderNode.factory)
+    Node.app.register_node('momentary_slider_int', MomentarySliderNode.factory)
+    Node.app.register_node('momentary_int', MomentarySliderNode.factory)
 
 
 class ButtonNode(Node):
@@ -3005,3 +3009,141 @@ class ParamValueNode(ValueNode):
     def do_send(self, value):
         output_list = [self.param_name(), value]
         self.param_output.send(output_list)
+
+
+class MomentarySliderNode(Node):
+    """A slider (or set of sliders) that auto-returns to center (0) when released.
+
+    Usage:
+        momentary_slider          - one float slider, range -1.0 to 1.0
+        momentary_slider 3        - three float sliders, range -1.0 to 1.0
+        momentary_slider 20       - one int slider, range -20 to 20
+        momentary_slider pan tilt - two named float sliders
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = MomentarySliderNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.slider_inputs = []
+        self.slider_outputs = []
+        self.slider_active = []
+        self.slider_initiated = []
+        self.is_int = False
+        self.slider_width = 120
+
+        # Detect int mode from node name
+        if '_int' in label:
+            self.is_int = True
+
+        # Parse args to determine number and names of sliders
+        slider_names = []
+        self.range_val = 20 if self.is_int else 1.0
+
+        if args is not None and len(args) > 0:
+            for arg in args:
+                val, t = decode_arg([arg], 0)
+                if t == int:
+                    # If it's a small int (1-10), treat as slider count
+                    if 1 <= val <= 10:
+                        slider_names = [str(i) for i in range(val)]
+                    else:
+                        # Larger int: treat as range for a single int slider
+                        self.range_val = val
+                        self.is_int = True
+                elif t == float:
+                    self.range_val = val
+                elif t == str:
+                    slider_names.append(val)
+
+        if len(slider_names) == 0:
+            slider_names = ['value']
+
+        # Create slider inputs and outputs
+        widget_type = 'slider_int' if self.is_int else 'slider_float'
+        min_val = -self.range_val
+        max_val = self.range_val
+        default_val = 0 if self.is_int else 0.0
+
+        for i, name in enumerate(slider_names):
+            slider_input = self.add_input(
+                name,
+                widget_type=widget_type,
+                widget_width=self.slider_width,
+                default_value=default_val,
+                min=min_val,
+                max=max_val,
+                callback=self._make_slider_callback(i)
+            )
+            self.slider_inputs.append(slider_input)
+            self.slider_active.append(False)
+            self.slider_initiated.append(False)
+
+        # Outputs in reverse order (bottom-up convention)
+        for name in slider_names:
+            out = self.add_output(name + ' out')
+            self.slider_outputs.append(out)
+
+        # Options
+        self.range_option = self.add_option(
+            'range', widget_type='drag_float', default_value=self.range_val,
+            callback=self._range_changed
+        )
+        self.width_option = self.add_option(
+            'width', widget_type='drag_int', default_value=self.slider_width,
+            callback=self._width_changed
+        )
+
+    def _make_slider_callback(self, index):
+        def callback():
+            self._slider_moved(index)
+        return callback
+
+    def _slider_moved(self, index):
+        val = self.slider_inputs[index]()
+        if self.slider_active[index] or val != (0 if self.is_int else 0.0):
+            self.slider_initiated[index] = True
+
+    def _range_changed(self):
+        self.range_val = self.range_option()
+        min_val = -self.range_val
+        max_val = self.range_val
+        for slider_input in self.slider_inputs:
+            slider_input.widget.set_limits(min_val, max_val)
+
+    def _width_changed(self):
+        width = self.width_option()
+        for slider_input in self.slider_inputs:
+            dpg.set_item_width(slider_input.widget.uuid, width)
+
+    def custom_create(self, from_file):
+        self.add_frame_task()
+
+    def frame_task(self):
+        try:
+            for i, slider_input in enumerate(self.slider_inputs):
+                # Check if slider was just released
+                if dpg.is_item_deactivated(slider_input.widget.uuid) and self.slider_active[i]:
+                    self._slider_release(i)
+                    self.slider_initiated[i] = False
+
+                # While slider is being dragged, send current value
+                if self.slider_initiated[i]:
+                    val = slider_input()
+                    if self.is_int:
+                        val = int(val)
+                    self.slider_active[i] = (val != (0 if self.is_int else 0.0))
+                    self.slider_outputs[i].send(val)
+        except Exception:
+            pass
+
+    def _slider_release(self, index):
+        self.slider_initiated[index] = False
+        self.slider_active[index] = False
+        reset_val = 0 if self.is_int else 0.0
+        self.slider_inputs[index].set(reset_val)
+        self.slider_outputs[index].send(reset_val)
