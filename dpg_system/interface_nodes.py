@@ -60,6 +60,8 @@ def register_interface_nodes():
     Node.app.register_node('momentary_2d', XYPadNode.factory)
     Node.app.register_node('xy_pad', XYPadNode.factory)
     Node.app.register_node('xy_2d', XYPadNode.factory)
+    Node.app.register_node('envelope', EnvelopeNode.factory)
+    Node.app.register_node('bpf', EnvelopeNode.factory)
 
 
 class ButtonNode(Node):
@@ -3308,3 +3310,451 @@ class XYPadNode(Node):
         self.pad_size = size
         dpg.set_item_width(self.plot_tag, size)
         dpg.set_item_height(self.plot_tag, size)
+
+
+class EnvelopeNode(Node):
+    """A breakpoint function / envelope editor with draggable control points.
+
+    Points are connected by lines. Drag points to reposition.
+    Right-click: add point (if far from existing) or remove point (if near one).
+    Shift+right-click drag near a point: adjust curvature (up=convex, down=concave).
+    Send an x value to interpolate the envelope.
+
+    Usage:
+        envelope          - x range 0-1, y range 0-1
+        envelope 10       - x range 0-10, y range 0-1
+        envelope 10 5     - x range 0-10, y range 0-5
+    """
+
+    SAMPLES_PER_CURVE = 32
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return EnvelopeNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.x_max = 1.0
+        self.y_min = 0.0
+        self.y_max = 1.0
+        self.plot_width = 300
+        self.plot_height = 150
+        self.remove_threshold = 0.08
+
+        # Parse args
+        if args and len(args) > 0:
+            val, t = decode_arg(args, 0)
+            if t in [float, int]:
+                self.x_max = float(val)
+        if args and len(args) > 1:
+            val, t = decode_arg(args, 1)
+            if t in [float, int]:
+                self.y_max = float(val)
+
+        # Point data: {'tag': uuid, 'x': float, 'y': float, 'curve': float}
+        # 'curve' controls the outgoing segment shape:
+        #   0 = linear, positive = convex (bows up), negative = concave (bows down)
+        self.points = []
+        self.right_was_down = False
+        self.left_was_down = False
+
+        # Ramp / trigger state
+        self.ramp_active = False
+        self.ramp_start_time = 0.0
+        self.ramp_time = self.x_max  # default ramp duration = x range
+
+        # Curvature drag state
+        self.curving = False
+        self.curving_point_idx = -1
+        self.curve_drag_start_screen_y = 0.0
+        self.curve_drag_start_val = 0.0
+
+        # UUIDs
+        self.plot_tag = dpg.generate_uuid()
+        self.x_axis_tag = dpg.generate_uuid()
+        self.y_axis_tag = dpg.generate_uuid()
+        self.line_tag = dpg.generate_uuid()
+        self.playhead_tag = dpg.generate_uuid()
+
+        # Inputs
+        self.sample_input = self.add_input('x', triggers_execution=True)
+        self.trigger_input = self.add_input('trigger', widget_type='button',
+                                            triggers_execution=True,
+                                            callback=self._start_ramp)
+        self.ramp_time_input = self.add_input('duration', widget_type='drag_float',
+                                              default_value=self.ramp_time,
+                                              triggers_execution=True)
+
+        # Display for the plot
+        self.plot_display = self.add_display('')
+        self.plot_display.submit_callback = self.submit_display
+
+        # Outputs
+        self.points_output = self.add_output('points out')
+        self.value_output = self.add_output('value out')
+
+        # Options
+        self.x_max_option = self.add_option(
+            'x max', widget_type='drag_float', default_value=self.x_max,
+            callback=self._range_changed
+        )
+        self.y_min_option = self.add_option(
+            'y min', widget_type='drag_float', default_value=self.y_min,
+            callback=self._range_changed
+        )
+        self.y_max_option = self.add_option(
+            'y max', widget_type='drag_float', default_value=self.y_max,
+            callback=self._range_changed
+        )
+        self.width_option = self.add_option(
+            'width', widget_type='drag_int', default_value=self.plot_width,
+            callback=self._size_changed
+        )
+        self.height_option = self.add_option(
+            'height', widget_type='drag_int', default_value=self.plot_height,
+            callback=self._size_changed
+        )
+
+    def submit_display(self):
+        with dpg.theme() as self.line_theme:
+            with dpg.theme_component(dpg.mvLineSeries):
+                dpg.add_theme_color(dpg.mvPlotCol_Line, (80, 140, 255), category=dpg.mvThemeCat_Plots)
+                dpg.add_theme_style(dpg.mvPlotStyleVar_LineWeight, 2.0, category=dpg.mvThemeCat_Plots)
+
+        with dpg.plot(
+            label='', tag=self.plot_tag,
+            height=self.plot_height, width=self.plot_width,
+            no_title=True, no_menus=True, no_box_select=True,
+            no_mouse_pos=True
+        ):
+            dpg.add_plot_axis(
+                dpg.mvXAxis, label='', tag=self.x_axis_tag,
+                no_tick_labels=True
+            )
+            dpg.add_plot_axis(
+                dpg.mvYAxis, label='', tag=self.y_axis_tag,
+                no_tick_labels=True
+            )
+            dpg.set_axis_limits(self.x_axis_tag, 0, self.x_max)
+            dpg.set_axis_limits(self.y_axis_tag, self.y_min, self.y_max)
+
+            # Line series connecting points
+            dpg.add_line_series([], [], parent=self.y_axis_tag, tag=self.line_tag)
+            dpg.bind_item_theme(self.line_tag, self.line_theme)
+
+            # Playhead vertical line (hidden until ramp active)
+            dpg.add_inf_line_series(x=[], parent=self.y_axis_tag, tag=self.playhead_tag)
+
+        # Default points: triangle
+        self._create_point(0.0, self.y_min)
+        self._create_point(self.x_max * 0.5, self.y_max)
+        self._create_point(self.x_max, self.y_min)
+        self._update_line()
+
+    def _create_point(self, x, y, curve=0.0):
+        tag = dpg.generate_uuid()
+        color = self._curve_color(curve)
+        dpg.add_drag_point(
+            tag=tag, default_value=(x, y),
+            color=color,
+            parent=self.plot_tag
+        )
+        self.points.append({'tag': tag, 'x': x, 'y': y, 'curve': curve})
+        return tag
+
+    def _remove_point_at_index(self, index):
+        if len(self.points) <= 2:
+            return
+        p = self.points.pop(index)
+        if dpg.does_item_exist(p['tag']):
+            dpg.delete_item(p['tag'])
+
+    @staticmethod
+    def _curve_color(curve_val):
+        """Interpolate point color: yellow (linear) → green (curved)."""
+        blend = min(1.0, abs(curve_val) / 2.0)
+        r = int(255 * (1 - blend))
+        g = 255
+        b = int(100 * blend)
+        return (r, g, b, 255)
+
+    def _update_point_color(self, index):
+        p = self.points[index]
+        color = self._curve_color(p['curve'])
+        if dpg.does_item_exist(p['tag']):
+            dpg.configure_item(p['tag'], color=color)
+
+    def _find_nearest_point(self, mx, my):
+        """Find index and normalized distance of nearest point to (mx, my)."""
+        min_dist = float('inf')
+        min_idx = -1
+        x_range = max(self.x_max, 0.001)
+        y_range = max(self.y_max - self.y_min, 0.001)
+        for i, p in enumerate(self.points):
+            dx = (p['x'] - mx) / x_range
+            dy = (p['y'] - my) / y_range
+            dist = (dx ** 2 + dy ** 2) ** 0.5
+            if dist < min_dist:
+                min_dist = dist
+                min_idx = i
+        return min_idx, min_dist
+
+    def _find_segment_at_x(self, mx):
+        """Find the index (in self.points) of the start point of the segment containing mx."""
+        sorted_pts = sorted(self.points, key=lambda p: p['x'])
+        for i in range(len(sorted_pts) - 1):
+            if sorted_pts[i]['x'] <= mx <= sorted_pts[i + 1]['x']:
+                # Return index in self.points (not sorted index)
+                return self.points.index(sorted_pts[i])
+        return -1
+
+    @staticmethod
+    def _ease(t, curve_val):
+        """Attempt to apply curvature using Schlick bias function.
+
+        f(t) = t / (t + (1 - t) * k)
+
+        This function always has nonzero curvature at t=0 (no flat start).
+        curve_val = 0: k=1, linear
+        curve_val > 0: k<1, convex (f(t) > t, bows above straight line)
+        curve_val < 0: k>1, concave (f(t) < t, bows below straight line)
+        """
+        if abs(curve_val) < 0.001:
+            return t
+        if t <= 0.0:
+            return 0.0
+        if t >= 1.0:
+            return 1.0
+        # Map curve_val to bias parameter k
+        if curve_val > 0:
+            k = 1.0 / (1.0 + curve_val)
+        else:
+            k = 1.0 - curve_val
+        return t / (t + (1.0 - t) * k)
+
+    def _generate_line_data(self):
+        """Generate x/y arrays for the line series, with curved segments densely sampled."""
+        sorted_pts = sorted(self.points, key=lambda p: p['x'])
+        n = len(sorted_pts)
+        if n == 0:
+            return [], []
+        if n == 1:
+            return [sorted_pts[0]['x']], [sorted_pts[0]['y']]
+
+        x_data = []
+        y_data = []
+
+        for i in range(n - 1):
+            p_cur = sorted_pts[i]
+            p_next = sorted_pts[i + 1]
+            curve_val = p_cur.get('curve', 0.0)
+
+            if abs(curve_val) > 0.001:
+                # Curved segment: generate dense samples
+                y0 = p_cur['y']
+                y1 = p_next['y']
+                x0 = p_cur['x']
+                x1 = p_next['x']
+                # Flip curve direction for descending segments so that
+                # drag-up always bows the curve upward visually
+                effective_curve = curve_val if y1 >= y0 else -curve_val
+                for s in range(self.SAMPLES_PER_CURVE):
+                    t = s / float(self.SAMPLES_PER_CURVE)
+                    eased = self._ease(t, effective_curve)
+                    x_data.append(x0 + t * (x1 - x0))
+                    y_data.append(y0 + eased * (y1 - y0))
+            else:
+                # Linear: just the start point
+                x_data.append(p_cur['x'])
+                y_data.append(p_cur['y'])
+
+        # Add the final point
+        x_data.append(sorted_pts[-1]['x'])
+        y_data.append(sorted_pts[-1]['y'])
+
+        return x_data, y_data
+
+    def _update_line(self):
+        x_data, y_data = self._generate_line_data()
+        dpg.set_value(self.line_tag, [x_data, y_data])
+
+    def _send_points(self):
+        sorted_pts = sorted(self.points, key=lambda p: p['x'])
+        point_list = [[p['x'], p['y'], p.get('curve', 0.0)] for p in sorted_pts]
+        self.points_output.send(point_list)
+
+    def _interpolate_at(self, x_val):
+        """Interpolate the envelope at x_val, respecting per-segment curvature."""
+        sorted_pts = sorted(self.points, key=lambda p: p['x'])
+        n = len(sorted_pts)
+        if n == 0:
+            return 0.0
+        if x_val <= sorted_pts[0]['x']:
+            return sorted_pts[0]['y']
+        if x_val >= sorted_pts[-1]['x']:
+            return sorted_pts[-1]['y']
+
+        for i in range(n - 1):
+            if sorted_pts[i]['x'] <= x_val <= sorted_pts[i + 1]['x']:
+                dx = sorted_pts[i + 1]['x'] - sorted_pts[i]['x']
+                if dx == 0:
+                    return sorted_pts[i]['y']
+                t = (x_val - sorted_pts[i]['x']) / dx
+                curve_val = sorted_pts[i].get('curve', 0.0)
+                # Flip curve direction for descending segments
+                effective_curve = curve_val if sorted_pts[i + 1]['y'] >= sorted_pts[i]['y'] else -curve_val
+                eased = self._ease(t, effective_curve)
+                return sorted_pts[i]['y'] + eased * (sorted_pts[i + 1]['y'] - sorted_pts[i]['y'])
+
+        return sorted_pts[-1]['y']
+
+    def _start_ramp(self):
+        """Start ramp playback (called by button or trigger input)."""
+        self.ramp_active = True
+        self.ramp_start_time = time.time()
+
+    def execute(self):
+        if self.trigger_input.fresh_input:
+            self._start_ramp()
+        if self.ramp_time_input.fresh_input:
+            self.ramp_time = max(0.001, any_to_float(self.ramp_time_input()))
+        if self.sample_input.fresh_input and not self.ramp_active:
+            x_val = any_to_float(self.sample_input())
+            y_val = self._interpolate_at(x_val)
+            self.value_output.send(y_val)
+
+    def custom_create(self, from_file):
+        self.add_frame_task()
+
+    def frame_task(self):
+        try:
+            # --- Ramp playback ---
+            if self.ramp_active:
+                elapsed = time.time() - self.ramp_start_time
+                ramp_t = max(0.001, any_to_float(self.ramp_time_input()))
+                # Map elapsed time to envelope x position
+                x_pos = (elapsed / ramp_t) * self.x_max
+                if elapsed >= ramp_t:
+                    # Ramp finished
+                    y_val = self._interpolate_at(self.x_max)
+                    self.value_output.send(y_val)
+                    self.ramp_active = False
+                    dpg.set_value(self.playhead_tag, [[]])
+                else:
+                    y_val = self._interpolate_at(x_pos)
+                    self.value_output.send(y_val)
+                    dpg.set_value(self.playhead_tag, [[x_pos]])
+
+            shift_held = dpg.is_key_down(dpg.mvKey_LShift) or dpg.is_key_down(dpg.mvKey_RShift)
+            left_down = dpg.is_mouse_button_down(0)
+            right_down = dpg.is_mouse_button_down(1)
+
+            # --- Curvature drag (Shift+left-click held) ---
+            if self.curving:
+                if left_down and shift_held:
+                    # Use screen mouse (pixels) so drag isn't clipped at plot edge
+                    screen_pos = dpg.get_mouse_pos()
+                    # Screen Y is inverted: drag up = decrease in screen Y = positive curve
+                    delta_px = self.curve_drag_start_screen_y - screen_pos[1]
+                    # ~18 pixels of drag per unit of curve_val
+                    new_curve = self.curve_drag_start_val + delta_px / 18.0
+                    new_curve = max(-16.0, min(16.0, new_curve))
+                    idx = self.curving_point_idx
+                    if 0 <= idx < len(self.points):
+                        self.points[idx]['curve'] = new_curve
+                        self._update_point_color(idx)
+                        self._update_line()
+                else:
+                    # Released: finalize
+                    self.curving = False
+                    self._send_points()
+                self.left_was_down = left_down
+                self.right_was_down = right_down
+                return
+
+            # --- Shift+left-click: start curvature drag ---
+            if left_down and not self.left_was_down and shift_held:
+                if dpg.is_item_hovered(self.plot_tag):
+                    plot_pos = dpg.get_plot_mouse_pos()
+                    if plot_pos:
+                        seg_idx = self._find_segment_at_x(plot_pos[0])
+                        if seg_idx >= 0:
+                            self.curving = True
+                            self.curving_point_idx = seg_idx
+                            self.curve_drag_start_screen_y = dpg.get_mouse_pos()[1]
+                            self.curve_drag_start_val = self.points[seg_idx].get('curve', 0.0)
+                            self.left_was_down = left_down
+                            self.right_was_down = right_down
+                            return
+
+            # --- Poll drag point positions for changes ---
+            changed = False
+            for p in self.points:
+                if dpg.does_item_exist(p['tag']):
+                    pos = dpg.get_value(p['tag'])
+                    x = max(0, min(self.x_max, pos[0]))
+                    y = max(self.y_min, min(self.y_max, pos[1]))
+                    if abs(x - pos[0]) > 1e-6 or abs(y - pos[1]) > 1e-6:
+                        dpg.set_value(p['tag'], [x, y])
+                    if abs(x - p['x']) > 1e-6 or abs(y - p['y']) > 1e-6:
+                        p['x'] = x
+                        p['y'] = y
+                        changed = True
+
+            if changed:
+                self._update_line()
+                self._send_points()
+
+            # --- Right-click: add or remove point ---
+            if right_down and not self.right_was_down:
+                if dpg.is_item_hovered(self.plot_tag):
+                    plot_pos = dpg.get_plot_mouse_pos()
+                    if plot_pos:
+                        nearest_idx, nearest_dist = self._find_nearest_point(
+                            plot_pos[0], plot_pos[1]
+                        )
+                        if nearest_dist < self.remove_threshold and len(self.points) > 2:
+                            self._remove_point_at_index(nearest_idx)
+                        else:
+                            x = max(0, min(self.x_max, plot_pos[0]))
+                            y = max(self.y_min, min(self.y_max, plot_pos[1]))
+                            self._create_point(x, y)
+                        self._update_line()
+                        self._send_points()
+
+            self.left_was_down = left_down
+            self.right_was_down = right_down
+
+        except Exception:
+            pass
+
+    def save_custom(self, container):
+        sorted_pts = sorted(self.points, key=lambda p: p['x'])
+        container['envelope_points'] = [
+            [p['x'], p['y'], p.get('curve', 0.0)] for p in sorted_pts
+        ]
+
+    def load_custom(self, container):
+        if 'envelope_points' in container:
+            for p in self.points:
+                if dpg.does_item_exist(p['tag']):
+                    dpg.delete_item(p['tag'])
+            self.points.clear()
+            for pt_data in container['envelope_points']:
+                x, y = pt_data[0], pt_data[1]
+                curve = float(pt_data[2]) if len(pt_data) > 2 else 0.0
+                self._create_point(x, y, curve=curve)
+            self._update_line()
+
+    def _range_changed(self):
+        self.x_max = self.x_max_option()
+        self.y_min = self.y_min_option()
+        self.y_max = self.y_max_option()
+        dpg.set_axis_limits(self.x_axis_tag, 0, self.x_max)
+        dpg.set_axis_limits(self.y_axis_tag, self.y_min, self.y_max)
+
+    def _size_changed(self):
+        dpg.set_item_width(self.plot_tag, self.width_option())
+        dpg.set_item_height(self.plot_tag, self.height_option())
+
