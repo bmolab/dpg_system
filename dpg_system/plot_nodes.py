@@ -683,6 +683,39 @@ class ProfileNode(BasePlotNode):
             with dpg.theme_component(dpg.mvLineSeries):
                 dpg.add_theme_color(dpg.mvPlotCol_Line, (200, 200, 0), category=dpg.mvThemeCat_Plots)
 
+    def change_sample_count(self):
+        """Override base class to use integer x positions for bar centering."""
+        self.lock.acquire(blocking=True)
+        if self.sample_count_option is not None:
+            self.sample_count = self.sample_count_option()
+        if self.sample_count < 1:
+            self.sample_count = 1
+            if self.sample_count_option is not None:
+                self.sample_count_option.set(self.sample_count)
+        del self.x_data
+        del self.y_data
+        # Use integer positions so bars are centered on 0, 1, 2, ..., N-1
+        self.x_data = np.arange(self.sample_count, dtype=float)
+        self.reallocate_buffer()
+
+        # Pad axis limits by 0.5 so first and last bars are fully visible
+        if self.min_x_option is not None:
+            self.min_x_option.set(-0.5)
+        self.min_x = -0.5
+        if self.max_x_option is not None:
+            self.max_x_option.set(self.sample_count - 0.5)
+        self.max_x = self.sample_count - 0.5
+
+        for i in range(len(self.plot_data_tag)):
+            if dpg.does_item_exist(self.plot_data_tag[i]):
+                dpg.delete_item(self.plot_data_tag[i])
+
+        self.adjust_to_sample_count_change()
+
+        self.pending_sample_count = self.sample_count
+        self.change_range()
+        self.lock.release()
+
     def custom_create(self, from_file):
         self.reallocate_buffer()
         self.change_sample_count()
@@ -745,11 +778,13 @@ class ProfileNode(BasePlotNode):
             return
 
         # Clamp coordinates to the valid data range of the profile.
-        x_pos = max(0.0, min(self.sample_count - 1.0, plot_mouse_pos[0]))
+        # x_data is integer-based [0, 1, ..., N-1], so clamp to that range.
+        x_pos = max(0.0, min(float(self.sample_count - 1), plot_mouse_pos[0]))
         y_pos = max(self.min_y, min(self.max_y, plot_mouse_pos[1]))
 
         # Get integer index for the buffer array.
         x_index = int(round(x_pos))
+        x_index = max(0, min(self.sample_count - 1, x_index))
 
         # If this is not the first point in the stroke, interpolate from the last point.
         if self.last_pos[0] != -1:
