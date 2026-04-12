@@ -100,11 +100,8 @@ class ArithmeticNode(Node):
 
         self.input = self.add_input('in', triggers_execution=True)
 
-        if supplied_operand:
-            self.operand_input = self.add_input('', widget_type=widget_type, default_value=self.operand, callback=self.operand_changed)
-        else:
-            self.operand_input = self.add_input('operand')
-
+        self.operand_input = self.add_input('###operand', widget_type=widget_type, default_value=self.operand, callback=self.operand_changed)
+        self.operand_input.name_archive.append('operand')
         self.output = self.add_output('result')
 
     def operand_changed(self):
