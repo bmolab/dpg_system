@@ -94,6 +94,21 @@ def register_basic_nodes():
     Node.app.register_node('list_box', ListBoxNode.factory)
     Node.app.register_node('dict_retrieve', DictRetrieveNode.factory)
 
+    # Color conversions
+    Node.app.register_node('color_convert', ColorConvertNode.factory)
+    Node.app.register_node('rgb_to_cmy', ColorConvertNode.factory)
+    Node.app.register_node('cmy_to_rgb', ColorConvertNode.factory)
+    Node.app.register_node('rgb_to_hsl', ColorConvertNode.factory)
+    Node.app.register_node('hsl_to_rgb', ColorConvertNode.factory)
+    Node.app.register_node('rgb_to_hsv', ColorConvertNode.factory)
+    Node.app.register_node('hsv_to_rgb', ColorConvertNode.factory)
+    Node.app.register_node('cmy_to_hsl', ColorConvertNode.factory)
+    Node.app.register_node('hsl_to_cmy', ColorConvertNode.factory)
+    Node.app.register_node('cmy_to_hsv', ColorConvertNode.factory)
+    Node.app.register_node('hsv_to_cmy', ColorConvertNode.factory)
+    Node.app.register_node('hsl_to_hsv', ColorConvertNode.factory)
+    Node.app.register_node('hsv_to_hsl', ColorConvertNode.factory)
+
 class SliceNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -3942,3 +3957,148 @@ class ListBoxNode(Node):
         selected_path = any_to_string(selected_path)
         self.node_list_box.set(selected_path)
         self.output.send(selected_path)
+
+
+class ColorConvertNode(Node):
+    """Converts between color spaces: RGB, CMY, HSL, HSV.
+
+    Scales (for non-hue components):
+        0-1, 0-100, 0-255
+    Hue is always 0-360.
+    """
+
+    spaces = ['rgb', 'cmy', 'hsl', 'hsv']
+    scales = ['0-1', '0-100', '0-255']
+    # Map scale name to the multiplier that converts from 0-1 to that scale
+    scale_multipliers = {'0-1': 1.0, '0-100': 100.0, '0-255': 255.0}
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ColorConvertNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        import colorsys
+        self.colorsys = colorsys
+
+        # Determine defaults from node name (e.g. 'rgb_to_cmy')
+        default_from = 'rgb'
+        default_to = 'cmy'
+        default_in_scale = '0-1'
+        default_out_scale = '0-1'
+
+        parts = label.split('_to_')
+        if len(parts) == 2 and parts[0] in self.spaces and parts[1] in self.spaces:
+            default_from = parts[0]
+            default_to = parts[1]
+
+        self.from_space = default_from
+        self.to_space = default_to
+        self.in_scale = default_in_scale
+        self.out_scale = default_out_scale
+
+        self.input = self.add_input('in', triggers_execution=True)
+        self.output = self.add_output('out')
+
+        self.from_option = self.add_option('from', widget_type='combo',
+                                           default_value=default_from,
+                                           callback=self.config_changed)
+        self.from_option.widget.combo_items = self.spaces
+
+        self.to_option = self.add_option('to', widget_type='combo',
+                                         default_value=default_to,
+                                         callback=self.config_changed)
+        self.to_option.widget.combo_items = self.spaces
+
+        self.in_scale_option = self.add_option('in scale', widget_type='combo',
+                                               default_value=default_in_scale,
+                                               callback=self.config_changed)
+        self.in_scale_option.widget.combo_items = self.scales
+
+        self.out_scale_option = self.add_option('out scale', widget_type='combo',
+                                                default_value=default_out_scale,
+                                                callback=self.config_changed)
+        self.out_scale_option.widget.combo_items = self.scales
+
+    def config_changed(self):
+        self.from_space = self.from_option()
+        self.to_space = self.to_option()
+        self.in_scale = self.in_scale_option()
+        self.out_scale = self.out_scale_option()
+
+    def _normalize_input(self, values):
+        """Convert input values to internal 0-1 representation (hue to 0-1 from 0-360)."""
+        scale = self.scale_multipliers[self.in_scale]
+        space = self.from_space
+
+        if space in ['hsl', 'hsv']:
+            # Hue is always 0-360, other components use input scale
+            h = values[0] / 360.0
+            c1 = values[1] / scale
+            c2 = values[2] / scale
+            return h, c1, c2
+        else:
+            # RGB, CMY: all components use input scale
+            return values[0] / scale, values[1] / scale, values[2] / scale
+
+    def _to_rgb(self, c0, c1, c2, space):
+        """Convert from normalized (0-1) color space to RGB (0-1)."""
+        if space == 'rgb':
+            return c0, c1, c2
+        elif space == 'cmy':
+            return 1.0 - c0, 1.0 - c1, 1.0 - c2
+        elif space == 'hsl':
+            return self.colorsys.hls_to_rgb(c0, c2, c1)  # colorsys: HLS order
+        elif space == 'hsv':
+            return self.colorsys.hsv_to_rgb(c0, c1, c2)
+        return c0, c1, c2
+
+    def _from_rgb(self, r, g, b, space):
+        """Convert from RGB (0-1) to normalized (0-1) color space."""
+        if space == 'rgb':
+            return r, g, b
+        elif space == 'cmy':
+            return 1.0 - r, 1.0 - g, 1.0 - b
+        elif space == 'hsl':
+            h, l, s = self.colorsys.rgb_to_hls(r, g, b)  # colorsys: HLS order
+            return h, s, l
+        elif space == 'hsv':
+            return self.colorsys.rgb_to_hsv(r, g, b)
+        return r, g, b
+
+    def _scale_output(self, c0, c1, c2):
+        """Scale normalized (0-1) output values to the chosen output scale."""
+        scale = self.scale_multipliers[self.out_scale]
+        space = self.to_space
+
+        if space in ['hsl', 'hsv']:
+            # Hue always 0-360, other components use output scale
+            return np.array([c0 * 360.0, c1 * scale, c2 * scale])
+        else:
+            # RGB, CMY: all components use output scale
+            return np.array([c0 * scale, c1 * scale, c2 * scale])
+
+    def execute(self):
+        data = self.input()
+        values = any_to_array(data).ravel().astype(float)
+        if len(values) < 3:
+            return
+
+        # Step 1: Normalize input to 0-1 (hue to 0-1 from 0-360)
+        c0, c1, c2 = self._normalize_input(values)
+
+        # Step 2: Convert to RGB (0-1)
+        r, g, b = self._to_rgb(c0, c1, c2, self.from_space)
+        r = max(0.0, min(1.0, r))
+        g = max(0.0, min(1.0, g))
+        b = max(0.0, min(1.0, b))
+
+        # Step 3: Convert from RGB to target space (0-1)
+        o0, o1, o2 = self._from_rgb(r, g, b, self.to_space)
+
+        # Step 4: Scale output
+        result = self._scale_output(o0, o1, o2)
+        self.output.send(result)
+
