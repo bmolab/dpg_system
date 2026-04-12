@@ -48,6 +48,8 @@ def register_math_nodes():
     Node.app.register_node('combination', ArithmeticNode.factory)
     Node.app.register_node('continuous_rotation', ContinuousRotationNode.factory)
     Node.app.register_node('accumulate', AccumulatorNode.factory)
+    Node.app.register_node('crossfade', CrossfadeNode.factory)
+    Node.app.register_node('lerp', CrossfadeNode.factory)
 
 
 
@@ -799,3 +801,52 @@ class AccumulatorNode(Node):
         input_value = any_to_float_or_int(self.input())
         self.accumulated_sum += input_value
         self.output.send(self.accumulated_sum)
+
+
+class CrossfadeNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = CrossfadeNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.mix = 0.5
+        if len(args) > 0:
+            self.mix = any_to_float(args[0])
+
+        self.input_a = self.add_input('A', triggers_execution=True)
+        self.input_b = self.add_input('B')
+        self.mix_input = self.add_input('mix', widget_type='drag_float',
+                                        default_value=self.mix, min=0.0, max=1.0,
+                                        callback=self.mix_changed)
+        self.mix_input.widget.speed = 0.01
+        self.output = self.add_output('out')
+
+    def mix_changed(self):
+        self.mix = self.mix_input()
+
+    def execute(self):
+        if self.mix_input.fresh_input:
+            mix_data = self.mix_input()
+            t = type(mix_data)
+            if t == np.ndarray or (self.app.torch_available and t == torch.Tensor):
+                self.mix = mix_data
+            elif t == list:
+                self.mix = np.array(mix_data, dtype=float)
+            else:
+                self.mix = any_to_float(mix_data)
+
+        val_a = any_to_numerical(self.input_a())
+        val_b = any_to_numerical(self.input_b())
+
+        # Ensure both inputs are the same type
+        ta = type(val_a)
+        tb = type(val_b)
+        if ta != tb:
+            val_b = any_to_match(val_b, val_a)
+
+        mix = self.mix
+        result = val_a * (1.0 - mix) + val_b * mix
+        self.output.send(result)

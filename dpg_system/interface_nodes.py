@@ -38,6 +38,7 @@ def register_interface_nodes():
     Node.app.register_node('load_action', LoadActionNode.factory)
     Node.app.register_node('load_bang', LoadActionNode.factory)
     Node.app.register_node('color', ColorPickerNode.factory)
+    Node.app.register_node('color_cmy', CMYColorNode.factory)
     Node.app.register_node('vector', Vector2DNode.factory)
 
     Node.app.register_node('radio', RadioButtonsNode.factory)
@@ -57,11 +58,8 @@ def register_interface_nodes():
     Node.app.register_node('momentary_slider_int', MomentarySliderNode.factory)
     Node.app.register_node('momentary_int', MomentarySliderNode.factory)
     Node.app.register_node('momentary_xy', XYPadNode.factory)
-    Node.app.register_node('momentary_2d', XYPadNode.factory)
-    Node.app.register_node('xy_pad', XYPadNode.factory)
-    Node.app.register_node('xy_2d', XYPadNode.factory)
+    Node.app.register_node('joy_stick', XYPadNode.factory)
     Node.app.register_node('envelope', EnvelopeNode.factory)
-    Node.app.register_node('bpf', EnvelopeNode.factory)
 
 
 class ButtonNode(Node):
@@ -2593,6 +2591,129 @@ class ColorPickerNode(Node):
 
     # def post_creation_callback(self):
     #     print(self.input())
+
+
+class CMYColorNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = CMYColorNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.cyan_val = 0
+        self.magenta_val = 0
+        self.yellow_val = 0
+        self._updating = False  # guard against feedback loops
+
+        self.picker_tag = dpg.generate_uuid()
+
+        self.input = self.add_input('cmy in', triggers_execution=True)
+        self.cyan_input = self.add_input('cyan', widget_type='slider_int', widget_width=120,
+                                         min=0, max=100, default_value=self.cyan_val,
+                                         callback=self.slider_changed)
+        self.magenta_input = self.add_input('magenta', widget_type='slider_int', widget_width=120,
+                                            min=0, max=100, default_value=self.magenta_val,
+                                            callback=self.slider_changed)
+        self.yellow_input = self.add_input('yellow', widget_type='slider_int', widget_width=120,
+                                           min=0, max=100, default_value=self.yellow_val,
+                                           callback=self.slider_changed)
+
+        # Color picker display
+        self.picker_display = self.add_display('')
+        self.picker_display.submit_callback = self.submit_picker
+
+        self.cmy_output = self.add_output('cmy')
+
+    def submit_picker(self):
+        rgb = self._cmy_to_rgb_float()
+        dpg.add_color_picker(label='##cmy_picker', tag=self.picker_tag,
+                             width=128, default_value=(rgb[0], rgb[1], rgb[2], 1.0),
+                             picker_mode=dpg.mvColorPicker_wheel,
+                             no_alpha=True, no_side_preview=False,
+                             no_inputs=True, no_small_preview=False,
+                             display_type=dpg.mvColorEdit_float,
+                             callback=self._picker_changed)
+
+    def _cmy_to_rgb_float(self):
+        """Convert CMY (0-100) to RGB (0.0-1.0) for the picker."""
+        r = (1.0 - self.cyan_val / 100.0) * 255
+        g = (1.0 - self.magenta_val / 100.0) * 255
+        b = (1.0 - self.yellow_val / 100.0) * 255
+        return (r, g, b, 255.0)
+
+    def _update_picker(self):
+        """Update the color picker to reflect current CMY values."""
+        if dpg.does_item_exist(self.picker_tag):
+            rgb = self._cmy_to_rgb_float()
+            dpg.set_value(self.picker_tag, rgb)
+
+    def _update_sliders(self):
+        """Update the CMY sliders to reflect current CMY values."""
+        self.cyan_input.widget.set(self.cyan_val)
+        self.magenta_input.widget.set(self.magenta_val)
+        self.yellow_input.widget.set(self.yellow_val)
+
+    def _picker_changed(self, sender, app_data):
+        """Called when the color picker is interacted with directly."""
+        if self._updating:
+            return
+        self._updating = True
+        # app_data is (R, G, B, A) in 0.0-1.0 range
+        r, g, b = app_data[0], app_data[1], app_data[2]
+        self.cyan_val = int(round((1.0 - r) * 100.0))
+        self.magenta_val = int(round((1.0 - g) * 100.0))
+        self.yellow_val = int(round((1.0 - b) * 100.0))
+        self._update_sliders()
+        self._send_outputs()
+        self._updating = False
+
+    def slider_changed(self):
+        """Called when any CMY slider is adjusted."""
+        if self._updating:
+            return
+        self._updating = True
+        self.cyan_val = self.cyan_input()
+        self.magenta_val = self.magenta_input()
+        self.yellow_val = self.yellow_input()
+        self._update_picker()
+        self._send_outputs()
+        self._updating = False
+
+    def _send_outputs(self):
+        self.cmy_output.send(np.array([self.cyan_val, self.magenta_val, self.yellow_val], dtype=float))
+
+    def get_preset_state(self):
+        return {'cmy': [self.cyan_val, self.magenta_val, self.yellow_val]}
+
+    def set_preset_state(self, preset):
+        if 'cmy' in preset:
+            vals = preset['cmy']
+            if len(vals) >= 3:
+                self.cyan_val = any_to_int(vals[0])
+                self.magenta_val = any_to_int(vals[1])
+                self.yellow_val = any_to_int(vals[2])
+                self._update_sliders()
+                self._update_picker()
+                self._send_outputs()
+
+    def execute(self):
+        if self.input.fresh_input:
+            data = self.input()
+            values = any_to_list(data)
+            if len(values) >= 3:
+                self.cyan_val = any_to_int(values[0])
+                self.magenta_val = any_to_int(values[1])
+                self.yellow_val = any_to_int(values[2])
+                self._update_sliders()
+        else:
+            self.cyan_val = self.cyan_input()
+            self.magenta_val = self.magenta_input()
+            self.yellow_val = self.yellow_input()
+        self._update_picker()
+        self._send_outputs()
+
 
 
 class KeyNode(Node):
