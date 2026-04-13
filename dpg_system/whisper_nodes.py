@@ -1541,6 +1541,11 @@ class WhisperNode(Node):
         self.using_external_audio = (self.audio_input is not None and
                                       len(self.audio_input._parents) > 0)
 
+        # Also force external mode if no audio devices are available
+        if not self.using_external_audio and not self.audio_capture.devices:
+            self.using_external_audio = True
+            print("Whisper: no audio devices found, using external audio input mode")
+
         if self.using_external_audio:
             # External audio mode — no mic needed, just mark capture ready
             self.audio_capture.external_mode = True
@@ -1557,9 +1562,19 @@ class WhisperNode(Node):
                     break
 
             if not self.audio_capture.audio_ready:
-                if not self.audio_capture.init(device_idx):
-                    print("Failed to initialize audio capture")
-                    return
+                try:
+                    if not self.audio_capture.init(device_idx):
+                        print("Whisper: mic init failed, falling back to external audio mode")
+                        self.using_external_audio = True
+                        self.audio_capture.external_mode = True
+                        self.audio_capture.audio_ready = True
+                        self.audio_capture.running = True
+                except Exception as e:
+                    print(f"Whisper: mic init error ({e}), falling back to external audio mode")
+                    self.using_external_audio = True
+                    self.audio_capture.external_mode = True
+                    self.audio_capture.audio_ready = True
+                    self.audio_capture.running = True
 
         # Start background thread which handles model loading + processing
         self.stop_event.clear()
