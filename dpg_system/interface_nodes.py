@@ -3324,7 +3324,6 @@ class XYPadNode(Node):
         self.plot_display.submit_callback = self.submit_display
 
         # Outputs
-        self.xy_output = self.add_output('xy out')
         self.x_output = self.add_output('x out')
         self.y_output = self.add_output('y out')
 
@@ -3401,7 +3400,6 @@ class XYPadNode(Node):
                         self.last_y = y
                         self.y_output.send(y)
                         self.x_output.send(x)
-                        self.xy_output.send([x, y])
             else:
                 if self.dragging:
                     self.dragging = False
@@ -3412,12 +3410,10 @@ class XYPadNode(Node):
                         self.last_y = 0.0
                         self.y_output.send(0.0)
                         self.x_output.send(0.0)
-                        self.xy_output.send([0.0, 0.0])
                     else:
                         # Persistent: send final position once
                         self.y_output.send(self.last_y)
                         self.x_output.send(self.last_x)
-                        self.xy_output.send([self.last_x, self.last_y])
         except Exception:
             pass
 

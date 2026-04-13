@@ -1413,14 +1413,18 @@ class WhisperNode(Node):
                                              callback=self.model_changed)
         self.model_property.widget.combo_items = MODEL_SIZES
 
-        # Audio device
+        # Audio device — gracefully handle missing audio hardware
         self.audio_capture = AudioCapture()
-        device_names = self.audio_capture.get_device_list()
+        try:
+            device_names = self.audio_capture.get_device_list()
+        except Exception as e:
+            print(f"Whisper: no audio hardware available ({e}), use audio_in input instead")
+            device_names = []
         self.device_property = self.add_input('audio device', widget_type='combo',
-                                              default_value=device_names[0] if device_names else '',
+                                              default_value=device_names[0] if device_names else 'none',
                                               widget_width=300,
                                               callback=self.device_changed)
-        self.device_property.widget.combo_items = device_names
+        self.device_property.widget.combo_items = device_names if device_names else ['none']
 
         # Language
         self.language_property = self.add_input('language', widget_type='combo',
