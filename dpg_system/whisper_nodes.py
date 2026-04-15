@@ -1378,10 +1378,10 @@ class WhisperNode(Node):
         super().__init__(label, data, args)
 
         # Parse args for model name and language
-        model_name = "base"
-        language = "auto"
+        model_name = "base.en"
+        language = "english"
         translate = False
-        backend_name = "faster-whisper"
+        backend_name = "whisper.cpp"
 
         if args:
             for arg in args:
@@ -1464,11 +1464,11 @@ class WhisperNode(Node):
                                                         callback=self.options_changed)
         self.silence_period_option = self.add_option('silence_period',
                                                      widget_type='drag_int',
-                                                     default_value=15, min=1, max=100,
+                                                     default_value=30, min=1, max=100,
                                                      callback=self.options_changed)
         self.update_period_option = self.add_option('update_period',
                                                     widget_type='drag_int',
-                                                    default_value=300, min=100, max=5000,
+                                                    default_value=150, min=100, max=5000,
                                                     callback=self.options_changed)
         self.confirmation_age_option = self.add_option('confirmation_age',
                                                        widget_type='drag_int',
@@ -1490,7 +1490,7 @@ class WhisperNode(Node):
                                                         callback=self.options_changed)
         self.length_factor_option = self.add_option('length_factor',
                                                     widget_type='drag_int',
-                                                    default_value=50, min=1, max=200,
+                                                    default_value=150, min=1, max=200,
                                                     callback=self.options_changed)
         self.buffer_overflow_option = self.add_option('buffer_overflow_fraction',
                                                       widget_type='drag_float',
