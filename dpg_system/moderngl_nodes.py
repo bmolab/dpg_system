@@ -52,6 +52,8 @@ def register_moderngl_nodes():
     Node.app.register_node('mgl_smpl_heatmap', MGLSMPLHeatmapNode.factory)
     Node.app.register_node('mgl_orientation_disks', MGLOrientationDisksNode.factory)
     Node.app.register_node('mgl_body_orientation', MGLBodyOrientationNode.factory)
+    Node.app.register_node('mgl_enable', MGLEnableNode.factory)
+    Node.app.register_node('mgl_shader', MGLShaderNode.factory)
 
 
 class MGLNode(Node):
@@ -3670,7 +3672,89 @@ class MGLOrientationDisksNode(MGLNode):
         self.colors_changed()
 
 
+class MGLEnableNode(MGLNode):
+    """Toggle core-profile GL state flags (depth_test, blend, cull_face, etc.) within the MGL scene graph."""
+
+    _flag_map = {
+        'DEPTH_TEST': moderngl.DEPTH_TEST,
+        'BLEND': moderngl.BLEND,
+        'CULL_FACE': moderngl.CULL_FACE,
+        'PROGRAM_POINT_SIZE': moderngl.PROGRAM_POINT_SIZE,
+        'RASTERIZER_DISCARD': moderngl.RASTERIZER_DISCARD,
+    }
+
+    # Map moderngl flag constants to OpenGL enum values for glIsEnabled queries
+    _gl_enum_map = {
+        moderngl.DEPTH_TEST: 0x0B71,
+        moderngl.BLEND: 0x0BE2,
+        moderngl.CULL_FACE: 0x0B44,
+        moderngl.PROGRAM_POINT_SIZE: 0x8642,
+        moderngl.RASTERIZER_DISCARD: 0x8C89,
+    }
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return MGLEnableNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self._was_enabled = True
+
+    def initialize(self, args):
+        super().initialize(args)
+
+        default_flag = 'DEPTH_TEST'
+        if len(args) > 0 and args[0] in self._flag_map:
+            default_flag = args[0]
+
+        self.enabled_input = self.add_input('enabled', widget_type='checkbox', default_value=True)
+        self.flag_input = self.add_input('flag', widget_type='combo', default_value=default_flag, widget_width=160, callback=self.flag_changed)
+        self.flag_input.widget.combo_items = list(self._flag_map.keys())
+
+        self._current_flag = self._flag_map.get(default_flag, moderngl.DEPTH_TEST)
+
+    def flag_changed(self):
+        name = self.flag_input()
+        if name in self._flag_map:
+            self._current_flag = self._flag_map[name]
+
+    _gl_lib = None
+
+    def remember_state(self):
+        if self.ctx is not None:
+            gl_enum = self._gl_enum_map.get(self._current_flag)
+            self._was_enabled = True  # safe default
+            if gl_enum is not None:
+                try:
+                    if MGLEnableNode._gl_lib is None:
+                        import ctypes
+                        import ctypes.util
+                        MGLEnableNode._gl_lib = ctypes.cdll.LoadLibrary(ctypes.util.find_library('OpenGL') or ctypes.util.find_library('GL'))
+                        MGLEnableNode._gl_lib.glIsEnabled.restype = ctypes.c_ubyte
+                        MGLEnableNode._gl_lib.glIsEnabled.argtypes = [ctypes.c_uint]
+                    self._was_enabled = bool(MGLEnableNode._gl_lib.glIsEnabled(gl_enum))
+                except Exception:
+                    pass
+
+    def restore_state(self):
+        if self.ctx is not None:
+            inner = self.ctx.ctx
+            if self._was_enabled:
+                inner.enable(self._current_flag)
+            else:
+                inner.disable(self._current_flag)
+
+    def draw(self):
+        if self.ctx is not None:
+            inner = self.ctx.ctx
+            if self.enabled_input():
+                inner.enable(self._current_flag)
+            else:
+                inner.disable(self._current_flag)
+
+
 from dpg_system.mgl_body_node import MGLBodyNode
 from dpg_system.mgl_smpl_mesh_node import MGLSMPLMeshNode
 from dpg_system.mgl_smpl_heatmap_node import MGLSMPLHeatmapNode
 from dpg_system.mgl_body_orientation_node import MGLBodyOrientationNode
+from dpg_system.mgl_shader_node import MGLShaderNode
