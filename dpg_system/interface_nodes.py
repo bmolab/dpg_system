@@ -872,6 +872,9 @@ class ValueNode(Node):
         # Initialize specific UI components
         self.setup_specific_ui(self.ordered_args)
 
+        if self.input is not None and self.input.widget is not None:
+            self.input.widget.wants_resize_handle = True
+
         # --- Common Options ---
         if self.ordered_args and len(self.ordered_args) > 0:
             for i in range(len(self.ordered_args)):
@@ -984,6 +987,10 @@ class ValueNode(Node):
         if hasattr(self, 'start_value') and self.start_value is not None:
             self.input.set(self.start_value)
         self.input.set_font(self.app.font_24)
+        self.install_resize_handle()
+
+    def install_resize_handle(self):
+        self.add_resize_handle(self.input.widget, axis='x', width_option=self.width_option)
 
     def custom_cleanup(self):
         if self.variable is not None:
@@ -1320,6 +1327,9 @@ class KnobNode(NumericValueNode):
             return any_to_int(value)
         return any_to_float(value)
 
+    def install_resize_handle(self):
+        pass
+
 
 class StringNode(ValueNode):
     def setup_specific_ui(self, args):
@@ -1376,6 +1386,12 @@ class TextEditorNode(StringNode):
     def custom_create(self, from_file):
         super().custom_create(from_file)
         dpg.set_item_height(self.input.widget.uuid, 200)
+
+    def install_resize_handle(self):
+        self.add_resize_handle(
+            self.input.widget, axis='xy',
+            width_option=self.width_option, height_option=self.height_option
+        )
 
     def options_changed(self):
         super().options_changed()

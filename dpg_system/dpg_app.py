@@ -337,6 +337,9 @@ class App:
         self.link_thickness_variable = self.add_variable(variable_name='link_thickness', setter=self.update_link_thickness, default_value=1.0)
         self.dragging_created_nodes = False
         self.dragging_ref = [0, 0]
+        self.resize_drag = None
+        self.resize_start_mouse = (0, 0)
+        self.resize_start_size = (0, 0)
         self.clipboard = None
         self.saving_to_lib = False
         self.project_name = os.path.basename(__file__).split('.')[0]
@@ -353,6 +356,9 @@ class App:
             dpg.add_item_edited_handler(callback=widget_edited)
             dpg.add_item_focus_handler(callback=widget_focus)
             dpg.add_item_clicked_handler(callback=widget_clicked)
+            dpg.add_item_hover_handler(callback=widget_hovered)
+        self.resize_handle_handler = dpg.item_handler_registry(tag="resize handle handler")
+        with self.resize_handle_handler:
             dpg.add_item_hover_handler(callback=widget_hovered)
         self.action = self.add_action('do_it', self.reset_frame_count)
         self.window_context = None
@@ -1274,6 +1280,16 @@ class App:
                 self.get_current_editor().copy_selection()
 
     def mouse_down_handler(self):
+        from dpg_system.node import ResizeHandle
+        if isinstance(self.hovered_item, ResizeHandle):
+            rh = self.hovered_item
+            if dpg.does_item_exist(rh.uuid) and dpg.is_item_hovered(rh.uuid) and dpg.does_item_exist(rh.target_uuid):
+                self.resize_drag = rh
+                self.resize_start_mouse = dpg.get_mouse_pos(local=False)
+                w = dpg.get_item_width(rh.target_uuid) or 0
+                h = dpg.get_item_height(rh.target_uuid) or 0
+                self.resize_start_size = (w, h)
+                return
         if self.control_or_command_down():
             self.toggle_presentation()
         else:
@@ -1285,7 +1301,30 @@ class App:
             # else:
             #     self.dragging_created_nodes = False
 
+    def mouse_up_handler(self, sender=None, app_data=None, user_data=None):
+        if self.resize_drag is not None:
+            self.resize_drag = None
+
     def drag_create_nodes(self):
+        if self.resize_drag is not None:
+            if not dpg.is_mouse_button_down(0):
+                self.resize_drag = None
+            else:
+                mp = dpg.get_mouse_pos(local=False)
+                dx = mp[0] - self.resize_start_mouse[0]
+                dy = mp[1] - self.resize_start_mouse[1]
+                rh = self.resize_drag
+                if dpg.does_item_exist(rh.target_uuid):
+                    if 'x' in rh.axis:
+                        new_w = max(20, int(self.resize_start_size[0] + dx))
+                        dpg.set_item_width(rh.target_uuid, new_w)
+                        if rh.width_option is not None:
+                            rh.width_option.set(new_w)
+                    if 'y' in rh.axis:
+                        new_h = max(20, int(self.resize_start_size[1] + dy))
+                        dpg.set_item_height(rh.target_uuid, new_h)
+                        if rh.height_option is not None:
+                            rh.height_option.set(new_h)
         if self.dragging_created_nodes:
             if dpg.is_mouse_button_down(0):
                 self.dragging_created_nodes = False
@@ -1935,6 +1974,7 @@ class App:
                             dpg.add_key_press_handler(dpg.mvKey_Return, callback=self.return_handler)
                             dpg.add_mouse_move_handler(callback=self.drag_create_nodes)
                             dpg.add_mouse_click_handler(callback=self.mouse_down_handler)
+                            dpg.add_mouse_release_handler(callback=self.mouse_up_handler)
 
         dpg.set_primary_window(main_window, True)
         dpg.show_viewport()

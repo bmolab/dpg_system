@@ -11,6 +11,15 @@ import os
 from pathlib import Path
 
 
+class ResizeHandle:
+    def __init__(self, uuid, target_uuid, axis='x', width_option=None, height_option=None):
+        self.uuid = uuid
+        self.target_uuid = target_uuid
+        self.axis = axis
+        self.width_option = width_option
+        self.height_option = height_option
+
+
 class NodeOutput:
     _pin_active_theme = None
     _pin_active_string_theme = None
@@ -527,6 +536,8 @@ class BasePropertyWidget:
         self.triggers_execution = triggers_execution
         self.widget_has_trigger = trigger_button
         self.trigger_widget = None
+        self.wants_resize_handle = False
+        self.h_group_uuid = None
 
         # State
         self.default_value = default_value
@@ -547,12 +558,12 @@ class BasePropertyWidget:
     def create(self) -> None:
         """Template Method: Defines the skeleton of widget creation."""
         # 1. Determine layout
-        horizontal = self.widget_has_trigger or self._force_horizontal()
+        horizontal = self.widget_has_trigger or self._force_horizontal() or self.wants_resize_handle
 
         # 2. Initialize Value
         self._init_default_value()
         # 3. Draw
-        with dpg.group(horizontal=horizontal):
+        with dpg.group(horizontal=horizontal) as self.h_group_uuid:
             self._draw_widget()
             self._setup_interaction()
             self._create_trigger_button()
@@ -2373,6 +2384,24 @@ class Node:
             self.ordered_elements.append(new_output)
             return new_output
         return None
+
+    def add_resize_handle(self, widget, axis='x', width_option=None, height_option=None):
+        parent = widget.h_group_uuid
+        if parent is None:
+            return None
+        handle_height = 0
+        if height_option is not None:
+            try:
+                v = height_option()
+                if v:
+                    handle_height = int(v)
+            except Exception:
+                pass
+        btn_uuid = dpg.add_button(parent=parent, label='', width=8, height=handle_height)
+        handle = ResizeHandle(btn_uuid, widget.uuid, axis, width_option, height_option)
+        dpg.set_item_user_data(btn_uuid, handle)
+        dpg.bind_item_handler_registry(btn_uuid, "resize handle handler")
+        return handle
 
     def add_handler_to_widgets(self):
         for input_ in self.inputs:
