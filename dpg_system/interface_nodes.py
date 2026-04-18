@@ -1368,6 +1368,7 @@ class TextEditorNode(StringNode):
             self.output = self.add_output(self.param_name + ' out')
         else:
             self.output = self.add_string_output('string out')
+            self.output.set_strip_returns(False)
 
         self.height_option = self.add_option('height', widget_type='drag_int', default_value=200,
                                              callback=self.options_changed)
@@ -1542,6 +1543,7 @@ class ValueNode_o(Node):
                                         trigger_button=True)
             self.input.set_strip_returns(False)
             self.output = self.add_string_output('string out')
+            self.output.set_strip_returns(False)
         if ordered_args is not None and len(ordered_args) > 0:
             for i in range(len(ordered_args)):
                 var_name, t = decode_arg(ordered_args, i)

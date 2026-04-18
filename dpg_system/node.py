@@ -310,16 +310,20 @@ class NodeStringOutput(NodeOutput):
     def __init__(self, label: str = "output", node=None, pos=None):
         super().__init__(label, node, pos)
         self.output_type = str
+        self.strip_returns = True
+
+    def set_strip_returns(self, value: bool) -> None:
+        self.strip_returns = value
 
     def send(self, data: Optional[Any] = None) -> None:
         if data is not None:
-            string_data = any_to_string(data)
+            string_data = any_to_string(data, strip_returns=self.strip_returns)
             super().send(string_data)
         else:
             super().send()
 
     def set_value(self, data: Any) -> str:
-        string_data = any_to_string(data)
+        string_data = any_to_string(data, strip_returns=self.strip_returns)
         super().set_value(string_data)
         return string_data
 
