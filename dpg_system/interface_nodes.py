@@ -3318,7 +3318,6 @@ class XYPadNode(Node):
         self.y_axis_tag = dpg.generate_uuid()
         self.scatter_tag = dpg.generate_uuid()
         self.scatter_theme_tag = dpg.generate_uuid()
-        self.marker_size_style_tag = dpg.generate_uuid()
         self.crosshair_h_tag = dpg.generate_uuid()
         self.crosshair_v_tag = dpg.generate_uuid()
 
@@ -3374,12 +3373,7 @@ class XYPadNode(Node):
             )
 
             # Visual marker for current position
-            with dpg.theme(tag=self.scatter_theme_tag):
-                with dpg.theme_component(dpg.mvScatterSeries):
-                    dpg.add_theme_style(dpg.mvPlotStyleVar_Marker, dpg.mvPlotMarker_Circle, category=dpg.mvThemeCat_Plots)
-                    dpg.add_theme_style(dpg.mvPlotStyleVar_MarkerSize, self.marker_size, tag=self.marker_size_style_tag, category=dpg.mvThemeCat_Plots)
-                    dpg.add_theme_color(dpg.mvPlotCol_MarkerFill, (255, 255, 0, 255), category=dpg.mvThemeCat_Plots)
-                    dpg.add_theme_color(dpg.mvPlotCol_MarkerOutline, (255, 255, 0, 255), category=dpg.mvThemeCat_Plots)
+            self._build_scatter_theme()
             dpg.add_scatter_series([0.0], [0.0], tag=self.scatter_tag, parent=self.y_axis_tag)
             dpg.bind_item_theme(self.scatter_tag, self.scatter_theme_tag)
 
@@ -3436,9 +3430,21 @@ class XYPadNode(Node):
         dpg.set_item_width(self.plot_tag, size)
         dpg.set_item_height(self.plot_tag, size)
 
+    def _build_scatter_theme(self):
+        if dpg.does_item_exist(self.scatter_theme_tag):
+            dpg.delete_item(self.scatter_theme_tag)
+        with dpg.theme(tag=self.scatter_theme_tag):
+            with dpg.theme_component(dpg.mvScatterSeries):
+                dpg.add_theme_style(dpg.mvPlotStyleVar_Marker, dpg.mvPlotMarker_Circle, category=dpg.mvThemeCat_Plots)
+                dpg.add_theme_style(dpg.mvPlotStyleVar_MarkerSize, self.marker_size, category=dpg.mvThemeCat_Plots)
+                dpg.add_theme_color(dpg.mvPlotCol_MarkerFill, (255, 255, 0, 255), category=dpg.mvThemeCat_Plots)
+                dpg.add_theme_color(dpg.mvPlotCol_MarkerOutline, (255, 255, 0, 255), category=dpg.mvThemeCat_Plots)
+
     def _marker_size_changed(self):
         self.marker_size = self.marker_size_option()
-        dpg.configure_item(self.marker_size_style_tag, x=self.marker_size)
+        self._build_scatter_theme()
+        if dpg.does_item_exist(self.scatter_tag):
+            dpg.bind_item_theme(self.scatter_tag, self.scatter_theme_tag)
 
 
 class EnvelopeNode(Node):
