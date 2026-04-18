@@ -3298,6 +3298,7 @@ class XYPadNode(Node):
 
         self.range_val = 1.0
         self.pad_size = 150
+        self.marker_size = 8
         self.dragging = False
         self.last_x = 0.0
         self.last_y = 0.0
@@ -3317,6 +3318,7 @@ class XYPadNode(Node):
         self.y_axis_tag = dpg.generate_uuid()
         self.scatter_tag = dpg.generate_uuid()
         self.scatter_theme_tag = dpg.generate_uuid()
+        self.marker_size_style_tag = dpg.generate_uuid()
         self.crosshair_h_tag = dpg.generate_uuid()
         self.crosshair_v_tag = dpg.generate_uuid()
 
@@ -3339,6 +3341,10 @@ class XYPadNode(Node):
         self.size_option = self.add_option(
             'size', widget_type='drag_int', default_value=self.pad_size,
             callback=self._size_changed
+        )
+        self.marker_size_option = self.add_option(
+            'marker size', widget_type='drag_int', default_value=self.marker_size,
+            callback=self._marker_size_changed
         )
 
     def submit_display(self):
@@ -3371,7 +3377,7 @@ class XYPadNode(Node):
             with dpg.theme(tag=self.scatter_theme_tag):
                 with dpg.theme_component(dpg.mvScatterSeries):
                     dpg.add_theme_style(dpg.mvPlotStyleVar_Marker, dpg.mvPlotMarker_Circle, category=dpg.mvThemeCat_Plots)
-                    dpg.add_theme_style(dpg.mvPlotStyleVar_MarkerSize, 8, category=dpg.mvThemeCat_Plots)
+                    dpg.add_theme_style(dpg.mvPlotStyleVar_MarkerSize, self.marker_size, tag=self.marker_size_style_tag, category=dpg.mvThemeCat_Plots)
                     dpg.add_theme_color(dpg.mvPlotCol_MarkerFill, (255, 255, 0, 255), category=dpg.mvThemeCat_Plots)
                     dpg.add_theme_color(dpg.mvPlotCol_MarkerOutline, (255, 255, 0, 255), category=dpg.mvThemeCat_Plots)
             dpg.add_scatter_series([0.0], [0.0], tag=self.scatter_tag, parent=self.y_axis_tag)
@@ -3429,6 +3435,10 @@ class XYPadNode(Node):
         self.pad_size = size
         dpg.set_item_width(self.plot_tag, size)
         dpg.set_item_height(self.plot_tag, size)
+
+    def _marker_size_changed(self):
+        self.marker_size = self.marker_size_option()
+        dpg.configure_item(self.marker_size_style_tag, x=self.marker_size)
 
 
 class EnvelopeNode(Node):
