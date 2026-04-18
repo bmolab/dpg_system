@@ -3315,7 +3315,8 @@ class XYPadNode(Node):
         self.plot_tag = dpg.generate_uuid()
         self.x_axis_tag = dpg.generate_uuid()
         self.y_axis_tag = dpg.generate_uuid()
-        self.drag_point_tag = dpg.generate_uuid()
+        self.scatter_tag = dpg.generate_uuid()
+        self.scatter_theme_tag = dpg.generate_uuid()
         self.crosshair_h_tag = dpg.generate_uuid()
         self.crosshair_v_tag = dpg.generate_uuid()
 
@@ -3366,14 +3367,15 @@ class XYPadNode(Node):
                 x=[0.0], parent=self.y_axis_tag, tag=self.crosshair_h_tag
             )
 
-            # Visual marker for current position (not interactive)
-            dpg.add_drag_point(
-                label='', tag=self.drag_point_tag,
-                default_value=(0.0, 0.0),
-                color=(255, 255, 0, 255),
-                parent=self.plot_tag,
-                no_inputs=True
-            )
+            # Visual marker for current position
+            with dpg.theme(tag=self.scatter_theme_tag):
+                with dpg.theme_component(dpg.mvScatterSeries):
+                    dpg.add_theme_style(dpg.mvPlotStyleVar_Marker, dpg.mvPlotMarker_Circle, category=dpg.mvThemeCat_Plots)
+                    dpg.add_theme_style(dpg.mvPlotStyleVar_MarkerSize, 8, category=dpg.mvThemeCat_Plots)
+                    dpg.add_theme_color(dpg.mvPlotCol_MarkerFill, (255, 255, 0, 255), category=dpg.mvThemeCat_Plots)
+                    dpg.add_theme_color(dpg.mvPlotCol_MarkerOutline, (255, 255, 0, 255), category=dpg.mvThemeCat_Plots)
+            dpg.add_scatter_series([0.0], [0.0], tag=self.scatter_tag, parent=self.y_axis_tag)
+            dpg.bind_item_theme(self.scatter_tag, self.scatter_theme_tag)
 
     def custom_create(self, from_file):
         self.add_frame_task()
@@ -3395,7 +3397,7 @@ class XYPadNode(Node):
                         x = max(-self.range_val, min(self.range_val, plot_pos[0]))
                         y = max(-self.range_val, min(self.range_val, plot_pos[1]))
                         # Move the visual marker
-                        dpg.set_value(self.drag_point_tag, [x, y])
+                        dpg.set_value(self.scatter_tag, [[x], [y]])
                         self.last_x = x
                         self.last_y = y
                         self.y_output.send(y)
@@ -3405,7 +3407,7 @@ class XYPadNode(Node):
                     self.dragging = False
                     if self.momentary_option():
                         # Momentary: snap back to center
-                        dpg.set_value(self.drag_point_tag, [0.0, 0.0])
+                        dpg.set_value(self.scatter_tag, [[0.0], [0.0]])
                         self.last_x = 0.0
                         self.last_y = 0.0
                         self.y_output.send(0.0)
