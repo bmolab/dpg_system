@@ -1280,7 +1280,7 @@ class App:
                 self.get_current_editor().copy_selection()
 
     def mouse_down_handler(self):
-        from dpg_system.node import ResizeHandle
+        from dpg_system.node import ResizeHandle, _get_resize_handle_dragging_theme
         if isinstance(self.hovered_item, ResizeHandle):
             rh = self.hovered_item
             if dpg.does_item_exist(rh.uuid) and dpg.is_item_hovered(rh.uuid) and dpg.does_item_exist(rh.target_uuid):
@@ -1289,6 +1289,7 @@ class App:
                 w = dpg.get_item_width(rh.target_uuid) or 0
                 h = dpg.get_item_height(rh.target_uuid) or 0
                 self.resize_start_size = (w, h)
+                dpg.bind_item_theme(rh.uuid, _get_resize_handle_dragging_theme())
                 return
         if self.control_or_command_down():
             self.toggle_presentation()
@@ -1303,11 +1304,19 @@ class App:
 
     def mouse_up_handler(self, sender=None, app_data=None, user_data=None):
         if self.resize_drag is not None:
+            from dpg_system.node import _get_resize_handle_theme
+            rh = self.resize_drag
+            if dpg.does_item_exist(rh.uuid):
+                dpg.bind_item_theme(rh.uuid, _get_resize_handle_theme())
             self.resize_drag = None
 
     def drag_create_nodes(self):
         if self.resize_drag is not None:
             if not dpg.is_mouse_button_down(0):
+                from dpg_system.node import _get_resize_handle_theme
+                rh = self.resize_drag
+                if dpg.does_item_exist(rh.uuid):
+                    dpg.bind_item_theme(rh.uuid, _get_resize_handle_theme())
                 self.resize_drag = None
             else:
                 mp = dpg.get_mouse_pos(local=False)

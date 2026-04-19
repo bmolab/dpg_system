@@ -200,7 +200,7 @@ class BasePlotNode(Node):
         self.install_plot_resize_handle()
 
     def install_plot_resize_handle(self):
-        from dpg_system.node import ResizeHandle
+        from dpg_system.node import ResizeHandle, _get_resize_handle_theme
         btn_uuid = dpg.add_button(parent=self.plot_display.uuid, label='', width=self.width, height=4)
         handle = ResizeHandle(
             btn_uuid, self.plot_tag, axis='xy',
@@ -209,6 +209,7 @@ class BasePlotNode(Node):
         )
         dpg.set_item_user_data(btn_uuid, handle)
         dpg.bind_item_handler_registry(btn_uuid, "resize handle handler")
+        dpg.bind_item_theme(btn_uuid, _get_resize_handle_theme())
         self.resize_handle = handle
 
     def update_plot(self):

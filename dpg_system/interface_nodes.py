@@ -3405,7 +3405,7 @@ class XYPadNode(Node):
         self._install_resize_handle()
 
     def _install_resize_handle(self):
-        from dpg_system.node import ResizeHandle
+        from dpg_system.node import ResizeHandle, _get_resize_handle_theme
         btn_uuid = dpg.add_button(parent=self.plot_display.uuid, label='', width=self.pad_width, height=4)
         handle = ResizeHandle(
             btn_uuid, self.plot_tag, axis='xy',
@@ -3414,6 +3414,7 @@ class XYPadNode(Node):
         )
         dpg.set_item_user_data(btn_uuid, handle)
         dpg.bind_item_handler_registry(btn_uuid, "resize handle handler")
+        dpg.bind_item_theme(btn_uuid, _get_resize_handle_theme())
         self.resize_handle = handle
 
     def custom_create(self, from_file):
@@ -3631,7 +3632,7 @@ class EnvelopeNode(Node):
         self._install_resize_handle()
 
     def _install_resize_handle(self):
-        from dpg_system.node import ResizeHandle
+        from dpg_system.node import ResizeHandle, _get_resize_handle_theme
         btn_uuid = dpg.add_button(parent=self.plot_display.uuid, label='', width=self.plot_width, height=4)
         handle = ResizeHandle(
             btn_uuid, self.plot_tag, axis='xy',
@@ -3640,6 +3641,7 @@ class EnvelopeNode(Node):
         )
         dpg.set_item_user_data(btn_uuid, handle)
         dpg.bind_item_handler_registry(btn_uuid, "resize handle handler")
+        dpg.bind_item_theme(btn_uuid, _get_resize_handle_theme())
         self.resize_handle = handle
 
     def _create_point(self, x, y, curve=0.0):

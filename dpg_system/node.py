@@ -12,6 +12,8 @@ from pathlib import Path
 
 
 _tight_group_theme = None
+_resize_handle_theme = None
+_resize_handle_dragging_theme = None
 
 
 def _get_tight_group_theme():
@@ -21,6 +23,28 @@ def _get_tight_group_theme():
             with dpg.theme_component(dpg.mvAll):
                 dpg.add_theme_style(dpg.mvStyleVar_ItemSpacing, 2, 4, category=dpg.mvThemeCat_Core)
     return _tight_group_theme
+
+
+def _get_resize_handle_theme():
+    global _resize_handle_theme
+    if _resize_handle_theme is None or not dpg.does_item_exist(_resize_handle_theme):
+        with dpg.theme() as _resize_handle_theme:
+            with dpg.theme_component(dpg.mvAll):
+                dpg.add_theme_color(dpg.mvThemeCol_Button, (65, 22, 90, 200), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, (133, 52, 165, 255), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, (200, 80, 240, 255), category=dpg.mvThemeCat_Core)
+    return _resize_handle_theme
+
+
+def _get_resize_handle_dragging_theme():
+    global _resize_handle_dragging_theme
+    if _resize_handle_dragging_theme is None or not dpg.does_item_exist(_resize_handle_dragging_theme):
+        with dpg.theme() as _resize_handle_dragging_theme:
+            with dpg.theme_component(dpg.mvAll):
+                dpg.add_theme_color(dpg.mvThemeCol_Button, (200, 80, 240, 255), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, (200, 80, 240, 255), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, (200, 80, 240, 255), category=dpg.mvThemeCat_Core)
+    return _resize_handle_dragging_theme
 
 
 class ResizeHandle:
@@ -2419,6 +2443,7 @@ class Node:
         handle = ResizeHandle(btn_uuid, widget.uuid, axis, width_option, height_option)
         dpg.set_item_user_data(btn_uuid, handle)
         dpg.bind_item_handler_registry(btn_uuid, "resize handle handler")
+        dpg.bind_item_theme(btn_uuid, _get_resize_handle_theme())
         return handle
 
     def add_handler_to_widgets(self):
