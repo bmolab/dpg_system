@@ -892,14 +892,13 @@ class ValueNode(Node):
             default_value=self.variable_name, callback=self.binding_changed
         )
 
-        # Widget Width
+        # Widget Width (DPG's knob_float is fixed-size, so no width option for knobs)
         default_width = getattr(self, 'widget_width', 100)
-        self.width_option = self.add_option(
-            'width', widget_type='drag_int', default_value=default_width,
-            callback=self.options_changed
-        )
-
         if 'knob' not in label:
+            self.width_option = self.add_option(
+                'width', widget_type='drag_int', default_value=default_width,
+                callback=self.options_changed
+            )
             self.large_text_option = self.add_option(
                 'font size', widget_type='combo', default_value='24',
                 callback=self.large_font_changed
@@ -941,7 +940,8 @@ class ValueNode(Node):
             trigger_size = 28
 
         adjusted_width = self.input.widget.adjust_to_text_width()
-        self.width_option.widget.set(adjusted_width)
+        if self.width_option is not None:
+            self.width_option.widget.set(adjusted_width)
 
         trigger = self.input.widget.trigger_widget
         if trigger:
