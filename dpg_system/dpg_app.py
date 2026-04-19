@@ -1315,16 +1315,32 @@ class App:
                 dy = mp[1] - self.resize_start_mouse[1]
                 rh = self.resize_drag
                 if dpg.does_item_exist(rh.target_uuid):
-                    if 'x' in rh.axis:
-                        new_w = max(20, int(self.resize_start_size[0] + dx))
-                        dpg.set_item_width(rh.target_uuid, new_w)
+                    if rh.square:
+                        delta = dx if abs(dx) >= abs(dy) else dy
+                        new_size = max(20, int(self.resize_start_size[0] + delta))
+                        dpg.set_item_width(rh.target_uuid, new_size)
+                        dpg.set_item_height(rh.target_uuid, new_size)
+                        if rh.sync_width and dpg.does_item_exist(rh.uuid):
+                            dpg.set_item_width(rh.uuid, new_size)
+                        if rh.sync_height and dpg.does_item_exist(rh.uuid):
+                            dpg.set_item_height(rh.uuid, new_size)
                         if rh.width_option is not None:
-                            rh.width_option.set(new_w)
-                    if 'y' in rh.axis:
-                        new_h = max(20, int(self.resize_start_size[1] + dy))
-                        dpg.set_item_height(rh.target_uuid, new_h)
-                        if rh.height_option is not None:
-                            rh.height_option.set(new_h)
+                            rh.width_option.set(new_size)
+                    else:
+                        if 'x' in rh.axis:
+                            new_w = max(20, int(self.resize_start_size[0] + dx))
+                            dpg.set_item_width(rh.target_uuid, new_w)
+                            if rh.sync_width and dpg.does_item_exist(rh.uuid):
+                                dpg.set_item_width(rh.uuid, new_w)
+                            if rh.width_option is not None:
+                                rh.width_option.set(new_w)
+                        if 'y' in rh.axis:
+                            new_h = max(20, int(self.resize_start_size[1] + dy))
+                            dpg.set_item_height(rh.target_uuid, new_h)
+                            if rh.sync_height and dpg.does_item_exist(rh.uuid):
+                                dpg.set_item_height(rh.uuid, new_h)
+                            if rh.height_option is not None:
+                                rh.height_option.set(new_h)
         if self.dragging_created_nodes:
             if dpg.is_mouse_button_down(0):
                 self.dragging_created_nodes = False

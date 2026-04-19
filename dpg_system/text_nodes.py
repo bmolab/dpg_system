@@ -506,6 +506,8 @@ class TextFileNode(Node):
 
         # self.text_input = self.add_string_input('text in', triggers_execution=True)
         self.text_editor.set_strip_returns(False)
+        if self.text_editor.widget is not None:
+            self.text_editor.widget.wants_resize_handle = True
         self.append_text_input = self.add_string_input('append text in', triggers_execution=True)
         self.append_text_input.set_strip_returns(False)
 
@@ -567,6 +569,16 @@ class TextFileNode(Node):
     def adjust_editor(self):
         dpg.set_item_width(self.text_editor.widget.uuid, self.editor_width())
         dpg.set_item_height(self.text_editor.widget.uuid, self.editor_height())
+        if getattr(self, 'resize_handle', None) and dpg.does_item_exist(self.resize_handle.uuid):
+            dpg.set_item_height(self.resize_handle.uuid, self.editor_height())
+
+    def custom_create(self, from_file):
+        dpg.set_item_width(self.text_editor.widget.uuid, self.editor_width())
+        dpg.set_item_height(self.text_editor.widget.uuid, self.editor_height())
+        self.resize_handle = self.add_resize_handle(
+            self.text_editor.widget, axis='xy',
+            width_option=self.editor_width, height_option=self.editor_height
+        )
 
     def post_load_callback(self):
         if self.file_name_property() != '':

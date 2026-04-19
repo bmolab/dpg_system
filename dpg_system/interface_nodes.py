@@ -1384,11 +1384,11 @@ class TextEditorNode(StringNode):
                                              callback=self.options_changed)
 
     def custom_create(self, from_file):
+        dpg.set_item_height(self.input.widget.uuid, self.height_option())
         super().custom_create(from_file)
-        dpg.set_item_height(self.input.widget.uuid, 200)
 
     def install_resize_handle(self):
-        self.add_resize_handle(
+        self.resize_handle = self.add_resize_handle(
             self.input.widget, axis='xy',
             width_option=self.width_option, height_option=self.height_option
         )
@@ -1396,7 +1396,10 @@ class TextEditorNode(StringNode):
     def options_changed(self):
         super().options_changed()
         if self.height_option:
-            dpg.set_item_height(self.input.widget.uuid, self.height_option())
+            h = self.height_option()
+            dpg.set_item_height(self.input.widget.uuid, h)
+            if getattr(self, 'resize_handle', None) and dpg.does_item_exist(self.resize_handle.uuid):
+                dpg.set_item_height(self.resize_handle.uuid, h)
 
 
 class ValueNode_o(Node):
@@ -3315,7 +3318,8 @@ class XYPadNode(Node):
         super().__init__(label, data, args)
 
         self.range_val = 1.0
-        self.pad_size = 150
+        self.pad_width = 150
+        self.pad_height = 150
         self.marker_size = 8
         self.dragging = False
         self.last_x = 0.0
@@ -3355,8 +3359,12 @@ class XYPadNode(Node):
             'range', widget_type='drag_float', default_value=self.range_val,
             callback=self._range_changed
         )
-        self.size_option = self.add_option(
-            'size', widget_type='drag_int', default_value=self.pad_size,
+        self.width_option = self.add_option(
+            'width', widget_type='drag_int', default_value=self.pad_width,
+            callback=self._size_changed
+        )
+        self.height_option = self.add_option(
+            'height', widget_type='drag_int', default_value=self.pad_height,
             callback=self._size_changed
         )
         self.marker_size_option = self.add_option(
@@ -3367,7 +3375,7 @@ class XYPadNode(Node):
     def submit_display(self):
         with dpg.plot(
             label='', tag=self.plot_tag,
-            height=self.pad_size, width=self.pad_size,
+            height=self.pad_height, width=self.pad_width,
             no_title=True, no_menus=True,
             no_mouse_pos=True
         ):
@@ -3394,6 +3402,19 @@ class XYPadNode(Node):
             self._build_scatter_theme()
             dpg.add_scatter_series([0.0], [0.0], tag=self.scatter_tag, parent=self.y_axis_tag)
             dpg.bind_item_theme(self.scatter_tag, self.scatter_theme_tag)
+        self._install_resize_handle()
+
+    def _install_resize_handle(self):
+        from dpg_system.node import ResizeHandle
+        btn_uuid = dpg.add_button(parent=self.plot_display.uuid, label='', width=self.pad_width, height=4)
+        handle = ResizeHandle(
+            btn_uuid, self.plot_tag, axis='xy',
+            width_option=self.width_option, height_option=self.height_option,
+            sync_width=True, sync_height=False
+        )
+        dpg.set_item_user_data(btn_uuid, handle)
+        dpg.bind_item_handler_registry(btn_uuid, "resize handle handler")
+        self.resize_handle = handle
 
     def custom_create(self, from_file):
         self.add_frame_task()
@@ -3443,10 +3464,13 @@ class XYPadNode(Node):
         dpg.set_axis_limits(self.y_axis_tag, -self.range_val, self.range_val)
 
     def _size_changed(self):
-        size = self.size_option()
-        self.pad_size = size
-        dpg.set_item_width(self.plot_tag, size)
-        dpg.set_item_height(self.plot_tag, size)
+        self.pad_width = self.width_option()
+        self.pad_height = self.height_option()
+        dpg.set_item_width(self.plot_tag, self.pad_width)
+        dpg.set_item_height(self.plot_tag, self.pad_height)
+        rh = getattr(self, 'resize_handle', None)
+        if rh is not None and dpg.does_item_exist(rh.uuid):
+            dpg.set_item_width(rh.uuid, self.pad_width)
 
     def _build_scatter_theme(self):
         if dpg.does_item_exist(self.scatter_theme_tag):
@@ -3604,6 +3628,19 @@ class EnvelopeNode(Node):
         self._create_point(self.x_max * 0.5, self.y_max)
         self._create_point(self.x_max, self.y_min)
         self._update_line()
+        self._install_resize_handle()
+
+    def _install_resize_handle(self):
+        from dpg_system.node import ResizeHandle
+        btn_uuid = dpg.add_button(parent=self.plot_display.uuid, label='', width=self.plot_width, height=4)
+        handle = ResizeHandle(
+            btn_uuid, self.plot_tag, axis='xy',
+            width_option=self.width_option, height_option=self.height_option,
+            sync_width=True, sync_height=False
+        )
+        dpg.set_item_user_data(btn_uuid, handle)
+        dpg.bind_item_handler_registry(btn_uuid, "resize handle handler")
+        self.resize_handle = handle
 
     def _create_point(self, x, y, curve=0.0):
         tag = dpg.generate_uuid()
@@ -3910,4 +3947,7 @@ class EnvelopeNode(Node):
     def _size_changed(self):
         dpg.set_item_width(self.plot_tag, self.width_option())
         dpg.set_item_height(self.plot_tag, self.height_option())
+        rh = getattr(self, 'resize_handle', None)
+        if rh is not None and dpg.does_item_exist(rh.uuid):
+            dpg.set_item_width(rh.uuid, self.width_option())
 

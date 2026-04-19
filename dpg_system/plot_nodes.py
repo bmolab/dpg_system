@@ -197,6 +197,19 @@ class BasePlotNode(Node):
         with dpg.plot(label='', tag=self.plot_tag, height=self.height, width=self.width, no_title=True) as self.plotter:
             dpg.add_plot_axis(dpg.mvXAxis, label="", tag=self.x_axis, no_tick_labels=True)
             dpg.add_plot_axis(dpg.mvYAxis, label="", tag=self.y_axis, no_tick_labels=True)
+        self.install_plot_resize_handle()
+
+    def install_plot_resize_handle(self):
+        from dpg_system.node import ResizeHandle
+        btn_uuid = dpg.add_button(parent=self.plot_display.uuid, label='', width=self.width, height=4)
+        handle = ResizeHandle(
+            btn_uuid, self.plot_tag, axis='xy',
+            width_option=self.width_option, height_option=self.height_option,
+            sync_width=True, sync_height=False
+        )
+        dpg.set_item_user_data(btn_uuid, handle)
+        dpg.bind_item_handler_registry(btn_uuid, "resize handle handler")
+        self.resize_handle = handle
 
     def update_plot(self):
         buffer = self.y_data.get_buffer()
@@ -211,6 +224,9 @@ class BasePlotNode(Node):
         if self.height_option is not None:
             dpg.set_item_height(self.plot_tag, self.height_option())
             self.height = self.height_option()
+        rh = getattr(self, 'resize_handle', None)
+        if rh is not None and dpg.does_item_exist(rh.uuid):
+            dpg.set_item_width(rh.uuid, self.width)
 
     def change_range(self):
         self.max_y = self.max_y_option()
@@ -499,6 +515,7 @@ class HeatMapNode(BasePlotNode):
             dpg.bind_colormap(self.plot_tag, dpg.mvPlotColormap_Viridis)
             dpg.add_plot_axis(dpg.mvXAxis, label="", tag=self.x_axis, no_tick_labels=True)
             dpg.add_plot_axis(dpg.mvYAxis, label="", tag=self.y_axis, no_tick_labels=True)
+        self.install_plot_resize_handle()
 
     def custom_create(self, from_file):
         # We need to call reallocate_buffer first to set the correct mode.

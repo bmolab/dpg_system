@@ -11,13 +11,29 @@ import os
 from pathlib import Path
 
 
+_tight_group_theme = None
+
+
+def _get_tight_group_theme():
+    global _tight_group_theme
+    if _tight_group_theme is None or not dpg.does_item_exist(_tight_group_theme):
+        with dpg.theme() as _tight_group_theme:
+            with dpg.theme_component(dpg.mvAll):
+                dpg.add_theme_style(dpg.mvStyleVar_ItemSpacing, 2, 4, category=dpg.mvThemeCat_Core)
+    return _tight_group_theme
+
+
 class ResizeHandle:
-    def __init__(self, uuid, target_uuid, axis='x', width_option=None, height_option=None):
+    def __init__(self, uuid, target_uuid, axis='x', width_option=None, height_option=None,
+                 sync_width=False, sync_height=True, square=False):
         self.uuid = uuid
         self.target_uuid = target_uuid
         self.axis = axis
         self.width_option = width_option
         self.height_option = height_option
+        self.sync_width = sync_width
+        self.sync_height = sync_height
+        self.square = square
 
 
 class NodeOutput:
@@ -567,6 +583,8 @@ class BasePropertyWidget:
             self._draw_widget()
             self._setup_interaction()
             self._create_trigger_button()
+        if horizontal:
+            dpg.bind_item_theme(self.h_group_uuid, _get_tight_group_theme())
 
     def _draw_widget(self):
         """Subclasses must implement the specific DPG draw call."""
@@ -2397,7 +2415,7 @@ class Node:
                     handle_height = int(v)
             except Exception:
                 pass
-        btn_uuid = dpg.add_button(parent=parent, label='', width=8, height=handle_height)
+        btn_uuid = dpg.add_button(parent=parent, label='', width=4, height=handle_height)
         handle = ResizeHandle(btn_uuid, widget.uuid, axis, width_option, height_option)
         dpg.set_item_user_data(btn_uuid, handle)
         dpg.bind_item_handler_registry(btn_uuid, "resize handle handler")
