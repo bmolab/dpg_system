@@ -298,8 +298,8 @@ class GLContextNode(Node):
                 if len(self.pending_commands) > 0:
                     for command in self.pending_commands:
                         self.command_parser.perform(command[0], self, command[1:])
-            except:
-                self.pending_commands = []
+            except Exception as e:
+                print(f'GLContextNode command error: {e}')
             self.pending_commands = []
             self.context.prepare_draw()
             glPushMatrix()
@@ -398,9 +398,6 @@ class TexturedGLNode(GLNode):
                 # Create a fresh texture (allocates GPU memory with correct format)
                 self.numpy_texture = GLNumpyTexture(self.texture_data_pending)
 
-                # Store metadata for future comparison if GLNumpyTexture doesn't expose them
-                # self.numpy_texture.shape = self.texture_data_pending.shape
-                # self.numpy_texture.dtype = self.texture_data_pending.dtype
             else:
                 # Safe to simply upload pixels because shape and type match
                 self.numpy_texture.update(self.texture_data_pending)
@@ -458,62 +455,6 @@ class TexturedGLNode(GLNode):
         self.texture_data_pending = base_texture * values
 
 
-    def receive_texture_data_o(self, data):
-        if type(data) == np.ndarray:
-            self.texture_data_pending = data  # * 255.0
-        elif self.app.torch_available and type(data) == torch.Tensor:
-            texture_data = data
-            if len(texture_data.shape) > 2:
-                if texture_data.shape[-3] <= 5:
-                    if texture_data.shape[-1] > 5:
-                        texture_data = texture_data.permute(-2, -1, -3)
-            self.texture_data_pending = texture_data.cpu().numpy()
-        elif type(data) == float:
-            self.texture_data_pending = np.ones((16, 16, 1), dtype=np.float32) * data
-        elif type(data) == int:
-            self.texture_data_pending = np.ones((16, 16, 1), dtype=np.uint8) * data
-        elif type(data) == list:
-            component_count = len(data)
-            t = type(data[0])
-            if component_count == 3:
-                if t == float:
-                    self.texture_data_pending = np.ones((16, 16, 3), dtype=np.float32)
-                    multiplier = np.array(data)
-                    multiplier = np.expand_dims(multiplier, axis=0)
-                    multiplier = np.expand_dims(multiplier, axis=0)
-                    self.texture_data_pending = self.texture_data_pending * multiplier
-                elif t == int:
-                    self.texture_data_pending = np.ones((16, 16, 3), dtype=np.uint8)
-                    multiplier = np.array(data)
-                    multiplier = np.expand_dims(multiplier, axis=0)
-                    multiplier = np.expand_dims(multiplier, axis=0)
-                    self.texture_data_pending = self.texture_data_pending * multiplier
-            elif component_count == 4:
-                if t == float:
-                    self.texture_data_pending = np.ones((16, 16, 4), dtype=np.float32)
-                    multiplier = np.array(data)
-                    multiplier = np.expand_dims(multiplier, axis=0)
-                    multiplier = np.expand_dims(multiplier, axis=0)
-                    self.texture_data_pending = self.texture_data_pending * multiplier
-                elif t == int:
-                    self.texture_data_pending = np.ones((16, 16, 4), dtype=np.uint8)
-                    multiplier = np.array(data)
-                    multiplier = np.expand_dims(multiplier, axis=0)
-                    multiplier = np.expand_dims(multiplier, axis=0)
-                    self.texture_data_pending = self.texture_data_pending * multiplier
-            elif component_count == 1:
-                if t == float:
-                    self.texture_data_pending = np.ones((16, 16, 1), dtype=np.float32)
-                    multiplier = np.array(data)
-                    multiplier = np.expand_dims(multiplier, axis=0)
-                    multiplier = np.expand_dims(multiplier, axis=0)
-                    self.texture_data_pending = self.texture_data_pending * multiplier
-                elif t == int:
-                    self.texture_data_pending = np.ones((16, 16, 1), dtype=np.uint8)
-                    multiplier = np.array(data)
-                    multiplier = np.expand_dims(multiplier, axis=0)
-                    multiplier = np.expand_dims(multiplier, axis=0)
-                    self.texture_data_pending = self.texture_data_pending * multiplier
 
 
 class GLQuadricCommandParser(GLCommandParser):
@@ -548,99 +489,6 @@ class GLQuadricCommandParser(GLCommandParser):
             node.set_size(scale)
         else:
             node.set_size(0.0)
-
-
-# class GLNumpyVertices:
-#     def __init__(self, texture_array):
-#         self.texture = -1
-#         self.width = 256
-#         self.height = 256
-#         self.channels = 3
-#         self.type = GL_UNSIGNED_BYTE
-#
-#         self.allocate(texture_array)
-
-    # def allocate(self, texture_array):
-    #     self.width = texture_array.shape[1]
-    #     self.height = texture_array.shape[0]
-    #     num_dims = len(texture_array.shape)
-    #     if num_dims == 3:
-    #         self.channels = texture_array.shape[2]
-    #     else:
-    #         self.channels = 1
-    #     # self.type = GL_UNSIGNED_BYTE
-    #     if texture_array.dtype == np.float32:
-    #         self.type = GL_FLOAT
-    #     elif texture_array.dtype == np.uint8:
-    #         self.type = GL_UNSIGNED_BYTE
-    #
-    #     if self.texture == -1:
-    #         self.texture = glGenTextures(1)
-    #
-    #     glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
-    #     glEnable(GL_TEXTURE_2D)
-    #     glBindTexture(GL_TEXTURE_2D, self.texture)
-    #     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
-    #     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
-    #     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-    #     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-    #     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL)
-    #     contiguous_texture = np.ascontiguousarray(texture_array)
-    #     if self.type == GL_FLOAT:
-    #         if self.channels == 3:
-    #             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, self.width, self.height, 0, GL_RGB, GL_FLOAT, contiguous_texture)
-    #         elif self.channels == 4:
-    #             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, self.width, self.height, 0, GL_RGBA, GL_FLOAT, contiguous_texture)
-    #         elif self.channels == 1:
-    #             glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, self.width, self.height, 0, GL_LUMINANCE, GL_FLOAT, contiguous_texture)
-    #     elif self.type == GL_UNSIGNED_BYTE:
-    #         if self.channels == 3:
-    #             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, self.width, self.height, 0, GL_RGB, GL_UNSIGNED_BYTE, contiguous_texture)
-    #         elif self.channels == 4:
-    #             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, self.width, self.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, contiguous_texture)
-    #         elif self.channels == 1:
-    #             glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, self.width, self.height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
-    #                          contiguous_texture)
-    #     glBindTexture(GL_TEXTURE_2D, 0)
-    #
-    # def update(self, texture_array):
-    #     reshape = False
-    #     if self.width != texture_array.shape[1]:
-    #         reshape = True
-    #     if self.height != texture_array.shape[0]:
-    #         reshape = True
-    #     num_dims = len(texture_array.shape)
-    #     if num_dims == 3:
-    #         channels = texture_array.shape[2]
-    #     else:
-    #         channels = 1
-    #     if self.channels != channels:
-    #         reshape = True
-    #
-    #     if reshape:
-    #         self.allocate(texture_array)
-    #     else:
-    #         glEnable(GL_TEXTURE_2D)
-    #         glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
-    #
-    #         glBindTexture(GL_TEXTURE_2D, self.texture)
-    #         contiguous_texture = np.ascontiguousarray(texture_array)
-    #         if self.type == GL_FLOAT:
-    #             if self.channels == 3:
-    #                 glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_RGB, GL_FLOAT, contiguous_texture)
-    #             elif self.channels == 4:
-    #                 glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_RGBA, GL_FLOAT, contiguous_texture)
-    #             elif self.channels == 1:
-    #                 glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_LUMINANCE, GL_FLOAT, contiguous_texture)
-    #
-    #         elif self.type == GL_UNSIGNED_BYTE:
-    #             if self.channels == 3:
-    #                 glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_RGB, GL_UNSIGNED_BYTE, contiguous_texture)
-    #             elif self.channels == 4:
-    #                 glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_RGBA, GL_UNSIGNED_BYTE, contiguous_texture)
-    #             elif self.channels == 1:
-    #                 glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL_LUMINANCE, GL_UNSIGNED_BYTE, contiguous_texture)
-    #         glBindTexture(GL_TEXTURE_2D, 0)
 
 
 class GLNumpyTexture:
@@ -761,12 +609,6 @@ class GLBillboard(TexturedGLNode):
 
     def draw(self):
         self.update_texture()
-        # if self.texture_data_pending is not None:
-        #     if self.numpy_texture is None:
-        #         self.numpy_texture = GLNumpyTexture(self.texture_data_pending)
-        #     else:
-        #         self.numpy_texture.update(self.texture_data_pending)
-        #     self.texture_data_pending = None
         half_width = self.width() / 2
         half_height = self.height() / 2
         # color = self.color_input.get_widget_value()
@@ -1511,7 +1353,7 @@ class GLMaterialNode(GLNode):
             if t == np.ndarray:
                 if diffuse.shape[0] == 4:
                     self.material.diffuse = diffuse
-            if t == list:
+            elif t == list:
                 diffuse = any_to_numerical_list(diffuse)
                 if len(diffuse) == 4:
                     self.material.diffuse = diffuse
@@ -1526,7 +1368,7 @@ class GLMaterialNode(GLNode):
             if t == np.ndarray:
                 if specular.shape[0] == 4:
                     self.material.specular = specular
-            if t == list:
+            elif t == list:
                 specular = any_to_numerical_list(specular)
                 if len(specular) == 4:
                     self.material.specular = specular
@@ -1541,7 +1383,7 @@ class GLMaterialNode(GLNode):
             if t == np.ndarray:
                 if emission.shape[0] == 4:
                     self.material.emission = emission
-            if t == list:
+            elif t == list:
                 emission = any_to_numerical_list(emission)
                 if len(emission) == 4:
                     self.material.emission = emission
@@ -1859,25 +1701,24 @@ class GLAlignNode(GLNode):
         self.axis[0] = self.x()
         self.axis[1] = self.y()
         self.axis[2] = self.z()
-        self.axis /= (math.sqrt(self.axis[0] * self.axis[0] + self.axis[1] * self.axis[1] + self.axis[2] * self.axis[2]))
+        length = math.sqrt(self.axis[0] * self.axis[0] + self.axis[1] * self.axis[1] + self.axis[2] * self.axis[2])
+        if length > 1e-8:
+            self.axis /= length
         self.align()
 
     def align(self):
         v = np.cross(self.axis, self.up)
         c = np.dot(self.axis, self.up)
-        k = 1.0 / (1.0 + c)
+        k = 1.0 / (1.0 + c + 1e-8)
 
         self.alignment_matrix = np.array([v[0] * v[0] * k + c, v[1] * v[1] * k - v[2], v[2] * v[0] * k + v[1], 0.0,
                   v[0] * v[1] * k + v[2], v[1] * v[1] * k + c, v[2] * v[1] * k - v[0], 0.0,
                   v[0] * v[2] * k - v[1], v[1] * v[2] * k + v[0], v[2] * v[2] * k + c, 0.0,
                   0.0, 0.0, 0.0, 1.0])
-        self.alignment_matrix.reshape((4, 4))
+        self.alignment_matrix = self.alignment_matrix.reshape((4, 4))
 
 class CharacterSlot:
     def __init__(self, cell, glyph_box, glyph, texture_size):
-        # self.texture = texture
-        # self.textureSize = (glyph.bitmap.width, glyph.bitmap.rows)
-        # self.origin = [0, 0]
         left_in_texture = cell[0] * glyph_box[0]
         top_in_texture = cell[1] * glyph_box[1]
         right_in_texture = left_in_texture + glyph_box[0]
@@ -1983,7 +1824,12 @@ class GLTextNode(GLNode):
         self.characters = {}
         if self.face is not None:
             del self.face
-        self.face = freetype.Face(self.font_path)
+        try:
+            self.face = freetype.Face(self.font_path)
+        except Exception as e:
+            print(f'GLTextNode: failed to load font "{self.font_path}": {e}')
+            self.face = None
+            return
         size = self.font_size * 256.0
         self.face.set_char_size(int(size))
         self.create_glyph_textures()
@@ -2146,47 +1992,13 @@ class GLTextNode(GLNode):
             self.initialized = True
         if self.new_text:
             self.render_text()
-        # if self.coords is None:
-        #     self.render_text()
-        # if self.text_buffer == -1:
-        #     self.text_buffer = glGenBuffers(1)
-        #     self.text_vertex_buffer = glGenVertexArrays(1)
-        #     glBindVertexArray(self.text_vertex_buffer)
-
         glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D, self.texture)
         glTranslatef(0, 0, -2)
 
-        # glEnable(GL_BLEND)
-        # glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        # glEnable(GL_TEXTURE_2D)
         glColor4f(self.color[0], self.color[1], self.color[2], self.text_alpha_input())
         if self.display_list != -1:
             glCallList(self.display_list)
-        # pos = [self.position_x_input(), self.position_y_input()]
-        # scale = self.scale_input() / 100
-        # text = self.text_input()
-        # glBindTexture(GL_TEXTURE_2D, self.texture)
-        #
-        # for c in text:
-        #     ch = self.characters[c]
-        #     width = self.glyph_shape[0] * scale
-        #     height = self.glyph_shape[1] * scale
-        #     vertices = self.get_rendering_buffer(pos[0], pos[1], width, height, ch.texture_coords)
-        #
-        #     glBegin(GL_TRIANGLES)
-        #     for i in range(6):
-        #         glTexCoord2f(vertices[i * 4 + 2], vertices[i * 4 + 3])
-        #         glVertex2f(vertices[i * 4], vertices[i * 4 + 1])
-        #     glEnd()
-        #
-        #     pos[0] += ((ch.advance >> 6) * scale)
-        # glBindBuffer(GL_ARRAY_BUFFER, self.text_buffer)
-        # glBufferData(GL_ARRAY_BUFFER, self.coords.size * self.coords.itemsize, self.coords.data, GL_DYNAMIC_DRAW)
-        # glBindBuffer(GL_ARRAY_BUFFER, 0)
-        #
-        # glDrawArrays(GL_TRIANGLES, 0, self.coords.shape[0] * 6)
-
         glBindTexture(GL_TEXTURE_2D, 0)
 
         glColor4f(1.0, 1.0, 1.0, 1.0)
@@ -2284,7 +2096,6 @@ class GLKoreanTextNode(GLNode):
             self.new_text = True
 
     def update_font(self):
-        print('update font')
         hold_context = glfw.get_current_context()
         glfw.make_context_current(self.context)
 
@@ -2294,7 +2105,13 @@ class GLKoreanTextNode(GLNode):
         self.characters = {}
         if self.face is not None:
             del self.face
-        self.face = freetype.Face(self.font_path)
+        try:
+            self.face = freetype.Face(self.font_path)
+        except Exception as e:
+            print(f'GLKoreanTextNode: failed to load font "{self.font_path}": {e}')
+            self.face = None
+            glfw.make_context_current(hold_context)
+            return
         size = self.font_size * 256.0
         self.face.set_char_size(int(size))
         self.create_glyph_textures()
@@ -2459,47 +2276,13 @@ class GLKoreanTextNode(GLNode):
             self.initialized = True
         if self.new_text:
             self.render_text()
-        # if self.coords is None:
-        #     self.render_text()
-        # if self.text_buffer == -1:
-        #     self.text_buffer = glGenBuffers(1)
-        #     self.text_vertex_buffer = glGenVertexArrays(1)
-        #     glBindVertexArray(self.text_vertex_buffer)
-
         glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D, self.texture)
         glTranslatef(0, 0, -2)
 
-        # glEnable(GL_BLEND)
-        # glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        # glEnable(GL_TEXTURE_2D)
         glColor4f(self.color[0], self.color[1], self.color[2], self.text_alpha_input())
         if self.display_list != -1:
             glCallList(self.display_list)
-        # pos = [self.position_x_input(), self.position_y_input()]
-        # scale = self.scale_input() / 100
-        # text = self.text_input()
-        # glBindTexture(GL_TEXTURE_2D, self.texture)
-        #
-        # for c in text:
-        #     ch = self.characters[c]
-        #     width = self.glyph_shape[0] * scale
-        #     height = self.glyph_shape[1] * scale
-        #     vertices = self.get_rendering_buffer(pos[0], pos[1], width, height, ch.texture_coords)
-        #
-        #     glBegin(GL_TRIANGLES)
-        #     for i in range(6):
-        #         glTexCoord2f(vertices[i * 4 + 2], vertices[i * 4 + 3])
-        #         glVertex2f(vertices[i * 4], vertices[i * 4 + 1])
-        #     glEnd()
-        #
-        #     pos[0] += ((ch.advance >> 6) * scale)
-        # glBindBuffer(GL_ARRAY_BUFFER, self.text_buffer)
-        # glBufferData(GL_ARRAY_BUFFER, self.coords.size * self.coords.itemsize, self.coords.data, GL_DYNAMIC_DRAW)
-        # glBindBuffer(GL_ARRAY_BUFFER, 0)
-        #
-        # glDrawArrays(GL_TRIANGLES, 0, self.coords.shape[0] * 6)
-
         glBindTexture(GL_TEXTURE_2D, 0)
 
         glColor4f(1.0, 1.0, 1.0, 1.0)
@@ -2744,7 +2527,7 @@ class GLNumpyLines(GLNode):
                 self.colors[i][2] = color[2] / 255.0
                 self.colors[i][3] = 1.0
             return
-        if 0 >= index >= len(self.colors):
+        if index < 0 or index >= len(self.colors):
             index = len(self.colors) - 1
         color = self.color_control()
         self.colors[index][0] = color[0] / 255.0
@@ -2808,12 +2591,6 @@ class GLNumpyLines(GLNode):
                         alpha = 1.0
                         if self.motion_accent() and self.motion_array is not None:
                             alpha = self.motion_array[j, i]
-                            # if self.previous_array is not None:
-                            #     motion = np.linalg.norm(self.line_array - self.previous_array) * accent_scale
-                            # if j > 0:
-                            #     alpha = np.linalg.norm(self.line_array[j, i] - self.line_array[j - 1, i]) * accent_scale
-                            # else:
-                            #     alpha = 0.0
                             if alpha > 1.0:
                                 alpha = 1.0
                             if self.accent_color():
@@ -2892,7 +2669,7 @@ class GLLightNode(GLNode):
 
         super().__init__(label, data, args)
         self.light_id = GL_LIGHT0
-        if len(args) > 1:
+        if args is not None and len(args) > 1:
             id = int(args[1])
             self.set_id(id)
 
@@ -2957,7 +2734,7 @@ class GLLightNode(GLNode):
         self.light.light_model_active = self.light_model_active_input()
 
     def global_ambient_active_changed(self):
-        self.light.global_ambient_active = self.light_model_active_input()
+        self.light.global_ambient_active = self.light_model_ambient_active_input()
 
     def local_viewer_changed(self):
         self.light.local_viewer = self.local_viewer_input()
@@ -3104,13 +2881,13 @@ class GLNestedSphereNode(TexturedGLNode):
         self.color_inputs = []
         for i in range(self.count):
             self.color_inputs.append(self.add_input('color ' + str(i), callback=self.colors_changed))
-        self.colors = np.ndarray((self.count, 4))
-        self.colors[0] = np.array([0.25, 0., 1.0, 0.25])
-        self.colors[1] = np.array([0., 0.5, 1.0, 0.25])
-        self.colors[2] = np.array([0., 1.0, 0.25, 0.25])
-        self.colors[3] = np.array([0.75, 1.0, 0., 0.25])
-        self.colors[4] = np.array([1.0, 0.5, 0., 0.25])
-        self.colors[5] = np.array([1.0, 0., 0.25, 0.25])
+        default_colors = [
+            [0.25, 0., 1.0, 0.25], [0., 0.5, 1.0, 0.25], [0., 1.0, 0.25, 0.25],
+            [0.75, 1.0, 0., 0.25], [1.0, 0.5, 0., 0.25], [1.0, 0., 0.25, 0.25]
+        ]
+        self.colors = np.zeros((self.count, 4))
+        for i in range(self.count):
+            self.colors[i] = np.array(default_colors[i % len(default_colors)])
 
         self.materials = []
         for i in range(self.count):
@@ -3178,23 +2955,7 @@ class GLNestedSphereNode(TexturedGLNode):
 
     def draw(self):
         self.process_pending_commands()
-        # if self.numpy_texture is not None:
-        #     glu.gluQuadricTexture(self.quadric, True)
-        # self.update_texture()
-        # restore_matrix = glGetInteger(GL_MATRIX_MODE)
-        # if self.alignment_matrix is not None:
-        #     glMatrixMode(GL_MODELVIEW)
-        #     glPushMatrix()
-        #     glMultMatrixf(self.alignment_matrix)
-        # if self.numpy_texture is not None and self.numpy_texture.texture != -1:
-        #     self.prepare_texture_for_drawing()
         self.quadric_draw()
-        # if self.numpy_texture is not None and self.numpy_texture.texture != -1:
-        #     self.finish_texture_drawing()
-        # if self.alignment_matrix is not None:
-        #     glPopMatrix()
-        #     glMatrixMode(restore_matrix)
-
     def execute(self):
         if self.texture.fresh_input:
             data = self.texture()
@@ -3271,13 +3032,13 @@ class GLMultiOrientationDiskNode(TexturedGLNode):
 
         for i in range(self.count):
             self.color_inputs.append(self.add_input('color ' + str(i), callback=self.colors_changed))
-        self.colors = np.ndarray((self.count, 4))
-        self.colors[0] = np.array([0.25, 0., 1.0, 0.25])
-        self.colors[1] = np.array([0., 0.5, 1.0, 0.25])
-        self.colors[2] = np.array([0., 1.0, 0.25, 0.25])
-        self.colors[3] = np.array([0.75, 1.0, 0., 0.25])
-        self.colors[4] = np.array([1.0, 0.5, 0., 0.25])
-        self.colors[5] = np.array([1.0, 0., 0.25, 0.25])
+        default_colors = [
+            [0.25, 0., 1.0, 0.25], [0., 0.5, 1.0, 0.25], [0., 1.0, 0.25, 0.25],
+            [0.75, 1.0, 0., 0.25], [1.0, 0.5, 0., 0.25], [1.0, 0., 0.25, 0.25]
+        ]
+        self.colors = np.zeros((self.count, 4))
+        for i in range(self.count):
+            self.colors[i] = np.array(default_colors[i % len(default_colors)])
 
         self.materials = []
         for i in range(self.count):
@@ -3374,6 +3135,8 @@ class GLMultiOrientationDiskNode(TexturedGLNode):
             width = self.ring_width()
             if axis.shape[0] == 3:
                 angle = np.linalg.norm(axis)
+                if angle < 1e-8:
+                    continue
                 axis = axis / angle
                 alignment_matrix = rotation_matrix_from_vectors(up_vector, axis)
                 restore_matrix = glGetInteger(GL_MATRIX_MODE)
@@ -3490,16 +3253,6 @@ class GLVertexBufferNode(GLNode):
     def refresh_buffer(self ):
         if self.vbo is not None:
 
-            # # Ensure data is contiguous and in correct format
-            # if not self.vertex_data.flags['C_CONTIGUOUS']:
-            #     self.vertex_data = np.ascontiguousarray(self.vertex_data, dtype=np.float32)
-            #
-            # self.vertex_count = self.vertex_data.shape[0]
-            # print('vertex_count', self.vertex_count)
-            # self.vertex_size = self.vertex_data.shape[1] if len(self.vertex_data.shape) > 1 else 1
-            # self.data_type = gl.GL_FLOAT
-
-            # Bind and upload data
             self.vbo.bind()
             self.vbo.set_array(self.vertex_data, self.vertex_data.nbytes)
             # self.vbo.unbind()
@@ -3545,11 +3298,6 @@ class GLVertexBufferNode(GLNode):
 
         gl.glPointSize(self.size_input())
 
-        # Set up vertex pointer
-        # offset = c_void_p(0)
-        # gl.glVertexPointer(self.vertex_size, self.data_type, 0, None)
-
-        # Draw the vertices
         gl.glDrawArrays(self.draw_mode, 0, self.vertex_count)
 
         # Cleanup

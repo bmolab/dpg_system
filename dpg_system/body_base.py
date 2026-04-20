@@ -52,7 +52,9 @@ def save_templates_and_distances(path, pose_proximities, templates):
 def unit_vector(self, data, axis=None, out=None):
     data = np.array(data, dtype=np.float64, copy=True)
     if data.ndim == 1:
-        data /= math.sqrt(np.dot(data, data))
+        length = math.sqrt(np.dot(data, data))
+        if length > 1e-8:
+            data /= length
         return data
     else:
         if out is not data:
@@ -60,6 +62,7 @@ def unit_vector(self, data, axis=None, out=None):
         data = out
     length = np.atleast_1d(np.sum(data * data, axis))
     np.sqrt(length, length)
+    length = np.maximum(length, 1e-8)
     data /= length
     return data
 
@@ -96,7 +99,10 @@ def axis_angle_to_rotation_matrix(axis, angle):
     numpy.ndarray: A 3x3 rotation matrix.
     """
     axis = np.asarray(axis)
-    axis = axis / np.linalg.norm(axis)
+    norm = np.linalg.norm(axis)
+    if norm < 1e-8:
+        return np.eye(3)
+    axis = axis / norm
     a = np.cos(angle / 2.0)
     b, c, d = -axis * np.sin(angle / 2.0)
     aa, bb, cc, dd = a * a, b * b, c * c, d * d
@@ -749,8 +755,15 @@ class BodyDataBase:
                 name = JointTranslator.bmolab_joint_index_to_name[joint_index]
                 new_joint = Joint(self, name, joint_index)
                 self.joints.append(new_joint)
-        def_path = Path('dpg_system') / 'definition.xml'
-        tree = ET.parse(str(def_path.resolve()))
+        def_path = Path(__file__).parent / 'definition.xml'
+        if not def_path.exists():
+            # Fallback to cwd-relative path for compatibility
+            def_path = Path('dpg_system') / 'definition.xml'
+        try:
+            tree = ET.parse(str(def_path.resolve()))
+        except (FileNotFoundError, ET.ParseError) as e:
+            print(f'BodyDataBase: failed to load definition.xml: {e}')
+            return
         root = tree.getroot()
         for node in root.iter('node'):
             if 'translate' in node.attrib:
@@ -776,7 +789,8 @@ class BodyDataBase:
                 self.joints[joint_index].set_limb_length(dims[0])
             elif len(dims) == 2:
                 self.joints[joint_index].set_thickness([dims[0], dims[1]])
-            self.limbs[joint_index].new_shape = True
+            if self.limbs[joint_index] is not None:
+                self.limbs[joint_index].new_shape = True
 
     def create_colours(self):
         self.color.append([0.5, 0.0, 0.0, 1.0])
@@ -1061,21 +1075,20 @@ class BodyData(BodyDataBase):
         else:
             glClearColor(0, 0, 0, 0)
 
-    def rotationAlign(self, axis, up_vector):
-        v = np.cross(axis, up_vector)
-        c = np.dot(axis, up_vector)
-        k = 1.0 / (1.0 + c)
-
-        alignment_matrix = np.array([v[0] * v[0] * k + c, v[1] * v[1] * k - v[2], v[2] * v[0] * k + v[1], 0.0,
-                  v[0] * v[1] * k + v[2], v[1] * v[1] * k + c, v[2] * v[1] * k - v[0], 0.0,
-                  v[0] * v[2] * k - v[1], v[1] * v[2] * k + v[0], v[2] * v[2] * k + c, 0.0,
-                  0.0, 0.0, 0.0, 1.0])
-        alignment_matrix.reshape((4, 4))
-        restore_matrix = glGetInteger(GL_MATRIX_MODE)
-        glMatrixMode(GL_MODELVIEW)
-        glPushMatrix()
-        glMultMatrixf(self.alignment_matrix)
-
+    # def rotationAlign(self, axis, up_vector):
+    #     v = np.cross(axis, up_vector)
+    #     c = np.dot(axis, up_vector)
+    #     k = 1.0 / (1.0 + c + 1e-8)
+    #
+    #     self.alignment_matrix = np.array([v[0] * v[0] * k + c, v[1] * v[1] * k - v[2], v[2] * v[0] * k + v[1], 0.0,
+    #               v[0] * v[1] * k + v[2], v[1] * v[1] * k + c, v[2] * v[1] * k - v[0], 0.0,
+    #               v[0] * v[2] * k - v[1], v[1] * v[2] * k + v[0], v[2] * v[2] * k + c, 0.0,
+    #               0.0, 0.0, 0.0, 1.0]).reshape((4, 4))
+    #     self._rotation_align_restore_matrix = glGetInteger(GL_MATRIX_MODE)
+    #     glMatrixMode(GL_MODELVIEW)
+    #     glPushMatrix()
+    #     glMultMatrixf(self.alignment_matrix)
+    #
     def draw_quaternion_distance_sphere(self, limb_index):
         if limb_index != -1 and self.magnitudes is not None:
             d = self.magnitudes[self.current_body, limb_index] * self.joint_motion_scale   #self.quaternion_distance_display_scale
@@ -1245,7 +1258,7 @@ class LimbGeometry:
                 glVertex3fv(self.points[11] * self.dims)
                 glVertex3fv(self.points[10] * self.dims)
 
-                glVertex3fv(self.points[10])
+                glVertex3fv(self.points[10] * self.dims)
                 glVertex3fv(self.points[0] * self.dims)
 
                 glNormal3fv(self.normals[9])
@@ -1265,12 +1278,11 @@ class LimbGeometry:
         temp1 = v_2 - v_1
         temp2 = v_3 - v_1
         normal = np.cross(temp1, temp2)
-        if normal.any() == 0:
-            for i in range(3):
-                if normal[i] == 0:
-                    normal[i] = 1e-6
         dist = np.linalg.norm(normal)
-        normal = normal / dist
+        if dist < 1e-8:
+            normal = np.array([0.0, 0.0, 1.0])
+        else:
+            normal = normal / dist
         return (normal[0], normal[1], normal[2])
 
     def __del__(self):
