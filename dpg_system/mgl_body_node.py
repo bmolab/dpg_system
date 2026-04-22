@@ -1,4 +1,6 @@
 import os
+import logging
+import traceback
 import numpy as np
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
@@ -10,8 +12,13 @@ from dpg_system.body_base import BodyData, t_PelvisAnchor, t_ActiveJointCount
 from dpg_system.body_defs import *
 from dpg_system.moderngl_nodes import MGLNode
 
+logger = logging.getLogger(__name__)
+
 
 class MGLBodyNode(MGLNode):
+    # Centimeters to meters conversion (pelvis bone_translation is stored in cm)
+    CM_TO_METERS = 0.01
+
     # Mapping from SMPL limb length keys to body_base joint indices.
     # Each joint's bone_translation is the offset FROM ITS PARENT to that joint,
     # so e.g. 'upper_leg' (hip→knee) maps to the Knee joints, not the Hip joints.
@@ -77,6 +84,13 @@ class MGLBodyNode(MGLNode):
         # Baseline translations used for Shadow mode scaling (captured from originals)
         self._baseline_translations = None
         self._gl_dirty = False
+
+        # GL resource handles (initialized in initialize_gl)
+        self.cube_vbo = None
+        self.cube_vao = None
+        self.prog = None
+        self.instance_vbo = None
+        self.max_limbs = 64
         self._last_limb_data = None  # Store last limb data for mode switching
         
         # Mapping for Active Joint Data (User provides data in t_* order, separate from internal list order)
@@ -130,6 +144,8 @@ class MGLBodyNode(MGLNode):
         
         def normalize_v(v):
             l = math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2])
+            if l < 1e-10:
+                return [0.0, 0.0, 0.0]
             return [v[0]/l, v[1]/l, v[2]/l]
         
         ico_verts = [normalize_v(v) for v in ico_verts]
@@ -211,10 +227,36 @@ class MGLBodyNode(MGLNode):
             (self.instanced_bone_idx_buffer, '1i/i', 'in_bone_idx'),
         ], index_buffer=self.instanced_sphere_ibo)
         
+    @staticmethod
+    def _normalize_color(c):
+        """Normalize color to 0-1 range with 4 components (RGBA)."""
+        if c is None or len(c) == 0:
+            return [1.0, 1.0, 1.0, 1.0]
+        c_list = list(c)
+        if max(c_list) > 1.0:
+            c_list = [val / 255.0 for val in c_list]
+        if len(c_list) == 3:
+            return c_list + [1.0]
+        return c_list
+
+    def _release_gl_resources(self):
+        """Release all ModernGL buffers and VAOs to prevent GPU memory leaks."""
+        for attr in ['limb_top_fix_vbo', 'limb_top_fix_vao', 'skeleton_vbo',
+                     'skeleton_index_buffer', 'skeleton_vao', 'skeleton_unlit_vao',
+                     'instanced_sphere_vbo', 'instanced_sphere_ibo',
+                     'instanced_sphere_norms', 'instanced_radius_buffer',
+                     'instanced_bone_idx_buffer', 'instanced_vao',
+                     'cube_vbo', 'cube_ibo']:
+            obj = getattr(self, attr, None)
+            if obj is not None:
+                try:
+                    obj.release()
+                except Exception:
+                    pass
+                setattr(self, attr, None)
+
     def draw_instanced(self, joint_data):
-        # DEBUG PRINTS FOR USER
         if not hasattr(self, 'instanced_vao'):
-            # print("MGLBodyNode: No instanced_vao in draw_instanced - skipping")
             return
             
         ctx = self.ctx.ctx
@@ -289,24 +331,8 @@ class MGLBodyNode(MGLNode):
         sphere_color = self.color_input()
         if sphere_color is None:
              sphere_color = self.ctx.current_color
-             
-        # Normalize colors (handle 0-255 vs 0-1)
-        # Identical logic to MGLMaterialNode.norm(c)
-        def norm(c):
-             if c is None or len(c) == 0: return [1.0, 1.0, 1.0, 1.0] # Fallback
-             
-             # Handle list/tuple to list
-             c_list = list(c)
-             
-             if max(c_list) > 1.0:
-                 c_list = [val / 255.0 for val in c_list]
-                 
-             # Ensure 4 components (defaults to alpha 1.0 if missing)
-             if len(c_list) == 3:
-                 return c_list + [1.0]
-             return c_list
-             
-        final_color = norm(sphere_color)
+
+        final_color = self._normalize_color(sphere_color)
         
         if 'color' in self.ctx.mgl_instanced_joint_shader:
             self.ctx.mgl_instanced_joint_shader['color'].value = tuple(final_color)
@@ -396,15 +422,13 @@ class MGLBodyNode(MGLNode):
         add_child(t_RightWrist, t_RightKnuckle)
         if t_RightKnuckle < len(joints) and t_RightFingerTip < len(joints):
              add_child(t_RightKnuckle, t_RightFingerTip)
-        
-        self.cube_vbo = None
-        self.cube_vao = None
-        self.prog = None
-        self.instance_vbo = None
-        self.max_limbs = 64
+
 
     def initialize_gl(self):
         if self.ctx.ctx is None: return
+        
+        # Release old GL resources before re-creating (prevents GPU memory leaks)
+        self._release_gl_resources()
         
         # Simple Cube Geometry (centered at 0,0,0, size 1x1x1)
         # But body_base cubes are complex. Let's use simple unit cube valid for scaling.
@@ -451,8 +475,6 @@ class MGLBodyNode(MGLNode):
         ], dtype='i4')
 
         ctx = self.ctx.ctx
-        self.cube_vbo = ctx.buffer(vertices)
-        self.cube_ibo = ctx.buffer(indices)
         
         # Shader for Skinned Rendering (Batched Limbs)
         self.prog = ctx.program(
@@ -527,6 +549,7 @@ class MGLBodyNode(MGLNode):
                     // If no lights, use simple ambient fallback based on material
                     if (num_lights == 0) {
                         result = material_ambient.rgb * v_color.rgb + material_diffuse.rgb * v_color.rgb * 0.5;
+                        f_color = vec4(result, v_color.a);
                     } else {
                         vec3 total_ambient = vec3(0.0);
                         vec3 total_diffuse = vec3(0.0);
@@ -780,16 +803,19 @@ class MGLBodyNode(MGLNode):
                 if offsets is not None:
                     self._apply_smpl_offsets(offsets, {})
                     self._gl_dirty = True
-                    print('mgl_body: applied default SMPL skeleton offsets')
+                    logger.debug('mgl_body: applied default SMPL skeleton offsets')
                 else:
-                    print('mgl_body: smplx not available, cannot switch to SMPL skeleton')
+                    logger.warning('mgl_body: smplx not available, cannot switch to SMPL skeleton')
         elif self._last_limb_data is not None:
             self._apply_limb_lengths(self._last_limb_data)
         self._gl_dirty = True
 
     def _apply_limb_lengths(self, limb_data):
         """Apply SMPL limb lengths to body joints by scaling bone_translation vectors."""
-        lengths = limb_data.get('lengths', limb_data) if isinstance(limb_data, dict) else {}
+        if isinstance(limb_data, dict):
+            lengths = limb_data.get('lengths', {})
+        else:
+            lengths = {}
         if not lengths:
             return
 
@@ -888,7 +914,7 @@ class MGLBodyNode(MGLNode):
             output = model(betas=torch.zeros(1, 10))
             joints = output.joints[0].detach().cpu().numpy()
 
-            print(f"mgl_body: SMPL-H joints shape: {joints.shape}")
+            logger.debug(f"mgl_body: SMPL-H joints shape: {joints.shape}")
 
             # SMPL parent indices
             smpl_parents = [
@@ -913,17 +939,17 @@ class MGLBodyNode(MGLNode):
             r_hand_dist = np.linalg.norm(offsets[23])
             l_forearm_dist = np.linalg.norm(offsets[20])
             r_forearm_dist = np.linalg.norm(offsets[21])
-            print(f"mgl_body: SMPL offset distances:")
-            print(f"  left forearm (20): {l_forearm_dist:.4f}m")
-            print(f"  right forearm (21): {r_forearm_dist:.4f}m")
-            print(f"  left hand (22, using joints[22]): {l_hand_dist:.4f}m")
-            print(f"  right hand (23, using joints[37]): {r_hand_dist:.4f}m")
+            logger.debug(f"mgl_body: SMPL offset distances:")
+            logger.debug(f"  left forearm (20): {l_forearm_dist:.4f}m")
+            logger.debug(f"  right forearm (21): {r_forearm_dist:.4f}m")
+            logger.debug(f"  left hand (22, using joints[22]): {l_hand_dist:.4f}m")
+            logger.debug(f"  right hand (23, using joints[37]): {r_hand_dist:.4f}m")
 
             # If left hand offset is suspiciously large (>0.15m = 15cm),
             # joints[22] is probably not the left hand base.
             # Try alternative indices.
             if l_hand_dist > 0.15 and joints.shape[0] > 24:
-                print(f"  WARNING: left hand offset {l_hand_dist:.4f}m seems too large!")
+                logger.warning(f"  left hand offset {l_hand_dist:.4f}m seems too large!")
                 # Scan nearby indices for the actual left hand base
                 best_idx = 22
                 best_dist = l_hand_dist
@@ -933,7 +959,7 @@ class MGLBodyNode(MGLNode):
                         best_dist = d
                         best_idx = try_idx
                 if best_idx != 22:
-                    print(f"  Using joints[{best_idx}] instead (dist={best_dist:.4f}m)")
+                    logger.debug(f"  Using joints[{best_idx}] instead (dist={best_dist:.4f}m)")
                     offsets[22] = joints[best_idx] - joints[20]
 
             # Virtual extensions matching smpl_processor
@@ -954,9 +980,8 @@ class MGLBodyNode(MGLNode):
             self._default_smpl_offsets = offsets
             return offsets
         except Exception as e:
-            print(f"mgl_body: error computing default SMPL offsets: {e}")
-            import traceback
-            traceback.print_exc()
+            logger.error(f"mgl_body: error computing default SMPL offsets: {e}")
+            logger.debug(traceback.format_exc())
             return None
 
     def _apply_smpl_offsets(self, offsets, lengths):
@@ -966,22 +991,22 @@ class MGLBodyNode(MGLNode):
         # Joints with custom geometry that should NOT have dims[0] scaled
         SKIP_DIMS_JOINTS = {t_SpinePelvis, t_LeftShoulderBladeBase, t_RightShoulderBladeBase}
 
-        # Print diagnostics for key joints on first call
+        # Log diagnostics for key joints on first call
         if not hasattr(self, '_smpl_offsets_debug_done'):
             self._smpl_offsets_debug_done = True
-            print(f"_apply_smpl_offsets: offsets shape={offsets.shape}")
+            logger.debug(f"_apply_smpl_offsets: offsets shape={offsets.shape}")
             for si in [0, 3, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]:
                 if si < offsets.shape[0]:
                     v = offsets[si]
                     bi = idx_map.get(si, -1)
-                    print(f"  SMPL {si} -> body {bi}: offset={v}, norm={np.linalg.norm(v):.4f}m")
+                    logger.debug(f"  SMPL {si} -> body {bi}: offset={v}, norm={np.linalg.norm(v):.4f}m")
             # Check fingertip original translations
             for bi in [t_LeftFingerTip, t_RightFingerTip, t_LeftKnuckle, t_RightKnuckle]:
                 orig = self._original_translations.get(bi)
                 if orig is not None:
-                    print(f"  body {bi}: original bone_translation={orig}, norm={np.linalg.norm(orig):.4f}m")
+                    logger.debug(f"  body {bi}: original bone_translation={orig}, norm={np.linalg.norm(orig):.4f}m")
                 else:
-                    print(f"  body {bi}: NOT in _original_translations")
+                    logger.debug(f"  body {bi}: NOT in _original_translations")
 
         # Virtual extension indices — preserve Shadow geometry for these
         # (toes and heels only; fingertips get SMPL offsets applied directly)
@@ -1050,22 +1075,28 @@ class MGLBodyNode(MGLNode):
             msg = self.mgl_input()
             if msg == 'draw':
                 self.ctx = MGLContext.get_instance()
-                self.draw()
-                self.ctx = None
+                try:
+                    self.remember_state()
+                    self.draw()
+                except Exception as e:
+                    logger.error(f"MGLBodyNode: draw error: {e}")
+                    logger.debug(traceback.format_exc())
+                finally:
+                    self.restore_state()
+                    self.ctx = None
             self.mgl_output.send(msg)
 
     def draw(self):
-        if not self.ctx or not self.ctx.ctx: return
-        
-        # 5. Instanced Visualization (Optional) - MOVED TO END
-        # if hasattr(self, 'latest_joint_data') and self.latest_joint_data is not None:
-        #      self.draw_instanced(self.latest_joint_data)
+        if not self.ctx or not self.ctx.ctx:
+            return
+        if self.ctx.view_matrix is None or self.ctx.projection_matrix is None:
+            return
         
         if not getattr(self, 'limb_top_fix_vao', None) or self._gl_dirty:
              if self._gl_dirty:
-                 print("MGLBodyNode: re-initializing GL for updated limb lengths")
+                 logger.debug("MGLBodyNode: re-initializing GL for updated limb lengths")
              else:
-                 print("MGLBodyNode: initializing GL for top cap normal fix")
+                 logger.debug("MGLBodyNode: initializing GL")
              self.initialize_gl()
              self._gl_dirty = False
 
@@ -1120,14 +1151,17 @@ class MGLBodyNode(MGLNode):
                 cam_pos = inv_view[3, :3]
                 if 'view_pos' in target_prog:
                     target_prog['view_pos'].value = tuple(cam_pos)
-            except:
+            except np.linalg.LinAlgError:
+                # Singular view matrix — skip view_pos update, lighting may be incorrect
                 pass
+            except Exception as e:
+                logger.error(f"MGLBodyNode: error computing camera position: {e}")
             
             self.ctx.update_lights(target_prog)
             self.ctx.update_material(target_prog)
 
         if 'color' in target_prog:
-            c = self.ctx.current_color
+            c = self._normalize_color(self.ctx.current_color)
             target_prog['color'].value = tuple(c)
         
         # 4. Draw
@@ -1178,11 +1212,11 @@ class MGLBodyNode(MGLNode):
         if joint_index == t_PelvisAnchor:
              joint = self.body.joints[joint_index]
              trans = np.identity(4, dtype='f4')
-             t_vec = joint.bone_translation * 0.01 
+             t_vec = joint.bone_translation * self.CM_TO_METERS
              trans[:3, 3] = t_vec
              
              anim_rot = np.identity(4, dtype='f4')
-             if self.body.joint_matrices is not None and -1 < joint_index < self.body.joint_matrices.shape[1]: 
+             if self.body.joint_matrices is not None and 0 <= self.body.current_body < self.body.joint_matrices.shape[0] and 0 <= joint_index < self.body.joint_matrices.shape[1]: 
                   anim_rot = self.body.joint_matrices[self.body.current_body, joint_index].reshape((4,4)).T
                   if np.abs(anim_rot).sum() < 0.1: anim_rot = np.identity(4, dtype='f4')
 
@@ -1203,7 +1237,7 @@ class MGLBodyNode(MGLNode):
         trans_bone[:3, 3] = joint.bone_translation 
         
         anim_rot = np.identity(4, dtype='f4')
-        if self.body.joint_matrices is not None and -1 < joint_index < self.body.joint_matrices.shape[1]: 
+        if self.body.joint_matrices is not None and 0 <= self.body.current_body < self.body.joint_matrices.shape[0] and 0 <= joint_index < self.body.joint_matrices.shape[1]: 
              anim_matrix = self.body.joint_matrices[self.body.current_body, joint_index].reshape((4,4)).T
              if np.abs(anim_matrix).sum() > 0.1: 
                   anim_rot = anim_matrix
@@ -1216,7 +1250,7 @@ class MGLBodyNode(MGLNode):
         up = np.array([0.0, 0.0, 1.0], dtype='f4')
         
         rot_align = np.identity(4, dtype='f4')
-        dot_p = np.dot(up, target_axis)
+        dot_p = float(np.clip(np.dot(up, target_axis), -1.0, 1.0))
         
         if np.abs(dot_p) < 0.99:
              axis = np.cross(up, target_axis)
