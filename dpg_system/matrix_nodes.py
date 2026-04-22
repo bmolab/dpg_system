@@ -4,7 +4,11 @@ from dpg_system.conversion_utils import *
 import time
 import numpy as np
 import threading
-import ssqueezepy
+try:
+    import ssqueezepy
+    ssqueezepy_available = True
+except ImportError:
+    ssqueezepy_available = False
 
 
 t_BufferFill = 0
@@ -15,7 +19,8 @@ t_BufferCircularVertical = 2
 def register_matrix_nodes():
     Node.app.register_node('buffer', BufferNode.factory)
     Node.app.register_node('rolling_buffer', RollingBufferNode.factory)
-    Node.app.register_node('cwt', WaveletNode.factory)
+    if ssqueezepy_available:
+        Node.app.register_node('cwt', WaveletNode.factory)
     Node.app.register_node('confusion', ConfusionMatrixNode.factory)
 
 
@@ -103,7 +108,6 @@ class BufferNode(Node):
                 if self.write_pos != 0:
                     output_buffer = np.concatenate((self.buffer[self.write_pos:], self.buffer[:self.write_pos]), axis=0)
                     self.output.send(output_buffer)
-                    del output_buffer
                 else:
                     self.output.send(self.buffer)
 
@@ -188,9 +192,8 @@ class RollingBuffer:
                 self.lock.release()
 
     def set_write_pos(self, pos):
-        if not self.lock.locked():
-            if self.lock.acquire(blocking=False):
-                self.write_pos = pos
+        if self.lock.acquire(blocking=False):
+            self.write_pos = pos
             self.lock.release()
 
     def update(self, incoming):
@@ -243,7 +246,6 @@ class RollingBuffer:
                         else:
                             self.buffer[0, :self.sample_count] = self.buffer[0, self.sample_count:] = incoming[-back_size:]
                         self.write_pos = 0
-                        self.lock.release()
                     else:
                         start = self.write_pos
                         end = self.write_pos + front_size
@@ -325,7 +327,7 @@ class RollingBuffer:
         return None
 
     def release_buffer(self):
-        if self.lock.locked and self.in_get_buffer:
+        if self.lock.locked() and self.in_get_buffer:
             self.lock.release()
             self.in_get_buffer = False
 
@@ -423,7 +425,6 @@ class RollingBufferNode(Node):
             output_buffer = self.rolling_buffer.get_buffer()
             if output_buffer is not None:
                 self.output.send(output_buffer)
-                del output_buffer
                 self.rolling_buffer.release_buffer()
 
 
@@ -448,16 +449,15 @@ class ConfusionMatrixNode(Node):
     def execute(self):
         if self.input2.fresh_input:
             self.data2 = self.input2()
-        if self.data2 is not None and len(self.data2) > 0:
+        if self.input.fresh_input and self.data2 is not None and len(self.data2) > 0:
             data1 = self.input()
-            self.confusion_matrix = np.ndarray((len(self.data2), len(data1)))
-            for index, word in enumerate(data1):
-                for index2, word2 in enumerate(self.data2):
-                    if word == word2:
-                        self.confusion_matrix[index2, index] = 1.0
-                    else:
-                        self.confusion_matrix[index2, index] = 0.0
-            self.output.send(self.confusion_matrix)
+            if data1 is not None and len(data1) > 0:
+                self.confusion_matrix = np.zeros((len(self.data2), len(data1)))
+                for index, word in enumerate(data1):
+                    for index2, word2 in enumerate(self.data2):
+                        if word == word2:
+                            self.confusion_matrix[index2, index] = 1.0
+                self.output.send(self.confusion_matrix)
 
 
 class WaveletNode(Node):
@@ -482,6 +482,9 @@ class WaveletNode(Node):
         if self.input.fresh_input:
             data = self.input()
             data = any_to_array(data)
-            wavelets, _ = ssqueezepy.cwt(data.ravel(), nv=self.octaves, wavelet=self.wavelets, scales='log-piecewise')
-            self.output.send(np.abs(wavelets))
+            try:
+                wavelets, _ = ssqueezepy.cwt(data.ravel(), nv=self.octaves, wavelet=self.wavelets, scales='log-piecewise')
+                self.output.send(np.abs(wavelets))
+            except Exception as e:
+                print(f'WaveletNode: cwt failed: {e}')
 
