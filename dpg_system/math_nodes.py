@@ -2,7 +2,6 @@ import dearpygui.dearpygui as dpg
 import math
 import numpy as np
 import torch
-from spacy.util import working_dir
 
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
@@ -14,6 +13,7 @@ def register_math_nodes():
     Node.app.register_node("!-", ArithmeticNode.factory)
     Node.app.register_node("*", ArithmeticNode.factory)
     Node.app.register_node("/", ArithmeticNode.factory)
+    Node.app.register_node("//", ArithmeticNode.factory)
     Node.app.register_node("!/", ArithmeticNode.factory)
     Node.app.register_node("min", ArithmeticNode.factory)
     Node.app.register_node("max", ArithmeticNode.factory)
@@ -64,9 +64,7 @@ class ArithmeticNode(Node):
 
         widget_type = 'drag_float'
         self.operand = 0
-        supplied_operand = False
         if len(args) > 0:
-            supplied_operand = True
             self.operand = any_to_float_or_int(args[0])
             t = type(self.operand)
             if t == float:
@@ -117,18 +115,19 @@ class ArithmeticNode(Node):
         output_value = self.op(input_value, self.operand)
         self.output.send(output_value)
 
-    def matrix_mult(self, a, b):
-        if type(a) == np.array and type(b) == np.array:
-            a_row = len(a[0])
-            b_col = len(b)
-            if a_row == b_col:
-                return np.multiply(a, b)
-
     def permutation(self, a, b):
-        return math.factorial(a) // math.factorial(abs(a - b))
+        a = any_to_int(a)
+        b = any_to_int(b)
+        if a < 0 or b < 0 or b > a:
+            return 0
+        return math.factorial(a) // math.factorial(a - b)
 
     def combination(self, a, b):
-        return math.factorial(a) // (math.factorial(abs(a - b)) * math.factorial(b))
+        a = any_to_int(a)
+        b = any_to_int(b)
+        if a < 0 or b < 0 or b > a:
+            return 0
+        return math.factorial(a) // (math.factorial(a - b) * math.factorial(b))
 
     def mod(self, a, b):
         if type(a) == np.ndarray:
@@ -391,8 +390,7 @@ class ComparisonAndPassNode(Node):
         if self.operand is not None:
             input_value = conform_type(input_value, self.operand)
         else:
-            t = type(input_value)
-            if t not in [float, int, np.int64, np.float32, np.double]:
+            if not isinstance(input_value, (int, float, bool, np.number, np.bool_)):
                 self.force_int_property.set(False)
         # input_value = any_to_numerical(self.input())
 
@@ -607,7 +605,7 @@ class OpSingleTrigNode(Node):
         self.use_degrees = self.use_degrees_property()
 
         input_value = any_to_numerical(self.input(), validate=True)
-        if input is not None:
+        if input_value is not None:
             t = type(input_value)
             if t in [int, bool, np.int64, np.bool_]:
                 input_value = float(input_value)
@@ -623,7 +621,7 @@ class OpSingleTrigNode(Node):
                 return np.sin(a)
         elif self.app.torch_available and t == torch.Tensor:
             if self.use_degrees:
-                return torch.sin(torch.rad2deg(a))
+                return torch.sin(torch.deg2rad(a))
             else:
                 return torch.sin(a)
         else:
@@ -641,7 +639,7 @@ class OpSingleTrigNode(Node):
                 return np.cos(a)
         elif self.app.torch_available and t == torch.Tensor:
             if self.use_degrees:
-                return torch.cos(torch.rad2deg(a))
+                return torch.cos(torch.deg2rad(a))
             else:
                 return torch.cos(a)
         else:
@@ -659,7 +657,7 @@ class OpSingleTrigNode(Node):
                 return np.tan(a)
         elif self.app.torch_available and t == torch.Tensor:
             if self.use_degrees:
-                return torch.tan(torch.rad2deg(a))
+                return torch.tan(torch.deg2rad(a))
             else:
                 return torch.tan(a)
         else:
@@ -679,7 +677,7 @@ class OpSingleTrigNode(Node):
         elif self.app.torch_available and t == torch.Tensor:
             a = torch.clamp(a, -1.0, 1.0)
             if self.use_degrees:
-                return torch.deg2rad(torch.arcsin(a))
+                return torch.rad2deg(torch.arcsin(a))
             else:
                 return torch.arcsin(a)
         else:
@@ -703,7 +701,7 @@ class OpSingleTrigNode(Node):
         elif self.app.torch_available and t == torch.Tensor:
             a = torch.clamp(a, -1.0, 1.0)
             if self.use_degrees:
-                return torch.deg2rad(torch.arccos(a))
+                return torch.rad2deg(torch.arccos(a))
             else:
                 return torch.arccos(a)
         else:
@@ -725,7 +723,7 @@ class OpSingleTrigNode(Node):
                 return np.arctan(a)
         elif self.app.torch_available and t == torch.Tensor:
             if self.use_degrees:
-                return torch.deg2rad(torch.arctan(a))
+                return torch.rad2deg(torch.arctan(a))
             else:
                 return torch.arctan(a)
         else:
@@ -758,7 +756,7 @@ class ContinuousRotationNode(Node):
         if self.do_clear:
             self.previous = rot.copy()
             self.do_clear = False
-        if self.previous is not None:
+        if self.previous is not None and len(self.previous) == len(rot):
             for index in range(len(rot)):
                 if rot[index] < self.previous[index]:
                     over_rot = (self.previous[index] - rot[index] + 179) // 360 * 360
