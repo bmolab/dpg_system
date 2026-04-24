@@ -1646,10 +1646,12 @@ class Vector2DNode(Node):
         for i in range(self.max_component_count):
             cp = self.add_input('[' + str(i) + ']', widget_type='drag_float_n', widget_width=self.component_widget_width, callback=self.component_changed, **kwargs)
             cp.name_archive.append('row ' + str(i))
+            cp.name_archive.append(str(i))
             self.component_properties.append(cp)
 
         self.zero_input = self.add_input('zero', widget_type='button', callback=self.zero)
         self.vector_format_input = self.add_input('output type', widget_type='combo', default_value='numpy', callback=self.vector_format_changed)
+        self.vector_format_input.name_archive.append('vector format')
         if Node.app.torch_available:
             self.vector_format_input.widget.combo_items = ['numpy', 'torch', 'list']
         else:
@@ -1778,11 +1780,27 @@ class Vector2DNode(Node):
                 dpg.configure_item(uuid, width=width)
 
     def send(self):
-        output_array = np.ndarray(self.current_dims)
-        for i in range(self.current_dims[0]):
-            for j in range(self.current_dims[1]):
-                output_array[i] = self.component_properties[i]()
+        dim1 = self.current_dims[0]
+        dim2 = self.current_dims[1] if len(self.current_dims) > 1 else 1
+        output_array = np.ndarray([dim1, dim2])
+        for i in range(dim1):
+            output_array[i] = self.component_properties[i]()
         self.output.send(output_array)
+
+    def load_custom(self, container):
+        dim1 = self.current_dims[0]
+        dim2 = self.current_dims[1] if len(self.current_dims) > 1 else 1
+        values = np.ndarray([dim1, dim2])
+        for i in range(dim1):
+            values[i] = self.component_properties[i]()
+        vf = self.vector_format_input()
+        if vf == 'torch':
+            self.output_vector = torch.from_numpy(values)
+        elif vf == 'list':
+            self.output_vector = values.tolist()
+        else:
+            self.output_vector = values
+        self.output.set_value(self.output_vector)
 
     def execute(self):
         if self.input.fresh_input:
@@ -1833,6 +1851,8 @@ class Vector2DNode(Node):
 
             elif t == np.ndarray:
                 self.current_dims = list(value.shape)
+                if len(self.current_dims) < 2:
+                    self.current_dims.append(1)
                 if self.vector_format_input() == 'list':
                     self.output_vector = value.tolist()
                 elif self.vector_format_input() == 'numpy':
@@ -1842,6 +1862,8 @@ class Vector2DNode(Node):
 
             elif t == torch.Tensor:
                 self.current_dims = list(value.shape)
+                if len(self.current_dims) < 2:
+                    self.current_dims.append(1)
                 if self.vector_format_input() == 'list':
                     self.output_vector = value.tolist()
                 elif self.vector_format_input() == 'numpy':

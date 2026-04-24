@@ -1697,7 +1697,7 @@ class SMPLTorqueNode(SMPLNode):
         
         # Contact Method Selection
         self.contact_method_prop = self.add_option('contact_method', widget_type='combo', default_value='stability_v2')
-        self.contact_method_prop.widget.combo_items = ['fusion', 'stability', 'stability_v2', 'com_driven', 'consensus']
+        self.contact_method_prop.widget.combo_items = ['fusion', 'stability', 'stability_v2', 'stability_v2_fe', 'com_driven', 'consensus']
         self.enable_frame_eval_prop = self.add_option('enable_frame_evaluator', widget_type='checkbox', default_value=True)
         
         
@@ -2474,6 +2474,15 @@ class SMPLBetaEditorNode(Node):
         self._recompute_and_send()
 
     def custom_create(self, from_file):
+        if not from_file:
+            self._recompute_and_send()
+
+    def load_custom(self, container):
+        """Properties are now restored; defer output until links are connected."""
+        pass
+
+    def post_load_callback(self):
+        """Called after all links are wired — send restored state to connected nodes."""
         self._recompute_and_send()
 
     def _get_betas_array(self):

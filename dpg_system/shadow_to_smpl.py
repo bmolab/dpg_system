@@ -212,10 +212,11 @@ def main():
     args = p.parse_args()
 
     files = list(args.files)
+    print(files)
     if args.dir:
         files += [os.path.join(args.dir, f) for f in sorted(os.listdir(args.dir))
                   if f.endswith('.npz')]
-
+    print(files)
     if not files:
         p.print_help()
         return

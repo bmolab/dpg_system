@@ -1619,6 +1619,25 @@ class SMPLProcessor:
         # already handled by apparent gravity in _compute_com_for_zmp
         support_fraction = np.clip(F_support_up / (total_mass * g_mag), 0.0, 1.0)
         
+        # --- ZMP-Aware Velocity Soft Penalty ---
+        # If a foot is sliding but the CoM is far away, we aggressively penalize it.
+        # This naturally suppresses sliding feet that aren't bearing load.
+        # Estimate static ZMP as CoM horizontal pos
+        if com.ndim > 1:
+            com_hz = com[0, plane_dims]
+        else:
+            com_hz = com[plane_dims]
+            
+        vel_h = np.zeros(J)
+        vel = getattr(self, 'prob_smoothed_vel', None)
+        if vel is not None:
+            for j in contact_joints:
+                if j < J and j < vel.shape[0]:
+                    vel_h[j] = np.sqrt(vel[j, plane_dims[0]]**2 + vel[j, plane_dims[1]]**2)
+                    
+        # Apply soft penalty to base probabilities
+        working_probs = self.contact_probs[f] if self.contact_probs.ndim > 1 else self.contact_probs
+        
         # --- Airborne detection for adaptive alpha ---
         # Check minimum joint height across all contact candidates
         min_joint_height = float('inf')
@@ -2846,8 +2865,10 @@ class SMPLProcessor:
         # Determine up axis and floor
         if options.input_up_axis == 'Y':
             y_dim = 1
+            plane_dims = [0, 2]
         else:
             y_dim = 2
+            plane_dims = [0, 1]
         floor_height = getattr(self, '_inferred_floor_height', None)
         if floor_height is None:
             floor_height = getattr(options, 'floor_height', 0.0) or 0.0
@@ -3012,11 +3033,22 @@ class SMPLProcessor:
         # Source 1: Consensus probability
         if raw_probs is not None:
             probs_1d = raw_probs[0] if raw_probs.ndim > 1 else raw_probs
+            
+            com = getattr(self, '_prev_com_for_stability', None)
+            if com is None:
+                com = getattr(self, 'current_com', None)
+            if com is not None and com.ndim > 1:
+                com = com[0]
+            if com is None:
+                com = positions[0]
+            com_hz = com[plane_dims]
+            
             for j in range(min(len(probs_1d), J)):
-                if probs_1d[j] > CANDIDATE_THRESHOLD and j not in EXCLUDED_JOINTS:
+                prob = probs_1d[j]
+                if prob > CANDIDATE_THRESHOLD and j not in EXCLUDED_JOINTS:
                     candidate_joints.add(j)
         
-        # Compute joint heights for evaluator use
+        # Compute joint heights for evaluator use early
         joint_heights = np.zeros(J)
         for j in range(J):
             joint_heights[j] = positions[j, y_dim] - floor_height
@@ -3326,6 +3358,141 @@ class SMPLProcessor:
         
         self._frame_eval_result = result
 
+
+    def _compute_probabilistic_contacts_stability_v2_fe(self, F, J, world_pos, options):
+        """stability_v2 + DynamicFrameEvaluator necessity override.
+        
+        Runs stability_v2 for the base consensus-driven contact decisions,
+        then runs the frame evaluator to check physics necessity. If the
+        evaluator determines a foot group MUST bear load (force > threshold)
+        but stability_v2 has it OFF (e.g. due to tight height Gaussian or
+        horizontal velocity penalty), this method overrides the group to ON.
+        
+        This re-enables the necessity-based approach from the original
+        'stability' method, where height was a gate (not a weight) and
+        CoM proximity determined load distribution.
+        """
+        # --- Step 1: Run stability_v2 as-is ---
+        consensus_probs = self._compute_probabilistic_contacts_stability_v2(
+            F, J, world_pos, options
+        )
+        
+        # --- Step 2: Run the frame evaluator ---
+        tips = getattr(self, 'temp_tips', {})
+        self._evaluate_dynamic_frame(F, world_pos, tips, options, consensus_probs)
+        
+        fe_result = getattr(self, '_frame_eval_result', None)
+        if fe_result is None:
+            return consensus_probs
+        
+        # --- Step 3: Necessity override ---
+        # Map frame evaluator joints to stability_v2 foot groups.
+        # If the evaluator says a foot group joint is 'necessary' but the
+        # stability_v2 state machine has the group OFF, promote it to ON.
+        NECESSITY_FORCE_THRESH = 2.0  # kg — same as DynamicFrameEvaluator.NECESSARY_THRESHOLD_KG
+        NECESSITY_HEIGHT_GATE = 0.35  # Don't override if foot is clearly airborne
+        
+        # Foot group mapping: evaluator joint → v2 group name
+        JOINT_TO_FOOT_GROUP = {
+            10: 'LF', 28: 'LF',  # Left foot joints
+            11: 'RF', 29: 'RF',  # Right foot joints
+        }
+        
+        # Axis setup (same as stability_v2 uses)
+        y_dim = 1 if options.input_up_axis == 'Y' else 2
+        floor_height = options.floor_height
+        
+        # Check each necessary joint
+        overrides_applied = []
+        v2_state = getattr(self, '_v2_group_state', None)
+        if v2_state is None:
+            return consensus_probs
+        
+        for j, force in fe_result.per_contact_force.items():
+            if force < NECESSITY_FORCE_THRESH:
+                continue
+            
+            gname = JOINT_TO_FOOT_GROUP.get(j)
+            if gname is None:
+                continue  # Only override foot groups
+            
+            # Already ON — nothing to do
+            if v2_state.get(gname, False):
+                continue
+            
+            # Height gate: don't override if the foot is clearly airborne
+            foot_j = 10 if gname == 'LF' else 11
+            if foot_j < J:
+                if hasattr(self, 'temp_tips') and foot_j in self.temp_tips:
+                    tip = self.temp_tips[foot_j]
+                    h = tip[0, y_dim] if tip.ndim > 1 else tip[y_dim]
+                else:
+                    h = world_pos[0, foot_j, y_dim]
+                h_above = h - floor_height
+                if h_above > NECESSITY_HEIGHT_GATE:
+                    continue
+            
+            # Override: promote group to ON
+            self._v2_group_state[gname] = True
+            self._v2_group_frames[gname] = 0
+            overrides_applied.append((gname, j, force))
+        
+        # --- Step 4: Replace pressure with frame evaluator forces ---
+        # The frame evaluator solves Newton-Euler equilibrium for the full
+        # body, producing a physics-based force distribution that respects
+        # ZMP and moment balance. This is more accurate than stability_v2's
+        # inverse-distance CoM proximity weighting, especially during
+        # symmetric poses (squats) where both feet bear similar load.
+        # Apply this unconditionally — not just when overrides happen.
+        target_pressure = np.zeros(J)
+        for j_fe, force_fe in fe_result.per_contact_force.items():
+            if j_fe < J and force_fe > 0:
+                target_pressure[j_fe] = force_fe
+                
+        # --- Dual Stance Softening ---
+        # The FE uses a point-to-point lever rule. But feet are surfaces, creating
+        # a broad support polygon. When both feet are planted, humans distribute
+        # weight more evenly than the point-lever rule suggests.
+        # We blend the forces towards 50/50 when both feet bear significant load.
+        lf_joints = [10, 28]
+        rf_joints = [11, 29]
+        
+        lf_force = sum(target_pressure[j] for j in lf_joints if j < J)
+        rf_force = sum(target_pressure[j] for j in rf_joints if j < J)
+        
+        # If both feet have > 10kg, it's a firm dual stance
+        if lf_force > 10.0 and rf_force > 10.0:
+            total_foot_force = lf_force + rf_force
+            even_split = total_foot_force / 2.0
+            
+            # Blend factor: 0.0 = strict physics (point lever), 1.0 = perfectly even
+            # 0.65 pulls a 25/50 split to ~33/42, smoothing the visual appearance
+            # while retaining a hint of the physical CoM offset.
+            blend = 0.65
+            
+            lf_target = lf_force * (1.0 - blend) + even_split * blend
+            rf_target = rf_force * (1.0 - blend) + even_split * blend
+            
+            # Redistribute proportionally within the foot groups (e.g. keeping heel/toe ratio)
+            for j in lf_joints:
+                if j < J and target_pressure[j] > 0:
+                    target_pressure[j] *= (lf_target / lf_force)
+                    
+            for j in rf_joints:
+                if j < J and target_pressure[j] > 0:
+                    target_pressure[j] *= (rf_target / rf_force)
+        
+        # Boost consensus probs for any joint with significant pressure
+        for j_fe in range(J):
+            if target_pressure[j_fe] > 1.0:
+                boost = min(0.95, target_pressure[j_fe] / (self.total_mass_kg * 0.3))
+                consensus_probs[0, j_fe] = max(consensus_probs[0, j_fe], boost)
+        
+        # Update stored pressure
+        self._stability_computed_pressure = target_pressure.copy()
+        self._stability_pressure = target_pressure.copy()
+        
+        return consensus_probs
 
     def _compute_probabilistic_contacts_com_driven(self, F, J, world_pos, floor_height, options):
         """
@@ -3884,8 +4051,7 @@ class SMPLProcessor:
         
         if not options.floor_enable:
             return contact_probs
-        
-        # Build consensus options from processing options.
+            
         # Priority: effective floor (physics-derived) > inferred floor > static
         floor_for_consensus = options.floor_height
         if hasattr(self, '_inferred_floor_height') and self._inferred_floor_height is not None:
@@ -7568,13 +7734,18 @@ class SMPLProcessor:
              contact_probs_fusion = self._compute_probabilistic_contacts_stability_v2(
                   F, world_pos.shape[1], world_pos, options
              )
+        elif options.contact_method == 'stability_v2_fe':
+             contact_probs_fusion = self._compute_probabilistic_contacts_stability_v2_fe(
+                  F, world_pos.shape[1], world_pos, options
+             )
         else:  # Default: 'fusion'
              contact_probs_fusion = self._compute_probabilistic_contacts_fusion(
                   F, world_pos.shape[1], world_pos, vel_y_in, vel_h_in, options.floor_height, options
              )
         
         # --- Dynamic Frame Evaluator (optional, read-only) ---
-        if getattr(options, 'enable_frame_evaluator', False):
+        # Skip if stability_v2_fe already ran it (avoids double-processing EMA states)
+        if getattr(options, 'enable_frame_evaluator', False) and options.contact_method != 'stability_v2_fe':
             self._evaluate_dynamic_frame(F, world_pos, tips, options, contact_probs_fusion)
         
         # --- Contact Pressure: Frame Eval vs Legacy ---
@@ -7590,11 +7761,28 @@ class SMPLProcessor:
             # bypassing legacy probability→pressure pipeline.
             J_cp = world_pos.shape[1]
             self.contact_pressure = np.zeros((F, J_cp))
-            fe_forces = fe_result.force_array
-            for f_idx in range(F):
-                n = min(len(fe_forces), J_cp)
-                self.contact_pressure[f_idx, :n] = fe_forces[:n]
+            
+            # stability_v2_fe: use its corrected pressure (which already
+            # incorporates FE forces + necessity overrides)
+            stab_press = getattr(self, '_stability_computed_pressure', None)
+            if options.contact_method == 'stability_v2_fe' and stab_press is not None and len(stab_press) == J_cp:
+                for f_idx in range(F):
+                    self.contact_pressure[f_idx] = stab_press
+                # DEBUG
+                if getattr(self, '_v2fe_debug_count', 0) % 1000 == 1:
+                    print(f'[PRESSURE] stab_press path: [10]={stab_press[10]:.1f} [28]={stab_press[28]:.1f}')
+            else:
+                fe_forces = fe_result.force_array
+                for f_idx in range(F):
+                    n = min(len(fe_forces), J_cp)
+                    self.contact_pressure[f_idx, :n] = fe_forces[:n]
+                # DEBUG
+                if getattr(self, '_v2fe_debug_count', 0) % 1000 == 1:
+                    print(f'[PRESSURE] fe_forces path: method={options.contact_method}')
         else:
+            # DEBUG
+            if getattr(self, '_v2fe_debug_count', 0) % 1000 == 1:
+                print(f'[PRESSURE] Legacy path: fe_result={fe_result is not None} method={options.contact_method}')
             # --- Legacy Pressure Pipeline ---
             working_probs = contact_probs_fusion.copy()
             # --- Weighted Mass Distribution (for RNE GRF) ---
@@ -7793,7 +7981,7 @@ class SMPLProcessor:
             # When using inverse statics, the stability method computes
             # physics-based pressure directly. Replace the probability-
             # derived pressure entirely.
-            if options.contact_method in ('stability', 'stability_v2'):
+            if options.contact_method in ('stability', 'stability_v2', 'stability_v2_fe'):
                 stab_press = getattr(self, '_stability_computed_pressure', None)
                 if stab_press is not None and len(stab_press) == self.contact_pressure.shape[1]:
                     for f in range(F):

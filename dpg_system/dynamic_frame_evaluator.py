@@ -484,23 +484,34 @@ class DynamicFrameEvaluator:
                 spatial = max(0.0, (spatial + 1.0) / 2.0)
                 
                 # Velocity penalty: moving joints are unlikely real contacts
-                # Squared for stronger rejection — 1m/s → 0.053, 0.5m/s → 0.138
+                # Smooth exponential decay replaces hard cutoffs.
+                # v_hz=0.0 -> 1.0; v_hz=0.5 -> ~0.13; v_hz=1.0 -> ~0.018
                 vel_penalty = 1.0
                 if joint_velocities is not None and j < len(joint_velocities):
                     v_hz = float(joint_velocities[j])
-                    vp = 1.0 / (1.0 + v_hz / 0.3)  # 0.3 m/s reference
-                    vel_penalty = vp * vp  # Squared for stronger effect
+                    vel_penalty = np.exp(-4.0 * v_hz)
+                
+                # Foot angling penalty: liftoff is preceded by foot rolling
+                angle_penalty = 1.0
+                members = group_members.get(j)
+                if members and len(members) == 2:
+                    h_a = joint_positions[members[0], up_axis]
+                    h_b = joint_positions[members[1], up_axis]
+                    h_diff = abs(h_a - h_b)
+                    # Penalty starts at 5cm difference, gets strong by 10cm
+                    if h_diff > 0.05:
+                        angle_penalty = np.exp(-20.0 * (h_diff - 0.05))
                 
                 # Consensus as mild tiebreaker
                 prob_factor = 0.5 + 0.5 * candidate_scores.get(j, 0)
                 
                 # Temporal advantage: previous contacts get a boost
-                # so the greedy process naturally preserves continuity
+                # Smoothly blends down to 1.0 (no boost) if the foot is sliding
                 temporal_boost = 1.0
                 if prev_active_contacts is not None and j in prev_active_contacts:
-                    temporal_boost = PREV_CONTACT_BOOST
+                    temporal_boost = 1.0 + (PREV_CONTACT_BOOST - 1.0) * vel_penalty
                 
-                recruit_score = spatial * vel_penalty * prob_factor * temporal_boost
+                recruit_score = spatial * vel_penalty * angle_penalty * prob_factor * temporal_boost
                 
                 if recruit_score > best_score:
                     best_score = recruit_score
@@ -548,35 +559,44 @@ class DynamicFrameEvaluator:
                 continue
             j_a, j_b = members
             
-            # --- Floor contact check ---
+            # --- Floor contact check (Softened) ---
+            # Instead of a hard 2cm cutoff (which causes flickering when a joint
+            # hovers near the threshold), we use a smooth fade. Full weight if
+            # under 2cm, fading to zero by 6cm.
             h_a = joint_positions[j_a, up_axis] - floor_height if j_a < J else 1.0
             h_b = joint_positions[j_b, up_axis] - floor_height if j_b < J else 1.0
-            a_grounded = h_a <= FLOOR_CONTACT_MARGIN
-            b_grounded = h_b <= FLOOR_CONTACT_MARGIN
             
-            if not a_grounded and not b_grounded:
-                # Neither on floor — keep force on representative
+            def get_height_weight(h):
+                if h <= FLOOR_CONTACT_MARGIN: return 1.0
+                if h >= 0.06: return 0.0
+                return 1.0 - (h - FLOOR_CONTACT_MARGIN) / (0.06 - FLOOR_CONTACT_MARGIN)
+                
+            w_a = get_height_weight(h_a)
+            w_b = get_height_weight(h_b)
+            
+            if w_a == 0.0 and w_b == 0.0:
+                # Neither can bear load — keep force on representative
                 continue
-            elif a_grounded and not b_grounded:
-                # Only j_a on floor
-                frac_a = 1.0
-            elif b_grounded and not a_grounded:
-                # Only j_b on floor
-                frac_a = 0.0
+                
+            # Base ZMP lever rule (assumes both are perfectly planted)
+            zmp_hz = result.zmp_approx
+            pos_a_hz = joint_positions[j_a][plane_dims] if j_a < J else np.zeros(2)
+            pos_b_hz = joint_positions[j_b][plane_dims] if j_b < J else np.zeros(2)
+            
+            d_a = np.linalg.norm(pos_a_hz - zmp_hz)
+            d_b = np.linalg.norm(pos_b_hz - zmp_hz)
+            d_total = d_a + d_b
+            
+            lever_frac_a = d_b / d_total if d_total > 0.01 else 0.5
+            
+            # Combine lever intent with physical ability to bear load (height)
+            score_a = lever_frac_a * w_a
+            score_b = (1.0 - lever_frac_a) * w_b
+            
+            if score_a + score_b > 0:
+                frac_a = score_a / (score_a + score_b)
             else:
-                # Both grounded — use ZMP lever rule
-                zmp_hz = result.zmp_approx  # 2D horizontal ZMP
-                pos_a_hz = joint_positions[j_a][plane_dims] if j_a < J else np.zeros(2)
-                pos_b_hz = joint_positions[j_b][plane_dims] if j_b < J else np.zeros(2)
-                
-                d_a = np.linalg.norm(pos_a_hz - zmp_hz)
-                d_b = np.linalg.norm(pos_b_hz - zmp_hz)
-                d_total = d_a + d_b
-                
-                if d_total > 0.01:
-                    frac_a = d_b / d_total  # closer to ZMP → more force
-                else:
-                    frac_a = 0.5
+                frac_a = 1.0 if w_a >= w_b else 0.0
             
             result.per_contact_force[j_a] = rep_force * frac_a
             result.per_contact_force[j_b] = rep_force * (1.0 - frac_a)
