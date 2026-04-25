@@ -1357,18 +1357,44 @@ class NumpySubtensorNode(Node):
         self.execute()
 
     def parse_slice_string(self, dim_text):
-        dim_text = dim_text.strip().strip("[]")
+        dim_text = dim_text.strip()
+
+        # Strip outer [] only if they wrap the entire string and don't
+        # contain inner brackets (i.e. they are just decorative, not a
+        # fancy-index list for a single dimension).
+        if dim_text.startswith('[') and dim_text.endswith(']'):
+            inner = dim_text[1:-1]
+            if '[' not in inner and ']' not in inner:
+                # Could be either "[:, 3]" style wrapper or "[0 3 7]" fancy list.
+                # If it contains a colon or comma-separated colons, treat as wrapper.
+                # Otherwise treat as a single fancy-index list.
+                if ':' in inner or '...' in inner:
+                    dim_text = inner
+                else:
+                    # Check whether it looks like a space/semicolon-separated
+                    # list of ints (fancy index) vs. comma-separated dims.
+                    tokens = inner.replace(';', ' ').split()
+                    all_int = all(self._is_int_token(t) for t in tokens)
+                    if all_int and len(tokens) > 1:
+                        # Single fancy-index list, e.g. [0 3 7]
+                        return (np.array([int(t) for t in tokens], dtype=int),)
+                    else:
+                        dim_text = inner
 
         if not dim_text:
             return (slice(None),)
 
-        parts = dim_text.split(',')
+        parts = self._split_respecting_brackets(dim_text)
         slices = []
 
         for part in parts:
             part = part.strip()
             if part == '...':
                 slices.append(Ellipsis)
+            elif part.startswith('[') and part.endswith(']'):
+                # Fancy index list: [0 3 7] or [0;3;7] or [0,3,7]
+                indices = self._parse_index_list(part[1:-1].strip())
+                slices.append(np.array(indices, dtype=int))
             elif ':' in part:
                 sub_parts = part.split(':')
                 slice_args = []
@@ -1388,6 +1414,53 @@ class NumpySubtensorNode(Node):
                     slices.append(slice(None))
 
         return tuple(slices)
+
+    # ------------------------------------------------------------------
+    # Helpers for fancy-index parsing
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _is_int_token(text):
+        """Return True if *text* looks like an integer (with optional sign)."""
+        try:
+            int(text)
+            return True
+        except ValueError:
+            return False
+
+    @staticmethod
+    def _split_respecting_brackets(text):
+        """Split *text* on commas that are NOT inside square brackets."""
+        parts = []
+        depth = 0
+        current = []
+        for ch in text:
+            if ch == '[':
+                depth += 1
+                current.append(ch)
+            elif ch == ']':
+                depth -= 1
+                current.append(ch)
+            elif ch == ',' and depth == 0:
+                parts.append(''.join(current))
+                current = []
+            else:
+                current.append(ch)
+        parts.append(''.join(current))
+        return parts
+
+    @staticmethod
+    def _parse_index_list(inner_text):
+        """Parse '0 3 7' or '0;3;7' or '0,3,7' into [0, 3, 7]."""
+        normalized = inner_text.replace(';', ' ').replace(',', ' ')
+        tokens = normalized.split()
+        indices = []
+        for t in tokens:
+            try:
+                indices.append(int(t))
+            except ValueError:
+                pass  # skip unparseable tokens
+        return indices
 
     def execute(self):
         input_data = self.input()

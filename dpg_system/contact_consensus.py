@@ -173,7 +173,7 @@ class SensoryPrior:
         self._lift_frames = np.zeros(self.num_joints, dtype=int)
     
     def compute(self, world_pos: np.ndarray, dt: float, 
-                options: ConsensusOptions) -> np.ndarray:
+                options: ConsensusOptions, contact_history: np.ndarray = None) -> np.ndarray:
         """
         Compute sensory contact probability for each joint.
         
@@ -188,6 +188,20 @@ class SensoryPrior:
         J = world_pos.shape[0]
         up = options.up_axis
         floor = options.floor_height
+        
+        # --- Active Floor Estimation ---
+        # If the actor's root drifts downward (e.g. IMU drift), the absolute
+        # floor_height becomes invalid. We estimate the true "active floor" 
+        # by looking at the lowest joint that was strongly planted last frame.
+        if contact_history is not None:
+            strong_contacts = np.where(contact_history > 0.3)[0]
+            if len(strong_contacts) > 0:
+                # Use only valid structural joints (J <= 50)
+                valid_contacts = [j for j in strong_contacts if j < J]
+                if valid_contacts:
+                    on_heights = world_pos[valid_contacts, up]
+                    active_floor = min(floor, np.min(on_heights))
+                    floor = active_floor
         
         heights = world_pos[:, up] - floor
         
@@ -245,6 +259,28 @@ class SensoryPrior:
         
         # Horizontal velocity (speed in the ground plane)
         horiz_disp = world_pos[:, plane_dims] - self._prev_positions[:min(J, self._prev_positions.shape[0]), :][:, plane_dims]
+        
+        # --- Relative Horizontal Velocity (Centroid-Aware) ---
+        # Instead of penalizing absolute velocity (vulnerable to IMU root drift),
+        # penalize velocity relative to the current support base. The support base is
+        # estimated as the height-probability-weighted centroid.
+        # By weighting with contact_history (if available), we ignore joints that
+        # are near the floor but not actively supporting the body (e.g. sweeping foot).
+        anchor_weights = p_height.copy()
+        if contact_history is not None:
+            # contact_history is typically 1.0 for planted, 0.0 for lifted.
+            # We add a tiny epsilon (0.05) to ensure joints still get *some* weight 
+            # if no joints have contact history (e.g. first frame, or mid-air).
+            anchor_weights *= (contact_history + 0.05)
+            
+        total_weight = np.sum(anchor_weights)
+        if total_weight > 0.1:
+            # Weighted average displacement of true anchor joints
+            centroid_disp = np.sum(horiz_disp * anchor_weights[:, None], axis=0) / total_weight
+            
+            # Relative displacement
+            horiz_disp = horiz_disp - centroid_disp
+        
         raw_horiz_speed = np.linalg.norm(horiz_disp, axis=-1) / max(dt, 1e-6)
         horiz_alpha = 0.3
         self._smooth_horiz_vel = (self._smooth_horiz_vel * (1 - horiz_alpha) + 
@@ -273,9 +309,16 @@ class SensoryPrior:
                 self._lift_frames[j] = 0
             
             if self._lift_state[j]:
+                # Exit lift state if actively descending
                 if vy[j] < -0.05 and heights[j] < ceilings[j]:
                     self._lift_frames[j] += 1
                     if self._lift_frames[j] > 3:
+                        self._lift_state[j] = False
+                        self._lift_frames[j] = 0
+                # OR exit lift state if completely stationary (e.g. tiptoe crouch)
+                elif abs(vy[j]) < 0.05 and vh[j] < 0.15 and heights[j] < ceilings[j]:
+                    self._lift_frames[j] += 1
+                    if self._lift_frames[j] > 5:  # Require a bit more time to prove it's stationary
                         self._lift_state[j] = False
                         self._lift_frames[j] = 0
                 else:
@@ -359,13 +402,24 @@ class SensoryPrior:
         # Grounded joints have near-zero horizontal velocity.
         # Scale: 0.5 m/s → mild suppression, 1.5+ m/s → strong suppression
         HORIZ_VEL_THRESHOLD = 0.3   # m/s below this, no penalty
-        HORIZ_VEL_SCALE = 3.0       # exponential decay rate
+        HORIZ_VEL_SCALE = 6.0       # exponential decay rate (stronger to kill fast swings)
         
         p_horiz = np.ones(J)
         for j in range(J):
+            # Height factor: 0.0 at floor, 1.0 at h=0.10m
+            # Feet firmly on the ground are allowed more horizontal movement (pivoting/sliding)
+            # Hovering feet get full horizontal velocity suppression (swinging)
+            h_fac = min(1.0, max(0.0, heights[j] / 0.10))
+            eff_vel_scale = HORIZ_VEL_SCALE * (0.1 + 0.9 * h_fac)
+            
             excess_vel = max(0, vh[j] - HORIZ_VEL_THRESHOLD)
             if excess_vel > 0:
-                p_horiz[j] = np.exp(-HORIZ_VEL_SCALE * excess_vel)
+                base_penalty = np.exp(-eff_vel_scale * excess_vel)
+                # Extra penalty for joints moving very fast (>0.5 m/s relative to centroid).
+                # These are definitely swinging, even if they are skimming the floor (h_fac ≈ 0).
+                extra_excess = max(0, vh[j] - 0.5)
+                extra_penalty = np.exp(-12.0 * extra_excess)
+                p_horiz[j] = base_penalty * extra_penalty
         
         p_sensory = p_height * p_lift * p_chain * p_horiz
         return p_sensory
@@ -937,7 +991,8 @@ class ContactConsensus:
         self._prev_torques = torques.copy() if torques is not None else None
     
     def compute_contacts(self, world_pos: np.ndarray, com: np.ndarray,
-                          dt: float, options: ConsensusOptions = None
+                          dt: float, options: ConsensusOptions = None,
+                          contact_history: np.ndarray = None
                           ) -> np.ndarray:
         """
         Compute consensus contact probabilities.
@@ -947,6 +1002,7 @@ class ContactConsensus:
             com: (3,) center of mass position
             dt: time step in seconds
             options: ConsensusOptions (uses stored defaults if None)
+            contact_history: (J,) optional previous frame contact probabilities
             
         Returns:
             contact_probs: (J,) consensus contact probabilities
@@ -962,7 +1018,7 @@ class ContactConsensus:
         # ══════════════════════════════════════════════════
         # Stage 1: Sensory Prior
         # ══════════════════════════════════════════════════
-        p_sensory = self.sensory.compute(world_pos, dt, options)
+        p_sensory = self.sensory.compute(world_pos, dt, options, contact_history=contact_history)
         
         # ══════════════════════════════════════════════════
         # Stage 2: Structural Analysis

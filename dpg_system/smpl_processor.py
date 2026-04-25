@@ -1,3 +1,4 @@
+import copy
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 import os
@@ -342,7 +343,7 @@ class SMPLProcessingOptions:
     floor_height: float = 0.0
     floor_tolerance: float = 0.15
     heel_toe_bias: float = 0.0
-    contact_method: str = 'fusion'  # 'fusion', 'stability', 'stability_v2', 'com_driven', or 'consensus'
+    contact_method: str = 'fusion'  # 'fusion', 'stability', 'stability_v2', 'stability_v2_fe', 'stability_v3', 'equilibrium', 'com_driven', 'consensus', or 'patch'
     enable_frame_evaluator: bool = True  # Run DynamicFrameEvaluator (read-only analysis alongside contact method)
     
     # --- Torque Rate Limiting ---
@@ -2368,8 +2369,21 @@ class SMPLProcessor:
         group_min_heights = {} # group_name → minimum joint height above floor
         group_positions = {}   # group_name → representative hz position
         
+        # Calculate 'active_floor' to be immune to global root drift.
+        # It is the minimum raw height among all currently 'ON' joints.
+        active_floor = floor_height
+        on_heights = []
+        for gname in ALL_GROUPS:
+            if self._v2_group_state.get(gname, False):
+                joints = ALL_GROUPS[gname]
+                for j in joints:
+                    if j < J:
+                        on_heights.append(world_pos[0, j, y_dim])
+        if len(on_heights) > 0:
+            active_floor = min(active_floor, min(on_heights))
+        
         # First pass: compute min heights for all groups (needed for alt_support check)
-        group_data = {}  # gname → (group_prob, min_h, best_pos, valid_joints)
+        group_data = {}  # gname → (group_prob, min_h, best_pos, valid_joints, h_above)
         for gname, joints in ALL_GROUPS.items():
             valid_joints = [j for j in joints if j < J]
             if not valid_joints:
@@ -2378,6 +2392,7 @@ class SMPLProcessor:
             group_prob = max(consensus_probs[0, j] for j in valid_joints)
             
             min_h = float('inf')
+            active_h_above = float('inf')
             best_pos = None
             for j in valid_joints:
                 if hasattr(self, 'temp_tips') and j in self.temp_tips:
@@ -2386,41 +2401,55 @@ class SMPLProcessor:
                 else:
                     pos_j = world_pos[0, j]
                     h = pos_j[y_dim]
-                h_above = h - floor_height
-                if h_above < min_h:
-                    min_h = h_above
+                h_above_floor = h - floor_height
+                h_above_active = h - active_floor
+                if h_above_floor < min_h:
+                    min_h = h_above_floor
+                    active_h_above = h_above_active
                     best_pos = pos_j[plane_dims].copy()
             
             group_min_heights[gname] = min_h
             if best_pos is not None:
                 group_positions[gname] = best_pos
-            group_data[gname] = (group_prob, min_h, best_pos, valid_joints)
+            group_data[gname] = (group_prob, min_h, best_pos, valid_joints, active_h_above)
+        
+        # --- CoM velocity for direction signal ---
+        # Used in plausibility to predict whether weight is arriving at
+        # or departing from each foot (inverted pendulum model).
+        com_hz = com[plane_dims]
+        com_vel_raw = getattr(self, 'prob_prev_com_vel', None)
+        com_vel_hz = np.zeros(2)
+        if com_vel_raw is not None:
+            if com_vel_raw.ndim == 1:
+                com_vel_hz = com_vel_raw[plane_dims]
+            elif com_vel_raw.ndim == 2:
+                com_vel_hz = com_vel_raw[0, plane_dims]
         
         # Second pass: state machine with plausibility
-        for gname, (group_prob, min_h, best_pos, valid_joints) in group_data.items():
+        for gname, (group_prob, min_h, best_pos, valid_joints, h_above) in group_data.items():
             prev_state = self._v2_group_state.get(gname, False)
             prev_frames = self._v2_group_frames.get(gname, 0)
             
             # --- Liftoff plausibility (foot groups only, when ON) ---
             plausibility = 0.0
             if prev_state and gname in FOOT_PLAUS_GROUPS:
-                planted_h = self._v2_group_planted_h.get(gname, min_h)
-                prev_min_h = self._v2_group_prev_min_h.get(gname, min_h)
+                planted_h = self._v2_group_planted_h.get(gname, h_above)
+                prev_h_above = self._v2_group_prev_min_h.get(gname, h_above)
                 settled_frames = self._v2_group_settled_frames.get(gname, 0)
                 
-                # Update planted height (track minimum while ON)
-                planted_h = min(planted_h, min_h)
+                # Update planted height (track minimum relative height while ON)
+                planted_h = min(planted_h, h_above)
                 
-                # Vertical velocity of lowest joint
-                v_up = (min_h - prev_min_h) / max(dt, 1e-6)
+                # Vertical velocity of lowest joint (relative to active support)
+                v_up = (h_above - prev_h_above) / max(dt, 1e-6)
                 
                 # Settled detection: foot rose but velocity → 0
-                delta_h = min_h - planted_h
+                delta_h = h_above - planted_h
                 if delta_h > 0.01 and abs(v_up) < SETTLED_VEL_THRESH:
                     settled_frames += 1
                     if settled_frames >= SETTLED_FRAMES_REQ:
                         # Accept new baseline — foot has settled (tiptoe/pointe)
-                        planted_h = min_h
+                        planted_h = h_above
                         settled_frames = 0
                 else:
                     settled_frames = 0
@@ -2501,7 +2530,98 @@ class SMPLProcessor:
                     # Other foot is OFF but approaching floor (no strong velocity)
                     alt_support = 0.3
                 
-                plausibility = lifting * max(alt_support, no_support_needed)
+                # FE low-force signal: if the frame evaluator says this foot
+                # bears very little weight, liftoff is more plausible even
+                # without strong kinematic lifting evidence.
+                fe_low_force = 0.0
+                fe_group_force = getattr(self, '_fe_group_force', {})
+                fe_f = fe_group_force.get(gname, -1)
+                if fe_f >= 0:  # FE has computed forces
+                    if fe_f < 2.0:  # Less than 2 kg — essentially unsupported
+                        fe_low_force = 0.8
+                    elif fe_f < 5.0:  # Less than 5 kg — lightly loaded
+                        fe_low_force = 0.4
+                    elif fe_f < 10.0:  # Less than 10 kg — moderately loaded
+                        fe_low_force = 0.2
+                
+                # Height-consensus evidence: foot is elevated AND raw consensus
+                # has declined, even if not actively rising (v_up ≈ 0).
+                # This catches the case where a foot is at 12cm+ but hovering
+                # rather than rising, so the kinematic `lifting` signal is weak.
+                # Must use RAW consensus, not group_prob (which is clamped at 0.95
+                # for ON groups by the state machine output).
+                height_evidence = 0.0
+                if delta_h > 0.03:  # Foot is >3cm above planted baseline
+                    h_signal = min(1.0, delta_h / 0.08)  # Full at 8cm
+                    # Get raw consensus for this group's joints
+                    raw_cons = getattr(self, '_raw_consensus_probs', None)
+                    if raw_cons is not None:
+                        raw_1d = raw_cons[0] if raw_cons.ndim > 1 else raw_cons
+                        raw_group_prob = max(raw_1d[j] for j in valid_joints if j < len(raw_1d))
+                    else:
+                        raw_group_prob = group_prob
+                    # Low raw consensus = strong evidence foot is off floor
+                    cons_signal = max(0.0, 1.0 - raw_group_prob / 0.3)  # Full at prob=0
+                    height_evidence = h_signal * cons_signal
+                
+                plausibility = max(
+                    lifting * max(alt_support, no_support_needed, fe_low_force),
+                    height_evidence * max(alt_support, fe_low_force, 0.3)
+                )
+                
+                # --- CoM direction signal (inverted pendulum) ---
+                # Predicts whether weight is arriving at or departing from this
+                # foot by projecting the CoM horizontal velocity onto the
+                # CoM→foot direction vector.
+                #   dot > 0 → CoM approaching foot → weight arriving → suppress lift
+                #   dot < 0 → CoM departing foot  → weight leaving  → encourage lift
+                #
+                # This distinguishes tiptoe support (CoM stationary/approaching
+                # the RF) from genuine liftoff (CoM shifting away from LF).
+                com_dir_signal = 0.0  # default: neutral
+                if best_pos is not None:
+                    foot_hz = best_pos  # already plane_dims
+                    com_to_foot = foot_hz - com_hz
+                    dist = np.linalg.norm(com_to_foot)
+                    if dist > 0.01:  # avoid divide-by-zero for foot under CoM
+                        com_to_foot_dir = com_to_foot / dist
+                        # Project CoM velocity onto CoM→foot direction
+                        approach_speed = np.dot(com_vel_hz, com_to_foot_dir)
+                        # Normalize: ±0.3 m/s → ±1.0 signal
+                        com_dir_signal = np.clip(approach_speed / 0.3, -1.0, 1.0)
+                
+                # Apply CoM direction modulation:
+                # - Approaching (signal > 0): plausibility *= (1 - 0.6*signal)
+                #   At full approach (signal=1.0): plausibility *= 0.4 (strong suppression)
+                # - Departing (signal < 0): plausibility *= (1 + 0.4*|signal|)
+                #   At full departure (signal=-1.0): plausibility *= 1.4 (moderate boost)
+                if com_dir_signal > 0:
+                    # CoM approaching this foot — suppress liftoff
+                    plausibility *= (1.0 - 0.6 * com_dir_signal)
+                elif com_dir_signal < 0:
+                    # CoM departing this foot — boost liftoff
+                    plausibility *= (1.0 + 0.4 * abs(com_dir_signal))
+                
+                # FE high-force suppression: if the FE says this foot bears
+                # significant weight AND it was promoted via necessity override,
+                # it is NOT lifting off — cap plausibility.
+                # This prevents tiptoe/relevé (ball-of-foot) from triggering
+                # false liftoff via height_evidence (foot joint is 12cm+ above
+                # active floor even though it's supporting the body).
+                #
+                # Only apply when under necessity hold — normal ON feet need
+                # their plausibility to be free to build so genuine lifts are
+                # not suppressed by stale FE force distribution.
+                necessity_held = getattr(self, '_v2_necessity_hold', {}).get(gname, 0) > 0
+                if necessity_held and fe_f > 15.0:  # More than 15 kg — clearly load-bearing
+                    plausibility = min(plausibility, 0.1)
+                elif necessity_held and fe_f > 8.0:  # More than 8 kg — likely load-bearing
+                    plausibility = min(plausibility, 0.25)
+                
+                # Store plausibility for downstream use (e.g., FE override)
+                if not hasattr(self, '_v2_group_plausibility'):
+                    self._v2_group_plausibility = {}
+                self._v2_group_plausibility[gname] = plausibility
                 
                 # Store updated tracking
                 self._v2_group_planted_h[gname] = planted_h
@@ -2519,26 +2639,46 @@ class SMPLProcessor:
             eff_thresh_off = THRESH_OFF + (0.65 - THRESH_OFF) * plausibility
             
             if prev_state:  # Currently ON
-                if group_prob < eff_thresh_off or min_h > eff_height_gate:
+                # Check if this group is under necessity hold protection
+                necessity_hold = getattr(self, '_v2_necessity_hold', {}).get(gname, 0)
+                if necessity_hold > 0:
+                    # Protected: decrement hold, do not eject
+                    if not hasattr(self, '_v2_necessity_hold'):
+                        self._v2_necessity_hold = {}
+                    self._v2_necessity_hold[gname] = necessity_hold - 1
+                    self._v2_group_frames[gname] = 0
+                elif group_prob < eff_thresh_off or min_h > eff_height_gate:
                     prev_frames += 1
                     if prev_frames >= eff_frames_off:
                         self._v2_group_state[gname] = False
                         self._v2_group_frames[gname] = 0
-                        # Don't delete planted tracking here — it may re-engage
-                        # next frame. Tracking is re-initialized on fresh ON transitions.
                     else:
                         self._v2_group_frames[gname] = prev_frames
                 else:
                     self._v2_group_frames[gname] = 0
 
             else:  # Currently OFF
+                # Decay stale plausibility: when a group is OFF, the liftoff
+                # plausibility from the moment it was ejected should not persist
+                # forever. Decay it toward 0 so the Necessity Override can
+                # eventually re-acquire the contact if physics demands it.
+                if gname in FOOT_PLAUS_GROUPS:
+                    if not hasattr(self, '_v2_group_plausibility'):
+                        self._v2_group_plausibility = {}
+                    old_plaus = self._v2_group_plausibility.get(gname, 0.0)
+                    # Exponential decay: halves roughly every 3 frames (~50ms at 60fps)
+                    # Fast decay ensures necessity override can re-acquire quickly
+                    # once genuine liftoff evidence dissipates.
+                    PLAUS_DECAY = 0.80
+                    self._v2_group_plausibility[gname] = old_plaus * PLAUS_DECAY
+                
                 if group_prob > THRESH_ON and min_h < HEIGHT_GATE:
                     prev_frames += 1
                     if prev_frames >= FRAMES_ON:
                         self._v2_group_state[gname] = True
                         self._v2_group_frames[gname] = 0
                         # Initialize planted tracking on ON transition
-                        self._v2_group_planted_h[gname] = min_h
+                        self._v2_group_planted_h[gname] = h_above
                         self._v2_group_settled_frames[gname] = 0
                     else:
                         self._v2_group_frames[gname] = prev_frames
@@ -3053,6 +3193,35 @@ class SMPLProcessor:
         for j in range(J):
             joint_heights[j] = positions[j, y_dim] - floor_height
         
+        # Source 2: Geometric proximity — foot/heel joints near the active
+        # floor are candidates even when consensus probability is suppressed
+        # (e.g. ball-of-foot stance where heel is elevated but ball touches).
+        # This prevents the deadlock where low consensus → not a candidate →
+        # FE assigns 0 force → Necessity Override can't fire → stays OFF.
+        # 
+        # CRITICAL: Use the height of the lowest currently-ON foot as the
+        # reference, not the FE floor. A foot 7cm above the other planted foot
+        # is lifted, not a proximity candidate. A foot 12cm above the other 
+        # planted foot in a relevé IS a candidate (ball-of-foot stance).
+        GEO_PROXIMITY_HEIGHT = 0.15  # 15cm above active support base
+        GEO_FOOT_JOINTS = {10, 11, 28, 29}  # foot + heel joints only
+        v2_state = getattr(self, '_v2_group_state', {})
+        # Find the lowest ON foot joint as reference
+        on_foot_heights = []
+        FOOT_GROUP_JOINTS = {'LF': [10, 28], 'RF': [11, 29]}
+        for gname, joints in FOOT_GROUP_JOINTS.items():
+            if v2_state.get(gname, False):
+                for j in joints:
+                    if j < J:
+                        on_foot_heights.append(positions[j, y_dim])
+        geo_ref_floor = min(on_foot_heights) if on_foot_heights else floor_height
+        
+        for j in GEO_FOOT_JOINTS:
+            if j < J and j not in EXCLUDED_JOINTS and j not in candidate_joints:
+                h_above_ref = positions[j, y_dim] - geo_ref_floor
+                if h_above_ref < GEO_PROXIMITY_HEIGHT:
+                    candidate_joints.add(j)
+        
         # --- Chain dominance pruning (soft) ---
         # Within each kinematic chain, prune ancestors that are WELL ABOVE
         # the chain's lowest contact. But keep ancestors near the floor —
@@ -3303,6 +3472,79 @@ class SMPLProcessor:
         
         self._fe_prev_residual = np.linalg.norm(result.residual)
         
+        # --- Static lever sanity cap ---
+        # During weight transfers, the ZMP-based force distribution can assign
+        # 50-70% of body weight to a foot the CoM has moved away from. The
+        # static lever rule (CoM projection) provides a ground-truth upper
+        # bound: a foot far from the CoM projection cannot bear more than its
+        # lever fraction suggests. Cap FE forces accordingly.
+        LEVER_CAP_MULTIPLIER = 1.3  # Allow up to 1.3x the static prediction
+        LEVER_CAP_MIN_FRAC = 0.15   # Don't cap below this fraction
+        
+        # Foot group definitions: group_name -> list of joint indices
+        FE_FOOT_GROUPS = {'LF': [10, 28], 'RF': [11, 29]}
+        
+        total_fe_force = sum(max(0, f) for f in result.per_contact_force.values())
+        if total_fe_force > 1.0 and com is not None:
+            # Compute static lever fractions
+            foot_positions_hz = {}
+            foot_forces = {}
+            for gname, joints in FE_FOOT_GROUPS.items():
+                active_in_group = [j for j in joints if j in result.per_contact_force and result.per_contact_force[j] > 0]
+                if active_in_group:
+                    # Use force-weighted position of active joints in this group
+                    pos_hz = np.zeros(2)
+                    f_total = 0.0
+                    for j in active_in_group:
+                        pos_hz += positions[j, plane_dims] * result.per_contact_force[j]
+                        f_total += result.per_contact_force[j]
+                    if f_total > 0:
+                        pos_hz /= f_total
+                    foot_positions_hz[gname] = pos_hz
+                    foot_forces[gname] = f_total
+            
+            if len(foot_positions_hz) == 2 and 'LF' in foot_positions_hz and 'RF' in foot_positions_hz:
+                lf_hz = foot_positions_hz['LF']
+                rf_hz = foot_positions_hz['RF']
+                d_total = np.linalg.norm(lf_hz - rf_hz)
+                if d_total > 0.05:  # Feet sufficiently separated
+                    d_com_to_rf = np.linalg.norm(com_hz - rf_hz)
+                    d_com_to_lf = np.linalg.norm(com_hz - lf_hz)
+                    # Static lever: fraction borne by each foot
+                    static_lf = np.clip(d_com_to_rf / d_total, 0, 1)
+                    static_rf = 1.0 - static_lf
+                    
+                    for gname, static_frac in [('LF', static_lf), ('RF', static_rf)]:
+                        cap_frac = max(LEVER_CAP_MIN_FRAC, static_frac * LEVER_CAP_MULTIPLIER)
+                        max_force = cap_frac * total_fe_force
+                        current_force = foot_forces.get(gname, 0)
+                        
+                        if current_force > max_force and current_force > 0:
+                            scale = max_force / current_force
+                            for j in FE_FOOT_GROUPS[gname]:
+                                if j in result.per_contact_force:
+                                    result.per_contact_force[j] *= scale
+                                    if j < len(result.force_array):
+                                        result.force_array[j] *= scale
+                            # Update necessity
+                            for j in FE_FOOT_GROUPS[gname]:
+                                if j in result.per_contact_force:
+                                    f_val = result.per_contact_force[j]
+                                    if f_val > 2.0:
+                                        result.necessity[j] = 'necessary'
+                                    elif f_val > 0.5:
+                                        result.necessity[j] = 'marginal'
+                                    else:
+                                        result.necessity[j] = 'unnecessary'
+        
+        # Store per-group FE force for state machine use
+        fe_group_force = {}
+        for gname, joints in FE_FOOT_GROUPS.items():
+            fe_group_force[gname] = sum(
+                max(0, result.per_contact_force.get(j, 0)) for j in joints
+            )
+        self._fe_group_force = fe_group_force
+        
         # Track active contacts and seed for next frame
         self._fe_prev_contacts = set(
             j for j, f in result.per_contact_force.items() if f > 0
@@ -3402,11 +3644,24 @@ class SMPLProcessor:
         y_dim = 1 if options.input_up_axis == 'Y' else 2
         floor_height = options.floor_height
         
-        # Check each necessary joint
-        overrides_applied = []
+        # Calculate active_floor to be immune to global root drift
+        active_floor = floor_height
         v2_state = getattr(self, '_v2_group_state', None)
         if v2_state is None:
             return consensus_probs
+            
+        on_heights = []
+        for gname in ['LF', 'RF']:
+            if v2_state.get(gname, False):
+                joints = JOINT_TO_FOOT_GROUP
+                for j, g in joints.items():
+                    if g == gname and j < J:
+                        on_heights.append(world_pos[0, j, y_dim])
+        if len(on_heights) > 0:
+            active_floor = min(active_floor, min(on_heights))
+        
+        # Check each necessary joint
+        overrides_applied = []
         
         for j, force in fe_result.per_contact_force.items():
             if force < NECESSITY_FORCE_THRESH:
@@ -3420,7 +3675,9 @@ class SMPLProcessor:
             if v2_state.get(gname, False):
                 continue
             
-            # Height gate: don't override if the foot is clearly airborne
+            # Height and Plausibility Gate
+            # Don't override if the foot is clearly airborne (h > 0.35m)
+            # OR if the state machine found strong kinematic evidence of liftoff (plausibility > 0.3)
             foot_j = 10 if gname == 'LF' else 11
             if foot_j < J:
                 if hasattr(self, 'temp_tips') and foot_j in self.temp_tips:
@@ -3428,26 +3685,49 @@ class SMPLProcessor:
                     h = tip[0, y_dim] if tip.ndim > 1 else tip[y_dim]
                 else:
                     h = world_pos[0, foot_j, y_dim]
-                h_above = h - floor_height
-                if h_above > NECESSITY_HEIGHT_GATE:
+                h_above = h - active_floor
+                
+                plaus = getattr(self, '_v2_group_plausibility', {}).get(gname, 0.0)
+                
+                if h_above > NECESSITY_HEIGHT_GATE or plaus > 0.3:
                     continue
             
-            # Override: promote group to ON
+            # Override: promote group to ON with necessity hold
             self._v2_group_state[gname] = True
             self._v2_group_frames[gname] = 0
+            # Set hold counter: protect from immediate ejection by state machine
+            # for N frames so the system can stabilize.
+            NECESSITY_HOLD_FRAMES = 3
+            if not hasattr(self, '_v2_necessity_hold'):
+                self._v2_necessity_hold = {}
+            self._v2_necessity_hold[gname] = NECESSITY_HOLD_FRAMES
+            # Clear stale plausibility so it doesn't immediately re-eject
+            if hasattr(self, '_v2_group_plausibility'):
+                self._v2_group_plausibility[gname] = 0.0
             overrides_applied.append((gname, j, force))
         
         # --- Step 4: Replace pressure with frame evaluator forces ---
         # The frame evaluator solves Newton-Euler equilibrium for the full
         # body, producing a physics-based force distribution that respects
-        # ZMP and moment balance. This is more accurate than stability_v2's
-        # inverse-distance CoM proximity weighting, especially during
-        # symmetric poses (squats) where both feet bear similar load.
-        # Apply this unconditionally — not just when overrides happen.
+        # ZMP and moment balance. 
+        # Crucially, we MUST ONLY assign these forces to joints whose 
+        # state machine group is actually ON. Otherwise, a lifting foot 
+        # (which the state machine correctly turned OFF) will still be assigned 
+        # 40+ kg of pressure and 0.95 consensus because the ZMP lags during 
+        # weight transfers.
         target_pressure = np.zeros(J)
         for j_fe, force_fe in fe_result.per_contact_force.items():
             if j_fe < J and force_fe > 0:
-                target_pressure[j_fe] = force_fe
+                gname = JOINT_TO_FOOT_GROUP.get(j_fe)
+                # Only apply force if it's not a foot, or if its foot group is ON
+                if gname is None or v2_state.get(gname, False):
+                    target_pressure[j_fe] = force_fe
+                else:
+                    # Also zero it out in the original fe_result so downstream 
+                    # users of the raw frame_eval output don't see ghost forces.
+                    fe_result.per_contact_force[j_fe] = 0.0
+                    if hasattr(fe_result, 'force_array') and j_fe < len(fe_result.force_array):
+                        fe_result.force_array[j_fe] = 0.0
                 
         # --- Dual Stance Softening ---
         # The FE uses a point-to-point lever rule. But feet are surfaces, creating
@@ -3491,6 +3771,447 @@ class SMPLProcessor:
         # Update stored pressure
         self._stability_computed_pressure = target_pressure.copy()
         self._stability_pressure = target_pressure.copy()
+        
+        return consensus_probs
+
+    def _compute_probabilistic_contacts_stability_v3(self, F, J, world_pos, options):
+        """Reordered pipeline: DFE evaluates BEFORE the state machine.
+        
+        Same logic as stability_v2_fe, but the Dynamic Frame Evaluator runs
+        first so the state machine's plausibility computation has access to
+        same-frame FE forces instead of one-frame-stale values.
+        
+        Architecture:
+          1. Pre-pass DFE: run the frame evaluator using previous frame's
+             consensus probs for candidate selection. Store fresh per-group
+             forces on self._fe_group_force. Save/restore DFE EMA state
+             so the canonical pass (inside v2_fe) advances it properly.
+          2. Delegate to v2_fe: the state machine inside v2 now reads
+             fresh _fe_group_force. v2_fe's canonical DFE run updates
+             all EMA state and produces the final force assignment.
+        
+        Benefits over v2_fe:
+          - Plausibility sees same-frame FE forces (no 1-frame lag)
+          - Necessity Override fires less often (state machine already
+            has good force info for ball-of-foot / relevé stances)
+          - CoM direction signal becomes confirmation, not primary
+        """
+        # --- Pre-pass: run DFE to get fresh group forces ---
+        prev_consensus = getattr(self, '_raw_consensus_probs', None)
+        tips = getattr(self, 'temp_tips', {})
+        
+        if prev_consensus is not None:
+            # Snapshot all DFE-mutable state so the canonical pass in
+            # v2_fe can advance it properly from the pre-pass starting point.
+            _saved = {}
+            for attr in ('_fe_ema_state', '_fe_prev_positions',
+                         '_fe_prev_contacts', '_fe_prev_seed',
+                         '_fe_prev_residual', '_fe_smooth_forces',
+                         '_ds_vy_ema', '_effective_floor_height',
+                         '_eff_floor_prev_min_h', '_frame_eval_result'):
+                val = getattr(self, attr, None)
+                if val is not None:
+                    _saved[attr] = copy.deepcopy(val)
+                else:
+                    _saved[attr] = None
+            
+            # Run DFE with previous frame's consensus for candidate selection.
+            # This stores fresh per-group forces in self._fe_group_force.
+            self._evaluate_dynamic_frame(
+                F, world_pos, tips, options, prev_consensus
+            )
+            
+            # Keep the fresh _fe_group_force but restore all other state
+            fresh_group_force = getattr(self, '_fe_group_force', {})
+            for attr, val in _saved.items():
+                if val is not None:
+                    setattr(self, attr, val)
+                elif hasattr(self, attr):
+                    # Attribute didn't exist before; remove it
+                    try:
+                        delattr(self, attr)
+                    except AttributeError:
+                        pass
+            # Re-apply fresh forces so the state machine can read them
+            self._fe_group_force = fresh_group_force
+        
+        # --- Delegate to v2_fe ---
+        # v2 (called by v2_fe) now has fresh _fe_group_force for plausibility.
+        # v2_fe's canonical DFE run will advance EMA state properly and
+        # produce the final force assignment.
+        return self._compute_probabilistic_contacts_stability_v2_fe(
+            F, J, world_pos, options
+        )
+
+    def _compute_probabilistic_contacts_equilibrium(self, F, J, world_pos, options):
+        """Self-contained equilibrium-based contact detection.
+        
+        Derives candidates from kinematic chain minima — no consensus
+        dependency. Uses leave-one-out necessity testing to reject
+        non-supporting joints (e.g., swing feet during walking).
+        
+        Architecture:
+          1. Chain minima: lowest joint(s) in each kinematic chain
+          2. Forward selection: start with lowest group, add if they
+             improve equilibrium (height/descent/persistence modifiers)
+          3. State machine with hysteresis
+          4. Pressure output (same format as stability modes)
+        """
+        consensus_probs = np.zeros((F, J))
+        
+        # --- Axis setup ---
+        if options.input_up_axis == 'Y':
+            y_dim = 1
+            plane_dims = [0, 2]
+        else:
+            y_dim = 2
+            plane_dims = [0, 1]
+        
+        floor_height = options.floor_height
+        g_mag = 9.81
+        total_mass = self.total_mass_kg
+        
+        # --- CoM state ---
+        prev_com = getattr(self, '_prev_com_for_stability', None)
+        if prev_com is None:
+            return consensus_probs
+        com = prev_com[0] if prev_com.ndim > 1 else prev_com
+        
+        # --- CoM acceleration (derived from main pipeline's smoothed ZMP) ---
+        # The main pipeline computes a well-smoothed ZMP (One Euro + EMA) and
+        # stores it in current_zmp. We back-compute the effective horizontal
+        # acceleration from ZMP = CoM_hz - (h/g)*a_hz, giving:
+        #   a_hz = (CoM_hz - ZMP_hz) * g / h
+        # This ensures the DFE sees the same ZMP the user sees.
+        zmp_3d = getattr(self, 'current_zmp', None)
+        if zmp_3d is not None and com is not None:
+            com_h = max(com[y_dim] - floor_height, 0.01)
+            zmp_hz = np.array([zmp_3d[plane_dims[0]], zmp_3d[plane_dims[1]]])
+            com_hz = com[plane_dims]
+            a_hz = (com_hz - zmp_hz) * g_mag / com_h
+            com_acc = np.zeros(3)
+            com_acc[plane_dims[0]] = a_hz[0]
+            com_acc[plane_dims[1]] = a_hz[1]
+            # Vertical acceleration: finite-difference from CoM height
+            # to detect freefall (a_vert ≈ -g when airborne)
+            dt = 1.0 / max(self.framerate, 1.0)
+            prev_com_vy = getattr(self, '_eq_prev_com_vy', 0.0)
+            prev_com_h = getattr(self, '_eq_prev_com_h', com[y_dim])
+            com_vy = (com[y_dim] - prev_com_h) / dt
+            com_ay = (com_vy - prev_com_vy) / dt
+            self._eq_prev_com_vy = com_vy
+            self._eq_prev_com_h = com[y_dim]
+            # Filter the vertical acceleration
+            if not hasattr(self, '_eq_ay_oef') or self._eq_ay_oef is None:
+                self._eq_ay_oef = OneEuroFilter(
+                    min_cutoff=1.5, beta=0.5, d_cutoff=1.0,
+                    framerate=self.framerate)
+            com_acc[y_dim] = float(self._eq_ay_oef(com_ay))
+        else:
+            com_acc = np.zeros(3)
+        
+        # --- Support fraction / freefall ---
+        g_vec = np.zeros(3)
+        g_vec[y_dim] = -g_mag
+        F_required = total_mass * (com_acc - g_vec)
+        support_fraction = np.clip(F_required[y_dim] / (total_mass * g_mag), 0.0, 1.0)
+        
+        if not hasattr(self, '_eq_support_oef') or self._eq_support_oef is None:
+            self._eq_support_oef = OneEuroFilter(
+                min_cutoff=0.8, beta=0.2, d_cutoff=1.0, framerate=self.framerate)
+            self._eq_support_frac = support_fraction
+        self._eq_support_frac = float(self._eq_support_oef(support_fraction))
+        
+        if self._eq_support_frac < 0.15:
+            # Airborne: vertical CoM acceleration ≈ -g, no floor contacts.
+            # Walking minimum is ~0.5, so 0.15 has large margin.
+            self._stability_computed_pressure = np.zeros(J)
+            self._stability_pressure = np.zeros(J)
+            # Clear contact state so airborne phase accumulates off-time
+            for gname in list(self._eq_group_state.keys()):
+                self._eq_group_state[gname] = False
+            return consensus_probs
+        
+        # --- Joint positions with tip substitution ---
+        pos = world_pos[0].copy()
+        tips = getattr(self, 'temp_tips', {})
+        for j, tip in tips.items():
+            if j < J:
+                pos[j] = tip[0] if tip.ndim > 1 else tip
+        
+        # --- State init ---
+        if not hasattr(self, '_eq_group_state') or self._eq_group_state is None:
+            self._eq_group_state = {}
+            self._eq_group_frames = {}
+            self._eq_necessity = {}
+        
+        # --- Active floor (from previous frame's confirmed contacts) ---
+        active_floor = floor_height
+        FOOT_JOINTS_MAP = {'LF': [10, 28], 'RF': [11, 29]}
+        for gname in ['LF', 'RF']:
+            if self._eq_group_state.get(gname, False):
+                for j in FOOT_JOINTS_MAP[gname]:
+                    if j < J:
+                        active_floor = min(active_floor, pos[j, y_dim])
+        
+        # --- Chain minima detection ---
+        # Kinematic chains: each chain lists joints from proximal to distal.
+        # Only includes joints with IMU-measured orientation.
+        # Excluded: ankles (7,8) — heels (28,29) are the real rear contacts
+        # Excluded: toes (24,25) — no IMU, position is pose-prior driven
+        CHAINS = [
+            ('L_leg', [1, 4, 28, 10]),      # hip, knee, heel, foot
+            ('R_leg', [2, 5, 29, 11]),
+            ('L_arm', [18, 20, 22]),          # elbow, wrist, hand
+            ('R_arm', [19, 21, 23]),
+            ('torso', [0]),                    # pelvis
+        ]
+        CHAIN_MARGINS = {
+            'L_leg': 0.05, 'R_leg': 0.05,
+            'L_arm': 0.08, 'R_arm': 0.08,
+            'torso': 0.10,
+        }
+        candidates = set()
+        n_pos = pos.shape[0]  # includes tip joints (28, 29, etc.)
+        for chain_name, joints in CHAINS:
+            valid = [j for j in joints if j < n_pos]
+            if not valid:
+                continue
+            heights = {j: pos[j, y_dim] - active_floor for j in valid}
+            min_h = min(heights.values())
+            margin = CHAIN_MARGINS[chain_name]
+            for j in valid:
+                if heights[j] <= min_h + margin:
+                    candidates.add(j)
+        
+        if not candidates:
+            self._stability_computed_pressure = np.zeros(J)
+            self._stability_pressure = np.zeros(J)
+            return consensus_probs
+        
+        # --- Ensure evaluator exists ---
+        if not hasattr(self, '_frame_evaluator') or self._frame_evaluator is None:
+            from dpg_system.dynamic_frame_evaluator import DynamicFrameEvaluator
+            seg_masses = getattr(self, 'segment_masses', np.ones(24) * (total_mass / 24))
+            self._frame_evaluator = DynamicFrameEvaluator(
+                total_mass=total_mass, segment_masses=seg_masses, num_joints=J)
+        evaluator = self._frame_evaluator
+        
+        # --- Forward selection (build-up) contact determination ---
+        # Instead of starting with all candidates and pruning, start with the
+        # most likely contact (lowest) and add groups that significantly
+        # improve equilibrium. This prevents high contacts from corrupting
+        # the solver's force distribution.
+        ADD_THRESHOLD = 1.5   # base residual improvement to accept a group
+        HEIGHT_FLOOR = 0.10   # metres — SMPL ball joint height when planted
+        HEIGHT_SCALE = 0.15   # metres — exponential decay above HEIGHT_FLOOR
+        PERSISTENCE_BONUS = 1.0  # bonus for groups ON in previous frame
+        OFF_SKEPTICISM = 5.0  # frames — time constant for off-duration penalty
+        
+        # Build groups from candidates
+        _J2G = {10: 'LF', 28: 'LF', 11: 'RF', 29: 'RF',
+                0: 'pelvis', 4: 'L_knee', 5: 'R_knee',
+                18: 'L_elbow', 19: 'R_elbow',
+                20: 'LH', 22: 'LH', 21: 'RH', 23: 'RH'}
+        
+        cand_groups = {}
+        for j in candidates:
+            gname = _J2G.get(j, f'J{j}')
+            if gname not in cand_groups:
+                cand_groups[gname] = set()
+            cand_groups[gname].add(j)
+        
+        # Per-group representative height for the height penalty.
+        # Uses the MIN joint height: a foot en pointe with ball at
+        # 5cm and heel at 20cm is a valid contact at the ball.
+        group_min_h = {}
+        for gname, group_joints in cand_groups.items():
+            group_min_h[gname] = min(pos[j, y_dim] - active_floor
+                                     for j in group_joints)
+        
+        # Track how long each group has been continuously OFF.
+        # Must track ALL known groups, not just current candidates —
+        # a foot at 70cm isn't a candidate but is still accumulating
+        # off-time that matters when it re-enters the candidate set.
+        if not hasattr(self, '_eq_group_off_frames'):
+            self._eq_group_off_frames = {}
+        all_known_groups = set(cand_groups.keys()) | set(self._eq_group_state.keys())
+        for gname in all_known_groups:
+            if self._eq_group_state.get(gname, False):
+                self._eq_group_off_frames[gname] = 0
+            else:
+                self._eq_group_off_frames[gname] = (
+                    self._eq_group_off_frames.get(gname, 0) + 1)
+        
+        # Sort groups by height (lowest first = most likely contact)
+        sorted_groups = sorted(cand_groups.keys(),
+                               key=lambda g: group_min_h[g])
+        
+        # Seed with the lowest group
+        accepted = {sorted_groups[0]}
+        accepted_joints = set(cand_groups[sorted_groups[0]])
+        result_curr = evaluator.evaluate(
+            accepted_joints, pos, com, com_acc, active_floor, y_dim)
+        curr_resid = np.linalg.norm(result_curr.residual)
+        
+        # --- Seed residual baseline ---
+        # Track the seed (single-contact) residual over time. When the
+        # seed residual is below its recent baseline, the body is well-
+        # balanced on one foot — "improvements" from adding contacts
+        # are just compensating for ZMP imprecision, not real support
+        # changes. When above baseline, balance is genuinely shifting.
+        BASELINE_ALPHA = 0.05  # EMA smoothing (~20 frame time constant)
+        prev_baseline = getattr(self, '_eq_seed_resid_baseline', curr_resid)
+        seed_baseline = (prev_baseline
+                         + BASELINE_ALPHA * (curr_resid - prev_baseline))
+        self._eq_seed_resid_baseline = seed_baseline
+        resid_ratio = min(2.0, curr_resid / max(seed_baseline, 1.0))
+        
+        # Previous frame's confirmed groups (for persistence)
+        prev_on_groups = {gname for gname, on
+                          in self._eq_group_state.items() if on}
+        
+        # Try adding remaining groups in height order
+        group_necessity = {}
+        for gname in sorted_groups[1:]:
+            test_joints = accepted_joints | cand_groups[gname]
+            result_test = evaluator.evaluate(
+                test_joints, pos, com, com_acc, active_floor, y_dim)
+            test_resid = np.linalg.norm(result_test.residual)
+            raw_improvement = curr_resid - test_resid
+            
+            # 1. Absolute height penalty: no penalty at planted-foot
+            #    height (≤10cm), exponential decay above
+            h = max(0.0, group_min_h[gname])
+            excess = max(0.0, h - HEIGHT_FLOOR)
+            height_factor = np.exp(-excess / HEIGHT_SCALE)
+            
+            # 2. Off-duration skepticism: the longer a group has been
+            #    OFF, the stronger the evidence needed to re-establish.
+            off_frames = self._eq_group_off_frames.get(gname, 0)
+            if gname in prev_on_groups:
+                off_skepticism = 1.0
+            else:
+                off_skepticism = 1.0 / (1.0 + off_frames / OFF_SKEPTICISM)
+            
+            # 3. Residual baseline: scale by how much the seed residual
+            #    exceeds its baseline. Low ratio → body well-balanced,
+            #    don't add contacts. High ratio → balance shifting.
+            resid_factor = resid_ratio
+            
+            # 4. Persistence bonus: previously-ON groups are easier to
+            #    keep, scaled by height (a rising foot loses persistence)
+            persistence = (PERSISTENCE_BONUS * height_factor
+                           if gname in prev_on_groups else 0.0)
+            
+            effective_improvement = (raw_improvement * height_factor
+                                     * off_skepticism * resid_factor
+                                     + persistence)
+            group_necessity[gname] = effective_improvement
+            
+            if effective_improvement >= ADD_THRESHOLD:
+                accepted.add(gname)
+                accepted_joints = test_joints
+                curr_resid = test_resid
+        
+        # The seed group always has necessity = 999 (always accepted)
+        group_necessity[sorted_groups[0]] = 999.0
+        
+        pruned = accepted_joints
+        
+        # Store per-joint necessity (from group) for diagnostics
+        necessity = {}
+        for gname, group_joints in cand_groups.items():
+            for j in group_joints:
+                necessity[j] = group_necessity.get(gname, 0.0)
+        
+        # --- Final equilibrium solve with pruned set ---
+        result_final = evaluator.evaluate(
+            pruned, pos, com, com_acc, active_floor, y_dim)
+        
+        # Store for diagnostics
+        self._frame_eval_result = result_final
+        
+        # --- Map to foot groups ---
+        JOINT_TO_GROUP = {
+            10: 'LF', 28: 'LF',
+            11: 'RF', 29: 'RF',
+            0: 'pelvis',
+            4: 'L_knee', 5: 'R_knee',
+            18: 'L_elbow', 19: 'R_elbow',
+            20: 'LH', 22: 'LH',
+            21: 'RH', 23: 'RH',
+        }
+        
+        # Aggregate force per group from final result
+        group_force = {}
+        group_necessity = {}
+        for j in pruned:
+            gname = JOINT_TO_GROUP.get(j, f'J{j}')
+            f_j = max(0, result_final.per_contact_force.get(j, 0.0))
+            group_force[gname] = group_force.get(gname, 0.0) + f_j
+            group_necessity[gname] = max(
+                group_necessity.get(gname, 0.0), necessity.get(j, 0.0))
+        
+        # --- Lightweight state machine with hysteresis ---
+        FRAMES_ON = 3
+        FRAMES_OFF = 3
+        ON_THRESH = 2.0    # kg of group force to turn ON
+        OFF_THRESH = 0.5   # kg of group force to turn OFF
+        
+        confirmed = {}
+        all_groups = set(group_force.keys()) | set(self._eq_group_state.keys())
+        
+        for gname in all_groups:
+            prev_on = self._eq_group_state.get(gname, False)
+            prev_frames = self._eq_group_frames.get(gname, 0)
+            gf = group_force.get(gname, 0.0)
+            gn = group_necessity.get(gname, 0.0)
+            
+            if prev_on:
+                # Currently ON — turn OFF if force drops
+                if gf < OFF_THRESH and gn < ADD_THRESHOLD:
+                    prev_frames += 1
+                    if prev_frames >= FRAMES_OFF:
+                        self._eq_group_state[gname] = False
+                        self._eq_group_frames[gname] = 0
+                    else:
+                        self._eq_group_frames[gname] = prev_frames
+                else:
+                    self._eq_group_frames[gname] = 0
+            else:
+                # Currently OFF — turn ON if force appears
+                if gf > ON_THRESH and gn >= ADD_THRESHOLD:
+                    prev_frames += 1
+                    if prev_frames >= FRAMES_ON:
+                        self._eq_group_state[gname] = True
+                        self._eq_group_frames[gname] = 0
+                    else:
+                        self._eq_group_frames[gname] = prev_frames
+                else:
+                    self._eq_group_frames[gname] = 0
+            
+            confirmed[gname] = self._eq_group_state.get(gname, False)
+        
+        # --- Pressure output ---
+        target_pressure = np.zeros(J)
+        for j in pruned:
+            gname = JOINT_TO_GROUP.get(j, f'J{j}')
+            if confirmed.get(gname, False):
+                f_j = max(0, result_final.per_contact_force.get(j, 0.0))
+                if j < J:
+                    target_pressure[j] = f_j
+        
+        self._stability_computed_pressure = target_pressure.copy()
+        self._stability_pressure = target_pressure.copy()
+        
+        # --- Consensus probs for downstream (rendering, floor enforcement) ---
+        for j in range(J):
+            if target_pressure[j] > 1.0:
+                consensus_probs[0, j] = min(0.95, target_pressure[j] / (total_mass * 0.3))
+        
+        # Store necessity for diagnostics
+        self._eq_necessity = necessity
         
         return consensus_probs
 
@@ -4078,12 +4799,272 @@ class SMPLProcessor:
             if hasattr(self, '_prev_torque_vecs') and self._prev_torque_vecs is not None:
                 self._consensus.set_prev_torques(self._prev_torque_vecs)
             
-            probs = self._consensus.compute_contacts(pos, com, options.dt, consensus_opts)
+            # Get previous frame contact history if available
+            prev_history = None
+            if f > 0:
+                prev_history = contact_probs[f-1].copy()
+            elif hasattr(self, '_raw_consensus_probs') and self._raw_consensus_probs is not None:
+                prev_history = self._raw_consensus_probs[0].copy() if self._raw_consensus_probs.ndim > 1 else self._raw_consensus_probs.copy()
+                
+            probs = self._consensus.compute_contacts(pos, com, options.dt, consensus_opts, contact_history=prev_history)
             
             # Ensure output size matches
             contact_probs[f, :min(J, len(probs))] = probs[:min(J, len(probs))]
-        
+
         return contact_probs
+
+    # ------------------------------------------------------------------
+    # Patch-based contact detection (Phase 1)
+    # ------------------------------------------------------------------
+
+    # Predefined multi-anchor patches.
+    # Foot: ankle + ball-of-foot + heel virtual (gives a 3-anchor triangle).
+    # Hand: wrist + hand (2-anchor segment).
+    _PATCH_FOOT_DEFS = [
+        ('LF', 7, 10, 28),   # name, ankle, foot/ball, heel
+        ('RF', 8, 11, 29),
+    ]
+    _PATCH_HAND_DEFS = [
+        ('LH', 20, 22),      # name, wrist, hand
+        ('RH', 21, 23),
+    ]
+    # Joints already covered by the predefined multi-anchor patches.
+    _PATCH_RESERVED_JOINTS = {7, 8, 10, 11, 28, 29, 20, 21, 22, 23}
+    # Single-anchor degenerate patches built only when consensus prob exceeds this.
+    _PATCH_DEGENERATE_THRESHOLD = 0.25
+
+    def _compute_probabilistic_contacts_patch(self, F, J, world_pos, options):
+        """Patch-based contact detection (Phase 1: K=1, K=2 closed-form).
+
+        Bootstraps plausibility from the consensus method, then builds patches
+        (foot / hand multi-anchor + degenerate single-anchor for other joints)
+        and runs PatchFrameEvaluator. Per-anchor force shares are mapped back
+        into a (F, J) probability array compatible with the existing pipeline.
+        """
+        contact_probs = np.zeros((F, J))
+        if not options.floor_enable:
+            return contact_probs
+
+        from dpg_system.patch_contact import (
+            PatchFrameEvaluator, ContactPatch
+        )
+        from dpg_system.dynamic_frame_evaluator import EvalResult
+
+        # Plausibility source: consensus probabilities.
+        consensus_probs = self._compute_probabilistic_contacts_consensus(
+            F, J, world_pos, options
+        )
+
+        if not hasattr(self, '_patch_evaluator') or self._patch_evaluator is None:
+            self._patch_evaluator = PatchFrameEvaluator(total_mass=self.total_mass_kg)
+
+        up_axis = getattr(self, 'internal_y_dim', 1)
+        prev_result = getattr(self, '_patch_prev_result', None)
+
+        # Per-frame patch results (kept for downstream / debug consumers).
+        all_results = []
+
+        for f in range(F):
+            positions = world_pos[f]
+            cons_f = consensus_probs[f]
+
+            # CoM
+            if self.current_com is not None:
+                com = (self.current_com[f] if self.current_com.ndim > 1
+                       else self.current_com)
+            else:
+                com = positions[0].copy()
+
+            # CoM acceleration (use the same source v2 uses)
+            com_acc = getattr(self, 'prob_prev_com_acc', None)
+            if com_acc is None:
+                com_acc = np.zeros(3)
+            elif com_acc.ndim > 1:
+                com_acc = com_acc[f] if f < com_acc.shape[0] else com_acc[-1]
+
+            # Build candidate patches
+            patches = self._build_contact_patches(
+                positions, cons_f, up_axis, prev_result, ContactPatch
+            )
+
+            # Evaluate
+            result = self._patch_evaluator.evaluate_patches(
+                patches, com, com_acc, up_axis=up_axis, prev_result=prev_result
+            )
+            all_results.append(result)
+
+            # Map per-anchor force shares into contact_probs[f, j].
+            # An anchor's "probability" is its share of its patch's force,
+            # zeroed out if the patch was deemed unnecessary.
+            for patch_force in result.per_patch.values():
+                if patch_force.necessity == 'unnecessary':
+                    continue
+                for j, share in patch_force.anchor_share.items():
+                    if 0 <= j < J:
+                        contact_probs[f, j] = float(share)
+
+            prev_result = result
+
+        self._patch_prev_result = prev_result
+        self._patch_all_results = all_results
+
+        # Synthesize an EvalResult from the most recent PatchEvalResult so the
+        # existing frame_eval_* outputs (forces, necessity, zmp, support_poly,
+        # f_required) and the FE-injection pressure path light up for patch mode.
+        self._frame_eval_result = self._synthesize_eval_result_from_patches(
+            prev_result, J, EvalResult
+        )
+
+        return contact_probs
+
+    def _synthesize_eval_result_from_patches(self, patch_result, J, EvalResult):
+        """Build a DynamicFrameEvaluator-shaped EvalResult from a PatchEvalResult.
+
+        Per-anchor force = patch.total_force_kg * anchor_share[j].
+        Per-anchor necessity inherits from the patch.
+        Support polygon is the union of active patches' polygon vertices.
+        """
+        per_contact_force = {}
+        necessity = {}
+        force_array = np.zeros(J)
+        necessity_array = np.zeros(J)
+        support_polygon = []
+
+        if patch_result is None:
+            return EvalResult(
+                per_contact_force=per_contact_force,
+                necessity=necessity,
+                f_required=np.zeros(3),
+                zmp_approx=np.zeros(2),
+                support_polygon=support_polygon,
+                residual=np.zeros(3),
+                pruned_contacts=set(),
+                suggested_contacts=set(),
+                force_array=force_array,
+                necessity_array=necessity_array,
+            )
+
+        nec_to_val = {'necessary': 1.0, 'marginal': 0.5, 'unnecessary': 0.0}
+        for pf in patch_result.per_patch.values():
+            for j, share in pf.anchor_share.items():
+                if not (0 <= j < J):
+                    continue
+                f_kg = float(share) * float(pf.total_force_kg)
+                # Multiple patches could in principle share an anchor; sum.
+                per_contact_force[j] = per_contact_force.get(j, 0.0) + f_kg
+                # Necessity: keep the strongest (necessary > marginal > unnecessary).
+                cur = necessity.get(j, 'unnecessary')
+                if nec_to_val[pf.necessity] > nec_to_val[cur]:
+                    necessity[j] = pf.necessity
+
+            # Active patches contribute their polygon to the support set.
+            if pf.necessity != 'unnecessary':
+                # Find the patch among candidates to retrieve polygon vertices.
+                # PatchForce doesn't carry the polygon; look it up in the
+                # caller-stored prev_result if needed. For now, use CoP as a
+                # representative point (sufficient for visualization / hull).
+                support_polygon.append(np.asarray(pf.cop_hz).copy())
+
+        for j, f_kg in per_contact_force.items():
+            force_array[j] = max(0.0, f_kg)
+        for j, nec in necessity.items():
+            necessity_array[j] = nec_to_val.get(nec, 0.0)
+
+        pruned = set()  # joint-level pruning not meaningful in patch model
+        suggested = set()  # patch.suggested is patch-name; not joint-level
+
+        return EvalResult(
+            per_contact_force=per_contact_force,
+            necessity=necessity,
+            f_required=patch_result.f_required.copy(),
+            zmp_approx=patch_result.zmp_hz.copy(),
+            support_polygon=support_polygon,
+            residual=patch_result.residual.copy(),
+            pruned_contacts=pruned,
+            suggested_contacts=suggested,
+            force_array=force_array,
+            necessity_array=necessity_array,
+        )
+
+    def _build_contact_patches(self, positions, consensus_probs_f,
+                                up_axis, prev_result, ContactPatch):
+        """Build ContactPatch list for one frame.
+
+        Phase 1: foot/hand multi-anchor patches + single-anchor degenerate
+        patches for other joints with non-trivial consensus probability.
+        Plausibility is the max consensus probability across anchors.
+        """
+        plane_dims = [0, 2] if up_axis == 1 else [0, 1]
+        J = positions.shape[0]
+        patches = []
+
+        prev_active_names = set(prev_result.per_patch.keys()) if prev_result is not None else set()
+
+        def consensus_at(j):
+            if j < 0 or j >= len(consensus_probs_f):
+                return 0.0
+            return float(consensus_probs_f[j])
+
+        # Foot patches
+        for name, ankle, foot, heel in self._PATCH_FOOT_DEFS:
+            if foot >= J:
+                continue
+            if heel < J:
+                anchors = [ankle, foot, heel]
+            else:
+                anchors = [ankle, foot]
+            anchor_pos = np.array([positions[j] for j in anchors])
+            polygon = anchor_pos[:, plane_dims].copy()
+            plausibility = max(consensus_at(j) for j in anchors)
+            patches.append(ContactPatch(
+                name=name,
+                anchor_joints=list(anchors),
+                anchor_positions=anchor_pos,
+                surface_offsets=np.full(len(anchors), 0.03),
+                polygon_hz=polygon,
+                plausibility=plausibility,
+                prev_active=name in prev_active_names,
+            ))
+
+        # Hand patches
+        for name, wrist, hand in self._PATCH_HAND_DEFS:
+            if hand >= J:
+                continue
+            anchors = [wrist, hand]
+            anchor_pos = np.array([positions[j] for j in anchors])
+            polygon = anchor_pos[:, plane_dims].copy()
+            plausibility = max(consensus_at(j) for j in anchors)
+            patches.append(ContactPatch(
+                name=name,
+                anchor_joints=list(anchors),
+                anchor_positions=anchor_pos,
+                surface_offsets=np.full(len(anchors), 0.025),
+                polygon_hz=polygon,
+                plausibility=plausibility,
+                prev_active=name in prev_active_names,
+            ))
+
+        # Single-anchor degenerate patches (knees, elbows, pelvis, etc.)
+        for j in range(min(J, len(consensus_probs_f))):
+            if j in self._PATCH_RESERVED_JOINTS:
+                continue
+            prob = consensus_at(j)
+            if prob < self._PATCH_DEGENERATE_THRESHOLD:
+                continue
+            anchor_pos = positions[j:j+1]
+            polygon = anchor_pos[:, plane_dims].copy()
+            name = f'J{j}'
+            patches.append(ContactPatch(
+                name=name,
+                anchor_joints=[j],
+                anchor_positions=anchor_pos,
+                surface_offsets=np.array([0.03]),
+                polygon_hz=polygon,
+                plausibility=prob,
+                prev_active=name in prev_active_names,
+            ))
+
+        return patches
 
     def _refine_contacts_from_torque_discontinuity(
             self, contact_probs, torques_vec, world_pos, parents, options, tips):
@@ -7738,14 +8719,29 @@ class SMPLProcessor:
              contact_probs_fusion = self._compute_probabilistic_contacts_stability_v2_fe(
                   F, world_pos.shape[1], world_pos, options
              )
+        elif options.contact_method == 'stability_v3':
+             contact_probs_fusion = self._compute_probabilistic_contacts_stability_v3(
+                  F, world_pos.shape[1], world_pos, options
+             )
+        elif options.contact_method == 'equilibrium':
+             contact_probs_fusion = self._compute_probabilistic_contacts_equilibrium(
+                  F, world_pos.shape[1], world_pos, options
+             )
+        elif options.contact_method == 'patch':
+             contact_probs_fusion = self._compute_probabilistic_contacts_patch(
+                  F, world_pos.shape[1], world_pos, options
+             )
         else:  # Default: 'fusion'
              contact_probs_fusion = self._compute_probabilistic_contacts_fusion(
                   F, world_pos.shape[1], world_pos, vel_y_in, vel_h_in, options.floor_height, options
              )
         
         # --- Dynamic Frame Evaluator (optional, read-only) ---
-        # Skip if stability_v2_fe already ran it (avoids double-processing EMA states)
-        if getattr(options, 'enable_frame_evaluator', False) and options.contact_method != 'stability_v2_fe':
+        # Skip if stability_v2_fe already ran it (avoids double-processing EMA states).
+        # Skip for 'patch' method — patch mode runs its own evaluator (PatchFrameEvaluator)
+        # and is intentionally independent of the v2_fe path.
+        if (getattr(options, 'enable_frame_evaluator', False)
+                and options.contact_method not in ('stability_v2_fe', 'stability_v3', 'equilibrium', 'patch')):
             self._evaluate_dynamic_frame(F, world_pos, tips, options, contact_probs_fusion)
         
         # --- Contact Pressure: Frame Eval vs Legacy ---
@@ -7765,7 +8761,7 @@ class SMPLProcessor:
             # stability_v2_fe: use its corrected pressure (which already
             # incorporates FE forces + necessity overrides)
             stab_press = getattr(self, '_stability_computed_pressure', None)
-            if options.contact_method == 'stability_v2_fe' and stab_press is not None and len(stab_press) == J_cp:
+            if options.contact_method in ('stability_v2_fe', 'stability_v3', 'equilibrium') and stab_press is not None and len(stab_press) == J_cp:
                 for f_idx in range(F):
                     self.contact_pressure[f_idx] = stab_press
                 # DEBUG
@@ -7981,7 +8977,7 @@ class SMPLProcessor:
             # When using inverse statics, the stability method computes
             # physics-based pressure directly. Replace the probability-
             # derived pressure entirely.
-            if options.contact_method in ('stability', 'stability_v2', 'stability_v2_fe'):
+            if options.contact_method in ('stability', 'stability_v2', 'stability_v2_fe', 'stability_v3', 'equilibrium'):
                 stab_press = getattr(self, '_stability_computed_pressure', None)
                 if stab_press is not None and len(stab_press) == self.contact_pressure.shape[1]:
                     for f in range(F):

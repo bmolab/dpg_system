@@ -1697,7 +1697,7 @@ class SMPLTorqueNode(SMPLNode):
         
         # Contact Method Selection
         self.contact_method_prop = self.add_option('contact_method', widget_type='combo', default_value='stability_v2')
-        self.contact_method_prop.widget.combo_items = ['fusion', 'stability', 'stability_v2', 'stability_v2_fe', 'com_driven', 'consensus']
+        self.contact_method_prop.widget.combo_items = ['fusion', 'stability', 'stability_v2', 'stability_v2_fe', 'stability_v3', 'equilibrium', 'com_driven', 'consensus', 'patch']
         self.enable_frame_eval_prop = self.add_option('enable_frame_evaluator', widget_type='checkbox', default_value=True)
         
         
