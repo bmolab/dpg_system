@@ -1669,6 +1669,7 @@ class SMPLTorqueNode(SMPLNode):
         self.frame_eval_zmp_output = self.add_output('frame_eval_zmp')
         self.frame_eval_f_required_output = self.add_output('frame_eval_f_required')
         self.frame_eval_support_poly_output = self.add_output('frame_eval_support_poly')
+        self.contact_points_output = self.add_output('contact_points')
         
         # Noise stats controls
         self.reset_noise_stats_input = self.add_input('reset_noise_stats', widget_type='button', callback=self._reset_noise_stats)
@@ -1699,6 +1700,9 @@ class SMPLTorqueNode(SMPLNode):
         self.contact_method_prop = self.add_option('contact_method', widget_type='combo', default_value='stability_v2')
         self.contact_method_prop.widget.combo_items = ['fusion', 'stability', 'stability_v2', 'stability_v2_fe', 'stability_v3', 'equilibrium', 'com_driven', 'consensus', 'patch']
         self.enable_frame_eval_prop = self.add_option('enable_frame_evaluator', widget_type='checkbox', default_value=True)
+        self.balance_mode_prop = self.add_option('balance_mode', widget_type='combo', default_value='raw')
+        self.balance_mode_prop.widget.combo_items = ['raw', 'xcom', 'am']
+        self.contact_force_threshold_prop = self.add_option('contact_force_threshold', widget_type='drag_float', default_value=0.0)
         
         
         # --- World-Frame Dynamics ---
@@ -1912,6 +1916,7 @@ class SMPLTorqueNode(SMPLNode):
 
                 use_s_curve_spine=self.use_s_curve_spine_prop() if hasattr(self, 'use_s_curve_spine_prop') else True,
                 enable_frame_evaluator=self.enable_frame_eval_prop() if hasattr(self, 'enable_frame_eval_prop') else False,
+                balance_mode=self.balance_mode_prop() if hasattr(self, 'balance_mode_prop') else 'raw',
                 enable_one_euro_filter=self.enable_one_euro_prop() if hasattr(self, 'enable_one_euro_prop') else False,
                 acc_smooth_window=self.acc_smooth_window_prop() if hasattr(self, 'acc_smooth_window_prop') else 0,
                 torque_smooth_window=self.torque_smooth_window_prop() if hasattr(self, 'torque_smooth_window_prop') else 0,
@@ -2067,6 +2072,28 @@ class SMPLTorqueNode(SMPLNode):
                     if fe.support_polygon:
                         poly = np.array(fe.support_polygon)
                         self.frame_eval_support_poly_output.send(poly)
+
+                    # Active contact points: [[x, y, z, force], ...]
+                    # force_array indexes 0-23 = standard SMPL joints,
+                    # 24/25 = L/R toe, 26/27 = L/R fingertip, 28/29 = L/R heel
+                    # Up-axis component is replaced with the inferred floor height
+                    # so contact points sit on the floor for visualization.
+                    forces = fe.force_array
+                    world_pos_30 = getattr(self.processor, 'last_world_pos', None)
+                    if forces is not None and world_pos_30 is not None and world_pos_30.size > 0:
+                        last_frame_pos = world_pos_30[-1] if world_pos_30.ndim == 3 else world_pos_30
+                        thresh = float(self.contact_force_threshold_prop())
+                        floor_h_val = float(floor_h) if floor_h is not None else 0.0
+                        n = min(len(forces), last_frame_pos.shape[0])
+                        active = []
+                        for j in range(n):
+                            f_j = float(forces[j])
+                            if f_j > thresh:
+                                p = last_frame_pos[j]
+                                xyz = [float(p[0]), float(p[1]), float(p[2])]
+                                xyz[up] = floor_h_val
+                                active.append([xyz[0], xyz[1], xyz[2], f_j])
+                        self.contact_points_output.send(np.array(active) if active else np.zeros((0, 4)))
             
             except Exception as e:
                 # Catch processing errors (e.g. shape mismatch on first frame)

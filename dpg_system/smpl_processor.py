@@ -365,6 +365,7 @@ class SMPLProcessingOptions:
     com_acc_min_cutoff: float = 2.0    # Base One Euro min_cutoff for CoM acceleration filter (999 = disabled)
     com_acc_beta: float = 0.8          # Base One Euro beta — high for adaptive responsiveness during impacts
     smooth_input_window: int = 0       # Causal moving average window for pose+trans input (0 = off, 3 = recommended for 33Hz cadence removal)
+    balance_mode: str = 'raw'          # Balance point mode for equilibrium: 'raw', 'xcom', 'am'
 
     
     # --- Spine Geometry ---
@@ -3877,24 +3878,140 @@ class SMPLProcessor:
             return consensus_probs
         com = prev_com[0] if prev_com.ndim > 1 else prev_com
         
-        # --- CoM acceleration (derived from main pipeline's smoothed ZMP) ---
-        # The main pipeline computes a well-smoothed ZMP (One Euro + EMA) and
-        # stores it in current_zmp. We back-compute the effective horizontal
-        # acceleration from ZMP = CoM_hz - (h/g)*a_hz, giving:
-        #   a_hz = (CoM_hz - ZMP_hz) * g / h
-        # This ensures the DFE sees the same ZMP the user sees.
+        # --- CoM horizontal acceleration (direct kinematic computation) ---
+        # Computes a_hz directly from CoM position via finite differencing
+        # + adaptive One Euro filtering. This avoids the main pipeline's
+        # ZMP which lags by ~15 frames from cascaded EMA+OEF smoothing.
         zmp_3d = getattr(self, 'current_zmp', None)
         if zmp_3d is not None and com is not None:
             com_h = max(com[y_dim] - floor_height, 0.01)
-            zmp_hz = np.array([zmp_3d[plane_dims[0]], zmp_3d[plane_dims[1]]])
             com_hz = com[plane_dims]
-            a_hz = (com_hz - zmp_hz) * g_mag / com_h
+            dt = 1.0 / max(self.framerate, 1.0)
+            
+            # CoM velocity (single finite diff from position)
+            prev_com_pos = getattr(self, '_eq_prev_com_pos', com.copy())
+            com_vel = (com - prev_com_pos) / dt
+            self._eq_prev_com_pos = com.copy()
+            
+            # Filter velocity with One Euro (adaptive: high beta opens
+            # the filter during fast transitions like foot liftoff)
+            if not hasattr(self, '_eq_comvel_oef') or self._eq_comvel_oef is None:
+                self._eq_comvel_oef = [
+                    OneEuroFilter(min_cutoff=1.5, beta=1.5, d_cutoff=1.0,
+                                  framerate=self.framerate),
+                    OneEuroFilter(min_cutoff=1.5, beta=1.5, d_cutoff=1.0,
+                                  framerate=self.framerate),
+                ]
+            com_vel_hz = np.array([
+                float(self._eq_comvel_oef[0](com_vel[plane_dims[0]])),
+                float(self._eq_comvel_oef[1](com_vel[plane_dims[1]])),
+            ])
+            
+            # Acceleration from filtered velocity
+            prev_vel_hz = getattr(self, '_eq_prev_vel_hz',
+                                  com_vel_hz.copy())
+            raw_a_hz = (com_vel_hz - prev_vel_hz) / dt
+            self._eq_prev_vel_hz = com_vel_hz.copy()
+            
+            # Filter acceleration with One Euro
+            if not hasattr(self, '_eq_ahz_oef') or self._eq_ahz_oef is None:
+                self._eq_ahz_oef = [
+                    OneEuroFilter(min_cutoff=1.5, beta=1.0, d_cutoff=1.0,
+                                  framerate=self.framerate),
+                    OneEuroFilter(min_cutoff=1.5, beta=1.0, d_cutoff=1.0,
+                                  framerate=self.framerate),
+                ]
+            a_hz = np.array([
+                float(self._eq_ahz_oef[0](raw_a_hz[0])),
+                float(self._eq_ahz_oef[1](raw_a_hz[1])),
+            ])
+            
+            # Compute the direct-kinematic ZMP for diagnostics
+            direct_zmp_hz = com_hz - a_hz * com_h / g_mag
+            self._eq_direct_zmp = direct_zmp_hz.copy()
+            
+            # --- Balance point correction (optional, on top of direct ZMP) ---
+            balance_mode = getattr(options, 'balance_mode', getattr(self, '_eq_balance_mode', 'raw'))
+            
+            if balance_mode == 'xcom':
+                # XCoM = CoM + velocity/ω₀ — blend with direct ZMP
+                omega_0 = np.sqrt(g_mag / max(com_h, 0.01))
+                xcom_hz = com_hz + com_vel_hz / omega_0
+                
+                sf_prev = getattr(self, '_eq_support_frac', 1.0)
+                alpha = np.clip(2.0 * (1.0 - sf_prev), 0.0, 1.0)
+                balance_hz = (1.0 - alpha) * direct_zmp_hz + alpha * xcom_hz
+                a_hz = (com_hz - balance_hz) * g_mag / com_h
+                
+                self._eq_balance_point = balance_hz.copy()
+                self._eq_xcom = xcom_hz.copy()
+                self._eq_blend_alpha = alpha
+                
+            elif balance_mode == 'am':
+                # Angular momentum corrected (uses filtered ω from torque pipeline)
+                pos_all = world_pos[0]
+                n_seg = min(24, pos_all.shape[0])
+                seg_masses = getattr(self, 'segment_masses',
+                                     np.ones(n_seg) * (total_mass / n_seg))
+                
+                ang_vel_world = getattr(self, '_current_ang_vel', None)
+                if ang_vel_world is not None and ang_vel_world.shape[-2] >= n_seg:
+                    omega = ang_vel_world[0, :n_seg, :]
+                    parents = self._get_hierarchy()
+                    seg_vel = np.zeros((n_seg, 3))
+                    seg_vel[0] = com_vel
+                    for j in range(1, n_seg):
+                        p = parents[j]
+                        if 0 <= p < n_seg:
+                            lever = pos_all[j] - pos_all[p]
+                            seg_vel[j] = seg_vel[p] + np.cross(omega[p], lever)
+                        else:
+                            seg_vel[j] = com_vel
+                else:
+                    prev_seg_pos = getattr(self, '_eq_prev_seg_pos',
+                                           pos_all[:n_seg].copy())
+                    seg_vel = (pos_all[:n_seg] - prev_seg_pos) / dt
+                    self._eq_prev_seg_pos = pos_all[:n_seg].copy()
+                
+                H = np.zeros(3)
+                for i in range(n_seg):
+                    dr = pos_all[i] - com
+                    dv = seg_vel[i] - com_vel
+                    H += seg_masses[i] * np.cross(dr, dv)
+                
+                AM_ALPHA = 0.5
+                prev_H_filt = getattr(self, '_eq_prev_H_filt', H.copy())
+                H_filt = AM_ALPHA * H + (1.0 - AM_ALPHA) * prev_H_filt
+                self._eq_prev_H_filt = H_filt.copy()
+                
+                prev_H_for_diff = getattr(self, '_eq_prev_H_for_diff',
+                                          H_filt.copy())
+                dH_dt = (H_filt - prev_H_for_diff) / dt
+                self._eq_prev_H_for_diff = H_filt.copy()
+                
+                mh = total_mass * com_h
+                if y_dim == 1:
+                    a_hz[0] -= dH_dt[2] / mh
+                    a_hz[1] += dH_dt[0] / mh
+                else:
+                    a_hz[0] += dH_dt[1] / mh
+                    a_hz[1] -= dH_dt[0] / mh
+                
+                self._eq_balance_point = (com_hz - a_hz * com_h / g_mag)
+                self._eq_ang_mom = H.copy()
+                self._eq_dH_dt = dH_dt.copy()
+                self._eq_blend_alpha = 0.0
+                
+            else:
+                # 'raw' — direct kinematic ZMP, no correction
+                self._eq_balance_point = direct_zmp_hz.copy()
+                self._eq_blend_alpha = 0.0
+            
             com_acc = np.zeros(3)
             com_acc[plane_dims[0]] = a_hz[0]
             com_acc[plane_dims[1]] = a_hz[1]
             # Vertical acceleration: finite-difference from CoM height
             # to detect freefall (a_vert ≈ -g when airborne)
-            dt = 1.0 / max(self.framerate, 1.0)
             prev_com_vy = getattr(self, '_eq_prev_com_vy', 0.0)
             prev_com_h = getattr(self, '_eq_prev_com_h', com[y_dim])
             com_vy = (com[y_dim] - prev_com_h) / dt
@@ -3931,6 +4048,14 @@ class SMPLProcessor:
             for gname in list(self._eq_group_state.keys()):
                 self._eq_group_state[gname] = False
             return consensus_probs
+        
+        # Override vertical acceleration with smoothed support fraction.
+        # The raw com_acc[y_dim] is noisy (double finite-diff), causing
+        # total_force_kg in the evaluator to oscillate wildly (0→150→0).
+        # The support fraction is smoothly filtered; back-compute the
+        # vertical acceleration that corresponds to it:
+        #   sf = (com_acc_y + g) / g  →  com_acc_y = (sf - 1) × g
+        com_acc[y_dim] = (self._eq_support_frac - 1.0) * g_mag
         
         # --- Joint positions with tip substitution ---
         pos = world_pos[0].copy()
@@ -4005,7 +4130,7 @@ class SMPLProcessor:
         ADD_THRESHOLD = 1.5   # base residual improvement to accept a group
         HEIGHT_FLOOR = 0.10   # metres — SMPL ball joint height when planted
         HEIGHT_SCALE = 0.15   # metres — exponential decay above HEIGHT_FLOOR
-        PERSISTENCE_BONUS = 1.0  # bonus for groups ON in previous frame
+        PERSISTENCE_BONUS = 2.0  # bonus for groups ON in previous frame
         OFF_SKEPTICISM = 5.0  # frames — time constant for off-duration penalty
         
         # Build groups from candidates
@@ -4043,24 +4168,28 @@ class SMPLProcessor:
                 self._eq_group_off_frames[gname] = (
                     self._eq_group_off_frames.get(gname, 0) + 1)
         
+        # --- Build representative joint set for solver ---
+        # The solver should see ONE contact per group (the lowest joint).
+        # Passing both ball+heel makes the solver treat them as independent
+        # contacts, doubling the group's force allocation.
+        group_rep = {}  # gname → representative joint (lowest)
+        for gname, group_joints in cand_groups.items():
+            group_rep[gname] = min(group_joints,
+                                   key=lambda j: pos[j, y_dim])
+        
         # Sort groups by height (lowest first = most likely contact)
         sorted_groups = sorted(cand_groups.keys(),
                                key=lambda g: group_min_h[g])
         
-        # Seed with the lowest group
+        # Seed with the lowest group (using its representative)
         accepted = {sorted_groups[0]}
-        accepted_joints = set(cand_groups[sorted_groups[0]])
+        accepted_reps = {group_rep[sorted_groups[0]]}
         result_curr = evaluator.evaluate(
-            accepted_joints, pos, com, com_acc, active_floor, y_dim)
+            accepted_reps, pos, com, com_acc, active_floor, y_dim)
         curr_resid = np.linalg.norm(result_curr.residual)
         
-        # --- Seed residual baseline ---
-        # Track the seed (single-contact) residual over time. When the
-        # seed residual is below its recent baseline, the body is well-
-        # balanced on one foot — "improvements" from adding contacts
-        # are just compensating for ZMP imprecision, not real support
-        # changes. When above baseline, balance is genuinely shifting.
-        BASELINE_ALPHA = 0.05  # EMA smoothing (~20 frame time constant)
+        # --- Seed residual baseline (for new contact skepticism) ---
+        BASELINE_ALPHA = 0.05
         prev_baseline = getattr(self, '_eq_seed_resid_baseline', curr_resid)
         seed_baseline = (prev_baseline
                          + BASELINE_ALPHA * (curr_resid - prev_baseline))
@@ -4074,35 +4203,34 @@ class SMPLProcessor:
         # Try adding remaining groups in height order
         group_necessity = {}
         for gname in sorted_groups[1:]:
-            test_joints = accepted_joints | cand_groups[gname]
+            test_reps = accepted_reps | {group_rep[gname]}
             result_test = evaluator.evaluate(
-                test_joints, pos, com, com_acc, active_floor, y_dim)
+                test_reps, pos, com, com_acc, active_floor, y_dim)
             test_resid = np.linalg.norm(result_test.residual)
             raw_improvement = curr_resid - test_resid
             
-            # 1. Absolute height penalty: no penalty at planted-foot
-            #    height (≤10cm), exponential decay above
+            # 1. Absolute height penalty
             h = max(0.0, group_min_h[gname])
             excess = max(0.0, h - HEIGHT_FLOOR)
             height_factor = np.exp(-excess / HEIGHT_SCALE)
             
-            # 2. Off-duration skepticism: the longer a group has been
-            #    OFF, the stronger the evidence needed to re-establish.
-            off_frames = self._eq_group_off_frames.get(gname, 0)
-            if gname in prev_on_groups:
+            is_on = gname in prev_on_groups
+            
+            # 2. Off-duration skepticism (OFF groups only)
+            if is_on:
                 off_skepticism = 1.0
             else:
+                off_frames = self._eq_group_off_frames.get(gname, 0)
                 off_skepticism = 1.0 / (1.0 + off_frames / OFF_SKEPTICISM)
             
-            # 3. Residual baseline: scale by how much the seed residual
-            #    exceeds its baseline. Low ratio → body well-balanced,
-            #    don't add contacts. High ratio → balance shifting.
-            resid_factor = resid_ratio
+            # 3. Residual baseline (OFF groups only)
+            resid_factor = resid_ratio if not is_on else 1.0
             
-            # 4. Persistence bonus: previously-ON groups are easier to
-            #    keep, scaled by height (a rising foot loses persistence)
-            persistence = (PERSISTENCE_BONUS * height_factor
-                           if gname in prev_on_groups else 0.0)
+            # 4. Persistence bonus (ON groups only, non-negative raw only)
+            if is_on and raw_improvement >= 0:
+                persistence = PERSISTENCE_BONUS * height_factor
+            else:
+                persistence = 0.0
             
             effective_improvement = (raw_improvement * height_factor
                                      * off_skepticism * resid_factor
@@ -4111,13 +4239,16 @@ class SMPLProcessor:
             
             if effective_improvement >= ADD_THRESHOLD:
                 accepted.add(gname)
-                accepted_joints = test_joints
+                accepted_reps = accepted_reps | {group_rep[gname]}
                 curr_resid = test_resid
         
-        # The seed group always has necessity = 999 (always accepted)
+        # The seed group always has necessity = 999
         group_necessity[sorted_groups[0]] = 999.0
         
-        pruned = accepted_joints
+        # Build the full joint set from accepted groups
+        pruned = set()
+        for gname in accepted:
+            pruned |= cand_groups[gname]
         
         # Store per-joint necessity (from group) for diagnostics
         necessity = {}
@@ -4125,9 +4256,48 @@ class SMPLProcessor:
             for j in group_joints:
                 necessity[j] = group_necessity.get(gname, 0.0)
         
-        # --- Final equilibrium solve with pruned set ---
+        # --- Final equilibrium solve with representatives ---
+        # Solve with one rep per group, then split force within groups
+        final_reps = {group_rep[g] for g in accepted}
         result_final = evaluator.evaluate(
-            pruned, pos, com, com_acc, active_floor, y_dim)
+            final_reps, pos, com, com_acc, active_floor, y_dim)
+        
+        # --- Split group forces to individual joints ---
+        # Use ZMP proximity (lever rule) within each group
+        zmp_hz = result_final.zmp_approx
+        for gname in accepted:
+            rep_j = group_rep[gname]
+            rep_force = result_final.per_contact_force.get(rep_j, 0.0)
+            members = list(cand_groups[gname])
+            if len(members) == 1 or rep_force <= 0:
+                # Single member or no force — assign directly
+                for j in members:
+                    result_final.per_contact_force[j] = (
+                        rep_force if j == rep_j else 0.0)
+                continue
+            # Lever rule split based on ZMP distance
+            plane = [0, 2] if y_dim == 1 else [0, 1]
+            dists = []
+            for j in members:
+                d = np.linalg.norm(pos[j][plane] - zmp_hz)
+                dists.append(d)
+            d_total = sum(dists)
+            if d_total > 0.01:
+                # Closer to ZMP → more force (inverse distance)
+                inv_d = [1.0 / max(d, 0.01) for d in dists]
+                inv_sum = sum(inv_d)
+                for j, w in zip(members, inv_d):
+                    result_final.per_contact_force[j] = rep_force * w / inv_sum
+            else:
+                # All at same position — equal split
+                for j in members:
+                    result_final.per_contact_force[j] = rep_force / len(members)
+        
+        # Rebuild force_array
+        result_final.force_array = np.zeros(J)
+        for j, f in result_final.per_contact_force.items():
+            if j < J:
+                result_final.force_array[j] = max(0, f)
         
         # Store for diagnostics
         self._frame_eval_result = result_final

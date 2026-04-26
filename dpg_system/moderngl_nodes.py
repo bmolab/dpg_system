@@ -38,6 +38,7 @@ def register_moderngl_nodes():
     Node.app.register_node('mgl_image', MGLImageNode.factory)
     Node.app.register_node('mgl_plane', MGLPlaneNode.factory)
     Node.app.register_node('mgl_disk', MGLDiskNode.factory)
+    Node.app.register_node('mgl_contact_disks', MGLContactDisksNode.factory)
     Node.app.register_node('mgl_body', MGLBodyNode.factory)
     Node.app.register_node('mgl_surface', MGLSurfaceNode.factory)
     Node.app.register_node('mgl_line', MGLLineNode.factory)
@@ -1958,6 +1959,130 @@ class MGLDiskNode(MGLShapeNode):
                 scale_mat = np.diag([r, 1.0, r, 1.0]).astype('f4')
                 model = np.dot(model, scale_mat)
                 self.prog['M'].write(model.astype('f4').T.tobytes())
+
+
+class MGLContactDisksNode(MGLShapeNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        return MGLContactDisksNode(name, data, args)
+
+    def __init__(self, label, data, args):
+        super().__init__(label, data, args)
+
+    def initialize(self, args):
+        super().initialize(args)
+        self.contacts_input = self.add_input('contacts', triggers_execution=True)
+        self.area_scale_input = self.add_input('area_scale', widget_type='drag_float', widget_width=60, default_value=0.001, speed=0.0001)
+        self.min_radius_input = self.add_input('min_radius', widget_type='drag_float', widget_width=60, default_value=0.0, speed=0.001)
+        self.max_radius_input = self.add_input('max_radius', widget_type='drag_float', widget_width=60, default_value=0.5, speed=0.01)
+        self.height_offset_input = self.add_input('height_offset', widget_type='drag_float', widget_width=60, default_value=0.001, speed=0.001)
+        self.segments_input = self.add_input('segments', widget_type='drag_int', widget_width=60, default_value=24, min_value=3, max_value=128)
+        self.end_initialization()
+        self.contacts_data = None
+        self.dirty = False
+
+    def execute(self):
+        if self.contacts_input.fresh_input:
+            data = self.contacts_input()
+            if data is not None:
+                if isinstance(data, list):
+                    data = np.array(data, dtype=np.float32)
+                elif isinstance(data, np.ndarray):
+                    data = data.astype(np.float32)
+                elif self.app.torch_available and isinstance(data, torch.Tensor):
+                    data = data.detach().cpu().numpy().astype(np.float32)
+
+                if data.ndim == 1 and data.size % 4 == 0:
+                    data = data.reshape(-1, 4)
+
+                if data.ndim == 2 and data.shape[1] == 4:
+                    self.contacts_data = data
+                    self.dirty = True
+                elif data.ndim == 2 and data.shape[0] == 0:
+                    self.contacts_data = data.reshape(0, 4)
+                    self.dirty = True
+
+        super().execute()
+
+    def _build_geometry(self):
+        contacts = self.contacts_data
+        if contacts is None or contacts.shape[0] == 0:
+            return [], []
+
+        segments = max(3, int(self.segments_input()))
+        area_scale = float(self.area_scale_input())
+        min_r = max(0.0, float(self.min_radius_input()))
+        max_r = float(self.max_radius_input())
+        if max_r <= 0.0:
+            max_r = 1e6
+        h_off = float(self.height_offset_input())
+
+        cos_t = np.cos(2.0 * np.pi * np.arange(segments) / segments).astype(np.float32)
+        sin_t = np.sin(2.0 * np.pi * np.arange(segments) / segments).astype(np.float32)
+
+        vertices = []
+        indices = []
+        verts_per_disk = 2 * (1 + segments)
+
+        for d in range(contacts.shape[0]):
+            cx, cy, cz, force = contacts[d]
+            if force <= 0.0:
+                continue
+            r = math.sqrt(max(0.0, force) * area_scale / math.pi)
+            r = max(min_r, min(r, max_r))
+            if r <= 0.0:
+                continue
+
+            base = len(vertices) // 8
+            y = float(cy) + h_off
+
+            # Top face (+Y normal): center + ring
+            vertices.extend([float(cx), y, float(cz), 0.0, 1.0, 0.0, 0.5, 0.5])
+            for s in range(segments):
+                x = float(cx) + r * cos_t[s]
+                z = float(cz) + r * sin_t[s]
+                u = 0.5 + 0.5 * cos_t[s]
+                v = 0.5 + 0.5 * sin_t[s]
+                vertices.extend([x, y, z, 0.0, 1.0, 0.0, u, v])
+            for s in range(segments):
+                s_next = (s + 1) % segments
+                indices.extend([base, base + 1 + s_next, base + 1 + s])
+
+            # Bottom face (-Y normal): center + ring (reversed winding)
+            base_b = base + 1 + segments
+            vertices.extend([float(cx), y, float(cz), 0.0, -1.0, 0.0, 0.5, 0.5])
+            for s in range(segments):
+                x = float(cx) + r * cos_t[s]
+                z = float(cz) + r * sin_t[s]
+                u = 0.5 + 0.5 * cos_t[s]
+                v = 0.5 + 0.5 * sin_t[s]
+                vertices.extend([x, y, z, 0.0, -1.0, 0.0, u, v])
+            for s in range(segments):
+                s_next = (s + 1) % segments
+                indices.extend([base_b, base_b + 1 + s, base_b + 1 + s_next])
+
+        return vertices, indices
+
+    def draw(self):
+        if self.ctx and self.dirty:
+            vertices, indices = self._build_geometry()
+            if len(vertices) > 0:
+                self.render_geometry(vertices, indices)
+            else:
+                # No active contacts — clear VAO so nothing draws
+                self.vao = None
+                self.vbo = None
+                self.ibo = None
+            self.dirty = False
+        super().draw()
+
+    def create_geometry(self):
+        return [], None
+
+    def handle_shape_params(self):
+        if self.ctx is not None and self.prog is not None and 'M' in self.prog:
+            model = self.ctx.get_model_matrix()
+            self.prog['M'].write(model.astype('f4').T.tobytes())
 
 
 class MGLPointCloudNode(MGLShapeNode):
