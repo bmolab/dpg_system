@@ -3933,14 +3933,21 @@ class SMPLProcessor:
             # --- Balance point correction (optional, on top of direct ZMP) ---
             balance_mode = getattr(options, 'balance_mode', getattr(self, '_eq_balance_mode', 'raw'))
             
-            if balance_mode == 'xcom':
-                # XCoM = CoM + velocity/ω₀ — blend with direct ZMP
+            if balance_mode in ('xcom', 'xcom_full'):
+                # XCoM = CoM + velocity/ω₀
                 omega_0 = np.sqrt(g_mag / max(com_h, 0.01))
                 xcom_hz = com_hz + com_vel_hz / omega_0
                 
-                sf_prev = getattr(self, '_eq_support_frac', 1.0)
-                alpha = np.clip(2.0 * (1.0 - sf_prev), 0.0, 1.0)
-                balance_hz = (1.0 - alpha) * direct_zmp_hz + alpha * xcom_hz
+                if balance_mode == 'xcom':
+                    # Gated blend: only activates when support_frac drops
+                    sf_prev = getattr(self, '_eq_support_frac', 1.0)
+                    alpha = np.clip(2.0 * (1.0 - sf_prev), 0.0, 1.0)
+                    balance_hz = (1.0 - alpha) * direct_zmp_hz + alpha * xcom_hz
+                else:
+                    # xcom_full: always-on, pure XCoM as balance point
+                    alpha = 1.0
+                    balance_hz = xcom_hz
+                
                 a_hz = (com_hz - balance_hz) * g_mag / com_h
                 
                 self._eq_balance_point = balance_hz.copy()
@@ -3948,47 +3955,63 @@ class SMPLProcessor:
                 self._eq_blend_alpha = alpha
                 
             elif balance_mode == 'am':
-                # Angular momentum corrected (uses filtered ω from torque pipeline)
+                # Angular momentum corrected — filtered pipeline
+                # Mirrors the successful CoM velocity→acceleration pipeline:
+                # segment velocities → OEF → H → OEF → dH/dt → OEF
                 pos_all = world_pos[0]
                 n_seg = min(24, pos_all.shape[0])
                 seg_masses = getattr(self, 'segment_masses',
                                      np.ones(n_seg) * (total_mass / n_seg))
                 
-                ang_vel_world = getattr(self, '_current_ang_vel', None)
-                if ang_vel_world is not None and ang_vel_world.shape[-2] >= n_seg:
-                    omega = ang_vel_world[0, :n_seg, :]
-                    parents = self._get_hierarchy()
-                    seg_vel = np.zeros((n_seg, 3))
-                    seg_vel[0] = com_vel
-                    for j in range(1, n_seg):
-                        p = parents[j]
-                        if 0 <= p < n_seg:
-                            lever = pos_all[j] - pos_all[p]
-                            seg_vel[j] = seg_vel[p] + np.cross(omega[p], lever)
-                        else:
-                            seg_vel[j] = com_vel
-                else:
-                    prev_seg_pos = getattr(self, '_eq_prev_seg_pos',
-                                           pos_all[:n_seg].copy())
-                    seg_vel = (pos_all[:n_seg] - prev_seg_pos) / dt
-                    self._eq_prev_seg_pos = pos_all[:n_seg].copy()
+                # --- Segment velocities (finite difference + per-segment OEF) ---
+                prev_seg_pos = getattr(self, '_eq_prev_seg_pos',
+                                       pos_all[:n_seg].copy())
+                raw_seg_vel = (pos_all[:n_seg] - prev_seg_pos) / dt
+                self._eq_prev_seg_pos = pos_all[:n_seg].copy()
                 
+                # Filter each segment's velocity with One Euro
+                if not hasattr(self, '_eq_segvel_oef') or self._eq_segvel_oef is None:
+                    self._eq_segvel_oef = [
+                        [OneEuroFilter(min_cutoff=1.0, beta=1.5, d_cutoff=1.0,
+                                       framerate=self.framerate) for _ in range(3)]
+                        for _ in range(n_seg)
+                    ]
+                seg_vel = np.zeros_like(raw_seg_vel)
+                for i in range(n_seg):
+                    for d in range(3):
+                        seg_vel[i, d] = float(
+                            self._eq_segvel_oef[i][d](raw_seg_vel[i, d]))
+                
+                # --- Compute angular momentum ---
                 H = np.zeros(3)
                 for i in range(n_seg):
                     dr = pos_all[i] - com
                     dv = seg_vel[i] - com_vel
                     H += seg_masses[i] * np.cross(dr, dv)
                 
-                AM_ALPHA = 0.5
-                prev_H_filt = getattr(self, '_eq_prev_H_filt', H.copy())
-                H_filt = AM_ALPHA * H + (1.0 - AM_ALPHA) * prev_H_filt
-                self._eq_prev_H_filt = H_filt.copy()
+                # --- Filter H with One Euro (replaces EMA α=0.5) ---
+                if not hasattr(self, '_eq_H_oef') or self._eq_H_oef is None:
+                    self._eq_H_oef = [
+                        OneEuroFilter(min_cutoff=0.8, beta=1.0, d_cutoff=1.0,
+                                      framerate=self.framerate) for _ in range(3)
+                    ]
+                H_filt = np.array([float(self._eq_H_oef[d](H[d])) for d in range(3)])
                 
+                # --- dH/dt from filtered H + OEF on the derivative ---
                 prev_H_for_diff = getattr(self, '_eq_prev_H_for_diff',
                                           H_filt.copy())
-                dH_dt = (H_filt - prev_H_for_diff) / dt
+                raw_dH_dt = (H_filt - prev_H_for_diff) / dt
                 self._eq_prev_H_for_diff = H_filt.copy()
                 
+                if not hasattr(self, '_eq_dHdt_oef') or self._eq_dHdt_oef is None:
+                    self._eq_dHdt_oef = [
+                        OneEuroFilter(min_cutoff=0.5, beta=0.8, d_cutoff=1.0,
+                                      framerate=self.framerate) for _ in range(3)
+                    ]
+                dH_dt = np.array([float(self._eq_dHdt_oef[d](raw_dH_dt[d]))
+                                  for d in range(3)])
+                
+                # --- Apply correction to horizontal acceleration ---
                 mh = total_mass * com_h
                 if y_dim == 1:
                     a_hz[0] -= dH_dt[2] / mh
@@ -4070,8 +4093,10 @@ class SMPLProcessor:
             self._eq_group_frames = {}
             self._eq_necessity = {}
         
-        # --- Active floor (from previous frame's confirmed contacts) ---
-        active_floor = floor_height
+        # --- Active floor (from adaptive estimate + confirmed contacts) ---
+        active_floor = getattr(self, '_inferred_floor_height', floor_height)
+        if active_floor is None:
+            active_floor = floor_height
         FOOT_JOINTS_MAP = {'LF': [10, 28], 'RF': [11, 29]}
         for gname in ['LF', 'RF']:
             if self._eq_group_state.get(gname, False):
@@ -4132,6 +4157,10 @@ class SMPLProcessor:
         HEIGHT_SCALE = 0.15   # metres — exponential decay above HEIGHT_FLOOR
         PERSISTENCE_BONUS = 2.0  # bonus for groups ON in previous frame
         OFF_SKEPTICISM = 5.0  # frames — time constant for off-duration penalty
+        MOVEMENT_WINDOW = 10  # frames — window for integrated movement
+        DH_RISE_SCALE = 0.05  # metres — Δh above this penalizes acceptance
+        DH_MAX_PENALTY = 5.0  # max multiplier on threshold from rising
+        HSPEED_SCALE = 0.3    # m/s — horizontal speed above this penalizes
         
         # Build groups from candidates
         _J2G = {10: 'LF', 28: 'LF', 11: 'RF', 29: 'RF',
@@ -4167,6 +4196,64 @@ class SMPLProcessor:
             else:
                 self._eq_group_off_frames[gname] = (
                     self._eq_group_off_frames.get(gname, 0) + 1)
+        
+        # --- Integrated movement history (drift-immune) ---
+        # Track representative joint positions over a short window.
+        # Δh and horizontal speed over this window are more reliable
+        # than single-frame velocity because noise cancels out.
+        if not hasattr(self, '_eq_group_pos_history'):
+            self._eq_group_pos_history = {}  # gname → deque of (y, x, z)
+        from collections import deque
+        for gname, group_joints in cand_groups.items():
+            # Use the lowest joint as representative
+            rep_j = min(group_joints, key=lambda j: pos[j, y_dim])
+            p = pos[rep_j]
+            if gname not in self._eq_group_pos_history:
+                self._eq_group_pos_history[gname] = deque(maxlen=MOVEMENT_WINDOW)
+            self._eq_group_pos_history[gname].append(p.copy())
+        
+        # Compute per-group movement factors
+        group_movement_factor = {}
+        for gname in cand_groups:
+            hist = self._eq_group_pos_history.get(gname, None)
+            if hist is None or len(hist) < 3:
+                group_movement_factor[gname] = 1.0
+                continue
+            
+            # Δh: vertical displacement from oldest to newest
+            oldest = hist[0]
+            newest = hist[-1]
+            dh = newest[y_dim] - oldest[y_dim]
+            
+            # Horizontal displacement / time = average horizontal speed
+            dt_window = len(hist) / max(self.framerate, 1.0)
+            dx = newest[plane_dims[0]] - oldest[plane_dims[0]]
+            dz = newest[plane_dims[1]] - oldest[plane_dims[1]]
+            hspeed = np.sqrt(dx**2 + dz**2) / max(dt_window, 0.001)
+            
+            # Rising penalty: exponential above DH_RISE_SCALE
+            if dh > DH_RISE_SCALE:
+                rise_penalty = 1.0 + (DH_MAX_PENALTY - 1.0) * min(1.0,
+                    (dh - DH_RISE_SCALE) / (3.0 * DH_RISE_SCALE))
+            else:
+                rise_penalty = 1.0
+            
+            # Horizontal speed penalty (sqrt-scaled, no hard cap)
+            if hspeed > HSPEED_SCALE:
+                # sqrt scaling: moderate growth, still differentiates at high speeds
+                # 0.5 m/s → 1.8x, 1.0 → 2.5x, 2.0 → 3.4x, 4.0 → 4.6x
+                ratio = (hspeed - HSPEED_SCALE) / HSPEED_SCALE
+                hspeed_penalty = 1.0 + np.sqrt(ratio) * 1.5
+            else:
+                hspeed_penalty = 1.0
+            
+            # Descending bonus: foot approaching floor gets easier acceptance
+            if dh < -DH_RISE_SCALE:
+                descent_bonus = max(0.5, 1.0 + dh / (3.0 * DH_RISE_SCALE))
+            else:
+                descent_bonus = 1.0
+            
+            group_movement_factor[gname] = rise_penalty * hspeed_penalty * descent_bonus
         
         # --- Build representative joint set for solver ---
         # The solver should see ONE contact per group (the lowest joint).
@@ -4232,8 +4319,12 @@ class SMPLProcessor:
             else:
                 persistence = 0.0
             
+            # 5. Movement factor (integrated Δh and speed over window)
+            mvmt = group_movement_factor.get(gname, 1.0)
+            
             effective_improvement = (raw_improvement * height_factor
                                      * off_skepticism * resid_factor
+                                     / mvmt  # rising/fast → harder to accept
                                      + persistence)
             group_necessity[gname] = effective_improvement
             
@@ -4263,19 +4354,24 @@ class SMPLProcessor:
             final_reps, pos, com, com_acc, active_floor, y_dim)
         
         # --- Split group forces to individual joints ---
-        # Use ZMP proximity (lever rule) within each group
+        # Use ZMP proximity (lever rule) within each group, then smooth
+        # the split ratio to prevent frame-to-frame jitter.
+        SPLIT_ALPHA = 0.3  # EMA smoothing for ball-heel ratio
+        if not hasattr(self, '_eq_group_split_weights'):
+            self._eq_group_split_weights = {}  # gname → {j: weight}
+        
         zmp_hz = result_final.zmp_approx
         for gname in accepted:
             rep_j = group_rep[gname]
             rep_force = result_final.per_contact_force.get(rep_j, 0.0)
             members = list(cand_groups[gname])
             if len(members) == 1 or rep_force <= 0:
-                # Single member or no force — assign directly
                 for j in members:
                     result_final.per_contact_force[j] = (
                         rep_force if j == rep_j else 0.0)
                 continue
-            # Lever rule split based on ZMP distance
+            
+            # Raw lever rule weights
             plane = [0, 2] if y_dim == 1 else [0, 1]
             dists = []
             for j in members:
@@ -4283,15 +4379,31 @@ class SMPLProcessor:
                 dists.append(d)
             d_total = sum(dists)
             if d_total > 0.01:
-                # Closer to ZMP → more force (inverse distance)
                 inv_d = [1.0 / max(d, 0.01) for d in dists]
                 inv_sum = sum(inv_d)
-                for j, w in zip(members, inv_d):
-                    result_final.per_contact_force[j] = rep_force * w / inv_sum
+                raw_weights = {j: w / inv_sum for j, w in zip(members, inv_d)}
             else:
-                # All at same position — equal split
-                for j in members:
-                    result_final.per_contact_force[j] = rep_force / len(members)
+                raw_weights = {j: 1.0 / len(members) for j in members}
+            
+            # Smooth weights with EMA
+            prev_weights = self._eq_group_split_weights.get(gname, raw_weights)
+            smooth_weights = {}
+            for j in members:
+                pw = prev_weights.get(j, raw_weights.get(j, 0.5))
+                rw = raw_weights.get(j, 0.5)
+                smooth_weights[j] = SPLIT_ALPHA * rw + (1.0 - SPLIT_ALPHA) * pw
+            
+            # Normalize to ensure they sum to 1
+            w_sum = sum(smooth_weights.values())
+            if w_sum > 0:
+                for j in smooth_weights:
+                    smooth_weights[j] /= w_sum
+            
+            self._eq_group_split_weights[gname] = smooth_weights
+            
+            # Apply smoothed weights
+            for j in members:
+                result_final.per_contact_force[j] = rep_force * smooth_weights.get(j, 0.5)
         
         # Rebuild force_array
         result_final.force_array = np.zeros(J)
@@ -8981,10 +9093,26 @@ class SMPLProcessor:
             # clearly above inferred floor).
             # STABILITY: Very slow EMA + per-frame clamp. Real floors
             # don't move, so this estimate should be rock-solid.
-            FLOOR_ALPHA = 0.02        # Very slow EMA
-            FLOOR_MAX_CHANGE = 0.002  # Max 2mm per frame
+            # But for IMU data, body-shape offsets can put planted feet
+            # at 0.10m+, so we need fast initial convergence.
+            _floor_age = getattr(self, '_floor_adapt_age', 0)
+            if _floor_age < 60:
+                # First ~1 second: converge quickly to planted-foot height
+                FLOOR_ALPHA = 0.15
+                FLOOR_MAX_CHANGE = 0.01   # 10mm per frame
+            else:
+                FLOOR_ALPHA = 0.02        # Very slow EMA
+                FLOOR_MAX_CHANGE = 0.002  # Max 2mm per frame
+            self._floor_adapt_age = _floor_age + 1
+            
             if not hasattr(self, '_inferred_floor_height') or self._inferred_floor_height is None:
-                self._inferred_floor_height = options.floor_height
+                # Initialize from minimum foot height (not from options)
+                foot_joints = [j for j in [10, 11] if j < len(curr_heights)]
+                if foot_joints:
+                    self._inferred_floor_height = min(
+                        curr_heights[j] for j in foot_joints)
+                else:
+                    self._inferred_floor_height = options.floor_height
             
             # Update floor estimate from high-confidence contact joints
             all_contact_joints = [7, 8, 10, 11]
@@ -8996,6 +9124,26 @@ class SMPLProcessor:
             for j in all_contact_joints:
                 if j < working_probs.shape[1] and working_probs[0, j] > 0.5:
                     confirmed_heights.append(curr_heights[j])
+            
+            # Fallback for equilibrium method: use computed pressure
+            # (breaks chicken-and-egg: floor needs contacts, contacts need floor)
+            if not confirmed_heights:
+                stab_press = getattr(self, '_stability_computed_pressure', None)
+                if stab_press is not None:
+                    for j in all_contact_joints:
+                        if j < len(stab_press) and stab_press[j] > 1.0:
+                            confirmed_heights.append(curr_heights[j])
+            
+            # Secondary fallback: track minimum foot height (very slow)
+            # This ensures floor adapts even during single-foot stance
+            if not confirmed_heights:
+                foot_joints = [j for j in [10, 11] if j < len(curr_heights)]
+                if foot_joints:
+                    min_foot_h = min(curr_heights[j] for j in foot_joints)
+                    # Only adapt upward from current estimate and only if
+                    # the foot is reasonably close to current floor
+                    if min_foot_h < self._inferred_floor_height + options.floor_tolerance:
+                        confirmed_heights.append(min_foot_h)
             
             if confirmed_heights:
                 lowest_confirmed = min(confirmed_heights)
