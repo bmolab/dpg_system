@@ -1698,12 +1698,22 @@ class SMPLTorqueNode(SMPLNode):
         
         # Contact Method Selection
         self.contact_method_prop = self.add_option('contact_method', widget_type='combo', default_value='stability_v2')
-        self.contact_method_prop.widget.combo_items = ['fusion', 'stability', 'stability_v2', 'stability_v2_fe', 'stability_v3', 'equilibrium', 'com_driven', 'consensus', 'patch']
+        self.contact_method_prop.widget.combo_items = ['fusion', 'stability', 'stability_v2', 'stability_v2_fe', 'stability_v3', 'equilibrium', 'unified', 'logodds', 'logodds_valved', 'com_driven', 'consensus', 'patch']
         self.enable_frame_eval_prop = self.add_option('enable_frame_evaluator', widget_type='checkbox', default_value=True)
         self.balance_mode_prop = self.add_option('balance_mode', widget_type='combo', default_value='raw')
         self.balance_mode_prop.widget.combo_items = ['raw', 'xcom', 'am']
         self.contact_force_threshold_prop = self.add_option('contact_force_threshold', widget_type='drag_float', default_value=0.0)
         
+        # --- Log-Odds Evidence Streams ---
+        self.lo_height_prop = self.add_option('lo_height', widget_type='checkbox', default_value=True)
+        self.lo_kinematic_prop = self.add_option('lo_kinematic', widget_type='checkbox', default_value=True)
+        self.lo_structural_prop = self.add_option('lo_structural', widget_type='checkbox', default_value=True)
+        # Stream weights
+        self.lo_w_height_prop = self.add_option('lo_w_height', widget_type='drag_float', default_value=1.0)
+        self.lo_w_kinematic_prop = self.add_option('lo_w_kinematic', widget_type='drag_float', default_value=1.0)
+        self.lo_w_structural_prop = self.add_option('lo_w_structural', widget_type='drag_float', default_value=1.0)
+        # Accumulator
+        self.lo_decay_rate_prop = self.add_option('lo_decay_rate', widget_type='drag_float', default_value=0.90)
         
         # --- World-Frame Dynamics ---
         self.world_frame_dynamics_prop = self.add_option('world_frame_dynamics', widget_type='checkbox', default_value=True)
@@ -1922,6 +1932,17 @@ class SMPLTorqueNode(SMPLNode):
                 torque_smooth_window=self.torque_smooth_window_prop() if hasattr(self, 'torque_smooth_window_prop') else 0,
                 smooth_contact_forces=self.smooth_contact_forces_prop() if hasattr(self, 'smooth_contact_forces_prop') else False,
                 enable_velocity_gate=self.enable_velocity_gate_prop() if hasattr(self, 'enable_velocity_gate_prop') else False,
+                
+                # Log-odds evidence streams
+                logodds_enable_height=self.lo_height_prop() if hasattr(self, 'lo_height_prop') else True,
+                logodds_enable_kinematic=self.lo_kinematic_prop() if hasattr(self, 'lo_kinematic_prop') else True,
+                logodds_enable_structural=self.lo_structural_prop() if hasattr(self, 'lo_structural_prop') else True,
+                # Stream weights
+                logodds_weight_height=self.lo_w_height_prop() if hasattr(self, 'lo_w_height_prop') else 1.0,
+                logodds_weight_kinematic=self.lo_w_kinematic_prop() if hasattr(self, 'lo_w_kinematic_prop') else 1.0,
+                logodds_weight_structural=self.lo_w_structural_prop() if hasattr(self, 'lo_w_structural_prop') else 1.0,
+                # Accumulator
+                logodds_decay_rate=self.lo_decay_rate_prop() if hasattr(self, 'lo_decay_rate_prop') else 0.90,
             )
             
             # Process
@@ -2073,27 +2094,32 @@ class SMPLTorqueNode(SMPLNode):
                         poly = np.array(fe.support_polygon)
                         self.frame_eval_support_poly_output.send(poly)
 
-                    # Active contact points: [[x, y, z, force], ...]
-                    # force_array indexes 0-23 = standard SMPL joints,
-                    # 24/25 = L/R toe, 26/27 = L/R fingertip, 28/29 = L/R heel
-                    # Up-axis component is replaced with the inferred floor height
-                    # so contact points sit on the floor for visualization.
-                    forces = fe.force_array
-                    world_pos_30 = getattr(self.processor, 'last_world_pos', None)
-                    if forces is not None and world_pos_30 is not None and world_pos_30.size > 0:
-                        last_frame_pos = world_pos_30[-1] if world_pos_30.ndim == 3 else world_pos_30
-                        thresh = float(self.contact_force_threshold_prop())
-                        floor_h_val = float(floor_h) if floor_h is not None else 0.0
-                        n = min(len(forces), last_frame_pos.shape[0])
-                        active = []
-                        for j in range(n):
-                            f_j = float(forces[j])
-                            if f_j > thresh:
-                                p = last_frame_pos[j]
-                                xyz = [float(p[0]), float(p[1]), float(p[2])]
-                                xyz[up] = floor_h_val
-                                active.append([xyz[0], xyz[1], xyz[2], f_j])
-                        self.contact_points_output.send(np.array(active) if active else np.zeros((0, 4)))
+                # Active contact points: [[x, y, z, force], ...]
+                up = 1 if self.up_axis_prop() == 'Y' else 2
+                floor_h = getattr(self.processor, '_inferred_floor_height', 0.0)
+                cp = getattr(self.processor, 'contact_pressure', None)
+                if cp is not None and cp.size > 0:
+                    forces = cp[-1] if cp.ndim == 2 else cp
+                elif 'frame_eval' in res:
+                    forces = res['frame_eval'].force_array
+                else:
+                    forces = None
+                
+                world_pos_30 = getattr(self.processor, 'last_world_pos', None)
+                if forces is not None and world_pos_30 is not None and world_pos_30.size > 0:
+                    last_frame_pos = world_pos_30[-1] if world_pos_30.ndim == 3 else world_pos_30
+                    thresh = float(self.contact_force_threshold_prop())
+                    floor_h_val = float(floor_h) if floor_h is not None else 0.0
+                    n = min(len(forces), last_frame_pos.shape[0])
+                    active = []
+                    for j in range(n):
+                        f_j = float(forces[j])
+                        if f_j > thresh:
+                            p = last_frame_pos[j]
+                            xyz = [float(p[0]), float(p[1]), float(p[2])]
+                            xyz[up] = floor_h_val
+                            active.append([xyz[0], xyz[1], xyz[2], f_j])
+                    self.contact_points_output.send(np.array(active) if active else np.zeros((0, 4)))
             
             except Exception as e:
                 # Catch processing errors (e.g. shape mismatch on first frame)

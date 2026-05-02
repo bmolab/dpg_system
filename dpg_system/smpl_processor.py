@@ -343,8 +343,33 @@ class SMPLProcessingOptions:
     floor_height: float = 0.0
     floor_tolerance: float = 0.15
     heel_toe_bias: float = 0.0
-    contact_method: str = 'fusion'  # 'fusion', 'stability', 'stability_v2', 'stability_v2_fe', 'stability_v3', 'equilibrium', 'com_driven', 'consensus', or 'patch'
+    contact_method: str = 'fusion'  # 'fusion', 'stability', 'stability_v2', 'stability_v2_fe', 'stability_v3', 'equilibrium', 'unified', 'com_driven', 'consensus', 'logodds', 'logodds_valved', or 'patch'
     enable_frame_evaluator: bool = True  # Run DynamicFrameEvaluator (read-only analysis alongside contact method)
+    
+    # --- Log-odds contact options ---
+    logodds_enable_height: bool = True
+    logodds_enable_kinematic: bool = True     # Unified kinematic stream (approach angle + td + settled)
+    logodds_enable_structural: bool = True    # Frame evaluator structural necessity
+    # Legacy enables (for backward compatibility / A/B testing)
+    logodds_enable_vertical_kinematic: bool = False
+    logodds_enable_hspeed: bool = False
+    logodds_enable_equilibrium: bool = False
+    logodds_enable_velocity: bool = False
+    logodds_enable_trajectory: bool = False
+    logodds_enable_touchdown: bool = False
+    # Per-stream weights
+    logodds_weight_height: float = 1.0
+    logodds_weight_kinematic: float = 1.0
+    logodds_weight_structural: float = 1.0
+    # Legacy weights
+    logodds_weight_vertical_kinematic: float = 1.0
+    logodds_weight_hspeed: float = 1.0
+    logodds_weight_equilibrium: float = 1.0
+    logodds_weight_velocity: float = 1.0
+    logodds_weight_trajectory: float = 1.0
+    logodds_weight_touchdown: float = 1.0
+    # Accumulator
+    logodds_decay_rate: float = 0.90
     
     # --- Torque Rate Limiting ---
     enable_rate_limiting: bool = False
@@ -1109,11 +1134,29 @@ class SMPLProcessor:
             
             # Always override heel offsets — model values target calcaneus center,
             # not the ground contact point. We need the bottom of the heel.
-            # Calibrated so heel ≈ floor level when flat-footed (ankle ~3.5cm above ground).
-            heel_dir = np.array([0.0, -0.9, -0.4])  # Primarily downward, slightly backward
-            heel_dir = heel_dir / np.linalg.norm(heel_dir) * 0.05  # ~5cm (ankle-to-heel ground)
-            offsets[28] = heel_dir  # L_heel from L_ankle
-            offsets[29] = heel_dir  # R_heel from R_ankle
+            # Use mesh surface extents for body-specific calibration when available.
+            extents = getattr(self, '_joint_surface_extents', None)
+            if extents is not None:
+                # Use the ankle's mesh extent: -Y = below ankle, -Z = behind ankle
+                # Average L and R ankle extents for robustness
+                l_ankle_down = abs(extents[7, 1, 0])   # L_Ankle -Y extent
+                r_ankle_down = abs(extents[8, 1, 0])   # R_Ankle -Y extent
+                l_ankle_back = abs(extents[7, 2, 0])   # L_Ankle -Z extent
+                r_ankle_back = abs(extents[8, 2, 0])   # R_Ankle -Z extent
+                
+                # Heel offset: go to the bottom of the mesh, slightly behind
+                # Use 95% of downward extent (the mesh bottom IS the floor contact)
+                # and 70% of backward extent (heel is behind ankle but not at edge)
+                l_heel = np.array([0.0, -l_ankle_down * 0.95, -l_ankle_back * 0.70])
+                r_heel = np.array([0.0, -r_ankle_down * 0.95, -r_ankle_back * 0.70])
+                offsets[28] = l_heel
+                offsets[29] = r_heel
+            else:
+                # Fallback: fixed heuristic offset
+                heel_dir = np.array([0.0, -1.0, -0.25])
+                heel_dir = heel_dir / np.linalg.norm(heel_dir) * 0.063
+                offsets[28] = heel_dir
+                offsets[29] = heel_dir
             return offsets
         
         # Fallback to heuristic reconstruction
@@ -4156,7 +4199,7 @@ class SMPLProcessor:
         HEIGHT_FLOOR = 0.10   # metres — SMPL ball joint height when planted
         HEIGHT_SCALE = 0.15   # metres — exponential decay above HEIGHT_FLOOR
         PERSISTENCE_BONUS = 2.0  # bonus for groups ON in previous frame
-        OFF_SKEPTICISM = 5.0  # frames — time constant for off-duration penalty
+        OFF_SKEPTICISM = 30.0  # frames — time constant for off-duration penalty (raised: movement factor handles flicker)
         MOVEMENT_WINDOW = 10  # frames — window for integrated movement
         DH_RISE_SCALE = 0.05  # metres — Δh above this penalizes acceptance
         DH_MAX_PENALTY = 5.0  # max multiplier on threshold from rising
@@ -4247,13 +4290,9 @@ class SMPLProcessor:
             else:
                 hspeed_penalty = 1.0
             
-            # Descending bonus: foot approaching floor gets easier acceptance
-            if dh < -DH_RISE_SCALE:
-                descent_bonus = max(0.5, 1.0 + dh / (3.0 * DH_RISE_SCALE))
-            else:
-                descent_bonus = 1.0
-            
-            group_movement_factor[gname] = rise_penalty * hspeed_penalty * descent_bonus
+            # No descent bonus — rising/speed penalize, but descending
+            # should not make acceptance easier (height penalty handles it)
+            group_movement_factor[gname] = rise_penalty * hspeed_penalty
         
         # --- Build representative joint set for solver ---
         # The solver should see ONE contact per group (the lowest joint).
@@ -4385,11 +4424,12 @@ class SMPLProcessor:
             else:
                 raw_weights = {j: 1.0 / len(members) for j in members}
             
-            # Smooth weights with EMA
-            prev_weights = self._eq_group_split_weights.get(gname, raw_weights)
+            # Smooth weights with EMA — new joints ramp in from 0
+            prev_weights = self._eq_group_split_weights.get(gname, {})
             smooth_weights = {}
             for j in members:
-                pw = prev_weights.get(j, raw_weights.get(j, 0.5))
+                # New joint starts at 0 → ramps in gradually
+                pw = prev_weights.get(j, 0.0)
                 rw = raw_weights.get(j, 0.5)
                 smooth_weights[j] = SPLIT_ALPHA * rw + (1.0 - SPLIT_ALPHA) * pw
             
@@ -5114,6 +5154,303 @@ class SMPLProcessor:
     _PATCH_RESERVED_JOINTS = {7, 8, 10, 11, 28, 29, 20, 21, 22, 23}
     # Single-anchor degenerate patches built only when consensus prob exceeds this.
     _PATCH_DEGENERATE_THRESHOLD = 0.25
+
+    def _compute_probabilistic_contacts_unified(self, F, J, world_pos, options):
+        """Unified multi-evidence contact detection.
+        
+        Delegates to contact_unified.UnifiedContactDetector which combines
+        6 evidence streams (sensory, kinematic, dynamic, directional,
+        equilibrium, plausibility) through a consensus loop with
+        configurable iterations and per-stream enable/disable.
+        """
+        from dpg_system.contact_unified import UnifiedContactDetector, UnifiedContactOptions
+        
+        # Lazy-init detector
+        if not hasattr(self, '_unified_detector') or self._unified_detector is None:
+            self._unified_detector = UnifiedContactDetector(
+                framerate=self.framerate,
+                total_mass_kg=self.total_mass_kg,
+                evaluator=getattr(self, '_frame_evaluator', None)
+            )
+        
+        # Build options (unified UI params removed — use hardcoded defaults)
+        u_opts = UnifiedContactOptions(
+            max_iterations=1,
+            enable_sensory=True,
+            enable_kinematic=True,
+            enable_dynamic=True,
+            enable_directional=True,
+            enable_equilibrium=True,
+            enable_plausibility=True,
+            weight_directional=0.6,
+            weight_equilibrium=1.0,
+            weight_plausibility=0.8,
+            gate_softening=1.0,
+            up_axis=1 if options.input_up_axis == 'Y' else 2,
+        )
+        
+        # Get CoM state
+        com = getattr(self, '_prev_com_for_stability', None)
+        com_vel = getattr(self, 'prob_prev_com_vel', None)
+        com_acc = getattr(self, 'prob_prev_com_acc', None)
+        
+        if com is None:
+            # No CoM yet — return zeros
+            return np.zeros((F, J))
+        
+        com = com[0] if com.ndim > 1 else com
+        if com_vel is not None:
+            com_vel = com_vel[0] if com_vel.ndim > 1 else com_vel
+        else:
+            com_vel = np.zeros(3)
+        if com_acc is not None:
+            com_acc = com_acc[0] if com_acc.ndim > 1 else com_acc
+        else:
+            com_acc = np.zeros(3)
+        
+        dt = 1.0 / max(self.framerate, 1.0)
+        pos = world_pos[0] if world_pos.ndim == 3 else world_pos
+        
+        # Use adaptive floor if available, otherwise static option
+        floor_h = options.floor_height
+        if hasattr(self, '_inferred_floor_height') and self._inferred_floor_height is not None:
+            floor_h = self._inferred_floor_height
+        
+        result = self._unified_detector.process_frame(
+            pos, com, com_vel, com_acc,
+            floor_h, dt, u_opts
+        )
+        
+        # Store pressure for the stab_press path
+        self._stability_computed_pressure = result.pressure_array
+        
+        # Clear stale frame_eval_result — unified handles physics internally.
+        # A stale result from a previous equilibrium run would cause the
+        # pressure pipeline to use the wrong code path (frame_eval vs legacy).
+        self._frame_eval_result = None
+        
+        # Store group state for downstream (same convention as equilibrium)
+        self._eq_group_state = result.contact_state
+        
+        # Build contact probability output (F, J)
+        contact_probs = np.zeros((F, J))
+        all_groups = {**result.contact_state}
+        from dpg_system.contact_unified import FOOT_GROUPS, HAND_GROUPS
+        group_joints = {**FOOT_GROUPS, **HAND_GROUPS}
+        for gname, is_on in all_groups.items():
+            if is_on and gname in group_joints:
+                for j in group_joints[gname]:
+                    if j < J:
+                        contact_probs[0, j] = 0.95
+        
+        return contact_probs
+
+    def _compute_probabilistic_contacts_logodds(self, F, J, world_pos, options, enable_valving=False):
+        """Log-odds continuous contact estimation.
+        
+        Uses additive log-odds accumulation with temporal decay.
+        No state machine, no vetoes — continuous intensity output.
+        When enable_valving=True, cross-stream context is used to
+        adjust stream contributions (data-driven rules).
+        """
+        from dpg_system.contact_logodds import (
+            LogOddsContactEstimator, LogOddsContactOptions, ALL_GROUPS
+        )
+        
+        # Lazy-init estimator
+        if not hasattr(self, '_logodds_estimator') or self._logodds_estimator is None:
+            # Get frame evaluator for structural stream
+            frame_eval = getattr(self, '_frame_evaluator', None)
+            seg_masses = getattr(self, '_seg_mass', None)
+            self._logodds_estimator = LogOddsContactEstimator(
+                framerate=self.framerate,
+                total_mass_kg=self.total_mass_kg,
+                segment_masses=seg_masses,
+                frame_evaluator=frame_eval,
+            )
+        
+        # Late-bind frame evaluator if it wasn't available at construction
+        if (self._logodds_estimator.structural_stream.evaluator is None
+                and hasattr(self, '_frame_evaluator')
+                and self._frame_evaluator is not None):
+            self._logodds_estimator.structural_stream.set_evaluator(
+                self._frame_evaluator)
+        
+        # Build options
+        lo_opts = LogOddsContactOptions(
+            up_axis=1 if options.input_up_axis == 'Y' else 2,
+            # 3-stream architecture enables
+            enable_height=options.logodds_enable_height,
+            enable_kinematic=options.logodds_enable_kinematic,
+            enable_structural=options.logodds_enable_structural,
+            # Legacy enables
+            enable_vertical_kinematic=options.logodds_enable_vertical_kinematic,
+            enable_hspeed=options.logodds_enable_hspeed,
+            enable_equilibrium=options.logodds_enable_equilibrium,
+            enable_velocity=options.logodds_enable_velocity,
+            enable_trajectory=options.logodds_enable_trajectory,
+            enable_touchdown=options.logodds_enable_touchdown,
+            # 3-stream weights
+            weight_height=options.logodds_weight_height,
+            weight_kinematic=options.logodds_weight_kinematic,
+            weight_structural=options.logodds_weight_structural,
+            # Legacy weights
+            weight_vertical_kinematic=options.logodds_weight_vertical_kinematic,
+            weight_hspeed=options.logodds_weight_hspeed,
+            weight_equilibrium=options.logodds_weight_equilibrium,
+            weight_velocity=options.logodds_weight_velocity,
+            weight_trajectory=options.logodds_weight_trajectory,
+            weight_touchdown=options.logodds_weight_touchdown,
+            # Accumulator
+            decay_rate=options.logodds_decay_rate,
+            enable_valving=enable_valving,
+        )
+        
+        # Get CoM state
+        com = getattr(self, '_prev_com_for_stability', None)
+        com_vel = getattr(self, 'prob_prev_com_vel', None)
+        com_acc = getattr(self, 'prob_prev_com_acc', None)
+        
+        if com is None:
+            return np.zeros((F, J))
+        
+        com = com[0] if com.ndim > 1 else com
+        if com_vel is not None:
+            com_vel = com_vel[0] if com_vel.ndim > 1 else com_vel
+        else:
+            com_vel = np.zeros(3)
+        if com_acc is not None:
+            com_acc = com_acc[0] if com_acc.ndim > 1 else com_acc
+        else:
+            com_acc = np.zeros(3)
+        
+        dt = 1.0 / max(self.framerate, 1.0)
+        pos = world_pos[0] if world_pos.ndim == 3 else world_pos
+        
+        # Use adaptive floor
+        floor_h = options.floor_height
+        if hasattr(self, '_inferred_floor_height') and self._inferred_floor_height is not None:
+            floor_h = self._inferred_floor_height
+        
+        result = self._logodds_estimator.process_frame(
+            pos, com, com_vel, com_acc,
+            floor_h, dt, lo_opts
+        )
+        
+        # Store pressure for the stab_press path
+        self._stability_computed_pressure = result.pressure_array
+        
+        # Store contact state for downstream
+        self._eq_group_state = result.contact_state
+        
+        # Store log-odds result for diagnostics
+        self._logodds_result = result
+        
+        # Clear stale frame_eval_result
+        self._frame_eval_result = None
+        
+        # Build contact probability output using intensity
+        contact_probs = np.zeros((F, J))
+        group_joints = dict(ALL_GROUPS)
+        for gname, intensity in result.intensity.items():
+            if intensity > 0.05 and gname in group_joints:
+                for j in group_joints[gname]:
+                    if j < J:
+                        contact_probs[0, j] = intensity
+        
+        return contact_probs
+
+    def _update_adaptive_floor(self, world_pos, tips, working_probs, options):
+        """Update the adaptive floor height estimate.
+        
+        Extracted from the legacy pressure pipeline so ALL contact methods
+        benefit from floor adaptation. Uses confirmed contacts, stability
+        pressure, and minimum foot height as fallbacks.
+        
+        Args:
+            world_pos: (F, J, 3) joint positions in world space
+            tips: dict of joint_index → tip position arrays
+            working_probs: (F, J) contact probabilities
+            options: SMPLProcessingOptions
+        
+        Returns:
+            float: current inferred floor height
+        """
+        yd = getattr(self, 'internal_y_dim', 1)
+        n_joints = world_pos.shape[1]
+        
+        # Compute current joint heights (using tips where available)
+        curr_heights = np.zeros(n_joints)
+        for j in range(n_joints):
+            if j in tips:
+                curr_heights[j] = tips[j][0, yd] if tips[j].ndim > 1 else tips[j][yd]
+            elif j < world_pos.shape[1]:
+                curr_heights[j] = world_pos[0, j, yd]
+        
+        # --- Adaptive floor height estimation ---
+        # Maintain a running estimate of the actual floor height from
+        # the lowest confirmed-contact joints.
+        _floor_age = getattr(self, '_floor_adapt_age', 0)
+        if _floor_age < 60:
+            # First ~1 second: converge quickly to planted-foot height
+            FLOOR_ALPHA = 0.15
+            FLOOR_MAX_CHANGE = 0.01   # 10mm per frame
+        else:
+            FLOOR_ALPHA = 0.02        # Very slow EMA
+            FLOOR_MAX_CHANGE = 0.002  # Max 2mm per frame
+        self._floor_adapt_age = _floor_age + 1
+        
+        if not hasattr(self, '_inferred_floor_height') or self._inferred_floor_height is None:
+            # Initialize from minimum foot height (not from options)
+            foot_joints = [j for j in [10, 11] if j < len(curr_heights)]
+            if foot_joints:
+                self._inferred_floor_height = min(
+                    curr_heights[j] for j in foot_joints)
+            else:
+                self._inferred_floor_height = options.floor_height
+        
+        # Update floor estimate from high-confidence contact joints
+        all_contact_joints = [7, 8, 10, 11]
+        for vi in [24, 25, 28, 29]:
+            if vi < n_joints:
+                all_contact_joints.append(vi)
+        
+        confirmed_heights = []
+        for j in all_contact_joints:
+            if j < working_probs.shape[1] and working_probs[0, j] > 0.5:
+                confirmed_heights.append(curr_heights[j])
+        
+        # Fallback for stability/equilibrium/unified methods: use computed pressure
+        if not confirmed_heights:
+            stab_press = getattr(self, '_stability_computed_pressure', None)
+            if stab_press is not None:
+                for j in all_contact_joints:
+                    if j < len(stab_press) and stab_press[j] > 1.0:
+                        confirmed_heights.append(curr_heights[j])
+        
+        # Secondary fallback: track minimum foot height (very slow)
+        # This ensures floor adapts even during single-foot stance
+        if not confirmed_heights:
+            foot_joints = [j for j in [10, 11] if j < len(curr_heights)]
+            if foot_joints:
+                min_foot_h = min(curr_heights[j] for j in foot_joints)
+                # Only adapt toward foot if it's reasonably close to current floor
+                if min_foot_h < self._inferred_floor_height + options.floor_tolerance:
+                    confirmed_heights.append(min_foot_h)
+        
+        if confirmed_heights:
+            lowest_confirmed = min(confirmed_heights)
+            raw_update = (
+                self._inferred_floor_height * (1 - FLOOR_ALPHA) +
+                lowest_confirmed * FLOOR_ALPHA
+            )
+            # Clamp change per frame for stability
+            delta = raw_update - self._inferred_floor_height
+            delta = np.clip(delta, -FLOOR_MAX_CHANGE, FLOOR_MAX_CHANGE)
+            self._inferred_floor_height += delta
+        
+        return self._inferred_floor_height
+
 
     def _compute_probabilistic_contacts_patch(self, F, J, world_pos, options):
         """Patch-based contact detection (Phase 1: K=1, K=2 closed-form).
@@ -9009,6 +9346,18 @@ class SMPLProcessor:
              contact_probs_fusion = self._compute_probabilistic_contacts_equilibrium(
                   F, world_pos.shape[1], world_pos, options
              )
+        elif options.contact_method == 'unified':
+             contact_probs_fusion = self._compute_probabilistic_contacts_unified(
+                  F, world_pos.shape[1], world_pos, options
+             )
+        elif options.contact_method == 'logodds':
+             contact_probs_fusion = self._compute_probabilistic_contacts_logodds(
+                  F, world_pos.shape[1], world_pos, options
+             )
+        elif options.contact_method == 'logodds_valved':
+             contact_probs_fusion = self._compute_probabilistic_contacts_logodds(
+                  F, world_pos.shape[1], world_pos, options, enable_valving=True
+             )
         elif options.contact_method == 'patch':
              contact_probs_fusion = self._compute_probabilistic_contacts_patch(
                   F, world_pos.shape[1], world_pos, options
@@ -9023,7 +9372,7 @@ class SMPLProcessor:
         # Skip for 'patch' method — patch mode runs its own evaluator (PatchFrameEvaluator)
         # and is intentionally independent of the v2_fe path.
         if (getattr(options, 'enable_frame_evaluator', False)
-                and options.contact_method not in ('stability_v2_fe', 'stability_v3', 'equilibrium', 'patch')):
+                and options.contact_method not in ('stability_v2_fe', 'stability_v3', 'equilibrium', 'unified', 'patch')):
             self._evaluate_dynamic_frame(F, world_pos, tips, options, contact_probs_fusion)
         
         # --- Contact Pressure: Frame Eval vs Legacy ---
@@ -9034,7 +9383,24 @@ class SMPLProcessor:
                            and fe_result is not None)
         working_probs = contact_probs_fusion.copy()
         
-        if _use_frame_eval:
+        # --- Adaptive floor height estimation ---
+        # Runs BEFORE the unified/legacy branch so ALL methods benefit.
+        # Previously this was inside the legacy pipeline and skipped by
+        # unified/equilibrium, causing the floor to stay at 0.0.
+        inferred_floor = self._update_adaptive_floor(
+            world_pos, tips, working_probs, options)
+        
+        if options.contact_method in ('unified', 'equilibrium', 'logodds', 'logodds_valved'):
+            # Unified/equilibrium: use the method's own pressure directly.
+            # Skip both frame_eval and legacy pipelines — they are redundant
+            # and cause oscillation artifacts.
+            J_cp = world_pos.shape[1]
+            self.contact_pressure = np.zeros((F, J_cp))
+            stab_press = getattr(self, '_stability_computed_pressure', None)
+            if stab_press is not None and len(stab_press) == J_cp:
+                for f_idx in range(F):
+                    self.contact_pressure[f_idx] = stab_press
+        elif _use_frame_eval:
             # Frame eval path: inject physics-based forces directly,
             # bypassing legacy probability→pressure pipeline.
             J_cp = world_pos.shape[1]
@@ -9043,7 +9409,7 @@ class SMPLProcessor:
             # stability_v2_fe: use its corrected pressure (which already
             # incorporates FE forces + necessity overrides)
             stab_press = getattr(self, '_stability_computed_pressure', None)
-            if options.contact_method in ('stability_v2_fe', 'stability_v3', 'equilibrium') and stab_press is not None and len(stab_press) == J_cp:
+            if options.contact_method in ('stability_v2_fe', 'stability_v3', 'equilibrium', 'unified') and stab_press is not None and len(stab_press) == J_cp:
                 for f_idx in range(F):
                     self.contact_pressure[f_idx] = stab_press
                 # DEBUG
@@ -9295,7 +9661,7 @@ class SMPLProcessor:
             # When using inverse statics, the stability method computes
             # physics-based pressure directly. Replace the probability-
             # derived pressure entirely.
-            if options.contact_method in ('stability', 'stability_v2', 'stability_v2_fe', 'stability_v3', 'equilibrium'):
+            if options.contact_method in ('stability', 'stability_v2', 'stability_v2_fe', 'stability_v3', 'equilibrium', 'unified'):
                 stab_press = getattr(self, '_stability_computed_pressure', None)
                 if stab_press is not None and len(stab_press) == self.contact_pressure.shape[1]:
                     for f in range(F):
@@ -9305,59 +9671,59 @@ class SMPLProcessor:
         # --- Contact Pressure Smoothing (Asymmetric + Rate Clamp) ---
         # Runs OUTSIDE the refinement loop so it always applies.
         # Time-constant based smoothing (framerate-adaptive).
-        if _use_frame_eval:
-            # Frame eval contacts are already temporally stable;
-            # use very fast time constants (just light jitter damping).
-            TAU_UP = 0.015    # seconds — minimal lag
-            TAU_DOWN = 0.025  # seconds — fast release
-        elif options.contact_method in ('stability', 'stability_v2'):
-            TAU_UP = 0.030    # seconds — fast build-up for physics-based pressure
-        else:
-            TAU_UP = 0.150    # seconds — slower build-up for probability methods
-        TAU_DOWN = TAU_DOWN if _use_frame_eval else 0.050  # seconds — release time constant
-        MAX_RATE = 5.0 * self.total_mass_kg  # kg/s — max pressure change rate per joint
+        #
+        # Skip for unified/equilibrium: these methods have internal state
+        # machines with hysteresis — external smoothing is redundant and
+        # creates oscillation artifacts (zero-snap → ramp-up → zero-snap).
+        _skip_smoothing = options.contact_method in ('equilibrium', 'unified', 'logodds', 'logodds_valved')
         
-        # Convert time constants to per-frame alphas
-        alpha_up   = 1.0 - np.exp(-dt / TAU_UP)    # ~0.054 at 120fps, ~0.189 at 30fps
-        alpha_down = 1.0 - np.exp(-dt / TAU_DOWN)   # ~0.154 at 120fps, ~0.487 at 30fps
-        max_change_per_frame = MAX_RATE * dt          # kg/frame
-        
-        if not hasattr(self, 'prev_contact_pressure_smooth') or self.prev_contact_pressure_smooth is None:
-            self.prev_contact_pressure_smooth = self.contact_pressure.copy()
-        
-        if self.prev_contact_pressure_smooth.shape != self.contact_pressure.shape:
-            self.prev_contact_pressure_smooth = self.contact_pressure.copy()
-        
-        for f in range(F):
-            curr = self.contact_pressure[f]
-            prev = self.prev_contact_pressure_smooth[0] if F == 1 else self.prev_contact_pressure_smooth[f]
-            
-            # Soft alpha blending based on drop magnitude.
-            # Instead of a binary switch (which is fragile near zero change),
-            # blend smoothly: small changes → slow alpha (stable),
-            # large drops → fast alpha (responsive release).
-            drop = np.maximum(0, prev - curr)  # How much each joint is dropping
-            drop_ratio = drop / (np.maximum(prev, 1.0))  # Relative drop (safe div)
-            blend = np.clip(drop_ratio / 0.3, 0, 1)  # 0→30% drop maps to 0→1
-            alpha = alpha_up * (1 - blend) + alpha_down * blend
-            
-            smoothed = prev * (1.0 - alpha) + curr * alpha
-            # Rate clamp: prevent single-frame radical shifts
-            delta = smoothed - prev
-            delta = np.clip(delta, -max_change_per_frame, max_change_per_frame)
-            smoothed = prev + delta
-            
-            # For physics-based methods (stability, frame_eval): when target
-            # pressure is zero (contact OFF), zero immediately — internal
-            # hysteresis already handles temporal continuity.
-            if _use_frame_eval or options.contact_method in ('stability', 'stability_v2'):
-                smoothed = np.where(curr <= 0, 0.0, smoothed)
-            
-            self.contact_pressure[f] = smoothed
-            if F == 1:
-                self.prev_contact_pressure_smooth = smoothed[np.newaxis, :].copy()
+        if not _skip_smoothing:
+            if _use_frame_eval:
+                TAU_UP = 0.015
+                TAU_DOWN = 0.025
+            elif options.contact_method in ('stability', 'stability_v2'):
+                TAU_UP = 0.030
+                TAU_DOWN = 0.030
             else:
-                self.prev_contact_pressure_smooth[f] = smoothed
+                TAU_UP = 0.150
+                TAU_DOWN = 0.050
+            MAX_RATE = 5.0 * self.total_mass_kg
+
+            alpha_up   = 1.0 - np.exp(-dt / TAU_UP)
+            alpha_down = 1.0 - np.exp(-dt / TAU_DOWN)
+            max_change_per_frame = MAX_RATE * dt
+
+            if not hasattr(self, 'prev_contact_pressure_smooth') or self.prev_contact_pressure_smooth is None:
+                self.prev_contact_pressure_smooth = self.contact_pressure.copy()
+
+            if self.prev_contact_pressure_smooth.shape != self.contact_pressure.shape:
+                self.prev_contact_pressure_smooth = self.contact_pressure.copy()
+
+            for f in range(F):
+                curr = self.contact_pressure[f]
+                prev = self.prev_contact_pressure_smooth[0] if F == 1 else self.prev_contact_pressure_smooth[f]
+
+                drop = np.maximum(0, prev - curr)
+                drop_ratio = drop / (np.maximum(prev, 1.0))
+                blend = np.clip(drop_ratio / 0.3, 0, 1)
+                alpha = alpha_up * (1 - blend) + alpha_down * blend
+
+                smoothed = prev * (1.0 - alpha) + curr * alpha
+                delta = smoothed - prev
+                delta = np.clip(delta, -max_change_per_frame, max_change_per_frame)
+                smoothed = prev + delta
+
+                if _use_frame_eval or options.contact_method in ('stability', 'stability_v2'):
+                    smoothed = np.where(curr <= 0, 0.0, smoothed)
+
+                self.contact_pressure[f] = smoothed
+                if F == 1:
+                    self.prev_contact_pressure_smooth = smoothed[np.newaxis, :].copy()
+                else:
+                    self.prev_contact_pressure_smooth[f] = smoothed
+        else:
+            # For unified/equilibrium: use raw pressure directly, update smooth cache
+            self.prev_contact_pressure_smooth = self.contact_pressure.copy()
         
         # --- Compute CoM dynamic torque (before final torque call) ---
         t_dyn_com_world = None
