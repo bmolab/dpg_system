@@ -588,7 +588,7 @@ class MGLSMPLHeatmapNode(Node):
 
         gender_map = {'male': 'MALE', 'female': 'FEMALE'}
         g_tag = gender_map.get(self.gender_prop(), 'MALE')
-        model_path = self.model_path_prop() or '.'
+        model_path = self.model_path_prop() or 'dpg_system/'
 
         try:
             self.smpl_model = smplx.create(
@@ -1476,7 +1476,7 @@ class MGLSMPLHeatmapNode(Node):
         
         model_path = self.model_path_prop()
         if not model_path:
-            model_path = '.'  # fallback
+            model_path = 'dpg_system/'  # fallback
 
         import sys
         cmd = [
