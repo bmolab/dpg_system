@@ -1720,6 +1720,15 @@ class SMPLTorqueNode(SMPLNode):
         # Structural-stream per-foot force EMA (1.0 = off; lower = heavier smoothing)
         self.lo_struct_force_ema_alpha_prop = self.add_option(
             'lo_struct_force_ema_alpha', widget_type='drag_float', default_value=1.0)
+        # Effort-relief biomechanical prior (default OFF; soft positive on
+        # hand candidates near a high-strain spine joint with positive lever
+        # arm to the lean side)
+        self.fe_relief_enable_prop = self.add_option(
+            'fe_relief_enable', widget_type='checkbox', default_value=False)
+        self.fe_relief_strain_threshold_prop = self.add_option(
+            'fe_relief_strain_threshold', widget_type='drag_float', default_value=25.0)
+        self.struct_relief_logodds_prop = self.add_option(
+            'struct_relief_logodds', widget_type='drag_float', default_value=0.3)
 
         # --- Structural-stream diagnostic logging ---
         self.struct_log_path_prop = self.add_option(
@@ -2000,6 +2009,10 @@ class SMPLTorqueNode(SMPLNode):
                 # Accumulator
                 logodds_decay_rate=self.lo_decay_rate_prop() if hasattr(self, 'lo_decay_rate_prop') else 0.90,
                 logodds_struct_force_ema_alpha=self.lo_struct_force_ema_alpha_prop() if hasattr(self, 'lo_struct_force_ema_alpha_prop') else 1.0,
+                # Effort-relief prior (default off)
+                logodds_fe_relief_enable=self.fe_relief_enable_prop() if hasattr(self, 'fe_relief_enable_prop') else False,
+                logodds_fe_relief_strain_threshold=self.fe_relief_strain_threshold_prop() if hasattr(self, 'fe_relief_strain_threshold_prop') else 25.0,
+                logodds_struct_relief_logodds=self.struct_relief_logodds_prop() if hasattr(self, 'struct_relief_logodds_prop') else 0.3,
             )
             
             # Process

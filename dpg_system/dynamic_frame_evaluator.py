@@ -48,6 +48,9 @@ class EvalResult:
     # Per-contact necessity as array (J,): 1.0=necessary, 0.5=marginal, 0.0=unnecessary
     necessity_array: np.ndarray = field(default_factory=lambda: np.zeros(0))
 
+    # Joints promoted by effort-relief prior (soft positive-evidence override).
+    effort_relief_promoted: Set[int] = field(default_factory=set)
+
 
 class DynamicFrameEvaluator:
     """Evaluate contact hypotheses against whole-body dynamic equilibrium.
@@ -179,9 +182,12 @@ class DynamicFrameEvaluator:
                  com: np.ndarray,
                  com_acc: np.ndarray,
                  floor_height: float,
-                 up_axis: int = 1) -> EvalResult:
+                 up_axis: int = 1,
+                 gravity_torque_vecs: Optional[np.ndarray] = None,
+                 relief_enable: bool = False,
+                 relief_strain_threshold: float = 25.0) -> EvalResult:
         """Evaluate a proposed contact set against dynamic equilibrium.
-        
+
         Args:
             contact_joints: Set of joint indices proposed as contacts
             joint_positions: (J, 3) joint positions in world space
@@ -189,7 +195,12 @@ class DynamicFrameEvaluator:
             com_acc: (3,) center of mass acceleration (m/s²)
             floor_height: Floor height in world coordinates
             up_axis: Vertical axis index (1=Y-up, 2=Z-up)
-            
+            gravity_torque_vecs: Optional (J, 3) per-joint gravity torque
+                in world frame. Required for the effort-relief promotion.
+            relief_enable: If True, run the post-hoc effort-relief pass.
+            relief_strain_threshold: N·m. Trunk joint torque magnitudes
+                above this trigger relief consideration for nearby hands.
+
         Returns:
             EvalResult with per-contact forces, necessity, ZMP, etc.
         """
@@ -292,7 +303,7 @@ class DynamicFrameEvaluator:
                 else:
                     necessity_array[j] = 0.0
         
-        return EvalResult(
+        result = EvalResult(
             per_contact_force=per_contact_force,
             necessity=necessity,
             f_required=f_required,
@@ -304,7 +315,79 @@ class DynamicFrameEvaluator:
             force_array=force_array,
             necessity_array=necessity_array,
         )
-    
+
+        if relief_enable and gravity_torque_vecs is not None:
+            self._apply_effort_relief_promotion(
+                result, contact_joints, joint_positions,
+                gravity_torque_vecs, up_axis, relief_strain_threshold)
+
+        return result
+
+    def _apply_effort_relief_promotion(self, result: EvalResult,
+                                        contact_joints,
+                                        joint_positions: np.ndarray,
+                                        gravity_torque_vecs: np.ndarray,
+                                        up_axis: int,
+                                        strain_threshold: float,
+                                        lever_min: float = 0.05) -> None:
+        """Promote hand candidates that would relieve trunk strain.
+
+        Soft biomechanical prior: when a trunk joint has high gravity-torque
+        demand, a candidate hand on the lean side likely bears passive load
+        even though the FE's ZMP solution gave it zero share. Mutates
+        result.effort_relief_promoted in place; per_contact_force untouched.
+        """
+        # Spine joints only. Hip gravity torques reflect leg-support
+        # asymmetry, not upper-body lean — using them here would give an
+        # inverted lean direction (wrong side of body for hand support).
+        TRUNK = (3, 6, 9)        # spine1, spine2, spine3
+        HANDS = (20, 21, 22, 23) # L_wrist, R_wrist, L_hand, R_hand
+        plane = [0, 2] if up_axis == 1 else [0, 1]
+        J_g = gravity_torque_vecs.shape[0]
+        J_p = joint_positions.shape[0]
+
+        # Find strained trunk joints with their lean direction in horiz plane.
+        # Lean direction is the body's offset vector from the joint, derived
+        # from τ = r × F_grav. For Y-up: r_h = (-τ_z, τ_x). For Z-up: (τ_y, -τ_x).
+        strained = []
+        for j in TRUNK:
+            if j >= J_g:
+                continue
+            tau = gravity_torque_vecs[j]
+            mag = float(np.linalg.norm(tau))
+            if mag < strain_threshold:
+                continue
+            if up_axis == 1:
+                lean = np.array([-tau[2], tau[0]])
+            else:
+                lean = np.array([tau[1], -tau[0]])
+            ln = float(np.linalg.norm(lean))
+            if ln < 1e-6:
+                continue
+            strained.append((j, mag, lean / ln))
+
+        if not strained:
+            return
+
+        strained.sort(key=lambda x: -x[1])  # most strained first
+
+        for c in contact_joints:
+            if c not in HANDS or c >= J_p:
+                continue
+            # Don't override a substantively-loaded contact.
+            if result.per_contact_force.get(c, 0.0) > self.MARGINAL_THRESHOLD_KG:
+                continue
+            cand_h = joint_positions[c][plane]
+            for j, _mag, lean_unit in strained:
+                if j >= J_p:
+                    continue
+                offset = cand_h - joint_positions[j][plane]
+                proj = float(np.dot(offset, lean_unit))
+                if proj < lever_min:
+                    continue
+                result.effort_relief_promoted.add(int(c))
+                break
+
     def evaluate_and_refine(self, candidate_joints: Set[int],
                             joint_positions: np.ndarray,
                             com: np.ndarray,
@@ -319,6 +402,9 @@ class DynamicFrameEvaluator:
                             joint_velocities: Optional[np.ndarray] = None,
                             prev_active_contacts: Optional[Set[int]] = None,
                             prev_seed: Optional[int] = None,
+                            gravity_torque_vecs: Optional[np.ndarray] = None,
+                            relief_enable: bool = False,
+                            relief_strain_threshold: float = 25.0,
                             ) -> EvalResult:
         """Greedy iterative contact selection.
         
@@ -668,7 +754,12 @@ class DynamicFrameEvaluator:
                 excluded_joints=excluded_joints
             )
             result.suggested_contacts = suggested
-        
+
+        if relief_enable and gravity_torque_vecs is not None:
+            self._apply_effort_relief_promotion(
+                result, candidate_joints, joint_positions,
+                gravity_torque_vecs, up_axis, relief_strain_threshold)
+
         return result
     
     # --- Contact spread radii ---

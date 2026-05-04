@@ -2074,7 +2074,8 @@ class MGLContactDisksNode(MGLShapeNode):
                 self.vbo = None
                 self.ibo = None
             self.dirty = False
-        super().draw()
+        if self.vao is not None:
+            super().draw()
 
     def create_geometry(self):
         return [], None

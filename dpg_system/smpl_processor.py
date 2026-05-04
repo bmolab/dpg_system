@@ -375,6 +375,12 @@ class SMPLProcessingOptions:
     logodds_decay_rate: float = 0.90
     # Structural-stream EMA on per-foot forces (1.0 = no smoothing)
     logodds_struct_force_ema_alpha: float = 1.0
+    # Effort-relief prior: hand candidates near a high-strain spine joint
+    # (lever arm on lean side) get a small structural positive even when
+    # the FE's ZMP solution would assign them no load. Default OFF.
+    logodds_fe_relief_enable: bool = False
+    logodds_fe_relief_strain_threshold: float = 25.0
+    logodds_struct_relief_logodds: float = 0.3
     
     # --- Torque Rate Limiting ---
     enable_rate_limiting: bool = False
@@ -5332,6 +5338,9 @@ class SMPLProcessor:
             # Accumulator
             decay_rate=options.logodds_decay_rate,
             struct_force_ema_alpha=options.logodds_struct_force_ema_alpha,
+            fe_relief_enable=options.logodds_fe_relief_enable,
+            fe_relief_strain_threshold=options.logodds_fe_relief_strain_threshold,
+            struct_relief_logodds=options.logodds_struct_relief_logodds,
             enable_valving=enable_valving,
             # Body contacts
             enable_body_contacts=options.enable_body_contacts,
@@ -5408,11 +5417,22 @@ class SMPLProcessor:
                 sd_full[:len(surface_dists)] = surface_dists
                 surface_dists = sd_full
 
+        # Previous frame's world-frame gravity torques, for the structural
+        # stream's effort-relief prior. Strain is slow-varying so the
+        # one-frame lag is fine; first frame has none and the prior no-ops.
+        prev_grav = getattr(self, '_last_gravity_torques_world', None)
+        if (prev_grav is not None and prev_grav.ndim == 3
+                and prev_grav.shape[0] >= 1):
+            prev_grav_2d = prev_grav[0]
+        else:
+            prev_grav_2d = None
+
         result = self._logodds_estimator.process_frame(
             pos, com, com_vel, com_acc,
             floor_h, dt, lo_opts,
             raw_com_acc=getattr(self, '_raw_com_acc', None),
             surface_dists=surface_dists,
+            gravity_torque_vecs=prev_grav_2d,
         )
         
         # Store pressure for the stab_press path
@@ -5498,6 +5518,20 @@ class SMPLProcessor:
             if j < working_probs.shape[1] and working_probs[0, j] > 0.5:
                 confirmed_heights.append(curr_heights[j])
         
+        # LogOdds contacts: include ALL active groups (hands, knees,
+        # pelvis, etc.) so the floor adapts when body is on the ground
+        # with legs in the air.
+        lo_result = getattr(self, '_logodds_result', None)
+        if lo_result is not None and hasattr(lo_result, 'intensity'):
+            from dpg_system.contact_logodds import get_active_groups
+            for gname, joints in get_active_groups(options).items():
+                if lo_result.intensity.get(gname, 0.0) > 0.5:
+                    valid = [j for j in joints if j < len(curr_heights)]
+                    if valid:
+                        # Use lowest joint in the group
+                        min_h = min(curr_heights[j] for j in valid)
+                        confirmed_heights.append(min_h)
+
         # Fallback for stability/equilibrium/unified methods: use computed pressure
         if not confirmed_heights:
             stab_press = getattr(self, '_stability_computed_pressure', None)
@@ -8769,6 +8803,11 @@ class SMPLProcessor:
         
         parent_inv_mats = _frame_cache['parent_inv_mats']
         
+        # Stash world-frame gravity torques for next-frame contact detection
+        # (the structural stream's effort-relief prior needs them in world
+        # frame for lean-direction extraction).
+        self._last_gravity_torques_world = t_grav_vecs[:, :self.target_joint_count].copy()
+
         # Batch transform gravity and contact to local frame: (F, J, 3, 3) @ (F, J, 3, 1) -> (F, J, 3)
         t_grav_local_all = np.einsum('fjik,fjk->fji', parent_inv_mats, t_grav_vecs[:, :self.target_joint_count])
         t_contact_local_all = np.einsum('fjik,fjk->fji', parent_inv_mats, t_contact_vecs[:, :self.target_joint_count])

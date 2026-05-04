@@ -23,7 +23,7 @@ Architecture:
 import json
 import os
 import numpy as np
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Dict, Optional, List
 from collections import deque
 
@@ -94,7 +94,10 @@ class LogOddsContactOptions:
 
     # Stream weights (multiplier on each stream's raw log-odds)
     weight_height: float = 1.0
-    weight_kinematic: float = 0.5      # Reduced: kinematic is noisiest stream (std=0.81)
+    weight_kinematic: float = 0.8      # Tuned: needs strong negative for swing
+                                        # suppression; positive side tamed to avoid
+                                        # pre-deceleration contact (divergence handles
+                                        # planted/swing discrimination now)
     weight_structural: float = 1.0     # Structural necessity stream
     weight_divergence: float = 1.0     # Foot-CoM divergence stream
     # Legacy weights (for backward compatibility)
@@ -224,6 +227,14 @@ class LogOddsContactOptions:
     # smoothing); alpha=0.2 ≈ 5-frame effective window.
     struct_force_ema_alpha: float = 1.0
 
+    # Effort-relief biomechanical prior: when a trunk joint's gravity
+    # torque exceeds the threshold, hand candidates on the lean side are
+    # promoted as soft positive evidence even if the FE's ZMP solution
+    # gave them no load. Default OFF — preserves prior behavior.
+    fe_relief_enable: bool = False
+    fe_relief_strain_threshold: float = 25.0   # N·m at spine joints
+    struct_relief_logodds: float = 0.3         # per-frame log-odds added when promoted
+
     # Divergence stream parameters
     div_min_com_speed: float = 0.1    # CoM speed below this → neutral (m/s)
     div_alignment_scale: float = 1.5  # alignment magnitude for full strength
@@ -316,16 +327,6 @@ class HeightStream:
             clr = opts.height_clear_zone
             lo_pos = opts.height_contact_logodds
             lo_neg = opts.height_clear_logodds
-
-            # For hand groups during floor work, widen zones and
-            # soften negatives. Mocap error in complex poses can place
-            # hands 10-15cm above their true position. The height stream
-            # should stay more neutral, letting structural decide.
-            if (gname in HAND_GROUPS
-                    and getattr(opts, 'enable_body_contacts', False)):
-                clr = 0.30   # wider clear zone (30cm vs 20cm)
-                ahi = 0.15   # wider ambiguous zone
-                lo_neg = lo_neg * 0.5  # softer negatives (-1.0 vs -2.0)
 
             if min_h <= cz:
                 # Contact zone: strong positive
@@ -479,13 +480,16 @@ class VerticalKinematicStream:
 
                 if (mean_h < opts.traj_height_thresh
                         and std_h < opts.traj_stable_std_thresh):
-                    # Stable and low: mild push toward grounded (arming only)
-                    # Steady state: 0.04 / (1 - 0.85) = 0.27 (inside dead zone 0.30)
-                    traj_push = 0.04 * confidence
+                    # Stable and low: very mild positive.
+                    # Divergence now handles planted confirmation;
+                    # kinematic just nudges to avoid fighting it.
+                    traj_push = 0.01 * confidence
                 elif slope < -opts.traj_trend_thresh:
-                    # Falling: push toward grounded (approaching/arming)
+                    # Falling: minimal approach arming — divergence and
+                    # height will confirm; kinematic shouldn't preempt
+                    # before deceleration actually occurs.
                     scale = min(1.0, -slope / (opts.traj_trend_thresh * 5))
-                    traj_push = 0.03 * scale * confidence
+                    traj_push = 0.01 * scale * confidence
                 elif slope > opts.traj_trend_thresh:
                     # Rising: push toward airborne (departing)
                     scale = min(1.0, slope / (opts.traj_trend_thresh * 5))
@@ -1224,7 +1228,7 @@ class StructuralStream:
         return out
 
     def compute(self, pos, com, com_acc, com_vel, floor_height, dt, opts,
-                raw_com_acc=None, intensities=None):
+                raw_com_acc=None, intensities=None, gravity_torque_vecs=None):
         """Phase A: Compute per-group log-odds from structural necessity.
 
         Provides evidence only where physics is unambiguous.
@@ -1385,7 +1389,10 @@ class StructuralStream:
 
         # --- Evaluate structural frame with group representatives ---
         eval_result = self.evaluator.evaluate(
-            rep_candidates, pos, com, com_acc, floor_height, up)
+            rep_candidates, pos, com, com_acc, floor_height, up,
+            gravity_torque_vecs=gravity_torque_vecs,
+            relief_enable=getattr(opts, 'fe_relief_enable', False),
+            relief_strain_threshold=getattr(opts, 'fe_relief_strain_threshold', 25.0))
 
         # --- Extract per-group force from representative ---
         group_forces_raw = {}
@@ -1492,6 +1499,7 @@ class StructuralStream:
                 result[sole_group] = opts.struct_necessary_logodds
         elif len(all_candidate_groups) >= 2 and total_force > 1.0:
             # Adaptive thresholds: with N groups, equal share = 1/N.
+            body_contacts_on = getattr(opts, 'enable_body_contacts', False)
             n_groups = len(all_candidate_groups)
             equal_share = 1.0 / n_groups
             for gname in all_candidate_groups:
@@ -1504,15 +1512,16 @@ class StructuralStream:
                 elif frac < equal_share * 0.6:
                     result[gname] = opts.struct_pendulum_leading_logodds
                 elif frac >= equal_share * 0.8:
-                    if gname in established or has_deficit:
+                    if (gname in established or has_deficit) and body_contacts_on:
                         # Established: full positive. New with deficit: full.
+                        # Only in body-contact mode — for foot-only walking,
+                        # divergence + kinematic streams handle discrimination.
                         result[gname] = opts.struct_necessary_logodds
                     else:
-                        # New, no deficit: stay neutral (let other
-                        # streams decide — height, kinematic, etc.)
+                        # Walking or no deficit: stay neutral
                         result[gname] = 0.0
                 else:
-                    if gname in established or has_deficit:
+                    if (gname in established or has_deficit) and body_contacts_on:
                         result[gname] = opts.struct_mild_logodds
                     else:
                         result[gname] = 0.0
@@ -1525,6 +1534,20 @@ class StructuralStream:
             if gname not in groups_with_candidates and result.get(gname, 0.0) == 0.0:
                 result[gname] = opts.struct_unnecessary_logodds
 
+        # --- Effort-relief override for hand groups ---
+        # When the FE flagged a hand candidate as bearing trunk strain
+        # (high gravity-torque on a spine joint, lever arm on lean side),
+        # raise the hand group's structural log-odds to a small positive.
+        # Floor — does not reduce a positive value already emitted.
+        relief_promoted = getattr(eval_result, 'effort_relief_promoted', None)
+        relief_logodds = getattr(opts, 'struct_relief_logodds', 0.3)
+        if relief_promoted and relief_logodds > 0:
+            for gname in HAND_GROUPS:
+                rep = group_reps.get(gname)
+                if rep is not None and rep in relief_promoted:
+                    if result.get(gname, 0.0) < relief_logodds:
+                        result[gname] = relief_logodds
+
         if log is not None:
             if len(all_candidate_groups) == 1:
                 log['branch'] = 'single_group'
@@ -1536,6 +1559,8 @@ class StructuralStream:
             log['established'] = sorted(established)
             log['new_candidates'] = sorted(new_candidates)
             log['has_deficit'] = has_deficit
+            if relief_promoted:
+                log['effort_relief_promoted'] = sorted(int(j) for j in relief_promoted)
             log['result'] = dict(result)
             self._emit_log(log)
             self._log_frame += 1
@@ -2545,7 +2570,7 @@ class LogOddsContactEstimator:
 
     def process_frame(self, pos, com, com_vel, com_acc,
                       floor_height, dt, opts=None, raw_com_acc=None,
-                      surface_dists=None):
+                      surface_dists=None, gravity_torque_vecs=None):
         """Process one frame.
 
         Args:
@@ -2570,6 +2595,25 @@ class LogOddsContactEstimator:
 
         up = opts.up_axis
         plane = [0, 2] if up == 1 else [0, 1]
+
+        # --- CoM-gate body contacts ---
+        # Body groups only activate when CoM is near the floor.
+        # During upright walking/standing, body contacts stay dormant
+        # even if the capability flag is on.
+        # Hysteresis: activate at < 0.5m, deactivate at > 0.7m to
+        # prevent flickering during transitional poses.
+        BODY_ACTIVATE_THRESH = 0.5   # CoM must drop below this to engage
+        BODY_DEACTIVATE_THRESH = 0.7  # CoM must rise above this to disengage
+        if opts.enable_body_contacts and com is not None:
+            com_h = com[up] - floor_height
+            was_active = getattr(self, '_body_contacts_active', False)
+            if was_active:
+                body_active = com_h <= BODY_DEACTIVATE_THRESH
+            else:
+                body_active = com_h <= BODY_ACTIVATE_THRESH
+            self._body_contacts_active = body_active
+            if not body_active:
+                opts = replace(opts, enable_body_contacts=False)
 
         # --- Compute per-stream increments ---
         stream_increments = {}  # stream_name → {gname: float}
@@ -2613,7 +2657,8 @@ class LogOddsContactEstimator:
             curr_int = self.accumulator.get_intensities(opts.sigmoid_temperature)
             struct_inc = self.structural_stream.compute(
                 pos, com, com_acc, com_vel, floor_height, dt, opts,
-                raw_com_acc=raw_com_acc, intensities=curr_int)
+                raw_com_acc=raw_com_acc, intensities=curr_int,
+                gravity_torque_vecs=gravity_torque_vecs)
             stream_increments['structural'] = {
                 g: v * opts.weight_structural for g, v in struct_inc.items()
             }
@@ -2685,21 +2730,32 @@ class LogOddsContactEstimator:
                 total_increments[g] += inc_dict.get(g, 0.0)
 
         # --- Update accumulator ---
-        # Body groups use slower decay (stickier contacts),
-        # except the head which needs faster fade-out (not a natural
-        # sustained-contact surface like knees/pelvis).
-        if opts.enable_body_contacts:
-            decay = {}
-            for g in all_group_names:
-                if g in BODY_GROUPS and g != 'HD':
-                    decay[g] = opts.body_decay_rate
-                else:
-                    decay[g] = opts.decay_rate
-        else:
-            decay = opts.decay_rate
-        self.accumulator.update(total_increments, decay, opts.max_logodds)
+        # Single decay rate for all groups. The structural stream's
+        # established-contact priority provides persistence; no need
+        # for per-group sticky decay rates.
+        self.accumulator.update(total_increments, opts.decay_rate, opts.max_logodds)
         intensities = self.accumulator.get_intensities(opts.sigmoid_temperature)
         log_odds_state = self.accumulator.state
+
+        # --- 1-frame onset latency filter ---
+        # Suppress single-frame contact flickers: a group must be above
+        # the deadzone for 2 consecutive frames before intensity passes
+        # through.  Release (drop below threshold) is immediate.
+        # The accumulator state is NOT affected — only the output.
+        dz = opts.intensity_deadzone
+        if not hasattr(self, '_prev_above_dz'):
+            self._prev_above_dz = {}
+        filtered = {}
+        for g, raw_i in intensities.items():
+            above = raw_i > dz
+            was_above = self._prev_above_dz.get(g, False)
+            if above and not was_above:
+                # First frame above threshold — suppress
+                filtered[g] = 0.0
+            else:
+                filtered[g] = raw_i
+            self._prev_above_dz[g] = above
+        intensities = filtered
 
         # --- Build per-stream diagnostic ---
         per_stream = {}
