@@ -2182,7 +2182,7 @@ class IntensityPressureModel:
         self._prev_joint_pos = {}  # gname → {j: float} vertical positions
 
     def distribute(self, intensities, pos, xcom_hz, total_mass,
-                   floor_height, opts):
+                   floor_height, opts, surface_dists=None):
         """Distribute force based on contact intensities.
 
         Args:
@@ -2192,6 +2192,8 @@ class IntensityPressureModel:
             total_mass: float
             floor_height: float
             opts: LogOddsContactOptions
+            surface_dists: Optional (J,) per-joint distance from joint
+                center to mesh surface in floor-ward direction
 
         Returns:
             np.ndarray: (J,) pressure per joint in kg
@@ -2201,28 +2203,31 @@ class IntensityPressureModel:
         J = pos.shape[0]
         pressure = np.zeros(J)
 
-        # Foot groups: intensity-weighted force sharing
-        foot_intensities = {}
-        for g in FOOT_GROUPS:
+        # Unified force distribution: all contact groups (feet AND hands)
+        # compete for body weight via intensity-weighted lever rule.
+        # During cartwheels, hands bear full body weight.
+        active_groups = {}
+        for g in list(FOOT_GROUPS.keys()) + list(HAND_GROUPS.keys()):
             intensity = intensities.get(g, 0.0)
             if intensity > opts.intensity_deadzone:
-                foot_intensities[g] = intensity
+                active_groups[g] = intensity
 
-        if not foot_intensities:
+        if not active_groups:
             return pressure
 
-        # Intensity-weighted XCoM lever rule between feet
-        total_intensity = sum(foot_intensities.values())
+        # Intensity-weighted XCoM lever rule between all active groups
+        total_intensity = sum(active_groups.values())
         group_forces = {}
+        all_groups_map = {**FOOT_GROUPS, **HAND_GROUPS}
 
-        if len(foot_intensities) == 1:
-            g = list(foot_intensities.keys())[0]
-            group_forces[g] = total_mass * foot_intensities[g]
+        if len(active_groups) == 1:
+            g = list(active_groups.keys())[0]
+            group_forces[g] = total_mass * active_groups[g]
         else:
             # XCoM-based lever rule, scaled by intensity
             centroids = {}
-            for gname in foot_intensities:
-                joints = FOOT_GROUPS[gname]
+            for gname in active_groups:
+                joints = all_groups_map[gname]
                 valid = [j for j in joints if j < J]
                 if valid:
                     centroids[gname] = np.mean(
@@ -2233,19 +2238,21 @@ class IntensityPressureModel:
                 for g, c in centroids.items():
                     d = max(0.01, np.linalg.norm(c - xcom_hz))
                     # Weight by both proximity and intensity
-                    inv_dists[g] = foot_intensities[g] / d
+                    inv_dists[g] = active_groups[g] / d
                 total_inv = sum(inv_dists.values())
-                for g in foot_intensities:
+                for g in active_groups:
                     group_forces[g] = (total_mass
                                        * inv_dists.get(g, 0)
                                        / max(total_inv, 1e-6))
             else:
-                for g in foot_intensities:
-                    w = foot_intensities[g] / total_intensity
+                for g in active_groups:
+                    w = active_groups[g] / total_intensity
                     group_forces[g] = total_mass * w
 
-        # Within-group ball-heel split (same lever rule as unified)
-        for gname in foot_intensities:
+        # Within-group joint split for foot groups (ball/heel)
+        for gname in active_groups:
+            if gname not in FOOT_GROUPS:
+                continue
             gforce = group_forces.get(gname, 0)
             if gforce <= 0:
                 continue
@@ -2270,82 +2277,86 @@ class IntensityPressureModel:
 
             if foot_len > 0.01:
                 t = np.dot(xcom_hz - heel_hz, foot_vec) / (foot_len ** 2)
-                t = float(np.clip(t, 0.0, 1.0))
+                # Moderate clamp: lever angle handles extremes, XCoM only
+                # needs to work in the flat-foot regime
+                t = float(np.clip(t, 0.15, 0.85))
                 xcom_weights = {ball_j: t, heel_j: 1.0 - t}
             else:
                 xcom_weights = {ball_j: 0.5, heel_j: 0.5}
 
-            # Rotation-rate suppression: within a contact group, a joint
-            # that's rising relative to its sibling is rotating away from
-            # the surface. Its pressure should evaporate based on that
-            # movement, not absolute height.
-            # This works generically for any joint pair: heel/ball,
-            # palm/fingertip, knee/shin, etc.
-            prev_positions = self._prev_joint_pos.get(gname, {})
-            curr_positions = {j: pos[j, up] for j in valid}
+            # Lever angle: the pitch of the ball-heel vector directly
+            # encodes the ankle (or wrist) lever state. This is the same
+            # information as the joint angle, read from world positions.
+            # At 0° (flat foot): both joints equal, XCoM fine-tunes.
+            # At large angles (dorsiflexed/plantarflexed): the lower joint
+            # smoothly takes all the weight.
+            # Use surface contact positions if available: joint height
+            # minus the mesh surface offset gives the actual ground
+            # contact height, correcting for SMPL's structural bias
+            # where the ball joint sits higher than the heel.
+            ball_surface_h = pos[ball_j, up]
+            heel_surface_h = pos[heel_j, up]
+            if surface_dists is not None:
+                if ball_j < len(surface_dists):
+                    ball_surface_h -= surface_dists[ball_j]
+                if heel_j < len(surface_dists):
+                    heel_surface_h -= surface_dists[heel_j]
 
-            # Compute per-joint vertical velocity
-            joint_vy = {}
-            for j in valid:
-                if j in prev_positions:
-                    joint_vy[j] = curr_positions[j] - prev_positions[j]
-                else:
-                    joint_vy[j] = 0.0
-            self._prev_joint_pos[gname] = curr_positions
+            # Lever angle from surface contact heights
+            foot_vec_hz = pos[ball_j] - pos[heel_j]
+            foot_len_hz = np.linalg.norm(foot_vec_hz[plane])
+            surface_h_diff = ball_surface_h - heel_surface_h
 
-            # Relative vy: how fast this joint rises vs the group minimum
-            # The lowest-vy joint (most planted) is the reference
-            min_vy = min(joint_vy.values()) if joint_vy else 0.0
-            rotation_weights = {}
-            rise_scale = opts.rise_suppression_scale  # m/frame for full suppression
-            for j in valid:
-                relative_rise = max(0.0, joint_vy[j] - min_vy)
-                # Exponential suppression: rising joint → weight → 0
-                rotation_weights[j] = float(np.exp(-relative_rise / max(rise_scale, 1e-6)))
+            if foot_len_hz > 0.01:
+                # sin(pitch) from surface heights, not joint heights
+                sin_pitch = float(np.clip(surface_h_diff / max(foot_len_hz, 0.01), -1.0, 1.0))
+            else:
+                sin_pitch = 0.0
 
-            rot_sum = sum(rotation_weights.values())
-            if rot_sum > 1e-10:
-                for j in rotation_weights:
-                    rotation_weights[j] /= rot_sum
+            # Lever weights: sharp transfer — any significant pitch
+            # pushes all weight to the lower joint. Only near flat
+            # (within ±~6°) is pressure shared.
+            transfer_scale = 0.2  # sin(11°)≈0.2: full transfer at ~11°
+            mapped = float(np.clip(sin_pitch / transfer_scale, -1.0, 1.0))
 
-            # Blend XCoM geometry with rotation-rate suppression
-            # When there's significant differential rotation, rotation
-            # dominates. When both joints move together, XCoM geometry
-            # decides.
-            max_relative_rise = max(0.0, max(joint_vy.values()) - min_vy) if joint_vy else 0.0
-            rotation_blend = min(1.0, max_relative_rise / max(rise_scale * 3, 1e-6))
+            lever_weights = {
+                ball_j: 0.5 * (1.0 - mapped),   # ball lower → more weight
+                heel_j: 0.5 * (1.0 + mapped),    # heel lower → more weight
+            }
+
+            # Blend: when flat (|mapped|≈0), XCoM decides.
+            # When lever active (|mapped|→1), lever dominates.
+            lever_blend = abs(mapped)
             raw_weights = {}
             for j in valid:
-                raw_weights[j] = ((1.0 - rotation_blend) * xcom_weights.get(j, 0.5)
-                                  + rotation_blend * rotation_weights.get(j, 0.5))
+                raw_weights[j] = ((1.0 - lever_blend) * xcom_weights.get(j, 0.5)
+                                  + lever_blend * lever_weights.get(j, 0.5))
 
-            # EMA smoothing
-            prev = self._split_weights.get(gname, {})
-            smooth = {}
-            alpha = opts.split_alpha
-            for j in valid:
-                pw = prev.get(j, 0.0)
-                rw = raw_weights.get(j, 0.5)
-                smooth[j] = alpha * rw + (1.0 - alpha) * pw
-
-            w_sum = sum(smooth.values())
+            # Normalize and apply
+            w_sum = sum(raw_weights.values())
             if w_sum > 0:
-                for j in smooth:
-                    smooth[j] /= w_sum
+                for j in raw_weights:
+                    raw_weights[j] /= w_sum
 
-            self._split_weights[gname] = smooth
+            self._split_weights[gname] = raw_weights
             for j in valid:
-                pressure[j] = gforce * smooth.get(j, 0.5)
+                pressure[j] = gforce * raw_weights.get(j, 0.5)
 
-        # Hand groups: simple intensity-scaled pressure
-        for gname in HAND_GROUPS:
-            intensity = intensities.get(gname, 0.0)
-            if intensity > opts.intensity_deadzone:
-                joints = HAND_GROUPS[gname]
-                valid = [j for j in joints if j < J]
-                force_per = 5.0 * intensity / max(len(valid), 1)
-                for j in valid:
-                    pressure[j] = force_per
+        # Within-group joint split for hand groups (wrist/hand)
+        for gname in active_groups:
+            if gname not in HAND_GROUPS:
+                continue
+            gforce = group_forces.get(gname, 0)
+            if gforce <= 0:
+                continue
+            joints = HAND_GROUPS[gname]
+            valid = [j for j in joints if j < J]
+            if not valid:
+                continue
+            # Equal split for now (hands don't have ball/heel asymmetry)
+            force_per = gforce / len(valid)
+            for j in valid:
+                pressure[j] = force_per
 
         return pressure
 
@@ -2417,7 +2428,8 @@ class LogOddsContactEstimator:
         return valved
 
     def process_frame(self, pos, com, com_vel, com_acc,
-                      floor_height, dt, opts=None, raw_com_acc=None):
+                      floor_height, dt, opts=None, raw_com_acc=None,
+                      surface_dists=None):
         """Process one frame.
 
         Args:
@@ -2572,7 +2584,7 @@ class LogOddsContactEstimator:
 
         pressure = self.pressure_model.distribute(
             intensities, pos, xcom_hz, self.total_mass,
-            floor_height, opts)
+            floor_height, opts, surface_dists=surface_dists)
 
         return LogOddsContactResult(
             intensity=intensities,

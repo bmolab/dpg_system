@@ -5339,10 +5339,29 @@ class SMPLProcessor:
         if hasattr(self, '_inferred_floor_height') and self._inferred_floor_height is not None:
             floor_h = self._inferred_floor_height
         
+        # Compute surface distances for lever angle correction
+        surface_dists = None
+        extents = getattr(self, '_joint_surface_extents', None)
+        global_rots = getattr(self, '_prev_global_rots', None)
+        if extents is not None and global_rots is not None:
+            from dpg_system.dynamic_frame_evaluator import DynamicFrameEvaluator
+            floor_normal = np.zeros(3)
+            floor_normal[1] = 1.0  # Y-up after axis permutation
+            grots = global_rots[0] if global_rots.ndim == 4 else global_rots
+            surface_dists = DynamicFrameEvaluator.compute_effective_surface_distances(
+                extents, grots, floor_normal, num_joints=min(J, 24)
+            )
+            if len(surface_dists) < J:
+                sd_full = np.zeros(J)  # Virtual joints (24-29) are already
+                # at mesh contact surfaces — no surface correction needed
+                sd_full[:len(surface_dists)] = surface_dists
+                surface_dists = sd_full
+
         result = self._logodds_estimator.process_frame(
             pos, com, com_vel, com_acc,
             floor_h, dt, lo_opts,
             raw_com_acc=getattr(self, '_raw_com_acc', None),
+            surface_dists=surface_dists,
         )
         
         # Store pressure for the stab_press path
