@@ -20,6 +20,8 @@ Architecture:
     4. Sigmoid maps accumulated state to intensity [0, 1]
 """
 
+import json
+import os
 import numpy as np
 from dataclasses import dataclass, field
 from typing import Dict, Optional, List
@@ -55,14 +57,16 @@ class LogOddsContactOptions:
     # Temporal accumulator
     decay_rate: float = 0.90      # Per-frame decay toward neutral (0.9 = 10% decay)
     initial_logodds: float = 0.0  # 0 = 50% prior
-    max_logodds: float = 3.0      # Clamp: sigmoid(3)=0.953, sigmoid(-3)=0.047
-                                   # Lower clamp = less time stuck at extremes,
-                                   # more visible intensity gradation
+    max_logodds: float = 6.0      # Clamp magnitude to prevent over-certainty
+    sigmoid_temperature: float = 2.0  # Shallower sigmoid → more gradual contact
+                                       # T=1.0: binary (0.05-0.95 over 6 LO)
+                                       # T=2.0: gradual (0.05-0.95 over 12 LO)
 
     # Stream enables (3-stream architecture)
     enable_height: bool = True
     enable_kinematic: bool = True      # Unified kinematic stream (approach angle + touchdown + settled)
     enable_structural: bool = True     # Frame evaluator structural necessity
+    enable_divergence: bool = True     # Foot-CoM relative velocity divergence
     # Legacy enables (kept for backward compatibility / A/B testing)
     enable_vertical_kinematic: bool = False  # Old unified vertical-only stream
     enable_hspeed: bool = False              # Old separate horizontal speed stream
@@ -73,8 +77,9 @@ class LogOddsContactOptions:
 
     # Stream weights (multiplier on each stream's raw log-odds)
     weight_height: float = 1.0
-    weight_kinematic: float = 1.0      # Unified kinematic stream
+    weight_kinematic: float = 0.5      # Reduced: kinematic is noisiest stream (std=0.81)
     weight_structural: float = 1.0     # Structural necessity stream
+    weight_divergence: float = 1.0     # Foot-CoM divergence stream
     # Legacy weights (for backward compatibility)
     weight_vertical_kinematic: float = 1.0
     weight_hspeed: float = 1.0
@@ -165,7 +170,8 @@ class LogOddsContactOptions:
 
     # Never-settled sub-signal (detects foot that never reached floor during approach)
     kin_settle_approach_zone: float = 0.08   # Height below which we track approach epoch
-    kin_settle_floor_thresh: float = 0.005   # min_h below this = foot has reached the floor
+    kin_settle_vy_thresh: float = 0.05       # |vy| below this counts as 'vertically still'
+    kin_settle_frames: int = 15              # consecutive low-vy frames needed to be 'settled'
     kin_settle_never_push: float = -0.15     # Airborne push when foot never settled
     kin_settle_speed_gate: float = 0.18      # Only apply when speed < this (low-speed gap filler)
     kin_settle_rise_reset: float = 0.012     # Rise above min_h to trigger epoch reset
@@ -183,11 +189,28 @@ class LogOddsContactOptions:
     struct_freefall_logodds: float = -2.0
     struct_freefall_thresh: float = 0.15  # support fraction below this = freefall
     struct_candidate_height: float = 0.15 # joints within this height are candidates
+    # Push-off evidence: scales continuously with excess support fraction
+    struct_pushoff_logodds: float = 2.0   # max positive for near-floor groups
+    struct_pushoff_height: float = 0.04   # only apply to groups with joints below this
     # Inverted pendulum: CoM falling → trailing foot is pivot,
     # leading foot is proven NOT fully supporting (pendulum still swinging)
     struct_pendulum_vy_thresh: float = -0.03  # m/s: below this = CoM is falling
     struct_pendulum_leading_logodds: float = -0.3  # negative for leading (not yet full support)
     struct_pendulum_min_separation: float = 0.15   # feet must be this far apart for directionality
+    # Per-frame ZMP/share noise can flip the lever-rule split many times
+    # within a single stance. Apply an EMA on per-group forces before the
+    # share decision to suppress that noise. alpha=1.0 disables (no
+    # smoothing); alpha=0.2 ≈ 5-frame effective window.
+    struct_force_ema_alpha: float = 1.0
+
+    # Divergence stream parameters
+    div_min_com_speed: float = 0.1    # CoM speed below this → neutral (m/s)
+    div_alignment_scale: float = 1.5  # alignment magnitude for full strength
+    div_max_logodds: float = 1.5      # max evidence magnitude
+    div_ground_gate_scale: float = 0.015  # pro-contact gate: 5mm→72%, 1cm→51%, 2cm→26%
+
+    # Pressure model: intra-group rotation-rate suppression
+    rise_suppression_scale: float = 0.001  # m/frame differential rise for full suppression
 
 
 @dataclass
@@ -554,6 +577,8 @@ class KinematicStream:
         self._phase = {}           # gname → float [-1, 1]
         # Approach angle tracking
         self._prev_pos = {}        # gname → (3,) previous position of representative joint
+        self._prev_rep_j = {}      # gname → int (which joint was rep last frame)
+        self._prev_joint_pos = {}  # (gname, joint_idx) → (3,) per-joint position history
         # Touchdown impulse tracking
         self._td_prev_h = {}       # gname → float
         self._td_fast_ema = {}     # gname → float
@@ -566,6 +591,7 @@ class KinematicStream:
         self._approach_min_h = {}  # gname → float (min height since entering approach zone)
         self._in_approach = {}     # gname → bool (currently in approach zone)
         self._was_planted = {}     # gname → bool (was planted last frame, for transition detection)
+        self._settle_count = {}    # gname → int (consecutive frames with low |vy|)
 
     def compute(self, pos, floor_height, dt, opts):
         """Compute per-group log-odds from unified kinematic analysis.
@@ -594,14 +620,47 @@ class KinematicStream:
                                   'angle_deg': 0.0, 'speed': 0.0}
                 continue
 
-            rep_j = min(valid, key=lambda j: heights[j])
+            # --- Select representative joint for this group ---
+            # Default: lowest joint by height.
+            # When multiple joints are near the floor (both in contact),
+            # use the one with the lowest vertical velocity (most stationary).
+            # This prevents heel peel from triggering group liftoff —
+            # the stationary ball becomes the reference during toe-off.
+            contact_thresh = 0.04  # both joints below this = both in contact
+            near_floor = [j for j in valid if heights[j] < contact_thresh]
+
+            if len(near_floor) >= 2:
+                # Multiple joints near floor — pick by lowest vertical velocity
+                def _joint_vy(j):
+                    prev = self._prev_joint_pos.get((gname, j))
+                    if prev is None:
+                        return 0.0
+                    return (pos[j, up] - prev[up]) / max(dt, 1e-6)
+                rep_j = min(near_floor, key=_joint_vy)
+            else:
+                rep_j = min(valid, key=lambda j: heights[j])
+
             h = heights[rep_j]
             pos_3d = pos[rep_j]
+
+            # Compute per-joint vertical velocities BEFORE overwriting prev positions
+            joint_vys = {}
+            for j in valid:
+                prev_j = self._prev_joint_pos.get((gname, j))
+                if prev_j is not None:
+                    joint_vys[j] = (pos[j, up] - prev_j[up]) / max(dt, 1e-6)
+                else:
+                    joint_vys[j] = 0.0
+
+            # Store per-joint positions for all valid joints
+            for j in valid:
+                self._prev_joint_pos[(gname, j)] = pos[j].copy()
 
             # --- Initialize on first frame ---
             if gname not in self._phase:
                 self._phase[gname] = 0.0
                 self._prev_pos[gname] = pos_3d.copy()
+                self._prev_rep_j[gname] = rep_j
                 self._td_prev_h[gname] = h
                 self._td_fast_ema[gname] = 0.0
                 self._td_slow_ema[gname] = 0.0
@@ -620,9 +679,28 @@ class KinematicStream:
             # =============================================================
             # SUB-SIGNAL 1: Phase-conditional approach angle
             # =============================================================
-            prev_pos_3d = self._prev_pos[gname]
+            # Use the current rep joint's OWN previous position to avoid
+            # velocity spikes when the representative switches (e.g.,
+            # heel→ball during toe-off). If we don't have this joint's
+            # previous position, use current pos (zero velocity).
+            prev_rep = self._prev_rep_j.get(gname, rep_j)
+            if rep_j == prev_rep:
+                # Same representative — use stored group prev_pos
+                prev_pos_3d = self._prev_pos[gname]
+            else:
+                # Representative switched — use the new joint's own
+                # previous position if available, else zero velocity
+                prev_pos_3d = self._prev_joint_pos.get(
+                    (gname, rep_j), pos_3d)
             vel_3d = (pos_3d - prev_pos_3d) / max(dt, 1e-6)
             self._prev_pos[gname] = pos_3d.copy()
+            self._prev_rep_j[gname] = rep_j
+
+            # If representative switched, reset height trackers to avoid
+            # false velocity spikes from comparing different joints' heights
+            if rep_j != prev_rep:
+                self._td_prev_h[gname] = h
+                self._vel_prev_h[gname] = h
 
             vy = vel_3d[up]  # positive = ascending in world coords
             vh = float(np.sqrt(sum(vel_3d[d] ** 2 for d in plane)))
@@ -702,13 +780,40 @@ class KinematicStream:
                 td_impulse = -0.3
 
             # =============================================================
+            # LEVER ROTATION CORRECTION
+            # =============================================================
+            # During toe-off, the ankle rotates (heel rises) while the ball
+            # stays on the floor as a pivot. The ball joint in SMPL sits
+            # above the actual metatarsal contact, so ankle rotation causes
+            # apparent ball vy that is rotation artifact, not translation.
+            # Detect lever rotation: if any other joint in the group rises
+            # much faster than the rep, the rep's vy is partly illusory.
+            lever_vy_correction = 0.0
+            if len(valid) >= 2 and h < 0.05:
+                rep_vy_raw = joint_vys.get(rep_j, 0.0)
+                max_other_vy = max(
+                    (joint_vys.get(j, 0.0) for j in valid if j != rep_j),
+                    default=0.0
+                )
+                # Lever rotation: other joint rises faster than rep
+                if max_other_vy > 0.05 and rep_vy_raw > 0:
+                    # Any differential in rise rate is rotation evidence.
+                    # correction fraction: 0 at ratio ≤1, 1 at ratio ≥2
+                    ratio = max_other_vy / max(rep_vy_raw, 1e-6)
+                    lever_frac = min(1.0, max(0.0, ratio - 1.0))
+                    lever_vy_correction = rep_vy_raw * lever_frac
+
+            # =============================================================
             # SUB-SIGNAL 3: Settled / ascending state
             # =============================================================
             raw_vy_vel = (h - self._vel_prev_h[gname]) / max(dt, 1e-6)
             self._vel_prev_h[gname] = h
 
+            # Apply lever correction: subtract rotation-induced vy
+            effective_vy = raw_vy_vel - lever_vy_correction
+
             prev_smooth = self._vel_smooth_vy.get(gname, 0.0)
-            vy_smooth = 0.4 * raw_vy_vel + 0.6 * prev_smooth
+            vy_smooth = 0.4 * effective_vy + 0.6 * prev_smooth
             self._vel_smooth_vy[gname] = vy_smooth
 
             vel_hold = 0.0
@@ -724,9 +829,8 @@ class KinematicStream:
             # SUB-SIGNAL 4: Never-settled detection
             # =============================================================
             # Track minimum height since entering the approach zone (h < 8cm).
-            # If the foot has never reached near-zero height, it hasn't actually
-            # landed — it's at the end of a swing arc or hovering.
-            # Only pushes when speed is low (when the angle sub-signal has no opinion).
+            # Uses velocity-based settling: consecutive frames of low |vy|.
+            # Push ramps continuously: full at count=0, zero at count=settle_frames.
             never_settled_push = 0.0
 
             # Reset epoch on planted → not-planted transition (liftoff)
@@ -738,46 +842,45 @@ class KinematicStream:
                 self._in_approach[gname] = h < opts.kin_settle_approach_zone
 
             if h < opts.kin_settle_approach_zone:
-                # In approach zone — track minimum
+                # In approach zone — track minimum and settle count
                 if self._in_approach.get(gname, False):
                     prev_min = self._approach_min_h.get(gname, h)
-                    # Reset epoch if foot has risen significantly above its minimum
-                    # (e.g., was at h=0.001 planted, now at h=0.020 lifting off)
                     rise_from_min = h - prev_min
                     if rise_from_min > opts.kin_settle_rise_reset:
-                        # Foot departed from its minimum — start fresh epoch
                         self._approach_min_h[gname] = h
+                        self._settle_count[gname] = 0
                     else:
                         self._approach_min_h[gname] = min(prev_min, h)
                 else:
-                    # Just entered approach zone — start epoch
                     self._approach_min_h[gname] = h
                     self._in_approach[gname] = True
+                    self._settle_count[gname] = 0
 
-                # Never-settled push: foot is in approach zone, speed is low
-                # (angle has no opinion), but min_h never reached floor
-                approach_min = self._approach_min_h.get(gname, h)
+                # Track consecutive low-|effective_vy| frames
+                if abs(effective_vy) < opts.kin_settle_vy_thresh:
+                    self._settle_count[gname] = self._settle_count.get(gname, 0) + 1
+                else:
+                    self._settle_count[gname] = 0
+
+                # Ramped never-settled push: scales from full at count=0
+                # to zero at count=settle_frames. No hard threshold.
+                settle_count = self._settle_count.get(gname, 0)
                 if (speed < opts.kin_settle_speed_gate
-                        and approach_min > opts.kin_settle_floor_thresh
                         and not is_planted):
-                    # Foot never reached the floor — push toward airborne
-                    # Scale by how far min_h is from the floor threshold
-                    # (0.008m denominator: full strength at 1.3cm above floor thresh)
-                    gap = min(1.0, (approach_min - opts.kin_settle_floor_thresh) / 0.008)
-                    never_settled_push = opts.kin_settle_never_push * gap
+                    settle_progress = min(1.0, settle_count / max(1, opts.kin_settle_frames))
+                    never_settled_push = opts.kin_settle_never_push * (1.0 - settle_progress)
             else:
                 # Above approach zone — reset epoch
                 self._in_approach[gname] = False
                 self._approach_min_h[gname] = h
+                self._settle_count[gname] = 0
 
             # =============================================================
             # PHASE UPDATE
             # =============================================================
+            increment = angle_push + td_impulse + vel_hold + never_settled_push
             phase *= opts.kin_phase_decay
-            phase += angle_push
-            phase += td_impulse
-            phase += vel_hold
-            phase += never_settled_push
+            phase += increment
             phase = max(-1.0, min(1.0, phase))
             self._phase[gname] = phase
 
@@ -810,6 +913,116 @@ class KinematicStream:
                 'approach_min_h': self._approach_min_h.get(gname, h),
             }
 
+        return result, context
+
+
+class DivergenceStream:
+    """Evidence from foot-CoM relative velocity alignment.
+
+    During walking, a planted foot falls behind the CoM (relative velocity
+    opposes CoM direction), while a swinging foot races ahead (relative
+    velocity aligns with CoM direction). This produces a clean, IMU-robust
+    signal that discriminates planted from swinging feet without depending
+    on world-frame positions.
+
+    The signal is the horizontal dot product:
+        alignment = dot(foot_vel - com_vel, com_vel) / |com_vel|
+
+    Positive alignment → diverging (swing) → anti-contact
+    Negative alignment → converging (planted) → pro-contact
+    Near-zero com_speed → neutral (can't discriminate)
+
+    When both feet are planted (e.g., weight shifting), both have foot_vel ≈ 0,
+    so both get rel_vel ≈ -com_vel → both read as 'trailing' → both pro-contact.
+    """
+
+    def __init__(self):
+        self._prev_pos = {}   # gname → (3,) representative joint position
+        self._prev_com = None  # (3,) previous CoM
+
+    def compute(self, pos, com, com_vel, floor_height, dt, opts):
+        """Compute per-group divergence evidence.
+
+        Args:
+            pos: (J, 3) joint positions
+            com: (3,) center of mass
+            com_vel: (3,) CoM velocity (may be None)
+            floor_height: float
+            dt: float
+            opts: LogOddsContactOptions
+
+        Returns:
+            (Dict[gname, float], Dict[gname, dict]):
+                log-odds increment per group, context per group
+        """
+        up = opts.up_axis
+        horiz = [0, 2] if up == 1 else [0, 1]
+        result = {g: 0.0 for g in ALL_GROUPS}
+        context = {g: {} for g in ALL_GROUPS}
+
+        if com is None:
+            return result, context
+
+        # Compute foot velocities from frame-to-frame position change
+        for gname, joints_list in ALL_GROUPS.items():
+            valid_j = [j for j in joints_list if j < len(pos)]
+            if not valid_j:
+                continue
+
+            # Representative position: lowest joint (most likely contact)
+            heights = [(pos[j, up] - floor_height, j) for j in valid_j]
+            _, rep_j = min(heights)
+            curr_pos = pos[rep_j].copy()
+
+            prev = self._prev_pos.get(gname)
+            self._prev_pos[gname] = curr_pos
+
+            if prev is None or self._prev_com is None:
+                continue
+
+            # Foot velocity and CoM velocity in horizontal plane
+            foot_vel_h = ((curr_pos - prev) / max(dt, 1e-6))[horiz]
+            com_vel_h = ((com - self._prev_com) / max(dt, 1e-6))[horiz]
+            com_speed = np.linalg.norm(com_vel_h)
+
+            # Gate: need meaningful CoM translation to discriminate
+            min_speed = opts.div_min_com_speed
+            if com_speed < min_speed:
+                context[gname] = {'div_align': 0.0, 'com_speed': com_speed}
+                continue
+
+            # Relative velocity: how the foot moves relative to CoM
+            rel_vel = foot_vel_h - com_vel_h
+            # Alignment: positive = diverging (swing), negative = trailing (planted)
+            alignment = np.dot(rel_vel, com_vel_h) / com_speed
+
+            # Map alignment to log-odds:
+            #   alignment > 0 → swing → negative evidence (anti-contact)
+            #   alignment < 0 → trailing → positive evidence (pro-contact)
+            # Scale continuously: |alignment| / scale → strength
+            scale = opts.div_alignment_scale
+            strength = min(1.0, abs(alignment) / scale)
+
+            # Asymmetric gating: anti-contact at any height (swing is swing),
+            # but pro-contact only when near the floor. A foot decelerating
+            # at h=2cm shouldn't pull itself into contact — that's the
+            # height stream's job.
+            min_h = min(h for h, _ in heights)  # lowest joint in group
+            ground_gate = float(np.exp(-max(0.0, min_h) / opts.div_ground_gate_scale))
+
+            if alignment > 0:
+                lo = -strength * opts.div_max_logodds  # anti-contact: unrestricted
+            else:
+                lo = strength * opts.div_max_logodds * ground_gate  # pro-contact: gated
+
+            result[gname] = lo
+            context[gname] = {
+                'div_align': alignment,
+                'com_speed': com_speed,
+                'div_ground_gate': ground_gate,
+            }
+
+        self._prev_com = com.copy() if com is not None else None
         return result, context
 
 
@@ -846,10 +1059,116 @@ class StructuralStream:
             evaluator: DynamicFrameEvaluator instance (or None, set later)
         """
         self.evaluator = evaluator
+        self._log_path = None
+        self._log_frame = 0
+        self._smoothed_group_forces = {}
+        # State for root-relative kinematic diagnostics
+        self._prev_root_pos = None
+        self._prev_foot_pos = {}   # joint_idx -> (3,)
+        self._prev_d_LR = None     # signed L-R distance projected on root forward
+        env_path = os.environ.get('SMPL_STRUCTURAL_LOG')
+        if env_path:
+            self.set_log_path(env_path)
 
     def set_evaluator(self, evaluator):
         """Set or replace the frame evaluator instance."""
         self.evaluator = evaluator
+
+    def set_log_path(self, path):
+        """Begin writing per-frame diagnostic JSONL to `path` (None to disable).
+
+        Truncates the file. One JSON object per line, one line per frame.
+        """
+        self._log_frame = 0
+        if path is None:
+            self._log_path = None
+            return
+        try:
+            open(path, 'w').close()
+            self._log_path = path
+        except OSError:
+            self._log_path = None
+
+    def _emit_log(self, payload):
+        if not self._log_path:
+            return
+        try:
+            with open(self._log_path, 'a') as f:
+                f.write(json.dumps(payload) + '\n')
+        except OSError:
+            pass
+
+    # SMPL joint indices used for root-relative kinematics
+    _PELVIS, _SPINE, _L_HIP, _R_HIP, _L_FOOT, _R_FOOT = 0, 3, 1, 2, 10, 11
+
+    def _root_relative_kinematics(self, pos, dt, up):
+        """Compute root-relative diagnostic signals for swing/stance discrimination.
+
+        Returns a dict suitable for merging into the log payload:
+          - root_forward:    [fwd_x, fwd_z]   (horizontal forward unit, plane coords)
+          - v_rel_root_LF:   float            ((v_LF − v_root) · fwd, m/s)
+          - v_rel_root_RF:   float            ((v_RF − v_root) · fwd, m/s)
+          - d_LR_signed:     float            ((pos_LF − pos_RF) · fwd, m)
+          - v_LR_signed:     float            (m/s)
+
+        Robust to whole-body global drift because both v_foot and v_root
+        receive the same drift; the difference cancels it. Forward axis
+        is derived from R_hip − L_hip cross spine − pelvis (body frame),
+        not from CoM velocity, so it works at low speeds.
+
+        State is updated for the next frame on every call.
+        """
+        out = {
+            'root_forward': None,
+            'v_rel_root_LF': None,
+            'v_rel_root_RF': None,
+            'd_LR_signed': None,
+            'v_LR_signed': None,
+        }
+        J = pos.shape[0]
+        needed = max(self._PELVIS, self._SPINE, self._L_HIP, self._R_HIP,
+                     self._L_FOOT, self._R_FOOT)
+        if needed >= J:
+            return out
+
+        # Body-frame forward = side × up_body, projected to horizontal.
+        side = pos[self._R_HIP] - pos[self._L_HIP]
+        up_body = pos[self._SPINE] - pos[self._PELVIS]
+        fwd = np.cross(side, up_body)
+        fwd[up] = 0.0
+        n = float(np.linalg.norm(fwd))
+        if n < 1e-6:
+            return out
+        fwd_unit = fwd / n
+        plane = [0, 2] if up == 1 else [0, 1]
+        out['root_forward'] = [float(fwd_unit[plane[0]]), float(fwd_unit[plane[1]])]
+
+        # Signed L−R distance is independent of velocity → can compute now.
+        d_LR = float(np.dot(pos[self._L_FOOT] - pos[self._R_FOOT], fwd_unit))
+        out['d_LR_signed'] = d_LR
+
+        # Velocities require a previous frame.
+        if self._prev_root_pos is None or dt <= 0:
+            self._prev_root_pos = pos[self._PELVIS].copy()
+            self._prev_foot_pos[self._L_FOOT] = pos[self._L_FOOT].copy()
+            self._prev_foot_pos[self._R_FOOT] = pos[self._R_FOOT].copy()
+            self._prev_d_LR = d_LR
+            return out
+
+        v_root = (pos[self._PELVIS] - self._prev_root_pos) / dt
+        v_LF = (pos[self._L_FOOT] - self._prev_foot_pos[self._L_FOOT]) / dt
+        v_RF = (pos[self._R_FOOT] - self._prev_foot_pos[self._R_FOOT]) / dt
+
+        out['v_rel_root_LF'] = float(np.dot(v_LF - v_root, fwd_unit))
+        out['v_rel_root_RF'] = float(np.dot(v_RF - v_root, fwd_unit))
+        if self._prev_d_LR is not None:
+            out['v_LR_signed'] = (d_LR - self._prev_d_LR) / dt
+
+        self._prev_root_pos = pos[self._PELVIS].copy()
+        self._prev_foot_pos[self._L_FOOT] = pos[self._L_FOOT].copy()
+        self._prev_foot_pos[self._R_FOOT] = pos[self._R_FOOT].copy()
+        self._prev_d_LR = d_LR
+        return out
 
     def compute(self, pos, com, com_acc, com_vel, floor_height, dt, opts,
                 raw_com_acc=None):
@@ -873,21 +1192,94 @@ class StructuralStream:
             Dict[group_name, float]: log-odds increment per group
         """
         up = opts.up_axis
+        plane_dims = [0, 2] if up == 1 else [0, 1]
         g_mag = opts.struct_gravity
         result = {g: 0.0 for g in ALL_GROUPS}
+
+        # --- Root-relative kinematics ---
+        # Updates internal state every frame so velocity is correct even
+        # across freefall / no-evaluator / no-candidate branches that
+        # short-circuit later. Cheap; safe to run unconditionally.
+        rrk = self._root_relative_kinematics(pos, dt, up)
+
+        # --- Diagnostic snapshot (only built if logging enabled) ---
+        if self._log_path:
+            log = {
+                'frame': self._log_frame,
+                'com_hz': [float(com[plane_dims[0]]), float(com[plane_dims[1]])],
+                'com_h': float(com[up] - floor_height),
+                'a_hz_filt': [float(com_acc[plane_dims[0]]),
+                              float(com_acc[plane_dims[1]])],
+                'a_vert_filt': float(com_acc[up]),
+                'a_hz_raw': ([float(raw_com_acc[plane_dims[0]]),
+                              float(raw_com_acc[plane_dims[1]])]
+                             if raw_com_acc is not None else None),
+                'a_vert_raw': (float(raw_com_acc[up])
+                               if raw_com_acc is not None else None),
+                'floor_h': float(floor_height),
+                'dt': float(dt),
+                'branch': None,
+                'candidates': [],
+                'group_reps': {},
+                'rep_pos_hz': {},
+                'group_forces': {},
+                'zmp_approx': None,
+                'zmp_displacement': None,
+                'support_frac_filt': None,
+                'support_frac_raw': None,
+            }
+            log.update(rrk)
+        else:
+            log = None
 
         # --- Freefall detection (raw acceleration if available) ---
         acc_for_freefall = raw_com_acc if raw_com_acc is not None else com_acc
         if acc_for_freefall is not None:
             f_up = acc_for_freefall[up] + g_mag
             support_frac = max(0.0, f_up / g_mag)
+            if log is not None:
+                log['support_frac_raw'] = float(support_frac)
+                log['support_frac_filt'] = float(
+                    max(0.0, (com_acc[up] + g_mag) / g_mag))
             if support_frac < opts.struct_freefall_thresh:
                 for gname in ALL_GROUPS:
                     result[gname] = opts.struct_freefall_logodds
+                if log is not None:
+                    log['branch'] = 'freefall'
+                    log['result'] = dict(result)
+                    self._emit_log(log)
+                    self._log_frame += 1
                 return result
+
+            # --- Push-off evidence (continuous above body weight) ---
+            # Excess support fraction above 1.0 is direct evidence of
+            # ground contact: accelerating the body requires MORE than
+            # body weight in GRF. Below 1.0, the FE's inverted pendulum
+            # handles per-foot discrimination — blanket evidence here
+            # would override that directional signal.
+            excess = support_frac - 1.0
+            if excess > 0.01:
+                pushoff_strength = min(1.0, excess)  # 0→1 over sup 1.0→2.0
+                pushoff_logodds = pushoff_strength * opts.struct_pushoff_logodds
+                heights_local = pos[:, up] - floor_height
+                for gname, joints_list in ALL_GROUPS.items():
+                    valid_j = [j for j in joints_list if j < len(heights_local)]
+                    if valid_j:
+                        min_h = max(0.0, min(heights_local[j] for j in valid_j))
+                        # Ground affinity: exponential decay with height
+                        ground_affinity = float(np.exp(-min_h / 0.04))
+                        if ground_affinity > 0.01:
+                            result[gname] = pushoff_logodds * ground_affinity
+                        elif min_h > opts.struct_candidate_height:
+                            result[gname] = opts.struct_unnecessary_logodds
 
         # --- If no evaluator available, return neutral ---
         if self.evaluator is None:
+            if log is not None:
+                log['branch'] = 'no_evaluator'
+                log['result'] = dict(result)
+                self._emit_log(log)
+                self._log_frame += 1
             return result
 
         # --- Find candidates by height ---
@@ -897,10 +1289,18 @@ class StructuralStream:
             if j < len(heights) and heights[j] < opts.struct_candidate_height:
                 candidates.add(j)
 
+        if log is not None:
+            log['candidates'] = sorted(int(j) for j in candidates)
+
         if not candidates:
             # No joints near floor → mild negative for foot groups
             for gname in FOOT_GROUPS:
                 result[gname] = opts.struct_unnecessary_logodds
+            if log is not None:
+                log['branch'] = 'no_candidates'
+                log['result'] = dict(result)
+                self._emit_log(log)
+                self._log_frame += 1
             return result
 
         # --- Identify which groups have candidates ---
@@ -912,15 +1312,68 @@ class StructuralStream:
                     groups_with_candidates[gname] = []
                 groups_with_candidates[gname].append(j)
 
-        # --- Evaluate structural frame ---
-        eval_result = self.evaluator.evaluate(
-            candidates, pos, com, com_acc, floor_height, up)
-
-        # --- Extract per-group max force ---
-        group_forces = {}
+        # --- Select one representative per group for FE evaluation ---
+        # Using individual joints causes spread regularization to kill
+        # the inter-group lever arm (within-foot pairs are ~15cm apart
+        # with 8cm spread each → effective lever = 0 → 50/50 blend).
+        # Use the lowest joint in each group as representative.
+        group_reps = {}  # gname → representative joint index
+        rep_candidates = set()
         for gname, joints in groups_with_candidates.items():
-            forces = [eval_result.per_contact_force.get(j, 0.0) for j in joints]
-            group_forces[gname] = max(forces) if forces else 0.0
+            rep = min(joints, key=lambda j: heights[j])
+            group_reps[gname] = rep
+            rep_candidates.add(rep)
+
+        # --- Evaluate structural frame with group representatives ---
+        eval_result = self.evaluator.evaluate(
+            rep_candidates, pos, com, com_acc, floor_height, up)
+
+        # --- Extract per-group force from representative ---
+        group_forces_raw = {}
+        for gname in groups_with_candidates:
+            rep = group_reps[gname]
+            group_forces_raw[gname] = eval_result.per_contact_force.get(rep, 0.0)
+
+        # --- Temporal EMA on per-group forces ---
+        # Per-frame ZMP noise can flip the lever-rule split many times per
+        # stance. EMA smooths this without changing the FE itself. alpha=1
+        # disables smoothing (raw passthrough); smaller alpha = heavier.
+        alpha = max(0.0, min(1.0, opts.struct_force_ema_alpha))
+        if alpha >= 0.999:
+            group_forces = group_forces_raw
+        else:
+            group_forces = {}
+            for gname in groups_with_candidates:
+                raw = group_forces_raw[gname]
+                prev = self._smoothed_group_forces.get(gname, raw)
+                group_forces[gname] = alpha * raw + (1.0 - alpha) * prev
+            # Decay groups that lost candidacy this frame so they don't
+            # linger forever — pull them toward 0 at the same rate.
+            for gname in list(self._smoothed_group_forces.keys()):
+                if gname not in groups_with_candidates:
+                    self._smoothed_group_forces[gname] = (
+                        (1.0 - alpha) * self._smoothed_group_forces[gname]
+                    )
+            # Update state with the just-computed smoothed values
+            for gname, val in group_forces.items():
+                self._smoothed_group_forces[gname] = val
+
+        if log is not None:
+            log['group_reps'] = {g: int(r) for g, r in group_reps.items()}
+            log['rep_pos_hz'] = {
+                g: [float(pos[r, plane_dims[0]]),
+                    float(pos[r, plane_dims[1]])]
+                for g, r in group_reps.items()
+            }
+            log['group_forces_raw'] = {g: float(f) for g, f in group_forces_raw.items()}
+            log['group_forces'] = {g: float(f) for g, f in group_forces.items()}
+            zmp = eval_result.zmp_approx
+            log['zmp_approx'] = [float(zmp[0]), float(zmp[1])]
+            log['zmp_displacement'] = [
+                float(com[plane_dims[0]] - zmp[0]),
+                float(com[plane_dims[1]] - zmp[1]),
+            ]
+            log['force_ema_alpha'] = float(alpha)
 
         # --- Signal 1: Negative force (tension) detection ---
         # If the FE says a contact needs to PULL, that's physically impossible
@@ -944,50 +1397,26 @@ class StructuralStream:
 
         elif len(foot_groups_present) >= 2:
             # Multiple foot groups present
-            # Use inverted pendulum dynamics: when CoM is falling,
-            # the pendulum is still anchored on the trailing foot.
-            # This PROVES the leading foot is not (fully) supporting yet —
-            # if it were, the CoM would start rising over the new pivot.
-            plane = [0, 2] if up == 1 else [0, 1]
+            # The FE's force distribution encodes the inverted pendulum
+            # dynamics via ZMP proximity. The leading foot at end of its
+            # swing arc gets only ~28-32% of the force because the ZMP
+            # is near the trailing foot. This proves the leading foot
+            # is NOT yet a major structural contributor.
+            foot_forces = [(g, group_forces.get(g, 0.0))
+                           for g in foot_groups_present]
+            total_force = sum(f for _, f in foot_forces)
 
-            # Compute per-group centroid in horizontal plane
-            group_centroids = {}
-            for gname in foot_groups_present:
-                joints = groups_with_candidates[gname]
-                centroid = np.mean([pos[j, plane] for j in joints], axis=0)
-                group_centroids[gname] = centroid
-
-            # Foot separation
-            centroids_list = list(group_centroids.values())
-            if len(centroids_list) >= 2:
-                separation = np.linalg.norm(centroids_list[0] - centroids_list[1])
-            else:
-                separation = 0.0
-
-            # CoM vertical velocity
-            com_vy = com_vel[up] if com_vel is not None else 0.0
-
-            if (com_vy < opts.struct_pendulum_vy_thresh
-                    and separation > opts.struct_pendulum_min_separation
-                    and com_vel is not None):
-                # CoM is falling → pendulum still swinging on trailing foot
-                # The leading foot is proven NOT fully supporting
-                com_hz_vel = com_vel[plane]
-                hz_speed = np.linalg.norm(com_hz_vel)
-
-                if hz_speed > 0.05:  # meaningful horizontal movement
-                    forward = com_hz_vel / hz_speed
-                    com_hz = com[plane]
-
-                    for gname, centroid in group_centroids.items():
-                        offset = centroid - com_hz
-                        projection = np.dot(offset, forward)
-
-                        if projection >= 0:
-                            # Leading foot: dynamics prove not fully engaged
-                            result[gname] = opts.struct_pendulum_leading_logodds
-                        # Trailing foot: neutral (pivot, but may be departing)
-            # else: CoM not clearly falling → neutral for all
+            if total_force > 1.0:  # meaningful support needed
+                for gname, force in foot_forces:
+                    frac = force / total_force
+                    if frac < 0.15:
+                        # Structurally unnecessary (<15% share)
+                        result[gname] = opts.struct_unnecessary_logodds
+                    elif frac < 0.35:
+                        # Minor contributor — mild negative
+                        # (pendulum proves not fully supporting)
+                        result[gname] = opts.struct_pendulum_leading_logodds
+                    # else: >=35% share → neutral (could be either foot)
 
         # --- Groups with no candidates get mild negative ---
         for gname in FOOT_GROUPS:
@@ -998,6 +1427,18 @@ class StructuralStream:
         for gname in HAND_GROUPS:
             if gname not in groups_with_candidates:
                 result[gname] = -0.3
+
+        if log is not None:
+            if len(foot_groups_present) == 1:
+                log['branch'] = 'single_foot'
+            elif len(foot_groups_present) >= 2:
+                log['branch'] = 'multi_foot'
+            else:
+                log['branch'] = 'no_foot_candidates'
+            log['foot_groups_present'] = list(foot_groups_present)
+            log['result'] = dict(result)
+            self._emit_log(log)
+            self._log_frame += 1
 
         return result
 
@@ -1706,13 +2147,18 @@ class LogOddsAccumulator:
 
         return dict(self._state)
 
-    def get_intensities(self):
-        """Map log-odds state to intensity [0, 1] via sigmoid."""
+    def get_intensities(self, temperature=2.0):
+        """Map log-odds state to intensity [0, 1] via sigmoid.
+
+        Args:
+            temperature: Controls slope of sigmoid. Higher = more gradual.
+                T=1.0: standard sigmoid (binary). T=2.0: gradual transitions.
+        """
         result = {}
         for g, lo in self._state.items():
             # Clamp to avoid overflow in exp
-            lo_clamped = max(-10.0, min(10.0, lo))
-            result[g] = 1.0 / (1.0 + np.exp(-lo_clamped))
+            scaled = max(-10.0, min(10.0, lo / temperature))
+            result[g] = 1.0 / (1.0 + np.exp(-scaled))
         return result
 
     @property
@@ -1733,6 +2179,7 @@ class IntensityPressureModel:
 
     def __init__(self):
         self._split_weights = {}  # gname → {j: weight}
+        self._prev_joint_pos = {}  # gname → {j: float} vertical positions
 
     def distribute(self, intensities, pos, xcom_hz, total_mass,
                    floor_height, opts):
@@ -1828,37 +2275,49 @@ class IntensityPressureModel:
             else:
                 xcom_weights = {ball_j: 0.5, heel_j: 0.5}
 
-            # Height-based weights: the joint closer to the floor
-            # gets more weight. This prevents heel getting force when
-            # it's raised and only the ball is on the ground.
-            ball_h = max(0.0, pos[ball_j, up] - floor_height)
-            heel_h = max(0.0, pos[heel_j, up] - floor_height)
+            # Rotation-rate suppression: within a contact group, a joint
+            # that's rising relative to its sibling is rotating away from
+            # the surface. Its pressure should evaporate based on that
+            # movement, not absolute height.
+            # This works generically for any joint pair: heel/ball,
+            # palm/fingertip, knee/shin, etc.
+            prev_positions = self._prev_joint_pos.get(gname, {})
+            curr_positions = {j: pos[j, up] for j in valid}
 
-            # SMPL structural compensation: the virtual heel sits ~2cm
-            # above the ball even when flat-footed. Without this offset,
-            # ball always dominates proximity weighting. We measure heel
-            # height relative to ball height so that when the heel is at
-            # its natural flat-foot position, it's treated as grounded.
-            heel_h_relative = max(0.0, heel_h - ball_h)
+            # Compute per-joint vertical velocity
+            joint_vy = {}
+            for j in valid:
+                if j in prev_positions:
+                    joint_vy[j] = curr_positions[j] - prev_positions[j]
+                else:
+                    joint_vy[j] = 0.0
+            self._prev_joint_pos[gname] = curr_positions
 
-            # Convert height to "ground proximity" (0 = high, 1 = on floor)
-            ball_prox = max(0.0, 1.0 - ball_h / 0.05)
-            heel_prox = max(0.0, 1.0 - heel_h_relative / 0.05)
-            prox_sum = ball_prox + heel_prox
-            if prox_sum > 0.01:
-                height_weights = {ball_j: ball_prox / prox_sum,
-                                  heel_j: heel_prox / prox_sum}
-            else:
-                height_weights = {ball_j: 0.5, heel_j: 0.5}
+            # Relative vy: how fast this joint rises vs the group minimum
+            # The lowest-vy joint (most planted) is the reference
+            min_vy = min(joint_vy.values()) if joint_vy else 0.0
+            rotation_weights = {}
+            rise_scale = opts.rise_suppression_scale  # m/frame for full suppression
+            for j in valid:
+                relative_rise = max(0.0, joint_vy[j] - min_vy)
+                # Exponential suppression: rising joint → weight → 0
+                rotation_weights[j] = float(np.exp(-relative_rise / max(rise_scale, 1e-6)))
 
-            # Blend XCoM and height weights (height has priority
-            # when there's a clear difference)
-            height_diff = abs(ball_h - heel_h)
-            height_blend = min(1.0, height_diff / 0.03)  # 0-1 based on height gap
+            rot_sum = sum(rotation_weights.values())
+            if rot_sum > 1e-10:
+                for j in rotation_weights:
+                    rotation_weights[j] /= rot_sum
+
+            # Blend XCoM geometry with rotation-rate suppression
+            # When there's significant differential rotation, rotation
+            # dominates. When both joints move together, XCoM geometry
+            # decides.
+            max_relative_rise = max(0.0, max(joint_vy.values()) - min_vy) if joint_vy else 0.0
+            rotation_blend = min(1.0, max_relative_rise / max(rise_scale * 3, 1e-6))
             raw_weights = {}
             for j in valid:
-                raw_weights[j] = ((1.0 - height_blend) * xcom_weights.get(j, 0.5)
-                                  + height_blend * height_weights.get(j, 0.5))
+                raw_weights[j] = ((1.0 - rotation_blend) * xcom_weights.get(j, 0.5)
+                                  + rotation_blend * rotation_weights.get(j, 0.5))
 
             # EMA smoothing
             prev = self._split_weights.get(gname, {})
@@ -1918,6 +2377,7 @@ class LogOddsContactEstimator:
         # New 3-stream architecture
         self.kinematic_stream = KinematicStream()
         self.structural_stream = StructuralStream(evaluator=frame_evaluator)
+        self.divergence_stream = DivergenceStream()
         self.pressure_model = IntensityPressureModel()
         # Legacy streams (kept for A/B testing)
         self.vertical_kinematic_stream = VerticalKinematicStream()
@@ -1957,23 +2417,28 @@ class LogOddsContactEstimator:
         return valved
 
     def process_frame(self, pos, com, com_vel, com_acc,
-                      floor_height, dt, opts=None):
+                      floor_height, dt, opts=None, raw_com_acc=None):
         """Process one frame.
 
         Args:
             pos: (J, 3) joint positions
             com: (3,) center of mass
             com_vel: (3,) CoM velocity
-            com_acc: (3,) CoM acceleration
+            com_acc: (3,) CoM acceleration (filtered)
             floor_height: float
             dt: float
             opts: LogOddsContactOptions
+            raw_com_acc: (3,) optional unfiltered CoM acceleration. Used by
+                the structural stream for freefall detection. Falls back to
+                ``self._raw_com_acc`` for backward compatibility.
 
         Returns:
             LogOddsContactResult
         """
         if opts is None:
             opts = LogOddsContactOptions()
+        if raw_com_acc is None:
+            raw_com_acc = getattr(self, '_raw_com_acc', None)
 
         up = opts.up_axis
         plane = [0, 2] if up == 1 else [0, 1]
@@ -2002,14 +2467,21 @@ class LogOddsContactEstimator:
                 stream_context[g].update(kin_ctx.get(g, {}))
 
         if opts.enable_structural:
-            # Pass raw_com_acc if available (for freefall detection)
-            raw_com_acc = getattr(self, '_raw_com_acc', None)
             struct_inc = self.structural_stream.compute(
                 pos, com, com_acc, com_vel, floor_height, dt, opts,
                 raw_com_acc=raw_com_acc)
             stream_increments['structural'] = {
                 g: v * opts.weight_structural for g, v in struct_inc.items()
             }
+
+        if opts.enable_divergence:
+            div_inc, div_ctx = self.divergence_stream.compute(
+                pos, com, com_vel, floor_height, dt, opts)
+            stream_increments['divergence'] = {
+                g: v * opts.weight_divergence for g, v in div_inc.items()
+            }
+            for g in all_group_names:
+                stream_context[g].update(div_ctx.get(g, {}))
 
         # --- Legacy streams (for A/B testing, disabled by default) ---
         if opts.enable_vertical_kinematic:
@@ -2050,7 +2522,7 @@ class LogOddsContactEstimator:
                 stream_context[g].update(hs_ctx.get(g, {}))
 
         if opts.enable_equilibrium:
-            curr_intensities = self.accumulator.get_intensities()
+            curr_intensities = self.accumulator.get_intensities(opts.sigmoid_temperature)
             eq_inc = self.equilibrium_stream.compute(
                 pos, com, com_vel, com_acc, curr_intensities,
                 floor_height, self.total_mass, opts)
@@ -2070,7 +2542,7 @@ class LogOddsContactEstimator:
 
         # --- Update accumulator ---
         self.accumulator.update(total_increments, opts.decay_rate, opts.max_logodds)
-        intensities = self.accumulator.get_intensities()
+        intensities = self.accumulator.get_intensities(opts.sigmoid_temperature)
         log_odds_state = self.accumulator.state
 
         # --- Build per-stream diagnostic ---

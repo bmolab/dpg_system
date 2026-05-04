@@ -1708,12 +1708,29 @@ class SMPLTorqueNode(SMPLNode):
         self.lo_height_prop = self.add_option('lo_height', widget_type='checkbox', default_value=True)
         self.lo_kinematic_prop = self.add_option('lo_kinematic', widget_type='checkbox', default_value=True)
         self.lo_structural_prop = self.add_option('lo_structural', widget_type='checkbox', default_value=True)
+        self.lo_divergence_prop = self.add_option('lo_divergence', widget_type='checkbox', default_value=True)
         # Stream weights
         self.lo_w_height_prop = self.add_option('lo_w_height', widget_type='drag_float', default_value=1.0)
-        self.lo_w_kinematic_prop = self.add_option('lo_w_kinematic', widget_type='drag_float', default_value=1.0)
+        self.lo_w_kinematic_prop = self.add_option('lo_w_kinematic', widget_type='drag_float', default_value=0.5)
         self.lo_w_structural_prop = self.add_option('lo_w_structural', widget_type='drag_float', default_value=1.0)
+        self.lo_w_divergence_prop = self.add_option('lo_w_divergence', widget_type='drag_float', default_value=1.0)
         # Accumulator
         self.lo_decay_rate_prop = self.add_option('lo_decay_rate', widget_type='drag_float', default_value=0.90)
+        # Structural-stream per-foot force EMA (1.0 = off; lower = heavier smoothing)
+        self.lo_struct_force_ema_alpha_prop = self.add_option(
+            'lo_struct_force_ema_alpha', widget_type='drag_float', default_value=1.0)
+
+        # --- Structural-stream diagnostic logging ---
+        self.struct_log_path_prop = self.add_option(
+            'struct_log_path', widget_type='text_input',
+            default_value='/tmp/smpl_struct.jsonl')
+        self.struct_log_start_input = self.add_input(
+            'struct_log_start', widget_type='button',
+            callback=self._struct_log_start)
+        self.struct_log_stop_input = self.add_input(
+            'struct_log_stop', widget_type='button',
+            callback=self._struct_log_stop)
+        self._pending_struct_log_path = None
         
         # --- World-Frame Dynamics ---
         self.world_frame_dynamics_prop = self.add_option('world_frame_dynamics', widget_type='checkbox', default_value=True)
@@ -1763,6 +1780,41 @@ class SMPLTorqueNode(SMPLNode):
             base_height = self.floor_height_prop() if hasattr(self, 'floor_height_prop') else 0.0
             self.processor._inferred_floor_height = base_height
             print(f"SMPLTorqueNode: Adaptive floor reset to {base_height:.3f}")
+
+    def _get_structural_stream(self):
+        est = getattr(self.processor, '_logodds_estimator', None) if self.processor else None
+        return getattr(est, 'structural_stream', None) if est is not None else None
+
+    def _struct_log_start(self):
+        """Begin writing per-frame structural-stream diagnostics to struct_log_path.
+
+        If the log-odds estimator hasn't been built yet (e.g. before the first
+        frame, or when contact_method isn't logodds), the path is held pending
+        and applied as soon as the structural stream becomes available.
+        """
+        path = (self.struct_log_path_prop() or '').strip()
+        if not path:
+            print('SMPLTorqueNode: struct_log_path is empty')
+            return
+        stream = self._get_structural_stream()
+        if stream is None:
+            self._pending_struct_log_path = path
+            print(f'SMPLTorqueNode: struct logging queued -> {path} '
+                  f'(will activate on next logodds frame)')
+            return
+        stream.set_log_path(path)
+        self._pending_struct_log_path = None
+        print(f'SMPLTorqueNode: struct logging ON -> {path}')
+
+    def _struct_log_stop(self):
+        """Stop the structural-stream diagnostic log."""
+        self._pending_struct_log_path = None
+        stream = self._get_structural_stream()
+        if stream is None:
+            print('SMPLTorqueNode: struct logging was not active')
+            return
+        stream.set_log_path(None)
+        print('SMPLTorqueNode: struct logging OFF')
 
     def execute(self):
         # 1. Handle Config
@@ -1937,12 +1989,15 @@ class SMPLTorqueNode(SMPLNode):
                 logodds_enable_height=self.lo_height_prop() if hasattr(self, 'lo_height_prop') else True,
                 logodds_enable_kinematic=self.lo_kinematic_prop() if hasattr(self, 'lo_kinematic_prop') else True,
                 logodds_enable_structural=self.lo_structural_prop() if hasattr(self, 'lo_structural_prop') else True,
+                logodds_enable_divergence=self.lo_divergence_prop() if hasattr(self, 'lo_divergence_prop') else True,
                 # Stream weights
                 logodds_weight_height=self.lo_w_height_prop() if hasattr(self, 'lo_w_height_prop') else 1.0,
-                logodds_weight_kinematic=self.lo_w_kinematic_prop() if hasattr(self, 'lo_w_kinematic_prop') else 1.0,
+                logodds_weight_kinematic=self.lo_w_kinematic_prop() if hasattr(self, 'lo_w_kinematic_prop') else 0.5,
                 logodds_weight_structural=self.lo_w_structural_prop() if hasattr(self, 'lo_w_structural_prop') else 1.0,
+                logodds_weight_divergence=self.lo_w_divergence_prop() if hasattr(self, 'lo_w_divergence_prop') else 1.0,
                 # Accumulator
                 logodds_decay_rate=self.lo_decay_rate_prop() if hasattr(self, 'lo_decay_rate_prop') else 0.90,
+                logodds_struct_force_ema_alpha=self.lo_struct_force_ema_alpha_prop() if hasattr(self, 'lo_struct_force_ema_alpha_prop') else 1.0,
             )
             
             # Process
@@ -2127,6 +2182,15 @@ class SMPLTorqueNode(SMPLNode):
                 import traceback
                 traceback.print_exc()
                 pass
+
+        # Apply queued structural-stream log path if the estimator now exists.
+        if self._pending_struct_log_path:
+            stream = self._get_structural_stream()
+            if stream is not None:
+                stream.set_log_path(self._pending_struct_log_path)
+                print(f'SMPLTorqueNode: struct logging ON -> '
+                      f'{self._pending_struct_log_path}')
+                self._pending_struct_log_path = None
 
     def print_max_torque(self, message='', args=[]):
         max = self.processor.max_torque_array

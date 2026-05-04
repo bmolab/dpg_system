@@ -350,6 +350,7 @@ class SMPLProcessingOptions:
     logodds_enable_height: bool = True
     logodds_enable_kinematic: bool = True     # Unified kinematic stream (approach angle + td + settled)
     logodds_enable_structural: bool = True    # Frame evaluator structural necessity
+    logodds_enable_divergence: bool = True    # Foot-CoM relative velocity divergence
     # Legacy enables (for backward compatibility / A/B testing)
     logodds_enable_vertical_kinematic: bool = False
     logodds_enable_hspeed: bool = False
@@ -361,6 +362,7 @@ class SMPLProcessingOptions:
     logodds_weight_height: float = 1.0
     logodds_weight_kinematic: float = 1.0
     logodds_weight_structural: float = 1.0
+    logodds_weight_divergence: float = 1.0
     # Legacy weights
     logodds_weight_vertical_kinematic: float = 1.0
     logodds_weight_hspeed: float = 1.0
@@ -370,6 +372,8 @@ class SMPLProcessingOptions:
     logodds_weight_touchdown: float = 1.0
     # Accumulator
     logodds_decay_rate: float = 0.90
+    # Structural-stream EMA on per-foot forces (1.0 = no smoothing)
+    logodds_struct_force_ema_alpha: float = 1.0
     
     # --- Torque Rate Limiting ---
     enable_rate_limiting: bool = False
@@ -5283,6 +5287,7 @@ class SMPLProcessor:
             enable_height=options.logodds_enable_height,
             enable_kinematic=options.logodds_enable_kinematic,
             enable_structural=options.logodds_enable_structural,
+            enable_divergence=options.logodds_enable_divergence,
             # Legacy enables
             enable_vertical_kinematic=options.logodds_enable_vertical_kinematic,
             enable_hspeed=options.logodds_enable_hspeed,
@@ -5294,6 +5299,7 @@ class SMPLProcessor:
             weight_height=options.logodds_weight_height,
             weight_kinematic=options.logodds_weight_kinematic,
             weight_structural=options.logodds_weight_structural,
+            weight_divergence=options.logodds_weight_divergence,
             # Legacy weights
             weight_vertical_kinematic=options.logodds_weight_vertical_kinematic,
             weight_hspeed=options.logodds_weight_hspeed,
@@ -5303,6 +5309,7 @@ class SMPLProcessor:
             weight_touchdown=options.logodds_weight_touchdown,
             # Accumulator
             decay_rate=options.logodds_decay_rate,
+            struct_force_ema_alpha=options.logodds_struct_force_ema_alpha,
             enable_valving=enable_valving,
         )
         
@@ -5334,7 +5341,8 @@ class SMPLProcessor:
         
         result = self._logodds_estimator.process_frame(
             pos, com, com_vel, com_acc,
-            floor_h, dt, lo_opts
+            floor_h, dt, lo_opts,
+            raw_com_acc=getattr(self, '_raw_com_acc', None),
         )
         
         # Store pressure for the stab_press path

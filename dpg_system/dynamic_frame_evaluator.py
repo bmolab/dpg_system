@@ -204,7 +204,9 @@ class DynamicFrameEvaluator:
         else:
             # Solve for force distribution using ZMP as the balance point
             force_fractions = self._solve_dynamic_equilibrium(
-                zmp_hz, contact_positions_hz, active_contacts
+                zmp_hz, contact_positions_hz, active_contacts,
+                total_force_kg=total_force_kg,
+                total_mass_kg=self.total_mass
             )
             per_contact_force = {
                 j: force_fractions[i] * total_force_kg
@@ -639,7 +641,9 @@ class DynamicFrameEvaluator:
 
     def _solve_dynamic_equilibrium(self, balance_point_hz: np.ndarray,
                                     contact_pts_hz: np.ndarray,
-                                    contact_joint_ids: list = None) -> np.ndarray:
+                                    contact_joint_ids: list = None,
+                                    total_force_kg: float = 0.0,
+                                    total_mass_kg: float = 75.0) -> np.ndarray:
         """Solve for vertical force distribution at contacts.
         
         Uses the ZMP (or CoM projection) as the balance point.
@@ -650,6 +654,8 @@ class DynamicFrameEvaluator:
             balance_point_hz: (2,) the point about which moments must balance
             contact_pts_hz: (N, 2) contact positions in horizontal plane
             contact_joint_ids: (N,) joint IDs for spread radius lookup
+            total_force_kg: total vertical force needed (for spread scaling)
+            total_mass_kg: body mass (for normalizing force ratio)
             
         Returns:
             fractions: (N,) force fraction at each contact (sum ≈ 1)
@@ -760,9 +766,20 @@ class DynamicFrameEvaluator:
                             trust = 1.0
                         min_physics_trust = min(min_physics_trust, trust)
                 
-                # Blend only among positive-force contacts
+                # Blend only among positive-force contacts.
+                # When total force is high (push-off, heavy dynamics),
+                # the lever-arm physics is well-determined — trust it
+                # more and reduce the spread blend. Force trust ramps
+                # from 0 at 1×bodyweight to 1.0 at 2×bodyweight.
+                if total_mass_kg > 0.1:
+                    force_ratio = total_force_kg / total_mass_kg
+                    force_trust = min(1.0, max(0.0, force_ratio - 1.0))
+                    effective_trust = max(min_physics_trust, force_trust)
+                else:
+                    effective_trust = min_physics_trust
+
                 equal_share = np.where(positive_mask, 1.0 / n_positive, 0.0)
-                forces = min_physics_trust * forces + (1.0 - min_physics_trust) * equal_share
+                forces = effective_trust * forces + (1.0 - effective_trust) * equal_share
         
         return forces
     
