@@ -345,6 +345,7 @@ class SMPLProcessingOptions:
     heel_toe_bias: float = 0.0
     contact_method: str = 'fusion'  # 'fusion', 'stability', 'stability_v2', 'stability_v2_fe', 'stability_v3', 'equilibrium', 'unified', 'com_driven', 'consensus', 'logodds', 'logodds_valved', or 'patch'
     enable_frame_evaluator: bool = True  # Run DynamicFrameEvaluator (read-only analysis alongside contact method)
+    enable_body_contacts: bool = False   # Extend contact detection to knees, elbows, head, pelvis
     
     # --- Log-odds contact options ---
     logodds_enable_height: bool = True
@@ -852,26 +853,47 @@ class SMPLProcessor:
                 PERCENTILE = 95
                 
                 joint_surface_extents = np.zeros((n_body_joints, 3, 2))
+                # Also compute near-surface distances per joint per axis.
+                # Used for body contacts where we want the skin/tissue 
+                # thickness, not the full limb extent.
+                # SMPL joints are regressed from vertices, so some vertices
+                # sit AT the joint center. We use the 10th percentile of
+                # absolute offsets per axis direction to capture the
+                # near-surface shell while ignoring co-located vertices.
+                # Shape: (24, 3, 2) = [joint, axis, (neg_10pct, pos_10pct)]
+                NEAR_SURFACE_PERCENTILE = 10
+                joint_surface_min_dists = np.full((n_body_joints, 3, 2), 0.03)
+                
                 for j in range(n_body_joints):
                     # Select vertices strongly associated with this joint
                     mask = lbs_weights[:, j] > LBS_WEIGHT_THRESH
                     verts_j = vertices[mask]
                     
                     if len(verts_j) < 3:
-                        # Fall back to argmax assignment if too few vertices
                         verts_j = vertices[seg_assignment == j]
                     
                     if len(verts_j) > 0:
                         offsets = verts_j - joints[j]
-                        # Use percentile for robustness against outlier vertices
+                        # Max extents (95th percentile) — for foot/hand contacts
                         joint_surface_extents[j, :, 0] = np.percentile(offsets, 100 - PERCENTILE, axis=0)
                         joint_surface_extents[j, :, 1] = np.percentile(offsets, PERCENTILE, axis=0)
+                        # Near-surface distances (10th percentile of |offset|)
+                        # per axis direction — for body contacts
+                        for axis in range(3):
+                            neg_mask = offsets[:, axis] < -0.001  # exclude co-located vertices
+                            pos_mask = offsets[:, axis] > 0.001
+                            if np.any(neg_mask):
+                                abs_neg = np.abs(offsets[neg_mask, axis])
+                                joint_surface_min_dists[j, axis, 0] = -np.percentile(abs_neg, NEAR_SURFACE_PERCENTILE)
+                            if np.any(pos_mask):
+                                joint_surface_min_dists[j, axis, 1] = np.percentile(offsets[pos_mask, axis], NEAR_SURFACE_PERCENTILE)
                     else:
                         # Default: ±3cm padding
                         joint_surface_extents[j, :, 0] = -0.03
                         joint_surface_extents[j, :, 1] = 0.03
                 
                 self._joint_surface_extents = joint_surface_extents
+                self._joint_surface_min_dists = joint_surface_min_dists
                 
                 # ── Correct spine CoM offsets for S-curve spine ────────────
                 # SMPL spine positions serve mesh deformation, not biomechanics.
@@ -5311,6 +5333,8 @@ class SMPLProcessor:
             decay_rate=options.logodds_decay_rate,
             struct_force_ema_alpha=options.logodds_struct_force_ema_alpha,
             enable_valving=enable_valving,
+            # Body contacts
+            enable_body_contacts=options.enable_body_contacts,
         )
         
         # Get CoM state
@@ -5342,15 +5366,42 @@ class SMPLProcessor:
         # Compute surface distances for lever angle correction
         surface_dists = None
         extents = getattr(self, '_joint_surface_extents', None)
+        min_dists_data = getattr(self, '_joint_surface_min_dists', None)
         global_rots = getattr(self, '_prev_global_rots', None)
         if extents is not None and global_rots is not None:
             from dpg_system.dynamic_frame_evaluator import DynamicFrameEvaluator
+            from dpg_system.contact_logodds import PRIMARY_GROUPS, BODY_GROUPS
             floor_normal = np.zeros(3)
             floor_normal[1] = 1.0  # Y-up after axis permutation
             grots = global_rots[0] if global_rots.ndim == 4 else global_rots
-            surface_dists = DynamicFrameEvaluator.compute_effective_surface_distances(
-                extents, grots, floor_normal, num_joints=min(J, 24)
-            )
+            n24 = min(J, 24)
+            # Max extents (for foot/hand contacts — full limb reach to floor)
+            sd_max = DynamicFrameEvaluator.compute_effective_surface_distances(
+                extents, grots, floor_normal, num_joints=n24)
+            # Min distances (for body contacts — closest skin surface)
+            if min_dists_data is not None:
+                sd_min = DynamicFrameEvaluator.compute_min_surface_distances(
+                    min_dists_data, grots, floor_normal, num_joints=n24)
+            else:
+                sd_min = np.full(n24, 0.03)
+            
+            # Build hybrid surface distances per joint:
+            # - Primary joints (feet/hands): max extent (full reach to sole/palm)
+            # - Pelvis (j=0): max extent (butt surface is far side, ~13cm)
+            # - Head (j=15): min extent (forehead/face is near side;
+            #   max extent would over-correct when head tilts forward,
+            #   projecting the 13cm scalp toward the floor)
+            # - Knees, hips, elbows: min extent (kneecap/flesh is near side, ~3-4cm)
+            USE_MAX_JOINTS = set()
+            for joints in PRIMARY_GROUPS.values():
+                USE_MAX_JOINTS.update(joints)
+            USE_MAX_JOINTS.update({0})  # Pelvis only — deep joint
+            
+            surface_dists = sd_min.copy()  # default to min (skin thickness)
+            for j in USE_MAX_JOINTS:
+                if j < len(surface_dists):
+                    surface_dists[j] = sd_max[j]
+            
             if len(surface_dists) < J:
                 sd_full = np.zeros(J)  # Virtual joints (24-29) are already
                 # at mesh contact surfaces — no surface correction needed

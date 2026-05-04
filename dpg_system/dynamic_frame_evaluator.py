@@ -127,6 +127,53 @@ class DynamicFrameEvaluator:
         
         return surface_distances
     
+    @staticmethod
+    def compute_min_surface_distances(joint_surface_min_dists, global_rots,
+                                       floor_normal, num_joints=24):
+        """Compute per-joint MINIMUM distance from joint center to nearest surface.
+        
+        Like compute_effective_surface_distances but uses the closest vertex
+        per direction instead of the farthest. Captures skin/tissue thickness
+        rather than full limb extent. Useful for body contacts (knees, elbows)
+        where the joint is close to the contact surface.
+        
+        Args:
+            joint_surface_min_dists: (24, 3, 2) closest vertex offset per axis
+                [:, :, 0] = closest in negative direction (negative values)
+                [:, :, 1] = closest in positive direction (positive values)
+            global_rots: (24, 3, 3) global rotation matrices for current pose
+            floor_normal: (3,) upward floor normal
+            num_joints: Number of joints to process
+            
+        Returns:
+            min_distances: (J,) minimum distance from joint to nearest surface
+                           in the floor-ward direction (always positive)
+        """
+        n_ext = min(num_joints, joint_surface_min_dists.shape[0])
+        min_distances = np.full(num_joints, 0.03)  # Default 3cm
+        
+        for j in range(n_ext):
+            if j < global_rots.shape[0]:
+                floor_in_local = global_rots[j].T @ floor_normal
+            else:
+                floor_in_local = floor_normal
+            
+            contact_dir = -floor_in_local
+            
+            # Use closest vertex per direction (minimum extent)
+            extent = 0.0
+            for axis in range(3):
+                if contact_dir[axis] > 0:
+                    # Closest vertex in positive direction
+                    extent += contact_dir[axis] * joint_surface_min_dists[j, axis, 1]
+                else:
+                    # Closest vertex in negative direction
+                    extent += contact_dir[axis] * joint_surface_min_dists[j, axis, 0]
+            
+            min_distances[j] = max(0.01, abs(extent))
+        
+        return min_distances
+    
     def evaluate(self, contact_joints: Set[int],
                  joint_positions: np.ndarray,
                  com: np.ndarray,
@@ -712,13 +759,68 @@ class DynamicFrameEvaluator:
             except np.linalg.LinAlgError:
                 forces = self._inverse_distance_weights(balance_point_hz, contact_pts_hz)
     
-        # --- Clamp fractions to prevent force amplification ---
-        # When ZMP is outside the support polygon, the unconstrained
-        # solution has fractions >> 1 and << 0, causing enormous force
-        # on one contact. Clamp negatives to 0 and renormalize.
-        # Track which contacts were clamped — they should not receive
-        # force from spread blending (ZMP says they can't help).
-        was_clamped = forces < -1e-6  # True for contacts that need "pulling"
+        # --- Iterative re-solve when contacts get negative force ---
+        # When ZMP is outside the support polygon, some contacts get
+        # negative (tension) force, which is physically impossible for
+        # ground contacts. Rather than just clamping and renormalizing
+        # (which loses information about which contacts are needed),
+        # iteratively drop the most negative contact and re-solve.
+        # This correctly handles the case where 3 contacts span a line
+        # and the ZMP lies between 2 of them — the distant 3rd contact
+        # gets dropped, and the remaining 2 split properly.
+        active_indices = list(range(N))
+        max_iterations = N - 1  # At worst, reduce to 1 contact
+        was_clamped = np.zeros(N, dtype=bool)
+        
+        for _ in range(max_iterations):
+            if len(active_indices) <= 1:
+                break
+            # Check for negative forces among active contacts
+            min_f = min(forces[i] for i in active_indices)
+            if min_f >= -1e-6:
+                break  # All positive, done
+            
+            # Drop the most negative contact
+            drop_i = min(active_indices, key=lambda i: forces[i])
+            was_clamped[drop_i] = True
+            forces[drop_i] = 0.0
+            active_indices.remove(drop_i)
+            
+            # Re-solve with remaining contacts
+            n_active = len(active_indices)
+            if n_active == 1:
+                forces[active_indices[0]] = 1.0
+            elif n_active == 2:
+                i0, i1 = active_indices
+                d = contact_pts_hz[i1] - contact_pts_hz[i0]
+                d_len = np.linalg.norm(d)
+                if d_len < 1e-6:
+                    forces[i0] = forces[i1] = 0.5
+                else:
+                    t = np.dot(balance_point_hz - contact_pts_hz[i0], d) / (d_len * d_len)
+                    forces[i0] = 1.0 - t
+                    forces[i1] = t
+            else:
+                # 3+ remaining: rebuild and re-solve
+                A_sub = np.zeros((3, n_active))
+                b_sub = np.array([1.0, 0.0, 0.0])
+                for ki, ai in enumerate(active_indices):
+                    A_sub[0, ki] = 1.0
+                    A_sub[1, ki] = contact_pts_hz[ai, 0] - balance_point_hz[0]
+                    A_sub[2, ki] = contact_pts_hz[ai, 1] - balance_point_hz[1]
+                try:
+                    if n_active == 3:
+                        sub_forces = np.linalg.solve(A_sub, b_sub)
+                    else:
+                        AAT = A_sub @ A_sub.T
+                        sub_forces = A_sub.T @ np.linalg.solve(AAT, b_sub)
+                    for ki, ai in enumerate(active_indices):
+                        forces[ai] = sub_forces[ki]
+                except np.linalg.LinAlgError:
+                    for ai in active_indices:
+                        forces[ai] = 1.0 / n_active
+        
+        # Final clamp: any remaining small negatives from numerical noise
         forces = np.maximum(forces, 0.0)
         fsum = np.sum(forces)
         if fsum > 1e-10:

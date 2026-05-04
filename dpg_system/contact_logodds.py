@@ -39,9 +39,26 @@ HAND_GROUPS = {
     'LH': [20, 22],   # L_wrist, L_hand
     'RH': [21, 23],   # R_wrist, R_hand
 }
-ALL_GROUPS = {**FOOT_GROUPS, **HAND_GROUPS}
+BODY_GROUPS = {
+    'LK': [4],    # L_Knee
+    'RK': [5],    # R_Knee
+    'LH2': [1],   # L_Hip
+    'RH2': [2],   # R_Hip
+    'LE': [18],   # L_Elbow
+    'RE': [19],   # R_Elbow
+    'HD': [15],   # Head
+    'PV': [0],    # Pelvis
+}
+PRIMARY_GROUPS = {**FOOT_GROUPS, **HAND_GROUPS}
+ALL_GROUPS = {**PRIMARY_GROUPS, **BODY_GROUPS}
 HEEL_MAP = {'LF': 28, 'RF': 29}
 BALL_MAP = {'LF': 10, 'RF': 11}
+
+def get_active_groups(opts):
+    """Return the contact groups to evaluate based on options."""
+    if getattr(opts, 'enable_body_contacts', False):
+        return ALL_GROUPS
+    return PRIMARY_GROUPS
 
 
 # ─────────────────────────────────────────────────────────────────────
@@ -131,6 +148,10 @@ class LogOddsContactOptions:
 
     # Pressure mapping
     intensity_deadzone: float = 0.05     # Below this intensity → zero pressure
+
+    # Body contacts (knees, elbows, head, pelvis)
+    enable_body_contacts: bool = False   # OFF by default — preserves hand/foot quality
+    body_decay_rate: float = 0.95        # Slower decay for body contacts (stickier)
 
     # Foot model
     split_alpha: float = 0.3             # EMA for ball-heel split
@@ -250,22 +271,31 @@ class HeightStream:
       h > clear_zone (20cm):   strong negative  (-3.0)
     """
 
-    def compute(self, pos, floor_height, opts):
+    def compute(self, pos, floor_height, opts, surface_dists=None):
         """Compute per-group log-odds increment from height.
 
         Args:
             pos: (J, 3) joint positions
             floor_height: float
             opts: LogOddsContactOptions
+            surface_dists: Optional (J,) per-joint distance from joint
+                center to mesh surface in floor-ward direction
 
         Returns:
             Dict[group_name, float]: log-odds increment per group
         """
         up = opts.up_axis
         heights = pos[:, up] - floor_height
+        # Surface-correct using hybrid distances: max extents for primary
+        # joints (foot/hand), min distances (skin thickness) for body joints.
+        # The caller provides the appropriate hybrid surface_dists array.
+        if surface_dists is not None:
+            n = min(len(heights), len(surface_dists))
+            heights = heights.copy()  # don't mutate input
+            heights[:n] -= surface_dists[:n]
 
         result = {}
-        for gname, joints in ALL_GROUPS.items():
+        for gname, joints in get_active_groups(opts).items():
             valid = [j for j in joints if j < len(heights)]
             if not valid:
                 result[gname] = 0.0
@@ -286,6 +316,16 @@ class HeightStream:
             clr = opts.height_clear_zone
             lo_pos = opts.height_contact_logodds
             lo_neg = opts.height_clear_logodds
+
+            # For hand groups during floor work, widen zones and
+            # soften negatives. Mocap error in complex poses can place
+            # hands 10-15cm above their true position. The height stream
+            # should stay more neutral, letting structural decide.
+            if (gname in HAND_GROUPS
+                    and getattr(opts, 'enable_body_contacts', False)):
+                clr = 0.30   # wider clear zone (30cm vs 20cm)
+                ahi = 0.15   # wider ambiguous zone
+                lo_neg = lo_neg * 0.5  # softer negatives (-1.0 vs -2.0)
 
             if min_h <= cz:
                 # Contact zone: strong positive
@@ -365,7 +405,7 @@ class VerticalKinematicStream:
         result = {}
         context = {}
 
-        for gname, joints in ALL_GROUPS.items():
+        for gname, joints in get_active_groups(opts).items():
             valid = [j for j in joints if j < len(heights)]
             if not valid:
                 result[gname] = 0.0
@@ -611,7 +651,7 @@ class KinematicStream:
         result = {}
         context = {}
 
-        for gname, joints in ALL_GROUPS.items():
+        for gname, joints in get_active_groups(opts).items():
             valid = [j for j in joints if j < len(heights)]
             if not valid:
                 result[gname] = 0.0
@@ -957,14 +997,15 @@ class DivergenceStream:
         """
         up = opts.up_axis
         horiz = [0, 2] if up == 1 else [0, 1]
-        result = {g: 0.0 for g in ALL_GROUPS}
-        context = {g: {} for g in ALL_GROUPS}
+        active = get_active_groups(opts)
+        result = {g: 0.0 for g in active}
+        context = {g: {} for g in active}
 
         if com is None:
             return result, context
 
         # Compute foot velocities from frame-to-frame position change
-        for gname, joints_list in ALL_GROUPS.items():
+        for gname, joints_list in active.items():
             valid_j = [j for j in joints_list if j < len(pos)]
             if not valid_j:
                 continue
@@ -1042,16 +1083,28 @@ class StructuralStream:
     log-odds accumulation, using evaluate_and_refine on consensus contacts.
     """
 
-    # Contact joint indices that can be candidates
-    CONTACT_JOINTS = {10, 11, 28, 29, 20, 21, 22, 23}
+    # Base contact joints (always active)
+    BASE_CONTACT_JOINTS = {10, 11, 28, 29, 20, 21, 22, 23}
 
-    # Group mapping: which CONTACT_JOINTS belong to which ALL_GROUPS group
-    JOINT_TO_GROUP = {
+    # Base group mapping
+    BASE_JOINT_TO_GROUP = {
         10: 'LF', 28: 'LF',
         11: 'RF', 29: 'RF',
         20: 'LH', 22: 'LH',
         21: 'RH', 23: 'RH',
     }
+
+    @staticmethod
+    def _get_contact_joints(opts):
+        """Return contact joints and joint-to-group mapping for active groups."""
+        joints = set(StructuralStream.BASE_CONTACT_JOINTS)
+        j2g = dict(StructuralStream.BASE_JOINT_TO_GROUP)
+        if getattr(opts, 'enable_body_contacts', False):
+            for gname, joint_list in BODY_GROUPS.items():
+                for j in joint_list:
+                    joints.add(j)
+                    j2g[j] = gname
+        return joints, j2g
 
     def __init__(self, evaluator=None):
         """
@@ -1171,7 +1224,7 @@ class StructuralStream:
         return out
 
     def compute(self, pos, com, com_acc, com_vel, floor_height, dt, opts,
-                raw_com_acc=None):
+                raw_com_acc=None, intensities=None):
         """Phase A: Compute per-group log-odds from structural necessity.
 
         Provides evidence only where physics is unambiguous.
@@ -1194,7 +1247,8 @@ class StructuralStream:
         up = opts.up_axis
         plane_dims = [0, 2] if up == 1 else [0, 1]
         g_mag = opts.struct_gravity
-        result = {g: 0.0 for g in ALL_GROUPS}
+        active = get_active_groups(opts)
+        result = {g: 0.0 for g in active}
 
         # --- Root-relative kinematics ---
         # Updates internal state every frame so velocity is correct even
@@ -1242,7 +1296,7 @@ class StructuralStream:
                 log['support_frac_filt'] = float(
                     max(0.0, (com_acc[up] + g_mag) / g_mag))
             if support_frac < opts.struct_freefall_thresh:
-                for gname in ALL_GROUPS:
+                for gname in active:
                     result[gname] = opts.struct_freefall_logodds
                 if log is not None:
                     log['branch'] = 'freefall'
@@ -1262,7 +1316,7 @@ class StructuralStream:
                 pushoff_strength = min(1.0, excess)  # 0→1 over sup 1.0→2.0
                 pushoff_logodds = pushoff_strength * opts.struct_pushoff_logodds
                 heights_local = pos[:, up] - floor_height
-                for gname, joints_list in ALL_GROUPS.items():
+                for gname, joints_list in active.items():
                     valid_j = [j for j in joints_list if j < len(heights_local)]
                     if valid_j:
                         min_h = max(0.0, min(heights_local[j] for j in valid_j))
@@ -1282,11 +1336,16 @@ class StructuralStream:
                 self._log_frame += 1
             return result
 
+        contact_joints, joint_to_group = self._get_contact_joints(opts)
+
         # --- Find candidates by height ---
         heights = pos[:, up] - floor_height
         candidates = set()
-        for j in self.CONTACT_JOINTS:
-            if j < len(heights) and heights[j] < opts.struct_candidate_height:
+        # Wider candidacy threshold for body contacts: complex poses
+        # have larger mocap error, so joints may be 20cm up yet touching.
+        cand_h = 0.25 if getattr(opts, 'enable_body_contacts', False) else opts.struct_candidate_height
+        for j in contact_joints:
+            if j < len(heights) and heights[j] < cand_h:
                 candidates.add(j)
 
         if log is not None:
@@ -1306,7 +1365,7 @@ class StructuralStream:
         # --- Identify which groups have candidates ---
         groups_with_candidates = {}
         for j in candidates:
-            gname = self.JOINT_TO_GROUP.get(j)
+            gname = joint_to_group.get(j)
             if gname:
                 if gname not in groups_with_candidates:
                     groups_with_candidates[gname] = []
@@ -1381,61 +1440,102 @@ class StructuralStream:
             if force < -0.5:
                 result[gname] = opts.struct_pulling_logodds
 
-        # --- Signal 2: Single-group dominance ---
-        # When only one foot group has candidates, it bears all weight
-        foot_groups_present = [g for g in groups_with_candidates if g in FOOT_GROUPS]
+        # --- Signal 2: Two-pass force-based necessity ---
+        # Pass 1: Check if established contacts (already in contact)
+        # provide sufficient support. Only recruit new candidates when
+        # there's a genuine support deficit.
+        all_candidate_groups = list(groups_with_candidates.keys())
+        total_force = sum(group_forces.get(g, 0.0) for g in all_candidate_groups)
 
-        if len(foot_groups_present) == 1:
-            sole_group = foot_groups_present[0]
+        # Classify candidates as established vs new
+        ESTABLISHED_THRESH = 0.3
+        established = set()
+        new_candidates = set()
+        for gname in all_candidate_groups:
+            if intensities and intensities.get(gname, 0.0) > ESTABLISHED_THRESH:
+                established.add(gname)
+            else:
+                new_candidates.add(gname)
+
+        # Determine if established contacts have a support deficit.
+        # Run FE with only established contacts' reps.
+        has_deficit = True  # default: recruit freely
+        if (established and new_candidates
+                and self.evaluator is not None
+                and getattr(opts, 'enable_body_contacts', False)):
+            est_reps = set()
+            for gname in established:
+                if gname in group_reps:
+                    est_reps.add(group_reps[gname])
+            if est_reps:
+                est_result = self.evaluator.evaluate(
+                    est_reps, pos, com, com_acc, floor_height, up)
+                # Check residual: if established contacts can balance the
+                # body (residual small), no deficit — don't recruit.
+                residual_mag = float(np.linalg.norm(est_result.residual))
+                # Total established force
+                est_total = sum(est_result.per_contact_force.get(j, 0.0)
+                                for j in est_reps)
+                # Deficit = significant residual (body tips laterally) OR
+                # tension (negative force → body tips over them) OR
+                # insufficient vertical support.
+                has_tension = any(est_result.per_contact_force.get(j, 0.0) < -1.0
+                                  for j in est_reps)
+                has_deficit = (has_tension
+                               or est_total < self.evaluator.total_mass * 0.5
+                               or residual_mag > 5.0)
+
+        if len(all_candidate_groups) == 1:
+            sole_group = all_candidate_groups[0]
             sole_force = group_forces.get(sole_group, 0.0)
             if sole_force > opts.struct_force_mild:
                 result[sole_group] = opts.struct_necessary_logodds
-            # Other foot groups get mild negative (not present)
-            for gname in FOOT_GROUPS:
-                if gname != sole_group and gname not in groups_with_candidates:
+        elif len(all_candidate_groups) >= 2 and total_force > 1.0:
+            # Adaptive thresholds: with N groups, equal share = 1/N.
+            n_groups = len(all_candidate_groups)
+            equal_share = 1.0 / n_groups
+            for gname in all_candidate_groups:
+                force = group_forces.get(gname, 0.0)
+                frac = force / total_force
+
+                # Determine structural evidence for this group
+                if frac < equal_share * 0.3:
                     result[gname] = opts.struct_unnecessary_logodds
+                elif frac < equal_share * 0.6:
+                    result[gname] = opts.struct_pendulum_leading_logodds
+                elif frac >= equal_share * 0.8:
+                    if gname in established or has_deficit:
+                        # Established: full positive. New with deficit: full.
+                        result[gname] = opts.struct_necessary_logodds
+                    else:
+                        # New, no deficit: stay neutral (let other
+                        # streams decide — height, kinematic, etc.)
+                        result[gname] = 0.0
+                else:
+                    if gname in established or has_deficit:
+                        result[gname] = opts.struct_mild_logodds
+                    else:
+                        result[gname] = 0.0
 
-        elif len(foot_groups_present) >= 2:
-            # Multiple foot groups present
-            # The FE's force distribution encodes the inverted pendulum
-            # dynamics via ZMP proximity. The leading foot at end of its
-            # swing arc gets only ~28-32% of the force because the ZMP
-            # is near the trailing foot. This proves the leading foot
-            # is NOT yet a major structural contributor.
-            foot_forces = [(g, group_forces.get(g, 0.0))
-                           for g in foot_groups_present]
-            total_force = sum(f for _, f in foot_forces)
-
-            if total_force > 1.0:  # meaningful support needed
-                for gname, force in foot_forces:
-                    frac = force / total_force
-                    if frac < 0.15:
-                        # Structurally unnecessary (<15% share)
-                        result[gname] = opts.struct_unnecessary_logodds
-                    elif frac < 0.35:
-                        # Minor contributor — mild negative
-                        # (pendulum proves not fully supporting)
-                        result[gname] = opts.struct_pendulum_leading_logodds
-                    # else: >=35% share → neutral (could be either foot)
-
-        # --- Groups with no candidates get mild negative ---
+        # --- Groups not in candidates get mild negative ---
+        # Only foot groups get structural unnecessary penalty: hands and body
+        # contacts rely on the height stream for negative evidence (their
+        # structural necessity is harder to infer when the body is low).
         for gname in FOOT_GROUPS:
-            if gname not in groups_with_candidates and result[gname] == 0.0:
+            if gname not in groups_with_candidates and result.get(gname, 0.0) == 0.0:
                 result[gname] = opts.struct_unnecessary_logodds
 
-        # Hand groups: negative if not in candidates
-        for gname in HAND_GROUPS:
-            if gname not in groups_with_candidates:
-                result[gname] = -0.3
-
         if log is not None:
-            if len(foot_groups_present) == 1:
-                log['branch'] = 'single_foot'
-            elif len(foot_groups_present) >= 2:
-                log['branch'] = 'multi_foot'
+            if len(all_candidate_groups) == 1:
+                log['branch'] = 'single_group'
+            elif len(all_candidate_groups) >= 2:
+                log['branch'] = 'multi_group'
             else:
-                log['branch'] = 'no_foot_candidates'
-            log['foot_groups_present'] = list(foot_groups_present)
+                log['branch'] = 'no_candidates_with_force'
+            log['candidate_groups'] = all_candidate_groups
+            log['established'] = sorted(established)
+            log['new_candidates'] = sorted(new_candidates)
+            log['has_deficit'] = has_deficit
             log['result'] = dict(result)
             self._emit_log(log)
             self._log_frame += 1
@@ -1475,7 +1575,7 @@ class VelocityStream:
         result = {}
         context = {}  # per-group context for valving/diagnostics
 
-        for gname, joints in ALL_GROUPS.items():
+        for gname, joints in get_active_groups(opts).items():
             valid = [j for j in joints if j < len(heights)]
             if not valid:
                 result[gname] = 0.0
@@ -1606,7 +1706,7 @@ class TrajectoryStream:
         h_break = self.HEIGHT_VEL_BREAK_MPS * dt
         hz_break = self.HZ_VEL_BREAK_MPS * dt
 
-        for gname, joints in ALL_GROUPS.items():
+        for gname, joints in get_active_groups(opts).items():
             valid = [j for j in joints if j < len(heights)]
             if not valid:
                 result[gname] = 0.0
@@ -1783,7 +1883,7 @@ class HorizontalSpeedStream:
         result = {}
         context = {}
 
-        for gname, joints in ALL_GROUPS.items():
+        for gname, joints in get_active_groups(opts).items():
             valid = [j for j in joints if j < len(heights)]
             if not valid:
                 result[gname] = 0.0
@@ -1908,7 +2008,7 @@ class TouchdownStream:
         alpha_fast = opts.td_alpha_fast
         alpha_slow = opts.td_alpha_slow
 
-        for gname, joints in ALL_GROUPS.items():
+        for gname, joints in get_active_groups(opts).items():
             valid = [j for j in joints if j < len(heights)]
             if not valid:
                 result[gname] = 0.0
@@ -2016,7 +2116,7 @@ class EquilibriumStream:
         result = {}
 
         if is_freefall:
-            for gname in ALL_GROUPS:
+            for gname in get_active_groups(opts):
                 result[gname] = opts.eq_unnecessary_logodds
             return result
 
@@ -2091,7 +2191,7 @@ class EquilibriumStream:
         # Only for steady-state conditions where the body needs support
         # but no foot has clear contact. NOT for dynamic transitions.
         if not is_freefall and dynamic_confidence > 0.5:
-            any_contact = any(intensities.get(g, 0.0) > 0.2 for g in ALL_GROUPS)
+            any_contact = any(intensities.get(g, 0.0) > 0.2 for g in get_active_groups(opts))
             if not any_contact:
                 # Only boost feet that are genuinely ambiguous (> 0.3),
                 # not feet that are already fading to zero
@@ -2130,7 +2230,8 @@ class LogOddsAccumulator:
 
         Args:
             increments: Dict[gname, float] — total log-odds increment per group
-            decay_rate: float — per-frame decay factor (0.9 = 10% decay toward 0)
+            decay_rate: float or Dict[gname, float] — per-frame decay factor
+                (0.9 = 10% decay toward 0). If dict, per-group decay rates.
             max_logodds: float — clamp magnitude to prevent over-certainty
 
         Returns:
@@ -2138,8 +2239,10 @@ class LogOddsAccumulator:
         """
         for g, inc in increments.items():
             prev = self._state.get(g, 0.0)
+            # Per-group or global decay
+            dr = decay_rate.get(g, 0.9) if isinstance(decay_rate, dict) else decay_rate
             # Decay toward neutral (0)
-            decayed = prev * decay_rate
+            decayed = prev * dr
             # Add new evidence and clamp
             new_val = decayed + inc
             new_val = max(-max_logodds, min(max_logodds, new_val))
@@ -2207,7 +2310,8 @@ class IntensityPressureModel:
         # compete for body weight via intensity-weighted lever rule.
         # During cartwheels, hands bear full body weight.
         active_groups = {}
-        for g in list(FOOT_GROUPS.keys()) + list(HAND_GROUPS.keys()):
+        groups_map = get_active_groups(opts)
+        for g in groups_map:
             intensity = intensities.get(g, 0.0)
             if intensity > opts.intensity_deadzone:
                 active_groups[g] = intensity
@@ -2218,7 +2322,7 @@ class IntensityPressureModel:
         # Intensity-weighted XCoM lever rule between all active groups
         total_intensity = sum(active_groups.values())
         group_forces = {}
-        all_groups_map = {**FOOT_GROUPS, **HAND_GROUPS}
+        all_groups_map = groups_map
 
         if len(active_groups) == 1:
             g = list(active_groups.keys())[0]
@@ -2358,6 +2462,18 @@ class IntensityPressureModel:
             for j in valid:
                 pressure[j] = force_per
 
+        # Body groups: single joint, no intra-group split needed
+        for gname in active_groups:
+            if gname not in BODY_GROUPS:
+                continue
+            gforce = group_forces.get(gname, 0)
+            if gforce <= 0:
+                continue
+            joints = BODY_GROUPS[gname]
+            for j in joints:
+                if j < J:
+                    pressure[j] = gforce
+
         return pressure
 
 
@@ -2457,10 +2573,12 @@ class LogOddsContactEstimator:
 
         # --- Compute per-stream increments ---
         stream_increments = {}  # stream_name → {gname: float}
-        all_group_names = list(ALL_GROUPS.keys())
+        active_groups = get_active_groups(opts)
+        all_group_names = list(active_groups.keys())
 
         if opts.enable_height:
-            h_inc = self.height_stream.compute(pos, floor_height, opts)
+            h_inc = self.height_stream.compute(
+                pos, floor_height, opts, surface_dists=surface_dists)
             stream_increments['height'] = {
                 g: v * opts.weight_height for g, v in h_inc.items()
             }
@@ -2472,6 +2590,17 @@ class LogOddsContactEstimator:
         if opts.enable_kinematic:
             kin_inc, kin_ctx = self.kinematic_stream.compute(
                 pos, floor_height, dt, opts)
+            # Attenuate kinematic NEGATIVE evidence for non-foot groups
+            # when CoM is low (floor work). Hands/body parts can slide
+            # on the floor — the "moving means airborne" assumption
+            # doesn't hold during floor work.
+            if (opts.enable_body_contacts and com is not None):
+                com_h = com[up] - floor_height
+                # Scale: 1.0 at com_h >= 0.5m, 0.0 at com_h <= 0.2m
+                kin_atten = max(0.0, min(1.0, (com_h - 0.2) / 0.3))
+                for g in list(kin_inc.keys()):
+                    if g not in FOOT_GROUPS and kin_inc[g] < 0:
+                        kin_inc[g] *= kin_atten
             stream_increments['kinematic'] = {
                 g: v * opts.weight_kinematic for g, v in kin_inc.items()
             }
@@ -2479,9 +2608,12 @@ class LogOddsContactEstimator:
                 stream_context[g].update(kin_ctx.get(g, {}))
 
         if opts.enable_structural:
+            # Get current intensities so structural stream can prioritize
+            # established contacts over new candidates
+            curr_int = self.accumulator.get_intensities(opts.sigmoid_temperature)
             struct_inc = self.structural_stream.compute(
                 pos, com, com_acc, com_vel, floor_height, dt, opts,
-                raw_com_acc=raw_com_acc)
+                raw_com_acc=raw_com_acc, intensities=curr_int)
             stream_increments['structural'] = {
                 g: v * opts.weight_structural for g, v in struct_inc.items()
             }
@@ -2553,7 +2685,19 @@ class LogOddsContactEstimator:
                 total_increments[g] += inc_dict.get(g, 0.0)
 
         # --- Update accumulator ---
-        self.accumulator.update(total_increments, opts.decay_rate, opts.max_logodds)
+        # Body groups use slower decay (stickier contacts),
+        # except the head which needs faster fade-out (not a natural
+        # sustained-contact surface like knees/pelvis).
+        if opts.enable_body_contacts:
+            decay = {}
+            for g in all_group_names:
+                if g in BODY_GROUPS and g != 'HD':
+                    decay[g] = opts.body_decay_rate
+                else:
+                    decay[g] = opts.decay_rate
+        else:
+            decay = opts.decay_rate
+        self.accumulator.update(total_increments, decay, opts.max_logodds)
         intensities = self.accumulator.get_intensities(opts.sigmoid_temperature)
         log_odds_state = self.accumulator.state
 

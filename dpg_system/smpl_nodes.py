@@ -1700,6 +1700,7 @@ class SMPLTorqueNode(SMPLNode):
         self.contact_method_prop = self.add_option('contact_method', widget_type='combo', default_value='stability_v2')
         self.contact_method_prop.widget.combo_items = ['fusion', 'stability', 'stability_v2', 'stability_v2_fe', 'stability_v3', 'equilibrium', 'unified', 'logodds', 'logodds_valved', 'com_driven', 'consensus', 'patch']
         self.enable_frame_eval_prop = self.add_option('enable_frame_evaluator', widget_type='checkbox', default_value=True)
+        self.enable_body_contacts_prop = self.add_option('enable_body_contacts', widget_type='checkbox', default_value=False)
         self.balance_mode_prop = self.add_option('balance_mode', widget_type='combo', default_value='raw')
         self.balance_mode_prop.widget.combo_items = ['raw', 'xcom', 'am']
         self.contact_force_threshold_prop = self.add_option('contact_force_threshold', widget_type='drag_float', default_value=0.0)
@@ -1978,6 +1979,7 @@ class SMPLTorqueNode(SMPLNode):
 
                 use_s_curve_spine=self.use_s_curve_spine_prop() if hasattr(self, 'use_s_curve_spine_prop') else True,
                 enable_frame_evaluator=self.enable_frame_eval_prop() if hasattr(self, 'enable_frame_eval_prop') else False,
+                enable_body_contacts=self.enable_body_contacts_prop() if hasattr(self, 'enable_body_contacts_prop') else False,
                 balance_mode=self.balance_mode_prop() if hasattr(self, 'balance_mode_prop') else 'raw',
                 enable_one_euro_filter=self.enable_one_euro_prop() if hasattr(self, 'enable_one_euro_prop') else False,
                 acc_smooth_window=self.acc_smooth_window_prop() if hasattr(self, 'acc_smooth_window_prop') else 0,
