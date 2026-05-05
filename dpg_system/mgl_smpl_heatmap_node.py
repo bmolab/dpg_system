@@ -578,8 +578,10 @@ class MGLSMPLHeatmapNode(Node):
         self.muscle_offset_prop = self.add_option('muscle offset', widget_type='drag_float',
                                                    default_value=0.4, speed=0.01)
         self.normalize_prop = self.add_option('normalize', widget_type='checkbox', default_value=True)
+        self.emit_activations_prop = self.add_option('emit activations', widget_type='checkbox', default_value=False)
 
         self.gl_output = self.add_output('gl chain out')
+        self.muscle_output = self.add_output('muscle activations')
 
     def _load_model(self):
         if not SMPLX_AVAILABLE:
@@ -1428,6 +1430,7 @@ class MGLSMPLHeatmapNode(Node):
         self._v3_flex_axes = meta['flex_axes']           # (N_muscles, 3)
         n_muscles = meta['n_muscles']
         names = meta['muscle_names']
+        self._v3_muscle_names = list(names)
 
         print(f"[V3] Loaded pre-baked atlas: {self._v3_prebaked_atlas.shape}, "
               f"{n_muscles} muscles")
@@ -1462,6 +1465,7 @@ class MGLSMPLHeatmapNode(Node):
         self._v4_flex_axes = meta['flex_axes']
         n_muscles = meta['n_muscles']
         names = meta['muscle_names']
+        self._v4_muscle_names = list(names)
 
         print(f"[V4] Loaded contour-projection atlas: {self._v4_prebaked_atlas.shape}, "
               f"{n_muscles} muscles")
@@ -1815,6 +1819,66 @@ class MGLSMPLHeatmapNode(Node):
 
         return vert_magnitudes
 
+    def _compute_muscle_activations(self):
+        """Compute per-muscle activation dict from current torques.
+
+        Returns a dict mapping muscle name → scalar activation (0.0-1.0),
+        using whichever weight mode is active for muscle definitions,
+        joint mappings, and flex axes. Normalized by max_torque.
+        """
+        torques = self.torques_data
+        if torques is None:
+            return {}
+
+        mode = self.weight_mode_prop()
+        max_torque = max(self.max_torque_prop(), 0.01)
+        dir_bias = self.dir_bias_prop()
+        n_j = torques.shape[0]
+
+        # Select muscle definitions based on mode
+        if mode == 'muscle_v4' and hasattr(self, '_v4_prebaked_atlas') and self._v4_prebaked_atlas is not None:
+            names = getattr(self, '_v4_muscle_names', [])
+            joints = self._v4_muscle_joints
+            flex_axes = self._v4_flex_axes
+        elif mode == 'muscle_v3' and hasattr(self, '_v3_prebaked_atlas') and self._v3_prebaked_atlas is not None:
+            names = getattr(self, '_v3_muscle_names', [])
+            joints = self._v3_muscle_joints
+            flex_axes = self._v3_flex_axes
+        else:
+            # v2 / muscle / fallback
+            names = [m['name'] for m in MUSCLE_GROUP_DEFS]
+            joints = self.muscle_joints if self.muscle_joints is not None else np.array([m['joint'] for m in MUSCLE_GROUP_DEFS])
+            flex_axes = self._v2_flex_axes if hasattr(self, '_v2_flex_axes') and self._v2_flex_axes is not None else np.zeros((len(names), 3))
+
+        n_muscles = len(names)
+        result = {}
+
+        for i in range(n_muscles):
+            j = int(joints[i]) if i < len(joints) else 0
+            if j >= n_j:
+                result[names[i]] = 0.0
+                continue
+
+            tau = torques[j]
+            tau_mag = float(np.linalg.norm(tau))
+            if tau_mag < 1e-8:
+                result[names[i]] = 0.0
+                continue
+
+            mag = tau_mag
+            if dir_bias > 0.0 and i < len(flex_axes):
+                fa = flex_axes[i]
+                if np.linalg.norm(fa) > 0.5:
+                    # Directional fade for small torques (matches shader)
+                    dir_fade = np.clip((tau_mag / max_torque - 0.02) / 0.06, 0.0, 1.0)
+                    eff_bias = dir_bias * dir_fade
+                    flex = np.clip(np.dot(tau, fa) / tau_mag, -1.0, 1.0)
+                    mag = tau_mag * (1.0 - eff_bias + eff_bias * max(0.0, flex) * 2.0)
+
+            result[names[i]] = float(np.clip(mag / max_torque, 0.0, 1.0))
+
+        return result
+
     def _compute_vertex_colors(self, torques):
         """Compute per-vertex RGBA heatmap colors from joint torque vectors.
 
@@ -2018,6 +2082,11 @@ class MGLSMPLHeatmapNode(Node):
             if do_draw:
                 self.draw()
                 self.gl_output.send('draw')
+                # Emit per-muscle activation dict
+                if self.emit_activations_prop() and self.torques_data is not None:
+                    act = self._compute_muscle_activations()
+                    if act:
+                        self.muscle_output.send(act)
 
     def draw(self):
         # Get context from MGLContext singleton

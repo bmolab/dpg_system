@@ -1633,8 +1633,6 @@ class SMPLTorqueNode(SMPLNode):
         
         # self.torques_output removed
 
-        self.effort_output = self.add_output('effort')
-        self.gravity_effort_output = self.add_output('gravity_effort')
         self.combined_effort_output = self.add_output('combined_effort')
 
         self.output_positions = self.add_output('joint_positions')
@@ -1650,8 +1648,7 @@ class SMPLTorqueNode(SMPLNode):
         self.gravity_torque_vec_output = self.add_output('gravity_torque_vectors')
         self.dynamic_torque_vec_output = self.add_output('dynamic_torque_vectors')
         self.passive_torque_vec_output = self.add_output('passive_torque_vectors')
-        self.contact_probs_output = self.add_output('contact_probs')
-        self.contact_probs_fusion_output = self.add_output('contact_probs_fusion')
+
         self.contact_pressure_output = self.add_output('contact_pressure')
         self.output_com = self.add_output('com_pos')
         self.output_zmp = self.add_output('zmp_pos')
@@ -1659,16 +1656,13 @@ class SMPLTorqueNode(SMPLNode):
         self.noise_score_output = self.add_output('noise_score')
         self.noise_report_output = self.add_output('noise_report')
         self.floor_level_output = self.add_output('floor_level')
-        self.balance_score_output = self.add_output('balance_score')
-        self.imbalance_vector_output = self.add_output('imbalance_vector')
-        self.support_polygon_output = self.add_output('support_polygon')
+
         
         # Frame Evaluator outputs
         self.frame_eval_forces_output = self.add_output('frame_eval_forces')
         self.frame_eval_necessity_output = self.add_output('frame_eval_necessity')
         self.frame_eval_zmp_output = self.add_output('frame_eval_zmp')
-        self.frame_eval_f_required_output = self.add_output('frame_eval_f_required')
-        self.frame_eval_support_poly_output = self.add_output('frame_eval_support_poly')
+
         self.contact_points_output = self.add_output('contact_points')
         
         # Noise stats controls
@@ -1694,16 +1688,15 @@ class SMPLTorqueNode(SMPLNode):
         self.reset_floor_input = self.add_input('reset_floor', widget_type='button', callback=self._reset_floor)
         
         # Bias: Negative = Toe Preference, Positive = Heel Preference
-        self.heel_toe_bias_prop = self.add_option('heel_toe_bias', widget_type='drag_float', default_value=0.0)
+
         
         # Contact Method Selection
-        self.contact_method_prop = self.add_option('contact_method', widget_type='combo', default_value='stability_v2')
-        self.contact_method_prop.widget.combo_items = ['fusion', 'stability', 'stability_v2', 'stability_v2_fe', 'stability_v3', 'equilibrium', 'unified', 'logodds', 'logodds_valved', 'com_driven', 'consensus', 'patch']
-        self.enable_frame_eval_prop = self.add_option('enable_frame_evaluator', widget_type='checkbox', default_value=True)
+        self.contact_method_prop = self.add_option('contact_method', widget_type='combo', default_value='logodds_valved')
+        self.contact_method_prop.widget.combo_items = ['logodds', 'logodds_valved', 'stability_v2']
+
         self.enable_body_contacts_prop = self.add_option('enable_body_contacts', widget_type='checkbox', default_value=False)
-        self.balance_mode_prop = self.add_option('balance_mode', widget_type='combo', default_value='raw')
-        self.balance_mode_prop.widget.combo_items = ['raw', 'xcom', 'am']
-        self.contact_force_threshold_prop = self.add_option('contact_force_threshold', widget_type='drag_float', default_value=0.0)
+
+        self.contact_force_threshold_prop = self.add_option('contact_force_threshold', widget_type='drag_float', default_value=0.1)
         
         # --- Log-Odds Evidence Streams ---
         self.lo_height_prop = self.add_option('lo_height', widget_type='checkbox', default_value=True)
@@ -1730,17 +1723,6 @@ class SMPLTorqueNode(SMPLNode):
         self.struct_relief_logodds_prop = self.add_option(
             'struct_relief_logodds', widget_type='drag_float', default_value=0.3)
 
-        # --- Structural-stream diagnostic logging ---
-        self.struct_log_path_prop = self.add_option(
-            'struct_log_path', widget_type='text_input',
-            default_value='/tmp/smpl_struct.jsonl')
-        self.struct_log_start_input = self.add_input(
-            'struct_log_start', widget_type='button',
-            callback=self._struct_log_start)
-        self.struct_log_stop_input = self.add_input(
-            'struct_log_stop', widget_type='button',
-            callback=self._struct_log_stop)
-        self._pending_struct_log_path = None
         
         # --- World-Frame Dynamics ---
         self.world_frame_dynamics_prop = self.add_option('world_frame_dynamics', widget_type='checkbox', default_value=True)
@@ -1751,11 +1733,8 @@ class SMPLTorqueNode(SMPLNode):
         self.com_acc_mc_prop = self.add_option('com_acc_min_cutoff', widget_type='drag_float', default_value=5.0)
         self.com_acc_beta_prop = self.add_option('com_acc_beta', widget_type='drag_float', default_value=0.8)
         self.smooth_input_window_prop = self.add_property('smooth_input_window', widget_type='drag_int', default_value=0)
-        self.enable_one_euro_prop = self.add_option('enable_one_euro_filter', widget_type='checkbox', default_value=False)
         self.acc_smooth_window_prop = self.add_property('acc_smooth_window', widget_type='drag_int', default_value=0)
         self.torque_smooth_window_prop = self.add_property('torque_smooth_window', widget_type='drag_int', default_value=0)
-        self.smooth_contact_forces_prop = self.add_option('smooth_contact_forces', widget_type='checkbox', default_value=False)
-        self.enable_velocity_gate_prop = self.add_option('enable_velocity_gate', widget_type='checkbox', default_value=False)
 
         
         # --- Spine Geometry ---
@@ -1795,36 +1774,6 @@ class SMPLTorqueNode(SMPLNode):
         est = getattr(self.processor, '_logodds_estimator', None) if self.processor else None
         return getattr(est, 'structural_stream', None) if est is not None else None
 
-    def _struct_log_start(self):
-        """Begin writing per-frame structural-stream diagnostics to struct_log_path.
-
-        If the log-odds estimator hasn't been built yet (e.g. before the first
-        frame, or when contact_method isn't logodds), the path is held pending
-        and applied as soon as the structural stream becomes available.
-        """
-        path = (self.struct_log_path_prop() or '').strip()
-        if not path:
-            print('SMPLTorqueNode: struct_log_path is empty')
-            return
-        stream = self._get_structural_stream()
-        if stream is None:
-            self._pending_struct_log_path = path
-            print(f'SMPLTorqueNode: struct logging queued -> {path} '
-                  f'(will activate on next logodds frame)')
-            return
-        stream.set_log_path(path)
-        self._pending_struct_log_path = None
-        print(f'SMPLTorqueNode: struct logging ON -> {path}')
-
-    def _struct_log_stop(self):
-        """Stop the structural-stream diagnostic log."""
-        self._pending_struct_log_path = None
-        stream = self._get_structural_stream()
-        if stream is None:
-            print('SMPLTorqueNode: struct logging was not active')
-            return
-        stream.set_log_path(None)
-        print('SMPLTorqueNode: struct logging OFF')
 
     def execute(self):
         # 1. Handle Config
@@ -1973,8 +1922,8 @@ class SMPLTorqueNode(SMPLNode):
                 floor_enable=self.floor_enable_prop(),
                 floor_height=self.floor_height_prop() if hasattr(self, 'floor_height_prop') else 0.0,
                 floor_tolerance=self.floor_tol_prop() if hasattr(self, 'floor_tol_prop') else 0.15,
-                heel_toe_bias=self.heel_toe_bias_prop() if hasattr(self, 'heel_toe_bias_prop') else 0.0,
-                contact_method=self.contact_method_prop() if hasattr(self, 'contact_method_prop') else 'fusion',
+
+                contact_method=self.contact_method_prop() if hasattr(self, 'contact_method_prop') else 'logodds_valved',
                 
 
                 world_frame_dynamics=self.world_frame_dynamics_prop() if hasattr(self, 'world_frame_dynamics_prop') else False,
@@ -1987,14 +1936,14 @@ class SMPLTorqueNode(SMPLNode):
                 smooth_input_window=self.smooth_input_window_prop() if hasattr(self, 'smooth_input_window_prop') else 0,
 
                 use_s_curve_spine=self.use_s_curve_spine_prop() if hasattr(self, 'use_s_curve_spine_prop') else True,
-                enable_frame_evaluator=self.enable_frame_eval_prop() if hasattr(self, 'enable_frame_eval_prop') else False,
+
                 enable_body_contacts=self.enable_body_contacts_prop() if hasattr(self, 'enable_body_contacts_prop') else False,
-                balance_mode=self.balance_mode_prop() if hasattr(self, 'balance_mode_prop') else 'raw',
-                enable_one_euro_filter=self.enable_one_euro_prop() if hasattr(self, 'enable_one_euro_prop') else False,
+
+                enable_one_euro_filter=False,
                 acc_smooth_window=self.acc_smooth_window_prop() if hasattr(self, 'acc_smooth_window_prop') else 0,
                 torque_smooth_window=self.torque_smooth_window_prop() if hasattr(self, 'torque_smooth_window_prop') else 0,
-                smooth_contact_forces=self.smooth_contact_forces_prop() if hasattr(self, 'smooth_contact_forces_prop') else False,
-                enable_velocity_gate=self.enable_velocity_gate_prop() if hasattr(self, 'enable_velocity_gate_prop') else False,
+                smooth_contact_forces=False,
+                enable_velocity_gate=False,
                 
                 # Log-odds evidence streams
                 logodds_enable_height=self.lo_height_prop() if hasattr(self, 'lo_height_prop') else True,
@@ -2076,8 +2025,6 @@ class SMPLTorqueNode(SMPLNode):
 
                 # self.torques_output.send(torques) - Removed
 
-                self.effort_output.send(efforts_dyn)
-                self.gravity_effort_output.send(efforts_grav)
                 self.combined_effort_output.send(efforts_net)
                 
                 if 'torques_dyn_vec' in res:
@@ -2104,17 +2051,7 @@ class SMPLTorqueNode(SMPLNode):
                          pos = pos[0] # (24, 3)
                      self.output_positions.send(pos)
                 
-                if 'contact_probs' in res:
-                     probs = res['contact_probs']
-                     if probs.shape[0] == 1:
-                         probs = probs[0]
-                     self.contact_probs_output.send(probs)
 
-                if 'contact_probs_fusion' in res:
-                     probs_fusion = res['contact_probs_fusion']
-                     if probs_fusion.shape[0] == 1:
-                         probs_fusion = probs_fusion[0]
-                     self.contact_probs_fusion_output.send(probs_fusion)
                      
                 press_out = getattr(self.processor, 'contact_pressure', None)
                 if press_out is not None:
@@ -2136,12 +2073,7 @@ class SMPLTorqueNode(SMPLNode):
                 self.noise_score_output.send(noise_score)
                 self.noise_report_output.send(noise_report)
                 
-                # Send balance stability
-                if 'balance' in res:
-                    bal = res['balance']
-                    self.balance_score_output.send(bal['stability_score'])
-                    self.imbalance_vector_output.send(bal['imbalance_vector'])
-                    self.support_polygon_output.send(bal['support_polygon'])
+
                 
                 # Frame evaluator outputs
                 if 'frame_eval' in res:
@@ -2159,10 +2091,7 @@ class SMPLTorqueNode(SMPLNode):
                     floor_h = getattr(self.processor, '_inferred_floor_height', 0.0)
                     zmp_3d[up] = floor_h if floor_h is not None else 0.0
                     self.frame_eval_zmp_output.send(zmp_3d)
-                    self.frame_eval_f_required_output.send(fe.f_required)
-                    if fe.support_polygon:
-                        poly = np.array(fe.support_polygon)
-                        self.frame_eval_support_poly_output.send(poly)
+
 
                 # Active contact points: [[x, y, z, force], ...]
                 up = 1 if self.up_axis_prop() == 'Y' else 2
@@ -2198,14 +2127,7 @@ class SMPLTorqueNode(SMPLNode):
                 traceback.print_exc()
                 pass
 
-        # Apply queued structural-stream log path if the estimator now exists.
-        if self._pending_struct_log_path:
-            stream = self._get_structural_stream()
-            if stream is not None:
-                stream.set_log_path(self._pending_struct_log_path)
-                print(f'SMPLTorqueNode: struct logging ON -> '
-                      f'{self._pending_struct_log_path}')
-                self._pending_struct_log_path = None
+
 
     def print_max_torque(self, message='', args=[]):
         max = self.processor.max_torque_array
