@@ -53,6 +53,15 @@ PRIMARY_GROUPS = {**FOOT_GROUPS, **HAND_GROUPS}
 ALL_GROUPS = {**PRIMARY_GROUPS, **BODY_GROUPS}
 HEEL_MAP = {'LF': 28, 'RF': 29}
 BALL_MAP = {'LF': 10, 'RF': 11}
+# Push-off joint pairs: (secondary, primary)
+# During push-off, the secondary joint rises relative to the primary.
+# Feet: ankle rises relative to ball; Hands: wrist rises relative to hand
+PUSHOFF_JOINTS = {
+    'LF': (7, 10),   # L_Ankle, L_Ball
+    'RF': (8, 11),   # R_Ankle, R_Ball
+    'LH': (20, 22),  # L_Wrist, L_Hand
+    'RH': (21, 23),  # R_Wrist, R_Hand
+}
 
 def get_active_groups(opts):
     """Return the contact groups to evaluate based on options."""
@@ -955,6 +964,8 @@ class KinematicStream:
                 'angle_confidence': angle_confidence,
                 'is_planted': float(is_planted),
                 'approach_min_h': self._approach_min_h.get(gname, h),
+                'vy_fast_ema': self._td_fast_ema.get(gname, 0.0),
+                'vy_slow_ema': self._td_slow_ema.get(gname, 0.0),
             }
 
         return result, context
@@ -1393,6 +1404,8 @@ class StructuralStream:
             gravity_torque_vecs=gravity_torque_vecs,
             relief_enable=getattr(opts, 'fe_relief_enable', False),
             relief_strain_threshold=getattr(opts, 'fe_relief_strain_threshold', 25.0))
+        # Expose for downstream (frame_eval_zmp output)
+        self.last_eval_result = eval_result
 
         # --- Extract per-group force from representative ---
         group_forces_raw = {}
@@ -2539,7 +2552,7 @@ class LogOddsContactEstimator:
         self.trajectory_stream = TrajectoryStream()
         self.touchdown_stream = TouchdownStream()
 
-    def _valve_streams(self, increments, context, opts):
+    def _valve_streams(self, increments, context, opts, pos, floor_height, dt):
         """Adjust stream contributions based on cross-stream context.
 
         When opts.enable_valving is False, this is a pass-through.
@@ -2551,6 +2564,9 @@ class LogOddsContactEstimator:
             context: Dict[gname, Dict[str, float]] — per-group context
                      (vy, decel, height_m, hspeed, straightness)
             opts: LogOddsContactOptions
+            pos: (J, 3) joint positions
+            floor_height: float
+            dt: float
 
         Returns:
             Dict[stream_name, Dict[gname, float]] — adjusted increments
@@ -2558,13 +2574,102 @@ class LogOddsContactEstimator:
         if not opts.enable_valving:
             return increments
 
-        # --- Valving rules (to be populated from diagnostic data) ---
         # Deep copy to avoid mutating originals
         valved = {s: dict(d) for s, d in increments.items()}
 
-        # TODO: Add data-driven valving rules here
-        # e.g. deceleration suppresses hspeed/trajectory negatives
-        # e.g. both-feet-planted suppresses equilibrium negatives
+        # ─── Push-off rate tracking ───
+        # Track the rate of change of the secondary-primary joint height
+        # differential (ankle-ball for feet, wrist-hand for hands).
+        # During push-off, the secondary rises relative to the primary.
+        # EMA-smoothed to reject frame-to-frame noise.
+        if not hasattr(self, '_valve_pushoff_prev_diff'):
+            self._valve_pushoff_prev_diff = {}
+            self._valve_pushoff_ema_rate = {}
+
+        PUSHOFF_EMA_ALPHA = 0.4
+        up = opts.up_axis
+        n_joints = pos.shape[0]
+        pushoff_rates = {}  # gname → EMA'd rate
+
+        for gname, (sec_j, pri_j) in PUSHOFF_JOINTS.items():
+            if sec_j >= n_joints or pri_j >= n_joints:
+                continue
+            diff = float(pos[sec_j, up] - pos[pri_j, up])
+            prev = self._valve_pushoff_prev_diff.get(gname)
+            if prev is not None:
+                raw_rate = (diff - prev) / max(dt, 1e-6)
+            else:
+                raw_rate = 0.0
+            self._valve_pushoff_prev_diff[gname] = diff
+
+            prev_ema = self._valve_pushoff_ema_rate.get(gname, 0.0)
+            ema_rate = PUSHOFF_EMA_ALPHA * raw_rate + (1.0 - PUSHOFF_EMA_ALPHA) * prev_ema
+            self._valve_pushoff_ema_rate[gname] = ema_rate
+            pushoff_rates[gname] = ema_rate
+
+        # ─── Rule 1: Vertical motion attenuates positive height evidence ───
+        # A foot/hand moving vertically through the contact zone provides
+        # unreliable height evidence. Uses the kinematic stream's
+        # dual-EMA fast value (smoothed vy, ~2-frame time constant)
+        # as a noise-robust velocity estimate.
+        #
+        # Shape: quartic Butterworth-like rolloff
+        #   valve = 1 / (1 + (vy_fast / sigma_eff)^4)
+        # This is flat near zero (noise-transparent) and drops
+        # smoothly for genuine vertical motion. No hard thresholds.
+        #
+        # Push-off amplification: when the ankle/wrist is rising relative
+        # to the ball/hand (push-off biomechanics), sigma_eff decreases,
+        # making the valve more aggressive. This gives earlier liftoff
+        # detection during push-off without affecting planted noise.
+        # Relevé safety: in relevé the ankle rises but the ball vy stays
+        # near zero, so the valve still produces ~1.0 (no attenuation).
+        #
+        # Only attenuates POSITIVE height evidence (contact zone).
+        # Negative evidence (foot clearly high) passes unchanged.
+        #
+        # Restricted to PRIMARY_GROUPS (feet + hands). Body contacts
+        # (knees, elbows, head, pelvis) have different kinematics
+        # and are not affected by this valve.
+        if 'height' in valved:
+            SIGMA_BASE = 0.15     # m/s: default rolloff scale
+            PUSHOFF_GAIN = 3.0    # how much push-off rate reduces sigma
+            for gname in valved['height']:
+                if gname not in PRIMARY_GROUPS:
+                    continue
+                h_lo = valved['height'][gname]
+                if h_lo > 0:
+                    vy_fast = context.get(gname, {}).get('vy_fast_ema', 0.0)
+                    # Push-off modulation: only positive rates (rising secondary)
+                    po_rate = max(0.0, pushoff_rates.get(gname, 0.0))
+                    sigma_eff = SIGMA_BASE / (1.0 + PUSHOFF_GAIN * po_rate)
+                    ratio = vy_fast / sigma_eff
+                    valve = 1.0 / (1.0 + ratio * ratio * ratio * ratio)
+                    valved['height'][gname] = h_lo * valve
+
+        # ─── Rule 2: Rapid descent attenuates positive divergence evidence ───
+        # The divergence stream can fire positive for a descending foot
+        # that hasn't landed yet (e.g., swing foot passing near the floor).
+        # When vy_fast is strongly negative (rapid descent), attenuate
+        # positive divergence evidence. Once the foot settles (vy_fast→0),
+        # divergence evidence passes through normally.
+        #
+        # Uses a larger sigma than the height valve since the divergence
+        # stream is useful during slow near-floor movement (walking).
+        # Only attenuates for descent (negative vy_fast).
+        if 'divergence' in valved:
+            DIV_SIGMA = 0.30  # m/s: descent speed for 50% attenuation
+            for gname in valved['divergence']:
+                if gname not in PRIMARY_GROUPS:
+                    continue
+                div_lo = valved['divergence'][gname]
+                if div_lo > 0:
+                    vy_fast = context.get(gname, {}).get('vy_fast_ema', 0.0)
+                    if vy_fast < 0:
+                        # Only attenuate during descent
+                        ratio = vy_fast / DIV_SIGMA
+                        valve = 1.0 / (1.0 + ratio * ratio * ratio * ratio)
+                        valved['divergence'][gname] = div_lo * valve
 
         return valved
 
@@ -2719,9 +2824,9 @@ class LogOddsContactEstimator:
                 g: v * opts.weight_equilibrium for g, v in eq_inc.items()
             }
 
-        # --- Valve step (currently pass-through) ---
+        # --- Valve step ---
         stream_increments = self._valve_streams(
-            stream_increments, stream_context, opts)
+            stream_increments, stream_context, opts, pos, floor_height, dt)
 
         # --- Sum increments across streams ---
         total_increments = {g: 0.0 for g in all_group_names}

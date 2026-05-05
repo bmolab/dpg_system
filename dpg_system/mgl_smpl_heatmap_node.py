@@ -771,10 +771,15 @@ class MGLSMPLHeatmapNode(Node):
 
                             float mag = tau_mag;
                             if (u_dir_bias > 0.0 && length(u_flex_axes[m]) > 0.5) {{
+                                // Fade directional bias to zero for small torques
+                                // to prevent flicker from noisy torque direction.
+                                // Ramp: 0 at 2% of max, full at 8% of max.
+                                float dir_fade = clamp((tau_mag / max(u_max_torque, 0.01) - 0.02) / 0.06, 0.0, 1.0);
+                                float eff_bias = u_dir_bias * dir_fade;
                                 float flex = clamp(dot(tau, u_flex_axes[m]) / tau_mag, -1.0, 1.0);
                                 // When dir_bias is 1.0, only activate along flex axis (perpendicular = 0)
                                 // Multiplied by 2.0 to match peak brightness of the old formula
-                                mag = tau_mag * mix(1.0, max(0.0, flex) * 2.0, u_dir_bias);
+                                mag = tau_mag * mix(1.0, max(0.0, flex) * 2.0, eff_bias);
                             }}
 
                             float w = texelFetch(u_atlas, ivec2(m, vid), 0).r;

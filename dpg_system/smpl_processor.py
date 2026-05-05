@@ -5444,8 +5444,11 @@ class SMPLProcessor:
         # Store log-odds result for diagnostics
         self._logodds_result = result
         
-        # Clear stale frame_eval_result
-        self._frame_eval_result = None
+        # Forward the structural stream's FE result for frame_eval outputs
+        # (ZMP, forces, necessity, support polygon)
+        struct_fe = getattr(self._logodds_estimator.structural_stream,
+                            'last_eval_result', None)
+        self._frame_eval_result = struct_fe
         
         # Build contact probability output using intensity
         contact_probs = np.zeros((F, J))
@@ -9792,7 +9795,10 @@ class SMPLProcessor:
         # Skip for unified/equilibrium: these methods have internal state
         # machines with hysteresis — external smoothing is redundant and
         # creates oscillation artifacts (zero-snap → ramp-up → zero-snap).
-        _skip_smoothing = options.contact_method in ('equilibrium', 'unified', 'logodds', 'logodds_valved')
+        # LogOdds: the accumulator handles on/off transitions, but the
+        # pressure distribution (force share via XCoM lever) is stateless
+        # and needs smoothing to prevent gravity torque flicker.
+        _skip_smoothing = options.contact_method in ('equilibrium', 'unified')
         
         if not _skip_smoothing:
             if _use_frame_eval:

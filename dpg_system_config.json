@@ -33,6 +33,6 @@
   "movie_nodes": true,
   "whisper_nodes": true,
   "context_tracker_nodes": true,
-  "mgl_shaders_nodes": true,
+  "mgl_shaders_node": true,
   "default_ip_base": "10.1.1.0"
 }
