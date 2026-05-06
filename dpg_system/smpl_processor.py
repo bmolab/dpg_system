@@ -3742,65 +3742,178 @@ class SMPLProcessor:
         Compute effective moment of inertia for all target joints in one call.
         Uses precomputed tables from _precompute_inertia_tables.
         
+        Vectorized: eliminates nested Python loops by pre-flattening the
+        (pivot, segment) pairs into flat arrays and processing all at once.
+        
         Args:
             world_positions: (F, J, 3) world positions
             
         Returns:
             inertias: (F, target_joint_count) effective inertia per joint
         """
+        # Lazily build the flattened scatter tables on first call
+        if not hasattr(self, '_inertia_scatter_built'):
+            self._build_inertia_scatter_tables()
+        
         F = world_positions.shape[0]
-        parents = self._get_hierarchy()
+        
+        # --- Step 1: Compute all segment COMs (batch) ---
+        # All positions including virtual joints
+        J_pos = world_positions.shape[1]
+        
+        # Start with com = joint position (default for segments without special handling)
+        # Start with com = joint position (default for segments without special handling)
+        # Non-leaf COMs: midpoint between joint and mean of children (vectorized)
+        end_pos_all = self._compute_nonleaf_end_positions(world_positions)  # (F, 24, 3)
+        seg_com = (world_positions[:, :24, :] + end_pos_all) * 0.5  # (F, 24, 3)
+        
+        # Leaf COMs: joint + normalize(joint - parent) * (length / 2)
+        if len(self._leaf_indices) > 0:
+            leaf_pos = world_positions[:, self._leaf_indices, :]      # (F, n_leaf, 3)
+            parent_pos = world_positions[:, self._leaf_parents, :]    # (F, n_leaf, 3)
+            dir_vec = leaf_pos - parent_pos                    # (F, n_leaf, 3)
+            norm = np.linalg.norm(dir_vec, axis=-1, keepdims=True)  # (F, n_leaf, 1)
+            norm_safe = np.maximum(norm, 1e-6)
+            dir_n = dir_vec / norm_safe                        # (F, n_leaf, 3)
+            seg_com[:, self._leaf_indices, :] = leaf_pos + dir_n * self._leaf_half_lengths[np.newaxis, :, np.newaxis]
+        
+        # --- Step 2: Compute r² for all (pivot, segment) pairs ---
+        pivot_pos = world_positions[:, self._scatter_pivots, :]  # (F, K, 3)
+        seg_com_k = seg_com[:, self._scatter_segs, :]            # (F, K, 3)
+        
+        r_vec = seg_com_k - pivot_pos                             # (F, K, 3)
+        r_sq = np.sum(r_vec * r_vec, axis=-1)                    # (F, K)
+        
+        # Parallel axis theorem: I = I_local + m * r²
+        pair_inertia = self._scatter_i_local + self._scatter_mass * r_sq  # (F, K)
+        
+        # --- Step 3: Scatter-add to per-pivot totals ---
         inertias = np.zeros((F, self.target_joint_count))
+        np.add.at(inertias, (slice(None), self._scatter_out_idx), pair_inertia)
+        
+        return inertias
+    
+    def _build_inertia_scatter_tables(self):
+        """Pre-build flat arrays for vectorized inertia computation.
+        
+        Flattens the nested (pivot_joint, subtree_segment) structure into
+        parallel arrays so the entire computation can be done without Python loops.
+        """
+        # --- Non-leaf segment tables (for COM computation) ---
+        nl_indices = []
+        nl_child_starts = []
+        nl_child_ends = []
+        nl_child_flat = []
+        
+        for idx in range(24):
+            if self._seg_is_leaf_skip[idx] or self._seg_mass[idx] <= 0:
+                continue
+            if self._seg_has_children[idx]:
+                children = self._hierarchy_children[idx]
+                nl_indices.append(idx)
+                nl_child_starts.append(len(nl_child_flat))
+                nl_child_flat.extend(children)
+                nl_child_ends.append(len(nl_child_flat))
+        
+        self._nl_indices = nl_indices
+        self._nl_child_starts = nl_child_starts
+        self._nl_child_ends = nl_child_ends
+        self._nl_child_flat = np.array(nl_child_flat, dtype=np.intp) if nl_child_flat else np.array([], dtype=np.intp)
+        
+        # --- Leaf segment tables (for COM computation) ---
+        leaf_indices = []
+        leaf_parents = []
+        leaf_half_lengths = []
+        
+        for idx in range(24):
+            if self._seg_is_leaf_skip[idx] or self._seg_mass[idx] <= 0:
+                continue
+            if not self._seg_has_children[idx]:
+                p_idx = self._seg_leaf_parent[idx]
+                if p_idx != -1:
+                    leaf_indices.append(idx)
+                    leaf_parents.append(p_idx)
+                    leaf_half_lengths.append(self._seg_length[idx] * 0.5)
+        
+        self._leaf_indices = np.array(leaf_indices, dtype=np.intp)
+        self._leaf_parents = np.array(leaf_parents, dtype=np.intp)
+        self._leaf_half_lengths = np.array(leaf_half_lengths, dtype=np.float64)
+        
+        # --- Scatter tables: flatten all (pivot, segment) pairs ---
+        scatter_pivots = []
+        scatter_segs = []
+        scatter_out_idx = []
+        scatter_mass = []
+        scatter_i_local = []
         
         for j in range(self.target_joint_count):
-            joint_pos = world_positions[:, j, :]  # (F, 3)
-            total_inertia = np.zeros(F)
-            
             for idx in self._subtree_members[j]:
                 if self._seg_is_leaf_skip[idx]:
                     continue
-                
                 m = self._seg_mass[idx]
                 if m <= 0:
                     continue
-                
-                l = self._seg_length[idx]
-                i_local = self._seg_local_inertia[idx]
-                
-                # Compute COM position for this segment
-                if self._seg_has_children[idx]:
-                    child_nodes = self._hierarchy_children[idx]
-                    # Vectorized mean of children positions
-                    child_positions = world_positions[:, child_nodes, :]  # (F, n_children, 3)
-                    end_pos = np.mean(child_positions, axis=1)  # (F, 3)
-                    com_pos = (world_positions[:, idx, :] + end_pos) * 0.5
-                else:
-                    # Leaf node
-                    p_idx = self._seg_leaf_parent[idx]
-                    if p_idx != -1:
-                        dir_vec = joint_pos - world_positions[:, p_idx, :]
-                        norm = np.linalg.norm(dir_vec, axis=-1, keepdims=True)
-                        norm_safe = np.maximum(norm, 1e-6)
-                        dir_vec_normalized = dir_vec / norm_safe
-                        
-                        is_small = (norm < 1e-6).flatten()
-                        if np.any(is_small):
-                            dir_vec_normalized[is_small] = np.array([0.0, 0.0, 1.0])
-                        
-                        com_pos = joint_pos + dir_vec_normalized * (l * 0.5)
-                    else:
-                        com_pos = world_positions[:, idx, :]
-                
-                # Distance from pivot to segment COM
-                r_vec = com_pos - joint_pos
-                r_sq = np.sum(r_vec**2, axis=-1)  # (F,)
-                
-                # Parallel axis theorem
-                total_inertia += (i_local + m * r_sq)
-            
-            inertias[:, j] = total_inertia
+                scatter_pivots.append(j)
+                scatter_segs.append(idx)
+                scatter_out_idx.append(j)
+                scatter_mass.append(m)
+                scatter_i_local.append(self._seg_local_inertia[idx])
         
-        return inertias
+        self._scatter_pivots = np.array(scatter_pivots, dtype=np.intp)
+        self._scatter_segs = np.array(scatter_segs, dtype=np.intp)
+        self._scatter_out_idx = np.array(scatter_out_idx, dtype=np.intp)
+        self._scatter_mass = np.array(scatter_mass, dtype=np.float64)
+        self._scatter_i_local = np.array(scatter_i_local, dtype=np.float64)
+        
+        # --- Child-mean weight matrix for vectorized end-position computation ---
+        # For each of 24 joints, the "end position" is the mean of its children.
+        # Build a sparse (24, J_max) weight matrix W such that:
+        #   end_pos = W @ all_positions  (matrix multiply over joint dim)
+        # For joints with 1 child: W[i, child] = 1.0
+        # For joints with N children: W[i, child_k] = 1/N
+        # For leaf joints: W[i, :] = 0 (unused)
+        J_max = 30  # max joint index including virtual
+        W = np.zeros((24, J_max), dtype=np.float64)
+        for idx in range(24):
+            children = self._hierarchy_children.get(idx, [])
+            if children:
+                w = 1.0 / len(children)
+                for c in children:
+                    if c < J_max:
+                        W[idx, c] = w
+        self._child_mean_weights = W  # (24, J_max)
+        # Mask of which joints actually have children (for selective application)
+        self._has_children_mask = np.array([len(self._hierarchy_children.get(i, [])) > 0
+                                            for i in range(24)])
+        
+        self._inertia_scatter_built = True
+    
+    def _compute_nonleaf_end_positions(self, world_positions):
+        """Compute end-of-segment positions for all 24 joints in one batched op.
+        
+        For non-leaf joints: end_pos = mean(children positions)
+        For leaf joints: returns the joint's own position (unused but safe).
+        
+        Args:
+            world_positions: (F, J, 3) with J >= 24
+        Returns:
+            end_pos: (F, 24, 3) end positions for each segment
+        """
+        F = world_positions.shape[0]
+        J = world_positions.shape[1]
+        W = self._child_mean_weights[:, :J]  # (24, J) — trim to actual joint count
+        
+        # Batched: end_pos[f] = W @ world_positions[f]
+        # (F, 24, 3) = (24, J) @ (F, J, 3)
+        end_pos = np.einsum('ij,fjk->fik', W, world_positions)  # (F, 24, 3)
+        
+        # For leaf joints (no children), W row is zero → end_pos = 0.
+        # Replace with joint position so com = joint (safe fallback).
+        leaf_mask = ~self._has_children_mask  # (24,)
+        end_pos[:, leaf_mask, :] = world_positions[:, :24, :][:, leaf_mask, :]
+        
+        return end_pos
+
 
     def _compute_subtree_inertia(self, joint_idx, world_positions, world_orientations, limb_lengths, limb_masses):
         """
@@ -3996,6 +4109,122 @@ class SMPLProcessor:
             
             return passive_torque
 
+    def _precompute_passive_limit_tables(self):
+        """Pre-build per-joint limit arrays for vectorized passive torque."""
+        J = self.target_joint_count
+        
+        # Arrays for cone-type joints
+        self._pl_is_cone = np.zeros(J, dtype=bool)
+        self._pl_cone_limit = np.zeros(J)
+        self._pl_cone_k = np.zeros(J)
+        
+        # Arrays for hinge-type joints
+        self._pl_is_hinge = np.zeros(J, dtype=bool)
+        self._pl_hinge_axis = np.zeros(J, dtype=int)
+        self._pl_hinge_min = np.full(J, -np.pi)
+        self._pl_hinge_max = np.full(J, np.pi)
+        self._pl_hinge_k = np.zeros(J)
+        self._pl_hinge_locked = [[] for _ in range(J)]  # list of locked axis lists
+        
+        for j in range(J):
+            name = self.joint_names[j]
+            limits = self.joint_limits.get('default')
+            for key in self.joint_limits:
+                if key in name:
+                    limits = self.joint_limits[key]
+                    break
+            
+            limit_type = limits.get('type', 'cone')
+            if limit_type == 'hinge':
+                self._pl_is_hinge[j] = True
+                self._pl_hinge_axis[j] = limits.get('axis', 0)
+                self._pl_hinge_min[j] = limits.get('min', -np.pi)
+                self._pl_hinge_max[j] = limits.get('max', np.pi)
+                self._pl_hinge_k[j] = limits['k']
+                self._pl_hinge_locked[j] = limits.get('locked_axes', [])
+            else:
+                self._pl_is_cone[j] = True
+                self._pl_cone_limit[j] = limits['limit']
+                self._pl_cone_k[j] = limits['k']
+        
+        self._passive_limits_precomputed = True
+    
+    def _compute_passive_torques_batch(self, t_net_all, pose_aa_all):
+        """Compute passive torques for all joints at once.
+        
+        Args:
+            t_net_all: (F, J, 3) net torques per joint
+            pose_aa_all: (F, J, 3) local pose axis-angle per joint
+            
+        Returns:
+            t_passive: (F, J, 3) passive torques
+        """
+        if not hasattr(self, '_passive_limits_precomputed'):
+            self._precompute_passive_limit_tables()
+        
+        F, J, _ = t_net_all.shape
+        t_passive = np.zeros_like(t_net_all)
+        
+        # --- Cone joints (batch) ---
+        cone_mask = self._pl_is_cone[:J]
+        if np.any(cone_mask):
+            cone_idx = np.where(cone_mask)[0]
+            cone_pose = pose_aa_all[:, cone_idx, :]  # (F, n_cone, 3)
+            
+            # Rotation angle magnitude
+            angle = np.linalg.norm(cone_pose, axis=2)  # (F, n_cone)
+            
+            # Excess beyond limit
+            limits = self._pl_cone_limit[cone_idx]  # (n_cone,)
+            k_vals = self._pl_cone_k[cone_idx]  # (n_cone,)
+            excess = np.maximum(0, angle - limits[np.newaxis, :])  # (F, n_cone)
+            
+            # Torque magnitude: k * excess²
+            t_mag = k_vals[np.newaxis, :] * (excess ** 2)  # (F, n_cone)
+            
+            # Direction: -axis (opposes displacement)
+            safe_angle = np.where(angle > 1e-6, angle, 1.0)
+            axis = cone_pose / safe_angle[:, :, np.newaxis]  # (F, n_cone, 3)
+            axis[angle <= 1e-6] = 0.0
+            
+            cone_passive = -axis * t_mag[:, :, np.newaxis]  # (F, n_cone, 3)
+            
+            # Zero out where no excess
+            cone_passive[excess <= 0] = 0.0
+            
+            t_passive[:, cone_idx, :] = cone_passive
+        
+        # --- Hinge joints (per-joint, few of them) ---
+        hinge_mask = self._pl_is_hinge[:J]
+        if np.any(hinge_mask):
+            hinge_idx = np.where(hinge_mask)[0]
+            for j in hinge_idx:
+                ax = self._pl_hinge_axis[j]
+                angle = pose_aa_all[:, j, ax]  # (F,)
+                torque_val = np.zeros(F)
+                
+                k = self._pl_hinge_k[j]
+                min_val = self._pl_hinge_min[j]
+                max_val = self._pl_hinge_max[j]
+                
+                mask_min = angle < min_val
+                torque_val[mask_min] = k * (min_val - angle[mask_min])
+                mask_max = angle > max_val
+                torque_val[mask_max] = -k * (angle[mask_max] - max_val)
+                
+                t_passive[:, j, ax] = torque_val
+                
+                # Locked axes: passive absorbs all net torque
+                for locked_ax in self._pl_hinge_locked[j]:
+                    t_passive[:, j, locked_ax] = t_net_all[:, j, locked_ax]
+        
+        # --- Optimal passive support clipping (all joints) ---
+        mask_neg = t_passive < 0
+        t_passive[mask_neg] = np.clip(t_net_all[mask_neg], t_passive[mask_neg], 0)
+        mask_pos = t_passive >= 0
+        t_passive[mask_pos] = np.clip(t_net_all[mask_pos], 0, t_passive[mask_pos])
+        
+        return t_passive
     def _compute_subtree_com(self, joint_idx, world_positions, limb_lengths, limb_masses):
         """
         Computes the Center of Mass (COM) and Total Mass of the subtree at joint_idx.
@@ -4059,40 +4288,30 @@ class SMPLProcessor:
 
     def _compute_full_body_com(self, world_positions):
         """Computes Total Body Center of Mass (F, 3)."""
-        parents = self._get_hierarchy()
-        limb_masses = self.limb_data['masses']
-        limb_lengths = self.limb_data['lengths']
+        if not hasattr(self, '_inertia_scatter_built'):
+            self._build_inertia_scatter_tables()
+        
+        F = world_positions.shape[0]
+        
+        # Vectorized end positions for all joints
+        end_pos_all = self._compute_nonleaf_end_positions(world_positions)  # (F, 24, 3)
+        
+        # Use cached segment masses from _precompute_inertia_tables
+        joint_segment_masses = self._grav_seg_masses if hasattr(self, '_grav_seg_masses') else self._seg_mass
         
         total_mass = 0.0
-        F = world_positions.shape[0]
         weighted_pos_sum = np.zeros((F, 3))
         
         for idx in range(24):
-            name = self.joint_names[idx]
+            m = joint_segment_masses[idx]
+            if m <= 0:
+                continue
             
-            # Map joint name to limb data keys
-            m = 0.0
-            if 'pelvis' in name: m = limb_masses['pelvis']
-            elif 'hip' in name: m = limb_masses['upper_leg']
-            elif 'knee' in name: m = limb_masses['lower_leg']
-            elif 'ankle' in name: m = limb_masses['foot']
-            elif 'spine' in name: m = limb_masses['spine']
-            elif 'neck' in name: m = limb_masses.get('head', 1.0)*0.2
-            elif 'head' in name: m = limb_masses['head']*0.8
-            elif 'collar' in name: m = limb_masses['upper_arm']*0.2
-            elif 'shoulder' in name: m = limb_masses['upper_arm']*0.8
-            elif 'elbow' in name: m = limb_masses['lower_arm']
-            elif 'wrist' in name: m = limb_masses['hand']
-            # Hands/Others ignored or lumped
-            
-            if m <= 0: continue
-            
-            # Segment COM estimation
-            child_nodes = [c for c, p in enumerate(parents) if p == idx]
-            com_pos = world_positions[..., idx, :]
-            if len(child_nodes) > 0:
-                end_pos = np.mean([world_positions[..., c, :] for c in child_nodes], axis=0) # (F, 3)
-                com_pos = (world_positions[..., idx, :] + end_pos) * 0.5
+            # COM = midpoint(joint, end_pos) for non-leaf, joint for leaf
+            if self._has_children_mask[idx]:
+                com_pos = (world_positions[:, idx, :] + end_pos_all[:, idx, :]) * 0.5
+            else:
+                com_pos = world_positions[:, idx, :]
             
             total_mass += m
             weighted_pos_sum += m * com_pos
@@ -4178,14 +4397,13 @@ class SMPLProcessor:
         joint_segment_masses = self._grav_seg_masses
         children_list = self._grav_children
         
-        # Non-leaf joints: seg_com = midpoint(joint, mean(children))
+        # Non-leaf joints: seg_com = midpoint(joint, mean(children)) — vectorized
+        if not hasattr(self, '_inertia_scatter_built'):
+            self._build_inertia_scatter_tables()
+        end_pos_all = self._compute_nonleaf_end_positions(world_pos)  # (F, 24, 3)
         for idx in self._grav_nonleaf:
             m = joint_segment_masses[idx]
-            joint_pos = world_pos[:, idx, :]
-            child_nodes = children_list[idx]
-            child_positions = world_pos[:, child_nodes, :]  # (F, n_children, 3)
-            end_pos = np.mean(child_positions, axis=1)  # (F, 3)
-            seg_com = (joint_pos + end_pos) * 0.5
+            seg_com = (world_pos[:, idx, :] + end_pos_all[:, idx, :]) * 0.5
             node_masses[:, idx] = m
             node_weighted_com[:, idx, :] = seg_com * m
         
@@ -4439,6 +4657,11 @@ class SMPLProcessor:
              parents = np.array(self._get_hierarchy())
              J = world_pos.shape[1]
              
+             # Pre-compute all bone vectors: r_bone[j] = pos[j] - pos[parent[j]]
+             # This avoids repeated slicing in the loop.
+             parent_indices = np.clip(parents[:J], 0, J-1)  # clip -1 to 0 (root, unused)
+             r_bones = world_pos[:, :J, :] - world_pos[:, parent_indices, :]  # (F, J, 3)
+             
              for j in range(J-1, 0, -1):
                  parent = parents[j]
                  if parent >= 0:
@@ -4446,13 +4669,16 @@ class SMPLProcessor:
                       f_child = f_cum_grf[:, j, :]
                       f_cum_grf[:, parent, :] += f_child
                       
-                      # Propagate Moment
-                      # M_parent += M_child + (P_child - P_parent) x F_child
-                      m_child = m_cum_grf[:, j, :]
-                      r_bone = world_pos[:, j, :] - world_pos[:, parent, :]
-                      t_lever = np.cross(r_bone, f_child)
+                      # Propagate Moment: M_parent += M_child + r_bone x f_child
+                      # Inline cross product (avoids numpy dispatch overhead)
+                      rb = r_bones[:, j, :]  # (F, 3)
+                      t_lever_0 = rb[:, 1] * f_child[:, 2] - rb[:, 2] * f_child[:, 1]
+                      t_lever_1 = rb[:, 2] * f_child[:, 0] - rb[:, 0] * f_child[:, 2]
+                      t_lever_2 = rb[:, 0] * f_child[:, 1] - rb[:, 1] * f_child[:, 0]
                       
-                      m_cum_grf[:, parent, :] += m_child + t_lever
+                      m_cum_grf[:, parent, 0] += m_cum_grf[:, j, 0] + t_lever_0
+                      m_cum_grf[:, parent, 1] += m_cum_grf[:, j, 1] + t_lever_1
+                      m_cum_grf[:, parent, 2] += m_cum_grf[:, j, 2] + t_lever_2
                       
              # Combine with Gravity (Opposing)
              # Gravity Moment (t_grav) and GRF Moment (m_cum) should naturally oppose.
@@ -5489,20 +5715,25 @@ class SMPLProcessor:
                     filtered_local_q[j] = curr_global_q[j]  # Root
         
         # 3. Compose: R_child_world = R_raw_global_parent × R_local_filtered
-        # No rotation-level filtering on global — raw FK rotations are smooth
-        # (visually confirmed by rendered body). Only the per-joint velocity
-        # filter (step 5b) smooths the composed angular velocity.
+        # Vectorized quaternion multiply — no scipy Rotation objects needed.
         composed_q = np.zeros((n_joints, 4))
-        for j in range(n_joints):
+        # Root: composed = local (world rotation IS the local rotation)
+        composed_q[0] = filtered_local_q[0]
+        # Non-root: composed = quat_mul(parent_raw_global, local_filtered)
+        for j in range(1, n_joints):
             p = parents[j] if j < len(parents) else -1
-            r_local = R.from_quat(filtered_local_q[j])
             if p >= 0:
-                r_parent_raw = R.from_quat(curr_global_q[p])
-                r_composed = r_parent_raw * r_local
+                # Quaternion multiply: q1 * q2 (scipy xyzw format)
+                a = curr_global_q[p]  # parent raw global
+                b = filtered_local_q[j]  # child local filtered
+                composed_q[j] = np.array([
+                    a[3]*b[0] + a[0]*b[3] + a[1]*b[2] - a[2]*b[1],
+                    a[3]*b[1] - a[0]*b[2] + a[1]*b[3] + a[2]*b[0],
+                    a[3]*b[2] + a[0]*b[1] - a[1]*b[0] + a[2]*b[3],
+                    a[3]*b[3] - a[0]*b[0] - a[1]*b[1] - a[2]*b[2],
+                ])
             else:
-                # Root: world rotation IS the local rotation
-                r_composed = r_local
-            composed_q[j] = r_composed.as_quat()
+                composed_q[j] = filtered_local_q[j]
         
         # 5. Differentiate composed rotation for angular velocity
         prev_composed = getattr(self, name_prev_composed, None)
@@ -5513,16 +5744,40 @@ class SMPLProcessor:
             setattr(self, name_prev_vel, np.zeros((n_joints, 3)))
             return ang_vel, ang_acc
         
-        # Compute angular velocity from composed rotation differences
-        vel = np.zeros((n_joints, 3))
-        for j in range(n_joints):
-            r_curr_c = R.from_quat(composed_q[j])
-            r_prev_c = R.from_quat(prev_composed[j])
-            # Ensure shortest path
-            if np.dot(composed_q[j], prev_composed[j]) < 0:
-                r_prev_c = R.from_quat(-prev_composed[j])
-            r_diff = r_curr_c * r_prev_c.inv()
-            vel[j] = r_diff.as_rotvec() / dt
+        # Vectorized angular velocity from quaternion differences
+        # Ensure shortest path (flip prev if dot < 0)
+        dots = np.sum(composed_q * prev_composed, axis=1)  # (n_joints,)
+        prev_q = prev_composed.copy()
+        prev_q[dots < 0] *= -1
+        
+        # r_diff = composed * prev.inv()
+        # quat inverse in xyzw format: [-x, -y, -z, w]
+        prev_inv = prev_q.copy()
+        prev_inv[:, :3] *= -1  # negate xyz
+        
+        # Batch quaternion multiply: composed_q * prev_inv
+        a = composed_q   # (N, 4) xyzw
+        b = prev_inv      # (N, 4) xyzw
+        diff_q = np.empty_like(a)
+        diff_q[:, 0] = a[:, 3]*b[:, 0] + a[:, 0]*b[:, 3] + a[:, 1]*b[:, 2] - a[:, 2]*b[:, 1]
+        diff_q[:, 1] = a[:, 3]*b[:, 1] - a[:, 0]*b[:, 2] + a[:, 1]*b[:, 3] + a[:, 2]*b[:, 0]
+        diff_q[:, 2] = a[:, 3]*b[:, 2] + a[:, 0]*b[:, 1] - a[:, 1]*b[:, 0] + a[:, 2]*b[:, 3]
+        diff_q[:, 3] = a[:, 3]*b[:, 3] - a[:, 0]*b[:, 0] - a[:, 1]*b[:, 1] - a[:, 2]*b[:, 2]
+        
+        # Convert diff quaternion to rotation vector (axis-angle)
+        # rotvec = 2 * atan2(|xyz|, w) * xyz / |xyz|
+        xyz = diff_q[:, :3]                                  # (N, 3)
+        w = diff_q[:, 3]                                      # (N,)
+        sin_half = np.linalg.norm(xyz, axis=1)                # (N,)
+        angle = 2.0 * np.arctan2(sin_half, w)                 # (N,)
+        # Normalize to [-pi, pi]
+        angle = (angle + np.pi) % (2 * np.pi) - np.pi
+        safe_sin = np.where(sin_half > 1e-10, sin_half, 1.0)
+        axis = xyz / safe_sin[:, np.newaxis]
+        rotvec = angle[:, np.newaxis] * axis                   # (N, 3)
+        rotvec[sin_half <= 1e-10] = 0.0  # Zero rotation → zero velocity
+        
+        vel = rotvec / dt
         
         # 5b. Apply per-joint One Euro filter on composed velocity (matching local pipeline)
         name_vel_oef = f'_vel_one_euro_composed{state_suffix}'
@@ -6193,20 +6448,12 @@ class SMPLProcessor:
         # Store local-frame gravity for output consistency
         t_grav_vecs[:, :self.target_joint_count] = t_grav_local_all
         
-        # Passive limits (per-joint, can't easily vectorize due to name-based lookup)
+        # Passive limits (vectorized batch computation)
         t_passive_all = np.zeros_like(t_net_all)
         if options.enable_passive_limits:
-            for j in range(self.target_joint_count):
-                name = self.joint_names[j]
-                curr_pose_aa = pose_data_aa[:, j, :]
-                t_p = self._compute_passive_torque(name, t_net_all[:, j], curr_pose_aa)
-                
-                # Optimal passive support clipping
-                mask_neg = t_p < 0
-                t_p[mask_neg] = np.clip(t_net_all[:, j][mask_neg], t_p[mask_neg], 0)
-                mask_pos = t_p >= 0
-                t_p[mask_pos] = np.clip(t_net_all[:, j][mask_pos], 0, t_p[mask_pos])
-                t_passive_all[:, j] = t_p
+            t_passive_all = self._compute_passive_torques_batch(
+                t_net_all, pose_data_aa[:, :self.target_joint_count, :]
+            )
         
         t_passive_vecs[:, :self.target_joint_count] = t_passive_all
         
@@ -6793,18 +7040,6 @@ class SMPLProcessor:
              world_pos, pose_data_aa, options
         )
         
-        # --- Velocity Prep for Fusion ---
-        smoothed_vel_vec = self.prob_smoothed_vel # (J, 3)
-        if F == 1:
-             vel_y_in = smoothed_vel_vec[np.newaxis, :, getattr(self, 'internal_y_dim', 1)]
-             # Horizontal
-             yd = getattr(self, 'internal_y_dim', 1)
-             pd = [0, 2] if yd == 1 else [0, 1]
-             vel_h_in = np.linalg.norm(smoothed_vel_vec[np.newaxis, :, pd], axis=-1)
-        else:
-             # Batch - simplified
-             vel_y_in = np.zeros((F, world_pos.shape[1]))
-             vel_h_in = np.zeros((F, world_pos.shape[1]))
         
         # --- Contact Method Selection ---
         if options.contact_method == 'stability_v2':
@@ -6826,7 +7061,6 @@ class SMPLProcessor:
         
         # Standalone frame evaluator call removed — logodds structural stream
         # provides FE results internally; stability_v2 has its own pressure path.
-        _use_frame_eval = False
         _frame_cache = {}
         dt = options.dt if hasattr(options, 'dt') and options.dt > 0 else 1.0/30.0
         working_probs = contact_probs_fusion.copy()
@@ -6848,33 +7082,7 @@ class SMPLProcessor:
             if stab_press is not None and len(stab_press) == J_cp:
                 for f_idx in range(F):
                     self.contact_pressure[f_idx] = stab_press
-        elif _use_frame_eval:
-            # Frame eval path: inject physics-based forces directly,
-            # bypassing legacy probability→pressure pipeline.
-            J_cp = world_pos.shape[1]
-            self.contact_pressure = np.zeros((F, J_cp))
-            
-            # stability_v2_fe: use its corrected pressure (which already
-            # incorporates FE forces + necessity overrides)
-            stab_press = getattr(self, '_stability_computed_pressure', None)
-            if options.contact_method in ('stability_v2',) and stab_press is not None and len(stab_press) == J_cp:
-                for f_idx in range(F):
-                    self.contact_pressure[f_idx] = stab_press
-                # DEBUG
-                if getattr(self, '_v2fe_debug_count', 0) % 1000 == 1:
-                    print(f'[PRESSURE] stab_press path: [10]={stab_press[10]:.1f} [28]={stab_press[28]:.1f}')
-            else:
-                fe_forces = fe_result.force_array
-                for f_idx in range(F):
-                    n = min(len(fe_forces), J_cp)
-                    self.contact_pressure[f_idx, :n] = fe_forces[:n]
-                # DEBUG
-                if getattr(self, '_v2fe_debug_count', 0) % 1000 == 1:
-                    print(f'[PRESSURE] fe_forces path: method={options.contact_method}')
         else:
-            # DEBUG
-            if getattr(self, '_v2fe_debug_count', 0) % 1000 == 1:
-                print(f'[PRESSURE] Legacy path: fe_result={fe_result is not None} method={options.contact_method}')
             # --- Legacy Pressure Pipeline ---
             working_probs = contact_probs_fusion.copy()
             # --- Weighted Mass Distribution (for RNE GRF) ---
