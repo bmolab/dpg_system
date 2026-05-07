@@ -27,6 +27,7 @@ def register_sampler_nodes():
     Node.app.register_node('granular_sampler', GranularSamplerNode.factory)
     Node.app.register_node('scratch_sampler', ScratchSamplerNode.factory)
     Node.app.register_node('crossfade_scanner', CrossfadeScannerNode.factory)
+    Node.app.register_node('muscle_activation_fader', MuscleActivationFaderNode.factory)
 
 
 class SamplerEngineNode(Node):
@@ -2683,3 +2684,108 @@ class CrossfadeScannerNode(Node):
             self.sound_ids = [int(x) for x in container['sound_ids']]
             self.n = len(self.sound_ids)
             self.n_input.set(self.n)
+
+
+class MuscleActivationFaderNode(Node):
+    """
+    Converts a muscle activation dict (from mgl_smpl_heatmap's 'muscle activations'
+    output) into a fade list [[sid, level], ...] for the PolyphonicSamplerNode 'fade'
+    input. Each muscle name is mapped to a sound_id on first sight (insertion order
+    is stable across frames), starting at start_sid. Activations are shaped by
+    threshold/curve/gain before being emitted.
+    """
+    @staticmethod
+    def factory(name, data, args=None):
+        node = MuscleActivationFaderNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.muscle_to_sid = {}
+        self.last_input_time = 0.0
+        self.last_sent_nonzero = False
+
+        self.activation_input = self.add_input('muscle activations', callback=self.on_activations)
+        self.start_sid_input = self.add_input('start_sid', widget_type='input_int', default_value=0, callback=self.on_mapping_param_change)
+        self.gain_input = self.add_input('gain', widget_type='drag_float', default_value=1.0, min=0.0, max=10.0)
+        self.threshold_input = self.add_input('threshold', widget_type='drag_float', default_value=0.0, min=0.0, max=1.0)
+        self.curve_input = self.add_input('curve', widget_type='drag_float', default_value=1.0, min=0.1, max=4.0)
+        self.stale_timeout_input = self.add_input('stale_timeout', widget_type='drag_float', default_value=0.25, min=0.0, max=5.0)
+        self.reset_input = self.add_input('reset_mapping', widget_type='button', callback=self.on_reset)
+
+        self.fade_out = self.add_output('fade')
+        self.mapping_out = self.add_output('mapping')
+
+    def on_mapping_param_change(self):
+        # Changing start_sid invalidates the existing mapping - reassign next frame.
+        self.muscle_to_sid = {}
+
+    def on_reset(self):
+        self.muscle_to_sid = {}
+
+    def _get_or_assign_sid(self, name):
+        if name not in self.muscle_to_sid:
+            base = int(self.start_sid_input())
+            self.muscle_to_sid[name] = base + len(self.muscle_to_sid)
+        return self.muscle_to_sid[name]
+
+    def on_activations(self):
+        data = self.activation_input()
+        if not isinstance(data, dict) or not data:
+            return
+
+        gain = float(self.gain_input())
+        thresh = float(self.threshold_input())
+        curve = float(self.curve_input())
+
+        fade_list = []
+        any_nonzero = False
+        for name, act in data.items():
+            try:
+                a = float(act)
+            except (TypeError, ValueError):
+                continue
+            if a < thresh:
+                a = 0.0
+            else:
+                if curve != 1.0:
+                    a = a ** curve
+                a *= gain
+                if a > 1.0:
+                    a = 1.0
+            if a > 0.0:
+                any_nonzero = True
+            sid = self._get_or_assign_sid(name)
+            fade_list.append([sid, round(a, 4)])
+
+        self.fade_out.send(fade_list)
+        self.mapping_out.send(dict(self.muscle_to_sid))
+
+        self.last_input_time = time.time()
+        self.last_sent_nonzero = any_nonzero
+        if any_nonzero:
+            # Watch for the source going silent so we can release voices.
+            self.add_frame_task()
+
+    def frame_task(self):
+        if not self.last_sent_nonzero:
+            self.remove_frame_tasks()
+            return
+        timeout = float(self.stale_timeout_input())
+        if (time.time() - self.last_input_time) < timeout:
+            return
+        # Source has gone silent while voices were still up. Emit one
+        # all-zero fade list across the known mapping so auto_stop can fire.
+        if self.muscle_to_sid:
+            zero_list = [[sid, 0.0] for sid in self.muscle_to_sid.values()]
+            self.fade_out.send(zero_list)
+        self.last_sent_nonzero = False
+        self.remove_frame_tasks()
+
+    def save_custom(self, container):
+        container['muscle_to_sid'] = dict(self.muscle_to_sid)
+
+    def load_custom(self, container):
+        if 'muscle_to_sid' in container:
+            self.muscle_to_sid = {str(k): int(v) for k, v in container['muscle_to_sid'].items()}
