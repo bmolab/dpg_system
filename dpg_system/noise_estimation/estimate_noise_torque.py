@@ -50,10 +50,11 @@ def _to_jsonable(obj):
 
 
 # Ensure dpg_system is importable when running as a standalone script
-_this_dir = os.path.dirname(os.path.abspath(__file__))
-_parent_dir = os.path.dirname(_this_dir)
-if _parent_dir not in sys.path:
-    sys.path.insert(0, _parent_dir)
+_this_dir = os.path.dirname(os.path.abspath(__file__))       # noise_estimation/
+_package_dir = os.path.dirname(_this_dir)                     # dpg_system/dpg_system/
+_project_dir = os.path.dirname(_package_dir)                  # dpg_system/
+if _project_dir not in sys.path:
+    sys.path.insert(0, _project_dir)
 
 from dpg_system.smpl_processor import SMPLProcessor, SMPLProcessingOptions
 
@@ -271,6 +272,81 @@ class CadenceInfo:
     coverage: float          # fraction of windows showing cadence
 
 
+MIN_SALVAGEABLE_FRAMES = 500   # minimum frames for a segment to be usable after splitting
+
+@dataclass
+class SurgerySegment:
+    """A continuous segment between stream breaks that may be usable."""
+    start: int               # first frame (inclusive)
+    end: int                 # last frame (inclusive)
+    n_frames: int
+    duration_s: float
+    usable: bool             # True if >= MIN_SALVAGEABLE_FRAMES
+
+
+# ── Corruption zone detection ────────────────────────────────────────────
+# Sustained multi-second regions where EXTREMITY joints (shoulder, elbow,
+# wrist) produce garbage data (marker dropout, capture failure).
+# Only arm-chain joints are checked because leg/pelvis velocity elevation
+# during dynamic movement (floor work, dancing) is expected physics.
+#
+# KEY INSIGHT: Absolute velocity thresholds cannot distinguish fast movement
+# from corruption.  We use LOCAL CONTEXT: compare short-term velocity
+# against a long-term local baseline.  Corruption = sustained elevation
+# relative to the local neighbourhood, NOT relative to the global median.
+# This correctly handles:
+#   - Take 3: fast arm movement during dance → local baseline also high → no flag
+#   - Maritsa: arm teleportation during slow movement → local baseline low → flag
+CORRUPTION_MIN_DURATION_FRAMES = 60   # minimum run length (~0.5s at 120fps)
+CORRUPTION_SHORT_WINDOW_S = 1.0       # short-term rolling mean window
+CORRUPTION_LONG_WINDOW_S = 10.0       # long-term rolling median window (local baseline)
+CORRUPTION_LOCAL_RATIO = 4.0          # flag if short/long > this ratio
+CORRUPTION_VEL_FLOOR = 3.0            # absolute minimum velocity to flag (rad/s)
+CORRUPTION_MERGE_GAP_S = 1.0          # merge zones separated by less than this
+# Only these joints are checked for corruption (arm chain).
+# Leg/pelvis/spine activity during dynamic movement is NOT corruption.
+CORRUPTION_JOINTS = {16, 17, 18, 19, 20, 21}  # L/R shoulder, elbow, wrist
+
+@dataclass
+class CorruptionZone:
+    """A sustained period of corrupted data on specific joints."""
+    start: int               # first frame (inclusive)
+    end: int                 # last frame (inclusive)
+    n_frames: int
+    duration_s: float
+    joints: List[str]        # affected joint names
+    joint_indices: List[int] # affected joint indices
+    mean_vel: float          # mean velocity during corruption (rad/s)
+    max_vel: float           # peak velocity during corruption
+
+
+@dataclass
+class ExcisionInfo:
+    """Summary of corruption zones requiring excision (section removal)."""
+    n_zones: int
+    total_corrupted_frames: int
+    corrupted_fraction: float
+    zones: List[CorruptionZone] = field(default_factory=list)
+
+
+@dataclass
+class SurgeryInfo:
+    """Stream break and corruption analysis — separate from noise quality scoring.
+    
+    Two types of structural issues:
+    1. Stream breaks — whole-body discontinuities → split the file
+    2. Corruption zones — sustained joint-level garbage → excise sections
+    """
+    n_breaks: int
+    needs_surgery: bool           # True if breaks or corruption present
+    segments: List[SurgerySegment] = field(default_factory=list)
+    n_usable_segments: int = 0    # segments >= MIN_SALVAGEABLE_FRAMES
+    usable_frames: int = 0        # total frames in usable segments
+    usable_fraction: float = 0.0  # fraction of file that is usable
+    recommendation: str = ''      # 'none', 'split', 'excise', 'split+excise', 'discard'
+    excision: Optional[ExcisionInfo] = None
+
+
 @dataclass
 class TorqueFileReport:
     filename: str
@@ -297,6 +373,7 @@ class TorqueFileReport:
     glitch_clusters: List[Tuple[int, int]] = field(default_factory=list)
     clean_segments: List[CleanSegment] = field(default_factory=list)
     stream_breaks: List[StreamBreak] = field(default_factory=list)
+    surgery: Optional[SurgeryInfo] = None
     cadence: Optional[CadenceInfo] = None
     motion_profile: Optional['MotionProfile'] = None
     ground_contact: Optional['GroundContactInfo'] = None
@@ -380,11 +457,30 @@ def _compute_angular_velocity(poses_aa, fps, n_joints=22):
 
 STREAM_BREAK_TRANS_FACTOR = 20.0   # flag if root displacement > factor × median
 STREAM_BREAK_POSE_FACTOR = 15.0    # flag if max-joint angle change > factor × median
-STREAM_BREAK_RADIUS = 3            # frames around break to discount in scoring
+STREAM_BREAK_RADIUS = 20           # frames around break to exclude from scoring
 STREAM_BREAK_DISCOUNT = 0.1        # score multiplier for stream break frames
 
+# Minimum joints that must teleport simultaneously to qualify as a stream break.
+# Single/few-joint teleportation (e.g., wrist marker dropout) is NOISE, not a
+# data discontinuity.  Real stream breaks (concatenated takes, capture resets)
+# affect the whole skeleton including the torso.
+MIN_JOINTS_FOR_BREAK = 8
+# Per-joint threshold for "this joint teleported": factor × per-joint median
+JOINT_BREAK_FACTOR = 10.0
+# Core joint indices that MUST be involved for a pose-based stream break.
+# A limb-chain glitch (wrist→elbow→shoulder) can pull 5+ joints without
+# affecting the core.  Real capture resets always move the torso.
+CORE_JOINTS = {0, 1, 2, 3, 6, 9}  # pelvis, L/R hip, spine1, spine2, spine3
+
 def _detect_stream_breaks(poses, trans, fps):
-    """Detect single-frame discontinuities in root position or joint angles.
+    """Detect whole-body discontinuities (concatenated takes, capture resets).
+    
+    A stream break requires EITHER:
+      - Root translation jump > threshold, OR
+      - At least MIN_JOINTS_FOR_BREAK joints teleporting AND at least one
+        core joint (pelvis/spine/hip) involved
+    
+    Single-joint or single-limb-chain teleportation is NOT a stream break.
     
     Returns:
         breaks: list of StreamBreak
@@ -398,31 +494,65 @@ def _detect_stream_breaks(poses, trans, fps):
     trans_disp = np.linalg.norm(np.diff(trans, axis=0), axis=1)  # (T-1,)
     trans_median = np.median(trans_disp) if len(trans_disp) > 0 else 0
     
-    # Per-joint angular displacement, take max across joints
+    # Per-joint angular displacement
     pose_disp = np.linalg.norm(np.diff(poses_3d, axis=0), axis=2)  # (T-1, J)
+    
+    # Per-joint median displacement for threshold computation
+    joint_medians = np.median(pose_disp, axis=0)  # (J,)
+    joint_medians = np.maximum(joint_medians, 0.01)  # floor to avoid div-by-zero
+    joint_thresholds = joint_medians * JOINT_BREAK_FACTOR  # (J,)
+    
+    # Whole-skeleton threshold (for the max-across-joints metric)
     pose_max = np.max(pose_disp, axis=1)  # (T-1,)
     pose_median = np.median(pose_max) if len(pose_max) > 0 else 0
     
     trans_thresh = max(trans_median * STREAM_BREAK_TRANS_FACTOR, 0.05)  # at least 5cm
     pose_thresh = max(pose_median * STREAM_BREAK_POSE_FACTOR, 0.3)     # at least ~17°
     
+    # Translation-shift threshold: lower than full stream break, but requires
+    # low pose change.  Catches sensor reference switches where the body
+    # shifts position without changing pose.
+    TRANS_SHIFT_FACTOR = 10.0     # trans > 10× median
+    TRANS_SHIFT_POSE_MAX = 2.0    # pose < 2× pose median
+    trans_shift_thresh = max(trans_median * TRANS_SHIFT_FACTOR, 0.03)  # at least 3cm
+    pose_shift_ceil = pose_median * TRANS_SHIFT_POSE_MAX
+    
     breaks = []
     break_frames = set()
     
     for f in range(len(trans_disp)):
         is_trans = trans_disp[f] > trans_thresh
-        is_pose = pose_max[f] > pose_thresh
         
-        if is_trans or is_pose:
+        # Translation-shift: high trans displacement, low pose change.
+        # The body teleports in space but maintains the same pose.
+        is_trans_shift = (trans_disp[f] > trans_shift_thresh and
+                          pose_max[f] < pose_shift_ceil and
+                          not is_trans)  # don't double-count with full break
+        
+        # Count how many joints teleported in this frame
+        joints_exceeded = pose_disp[f] > joint_thresholds  # (J,) boolean
+        exceeded_indices = set(np.where(joints_exceeded)[0].tolist())
+        n_joints_jumped = len(exceeded_indices)
+        
+        # Whole-body = enough joints AND at least one core joint involved
+        has_core = bool(exceeded_indices & CORE_JOINTS)
+        is_whole_body = n_joints_jumped >= MIN_JOINTS_FOR_BREAK and has_core
+        
+        # A stream break is a WHOLE-BODY discontinuity:
+        # either root translation jump OR many joints teleporting together
+        # OR a translation-shift (position jump, same pose)
+        if is_trans or is_whole_body or is_trans_shift:
             worst_j_idx = int(np.argmax(pose_disp[f]))
             worst_j_name = SMPL_JOINT_NAMES[worst_j_idx] if worst_j_idx < len(SMPL_JOINT_NAMES) else f'j{worst_j_idx}'
             
-            if is_trans and is_pose:
+            if is_trans and is_whole_body:
                 btype = 'both'
             elif is_trans:
                 btype = 'translation'
+            elif is_trans_shift:
+                btype = 'trans_shift'
             else:
-                btype = 'pose'
+                btype = 'multi_joint'
             
             breaks.append(StreamBreak(
                 frame=f + 1,  # the discontinuity is AT frame f+1
@@ -610,9 +740,19 @@ def _build_classification(report):
     ic = {'clean': '✅', 'moderate': '⚠️', 'problematic': '❌'}
     parts.append(f"{ic.get(report.classification, '')} {report.classification.upper()} capture")
     
-    # Stream breaks
-    if report.stream_breaks:
-        parts.append(f"⚡ {len(report.stream_breaks)} stream break(s)")
+    # Surgery (stream breaks + corruption)
+    if report.surgery and report.surgery.needs_surgery:
+        s = report.surgery
+        if s.recommendation == 'split':
+            parts.append(f"✂️ {s.n_breaks} break(s) → split ({s.n_usable_segments} usable, {s.usable_fraction:.0%})")
+        elif s.recommendation == 'excise':
+            ex = s.excision
+            parts.append(f"🔪 {ex.n_zones} corruption zone(s) → excise ({ex.corrupted_fraction:.0%} corrupted)")
+        elif s.recommendation == 'split+excise':
+            ex = s.excision
+            parts.append(f"✂️🔪 {s.n_breaks} break(s) + {ex.n_zones} corruption zone(s)")
+        elif s.recommendation == 'discard':
+            parts.append(f"⚡ {s.n_breaks} break(s) → discard")
     
     # Cadence
     if report.cadence and report.cadence.detected:
@@ -646,7 +786,8 @@ def _build_classification(report):
     return detail, recs
 
 
-def analyze_file(filepath, total_mass=75.0, gender_override=None, verbose=True):
+def analyze_file(filepath, total_mass=75.0, gender_override=None,
+                 smooth_input_window=0, verbose=True):
     """
     Run torque-based noise analysis on a single .npz file.
     
@@ -654,6 +795,8 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None, verbose=True):
         filepath: path to .npz file
         total_mass: body mass in kg (default 75)
         gender_override: override gender from file metadata
+        smooth_input_window: Savitzky-Golay input smoothing window (0=off, 3/5/7).
+            Use 3 for files with 3-frame cadence sub-sampling artifacts.
         verbose: print report to console
     
     Returns:
@@ -703,6 +846,17 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None, verbose=True):
     if verbose and stream_breaks:
         print(f"  Detected {len(stream_breaks)} stream break(s)")
     
+    # ── Detect corruption zones (raw pose level, before torque filtering)
+    # Done early so corruption frames can be excluded from torque scoring.
+    # The torque pipeline's SG filtering absorbs arm corruption, making it
+    # invisible to the torque scorer.  We detect it here on raw poses.
+    corruption_zones, corruption_mask = _detect_corruption_zones(poses, fps)
+    
+    # Merge break + corruption into a unified structural exclusion mask.
+    # Frames in either category are STRUCTURAL issues, not motion quality
+    # issues, and must be excluded from torque-based noise scoring.
+    structural_mask = break_mask | corruption_mask
+    
     # ── Detect cadence pattern ────────────────────────────────────────
     cadence = _detect_cadence(poses, fps)
     if verbose and cadence and cadence.detected:
@@ -722,7 +876,8 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None, verbose=True):
     ang_vel = _compute_angular_velocity(poses, fps)  # (T, J)
     
     # ── Initialize SMPLProcessor ──────────────────────────────────────
-    model_path = os.path.dirname(os.path.abspath(__file__))
+    # model_path must contain smplh/ directory with SMPLH_{GENDER}.pkl
+    model_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # dpg_system/
     processor = SMPLProcessor(
         framerate=fps,
         betas=betas,
@@ -732,11 +887,14 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None, verbose=True):
     )
     processor.set_axis_permutation('x, z, -y')
     
-    # Options matching smpl_torque node defaults
-    # IMPORTANT: The CoM One Euro filter params below must match the node's
-    # widget defaults, NOT the SMPLProcessingOptions dataclass defaults.
-    # The node defaults have com_pos_min_cutoff=999 (position filter OFF),
-    # while the dataclass defaults have 8.0 (heavy smoothing that hides spikes).
+    # Options matching smpl_torque node defaults (as of 2026-05-06).
+    # These must mirror the node's live widget values, NOT the
+    # SMPLProcessingOptions dataclass defaults.
+    #
+    # For noise detection we keep rate limiting / jitter / KF OFF
+    # so we see raw anomalies, but all physics settings (contact method,
+    # logodds params, CoM filters, acc smoothing) match the live node
+    # so that torques are computed identically.
     options = SMPLProcessingOptions(
         input_type='axis_angle',
         input_up_axis='Y',
@@ -744,29 +902,53 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None, verbose=True):
         quat_format='wxyz',
         return_quats=False,
         dt=dt,
+
+        # Physics
         add_gravity=True,
         enable_passive_limits=True,
         enable_apparent_gravity=True,
+        use_s_curve_spine=True,
+        world_frame_dynamics=True,
+
+        # Floor / contact
         floor_enable=True,
         floor_height=0.0,
         floor_tolerance=0.15,
-        contact_method='stability_v2',
-        world_frame_dynamics=True,
-        use_s_curve_spine=True,
-        enable_frame_evaluator=True,    # Match node: physics-based contact forces
-        # All rate limiting / filtering OFF (match node defaults)
+        contact_method='logodds_valved',
+        enable_body_contacts=True,
+
+        # LogOdds evidence streams (match node defaults)
+        logodds_enable_height=True,
+        logodds_enable_kinematic=True,
+        logodds_enable_structural=True,
+        logodds_enable_divergence=True,
+        logodds_weight_height=1.0,
+        logodds_weight_kinematic=0.5,
+        logodds_weight_structural=1.0,
+        logodds_weight_divergence=1.0,
+        logodds_decay_rate=0.90,
+        logodds_struct_force_ema_alpha=1.0,
+        logodds_struct_relief_logodds=0.3,
+
+        # All rate limiting / filtering OFF — we want RAW anomalies
         enable_rate_limiting=False,
         enable_jitter_damping=False,
         enable_kf_smoothing=False,
         enable_velocity_gate=False,
         enable_one_euro_filter=False,
-        smooth_input_window=0,
-        # CoM One Euro filter params — match smpl_torque node widget defaults
-        com_pos_min_cutoff=999.0,   # Position filter OFF (node default)
+        smooth_input_window=smooth_input_window,
+        smooth_contact_forces=False,
+
+        # Acceleration smoothing (Savitzky-Golay derivative window)
+        acc_smooth_window=7,
+        torque_smooth_window=0,
+
+        # CoM One Euro filter params — match node widget defaults
+        com_pos_min_cutoff=999.0,   # Position filter OFF
         com_pos_beta=1.0,
-        com_vel_min_cutoff=20.0,    # Velocity filter — light smoothing
+        com_vel_min_cutoff=20.0,    # Velocity: light smoothing
         com_vel_beta=0.1,
-        com_acc_min_cutoff=5.0,     # Acceleration filter
+        com_acc_min_cutoff=5.0,     # Acceleration
         com_acc_beta=0.8,
     )
     
@@ -883,6 +1065,19 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None, verbose=True):
     s_effort = np.maximum(0, (effort_spike - EFFORT_SPIKE_WARN) / EFFORT_SPIKE_WARN) * W_EFFORT
     s_jitter = np.maximum(0, (jitter_rate - JITTER_THRESH) / (1.0 - JITTER_THRESH + 1e-6)) * W_JITTER
     
+    # ── Velocity-gated effort discount ─────────────────────────────────
+    # Noise glitches produce high effort at LOW angular velocity (the joint
+    # isn't actually moving).  Real dynamic maneuvers (cartwheels, jumps)
+    # produce high effort at HIGH angular velocity (the joint IS moving).
+    # Discount the effort signal when velocity is above a threshold.
+    EFFORT_VEL_GATE = 3.0     # rad/s — above this, effort is expected
+    EFFORT_VEL_SCALE = 10.0   # rad/s — at this velocity, full discount
+    vel_discount = np.clip(
+        1.0 - (ang_vel[:, :N_JOINTS] - EFFORT_VEL_GATE) / EFFORT_VEL_SCALE,
+        0.1, 1.0
+    )  # (T, J): 1.0 when slow (suspicious), 0.1 when fast (expected)
+    s_effort *= vel_discount
+    
     # Per-joint combined score: (T, J)
     joint_scores = s_surprise + s_tv + s_effort + s_jitter
     
@@ -903,6 +1098,26 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None, verbose=True):
         # Discount frames that are part of long runs
         sustained = run_len > TRANSIENCE_WINDOW
         joint_scores[sustained, j] *= TRANSIENCE_DISCOUNT
+    
+    # ── Dynamic motion discount ───────────────────────────────────────
+    # When the whole body is in fast motion (cartwheels, flips, jumps),
+    # high torque across joints is expected physics.  Noise glitches
+    # happen at ANY activity level, but legitimate dynamics only at high
+    # activity.  Discount scores proportionally to how far above median
+    # the per-frame total body velocity is.
+    body_vel_total = np.sum(ang_vel[:, :N_JOINTS], axis=1)  # (T,) rad/s
+    vel_p50 = np.percentile(body_vel_total, 50) if T > 0 else 0
+    vel_p90 = np.percentile(body_vel_total, 90) if T > 0 else 0
+    # Gate: starts discounting at p75 of the file's velocity distribution
+    vel_gate = np.percentile(body_vel_total, 75) if T > 0 else 0
+    vel_range = max(vel_p90 - vel_gate, 5.0)  # avoid div-by-zero
+    # Discount: 1.0 at vel_gate, 0.15 at vel_p90+
+    DYNAMIC_MOTION_DISCOUNT_MIN = 0.15
+    dynamic_discount = np.clip(
+        1.0 - (body_vel_total - vel_gate) / vel_range * (1.0 - DYNAMIC_MOTION_DISCOUNT_MIN),
+        DYNAMIC_MOTION_DISCOUNT_MIN, 1.0
+    )  # (T,)
+    joint_scores *= dynamic_discount[:, np.newaxis]  # broadcast to (T, J)
     
     # ── Contact-event discount ────────────────────────────────────────
     # Torque spikes during contact state changes (touchdown, liftoff, hand plant)
@@ -940,6 +1155,36 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None, verbose=True):
             if chain_j < N_JOINTS:
                 contact_event_mask[transition_window, chain_j] = CONTACT_EVENT_DISCOUNT
     
+    # ── Load-bearing discount ─────────────────────────────────────────
+    # When a contact joint is actively bearing weight (not just transitioning),
+    # high torque in the kinetic chain is expected physics (e.g., shoulder
+    # torque during a cartwheel hand plant).  Apply a proportional discount
+    # based on the fraction of body weight carried by that chain.
+    LOAD_BEARING_THRESH = 20.0     # N — minimum force for load-bearing
+    LOAD_BEARING_DISCOUNT = 0.1    # score multiplier when bearing full weight
+    
+    for contact_j, chain_joints in CONTACT_CHAIN.items():
+        if contact_j >= N_CONTACT_JOINTS:
+            continue
+        
+        force_j = contact_forces[:, contact_j]  # (T,)
+        bearing = force_j > LOAD_BEARING_THRESH  # (T,) boolean
+        
+        if np.any(bearing):
+            # Discount proportional to force fraction (normalized to total mass)
+            total_weight = 75.0 * 9.81  # ~735 N
+            force_frac = np.clip(force_j / total_weight, 0, 1)  # (T,)
+            # Blend: full weight → LOAD_BEARING_DISCOUNT, zero weight → 1.0
+            load_discount = 1.0 - force_frac * (1.0 - LOAD_BEARING_DISCOUNT)
+            
+            for chain_j in chain_joints:
+                if chain_j < N_JOINTS:
+                    # Take the minimum of existing discount and load-bearing discount
+                    contact_event_mask[bearing, chain_j] = np.minimum(
+                        contact_event_mask[bearing, chain_j],
+                        load_discount[bearing]
+                    )
+    
     joint_scores *= contact_event_mask
     
     # ── Airborne discount ────────────────────────────────────────────
@@ -960,11 +1205,12 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None, verbose=True):
     # Apply discount to ALL joints during airborne phases
     joint_scores[airborne_expanded] *= AIRBORNE_DISCOUNT
     
-    # ── Stream break discount ─────────────────────────────────────────
-    # Frames near detected stream breaks are data discontinuities, not noise.
-    # Discount their scores heavily so they don't inflate the file-level score.
-    if np.any(break_mask):
-        joint_scores[break_mask] *= STREAM_BREAK_DISCOUNT
+    # ── Structural exclusion (breaks + corruption) ─────────────────────
+    # Stream breaks and corruption zones are STRUCTURAL issues, not
+    # motion quality issues.  Exclude them entirely from the noise
+    # score computation.  They are reported separately via SurgeryInfo.
+    if np.any(structural_mask):
+        joint_scores[structural_mask] = 0
     
     # Apply joint importance weighting
     weighted_scores = joint_scores * JOINT_IMPORTANCE[np.newaxis, :]
@@ -974,16 +1220,19 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None, verbose=True):
     worst_joint_per_frame = np.argmax(weighted_scores, axis=1)  # (T,)
     
     # ── Build frame-level results ─────────────────────────────────────
-    glitch_mask = frame_scores >= GLITCH_THRESH
-    suspect_mask = (frame_scores >= SUSPECT_THRESH) & ~glitch_mask
+    # Exclude structural frames (breaks + corruption) from glitch/suspect counts
+    non_structural = ~structural_mask
+    glitch_mask = (frame_scores >= GLITCH_THRESH) & non_structural
+    suspect_mask = (frame_scores >= SUSPECT_THRESH) & ~glitch_mask & non_structural
     n_g = int(np.sum(glitch_mask))
     n_s = int(np.sum(suspect_mask))
-    g_frac = n_g / max(T, 1)
+    T_valid = int(np.sum(non_structural))  # frames used for scoring
+    g_frac = n_g / max(T_valid, 1)
     
     # Glitch frame details (sorted by score)
     glitch_list = []
     for t in range(T):
-        if frame_scores[t] >= GLITCH_THRESH:
+        if frame_scores[t] >= GLITCH_THRESH and non_structural[t]:
             wj = int(worst_joint_per_frame[t])
             glitch_list.append(FrameScore(
                 frame=t,
@@ -1000,25 +1249,30 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None, verbose=True):
     # Clusters
     clusters = _find_clusters(sorted(s.frame for s in glitch_list))
     
-    # Clean segments
-    clean = _find_clean_segments(frame_scores, fps)
+    # Clean segments — use structural mask so break AND corruption frames
+    # are excluded from the "clean" analysis
+    clean = _find_clean_segments(frame_scores, fps, corruption_mask=structural_mask)
     
     # ── Per-joint noise profiles ──────────────────────────────────────
     joint_profiles = []
     for j in range(N_JOINTS):
-        j_glitch = int(np.sum(joint_scores[:, j] >= GLITCH_THRESH))
-        j_suspect = int(np.sum((joint_scores[:, j] >= SUSPECT_THRESH) & (joint_scores[:, j] < GLITCH_THRESH)))
-        j_frac = j_glitch / max(T, 1)
+        # Exclude structural frames from per-joint stats
+        j_scores_valid = joint_scores[non_structural, j]
+        j_glitch = int(np.sum(j_scores_valid >= GLITCH_THRESH))
+        j_suspect = int(np.sum((j_scores_valid >= SUSPECT_THRESH) & (j_scores_valid < GLITCH_THRESH)))
+        j_frac = j_glitch / max(T_valid, 1)
         
+        surprise_valid = surprise[non_structural, j]
+        effort_valid = effort[non_structural, j]
         prof = JointNoiseProfile(
             joint_idx=j,
             joint_name=SMPL_JOINT_NAMES[j],
             n_glitch_frames=j_glitch,
             n_suspect_frames=j_suspect,
-            mean_surprise=round(float(np.mean(surprise[:, j])), 3),
-            max_surprise=round(float(np.max(surprise[:, j])), 2),
-            mean_effort=round(float(np.mean(effort[:, j])), 4),
-            max_effort=round(float(np.max(effort[:, j])), 3),
+            mean_surprise=round(float(np.mean(surprise_valid)), 3),
+            max_surprise=round(float(np.max(surprise_valid)), 2),
+            mean_effort=round(float(np.mean(effort_valid)), 4),
+            max_effort=round(float(np.max(effort_valid)), 3),
             glitch_fraction=round(j_frac, 6),
         )
         joint_profiles.append(prof)
@@ -1026,21 +1280,60 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None, verbose=True):
     # Sort by glitch count (noisiest first)
     joint_profiles.sort(key=lambda p: -(p.n_glitch_frames + p.n_suspect_frames * 0.5))
     
-    # ── File-level scoring ────────────────────────────────────────────
-    peak = float(np.max(frame_scores)) if T > 0 else 0
-    p95 = float(np.percentile(frame_scores, 95)) if T > 0 else 0
-    p99 = float(np.percentile(frame_scores, 99)) if T > 0 else 0
+    # ── File-level scoring (non-break frames only) ────────────────────
+    scores_valid = frame_scores[non_structural] if T_valid > 0 else frame_scores
+    peak = float(np.max(scores_valid)) if T_valid > 0 else 0
+    p95 = float(np.percentile(scores_valid, 95)) if T_valid > 0 else 0
+    p99 = float(np.percentile(scores_valid, 99)) if T_valid > 0 else 0
     
-    # Score: weighted combination of glitch density, peak severity, and P99
-    # Scaled so that a file with ~5% glitch frames and moderate peaks ≈ 50
-    ns = g_frac * 200 + min(peak * 3, 40) + p99 * 10
+    # Raw signal severity — computed on NON-STRUCTURAL frames only.
+    # Break/corruption anomalies are structural, not motion noise.
+    surprise_valid_all = surprise[non_structural] if T_valid > 0 else surprise
+    effort_valid_all = effort_spike[non_structural] if T_valid > 0 else effort_spike
+    max_raw_surprise = float(np.max(surprise_valid_all)) if T_valid > 0 else 0
+    max_raw_effort = float(np.max(effort_valid_all)) if T_valid > 0 else 0
+    
+    # Score: multi-component to handle different noise profiles.
+    #
+    # Component 1: Glitch FRACTION — how much of the valid file is noisy
+    score_frac = g_frac * 200
+    
+    # Component 2: Peak weighted frame score — worst-case (after discounts)
+    score_peak = min(peak * 3, 30)
+    
+    # Component 3: P99 of frame scores — captures persistent noise
+    score_p99 = p99 * 10
+    
+    # Component 4: Raw surprise severity — captures extreme teleportation
+    score_raw = min(max_raw_surprise * 0.05, 25)
+    
+    # Component 5: Absolute glitch count — more glitches = more problematic
+    score_count = min(n_g * 0.1, 10) if n_g > 3 else 0
+    
+    ns = score_frac + score_peak + score_p99 + score_raw + score_count
     ns = min(100.0, ns)
     
-    if g_frac < 0.01 and peak < 2.0:
+    if n_g <= 3 and peak < 1.5:
         cls = 'clean'
-    elif g_frac < 0.05 and peak < 5.0:
+    elif g_frac < 0.03 and peak < 5.0 and max_raw_surprise < 300:
         cls = 'moderate'
     else:
+        cls = 'problematic'
+    
+    # ── Surgery analysis (uses corruption zones computed earlier) ─────────
+    surgery = _analyze_surgery(stream_breaks, T, fps, corruption_zones=corruption_zones)
+    
+    # Component 6: Corruption fraction — raw pose level evidence that the
+    # torque pipeline's filtering has absorbed.  This is the pre-filtering
+    # signal that would otherwise be invisible to the torque scorer.
+    corruption_frac = surgery.excision.corrupted_fraction if surgery.excision else 0.0
+    score_corruption = corruption_frac * 50  # 50% corruption → +25 points
+    ns += score_corruption
+    ns = min(100.0, ns)
+    
+    # Corruption fraction also bumps classification.
+    # >10% arm corruption means the file is structurally compromised.
+    if corruption_frac > 0.10:
         cls = 'problematic'
     
     report = TorqueFileReport(
@@ -1052,7 +1345,7 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None, verbose=True):
         n_glitch_frames=n_g,
         n_suspect_frames=n_s,
         glitch_fraction=round(g_frac, 6),
-        max_surprise=round(float(np.max(surprise)), 2) if T > 0 else 0,
+        max_surprise=round(max_raw_surprise, 2),
         max_tv_ratio=round(float(np.max(tv_ratio)), 1) if T > 0 else 0,
         max_effort=round(float(np.max(effort)), 3) if T > 0 else 0,
         p95_score=round(p95, 4),
@@ -1062,6 +1355,7 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None, verbose=True):
         glitch_clusters=clusters,
         clean_segments=clean,
         stream_breaks=stream_breaks,
+        surgery=surgery,
         cadence=cadence,
         motion_profile=motion_profile,
         ground_contact=ground_contact,
@@ -1078,6 +1372,235 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None, verbose=True):
 
 # ── Helpers ───────────────────────────────────────────────────────────────
 
+def _detect_corruption_zones(poses, fps):
+    """Detect sustained joint-level corruption (marker dropout, capture failure).
+    
+    Uses LOCAL CONTEXT: compares each joint's short-term velocity against its
+    own long-term local baseline (rolling median).  This correctly distinguishes
+    between fast movement (both short and long terms are high → low ratio) and
+    corruption during slow movement (short term spikes while baseline is low
+    → high ratio).
+    
+    Returns:
+        zones: list of CorruptionZone
+        corruption_mask: (T,) boolean array, True for frames in any corruption zone
+    """
+    T = poses.shape[0]
+    if T < CORRUPTION_MIN_DURATION_FRAMES * 2:
+        return [], np.zeros(T, dtype=bool)
+    
+    nj = poses.shape[1] // 3 if poses.ndim == 2 else poses.shape[1]
+    nj = min(nj, N_JOINTS)
+    poses_3d = poses.reshape(T, -1, 3)[:, :nj, :]
+    
+    # Per-joint angular velocity magnitude (rad/s)
+    vel = np.linalg.norm(np.diff(poses_3d, axis=0), axis=2) * fps  # (T-1, J)
+    
+    # Window sizes
+    w_short = max(3, int(CORRUPTION_SHORT_WINDOW_S * fps))
+    w_long = max(w_short * 2, int(CORRUPTION_LONG_WINDOW_S * fps))
+    merge_gap = int(CORRUPTION_MERGE_GAP_S * fps)
+    
+    short_kernel = np.ones(w_short) / w_short
+    
+    # Per-joint: find sustained locally-anomalous velocity runs.
+    # Only check arm-chain joints.
+    per_joint_runs = {}  # j -> list of (start, end)
+    
+    for j in sorted(CORRUPTION_JOINTS):
+        v = vel[:, j]
+        
+        # Short-term rolling mean: captures current activity
+        short_mean = np.convolve(v, short_kernel, mode='same')
+        
+        # Long-term rolling median: captures local baseline.
+        # Uses a strided approach for efficiency on long files.
+        # For each frame, the local baseline is the median velocity over
+        # the surrounding w_long frames.
+        half_long = w_long // 2
+        long_median = np.empty_like(v)
+        for t in range(len(v)):
+            lo = max(0, t - half_long)
+            hi = min(len(v), t + half_long + 1)
+            long_median[t] = np.median(v[lo:hi])
+        
+        # Floor the local baseline to avoid division by zero and to avoid
+        # flagging noise during near-stillness
+        long_median_floor = np.maximum(long_median, 0.5)
+        
+        # Local surprise ratio: how anomalous is the current velocity
+        # relative to the local baseline?
+        ratio = short_mean / long_median_floor
+        
+        # Flag frames where BOTH conditions hold:
+        #   1. Local surprise ratio is high (short >> long)
+        #   2. Absolute velocity exceeds floor (to avoid flagging stillness noise)
+        high = (ratio > CORRUPTION_LOCAL_RATIO) & (short_mean > CORRUPTION_VEL_FLOOR)
+        
+        # Find runs of CORRUPTION_MIN_DURATION_FRAMES+ frames
+        runs = []
+        start = None
+        for t in range(len(high)):
+            if high[t]:
+                if start is None:
+                    start = t
+            else:
+                if start is not None and (t - start) >= CORRUPTION_MIN_DURATION_FRAMES:
+                    runs.append((start, t - 1))
+                start = None
+        if start is not None and (len(high) - start) >= CORRUPTION_MIN_DURATION_FRAMES:
+            runs.append((start, len(high) - 1))
+        
+        # Merge nearby runs
+        merged = []
+        for s, e in runs:
+            if merged and (s - merged[-1][1]) <= merge_gap:
+                merged[-1] = (merged[-1][0], e)
+            else:
+                merged.append((s, e))
+        
+        if merged:
+            per_joint_runs[j] = merged
+    
+    if not per_joint_runs:
+        return [], np.zeros(T, dtype=bool)
+    
+    # Build unified corruption zones by merging overlapping per-joint runs
+    # across the arm chain (wrist+elbow+shoulder often corrupt together)
+    all_intervals = []
+    for j, runs in per_joint_runs.items():
+        for s, e in runs:
+            all_intervals.append((s, e, j))
+    
+    all_intervals.sort()
+    
+    # Merge overlapping/adjacent intervals, tracking which joints are involved
+    zones = []
+    if all_intervals:
+        cur_s, cur_e, _ = all_intervals[0]
+        cur_joints = set()
+        for s, e, j in all_intervals:
+            if s <= cur_e + merge_gap:
+                cur_e = max(cur_e, e)
+                cur_joints.add(j)
+            else:
+                if cur_joints:
+                    zones.append((cur_s, cur_e, cur_joints))
+                cur_s, cur_e = s, e
+                cur_joints = {j}
+        if cur_joints:
+            zones.append((cur_s, cur_e, cur_joints))
+    
+    # Build CorruptionZone objects
+    result = []
+    corruption_mask = np.zeros(T, dtype=bool)
+    
+    for s, e, joint_set in zones:
+        n = e - s + 1
+        dur = n / fps
+        joint_indices = sorted(joint_set)
+        joint_names = [SMPL_JOINT_NAMES[j] if j < len(SMPL_JOINT_NAMES) else f'j{j}'
+                       for j in joint_indices]
+        
+        # Velocity stats across affected joints during this zone
+        zone_vels = vel[s:min(e + 1, len(vel)), :][:, joint_indices]
+        mean_v = float(np.mean(zone_vels))
+        max_v = float(np.max(zone_vels))
+        
+        result.append(CorruptionZone(
+            start=s, end=e, n_frames=n,
+            duration_s=round(dur, 1),
+            joints=joint_names,
+            joint_indices=joint_indices,
+            mean_vel=round(mean_v, 1),
+            max_vel=round(max_v, 0),
+        ))
+        corruption_mask[s:min(e + 1, T)] = True
+    
+    return result, corruption_mask
+
+
+def _analyze_surgery(stream_breaks, T, fps, corruption_zones=None):
+    """Analyze stream breaks and corruption zones to determine salvageability.
+    
+    Returns SurgeryInfo with segment boundaries and a recommendation:
+      - 'none':          no issues, file is intact
+      - 'split':         breaks present, usable segments exist
+      - 'excise':        corruption zones present, sections need removal
+      - 'split+excise':  both breaks and corruption
+      - 'discard':       no usable segments remain
+    """
+    has_breaks = bool(stream_breaks)
+    has_corruption = bool(corruption_zones)
+    
+    if not has_breaks and not has_corruption:
+        return SurgeryInfo(
+            n_breaks=0, needs_surgery=False,
+            recommendation='none',
+        )
+    
+    # ── Break segments ────────────────────────────────────────────────
+    segments = []
+    usable_frames = 0
+    n_usable = 0
+    
+    if has_breaks:
+        break_frames = sorted(b.frame for b in stream_breaks)
+        boundaries = [0] + break_frames + [T]
+        
+        for i in range(len(boundaries) - 1):
+            s = boundaries[i]
+            e = boundaries[i + 1]
+            if i < len(boundaries) - 2:
+                e -= 1
+            n = e - s
+            if n <= 0:
+                continue
+            dur = n / fps
+            usable = n >= MIN_SALVAGEABLE_FRAMES
+            segments.append(SurgerySegment(
+                start=s, end=e, n_frames=n,
+                duration_s=round(dur, 1), usable=usable,
+            ))
+            if usable:
+                usable_frames += n
+                n_usable += 1
+    
+    usable_frac = usable_frames / max(T, 1) if has_breaks else 1.0
+    
+    # ── Excision info ─────────────────────────────────────────────────
+    excision = None
+    if has_corruption:
+        total_corrupted = sum(z.n_frames for z in corruption_zones)
+        excision = ExcisionInfo(
+            n_zones=len(corruption_zones),
+            total_corrupted_frames=total_corrupted,
+            corrupted_fraction=round(total_corrupted / max(T, 1), 4),
+            zones=corruption_zones,
+        )
+    
+    # ── Recommendation ────────────────────────────────────────────────
+    if has_breaks and has_corruption:
+        rec = 'split+excise' if n_usable > 0 else 'discard'
+    elif has_breaks:
+        rec = 'split' if n_usable > 0 else 'discard'
+    elif has_corruption:
+        rec = 'excise'
+    else:
+        rec = 'none'
+    
+    return SurgeryInfo(
+        n_breaks=len(stream_breaks) if stream_breaks else 0,
+        needs_surgery=True,
+        segments=segments,
+        n_usable_segments=n_usable,
+        usable_frames=usable_frames,
+        usable_fraction=round(usable_frac, 4),
+        recommendation=rec,
+        excision=excision,
+    )
+
+
 def _find_clusters(frames, gap=5):
     """Group nearby frame indices into (start, end) clusters."""
     if not frames:
@@ -1093,14 +1616,25 @@ def _find_clusters(frames, gap=5):
     return clusters
 
 
-def _find_clean_segments(scores, fps, margin=3):
+def _find_clean_segments(scores, fps, margin=3, corruption_mask=None):
     """
-    Find continuous stretches where NO frame is glitch or suspect.
+    Find continuous stretches where NO frame is glitch, suspect, or corrupted.
     Expands bad regions by margin frames on each side.
+    
+    corruption_mask: optional (T,) boolean array from _detect_corruption_zones.
+        Frames in corruption zones are marked bad regardless of their torque
+        score, because the torque pipeline's filtering absorbs the evidence
+        of arm corruption before scoring.
+    
     Returns list of CleanSegment, sorted longest-first.
     """
     T = len(scores)
     bad = scores >= SUSPECT_THRESH
+    
+    # Merge corruption mask — these frames have pre-filtering evidence
+    # of capture failure that the torque scorer cannot see
+    if corruption_mask is not None and len(corruption_mask) >= T:
+        bad = bad | corruption_mask[:T]
     
     if margin > 0:
         bad_expanded = bad.copy()
@@ -1169,25 +1703,47 @@ def print_report(r):
         rec_str = ', '.join(f'{k}={v}' for k, v in r.recommendations.items())
         print(f"  Recommended:    {rec_str}")
     
-    # ── Stream breaks ──────────────────────────────────────────────────
-    if r.stream_breaks:
-        print(f"\n  ⚡ Stream breaks: {len(r.stream_breaks)} detected")
-        print(f"    {'Frame':>7s}  {'Time':>6s}  {'Type':>12s}  {'TransJump':>10s}  {'PoseJump':>10s}  Worst Joint")
-        for sb in r.stream_breaks:
-            print(f"    {sb.frame:7d}  {sb.time_s:5.1f}s  {sb.break_type:>12s}  "
-                  f"{sb.trans_jump:9.4f}m  {sb.pose_jump:9.4f}r  {sb.worst_joint}")
+    # ── Surgery ─────────────────────────────────────────────────────────
+    if r.surgery and r.surgery.needs_surgery:
+        si = r.surgery
+        rec_icon = {'split': '✂️', 'excise': '🔪', 'split+excise': '✂️🔪', 'discard': '⚡'}
+        print(f"\n  {rec_icon.get(si.recommendation, '⚡')} Surgery: "
+              f"recommendation: {si.recommendation.upper()}")
         
-        # Show clean segments between breaks
-        break_frames = sorted(sb.frame for sb in r.stream_breaks)
-        seg_boundaries = [0] + break_frames + [r.n_frames]
-        print(f"\n    Continuous segments between breaks:")
-        for i in range(len(seg_boundaries) - 1):
-            s, e = seg_boundaries[i], seg_boundaries[i + 1]
-            if i < len(seg_boundaries) - 2:
-                e -= 1  # don't include the break frame
-            dur = (e - s) / r.fps
-            if dur > 0:
-                print(f"      [{s:>7d}–{e:>7d}]  {dur:6.1f}s  ({e-s:>6d} frames)")
+        # Stream breaks
+        if si.n_breaks > 0:
+            print(f"\n    Stream breaks: {si.n_breaks}")
+            if si.recommendation in ('split', 'split+excise'):
+                print(f"    {si.n_usable_segments} usable segment(s), "
+                      f"{si.usable_frames} frames ({si.usable_fraction:.0%} of file)")
+            
+            print(f"    {'Frame':>7s}  {'Time':>6s}  {'Type':>12s}  {'TransJump':>10s}  {'PoseJump':>10s}  Worst Joint")
+            for sb in r.stream_breaks:
+                print(f"    {sb.frame:7d}  {sb.time_s:5.1f}s  {sb.break_type:>12s}  "
+                      f"{sb.trans_jump:9.4f}m  {sb.pose_jump:9.4f}r  {sb.worst_joint}")
+            
+            # Show segments between breaks with usability flag
+            if si.segments:
+                print(f"\n    Segments between breaks:")
+                for seg in si.segments:
+                    flag = '✅' if seg.usable else '❌'
+                    print(f"      {flag}  [{seg.start:>7d}–{seg.end:>7d}]  "
+                          f"{seg.duration_s:6.1f}s  ({seg.n_frames:>6d} frames)")
+        
+        # Corruption zones
+        if si.excision:
+            ex = si.excision
+            print(f"\n    Corruption zones: {ex.n_zones} detected "
+                  f"({ex.total_corrupted_frames} frames, {ex.corrupted_fraction:.0%} of file)")
+            for z in ex.zones:
+                joints_str = ', '.join(z.joints[:4])
+                if len(z.joints) > 4:
+                    joints_str += f' +{len(z.joints)-4}'
+                print(f"      [{z.start:>7d}–{z.end:>7d}]  {z.duration_s:5.1f}s  "
+                      f"mean={z.mean_vel:.0f} max={z.max_vel:.0f} rad/s  {joints_str}")
+    elif r.stream_breaks:
+        # Fallback: show raw breaks if no surgery info
+        print(f"\n  ⚡ Stream breaks: {len(r.stream_breaks)} detected")
     
     # ── Cadence ────────────────────────────────────────────────────────
     if r.cadence and r.cadence.detected:
@@ -1290,70 +1846,140 @@ def main():
     )
     p.add_argument('files', nargs='*', help='NPZ files to analyse')
     p.add_argument('--dir', help='Directory of NPZ files to analyse')
+    p.add_argument('--recursive', action='store_true',
+                   help='Walk directory tree recursively (for AMASS)')
     p.add_argument('--json', help='Save results to JSON file')
+    p.add_argument('--checkpoint', help='Checkpoint file for resume (JSON). '
+                   'Results are written incrementally after each file. '
+                   'On restart, already-processed files are skipped.')
     p.add_argument('--mass', type=float, default=75.0, help='Body mass in kg (default: 75)')
     p.add_argument('--gender', choices=['male', 'female', 'neutral'],
                    help='Override gender (default: read from file)')
+    p.add_argument('--smooth-window', type=int, default=0,
+                   help='Input smoothing window (0=off, 3/5/7). '
+                   'Use 3 for files with 3-frame cadence artifacts.')
+    p.add_argument('--quiet', action='store_true',
+                   help='Suppress per-file console reports (summary only)')
     
     args = p.parse_args()
     
     files = list(args.files or [])
     if args.dir:
-        files += [
-            os.path.join(args.dir, f)
-            for f in sorted(os.listdir(args.dir))
-            if f.endswith('.npz')
-        ]
+        if args.recursive:
+            for root, _, f_names in os.walk(args.dir):
+                for f in sorted(f_names):
+                    if f.endswith('.npz'):
+                        files.append(os.path.join(root, f))
+        else:
+            files += [
+                os.path.join(args.dir, f)
+                for f in sorted(os.listdir(args.dir))
+                if f.endswith('.npz')
+            ]
     
     if not files:
         p.print_help()
         return
     
+    # ── Checkpoint / resume ───────────────────────────────────────────
+    completed = {}  # filepath -> report dict
+    if args.checkpoint and os.path.exists(args.checkpoint):
+        try:
+            with open(args.checkpoint, 'r') as f:
+                existing = json.load(f)
+            for entry in existing:
+                fp = entry.get('filepath', entry.get('filename', ''))
+                completed[fp] = entry
+            print(f"  Resuming: {len(completed)} files already processed, "
+                  f"{len(files) - len(completed)} remaining")
+        except Exception as e:
+            print(f"  ⚠️  Could not load checkpoint: {e}")
+    
     reports = []
-    for filepath in files:
+    # Include previously completed results
+    for entry in completed.values():
+        # Reconstruct a minimal report for summary
+        reports.append(entry)
+    
+    n_total = len(files)
+    n_skipped = 0
+    n_errors = 0
+    
+    for i, filepath in enumerate(files):
+        abs_path = os.path.abspath(filepath)
+        if abs_path in completed:
+            n_skipped += 1
+            continue
+        
         if not os.path.exists(filepath):
             print(f"  ⚠️  Not found: {filepath}")
             continue
+        
+        print(f"\n  [{i+1}/{n_total}] {os.path.basename(filepath)}")
         try:
             report = analyze_file(
                 filepath,
                 total_mass=args.mass,
                 gender_override=args.gender,
-                verbose=True,
+                smooth_input_window=args.smooth_window,
+                verbose=not args.quiet,
             )
-            reports.append(report)
+            report_dict = _to_jsonable(asdict(report))
+            report_dict['filepath'] = abs_path
+            # Limit glitch_frames for checkpoint size
+            report_dict['glitch_frames'] = report_dict['glitch_frames'][:500]
+            reports.append(report_dict)
+            
+            # Incremental checkpoint write
+            if args.checkpoint:
+                completed[abs_path] = report_dict
+                _write_checkpoint(args.checkpoint, list(completed.values()))
+                
         except Exception as e:
             import traceback
             print(f"  ❌ Error: {filepath}: {e}")
             traceback.print_exc()
+            n_errors += 1
     
     # ── Multi-file summary ────────────────────────────────────────────
     if len(reports) > 1:
         print(f"\n{'═' * 72}")
-        print(f"  SUMMARY ({len(reports)} files)")
+        print(f"  SUMMARY ({len(reports)} files, {n_skipped} resumed, {n_errors} errors)")
         print(f"{'═' * 72}")
-        print(f"  {'File':<40s}  {'Score':>7s}  {'Class':>12s}  {'Glitches':>8s}  {'Clean%':>6s}")
-        for r in sorted(reports, key=lambda x: -x.noise_score):
-            e = {'clean': '✅', 'moderate': '⚠️', 'problematic': '❌'}.get(r.classification, '?')
-            tc = sum(s.n_frames for s in r.clean_segments)
-            cp = 100 * tc / max(r.n_frames, 1)
-            print(f"  {r.filename:<40s}  {r.noise_score:7.1f}  {e} {r.classification:<10s}  "
-                  f"{r.n_glitch_frames:>8d}  {cp:5.1f}%")
+        print(f"  {'File':<40s}  {'Score':>7s}  {'Class':>12s}  {'Glitches':>8s}  {'Clean%':>6s}  {'Surgery':>10s}")
+        
+        sorted_reports = sorted(reports, key=lambda x: -x.get('noise_score', 0))
+        for r in sorted_reports:
+            cls = r.get('classification', '?')
+            e = {'clean': '✅', 'moderate': '⚠️', 'problematic': '❌'}.get(cls, '?')
+            clean_segs = r.get('clean_segments', [])
+            tc = sum(s.get('n_frames', 0) for s in clean_segs)
+            nf = max(r.get('n_frames', 1), 1)
+            cp = 100 * tc / nf
+            fname = r.get('filename', '?')
+            ns = r.get('noise_score', 0)
+            ng = r.get('n_glitch_frames', 0)
+            # Surgery recommendation
+            surg = r.get('surgery', None) or {}
+            surg_rec = surg.get('recommendation', 'none') if surg else 'none'
+            surg_str = {'none': '—', 'split': '✂️ split', 'excise': '🔪 excise',
+                        'split+excise': '✂️🔪', 'discard': '⚡discard'}.get(surg_rec, '—')
+            print(f"  {fname:<40s}  {ns:7.1f}  {e} {cls:<10s}  {ng:>8d}  {cp:5.1f}%  {surg_str:>10s}")
     
     # ── JSON output ───────────────────────────────────────────────────
     if args.json:
-        out = []
-        for r in reports:
-            d = asdict(r)
-            # Limit glitch_frames for JSON
-            d['glitch_frames'] = [asdict(s) for s in r.glitch_frames[:500]]
-            d['clean_segments'] = [asdict(s) for s in r.clean_segments]
-            d['joint_profiles'] = [asdict(jp) for jp in r.joint_profiles]
-            # out.append(d)
-            out.append(_to_jsonable(d))
+        sorted_reports = sorted(reports, key=lambda x: -x.get('noise_score', 0))
         with open(args.json, 'w') as f:
-            json.dump(out, f, indent=2)
-        print(f"\n  Saved to {args.json}")
+            json.dump(sorted_reports, f, indent=2)
+        print(f"\n  Saved {len(sorted_reports)} reports to {args.json}")
+
+
+def _write_checkpoint(path, data):
+    """Atomic checkpoint write via temp file."""
+    tmp = path + '.tmp'
+    with open(tmp, 'w') as f:
+        json.dump(data, f, indent=2)
+    os.replace(tmp, path)
 
 
 if __name__ == '__main__':
