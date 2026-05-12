@@ -198,7 +198,7 @@ uniform sampler2D iChannel3;
             self._needs_compile = True
 
     def _resolve_path(self, path):
-        """Resolve a file path, trying absolute then relative to app_path."""
+        """Resolve a file path, trying absolute, then app_path, then app_path/assets/shaders."""
         if not path or not isinstance(path, str) or not path.strip():
             return None
         path = path.strip()
@@ -208,6 +208,9 @@ uniform sampler2D iChannel3;
             full = os.path.join(self.app.app_path, path)
             if os.path.isfile(full):
                 return full
+            shaders = os.path.join(self.app.app_path, 'assets', 'shaders', path)
+            if os.path.isfile(shaders):
+                return shaders
         return None
 
     # ------------------------------------------------------------------ #
