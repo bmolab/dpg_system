@@ -1408,12 +1408,12 @@ class MGLSMPLHeatmapNode(Node):
 
         # Load pre-baked atlas
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        atlas_path = os.path.join(script_dir, 'muscle_atlas_v3.npy')
-        meta_path = os.path.join(script_dir, 'muscle_atlas_v3_meta.npy')
+        atlas_path = os.path.join(script_dir, 'smpl_muscle_editor', 'muscle_atlas_v3.npy')
+        meta_path = os.path.join(script_dir, 'smpl_muscle_editor', 'muscle_atlas_v3_meta.npy')
 
         if not os.path.exists(atlas_path) or not os.path.exists(meta_path):
-            print(f"[V3] Atlas files not found at {script_dir}")
-            print(f"[V3] Run: python generate_muscle_atlas.py --model_path <path>")
+            print(f"[V3] Atlas files not found at {script_dir}/smpl_muscle_editor")
+            print(f"[V3] Run: python smpl_muscle_editor/generate_muscle_atlas.py --model_path <path>")
             self._v3_prebaked_atlas = None
             self._v3_muscle_joints = np.zeros(0, dtype=np.int32)
             self._v3_flex_axes = np.zeros((0, 3), dtype=np.float32)
@@ -1443,12 +1443,12 @@ class MGLSMPLHeatmapNode(Node):
         self._v4_cached_spread = -1.0
 
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        atlas_path = os.path.join(script_dir, 'muscle_atlas_v4.npy')
-        meta_path = os.path.join(script_dir, 'muscle_atlas_v4_meta.npy')
+        atlas_path = os.path.join(script_dir, 'smpl_muscle_editor', 'muscle_atlas_v4.npy')
+        meta_path = os.path.join(script_dir, 'smpl_muscle_editor', 'muscle_atlas_v4_meta.npy')
 
         if not os.path.exists(atlas_path) or not os.path.exists(meta_path):
-            print(f"[V4] Atlas files not found at {script_dir}")
-            print(f"[V4] Run: python generate_muscle_atlas_v4.py --model_path <path>")
+            print(f"[V4] Atlas files not found at {script_dir}/smpl_muscle_editor")
+            print(f"[V4] Run: python smpl_muscle_editor/generate_muscle_atlas_v4.py --model_path <path>")
             self._v4_prebaked_atlas = None
             self._v4_muscle_joints = np.zeros(0, dtype=np.int32)
             self._v4_flex_axes = np.zeros((0, 3), dtype=np.float32)
@@ -1476,7 +1476,7 @@ class MGLSMPLHeatmapNode(Node):
         smooth_iters = int(round(spread * 10))
         
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        script_path = os.path.join(script_dir, 'generate_muscle_atlas.py')
+        script_path = os.path.join(script_dir, 'smpl_muscle_editor', 'generate_muscle_atlas.py')
         
         model_path = self.model_path_prop()
         if not model_path:
@@ -1500,8 +1500,8 @@ class MGLSMPLHeatmapNode(Node):
             print(f"[V3] FAILED: {e.stderr}")
             
         # Re-load the newly baked atlas
-        atlas_path = os.path.join(script_dir, 'muscle_atlas_v3.npy')
-        meta_path = os.path.join(script_dir, 'muscle_atlas_v3_meta.npy')
+        atlas_path = os.path.join(script_dir, 'smpl_muscle_editor', 'muscle_atlas_v3.npy')
+        meta_path = os.path.join(script_dir, 'smpl_muscle_editor', 'muscle_atlas_v3_meta.npy')
         if os.path.exists(atlas_path):
             self._v3_prebaked_atlas = np.load(atlas_path)
             meta = np.load(meta_path, allow_pickle=True).item()
