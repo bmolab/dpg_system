@@ -334,6 +334,11 @@ class SMPLProcessingOptions:
     enable_one_euro_filter: bool = False
     acc_smooth_window: int = 0   # 0=off, 3/5/7 = Savitzky-Golay derivative window
     torque_smooth_window: int = 0  # 0=off, 3/5/7 = SG output smoothing window
+    adaptive_effort_smooth: bool = True  # magnitude-adaptive EMA: heavy at low torque, none at high
+    adaptive_effort_lo: float = 10.0     # Nm: below this, maximum smoothing (alpha_min)
+    adaptive_effort_hi: float = 40.0     # Nm: above this, minimum smoothing (alpha_max)
+    adaptive_effort_alpha_min: float = 0.05  # EMA alpha at low magnitudes (~20-frame window)
+    adaptive_effort_alpha_max: float = 0.5   # EMA alpha at high magnitudes (~11 Hz cutoff at 100fps)
     smooth_contact_forces: bool = False  # proximity-adaptive contact force smoothing
     filter_min_cutoff: float = 1.0
     filter_beta: float = 0.0
@@ -401,6 +406,9 @@ class SMPLProcessingOptions:
     com_acc_min_cutoff: float = 2.0    # Base One Euro min_cutoff for CoM acceleration filter (999 = disabled)
     com_acc_beta: float = 0.8          # Base One Euro beta — high for adaptive responsiveness during impacts
     smooth_input_window: int = 0       # Causal moving average window for pose+trans input (0 = off, 3 = recommended for 33Hz cadence removal)
+    zmp_sg_window: int = 0             # SG derivative window for ZMP acceleration (0 = off/use One Euro chain, 11+ = SG window).
+                                       # When enabled, gets acceleration directly from COM position via Savitzky-Golay
+                                       # 2nd derivative, bypassing the noisy pos→vel→acc finite difference chain.
 
 
     
@@ -1333,29 +1341,108 @@ class SMPLProcessor:
             c = self._compute_full_body_com(world_pos[0:1])[0]
 
         # CoM Dynamics (Acceleration)
+        #
+        # Two paths:
+        #   A) SG derivative (zmp_sg_window > 0): Fits a local quadratic to a
+        #      ring buffer of COM positions and reads off the 2nd derivative.
+        #      Single-step pos→acc avoids chaining two finite differences,
+        #      which amplifies noise by ×fps².
+        #   B) Legacy (zmp_sg_window == 0): Chained finite differences
+        #      pos→vel→acc with One Euro filter on acceleration.
+        
+        sg_win = getattr(options, 'zmp_sg_window', 0)
+        
         if not hasattr(self, 'prob_prev_com') or self.prob_prev_com is None:
             self.prob_prev_com = c.copy()
             self.prob_prev_com_vel = np.zeros_like(c)
             self.prob_prev_com_acc = np.zeros_like(c)
-            self.com_acc_filter = OneEuroFilter(min_cutoff=0.3, beta=0.1, d_cutoff=1.0)  # Lower cutoff for more smoothing
+            self.com_acc_filter = OneEuroFilter(min_cutoff=0.3, beta=0.1, d_cutoff=1.0)
+            # SG ring buffer for COM positions (allocated on first use)
+            self._zmp_sg_ring = None
+            self._zmp_sg_ptr = 0
+            self._zmp_sg_cnt = 0
+            self._zmp_sg_coeffs = None
             
             com_vel = np.zeros_like(c)
             com_acc = np.zeros_like(c)
-        else:
-            # Kinematics
-            if F > 1:
-                 com_vel = (c - self.prob_prev_com) / dt # Approx
+        elif sg_win >= 5:
+            # ── Path A: SG derivative ──────────────────────────────────
+            # Ensure odd window
+            if sg_win % 2 == 0:
+                sg_win += 1
+            
+            # Allocate / resize ring buffer
+            if self._zmp_sg_ring is None or self._zmp_sg_ring.shape[0] != sg_win:
+                self._zmp_sg_ring = np.tile(c, (sg_win, 1))  # (W, 3)
+                self._zmp_sg_ptr = 0
+                self._zmp_sg_cnt = 0
+                self._zmp_sg_coeffs = None
+            
+            # Push current COM position into ring buffer
+            self._zmp_sg_ring[self._zmp_sg_ptr] = c
+            self._zmp_sg_ptr = (self._zmp_sg_ptr + 1) % sg_win
+            self._zmp_sg_cnt = min(self._zmp_sg_cnt + 1, sg_win)
+            
+            N = self._zmp_sg_cnt
+            
+            if N >= 5:
+                # Compute SG 2nd-derivative coefficients (cached)
+                # For a quadratic fit, the 2nd derivative coefficients
+                # are the same regardless of data — they only depend on
+                # window size and dt.
+                if self._zmp_sg_coeffs is None or self._zmp_sg_coeffs[0] != N or self._zmp_sg_coeffs[1] != dt:
+                    # Build least-squares 2nd derivative kernel.
+                    # For polyorder=2, the 2nd derivative at the center
+                    # of a window of size N with spacing dt is:
+                    #   d²f/dt² ≈ Σ_k  c_k · f_k
+                    # where c_k are the SG coefficients for deriv=2.
+                    from scipy.signal import savgol_coeffs
+                    # savgol_coeffs returns filter coefficients for the
+                    # given derivative.  We evaluate at the LAST point
+                    # (causal) by using pos=N-1.
+                    sg_c = savgol_coeffs(N, polyorder=min(2, N - 1),
+                                         deriv=2, delta=dt, pos=N - 1)
+                    self._zmp_sg_coeffs = (N, dt, sg_c)
+                
+                _, _, sg_c = self._zmp_sg_coeffs
+                
+                # Reorder ring buffer oldest → newest
+                if N == sg_win:
+                    ordered = np.roll(self._zmp_sg_ring, -self._zmp_sg_ptr, axis=0)  # (W, 3)
+                else:
+                    # Partial fill: take the N most recent entries
+                    idxs = [(self._zmp_sg_ptr - N + k) % sg_win for k in range(N)]
+                    ordered = self._zmp_sg_ring[idxs]  # (N, 3)
+                
+                # Apply coefficients: acc = Σ c_k · pos_k  (for each xyz)
+                com_acc = sg_c @ ordered  # (3,) — 2nd derivative at current time
+                
+                # Velocity via finite difference (still needed for state tracking)
+                com_vel = (c - self.prob_prev_com) / dt
             else:
-                 com_vel = (c - self.prob_prev_com) / dt
+                # Not enough samples yet — fall back to zero
+                com_vel = (c - self.prob_prev_com) / dt
+                com_acc = np.zeros_like(c)
+            
+            # Store raw acceleration for plausibility
+            self._raw_com_acc = com_acc.copy()
+            
+            # Update state
+            self.prob_prev_com = c.copy()
+            self.prob_prev_com_vel = com_vel.copy()
+            self.prob_prev_com_acc = com_acc.copy()
+        else:
+            # ── Path B: Legacy chained finite differences ──────────────
+            com_vel = (c - self.prob_prev_com) / dt
                  
             # Acceleration
             raw_acc = (com_vel - self.prob_prev_com_vel) / dt
             
-            # Store raw acceleration for plausibility (unfiltered, captures true free-fall)
+            # Store raw acceleration for plausibility (unfiltered)
             self._raw_com_acc = raw_acc.copy()
             
             if not hasattr(self, 'com_acc_filter'):
-                self.com_acc_filter = OneEuroFilter(min_cutoff=0.3, beta=0.1, d_cutoff=1.0)  # Lower cutoff
+                self.com_acc_filter = OneEuroFilter(min_cutoff=0.3, beta=0.1, d_cutoff=1.0)
 
             if dt > 0:
                 self.com_acc_filter._freq = 1.0 / dt
@@ -1959,7 +2046,7 @@ class SMPLProcessor:
         # --- Layer 3: Weight distribution among confirmed contacts ---
         
         # Effective CoM with velocity prediction
-        COM_LOOKAHEAD = 0.1
+        COM_LOOKAHEAD = 0.03
         com_hz = com[plane_dims]
         com_vel = getattr(self, 'prob_prev_com_vel', None)
         if com_vel is not None and com_vel.ndim >= 1:
@@ -2012,7 +2099,7 @@ class SMPLProcessor:
             # --- Two-stage weight distribution ---
             # Stage 1: Group-level split (how much total pressure per foot group)
             # Uses centroid of each group's candidates vs CoM projection
-            SIGMA_GROUP = 0.12  # 12cm — sharp group-level falloff
+            SIGMA_GROUP = 0.20  # 20cm — wider to reduce L/R pressure sensitivity to COM sway
             # At centroids 15cm each from CoM: 50/50
             # At 0cm vs 30cm: 94%/6%
             # At 0cm vs 50cm: 100%/0%
@@ -2909,6 +2996,23 @@ class SMPLProcessor:
             self._logodds_estimator.structural_stream.set_evaluator(
                 self._frame_evaluator)
         
+        # Create a DynamicFrameEvaluator on-demand if the structural stream
+        # still has no evaluator. Without this, the structural stream outputs
+        # 0.0 for all groups, leaving kinematic noise unchecked.
+        if self._logodds_estimator.structural_stream.evaluator is None:
+            from dpg_system.dynamic_frame_evaluator import DynamicFrameEvaluator
+            seg_masses = getattr(self, '_seg_mass', None)
+            if seg_masses is None:
+                seg_masses = np.ones(24)
+            n_j = world_pos.shape[1] if world_pos.ndim == 3 else world_pos.shape[0]
+            fe = DynamicFrameEvaluator(
+                total_mass=self.total_mass_kg,
+                segment_masses=seg_masses,
+                num_joints=n_j
+            )
+            self._frame_evaluator = fe
+            self._logodds_estimator.structural_stream.set_evaluator(fe)
+        
         # Build options
         lo_opts = LogOddsContactOptions(
             up_axis=1 if options.input_up_axis == 'Y' else 2,
@@ -3001,11 +3105,19 @@ class SMPLProcessor:
             # - Head (j=15): min extent (forehead/face is near side;
             #   max extent would over-correct when head tilts forward,
             #   projecting the 13cm scalp toward the floor)
-            # - Knees, hips, elbows: min extent (kneecap/flesh is near side, ~3-4cm)
+            # - Knees, elbows: min extent (kneecap/flesh is near side, ~3-4cm)
+            # - Hips (j=1,2): max extent (joint center is deep; contact
+            #   surface is buttock on far side, like pelvis in standing)
+            # - Pelvis (j=0): min extent. The sd_max (~19cm buttock projection)
+            #   is only valid in neutral standing. In a squat/crouch the thighs
+            #   compress against the buttock, drastically reducing the effective
+            #   offset. Using sd_min (~2.5cm) prevents false positives during
+            #   squats while still detecting actual seated contact (pelvis
+            #   drops to 5-10cm raw → 2.5-7.5cm corrected → contact zone).
             USE_MAX_JOINTS = set()
             for joints in PRIMARY_GROUPS.values():
                 USE_MAX_JOINTS.update(joints)
-            USE_MAX_JOINTS.update({0})  # Pelvis only — deep joint
+            USE_MAX_JOINTS.update({1, 2})  # Hips only — deep joints
             
             surface_dists = sd_min.copy()  # default to min (skin thickness)
             for j in USE_MAX_JOINTS:
@@ -3364,11 +3476,11 @@ class SMPLProcessor:
             elif 'neck' in name: val = [50.0, 50.0, 50.0]
             elif 'head' in name: val = [50.0, 50.0, 50.0]
             
-            elif 'collar' in name: val = [300.0, 300.0, 300.0]
-            elif 'shoulder' in name: val = [100.0, 100.0, 100.0]
-            elif 'elbow' in name: val = [80.0, 80.0, 80.0]
-            elif 'wrist' in name: val = [30.0, 30.0, 30.0]
-            elif 'hand' in name: val = [30.0, 30.0, 30.0]
+            elif 'collar' in name: val = [60.0, 40.0, 60.0]      # Scapular pro/retraction
+            elif 'shoulder' in name: val = [70.0, 30.0, 60.0]    # Flex~40-80, twist~30, abd~40-60
+            elif 'elbow' in name: val = [10.0, 40.0, 8.0]        # Flexion dominant
+            elif 'wrist' in name: val = [8.0, 15.0, 10.0]        # Small muscles
+            elif 'hand' in name: val = [3.0, 5.0, 3.0]           # Terminal segment
             
             # Feature: User Overrides via set_max_torque (stored in dict)
             # If user set a value in self.max_torques, use it.
@@ -3418,11 +3530,11 @@ class SMPLProcessor:
             'foot': [40.0, 40.0, 40.0],
             'neck': [50.0, 50.0, 50.0],
             'head': [50.0, 50.0, 50.0],
-            'collar': [300.0, 300.0, 300.0],
-            'shoulder': [100.0, 100.0, 100.0],
-            'elbow': [80.0, 80.0, 80.0],
-            'wrist': [30.0, 30.0, 30.0],
-            'hand': [30.0, 30.0, 30.0]
+            'collar': [60.0, 40.0, 60.0],       # Scapular pro/retraction
+            'shoulder': [70.0, 30.0, 60.0],     # Flex~40-80, twist~30, abd~40-60
+            'elbow': [10.0, 40.0, 8.0],          # Flexion dominant
+            'wrist': [8.0, 15.0, 10.0],          # Small muscles
+            'hand': [3.0, 5.0, 3.0]              # Terminal segment
         }
         
         scale = 1.0
@@ -7501,6 +7613,109 @@ class SMPLProcessor:
                     V = np.column_stack([np.ones(t_cnt), x])  # linear fit
                     sg_coeffs = np.linalg.pinv(V)[0]
                 torques_vec = np.tensordot(sg_coeffs[:t_cnt], ordered, axes=([0], [0]))[np.newaxis]
+                
+                # Recompute efforts_net from smoothed torques so the heatmap
+                # sees the same smoothing. Without this, efforts_net reflects
+                # pre-smoothed torques and the heatmap bypasses the filter.
+                max_torque = self.max_torque_array[:self.target_joint_count]  # (J, 3)
+                denom = max_torque + 1e-6
+                n_j = min(torques_vec.shape[1], efforts_net.shape[1], denom.shape[0])
+                efforts_net[:, :n_j] = torques_vec[:, :n_j] / denom[np.newaxis, :n_j, :]
+
+        # --- Magnitude-Adaptive Effort Smoothing ---
+        # At low torque magnitudes, SNR is poor and direction/magnitude noise
+        # dominates (30-60° direction swings at <15 Nm). At high magnitudes,
+        # sub-degree parent orientation jitter creates 10-20 Hz torque noise
+        # via local-frame gravity projection. Apply per-joint EMA with:
+        #   - magnitude-adaptive alpha (heavier smoothing at low magnitudes)
+        #   - joint-specific alpha_max (heavier for high-inertia proximal
+        #     joints, lighter for nimble distal joints)
+        #
+        # Per-joint alpha_max rationale (at 100fps):
+        #   Proximal (pelvis/hip/spine): α=0.3 → ~5.7 Hz cutoff
+        #     High inertia, can't physically change >5 Hz. Most sensitive
+        #     to parent orientation noise amplification.
+        #   Mid (knee/shoulder/neck/collar): α=0.4 → ~8 Hz cutoff
+        #   Distal (ankle/elbow): α=0.6 → ~15 Hz cutoff
+        #   Extremity (wrist/hand/foot/head): α=0.8 → ~26 Hz cutoff
+        #     Low inertia, fast movements (e.g. gestures, footwork).
+        if getattr(options, 'adaptive_effort_smooth', False) and F == 1:
+            lo = getattr(options, 'adaptive_effort_lo', 10.0)
+            hi = getattr(options, 'adaptive_effort_hi', 40.0)
+            alpha_min = getattr(options, 'adaptive_effort_alpha_min', 0.05)
+            global_alpha_max = getattr(options, 'adaptive_effort_alpha_max', 0.5)
+            
+            # Per-joint alpha_max (SMPL 22-joint layout)
+            # Scaled by global_alpha_max as a master control
+            _PER_JOINT_ALPHA_MAX = getattr(self, '_per_joint_alpha_max', None)
+            n_j = torques_vec.shape[1]
+            if _PER_JOINT_ALPHA_MAX is None or len(_PER_JOINT_ALPHA_MAX) != n_j:
+                _base = np.full(n_j, 0.5)  # default for unknown joints
+                # SMPL joint indices:
+                #  0=pelvis  1=L_hip  2=R_hip  3=spine1
+                #  4=L_knee  5=R_knee  6=spine2
+                #  7=L_ankle  8=R_ankle  9=spine3
+                # 10=L_foot 11=R_foot 12=neck
+                # 13=L_collar 14=R_collar 15=head
+                # 16=L_shoulder 17=R_shoulder
+                # 18=L_elbow 19=R_elbow
+                # 20=L_wrist 21=R_wrist
+                _joint_alpha = {
+                    0: 0.3,   # pelvis — root, highest inertia
+                    1: 0.3,   # L_hip — heavy leg
+                    2: 0.3,   # R_hip — heavy leg
+                    3: 0.3,   # spine1 — trunk mass
+                    6: 0.3,   # spine2 — trunk mass
+                    9: 0.35,  # spine3 — upper trunk
+                    4: 0.4,   # L_knee
+                    5: 0.4,   # R_knee
+                    12: 0.4,  # neck
+                    13: 0.4,  # L_collar
+                    14: 0.4,  # R_collar
+                    16: 0.5,  # L_shoulder
+                    17: 0.5,  # R_shoulder
+                    7: 0.6,   # L_ankle
+                    8: 0.6,   # R_ankle
+                    18: 0.6,  # L_elbow
+                    19: 0.6,  # R_elbow
+                    15: 0.8,  # head — light, fast
+                    10: 0.8,  # L_foot/toe — fast footwork
+                    11: 0.8,  # R_foot/toe
+                    20: 0.8,  # L_wrist — very nimble
+                    21: 0.8,  # R_wrist
+                }
+                for j_idx, a in _joint_alpha.items():
+                    if j_idx < n_j:
+                        _base[j_idx] = a
+                # Scale by global alpha_max (user tuning knob)
+                self._per_joint_alpha_max = np.clip(_base * (global_alpha_max / 0.5), 0.05, 1.0)
+                _PER_JOINT_ALPHA_MAX = self._per_joint_alpha_max
+            
+            # Initialize EMA state if needed
+            prev_tv = getattr(self, '_adapt_smooth_tv', None)
+            prev_en = getattr(self, '_adapt_smooth_en', None)
+            
+            tv_cur = torques_vec[0]  # (J, 3)
+            en_cur = efforts_net[0]  # (J, 3)
+            
+            if prev_tv is not None and prev_tv.shape == tv_cur.shape:
+                # Per-joint adaptive alpha based on torque magnitude
+                tau_mags = np.linalg.norm(tv_cur, axis=-1)  # (J,)
+                # Blend: 0 at lo, 1 at hi
+                blend = np.clip((tau_mags - lo) / max(hi - lo, 1e-6), 0.0, 1.0)
+                # alpha: alpha_min at low magnitudes, per-joint alpha_max at high
+                alpha = alpha_min + blend * (_PER_JOINT_ALPHA_MAX[:n_j] - alpha_min)  # (J,)
+                alpha_3 = alpha[:, np.newaxis]  # (J, 1) for broadcasting
+                
+                tv_smooth = alpha_3 * tv_cur + (1.0 - alpha_3) * prev_tv
+                en_smooth = alpha_3 * en_cur + (1.0 - alpha_3) * prev_en
+                
+                torques_vec = tv_smooth[np.newaxis]  # (1, J, 3)
+                efforts_net = en_smooth[np.newaxis]  # (1, J, 3)
+            
+            # Store for next frame (use the smoothed values for continuity)
+            self._adapt_smooth_tv = torques_vec[0].copy()
+            self._adapt_smooth_en = efforts_net[0].copy()
 
         # --- Output Dictionary ---
         res = {

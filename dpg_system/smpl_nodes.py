@@ -1703,11 +1703,15 @@ class SMPLTorqueNode(SMPLNode):
         self.lo_kinematic_prop = self.add_option('lo_kinematic', widget_type='checkbox', default_value=True)
         self.lo_structural_prop = self.add_option('lo_structural', widget_type='checkbox', default_value=True)
         self.lo_divergence_prop = self.add_option('lo_divergence', widget_type='checkbox', default_value=True)
+        # Standalone touchdown stream — separate from the kinematic stream's
+        # internal td_impulse sub-signal.  Off by default (legacy stream).
+        self.lo_touchdown_prop = self.add_option('lo_touchdown', widget_type='checkbox', default_value=False)
         # Stream weights
         self.lo_w_height_prop = self.add_option('lo_w_height', widget_type='drag_float', default_value=1.0)
         self.lo_w_kinematic_prop = self.add_option('lo_w_kinematic', widget_type='drag_float', default_value=0.5)
         self.lo_w_structural_prop = self.add_option('lo_w_structural', widget_type='drag_float', default_value=1.0)
         self.lo_w_divergence_prop = self.add_option('lo_w_divergence', widget_type='drag_float', default_value=1.0)
+        self.lo_w_touchdown_prop = self.add_option('lo_w_touchdown', widget_type='drag_float', default_value=1.0)
         # Accumulator
         self.lo_decay_rate_prop = self.add_option('lo_decay_rate', widget_type='drag_float', default_value=0.90)
         # Structural-stream per-foot force EMA (1.0 = off; lower = heavier smoothing)
@@ -1733,6 +1737,7 @@ class SMPLTorqueNode(SMPLNode):
         self.com_acc_mc_prop = self.add_option('com_acc_min_cutoff', widget_type='drag_float', default_value=5.0)
         self.com_acc_beta_prop = self.add_option('com_acc_beta', widget_type='drag_float', default_value=0.8)
         self.smooth_input_window_prop = self.add_property('smooth_input_window', widget_type='drag_int', default_value=0)
+        self.zmp_sg_window_prop = self.add_property('zmp_sg_window', widget_type='drag_int', default_value=0)
         self.acc_smooth_window_prop = self.add_property('acc_smooth_window', widget_type='drag_int', default_value=0)
         self.torque_smooth_window_prop = self.add_property('torque_smooth_window', widget_type='drag_int', default_value=0)
 
@@ -1934,6 +1939,7 @@ class SMPLTorqueNode(SMPLNode):
                 com_acc_min_cutoff=self.com_acc_mc_prop() if hasattr(self, 'com_acc_mc_prop') else 2.0,
                 com_acc_beta=self.com_acc_beta_prop() if hasattr(self, 'com_acc_beta_prop') else 0.8,
                 smooth_input_window=self.smooth_input_window_prop() if hasattr(self, 'smooth_input_window_prop') else 0,
+                zmp_sg_window=self.zmp_sg_window_prop() if hasattr(self, 'zmp_sg_window_prop') else 0,
 
                 use_s_curve_spine=self.use_s_curve_spine_prop() if hasattr(self, 'use_s_curve_spine_prop') else True,
 
@@ -1950,11 +1956,13 @@ class SMPLTorqueNode(SMPLNode):
                 logodds_enable_kinematic=self.lo_kinematic_prop() if hasattr(self, 'lo_kinematic_prop') else True,
                 logodds_enable_structural=self.lo_structural_prop() if hasattr(self, 'lo_structural_prop') else True,
                 logodds_enable_divergence=self.lo_divergence_prop() if hasattr(self, 'lo_divergence_prop') else True,
+                logodds_enable_touchdown=self.lo_touchdown_prop() if hasattr(self, 'lo_touchdown_prop') else False,
                 # Stream weights
                 logodds_weight_height=self.lo_w_height_prop() if hasattr(self, 'lo_w_height_prop') else 1.0,
                 logodds_weight_kinematic=self.lo_w_kinematic_prop() if hasattr(self, 'lo_w_kinematic_prop') else 0.5,
                 logodds_weight_structural=self.lo_w_structural_prop() if hasattr(self, 'lo_w_structural_prop') else 1.0,
                 logodds_weight_divergence=self.lo_w_divergence_prop() if hasattr(self, 'lo_w_divergence_prop') else 1.0,
+                logodds_weight_touchdown=self.lo_w_touchdown_prop() if hasattr(self, 'lo_w_touchdown_prop') else 1.0,
                 # Accumulator
                 logodds_decay_rate=self.lo_decay_rate_prop() if hasattr(self, 'lo_decay_rate_prop') else 0.90,
                 logodds_struct_force_ema_alpha=self.lo_struct_force_ema_alpha_prop() if hasattr(self, 'lo_struct_force_ema_alpha_prop') else 1.0,
@@ -1967,6 +1975,7 @@ class SMPLTorqueNode(SMPLNode):
             # Process
             try:
                 res = self.processor.process_frame(pose, trans, options)
+                
                 # Output Torques: (F, 22) -> (22) if F=1
                 # Output Inertias: (22,)
                 

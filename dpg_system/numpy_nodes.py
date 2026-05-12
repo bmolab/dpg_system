@@ -5,6 +5,7 @@ from dpg_system.node import Node, NodeInput, LoadDialog, SaveDialog
 from dpg_system.conversion_utils import *
 import time
 import numpy as np
+from scipy.stats import median_abs_deviation
 
 # add random, linspace, ones, zeros
 def register_numpy_nodes():
@@ -62,6 +63,7 @@ def register_numpy_nodes():
     Node.app.register_node('np.any', NumpyAnyNode.factory)
     Node.app.register_node('np.all', NumpyAllNode.factory)
     Node.app.register_node('rotate_position', RotatePositionNode.factory)
+    Node.app.register_node('np.robust_mean', NumpyRobustMeanNode.factory)
 
 class NumpyGeneratorNode(Node):
     operations = {'np.rand': np.random.Generator.random, 'np.ones': np.ones, 'np.zeros': np.zeros}
@@ -1266,6 +1268,104 @@ class NumpyRotateNode(Node):
             if axis1 != axis2:
                 rotated_data = np.rot90(data, k=self.k(), axes=(axis1, axis2))
                 self.output.send(rotated_data)
+
+
+class NumpyRobustMeanNode(Node):
+    """Accumulates incoming numpy arrays and computes a MAD-based
+    outlier-rejected mean.  Useful for resolving a single best estimate
+    (e.g. SMPL betas) from noisy per-frame predictions.
+
+    Inputs:
+        in          – numpy array (one sample per execution)
+        threshold   – number of MADs from the median to accept (default 3.0)
+    Outputs:
+        robust mean – the outlier-rejected mean of accumulated samples
+        inlier count – number of inlier samples used
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyRobustMeanNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        threshold = 3.0
+        if len(args) > 0:
+            threshold = any_to_float(args[0])
+
+        self.samples = []  # list of 1-D or N-D arrays
+
+        self.input = self.add_input('in', triggers_execution=True)
+        self.threshold_input = self.add_input('threshold', widget_type='drag_float',
+                                              default_value=threshold)
+        self.reset_button = self.add_property('reset', widget_type='button',
+                                              callback=self.reset)
+
+        self.count_display = self.add_property('samples', widget_type='drag_int',
+                                               default_value=0)
+
+        self.output = self.add_output('robust mean')
+        self.inlier_output = self.add_output('inlier count')
+
+    def reset(self):
+        self.samples = []
+        self.count_display.set(0)
+
+    def execute(self):
+        data = self.input()
+        if data is None:
+            return
+
+        # Handle 'bang' – recompute from accumulated samples without adding
+        if isinstance(data, str) and data == 'bang':
+            pass
+        else:
+            arr = any_to_array(data).astype(np.float64)
+
+            if arr.ndim >= 2:
+                # Batch mode: treat as (N_samples, D) — replace accumulated buffer
+                self.samples = [arr[i] for i in range(arr.shape[0])]
+            else:
+                # Single sample: accumulate
+                self.samples.append(arr.flatten())
+
+            self.count_display.set(len(self.samples))
+
+        if len(self.samples) < 2:
+            if len(self.samples) == 1:
+                self.output.send(self.samples[0])
+                self.inlier_output.send(1)
+            return
+
+        # Stack all accumulated samples: (N, D)
+        stacked = np.stack(self.samples, axis=0)
+        threshold = any_to_float(self.threshold_input())
+
+        # Per-component median and MAD
+        med = np.median(stacked, axis=0)
+        mad = median_abs_deviation(stacked, axis=0)
+
+        # Where MAD is zero (constant component), all samples are inliers
+        mad_safe = np.where(mad > 0, mad, 1.0)
+
+        # Inlier mask: a sample is an inlier if ALL its components are within threshold
+        deviations = np.abs(stacked - med) / mad_safe
+        # For components with zero MAD, deviation should be zero
+        deviations = np.where(mad > 0, deviations, 0.0)
+        mask = np.all(deviations < threshold, axis=1)
+
+        inlier_count = int(np.sum(mask))
+        if inlier_count > 0:
+            robust = np.mean(stacked[mask], axis=0)
+        else:
+            # Fallback to median if no inliers (extreme threshold)
+            robust = med
+            inlier_count = 0
+
+        self.output.send(robust.astype(np.float32))
+        self.inlier_output.send(inlier_count)
 
 
 class NumpyRollingBufferNode(Node):

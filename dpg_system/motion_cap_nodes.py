@@ -478,11 +478,11 @@ class OpenTakeNode(MoCapNode):
         self.clip_end_input.set(self.clip_end)
 
     def clip_start_set(self):
-        self.clip_start = self.current_frame
+        self.clip_start = int(self.current_frame)
         self.clip_start_input.set(self.clip_start)
 
     def clip_end_set(self):
-        self.clip_end = self.current_frame
+        self.clip_end = int(self.current_frame)
         self.clip_end_input.set(self.clip_end)
 
     def stop_button_clicked(self):
@@ -612,8 +612,10 @@ class OpenTakeNode(MoCapNode):
     def save_clip_only(self, save_path):
         if save_path != '':
             clip_dict = {}
-            for key, value in self.take_dict.items():
-                value = np.array(value)
+            for key in self.sequence_keys:
+                if key not in self.take_dict:
+                    continue
+                value = np.array(self.take_dict[key])
                 clip_value = value[self.clip_start:self.clip_end + 1]
                 clip_dict[key] = clip_value
             for key, value in self.global_dict.items():

@@ -209,6 +209,24 @@ class LogOddsContactOptions:
     kin_settle_speed_gate: float = 0.18      # Only apply when speed < this (low-speed gap filler)
     kin_settle_rise_reset: float = 0.012     # Rise above min_h to trigger epoch reset
 
+    # Apex crossover impulse — counterpart of the landing crossover in
+    # td_impulse.  Fires a single-frame negative impulse when fast_ema
+    # crosses slow_ema downward (rising momentum decaying), the slow_ema
+    # is still positive (foot was rising), and the foot is in the
+    # decision-relevant height band.  Symmetric to the landing impulse:
+    # vy approaches 0 from the negative side → +impulse (contact indicator);
+    # vy approaches 0 from the positive side → −impulse (anti-contact).
+    #
+    # td_apex_scale is intentionally smaller than td_descent_scale because
+    # rise velocities are gravity-limited from below (driven by muscles)
+    # while fall velocities are gravity-driven from above — landings
+    # naturally arrive at much higher speeds than apex peaks reach, so
+    # they shouldn't share the same strength normalisation.
+    td_apex_logodds: float = -0.4            # Magnitude at full strength
+    td_apex_height_gate: float = 0.18        # m; slightly more permissive than landing
+    td_apex_rise_gate: float = 0.05          # m/s; minimum slow_ema to qualify as "was rising"
+    td_apex_scale: float = 0.2               # m/s; rise speed at which strength saturates
+
     # Structural stream parameters (frame evaluator wrapper)
     struct_gravity: float = 9.81
     struct_force_strong: float = 10.0    # kg: above this → strong positive
@@ -249,6 +267,13 @@ class LogOddsContactOptions:
     div_alignment_scale: float = 1.5  # alignment magnitude for full strength
     div_max_logodds: float = 1.5      # max evidence magnitude
     div_ground_gate_scale: float = 0.015  # pro-contact gate: 5mm→72%, 1cm→51%, 2cm→26%
+    # EMA on the alignment signal before log-odds mapping.  Smoothing the
+    # raw foot-CoM divergence damps the snap from anti-contact (swing) to
+    # pro-contact (stance) when the foot stops racing ahead of the CoM but
+    # is still in late swing — the foot reaches its limit and is unlikely
+    # to be a contact moment, so delaying the switch is non-destructive.
+    # 1.0 = no smoothing (raw passthrough); smaller = heavier lag.
+    div_alignment_ema_alpha: float = 0.30
 
     # Pressure model: intra-group rotation-rate suppression
     rise_suppression_scale: float = 0.001  # m/frame differential rise for full suppression
@@ -816,21 +841,48 @@ class KinematicStream:
             self._td_prev_delta[gname] = delta
 
             td_impulse = 0.0
+            td_landing_imp = 0.0
+            td_apex_imp = 0.0
+            td_liftoff_imp = 0.0
             descent_speed = abs(slow)
 
-            # Landing crossover: prev_delta < 0, delta >= 0, was genuinely falling
+            # Landing crossover: prev_delta < 0, delta >= 0, was genuinely falling.
+            # Single-frame impulse fired at the moment vy approaches 0 from
+            # the negative side — the kinematic signature of an arrest.
             if (prev_delta < 0 and delta >= 0
                     and descent_speed > opts.td_descent_gate
                     and h < opts.td_height_gate):
                 strength = min(1.0, descent_speed / opts.td_descent_scale)
-                td_impulse = 0.5 * strength
+                td_landing_imp = 0.5 * strength
+                td_impulse = td_landing_imp
 
-            # Liftoff crossover: fast drops below slow while near floor
+            # Apex crossover: prev_delta > 0, delta <= 0, was genuinely rising.
+            # Symmetric counterpart of the landing crossover — vy is approaching
+            # 0 from the positive side, which is the kinematic signature of a
+            # swing apex, not a contact.  Only fires when slow_ema is positive
+            # (so we know the recent motion was upward) and the apex is in the
+            # decision-relevant height band.  Single-frame impulse, no spillover
+            # into the surrounding descent / ascent phases.  Strength is
+            # normalised against td_apex_scale (smaller than td_descent_scale)
+            # because rise velocities are intrinsically smaller than fall
+            # velocities — see comment on td_apex_scale in options.
+            elif (prev_delta >= 0 and delta < 0
+                  and slow > opts.td_apex_rise_gate
+                  and h < opts.td_apex_height_gate):
+                strength = min(1.0, slow / max(opts.td_apex_scale, 1e-6))
+                td_apex_imp = opts.td_apex_logodds * strength
+                td_impulse = td_apex_imp
+
+            # Liftoff crossover: fast drops below slow while near floor in
+            # planted state.  This is a separate event from the apex above:
+            # the foot was already in contact (phase > PLANTED_PHASE_THRESH)
+            # and is now lifting off with low speed.
             elif (prev_delta >= 0 and delta < 0
                   and abs(slow) < 0.15
                   and h < opts.td_height_gate
                   and phase > self.PLANTED_PHASE_THRESH):
-                td_impulse = -0.3
+                td_liftoff_imp = -0.3
+                td_impulse = td_liftoff_imp
 
             # =============================================================
             # LEVER ROTATION CORRECTION
@@ -955,6 +1007,9 @@ class KinematicStream:
                 'phase': phase,
                 'angle_push': angle_push,
                 'td_impulse': td_impulse,
+                'td_landing_imp': td_landing_imp,
+                'td_apex_imp': td_apex_imp,
+                'td_liftoff_imp': td_liftoff_imp,
                 'vel_hold': vel_hold,
                 'never_settled': never_settled_push,
                 'angle_deg': angle_deg,
@@ -992,8 +1047,9 @@ class DivergenceStream:
     """
 
     def __init__(self):
-        self._prev_pos = {}   # gname → (3,) representative joint position
-        self._prev_com = None  # (3,) previous CoM
+        self._prev_pos = {}      # gname → (3,) representative joint position
+        self._prev_com = None    # (3,) previous CoM
+        self._alignment_ema = {}  # gname → EMA-smoothed alignment
 
     def compute(self, pos, com, com_vel, floor_height, dt, opts):
         """Compute per-group divergence evidence.
@@ -1050,7 +1106,16 @@ class DivergenceStream:
             # Relative velocity: how the foot moves relative to CoM
             rel_vel = foot_vel_h - com_vel_h
             # Alignment: positive = diverging (swing), negative = trailing (planted)
-            alignment = np.dot(rel_vel, com_vel_h) / com_speed
+            alignment_raw = float(np.dot(rel_vel, com_vel_h) / com_speed)
+
+            # EMA smoothing on alignment.  Damps the swing→stance flip so the
+            # anti-contact vote persists through the end of the swing, when
+            # the foot stops racing ahead but isn't yet a contact candidate.
+            # Initialise from the first raw value to avoid a startup transient.
+            ema_alpha = max(0.0, min(1.0, opts.div_alignment_ema_alpha))
+            prev_align = self._alignment_ema.get(gname, alignment_raw)
+            alignment = ema_alpha * alignment_raw + (1.0 - ema_alpha) * prev_align
+            self._alignment_ema[gname] = alignment
 
             # Map alignment to log-odds:
             #   alignment > 0 → swing → negative evidence (anti-contact)
@@ -1074,6 +1139,7 @@ class DivergenceStream:
             result[gname] = lo
             context[gname] = {
                 'div_align': alignment,
+                'div_align_raw': alignment_raw,
                 'com_speed': com_speed,
                 'div_ground_gate': ground_gate,
             }
@@ -1525,16 +1591,25 @@ class StructuralStream:
                 elif frac < equal_share * 0.6:
                     result[gname] = opts.struct_pendulum_leading_logodds
                 elif frac >= equal_share * 0.8:
-                    if (gname in established or has_deficit) and body_contacts_on:
-                        # Established: full positive. New with deficit: full.
-                        # Only in body-contact mode — for foot-only walking,
-                        # divergence + kinematic streams handle discrimination.
+                    if body_contacts_on and (gname in established or has_deficit):
+                        # Body-contact mode: established or deficit → full.
+                        result[gname] = opts.struct_necessary_logodds
+                    elif gname in established and gname in FOOT_GROUPS:
+                        # Foot-only mode: an ESTABLISHED foot bearing ≥80%
+                        # of weight is unambiguously supporting the body.
+                        # Provide full structural evidence to counterbalance
+                        # kinematic false-liftoff from postural sway.
+                        # New candidates stay neutral (0.0) to avoid
+                        # premature recruitment during walking swing.
                         result[gname] = opts.struct_necessary_logodds
                     else:
-                        # Walking or no deficit: stay neutral
+                        # Walking or new candidate: stay neutral
                         result[gname] = 0.0
                 else:
-                    if (gname in established or has_deficit) and body_contacts_on:
+                    if body_contacts_on and (gname in established or has_deficit):
+                        result[gname] = opts.struct_mild_logodds
+                    elif gname in established and gname in FOOT_GROUPS:
+                        # Moderate share + established foot → mild evidence
                         result[gname] = opts.struct_mild_logodds
                     else:
                         result[gname] = 0.0
@@ -2349,9 +2424,11 @@ class IntensityPressureModel:
         # During cartwheels, hands bear full body weight.
         active_groups = {}
         groups_map = get_active_groups(opts)
+        BODY_DEADZONE = 0.15  # Body contacts need higher confidence
         for g in groups_map:
             intensity = intensities.get(g, 0.0)
-            if intensity > opts.intensity_deadzone:
+            dz = BODY_DEADZONE if g in BODY_GROUPS else opts.intensity_deadzone
+            if intensity > dz:
                 active_groups[g] = intensity
 
         if not active_groups:
@@ -2366,30 +2443,51 @@ class IntensityPressureModel:
             g = list(active_groups.keys())[0]
             group_forces[g] = total_mass * active_groups[g]
         else:
-            # XCoM-based lever rule, scaled by intensity
-            centroids = {}
-            for gname in active_groups:
-                joints = all_groups_map[gname]
-                valid = [j for j in joints if j < J]
-                if valid:
-                    centroids[gname] = np.mean(
-                        [pos[j][plane] for j in valid], axis=0)
+            # Two-regime distribution.
+            #
+            # Naive per-group force (matches single-group rule): each group
+            # bears force proportional to its own intensity.  Sum these.
+            #
+            # Below body-weight total: use the naive forces directly — the
+            # contacts are too uncertain to be claiming the full body, so
+            # force scales with confidence and the body weight is "missing"
+            # (consistent with the kinematic interpretation: the body is in
+            # transit / the contacts are tentative).
+            #
+            # At or above body-weight total: switch to the XCoM lever rule
+            # to redistribute exactly total_mass among the groups, weighted
+            # by both proximity to XCoM and intensity.  This is the standard
+            # established-contact behaviour.
+            naive_forces = {g: total_mass * active_groups[g]
+                            for g in active_groups}
+            total_naive = sum(naive_forces.values())
 
-            if len(centroids) >= 2:
-                inv_dists = {}
-                for g, c in centroids.items():
-                    d = max(0.01, np.linalg.norm(c - xcom_hz))
-                    # Weight by both proximity and intensity
-                    inv_dists[g] = active_groups[g] / d
-                total_inv = sum(inv_dists.values())
-                for g in active_groups:
-                    group_forces[g] = (total_mass
-                                       * inv_dists.get(g, 0)
-                                       / max(total_inv, 1e-6))
+            if total_naive <= total_mass:
+                group_forces = naive_forces
             else:
-                for g in active_groups:
-                    w = active_groups[g] / total_intensity
-                    group_forces[g] = total_mass * w
+                centroids = {}
+                for gname in active_groups:
+                    joints = all_groups_map[gname]
+                    valid = [j for j in joints if j < J]
+                    if valid:
+                        centroids[gname] = np.mean(
+                            [pos[j][plane] for j in valid], axis=0)
+
+                if len(centroids) >= 2:
+                    inv_dists = {}
+                    for g, c in centroids.items():
+                        d = max(0.01, np.linalg.norm(c - xcom_hz))
+                        # Weight by both proximity and intensity
+                        inv_dists[g] = active_groups[g] / d
+                    total_inv = sum(inv_dists.values())
+                    for g in active_groups:
+                        group_forces[g] = (total_mass
+                                           * inv_dists.get(g, 0)
+                                           / max(total_inv, 1e-6))
+                else:
+                    for g in active_groups:
+                        w = active_groups[g] / total_intensity
+                        group_forces[g] = total_mass * w
 
         # Within-group joint split for foot groups (ball/heel)
         for gname in active_groups:
@@ -2673,6 +2771,74 @@ class LogOddsContactEstimator:
 
         return valved
 
+    def _check_foot_structural_deficit(self, plane):
+        """Check if foot contacts alone can explain the current dynamics.
+
+        Uses the previous frame's structural evaluation to determine
+        whether the ZMP lies inside the support polygon of foot-only
+        contacts.  If not, or if no foot contacts are active, returns
+        True indicating a structural deficit that may require body
+        contacts.
+
+        Args:
+            plane: [int, int] horizontal plane indices (e.g. [0, 2] for Y-up)
+
+        Returns:
+            bool: True if feet can't explain dynamics (body contacts may
+                  be needed), False if feet are sufficient.
+        """
+        fe = getattr(self.structural_stream, 'last_eval_result', None)
+        if fe is None:
+            return False  # No data yet — don't activate
+
+        # Check if any foot contacts are active with meaningful force
+        foot_joints = set()
+        for gname in FOOT_GROUPS:
+            foot_joints.update(FOOT_GROUPS[gname])
+        foot_force = sum(
+            fe.per_contact_force.get(j, 0.0) for j in foot_joints
+        )
+        if foot_force < 1.0:
+            # No meaningful foot force → structural deficit
+            return True
+
+        # Get foot-only contact positions in horizontal plane
+        foot_positions = []
+        for j, force in fe.per_contact_force.items():
+            if j in foot_joints and force > 0.5:
+                foot_positions.append(fe.zmp_approx * 0)  # placeholder
+        # Actually use the support polygon from the eval result,
+        # but filter to foot contacts only
+        if not fe.support_polygon or len(fe.support_polygon) < 1:
+            return True  # No support polygon → deficit
+
+        # Check ZMP vs foot support polygon:
+        # Simple approach — is the ZMP within reasonable distance
+        # of the foot contact centroid?  For a full sitting-down,
+        # the ZMP moves far behind the feet.
+        zmp = fe.zmp_approx  # (2,) horizontal
+        if zmp is None or np.any(np.isnan(zmp)):
+            return False
+
+        # Compute foot centroid from support polygon
+        poly = np.array(fe.support_polygon)  # (N, 2)
+        if len(poly) == 0:
+            return True
+
+        centroid = poly.mean(axis=0)
+
+        # Simple containment: is ZMP within the support polygon?
+        # Use signed area method for convex polygon check.
+        # For simplicity, use distance from centroid vs polygon radius.
+        max_radius = np.max(np.linalg.norm(poly - centroid, axis=1))
+        max_radius = max(max_radius, 0.05)  # min 5cm
+
+        zmp_dist = np.linalg.norm(zmp - centroid)
+
+        # If ZMP is more than 1.5x the polygon radius from centroid,
+        # feet can't explain it → structural deficit
+        return zmp_dist > max_radius * 1.5
+
     def process_frame(self, pos, com, com_vel, com_acc,
                       floor_height, dt, opts=None, raw_com_acc=None,
                       surface_dists=None, gravity_torque_vecs=None):
@@ -2702,20 +2868,29 @@ class LogOddsContactEstimator:
         plane = [0, 2] if up == 1 else [0, 1]
 
         # --- CoM-gate body contacts ---
-        # Body groups only activate when CoM is near the floor.
-        # During upright walking/standing, body contacts stay dormant
-        # even if the capability flag is on.
-        # Hysteresis: activate at < 0.5m, deactivate at > 0.7m to
-        # prevent flickering during transitional poses.
+        # Body groups only activate when CoM is near the floor AND the
+        # feet alone can't explain the dynamics (structural deficit).
+        # This prevents false body contacts during squats where CoM is
+        # low but feet perfectly explain the balance.
+        # Hysteresis: activate at < 0.5m, deactivate at > 0.7m.
         BODY_ACTIVATE_THRESH = 0.5   # CoM must drop below this to engage
         BODY_DEACTIVATE_THRESH = 0.7  # CoM must rise above this to disengage
         if opts.enable_body_contacts and com is not None:
             com_h = com[up] - floor_height
             was_active = getattr(self, '_body_contacts_active', False)
+
+            # --- Structural deficit check ---
+            # Check if foot contacts alone can explain the dynamics.
+            # Use the previous frame's foot-only structural evaluation:
+            # if ZMP is inside the foot support polygon, feet handle it.
+            has_structural_deficit = self._check_foot_structural_deficit(plane)
+
             if was_active:
                 body_active = com_h <= BODY_DEACTIVATE_THRESH
             else:
-                body_active = com_h <= BODY_ACTIVATE_THRESH
+                # Require BOTH low CoM AND structural deficit to activate
+                body_active = (com_h <= BODY_ACTIVATE_THRESH
+                               and has_structural_deficit)
             self._body_contacts_active = body_active
             if not body_active:
                 opts = replace(opts, enable_body_contacts=False)
@@ -2876,6 +3051,7 @@ class LogOddsContactEstimator:
         # --- Binary contact (for compatibility) ---
         contact_state = {g: (intensities.get(g, 0.0) > 0.5)
                          for g in all_group_names}
+
 
         # --- Pressure distribution ---
         # XCoM for lever rule

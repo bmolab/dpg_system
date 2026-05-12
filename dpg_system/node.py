@@ -3657,29 +3657,61 @@ def _macos_file_dialog(action="open", target_dir=".", default_name=""):
         return ""
 
 
+def _resolve_existing_dir(path):
+    """Return an absolute, existing directory by walking up `path` until one exists.
+    Falls back to cwd if nothing usable is found. Returns "" if even cwd is unusable."""
+    import os
+    try:
+        candidate = os.path.abspath(path) if path else os.getcwd()
+    except Exception:
+        candidate = ""
+    while candidate and not os.path.isdir(candidate):
+        parent = os.path.dirname(candidate)
+        if parent == candidate:
+            candidate = ""
+            break
+        candidate = parent
+    if not candidate:
+        try:
+            cwd = os.getcwd()
+            if os.path.isdir(cwd):
+                return cwd
+        except Exception:
+            pass
+        return ""
+    return candidate
+
+
 class LoadDialog:
     def __init__(self, parent, callback, extensions, default_path=''):
         Node.app.active_widget = 1
         self.callback = callback
         self.parent = parent
         load_path = ""
+        start_dir = _resolve_existing_dir(default_path)
         try:
             import crossfiledialog
-            import os
-            start_dir = os.path.abspath(default_path) if default_path else ""
-            load_path = crossfiledialog.open_file(title="Open", start_dir=start_dir)
+            try:
+                load_path = crossfiledialog.open_file(title="Open", start_dir=start_dir)
+            except Exception as e:
+                print(f'LoadDialog crossfiledialog error: {e}; retrying without start_dir')
+                try:
+                    load_path = crossfiledialog.open_file(title="Open")
+                except Exception as e2:
+                    print(f'LoadDialog crossfiledialog retry error: {e2}')
+                    load_path = ""
         except ImportError:
             try:
                 import sys
                 if sys.platform == "darwin":
-                    load_path = _macos_file_dialog(action="open", target_dir=default_path)
+                    load_path = _macos_file_dialog(action="open", target_dir=start_dir)
                 elif sys.platform == "win32":
-                    load_path = _windows_file_dialog(action="open", target_dir=default_path, extensions=extensions)
+                    load_path = _windows_file_dialog(action="open", target_dir=start_dir, extensions=extensions)
                 else:
-                    load_path = _linux_file_dialog(action="open", target_dir=default_path, extensions=extensions)
+                    load_path = _linux_file_dialog(action="open", target_dir=start_dir, extensions=extensions)
             except Exception as e:
                 print(f'LoadDialog fallback error: {e}')
-                
+
         try:
             if load_path:
                 self.callback(load_path)
@@ -3696,24 +3728,34 @@ class SaveDialog:
         self.callback = callback
         self.parent = parent
         save_path = ""
+        import os
+        start_dir = _resolve_existing_dir(default_path)
+        if default_path:
+            try:
+                os.makedirs(os.path.abspath(default_path), exist_ok=True)
+                start_dir = _resolve_existing_dir(default_path)
+            except Exception as e:
+                print(f'SaveDialog could not create {default_path}: {e}')
         try:
             import crossfiledialog
-            import os
-            start_dir = os.path.abspath(default_path) if default_path else os.getcwd()
-            os.makedirs(start_dir, exist_ok=True)
             try:
                 save_path = crossfiledialog.save_file(title="Save As", start_dir=start_dir)
-            except Exception:
-                save_path = ""
+            except Exception as e:
+                print(f'SaveDialog crossfiledialog error: {e}; retrying without start_dir')
+                try:
+                    save_path = crossfiledialog.save_file(title="Save As")
+                except Exception as e2:
+                    print(f'SaveDialog crossfiledialog retry error: {e2}')
+                    save_path = ""
         except ImportError:
             try:
                 import sys
                 if sys.platform == "darwin":
-                    save_path = _macos_file_dialog(action="save", target_dir=default_path, default_name=default_filename)
+                    save_path = _macos_file_dialog(action="save", target_dir=start_dir, default_name=default_filename)
                 elif sys.platform == "win32":
-                    save_path = _windows_file_dialog(action="save", target_dir=default_path, default_name=default_filename, extensions=extensions)
+                    save_path = _windows_file_dialog(action="save", target_dir=start_dir, default_name=default_filename, extensions=extensions)
                 else:
-                    save_path = _linux_file_dialog(action="save", target_dir=default_path, default_name=default_filename, extensions=extensions)
+                    save_path = _linux_file_dialog(action="save", target_dir=start_dir, default_name=default_filename, extensions=extensions)
             except Exception as e:
                 print(f'SaveDialog fallback error: {e}')
                 
