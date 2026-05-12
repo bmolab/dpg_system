@@ -1,4 +1,4 @@
-from dpg_system.shadow_to_smpl import SHADOW_TO_SMPL
+from dpg_system.smpl_utilities.shadow_to_smpl import SHADOW_TO_SMPL
 
 print('in')
 
