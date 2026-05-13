@@ -3667,11 +3667,52 @@ if($dialog.ShowDialog() -eq "OK") {
         print(f"Windows Dialog Exception: {e}")
         return ""
 
+class _LinuxDialogServer:
+    """Persistent GTK file-chooser process.
+
+    GTK is initialised once when the server starts; subsequent dialogs appear
+    with no subprocess-spawn or library-load overhead.
+    """
+    _proc = None
+    _lock = threading.Lock()
+    _SERVER_SCRIPT = os.path.join(os.path.dirname(__file__), '_dialog_server.py')
+
+    @classmethod
+    def _start(cls):
+        import subprocess
+        cls._proc = subprocess.Popen(
+            ['/usr/bin/python3', cls._SERVER_SCRIPT],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            text=True,
+        )
+        ready = cls._proc.stdout.readline().strip()
+        if ready != "READY":
+            cls._proc.kill()
+            cls._proc = None
+            raise RuntimeError(f"Dialog server did not send READY (got {ready!r})")
+
+    @classmethod
+    def request(cls, action, target_dir, default_name=""):
+        with cls._lock:
+            if cls._proc is None or cls._proc.poll() is not None:
+                cls._start()
+            req = json.dumps({"action": action, "dir": target_dir, "name": default_name})
+            cls._proc.stdin.write(req + "\n")
+            cls._proc.stdin.flush()
+            resp = json.loads(cls._proc.stdout.readline().strip())
+            return resp.get("path", "")
+
+
 def _linux_file_dialog(action="open", target_dir=".", default_name="", extensions=None):
+    try:
+        return _LinuxDialogServer.request(action, target_dir, default_name)
+    except Exception as e:
+        print(f"Linux dialog server error: {e}; falling back to zenity/kdialog")
+
     import subprocess
-    import os
     import shutil
-    
+
     target_posix = os.path.abspath(target_dir) if target_dir else os.getcwd()
     if action == "save":
         initial_path = os.path.join(target_posix, default_name)
@@ -3691,7 +3732,7 @@ def _linux_file_dialog(action="open", target_dir=".", default_name="", extension
     else:
         print("Linux Dialog Error: zenity or kdialog not found. Cannot launch native dialog.")
         return ""
-        
+
     try:
         result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode == 0:
@@ -3773,39 +3814,35 @@ class LoadDialog:
         Node.app.active_widget = 1
         self.callback = callback
         self.parent = parent
-        load_path = ""
         start_dir = _resolve_existing_dir(default_path)
-        try:
-            import crossfiledialog
+
+        def _run():
+            load_path = ""
             try:
-                load_path = crossfiledialog.open_file(title="Open", start_dir=start_dir)
-            except Exception as e:
-                print(f'LoadDialog crossfiledialog error: {e}; retrying without start_dir')
-                try:
-                    load_path = crossfiledialog.open_file(title="Open")
-                except Exception as e2:
-                    print(f'LoadDialog crossfiledialog retry error: {e2}')
-                    load_path = ""
-        except ImportError:
-            try:
-                import sys
                 if sys.platform == "darwin":
                     load_path = _macos_file_dialog(action="open", target_dir=start_dir)
                 elif sys.platform == "win32":
                     load_path = _windows_file_dialog(action="open", target_dir=start_dir, extensions=extensions)
-                else:
+                elif sys.platform == "linux":
                     load_path = _linux_file_dialog(action="open", target_dir=start_dir, extensions=extensions)
+                else:
+                    try:
+                        import crossfiledialog
+                        load_path = crossfiledialog.open_file(title="Open", start_dir=start_dir)
+                    except Exception as e:
+                        print(f'LoadDialog crossfiledialog error: {e}')
             except Exception as e:
-                print(f'LoadDialog fallback error: {e}')
+                print(f'LoadDialog error: {e}')
+            try:
+                if load_path:
+                    self.callback(load_path)
+                else:
+                    print('Load cancelled')
+            except Exception as e:
+                print(f'LoadDialog callback error: {e}')
+            Node.app.active_widget = -1
 
-        try:
-            if load_path:
-                self.callback(load_path)
-            else:
-                print('Load cancelled')
-        except Exception as e:
-            print(f'LoadDialog callback error: {e}')
-        Node.app.active_widget = -1
+        threading.Thread(target=_run, daemon=True).start()
 
 
 class SaveDialog:
@@ -3813,8 +3850,6 @@ class SaveDialog:
         Node.app.active_widget = 1
         self.callback = callback
         self.parent = parent
-        save_path = ""
-        import os
         start_dir = _resolve_existing_dir(default_path)
         if default_path:
             try:
@@ -3822,34 +3857,31 @@ class SaveDialog:
                 start_dir = _resolve_existing_dir(default_path)
             except Exception as e:
                 print(f'SaveDialog could not create {default_path}: {e}')
-        try:
-            import crossfiledialog
+
+        def _run():
+            save_path = ""
             try:
-                save_path = crossfiledialog.save_file(title="Save As", start_dir=start_dir)
-            except Exception as e:
-                print(f'SaveDialog crossfiledialog error: {e}; retrying without start_dir')
-                try:
-                    save_path = crossfiledialog.save_file(title="Save As")
-                except Exception as e2:
-                    print(f'SaveDialog crossfiledialog retry error: {e2}')
-                    save_path = ""
-        except ImportError:
-            try:
-                import sys
                 if sys.platform == "darwin":
                     save_path = _macos_file_dialog(action="save", target_dir=start_dir, default_name=default_filename)
                 elif sys.platform == "win32":
                     save_path = _windows_file_dialog(action="save", target_dir=start_dir, default_name=default_filename, extensions=extensions)
-                else:
+                elif sys.platform == "linux":
                     save_path = _linux_file_dialog(action="save", target_dir=start_dir, default_name=default_filename, extensions=extensions)
+                else:
+                    try:
+                        import crossfiledialog
+                        save_path = crossfiledialog.save_file(title="Save As", start_dir=start_dir)
+                    except Exception as e:
+                        print(f'SaveDialog crossfiledialog error: {e}')
             except Exception as e:
-                print(f'SaveDialog fallback error: {e}')
-                
-        try:
-            if save_path:
-                self.callback(save_path)
-            else:
-                print('Save cancelled')
-        except Exception as e:
-            print(f'SaveDialog callback error: {e}')
-        Node.app.active_widget = -1
+                print(f'SaveDialog error: {e}')
+            try:
+                if save_path:
+                    self.callback(save_path)
+                else:
+                    print('Save cancelled')
+            except Exception as e:
+                print(f'SaveDialog callback error: {e}')
+            Node.app.active_widget = -1
+
+        threading.Thread(target=_run, daemon=True).start()
