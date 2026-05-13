@@ -1100,6 +1100,7 @@ class TrackerAlignNode(Node):
     def do_calibrate(self):
         self.calibrated_yaw = self.smoothed_yaw
         self.calibrated = True
+        self.continuous_opt.set(False)
 
     @staticmethod
     def quat_rotate_vector(q_wxyz, vec):
