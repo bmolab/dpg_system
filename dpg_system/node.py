@@ -8,6 +8,7 @@ from typing import List, Any, Callable, Union, Tuple, Optional, Dict, Set, Type,
 from fuzzywuzzy import fuzz
 import sys
 import os
+import threading
 from pathlib import Path
 
 
@@ -1386,7 +1387,7 @@ class NodeInput:
     _pin_active_list_theme = None
     _pin_active_bang_theme = None
 
-    def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, **kwargs):
+    def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, cross_thread_latest=False, **kwargs):
         if not self._pin_theme_created:
             self.create_pin_themes()
         self._label = label
@@ -1408,6 +1409,20 @@ class NodeInput:
         self.node_attribute = None
         self.received_bang = False
         self.received_type = None
+
+        # Cross-thread "latest-wins" mailbox. When a non-main thread sends
+        # data into this input, the write is stashed under a lock and the
+        # main-thread side effects (widget/theme updates, callback, execute)
+        # are deferred to the owning node's mailbox pump. Same-thread sends
+        # bypass this entirely and behave identically to before.
+        self.cross_thread_latest = cross_thread_latest
+        self._mailbox_lock = threading.Lock() if cross_thread_latest else None
+        self._mailbox_pending = False
+        self._mailbox_data = None
+        self._mailbox_orig_type = None
+        self._mailbox_dropped = 0
+        if cross_thread_latest and node is not None:
+            node._register_mailboxed_input(self)
 
         self.bang_repeats_previous = True
         if widget_type == 'checkbox':
@@ -1581,6 +1596,22 @@ class NodeInput:
             self._parents.remove(parent)
 
     def receive_data(self, data: Any, orig_type: Optional[Type] = None) -> None:
+        # Cross-thread "latest-wins" mailbox. Off-thread writers drop the
+        # value into a slot and return; the owning node's main-thread pump
+        # replays receive_data on the next frame_task tick. Same-thread
+        # sends (including the existing 60 Hz patches) fall through to the
+        # original code path unchanged.
+        if (self.cross_thread_latest
+                and Node.app is not None
+                and threading.get_ident() != getattr(Node.app, 'main_thread_id', threading.get_ident())):
+            with self._mailbox_lock:
+                if self._mailbox_pending:
+                    self._mailbox_dropped += 1
+                self._mailbox_data = data
+                self._mailbox_orig_type = orig_type
+                self._mailbox_pending = True
+            self.node._mailbox_dirty = True
+            return
         # if Node.app.trace:
         #     Node.app.increment_trace_indent()
         #     print(Node.app.trace_indent, end='')
@@ -1649,6 +1680,12 @@ class NodeInput:
         return data
 
     def trigger(self) -> None:
+        # Off-thread trigger: receive_data has already deposited the value
+        # in the mailbox; execute() will fire from the main-thread pump.
+        if (self.cross_thread_latest
+                and Node.app is not None
+                and threading.get_ident() != getattr(Node.app, 'main_thread_id', threading.get_ident())):
+            return
         if self.triggers_execution and not self.node.message_handled:
             self.node.active_input = self
             if Node.app.trace:
@@ -2005,6 +2042,9 @@ class Node:
         self.in_loading_process = False
         self.show_options_check = None
         self.help_file_name = None
+        # Cross-thread mailbox state (see NodeInput.cross_thread_latest).
+        self._mailboxed_inputs = []
+        self._mailbox_dirty = False
         if Node.active_theme is None:
             self.create_button_themes()
 
@@ -2496,6 +2536,52 @@ class Node:
         if self.has_frame_task:
             Node.app.remove_frame_task(self)
             self.has_frame_task = False
+
+    def _register_mailboxed_input(self, inp: 'NodeInput') -> None:
+        """Called by NodeInput when cross_thread_latest=True."""
+        self._mailboxed_inputs.append(inp)
+
+    def enable_mailbox_pump(self) -> None:
+        """Call after declaring cross_thread_latest inputs so the node's
+        frame_task runs on the main thread once per dpg tick. The
+        subclass's frame_task should invoke self._pump_mailboxes()."""
+        if not self.has_frame_task:
+            self.add_frame_task()
+
+    def _pump_mailboxes(self) -> bool:
+        """Drain pending off-thread writes on the main thread. Replays
+        receive_data for each pending input so widget/theme/callback side
+        effects run in main-thread context, then fires execute() once if
+        any triggering input was written. Returns True if anything fired."""
+        if not self._mailbox_dirty:
+            return False
+        self._mailbox_dirty = False
+        fired = False
+        last_trigger_input = None
+        for inp in self._mailboxed_inputs:
+            if not inp._mailbox_pending:
+                continue
+            with inp._mailbox_lock:
+                inp._mailbox_pending = False
+                data = inp._mailbox_data
+                orig_type = inp._mailbox_orig_type
+                inp._mailbox_data = None
+            # Same-thread replay: receive_data will skip the off-thread
+            # branch and run widget set / theme bind / callback normally.
+            inp.receive_data(data, orig_type=orig_type)
+            fired = True
+            if inp.triggers_execution:
+                last_trigger_input = inp
+        if last_trigger_input is not None and not self.message_handled:
+            self.active_input = last_trigger_input
+            try:
+                self.execute()
+            except Exception:
+                import traceback
+                print(f"Exception in node '{self.label}' execute (mailbox pump):")
+                traceback.print_exc()
+            self.active_input = None
+        return fired
 
     def create(self, parent: int, pos: List[float], from_file: bool = False) -> None:
         with dpg.node(parent=parent, label=self.label, tag=self.uuid, pos=pos):

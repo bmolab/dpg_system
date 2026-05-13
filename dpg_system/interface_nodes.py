@@ -5,7 +5,7 @@ import traceback
 import numpy as np
 import torch
 
-from dpg_system.node import Node
+from dpg_system.node import Node, SaveDialog, LoadDialog
 import threading
 from dpg_system.conversion_utils import *
 from dpg_system.matrix_nodes import RollingBuffer
@@ -1662,6 +1662,8 @@ class Vector2DNode(Node):
         self.format_option = self.add_option(label='number format', widget_type='text_input', default_value=self.format, callback=self.change_format)
         self.all_inputs_trigger_option = self.add_option('all inputs trigger', widget_type='checkbox', default_value=True)
         self.width_option = self.add_option('width', widget_type='drag_int', default_value=self.component_widget_width, callback=self.width_changed)
+        self.save_option = self.add_option('save', widget_type='button', callback=self._save_values)
+        self.load_option = self.add_option('load', widget_type='button', callback=self._load_values)
         self.output_vector = np.zeros(self.current_dims)
 
         self.first_component_input_index = -1
@@ -1711,6 +1713,47 @@ class Vector2DNode(Node):
             if not_zeroed:
                 self.output_vector = [[0.0] * self.current_dims[0]] * self.current_dims[1]
         self.execute()
+
+    def _save_values(self):
+        SaveDialog(self, callback=self._save_file_callback, extensions=['.npy'],
+                   default_filename='vector2d.npy')
+
+    def _save_file_callback(self, save_path):
+        if not save_path:
+            return
+        if not save_path.endswith('.npy'):
+            save_path += '.npy'
+        try:
+            dim1 = self.current_dims[0]
+            values = [any_to_list(self.component_properties[i]()) for i in range(dim1)]
+            payload = {'values': values, 'dims': list(self.current_dims)}
+            np.save(save_path, payload)
+            print(f'Vector2DNode: saved values to {save_path}')
+        except Exception as e:
+            print(f'Vector2DNode: error saving values: {e}')
+
+    def _load_values(self):
+        LoadDialog(self, callback=self._load_file_callback, extensions=['.npy'])
+
+    def _load_file_callback(self, load_path):
+        if not load_path:
+            return
+        try:
+            data = np.load(load_path, allow_pickle=True).item()
+            values = data.get('values', [])
+            if not values:
+                print(f'Vector2DNode: no values found in {load_path}')
+                return
+            if len(values) != self.current_dims[0]:
+                new_count = min(len(values), self.max_component_count)
+                self.component_count_property.set(new_count)
+                self.component_count_changed()
+            for i in range(min(len(values), self.current_dims[0])):
+                self.component_properties[i].widget.set(any_to_list(values[i]))
+            self.execute()
+            print(f'Vector2DNode: loaded values from {load_path}')
+        except Exception as e:
+            print(f'Vector2DNode: error loading values: {e}')
 
     def get_preset_state(self):
         preset = {}

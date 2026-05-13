@@ -543,10 +543,10 @@ class MGLSMPLHeatmapNode(Node):
         # super().initialize(args)
 
         self.gl_input = self.add_input('gl chain in', triggers_execution=True)
-        self.pose_input = self.add_input('pose', triggers_execution=True)
-        self.trans_input = self.add_input('trans')
-        self.torques_input = self.add_input('torques')
-        self.config_input = self.add_input('config', triggers_execution=True)
+        self.pose_input = self.add_input('pose', triggers_execution=True, cross_thread_latest=True)
+        self.trans_input = self.add_input('trans', cross_thread_latest=True)
+        self.torques_input = self.add_input('torques', cross_thread_latest=True)
+        self.config_input = self.add_input('config', triggers_execution=True, cross_thread_latest=True)
 
         self.max_torque_prop = self.add_input('max torque', widget_type='drag_float',
                                                 default_value=50.0, speed=1.0)
@@ -582,6 +582,14 @@ class MGLSMPLHeatmapNode(Node):
 
         self.gl_output = self.add_output('gl chain out')
         self.muscle_output = self.add_output('muscle activations')
+
+        # Off-thread producers (e.g. high-rate OpenTake/Shadow + SMPLTorque
+        # on a worker thread) drop into a latest-wins mailbox; this pump
+        # drains it on the main thread at the dpg frame rate.
+        self.enable_mailbox_pump()
+
+    def frame_task(self):
+        self._pump_mailboxes()
 
     def _load_model(self):
         if not SMPLX_AVAILABLE:

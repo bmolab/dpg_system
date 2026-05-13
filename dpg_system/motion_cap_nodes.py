@@ -13,6 +13,7 @@ import scipy
 import copy
 import datetime
 import json
+import threading
 import time
 
 #
@@ -397,9 +398,12 @@ class OpenTakeNode(MoCapNode):
         self.stop_button = self.add_input('stop', widget_type='button', callback=self.stop_button_clicked)
         self.loop_input = self.add_input('loop', widget_type='checkbox', default_value=True)
         self.output_when_paused_input = self.add_input('output when paused', widget_type='checkbox', default_value=False)
-        self.external_clock_enable_input = self.add_input('enable external clock', widget_type='checkbox', default_value=False)
+        # When on, playback is driven by a worker thread paced at the file's
+        # mocap framerate (read at load). When off, playback advances on the
+        # dpg 60 Hz frame_task as before. Toggling mid-play takes effect on
+        # the next play press.
+        self.use_file_framerate_input = self.add_input('use file framerate', widget_type='checkbox', default_value=False)
         self.save_temp_input = self.add_input('save temp files', widget_type='checkbox', default_value=False)
-        self.external_clock_input = self.add_input('external clock', callback=self.external_play)
         self.add_spacer()
         self.frame_input = self.add_input('frame', widget_type='drag_int', widget_width=50, callback=self.frame_widget_changed)
         self.length_property = self.add_input('length: 0', widget_type='label')
@@ -432,6 +436,12 @@ class OpenTakeNode(MoCapNode):
         self.message_handlers['load'] = self.load_take_message
         self.new_positions = False
         self.load_take_task = -1
+        # File framerate (parsed from the npz at load time). 60 is the
+        # neutral default when the file does not carry a framerate.
+        self.file_fps = 60.0
+        # Worker thread for file-rate playback (created on demand).
+        self._playback_thread = None
+        self._playback_stop_event = threading.Event()
 
     def custom_create(self, from_file):
         self.load_button.widget.set_active_theme(Node.active_theme_blue)
@@ -444,6 +454,13 @@ class OpenTakeNode(MoCapNode):
         self.stop_button.widget.set_height(24)
         self.play_pause_button.widget.set_active_theme(Node.active_theme_green)
         self.play_pause_button.widget.set_height(24)
+
+    def custom_cleanup(self):
+        # Signal any running playback thread to exit. The thread is a
+        # daemon, so it won't block process shutdown, but a clean exit
+        # avoids spurious activity on a deleted node.
+        self.streaming = False
+        self._playback_stop_event.set()
 
     def receive_globals(self):
         incoming = self.global_data_in()
@@ -654,14 +671,33 @@ class OpenTakeNode(MoCapNode):
         self.dump_out.send(self.take_dict)
 
     def start_playing(self):
-        if not self.external_clock_enable_input():
+        if self.use_file_framerate_input():
+            # Worker-thread playback paced by file_fps. The thread loop
+            # exits when either self.streaming flips false or the stop
+            # event is set.
+            self._playback_stop_event.clear()
+            if self._playback_thread is not None and self._playback_thread.is_alive():
+                return
+            # The caller sets self.streaming = True *after* start_playing()
+            # returns; set it here so the thread's first iteration doesn't
+            # see streaming=False and exit immediately.
+            self.streaming = True
+            self._playback_thread = threading.Thread(
+                target=self._playback_loop, daemon=True,
+                name=f'OpenTakePlayback-{self.uuid}')
+            self._playback_thread.start()
+        else:
             self.add_frame_task()
 
     def stop_playing(self):
-        if not self.external_clock_enable_input():
-            self.remove_frame_tasks()
+        # Always signal both clock sources — if the user toggled the
+        # checkbox mid-play we might have started in one mode and need to
+        # stop the other.
+        self._playback_stop_event.set()
+        self.remove_frame_tasks()
 
     def frame_task(self):
+        # Runs on the main thread at 60 Hz when use_file_framerate is off.
         if self.paused_outputting:
             self.output_current_frame()
             return
@@ -671,12 +707,47 @@ class OpenTakeNode(MoCapNode):
             self.remove_frame_tasks()
             self.streaming = False
 
-    def external_play(self):
-        if self.external_clock_enable_input():
-            if self.streaming:
+    def _playback_loop(self):
+        """Runs on a worker thread when use_file_framerate is on. Drives
+        step() at the file's native fps, scaled by the speed slider.
+
+        Uses a deadline-based pacer: each iteration sleeps only the
+        remainder of the target period after step() completes, so the
+        downstream work time (sends, mailbox writes, etc.) doesn't add
+        to the period. If we fall behind, the loop runs back-to-back
+        until it catches up (no try-to-catch-up explosion: a single
+        missed deadline is recovered next iteration)."""
+        fps = self.file_fps if self.file_fps > 0 else 60.0
+        speed_abs = abs(self.speed()) or 1.0
+        period = 1.0 / (fps * speed_abs)
+        next_deadline = time.perf_counter() + period
+        while self.streaming and not self._playback_stop_event.is_set():
+            if self.paused_outputting:
+                self.output_current_frame()
+            else:
                 self.step()
+                if self.force_frame:
+                    self.force_frame = False
+                    self.streaming = False
+                    break
+            # Re-read each tick so changes to speed take effect live.
+            speed_abs = abs(self.speed()) or 1.0
+            period = 1.0 / (fps * speed_abs)
+            remaining = next_deadline - time.perf_counter()
+            if remaining > 0:
+                if self._playback_stop_event.wait(timeout=remaining):
+                    break
+                next_deadline += period
+            else:
+                # We're behind schedule; skip ahead to the next future
+                # deadline rather than letting drift accumulate.
+                next_deadline = time.perf_counter() + period
 
     def step(self):
+        # When invoked from the worker thread, skip dpg widget side
+        # effects and let the main thread reconcile UI on the next event.
+        is_main = (Node.app is not None
+                   and threading.get_ident() == getattr(Node.app, 'main_thread_id', threading.get_ident()))
         if self.pending_frame == int(self.current_frame):
             self.current_frame += self.speed()
         else:
@@ -688,11 +759,16 @@ class OpenTakeNode(MoCapNode):
                     self.current_frame = self.clip_start
                     self.pending_frame = self.clip_start
                 else:
-                    self.stop_button_clicked()
+                    if is_main:
+                        self.stop_button_clicked()
+                    else:
+                        # Off-thread end-of-clip: drop streaming so the
+                        # loop exits; widget cleanup waits for next click.
+                        self.streaming = False
                 self.done_out.send('done')
                 if not self.loop_input():
                     return
-            if not self.force_frame:
+            if not self.force_frame and is_main:
                 self.frame_input.set(self.current_frame)
             frame = int(self.current_frame)
 
@@ -762,6 +838,16 @@ class OpenTakeNode(MoCapNode):
                 data = self.take_dict[key]
                 self.global_dict[key] = data
             self.global_dict['length'] = sequence_length
+            # Tolerant lookup for the source framerate (matches the key set
+            # used by SMPLTorqueNode). Falls back to 60 fps if absent.
+            self.file_fps = 60.0
+            for k in ('motioncapture_framerate', 'mocap_framerate', 'framerate'):
+                if k in self.global_dict:
+                    try:
+                        self.file_fps = float(self.global_dict[k])
+                    except (TypeError, ValueError):
+                        pass
+                    break
             if len(self.global_dict) > 0:
                 self.global_params_out.send(self.global_dict)
 

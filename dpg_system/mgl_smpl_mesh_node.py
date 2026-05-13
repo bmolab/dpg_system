@@ -47,9 +47,9 @@ class MGLSMPLMeshNode(MGLShapeNode):
         super().initialize(args)
         
         # Pose input: (22*3,) or (24*3,) axis-angle, or (22,3) / (24,3)
-        self.pose_input = self.add_input('pose', triggers_execution=True)
-        self.trans_input = self.add_input('trans')
-        
+        self.pose_input = self.add_input('pose', triggers_execution=True, cross_thread_latest=True)
+        self.trans_input = self.add_input('trans', cross_thread_latest=True)
+
         # Properties
         self.gender_prop = self.add_property('gender', widget_type='combo', default_value='male')
         self.gender_prop.widget.combo_items = ['male', 'female']
@@ -60,9 +60,16 @@ class MGLSMPLMeshNode(MGLShapeNode):
         self.up_axis_prop = self.add_property('up_axis', widget_type='combo', default_value='Y')
         self.up_axis_prop.widget.combo_items = ['Y', 'Z']
         # Config input: dict with {gender, betas, mocap_framerate} from NPZ
-        self.config_input = self.add_input('config', triggers_execution=True)
-        
+        self.config_input = self.add_input('config', triggers_execution=True, cross_thread_latest=True)
+
         self.end_initialization()
+
+        # Off-thread producers drop into a latest-wins mailbox; drained
+        # on the main thread at the dpg frame rate.
+        self.enable_mailbox_pump()
+
+    def frame_task(self):
+        self._pump_mailboxes()
 
     def custom_create(self, from_file):
         self.trans_input._data = np.array([0.0, 0.0, 0.0])

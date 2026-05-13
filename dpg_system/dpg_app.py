@@ -292,6 +292,7 @@ class App:
         self.tabs = []
         Node.app = self
         NodeEditor.app = self
+        self.main_thread_id = threading.get_ident()
         self.register_nodes()
         self.new_patcher_index = 1
         self.patchers = []

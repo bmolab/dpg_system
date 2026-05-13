@@ -7,7 +7,7 @@ import time
 import os
 import scipy
 from scipy import signal
-from dpg_system.node import Node
+from dpg_system.node import Node, SaveDialog, LoadDialog
 from dpg_system.interface_nodes import Vector2DNode
 import pickle
 from dpg_system.conversion_utils import *
@@ -2250,18 +2250,15 @@ class SMPLBetaEditorNode(Node):
         if path:
             self._do_save(path)
         else:
-            with dpg.file_dialog(modal=True, directory_selector=False, show=True,
-                                 height=400, width=600, callback=self._save_file_callback,
-                                 cancel_callback=lambda s, a: None):
-                dpg.add_file_extension('.npy')
+            SaveDialog(self, callback=self._save_file_callback, extensions=['.npy'],
+                       default_filename='betas.npy')
 
-    def _save_file_callback(self, sender, app_data):
-        """File dialog callback for save."""
-        if app_data and 'file_path_name' in app_data:
-            path = app_data['file_path_name']
-            if not path.endswith('.npy'):
-                path += '.npy'
-            self._do_save(path)
+    def _save_file_callback(self, save_path):
+        """Native save dialog callback."""
+        if save_path:
+            if not save_path.endswith('.npy'):
+                save_path += '.npy'
+            self._do_save(save_path)
 
     def _do_save(self, path):
         """Write betas, gender, and mass to a .npy file."""
@@ -2283,15 +2280,12 @@ class SMPLBetaEditorNode(Node):
         if path and os.path.exists(path):
             self._do_load(path)
         else:
-            with dpg.file_dialog(modal=True, directory_selector=False, show=True,
-                                 height=400, width=600, callback=self._load_file_callback,
-                                 cancel_callback=lambda s, a: None):
-                dpg.add_file_extension('.npy')
+            LoadDialog(self, callback=self._load_file_callback, extensions=['.npy'])
 
-    def _load_file_callback(self, sender, app_data):
-        """File dialog callback for load."""
-        if app_data and 'file_path_name' in app_data:
-            self._do_load(app_data['file_path_name'])
+    def _load_file_callback(self, load_path):
+        """Native load dialog callback."""
+        if load_path:
+            self._do_load(load_path)
 
     def _do_load(self, path):
         """Read betas, gender, and mass from a .npy file."""
