@@ -1435,14 +1435,6 @@ class MGLSMPLHeatmapNode(Node):
         names = meta['muscle_names']
         self._v3_muscle_names = list(names)
 
-        print(f"[V3] Loaded pre-baked atlas: {self._v3_prebaked_atlas.shape}, "
-              f"{n_muscles} muscles")
-        for i, name in enumerate(names[:5]):
-            n_active = np.sum(self._v3_prebaked_atlas[:, i] > 0.01)
-            print(f"  {i}: {name} ({n_active} verts)")
-        if n_muscles > 5:
-            print(f"  ... and {n_muscles - 5} more")
-
     def _init_muscle_v4(self, tpose_verts, tpose_jpos):
         """Load pre-baked contour-projection muscle atlas (v4) from .npy files."""
         self._v4_atlas = None
@@ -1469,14 +1461,6 @@ class MGLSMPLHeatmapNode(Node):
         n_muscles = meta['n_muscles']
         names = meta['muscle_names']
         self._v4_muscle_names = list(names)
-
-        print(f"[V4] Loaded contour-projection atlas: {self._v4_prebaked_atlas.shape}, "
-              f"{n_muscles} muscles")
-        for i, name in enumerate(names[:5]):
-            n_active = np.sum(self._v4_prebaked_atlas[:, i] > 0.01)
-            print(f"  {i}: {name} ({n_active} verts)")
-        if n_muscles > 5:
-            print(f"  ... and {n_muscles - 5} more")
 
     def _build_v3_atlas(self, spread, edge_threshold):
         """Re-bake the atlas via subprocess with mesh smoothing + edge subtraction."""
@@ -1680,7 +1664,6 @@ class MGLSMPLHeatmapNode(Node):
                 dtype='f4'
             )
             self._v4_atlas_tex.filter = (moderngl.NEAREST, moderngl.NEAREST)
-            print(f"[V4 DRAW] Atlas texture uploaded: {n_muscles}x{n_verts}")
 
         # Build pos+normal VBO (6 floats per vertex)
         vertices = self.last_vertices

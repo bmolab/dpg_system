@@ -3315,6 +3315,10 @@ class OriginNode(Node):
 
     def __init__(self, label: str, data: Any, args: Optional[List[str]]) -> None:
         super().__init__(label, data, args)
+        # Origin is always hidden — keep self.visibility in sync with the
+        # invisible_theme bound in custom_create so undo snapshots round-trip
+        # correctly (snapshot stores 'hidden' → load() rebinds invisible_theme).
+        self.visibility = 'hidden'
         self.ref_property = self.add_property('', widget_type='button', width=1)
 
     def custom_create(self, from_file: bool) -> None:

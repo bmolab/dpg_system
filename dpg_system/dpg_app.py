@@ -777,6 +777,9 @@ class App:
                 dpg.add_separator()
                 dpg.add_menu_item(label="Quit (Q)", callback=self.quit)
             with dpg.menu(label='Edit'):
+                dpg.add_menu_item(label="Undo (Z)", callback=self._do_undo)
+                dpg.add_menu_item(label="Redo (Shift-Z)", callback=self._do_redo)
+                dpg.add_separator()
                 dpg.add_menu_item(label="Cut (X)", callback=self.cut_selected)
                 dpg.add_menu_item(label="Copy (C)", callback=self.copy_selected)
                 dpg.add_menu_item(label="Paste (V)", callback=self.paste_selected)
@@ -833,6 +836,30 @@ class App:
 
     def quit(self):
         self.do_exit = True
+
+    def shutdown(self):
+        # Stop daemon threads (playback workers, etc.) and release per-node
+        # resources before DPG's globals start tearing down. Without this,
+        # daemon threads can be killed mid-allocation by interpreter
+        # finalization, corrupting the malloc heap in a way that only
+        # surfaces when DPG's C++ static destructors run at __cxa_finalize.
+        for editor in getattr(self, 'node_editors', []) or []:
+            for node in list(getattr(editor, '_nodes', []) or []):
+                try:
+                    node.custom_cleanup()
+                except Exception:
+                    traceback.print_exc()
+        try:
+            dpg.stop_dearpygui()
+        except Exception:
+            pass
+        try:
+            dpg.destroy_context()
+        except Exception:
+            pass
+        # Skip Python finalization — sidesteps races between any remaining
+        # daemon threads, moderngl __del__s, and DPG's static destructors.
+        os._exit(0)
 
     def register_nodes(self):
         register_base_nodes()
@@ -1274,6 +1301,12 @@ class App:
         self.redo_stack.clear()
         self._push_snapshot(self.undo_stack)
 
+    def _speculative_snapshot_for_undo(self):
+        # Push undo without clearing redo. Used when an edit *might* happen
+        # (e.g. mouse-down before we know if a drag occurred). The matching
+        # commit path is responsible for clearing redo once the edit is confirmed.
+        self._push_snapshot(self.undo_stack)
+
     def snapshot_for_widget_edit(self, widget_uuid):
         editor = self.get_current_editor()
         if editor is None or editor.presenting:
@@ -1289,7 +1322,7 @@ class App:
                 and self._pending_drag_snapshot[0] is editor):
             self._pending_drag_snapshot = None
         else:
-            self.snapshot_for_undo()
+            self._speculative_snapshot_for_undo()
         self._pending_widget_edit = (editor, widget_uuid, before)
 
     def commit_widget_edit_snapshot(self):
@@ -1305,6 +1338,9 @@ class App:
             # No actual edit — discard the speculative snapshot if it's still on top.
             if self.undo_stack and self.undo_stack[-1][0] is editor:
                 self.undo_stack.pop()
+        else:
+            # Real edit confirmed — branches the timeline, drop pending redo.
+            self.redo_stack.clear()
 
     def Z_handler(self):
         if not self.control_or_command_down():
@@ -1425,7 +1461,7 @@ class App:
                     # mouse-up if no node actually moved.
                     try:
                         positions = self._node_position_fingerprint(editor)
-                        self.snapshot_for_undo()
+                        self._speculative_snapshot_for_undo()
                         self._pending_drag_snapshot = (editor, positions)
                     except Exception as e:
                         print(f'drag capture setup failed: {e}')
@@ -1451,6 +1487,9 @@ class App:
                     # Nothing moved — discard the speculative snapshot if it's still on top.
                     if self.undo_stack and self.undo_stack[-1][0] is editor:
                         self.undo_stack.pop()
+                else:
+                    # Real drag confirmed — branches the timeline, drop pending redo.
+                    self.redo_stack.clear()
             except Exception as e:
                 print(f'drag commit check failed: {e}')
 
@@ -2256,7 +2295,8 @@ class App:
                     elapsed = then - now
 
                 if self.do_exit:
-                    _thread.interrupt_main()
+                    self.shutdown()
+                    return
 
             except Exception as exc_:
                 print('run_loop exception:')

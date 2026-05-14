@@ -442,6 +442,10 @@ class OpenTakeNode(MoCapNode):
         # Worker thread for file-rate playback (created on demand).
         self._playback_thread = None
         self._playback_stop_event = threading.Event()
+        # True while a worker thread is driving step(). When set, the
+        # main-thread frame_task tick reconciles the frame widget instead
+        # of advancing playback itself.
+        self._driven_by_worker = False
 
     def custom_create(self, from_file):
         self.load_button.widget.set_active_theme(Node.active_theme_blue)
@@ -682,11 +686,16 @@ class OpenTakeNode(MoCapNode):
             # returns; set it here so the thread's first iteration doesn't
             # see streaming=False and exit immediately.
             self.streaming = True
+            self._driven_by_worker = True
             self._playback_thread = threading.Thread(
                 target=self._playback_loop, daemon=True,
                 name=f'OpenTakePlayback-{self.uuid}')
             self._playback_thread.start()
+            # Also run the main-thread tick so the frame widget reflects
+            # progress — dpg widget mutation isn't safe off-thread.
+            self.add_frame_task()
         else:
+            self._driven_by_worker = False
             self.add_frame_task()
 
     def stop_playing(self):
@@ -697,6 +706,18 @@ class OpenTakeNode(MoCapNode):
         self.remove_frame_tasks()
 
     def frame_task(self):
+        # When the worker thread drives step() (use_file_framerate on),
+        # this main-thread tick only reconciles the frame widget. Calling
+        # step() here too would double-advance the clip. Unregister once
+        # the worker has fully exited.
+        if self._driven_by_worker:
+            worker = self._playback_thread
+            if not self.force_frame:
+                self.frame_input.set(self.current_frame)
+            if worker is None or not worker.is_alive():
+                self._driven_by_worker = False
+                self.remove_frame_tasks()
+            return
         # Runs on the main thread at 60 Hz when use_file_framerate is off.
         if self.paused_outputting:
             self.output_current_frame()

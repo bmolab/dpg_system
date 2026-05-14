@@ -1,6 +1,5 @@
 from dpg_system.smpl_utilities.shadow_to_smpl import SHADOW_TO_SMPL
 
-print('in')
 
 import numpy as np
 
