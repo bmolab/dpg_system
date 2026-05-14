@@ -11,6 +11,9 @@ class NodeEditor:
     app = None
     @staticmethod
     def _link_callback(sender, app_data, user_data):
+        # Mouse-driven link create. (Programmatic add_child during load/paste does NOT
+        # come through here — it goes via connect_link, which calls add_child directly.)
+        NodeEditor.app.snapshot_for_undo()
         output_attr_uuid, input_attr_uuid = app_data
         input_attr = dpg.get_item_user_data(input_attr_uuid)
         output_attr = dpg.get_item_user_data(output_attr_uuid)
@@ -21,7 +24,7 @@ class NodeEditor:
 
     @staticmethod
     def _unlink_callback(sender, app_data, user_data):
-        # print('unlink')
+        NodeEditor.app.snapshot_for_undo()
         dat = dpg.get_item_user_data(app_data)
         out = dat[0]
         child = dat[1]
@@ -55,6 +58,7 @@ class NodeEditor:
         self.presenting = False
         self.is_first_frame = True
         self._editor_padding = [0, 0]
+        self._next_stable_id = 1
 
     def set_name(self, name):
         old_name = getattr(self, 'patch_name', None)
@@ -446,6 +450,13 @@ class NodeEditor:
     def add_node(self, node: Node):
         self._nodes.append(node)
         self.num_nodes = len(self._nodes)
+        if node.stable_id is None:
+            node.stable_id = self._next_stable_id
+            self._next_stable_id += 1
+        else:
+            # Externally set (file load, snapshot recreate). Keep our counter ahead.
+            if node.stable_id >= self._next_stable_id:
+                self._next_stable_id = node.stable_id + 1
         self.modified = True
 
     def first_frame(self):
@@ -542,6 +553,158 @@ class NodeEditor:
         else:
             dpg.configure_item(self.uuid, minimap=False)
             self.mini_map = False
+
+    def apply_snapshot(self, snap):
+        """Reconcile this editor against a previously captured snapshot.
+        Nodes that exist in both: update in place via node.load() — no teardown,
+        runtime state preserved.
+        Nodes only in snapshot: recreated.
+        Nodes only live: deleted (origin is never deleted).
+        Links: set-diffed by (src_id, src_out_idx, dst_id, dst_in_idx).
+        """
+        if snap is None or 'nodes' not in snap:
+            return
+
+        live_by_sid = {n.stable_id: n for n in self._nodes if n.stable_id is not None}
+        origin_sid = self.origin.stable_id if self.origin is not None else None
+
+        snap_nodes = snap['nodes']
+        snap_sids = set()
+        # snap_sid -> live_uuid (after reconcile). Used by the link pass to translate
+        # snapshot-side node references to current DPG uuids.
+        sid_to_uuid = {}
+
+        # Pass 1: matched + snap-only
+        for nc in snap_nodes.values():
+            snap_sid = nc.get('sid')
+            if snap_sid is None:
+                continue
+            snap_sids.add(snap_sid)
+            live = live_by_sid.get(snap_sid)
+            if live is not None:
+                # Update in place. node.load() handles position, visibility, properties.
+                try:
+                    live.load(nc)
+                except Exception as e:
+                    print(f'apply_snapshot: load failed for {live.label}: {e}')
+                sid_to_uuid[snap_sid] = live.uuid
+            else:
+                # Recreate. node.load() will pick up sid from nc and re-establish stable_id.
+                if nc.get('name') == '':
+                    continue  # origin node sentinel; never recreate
+                pos = [nc.get('position_x', 0), nc.get('position_y', 0)]
+                args = []
+                if 'init' in nc:
+                    args = nc['init'].split(' ')
+                node_name = args[0] if args else nc.get('name', '')
+                node_args = args[1:] if len(args) > 1 else []
+                try:
+                    new_node = self.app.create_node_by_name_from_file(node_name, pos, node_args)
+                    if new_node is not None:
+                        new_node.load(nc)
+                        new_node.post_creation_callback()
+                        sid_to_uuid[snap_sid] = new_node.uuid
+                except Exception as e:
+                    print(f'apply_snapshot: create failed for {node_name}: {e}')
+
+        # Pass 2: live-only -> delete (skip origin and protected)
+        for live_sid, live in list(live_by_sid.items()):
+            if live_sid in snap_sids:
+                continue
+            if live_sid == origin_sid or live.do_not_delete:
+                continue
+            try:
+                self.remove_node(live)
+            except Exception as e:
+                print(f'apply_snapshot: remove failed for {live.label}: {e}')
+
+        # Pass 3: reconcile links
+        # Build live tuples: (src_uuid, src_out_idx, dst_uuid, dst_in_idx) -> (output, link_uuid, dest_input)
+        live_links = {}
+        for n in self._nodes:
+            for out_idx, output in enumerate(n.outputs):
+                for child_idx, child in enumerate(output._children):
+                    dest_node = child.node
+                    dest_in_idx = None
+                    for i, inp in enumerate(dest_node.inputs):
+                        if inp.uuid == child.uuid:
+                            dest_in_idx = i
+                            break
+                    if dest_in_idx is None:
+                        continue
+                    link_uuid = output.links[child_idx] if child_idx < len(output.links) else None
+                    key = (n.uuid, out_idx, dest_node.uuid, dest_in_idx)
+                    live_links[key] = (output, link_uuid, child)
+
+        # snap link entries reference DPG uuids from save time; translate uuid -> sid -> current live uuid.
+        snap_uuid_to_sid = {nc.get('id'): nc.get('sid')
+                            for nc in snap_nodes.values()
+                            if nc.get('id') is not None and nc.get('sid') is not None}
+        snap_link_keys = set()
+        for lc in snap.get('links', {}).values():
+            src_sid = snap_uuid_to_sid.get(lc.get('source_node'))
+            dst_sid = snap_uuid_to_sid.get(lc.get('dest_node'))
+            src_uuid = sid_to_uuid.get(src_sid)
+            dst_uuid = sid_to_uuid.get(dst_sid)
+            if src_uuid is None or dst_uuid is None:
+                continue
+            key = (src_uuid, lc.get('source_output_index'), dst_uuid, lc.get('dest_input_index'))
+            snap_link_keys.add(key)
+
+        # Remove live links not in snap
+        for key, (output, link_uuid, dest_input) in live_links.items():
+            if key not in snap_link_keys and link_uuid is not None:
+                try:
+                    output.remove_link(link_uuid, dest_input)
+                except Exception as e:
+                    print(f'apply_snapshot: remove_link failed: {e}')
+
+        # Add snap links not in live
+        live_by_uuid = {n.uuid: n for n in self._nodes}  # rebuild after deletes/creates
+        for key in snap_link_keys:
+            if key in live_links:
+                continue
+            src_uuid, src_out_idx, dst_uuid, dst_in_idx = key
+            src = live_by_uuid.get(src_uuid)
+            dst = live_by_uuid.get(dst_uuid)
+            if src is None or dst is None:
+                continue
+            if src_out_idx >= len(src.outputs) or dst_in_idx >= len(dst.inputs):
+                continue
+            try:
+                src.outputs[src_out_idx].add_child(dst.inputs[dst_in_idx], self.uuid)
+            except Exception as e:
+                print(f'apply_snapshot: add_link failed: {e}')
+
+        self.modified = True
+
+    def capture_snapshot(self):
+        """Capture a snapshot dict suitable for apply_snapshot().
+        Positions are stored in absolute (un-origin-adjusted) form so undo doesn't
+        fight with intervening pans."""
+        snap = self.containerize({})
+        if self.origin is not None and 'nodes' in snap:
+            try:
+                origin_offset = dpg.get_item_pos(self.origin.uuid)
+                if abs(origin_offset[0]) > 0.5 or abs(origin_offset[1]) > 0.5:
+                    for nc in snap['nodes'].values():
+                        if 'position_x' in nc:
+                            nc['position_x'] += origin_offset[0]
+                            nc['position_y'] += origin_offset[1]
+            except Exception:
+                pass
+        return snap
+
+    def pan_nodes(self, dx, dy):
+        """Shift every node by (dx, dy). Positive dx moves nodes right, positive dy moves nodes down."""
+        if len(self._nodes) == 0 or (dx == 0 and dy == 0):
+            return
+        for node in self._nodes:
+            try:
+                pos = dpg.get_item_pos(node.uuid)
+                dpg.set_item_pos(node.uuid, [pos[0] + dx, pos[1] + dy])
+            except Exception:
+                pass
 
     def home_nodes(self):
         """Shift all nodes so the origin node appears at the top-left of the editor.
@@ -739,6 +902,12 @@ class NodeEditor:
         self.app.loading = True
         if len(file_container) == 0:
             return
+
+        # Pasted/duplicated nodes are NEW nodes — must not inherit stable_ids from the source.
+        if 'nodes' in file_container:
+            for nc in file_container['nodes'].values():
+                if isinstance(nc, dict):
+                    nc.pop('sid', None)
 
         self.uncontainerize(file_container, create_origin=origin)
         for node_editor_uuid in self.app.links_containers:

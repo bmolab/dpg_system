@@ -127,16 +127,19 @@ def widget_hovered(source, data, user_data):
 def widget_activated(source, data, user_data):
     if dpg.does_item_exist(data):
         item_type = dpg.get_item_type(data)
-        # print(item_type, type(item_type))
+        # Speculative undo snapshot for property edits. Buttons can't change a value,
+        # so skip them. Combos commit on selection but still belong on the undo stack.
+        if item_type != 'mvAppItemType::mvButton':
+            Node.app.snapshot_for_widget_edit(data)
         if item_type not in ['mvAppItemType::mvCombo', 'mvAppItemType::mvButton']:
             Node.app.active_widget = data
         else:
             Node.app.active_widget = -1
-        # print("activated", Node.app.active_widget)
     else:
         Node.app.active_widget = -1
 
 def widget_deactive(source, data, user_data):
+    Node.app.commit_widget_edit_snapshot()
     if dpg.does_item_exist(data):
         node = None
         if Node.app.return_pressed:
@@ -342,6 +345,11 @@ class App:
         self.resize_start_mouse = (0, 0)
         self.resize_start_size = (0, 0)
         self.clipboard = None
+        self.undo_stack = []  # app-wide stack of (editor, snapshot_dict)
+        self.redo_stack = []
+        self.undo_stack_max = 50
+        self._pending_drag_snapshot = None  # (editor, positions_fingerprint) speculatively pushed on mouse-down
+        self._pending_widget_edit = None    # (editor, widget_uuid, before_value) speculatively pushed on widget-activated
         self.saving_to_lib = False
         self.project_name = os.path.basename(__file__).split('.')[0]
         self.currently_loading_patch_name = ''
@@ -997,6 +1005,7 @@ class App:
         if self.not_focussed_on_widget():
             editor = self.get_current_editor()
             if editor is not None and not editor.presenting:
+                self.snapshot_for_undo()
                 editor.delete_selected_items()
 
     def return_handler(self):
@@ -1008,6 +1017,7 @@ class App:
         editor = self.get_current_editor()
         if editor is not None:
             try:
+                self.snapshot_for_undo()
                 editor_mouse_pos = editor.global_pos_to_editor_pos(mouse_pos)
                 node.create(editor.uuid, pos=editor_mouse_pos)
                 editor.add_node(node)
@@ -1190,10 +1200,16 @@ class App:
         else:
             return dpg.is_key_down(dpg.mvKey_Alt)
 
+    def shift_down(self):
+        if hasattr(dpg, 'mvKey_LShift'):
+            return dpg.is_key_down(dpg.mvKey_LShift) or dpg.is_key_down(dpg.mvKey_RShift)
+        return dpg.is_key_down(dpg.mvKey_Shift)
+
     def X_handler(self):
         if self.control_or_command_down():
             if self.get_current_editor() is not None:
                 if not self.get_current_editor().presenting:
+                    self.snapshot_for_undo()
                     self.clipboard = self.get_current_editor().cut_selection()
 
     def S_handler(self):
@@ -1239,6 +1255,109 @@ class App:
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
                 self.get_current_editor().home_nodes()
 
+    def _push_snapshot(self, stack):
+        editor = self.get_current_editor()
+        if editor is None or editor.presenting:
+            return None
+        try:
+            snap = editor.capture_snapshot()
+            stack.append((editor, snap))
+            if len(stack) > self.undo_stack_max:
+                stack.pop(0)
+            return editor
+        except Exception as e:
+            print(f'_push_snapshot failed: {e}')
+            return None
+
+    def snapshot_for_undo(self):
+        # New edit branches the timeline — any pending redo is discarded.
+        self.redo_stack.clear()
+        self._push_snapshot(self.undo_stack)
+
+    def snapshot_for_widget_edit(self, widget_uuid):
+        editor = self.get_current_editor()
+        if editor is None or editor.presenting:
+            return
+        try:
+            before = dpg.get_value(widget_uuid)
+        except Exception:
+            before = None
+        # Mouse-down already speculatively pushed a snapshot for the (potential) drag.
+        # If that snapshot is still pending for this editor, claim it as the edit baseline
+        # and cancel the drag rollback — otherwise we'd push a redundant snapshot.
+        if (self._pending_drag_snapshot is not None
+                and self._pending_drag_snapshot[0] is editor):
+            self._pending_drag_snapshot = None
+        else:
+            self.snapshot_for_undo()
+        self._pending_widget_edit = (editor, widget_uuid, before)
+
+    def commit_widget_edit_snapshot(self):
+        if self._pending_widget_edit is None:
+            return
+        editor, widget_uuid, before = self._pending_widget_edit
+        self._pending_widget_edit = None
+        try:
+            after = dpg.get_value(widget_uuid)
+        except Exception:
+            after = None
+        if before == after:
+            # No actual edit — discard the speculative snapshot if it's still on top.
+            if self.undo_stack and self.undo_stack[-1][0] is editor:
+                self.undo_stack.pop()
+
+    def Z_handler(self):
+        if not self.control_or_command_down():
+            return
+        if not self.not_focussed_on_widget():
+            return
+        if self.shift_down():
+            self._do_redo()
+        else:
+            self._do_undo()
+
+    def _do_undo(self):
+        if not self.undo_stack:
+            return
+        editor, snap = self.undo_stack[-1]
+        if editor is None:
+            self.undo_stack.pop()
+            return
+        # Save current state to redo before mutating.
+        try:
+            current = editor.capture_snapshot()
+            self.redo_stack.append((editor, current))
+            if len(self.redo_stack) > self.undo_stack_max:
+                self.redo_stack.pop(0)
+        except Exception as e:
+            print(f'undo: failed to capture redo snapshot: {e}')
+        self.undo_stack.pop()
+        try:
+            editor.apply_snapshot(snap)
+        except Exception as e:
+            print(f'undo apply_snapshot failed: {e}')
+
+    def _do_redo(self):
+        if not self.redo_stack:
+            return
+        editor, snap = self.redo_stack[-1]
+        if editor is None:
+            self.redo_stack.pop()
+            return
+        # Save current state to undo before mutating (without clearing redo).
+        try:
+            current = editor.capture_snapshot()
+            self.undo_stack.append((editor, current))
+            if len(self.undo_stack) > self.undo_stack_max:
+                self.undo_stack.pop(0)
+        except Exception as e:
+            print(f'redo: failed to capture undo snapshot: {e}')
+        self.redo_stack.pop()
+        try:
+            editor.apply_snapshot(snap)
+        except Exception as e:
+            print(f'redo apply_snapshot failed: {e}')
+
     def home_current_editor(self):
         if self.get_current_editor() is not None:
             self.get_current_editor().home_nodes()
@@ -1254,6 +1373,7 @@ class App:
         if self.control_or_command_down():
             if self.not_focussed_on_widget():
                 if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+                    self.snapshot_for_undo()
                     self.get_current_editor().duplicate_selection()
 
     def E_handler(self):
@@ -1295,13 +1415,25 @@ class App:
         if self.control_or_command_down():
             self.toggle_presentation()
         else:
-            if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+            editor = self.get_current_editor()
+            if editor is not None and not editor.presenting:
                 if self.alt_down():
                     self.help_handler()
+                else:
+                    # Speculative undo capture for node drags. DPG handles node movement
+                    # internally with no callback, so we snapshot now and rollback on
+                    # mouse-up if no node actually moved.
+                    try:
+                        positions = self._node_position_fingerprint(editor)
+                        self.snapshot_for_undo()
+                        self._pending_drag_snapshot = (editor, positions)
+                    except Exception as e:
+                        print(f'drag capture setup failed: {e}')
+                        self._pending_drag_snapshot = None
             self.dragging_created_nodes = False
 
-            # else:
-            #     self.dragging_created_nodes = False
+    def _node_position_fingerprint(self, editor):
+        return tuple((n.uuid, *dpg.get_item_pos(n.uuid)) for n in editor._nodes)
 
     def mouse_up_handler(self, sender=None, app_data=None, user_data=None):
         if self.resize_drag is not None:
@@ -1310,6 +1442,17 @@ class App:
             if dpg.does_item_exist(rh.uuid):
                 dpg.bind_item_theme(rh.uuid, _get_resize_handle_theme())
             self.resize_drag = None
+        if self._pending_drag_snapshot is not None:
+            editor, before = self._pending_drag_snapshot
+            self._pending_drag_snapshot = None
+            try:
+                after = self._node_position_fingerprint(editor)
+                if after == before:
+                    # Nothing moved — discard the speculative snapshot if it's still on top.
+                    if self.undo_stack and self.undo_stack[-1][0] is editor:
+                        self.undo_stack.pop()
+            except Exception as e:
+                print(f'drag commit check failed: {e}')
 
     def drag_create_nodes(self):
         if self.resize_drag is not None:
@@ -1385,7 +1528,14 @@ class App:
         for node in KeyNode.node_list:
             node.key_up(app_data)
 
+    pan_step = 60
+
     def up_handler(self):
+        if self.control_or_command_down() and self.not_focussed_on_widget():
+            editor = self.get_current_editor()
+            if editor is not None and not editor.presenting:
+                editor.pan_nodes(0, self.pan_step)
+                return
         handled = False
         if self.hovered_item is not None:
             uuid = self.hovered_item.uuid
@@ -1409,6 +1559,11 @@ class App:
         pass
 
     def down_handler(self):
+        if self.control_or_command_down() and self.not_focussed_on_widget():
+            editor = self.get_current_editor()
+            if editor is not None and not editor.presenting:
+                editor.pan_nodes(0, -self.pan_step)
+                return
         handled = False
         if self.hovered_item is not None:
             uuid = self.hovered_item.uuid
@@ -1427,6 +1582,18 @@ class App:
                             widget.node.decrement_widget(widget)
                             if widget.callback is not None:
                                 widget.callback_because_edit()
+
+    def left_handler(self):
+        if self.control_or_command_down() and self.not_focussed_on_widget():
+            editor = self.get_current_editor()
+            if editor is not None and not editor.presenting:
+                editor.pan_nodes(self.pan_step, 0)
+
+    def right_handler(self):
+        if self.control_or_command_down() and self.not_focussed_on_widget():
+            editor = self.get_current_editor()
+            if editor is not None and not editor.presenting:
+                editor.pan_nodes(-self.pan_step, 0)
 
 
     def new_handler(self, name=None):
@@ -1766,6 +1933,7 @@ class App:
 
     def paste_selected(self):
         if self.clipboard is not None:
+            self.snapshot_for_undo()
             self.clear_remembered_ids()
             self.get_current_editor().paste(self.clipboard)
         else:
@@ -1969,6 +2137,8 @@ class App:
                             dpg.add_key_release_handler(callback=self.key_release_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Up, callback=self.up_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Down, callback=self.down_handler)
+                            dpg.add_key_press_handler(dpg.mvKey_Left, callback=self.left_handler)
+                            dpg.add_key_press_handler(dpg.mvKey_Right, callback=self.right_handler)
                             dpg.add_key_press_handler(dpg.mvKey_I, callback=self.int_handler)
                             dpg.add_key_press_handler(dpg.mvKey_F, callback=self.float_handler)
                             dpg.add_key_press_handler(dpg.mvKey_T, callback=self.toggle_handler)
@@ -1992,6 +2162,7 @@ class App:
                             dpg.add_key_press_handler(dpg.mvKey_P, callback=self.P_handler)
                             dpg.add_key_press_handler(dpg.mvKey_R, callback=self.R_handler)
                             dpg.add_key_press_handler(dpg.mvKey_H, callback=self.H_handler)
+                            dpg.add_key_press_handler(dpg.mvKey_Z, callback=self.Z_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Plus, callback=self.plus_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Minus, callback=self.minus_handler)
                             dpg.add_key_press_handler(dpg.mvKey_Spacebar, callback=self.space_handler)

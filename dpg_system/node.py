@@ -2029,6 +2029,7 @@ class Node:
         self.ordered_args = []
         self.horizontal = False
         self.loaded_uuid = -1
+        self.stable_id = None  # editor-local sticky id; assigned by NodeEditor.add_node
         self.options_visible = False
         self.has_frame_task = False
         self.created = False
@@ -2743,6 +2744,8 @@ class Node:
                 node_container['init'] = args_string
             node_container['name'] = self.label
             node_container['id'] = self.uuid
+            if self.stable_id is not None:
+                node_container['sid'] = self.stable_id
             pos = dpg.get_item_pos(self.uuid)
             node_container['position_x'] = pos[0]
             node_container['position_y'] = pos[1]
@@ -2773,6 +2776,10 @@ class Node:
                     self.label = node_container['name']
                 if 'id' in node_container:
                     self.loaded_uuid = node_container['id']
+                if 'sid' in node_container:
+                    self.stable_id = node_container['sid']
+                    if self.my_editor is not None and self.stable_id >= self.my_editor._next_stable_id:
+                        self.my_editor._next_stable_id = self.stable_id + 1
                 if 'position_x' in node_container and 'position_y' in node_container:
                     pos = [0, 0]
                     pos[0] = node_container['position_x'] + offset[0]
@@ -2813,6 +2820,26 @@ class Node:
         self.save_custom(node_container)
 
     def restore_properties(self, node_container: Dict[str, Any]) -> None:
+        def apply(widget, value):
+            # Skip set + value_changed when the widget already holds this value.
+            # Avoids firing custom widget callbacks on no-op restores (matters most
+            # for matched-path reconcile-undo, where unrelated edits would otherwise
+            # re-run callbacks like _on_skeleton_mode_changed).
+            # Mirror BasePropertyWidget.save()'s read pattern so we compare apples
+            # to apples — there's no widget.get(), and self.value can lag the DPG state.
+            try:
+                if len(widget.uuids) > 1:
+                    current = [dpg.get_value(u) for u in widget.uuids]
+                else:
+                    current = dpg.get_value(widget.uuid)
+            except Exception:
+                current = None
+            if current == value:
+                return False
+            widget.set(value)
+            widget.value_changed(force=True)
+            return True
+
         if 'properties' in node_container:
             properties_container = node_container['properties']
             for index, property_index in enumerate(properties_container):
@@ -2836,9 +2863,8 @@ class Node:
                                 if 'value' in property_container:
                                     value = property_container['value']
                                     if input.widget.widget != 'button':
-                                        input.widget.set(value)
                                         self.active_input = input
-                                        input.widget.value_changed(force=True)
+                                        apply(input.widget, value)
                                 found = True
                                 break
                     if not found:
@@ -2849,8 +2875,7 @@ class Node:
                                     if 'value' in property_container:
                                         value = property_container['value']
                                         if property.widget.widget != 'button':
-                                            property.widget.set(value)
-                                            property.widget.value_changed(force=True)
+                                            apply(property.widget, value)
                                     found = True
                                     break
                     if not found:
@@ -2868,8 +2893,7 @@ class Node:
                                     if 'value' in property_container:
                                         value = property_container['value']
                                         if option.widget.widget != 'button':
-                                            option.widget.set(value)
-                                            option.widget.value_changed(force=True)
+                                            apply(option.widget, value)
                                     found = True
                                     break
                     if not found:
@@ -2880,9 +2904,8 @@ class Node:
                                     if 'value' in property_container:
                                         value = property_container['value']
                                         if input.widget.widget != 'button':
-                                            input.widget.set(value)
                                             self.active_input = input
-                                            input.widget.value_changed(force=True)
+                                            apply(input.widget, value)
 
 
         self.load_custom(node_container)

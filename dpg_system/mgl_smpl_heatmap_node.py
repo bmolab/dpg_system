@@ -2039,8 +2039,9 @@ class MGLSMPLHeatmapNode(Node):
                 betas = betas[:10]
             bt = torch.zeros(1, 10, dtype=torch.float32)
             bt[0, :len(betas)] = torch.tensor(betas)
-            self.betas_tensor = bt
-            needs_reload = True
+            if self.betas_tensor is None or not torch.equal(self.betas_tensor, bt):
+                self.betas_tensor = bt
+                needs_reload = True
 
         if needs_reload:
             if self._load_model():
