@@ -431,7 +431,9 @@ class TorchParallelSavGolFilter:
         )
         self.ptr = 0
         self.is_warmed_up = False
-        print(f"Allocated Parallel SavGol buffer for {num_streams} streams of {num_components} components.")
+        # Caller (TorchSavGolFilterNode.execute) already logs the
+        # instantiate/resize event when verbose; this duplicate print fired
+        # every reset and on every input shape change.
 
     def filter(self, input_batch: torch.Tensor) -> torch.Tensor:
         """
@@ -969,126 +971,130 @@ class TorchTristateBlendEuclideanNode(TorchDeviceDtypeNode):
         self.err_tensor = torch.tensor(self.err_params, device=self.device, dtype=self.dtype)
 
     def execute(self):
-        signal_in = any_to_tensor(self.input())
-        if signal_in is None: return
+        try:
+            signal_in = any_to_tensor(self.input())
+            if signal_in is None: return
 
-        # Flatten input to [S, D] if needed, or handle [B, ..., D]
-        # For simplicity, treat dim=0 as streams/batch, and the rest as flat dimension D
-        input_shape = signal_in.shape
-        if len(input_shape) == 1:
-            # Single stream, vector
-            signal_in = signal_in.unsqueeze(0)
-            
-        # Treat last dim as D, but flatten all prior dims to S? 
-        # Or just S = dim 0
-        if len(input_shape) > 2:
-             # Flatten [B, T, D] -> [B*T, D] for filtering? 
-             # Usually node logic assumes [Batch, Features]
-             # Let's enforce 2D for now: [Stream, Dim]
-             signal_in = signal_in.view(input_shape[0], -1)
-             
-        num_streams, dim = signal_in.shape
-        dt = self.dt_input()
-        if dt is None or dt <= 0: return
-        
-        if signal_in.device != self.device:
-            self.device = signal_in.device
-            self.update_params()
+            # Flatten input to [S, D] if needed, or handle [B, ..., D]
+            # For simplicity, treat dim=0 as streams/batch, and the rest as flat dimension D
+            input_shape = signal_in.shape
+            if len(input_shape) == 1:
+                # Single stream, vector
+                signal_in = signal_in.unsqueeze(0)
 
-        if self.filter is None or self.filter.num_streams != num_streams or self.filter.dim != dim:
-            self.filter = TorchEuclideanKF(dt, num_streams, dim, self.device, self.dtype)
-            self.reset_filter()
-            self.blended_alphas = torch.tensor([1.0, 0.0, 0.0], device=self.device, dtype=self.dtype).unsqueeze(0).repeat(num_streams, 1)
+            # Treat last dim as D, but flatten all prior dims to S?
+            # Or just S = dim 0
+            if len(input_shape) > 2:
+                 # Flatten [B, T, D] -> [B*T, D] for filtering?
+                 # Usually node logic assumes [Batch, Features]
+                 # Let's enforce 2D for now: [Stream, Dim]
+                 signal_in = signal_in.view(input_shape[0], -1)
 
-        self.filter.update_device_to_match(signal_in)
-        if self.last_input_vec is not None and self.last_input_vec.device != self.device:
-            self.last_input_vec = self.last_input_vec.to(self.device)
-        self.blended_alphas = self.blended_alphas.to(self.device)
+            num_streams, dim = signal_in.shape
+            dt = self.dt_input()
+            if dt is None or dt <= 0: return
 
-        self.blended_alphas = self.blended_alphas.to(self.device)
+            if signal_in.device != self.device:
+                self.device = signal_in.device
+                self.update_params()
+
+            if self.filter is None or self.filter.num_streams != num_streams or self.filter.dim != dim:
+                self.filter = TorchEuclideanKF(dt, num_streams, dim, self.device, self.dtype)
+                self.reset_filter()
+                self.blended_alphas = torch.tensor([1.0, 0.0, 0.0], device=self.device, dtype=self.dtype).unsqueeze(0).repeat(num_streams, 1)
+
+            self.filter.update_device_to_match(signal_in)
+            if self.last_input_vec is not None and self.last_input_vec.device != self.device:
+                self.last_input_vec = self.last_input_vec.to(self.device)
+            self.blended_alphas = self.blended_alphas.to(self.device)
+
+            self.blended_alphas = self.blended_alphas.to(self.device)
 
 
-        # 1. Motion Calc
-        motion_per_sec = torch.zeros(num_streams, device=self.device, dtype=self.dtype)
-        if self.last_input_vec is not None:
-            dist = torch.linalg.norm(signal_in - self.last_input_vec, dim=-1)
-            motion_per_sec = dist / dt
+            # 1. Motion Calc
+            motion_per_sec = torch.zeros(num_streams, device=self.device, dtype=self.dtype)
+            if self.last_input_vec is not None:
+                dist = torch.linalg.norm(signal_in - self.last_input_vec, dim=-1)
+                motion_per_sec = dist / dt
 
-        # 2. Error Calc
-        # We need estimated position for error calc, but we haven't run predict yet (to allow Q update).
-        # So we manually predict position for the error metric: pos + vel * dt
-        predicted_pos_temp = self.filter.pos + self.filter.vel * dt
-        error_dist = torch.linalg.norm(signal_in - predicted_pos_temp, dim=-1)
+            # 2. Error Calc
+            # We need estimated position for error calc, but we haven't run predict yet (to allow Q update).
+            # So we manually predict position for the error metric: pos + vel * dt
+            predicted_pos_temp = self.filter.pos + self.filter.vel * dt
+            error_dist = torch.linalg.norm(signal_in - predicted_pos_temp, dim=-1)
 
-        
-        # 3. Blending
-        strength_resp = torch.clamp((motion_per_sec - self.motion_min) / (self.motion_max - self.motion_min + 1e-9), 0.0, 1.0)
-        strength_err = torch.clamp((error_dist - self.error_min) / (self.error_max - self.error_min + 1e-9), 0.0, 1.0)
-        
-        alpha_active = torch.maximum(strength_resp, strength_err)
-        total_strength = strength_resp + strength_err + 1e-9
-        
-        target_resp = alpha_active * (strength_resp / total_strength)
-        target_err = alpha_active * (strength_err / total_strength)
-        target_damp = 1.0 - target_resp - target_err
-        
-        target_alphas = torch.stack([target_damp, target_resp, target_err], dim=1)
-        
-        blending_speed = self.blending_speed_in()
-        self.blended_alphas.lerp_(target_alphas, blending_speed)
-        
-        # 4. Set Params
-        # self.damp_tensor is [2], blended_alphas [S, 3]
-        param_stack = torch.stack([self.damp_tensor, self.resp_tensor, self.err_tensor], dim=0) # [3, 2]
-        blended_params = self.blended_alphas @ param_stack # [S, 2]
 
-        # --- Acceleration Rejection Logic ---
-        accel_rejection_factor = self.accel_filter_in()
-        
-        if accel_rejection_factor > 0 and self.filter is not None:
-            current_vel = self.filter.vel
-            if self.last_vel is not None:
-                # Calculate current acceleration (frame k-1)
-                current_accel = (current_vel - self.last_vel) / dt
-                
-                if self.last_accel is not None:
-                     # Dot product to detect reversal [S]
-                     accel_dot = (current_accel * self.last_accel).sum(dim=1) # [S]
-                     
-                     reversal_mask = accel_dot < 0
-                     if reversal_mask.any():
-                         damping = torch.ones_like(accel_dot)
-                         damping[reversal_mask] = 1.0 + accel_rejection_factor
-                         
-                         # Apply: Increase Meas Noise (0), Decrease Vel Noise (1)
-                         blended_params[:, 0] = blended_params[:, 0] * damping
-                         blended_params[:, 1] = blended_params[:, 1] / damping
+            # 3. Blending
+            strength_resp = torch.clamp((motion_per_sec - self.motion_min) / (self.motion_max - self.motion_min + 1e-9), 0.0, 1.0)
+            strength_err = torch.clamp((error_dist - self.error_min) / (self.error_max - self.error_min + 1e-9), 0.0, 1.0)
 
-                
-                self.last_accel = current_accel
-            
-            self.last_vel = current_vel.clone()
-        
-        self.filter.set_noise_params(
-            meas_noise_vec=blended_params[:, 0],
-            vel_change_noise_vec=blended_params[:, 1],
-            dt=dt
-        )
-        
-        # NOW we predict, using the updated Q (noise) from the blending/rejection logic
-        self.filter.predict()
-        
-        self.filter.update(signal_in)
+            alpha_active = torch.maximum(strength_resp, strength_err)
+            total_strength = strength_resp + strength_err + 1e-9
 
-        
-        # Output reshape
-        output = self.filter.pos
-        if len(input_shape) > 2:
-            output = output.view(input_shape)
-            
-        self.output_port.send(output)
-        self.alphas_output.send(self.blended_alphas)
-        self.last_input_vec = signal_in.clone()
+            target_resp = alpha_active * (strength_resp / total_strength)
+            target_err = alpha_active * (strength_err / total_strength)
+            target_damp = 1.0 - target_resp - target_err
+
+            target_alphas = torch.stack([target_damp, target_resp, target_err], dim=1)
+
+            blending_speed = self.blending_speed_in()
+            self.blended_alphas.lerp_(target_alphas, blending_speed)
+
+            # 4. Set Params
+            # self.damp_tensor is [2], blended_alphas [S, 3]
+            param_stack = torch.stack([self.damp_tensor, self.resp_tensor, self.err_tensor], dim=0) # [3, 2]
+            blended_params = self.blended_alphas @ param_stack # [S, 2]
+
+            # --- Acceleration Rejection Logic ---
+            accel_rejection_factor = self.accel_filter_in()
+
+            if accel_rejection_factor > 0 and self.filter is not None:
+                current_vel = self.filter.vel
+                if self.last_vel is not None:
+                    # Calculate current acceleration (frame k-1)
+                    current_accel = (current_vel - self.last_vel) / dt
+
+                    if self.last_accel is not None:
+                         # Dot product to detect reversal [S]
+                         accel_dot = (current_accel * self.last_accel).sum(dim=1) # [S]
+
+                         reversal_mask = accel_dot < 0
+                         if reversal_mask.any():
+                             damping = torch.ones_like(accel_dot)
+                             damping[reversal_mask] = 1.0 + accel_rejection_factor
+
+                             # Apply: Increase Meas Noise (0), Decrease Vel Noise (1)
+                             blended_params[:, 0] = blended_params[:, 0] * damping
+                             blended_params[:, 1] = blended_params[:, 1] / damping
+
+
+                    self.last_accel = current_accel
+
+                self.last_vel = current_vel.clone()
+
+            self.filter.set_noise_params(
+                meas_noise_vec=blended_params[:, 0],
+                vel_change_noise_vec=blended_params[:, 1],
+                dt=dt
+            )
+
+            # NOW we predict, using the updated Q (noise) from the blending/rejection logic
+            self.filter.predict()
+
+            self.filter.update(signal_in)
+
+
+            # Output reshape
+            output = self.filter.pos
+            if len(input_shape) > 2:
+                output = output.view(input_shape)
+
+            self.output_port.send(output)
+            self.alphas_output.send(self.blended_alphas)
+            self.last_input_vec = signal_in.clone()
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
 
 # --- REFACTORED AND RENAMED FILTER CLASS ---
 
@@ -1364,161 +1370,165 @@ class TorchTristateBlendESEKFNode(TorchDeviceDtypeNode):  # Renamed
         return torch.rad2deg(angle_rad)
 
     def execute(self):
-        signal_in = any_to_tensor(self.quat_input())
-        if signal_in is None or signal_in.dim() != 2 or signal_in.shape[1] != 4:
-            return
+        try:
+            signal_in = any_to_tensor(self.quat_input())
+            if signal_in is None or signal_in.dim() != 2 or signal_in.shape[1] != 4:
+                return
 
-        dt = self.dt_input()
-        if dt is None or dt <= 0: return
+            dt = self.dt_input()
+            if dt is None or dt <= 0: return
 
-        # Optimize: don't check shape[0] vs num_streams every single time if filter exists? 
-        # Actually filter check is fast.
-        num_streams = signal_in.shape[0]
-        
-        # Device check is handled by base class usually calling device_changed, 
-        # but if input comes from elsewhere we must check.
-        if signal_in.device != self.device:
-            self.device = signal_in.device
-            self.update_params() # Move param tensors to new device
+            # Optimize: don't check shape[0] vs num_streams every single time if filter exists?
+            # Actually filter check is fast.
+            num_streams = signal_in.shape[0]
 
-        if self.filter is None or self.filter.num_streams != num_streams:
-            self.filter = TorchQuaternionESEKF(dt, num_streams, self.device, self.dtype)
-            self.reset_filter()
-            self.blended_alphas = torch.tensor([1.0, 0.0, 0.0], device=self.device, dtype=self.dtype).unsqueeze(0).repeat(num_streams, 1)
+            # Device check is handled by base class usually calling device_changed,
+            # but if input comes from elsewhere we must check.
+            if signal_in.device != self.device:
+                self.device = signal_in.device
+                self.update_params() # Move param tensors to new device
 
-        self.filter.update_device_to_match(signal_in)
-        if self.last_input_quat is not None and self.last_input_quat.device != self.device:
-             self.last_input_quat = self.last_input_quat.to(self.device)
-        if self.blended_alphas.device != self.device:
-             self.blended_alphas = self.blended_alphas.to(self.device)
+            if self.filter is None or self.filter.num_streams != num_streams:
+                self.filter = TorchQuaternionESEKF(dt, num_streams, self.device, self.dtype)
+                self.reset_filter()
+                self.blended_alphas = torch.tensor([1.0, 0.0, 0.0], device=self.device, dtype=self.dtype).unsqueeze(0).repeat(num_streams, 1)
 
-        # Predict
-        if self.blended_alphas.device != self.device:
-             self.blended_alphas = self.blended_alphas.to(self.device)
+            self.filter.update_device_to_match(signal_in)
+            if self.last_input_quat is not None and self.last_input_quat.device != self.device:
+                 self.last_input_quat = self.last_input_quat.to(self.device)
+            if self.blended_alphas.device != self.device:
+                 self.blended_alphas = self.blended_alphas.to(self.device)
 
-        # Predict MOVED DOWN
+            # Predict
+            if self.blended_alphas.device != self.device:
+                 self.blended_alphas = self.blended_alphas.to(self.device)
 
-
-        # 1. Calculate the raw strength for each active mode.
-        motion_deg_per_sec = torch.zeros(num_streams, device=self.device, dtype=self.dtype)
-        if self.last_input_quat is not None:
-            motion_deg_per_frame = self._calculate_angular_difference_deg(signal_in, self.last_input_quat)
-            motion_deg_per_sec = motion_deg_per_frame / dt
-            
-        strength_resp_vec = torch.clamp(
-            (motion_deg_per_sec - self.motion_min) / (self.motion_max - self.motion_min + 1e-9), 0.0, 1.0)
-
-            
-        # We need estimated quaternion for error calc.
-        # manually predict q: q + delta_q(av)
-        delta_q = angular_velocity_to_delta_q(self.filter.av, dt)
-        predicted_q_temp = q_mult(self.filter.q, delta_q)
-        # Normalize? Not strictly needed for difference calc but safe
-        # predicted_q_temp = F.normalize(predicted_q_temp, dim=-1)
-
-        error_deg = self._calculate_angular_difference_deg(signal_in, predicted_q_temp)
-
-        strength_err_vec = torch.clamp((error_deg - self.error_min) / (self.error_max - self.error_min + 1e-9), 0.0,
-                                       1.0)
+            # Predict MOVED DOWN
 
 
-        # 2. Calculate target alphas
-        alpha_active = torch.maximum(strength_resp_vec, strength_err_vec)
-        total_strength = strength_resp_vec + strength_err_vec + 1e-9
-        
-        # Optimized: logical masking or direct math
-        target_alpha_resp = alpha_active * (strength_resp_vec / total_strength)
-        target_alpha_err = alpha_active * (strength_err_vec / total_strength)
-        target_alpha_damp = 1.0 - target_alpha_resp - target_alpha_err
-        
-        target_alphas = torch.stack([target_alpha_damp, target_alpha_resp, target_alpha_err], dim=1)
+            # 1. Calculate the raw strength for each active mode.
+            motion_deg_per_sec = torch.zeros(num_streams, device=self.device, dtype=self.dtype)
+            if self.last_input_quat is not None:
+                motion_deg_per_frame = self._calculate_angular_difference_deg(signal_in, self.last_input_quat)
+                motion_deg_per_sec = motion_deg_per_frame / dt
 
-        # 3. Smooth the alphas
-        blending_speed = self.blending_speed_in()
-        self.blended_alphas.lerp_(target_alphas, blending_speed) # In-place lerp
+            strength_resp_vec = torch.clamp(
+                (motion_deg_per_sec - self.motion_min) / (self.motion_max - self.motion_min + 1e-9), 0.0, 1.0)
 
-        # 4. Use smoothed alphas to set filter parameters
-        # Optimized: Use pre-allocated parameter tensors (damp_tensor, etc).
-        # We need to mix them.
-        # blended_params = alphas * params
-        # [S, 3] * [3, 2] -> [S, 2]? No
-        # alphas is [S, 3] (damp, resp, err)
-        # params is 3 sets of [2] (meas, vel)
-        # We want result [S, 2]
-        
-        # Stack params: [3, 2]
-        # self.damp_tensor: [2]
-        param_stack = torch.stack([self.damp_tensor, self.resp_tensor, self.err_tensor], dim=0) # [3, 2]
-        
-        # blended = alphas @ param_stack
-        # [S, 3] @ [3, 2] -> [S, 2]
-        blended_params = self.blended_alphas @ param_stack
-        
-        # --- Acceleration Rejection Logic ---
-        # Detect acceleration reversals and reduce velocity process noise (blended_params[:, 1])
-        accel_rejection_factor = self.accel_filter_in()
-        
-        if accel_rejection_factor > 0 and self.filter is not None:
-            current_av = self.filter.av
-            if self.last_av is not None:
-                # Calculate current acceleration (frame k-1)
-                # av is a tensor [S, 3]
-                current_accel = (current_av - self.last_av) / dt
-                
-                if self.last_accel is not None:
-                     # Dot product to detect reversal [S]
-                     # normalized dot product might be better, but let's stick to raw sign first?
-                     # actually, we want to know if they oppose.
-                     accel_dot = (current_accel * self.last_accel).sum(dim=1) # [S]
-                     
-                     # Reversal if dot < 0.
-                     # We want a damping factor. 
-                     # If dot < 0, we want to reduce noise.
-                     # Let's say we define a penalty based on how strong the reversal is.
-                     
-                     # Simple logic: if dot < 0, huge penalty.
-                     # Damping = 1 / (1 + factor * |dot_norm|) ?
-                     
-                     reversal_mask = accel_dot < 0
-                     if reversal_mask.any():
-                         # Calculate a scalar intensity of reversal?
-                         # Or just apply constant damping?
-                         # Plan said: "scale down the vel_change_noise_vec"
-                         
-                         # Let's use the rejection factor as a multiplier for the reduction
-                         # modification: new_noise = noise / (1 + factor)
-                         
-                         # But checking magnitude of reversal is good.
-                         # Let's use the magnitude of the acceleration as well?
-                         
-                         damping = torch.ones_like(accel_dot)
-                         damping[reversal_mask] = 1.0 + accel_rejection_factor
-                         
-                         # Apply: Increase Meas Noise (0), Decrease Vel Noise (1)
-                         blended_params[:, 0] = blended_params[:, 0] * damping
-                         blended_params[:, 1] = blended_params[:, 1] / damping
 
-                
-                self.last_accel = current_accel
-            
-            self.last_av = current_av.clone()
+            # We need estimated quaternion for error calc.
+            # manually predict q: q + delta_q(av)
+            delta_q = angular_velocity_to_delta_q(self.filter.av, dt)
+            predicted_q_temp = q_mult(self.filter.q, delta_q)
+            # Normalize? Not strictly needed for difference calc but safe
+            # predicted_q_temp = F.normalize(predicted_q_temp, dim=-1)
 
-        self.filter.set_noise_params(
-            meas_noise_vec=blended_params[:, 0],
-            vel_change_noise_vec=blended_params[:, 1],
-            dt=dt
-        )
+            error_deg = self._calculate_angular_difference_deg(signal_in, predicted_q_temp)
 
-        # Predict NOW (using new Q)
-        self.filter.predict()
+            strength_err_vec = torch.clamp((error_deg - self.error_min) / (self.error_max - self.error_min + 1e-9), 0.0,
+                                           1.0)
 
-        # 5. Run Update
-        self.filter.update(signal_in)
 
-        
-        self.output_port.send(self.filter.q)
-        self.alphas_output.send(self.blended_alphas)
-        self.last_input_quat = signal_in.clone()
+            # 2. Calculate target alphas
+            alpha_active = torch.maximum(strength_resp_vec, strength_err_vec)
+            total_strength = strength_resp_vec + strength_err_vec + 1e-9
+
+            # Optimized: logical masking or direct math
+            target_alpha_resp = alpha_active * (strength_resp_vec / total_strength)
+            target_alpha_err = alpha_active * (strength_err_vec / total_strength)
+            target_alpha_damp = 1.0 - target_alpha_resp - target_alpha_err
+
+            target_alphas = torch.stack([target_alpha_damp, target_alpha_resp, target_alpha_err], dim=1)
+
+            # 3. Smooth the alphas
+            blending_speed = self.blending_speed_in()
+            self.blended_alphas.lerp_(target_alphas, blending_speed) # In-place lerp
+
+            # 4. Use smoothed alphas to set filter parameters
+            # Optimized: Use pre-allocated parameter tensors (damp_tensor, etc).
+            # We need to mix them.
+            # blended_params = alphas * params
+            # [S, 3] * [3, 2] -> [S, 2]? No
+            # alphas is [S, 3] (damp, resp, err)
+            # params is 3 sets of [2] (meas, vel)
+            # We want result [S, 2]
+
+            # Stack params: [3, 2]
+            # self.damp_tensor: [2]
+            param_stack = torch.stack([self.damp_tensor, self.resp_tensor, self.err_tensor], dim=0) # [3, 2]
+
+            # blended = alphas @ param_stack
+            # [S, 3] @ [3, 2] -> [S, 2]
+            blended_params = self.blended_alphas @ param_stack
+
+            # --- Acceleration Rejection Logic ---
+            # Detect acceleration reversals and reduce velocity process noise (blended_params[:, 1])
+            accel_rejection_factor = self.accel_filter_in()
+
+            if accel_rejection_factor > 0 and self.filter is not None:
+                current_av = self.filter.av
+                if self.last_av is not None:
+                    # Calculate current acceleration (frame k-1)
+                    # av is a tensor [S, 3]
+                    current_accel = (current_av - self.last_av) / dt
+
+                    if self.last_accel is not None:
+                         # Dot product to detect reversal [S]
+                         # normalized dot product might be better, but let's stick to raw sign first?
+                         # actually, we want to know if they oppose.
+                         accel_dot = (current_accel * self.last_accel).sum(dim=1) # [S]
+
+                         # Reversal if dot < 0.
+                         # We want a damping factor.
+                         # If dot < 0, we want to reduce noise.
+                         # Let's say we define a penalty based on how strong the reversal is.
+
+                         # Simple logic: if dot < 0, huge penalty.
+                         # Damping = 1 / (1 + factor * |dot_norm|) ?
+
+                         reversal_mask = accel_dot < 0
+                         if reversal_mask.any():
+                             # Calculate a scalar intensity of reversal?
+                             # Or just apply constant damping?
+                             # Plan said: "scale down the vel_change_noise_vec"
+
+                             # Let's use the rejection factor as a multiplier for the reduction
+                             # modification: new_noise = noise / (1 + factor)
+
+                             # But checking magnitude of reversal is good.
+                             # Let's use the magnitude of the acceleration as well?
+
+                             damping = torch.ones_like(accel_dot)
+                             damping[reversal_mask] = 1.0 + accel_rejection_factor
+
+                             # Apply: Increase Meas Noise (0), Decrease Vel Noise (1)
+                             blended_params[:, 0] = blended_params[:, 0] * damping
+                             blended_params[:, 1] = blended_params[:, 1] / damping
+
+
+                    self.last_accel = current_accel
+
+                self.last_av = current_av.clone()
+
+            self.filter.set_noise_params(
+                meas_noise_vec=blended_params[:, 0],
+                vel_change_noise_vec=blended_params[:, 1],
+                dt=dt
+            )
+
+            # Predict NOW (using new Q)
+            self.filter.predict()
+
+            # 5. Run Update
+            self.filter.update(signal_in)
+
+
+            self.output_port.send(self.filter.q)
+            self.alphas_output.send(self.blended_alphas)
+            self.last_input_quat = signal_in.clone()
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
 
 
 class TorchSmartClampKF:
@@ -1815,51 +1825,55 @@ class TorchSmartClampKFNode(TorchDeviceDtypeNode):
             self.filter.flag_reset()
 
     def execute(self):
-        input_tensor = any_to_tensor(self.input_port())
-        dt = self.dt_input()
-        
-        if input_tensor is None:
-            return
+        try:
+            input_tensor = any_to_tensor(self.input_port())
+            dt = self.dt_input()
 
-        # Handle formatting
-        # Expect [Streams, Dims]
-        original_shape = input_tensor.shape
-        if input_tensor.dim() == 1:
-            input_tensor = input_tensor.unsqueeze(0)
-            
-        # Treat [B, T, D] as flat [BT, D] ??
-        # Or just enforce 2D
-        if input_tensor.dim() > 2:
-            input_tensor = input_tensor.flatten(0, -2)
-            
-        num_streams, dim = input_tensor.shape
-        
-        # Initialize or Resize
-        if self.filter is None or self.filter.num_streams != num_streams or self.filter.dim != dim:
-            self.filter = TorchSmartClampKF(dt, num_streams, dim, device=self.device, dtype=self.dtype)
-            
-        self.filter.update_device_to_match(input_tensor)
-        
-        # Update Parameters
-        p_noise = self.process_noise_prop()
-        m_noise = self.meas_noise_prop()
-        clamp = self.clamp_prop()
-        accel_rej = self.accel_reject_prop()
-        max_accel = self.max_accel_prop()
-        
-        self.filter.update_params(p_noise, m_noise, clamp, accel_rej, max_accel, dt)
-        
-        # Execution
-        self.filter.predict()
-        filtered_pos = self.filter.update(input_tensor)
-        
-        # Reshape output
-        if len(original_shape) > 2:
-            filtered_pos = filtered_pos.view(original_shape)
-        elif len(original_shape) == 1:
-            filtered_pos = filtered_pos.squeeze(0)
-            
-        self.output_port.send(filtered_pos)
+            if input_tensor is None:
+                return
+
+            # Handle formatting
+            # Expect [Streams, Dims]
+            original_shape = input_tensor.shape
+            if input_tensor.dim() == 1:
+                input_tensor = input_tensor.unsqueeze(0)
+
+            # Treat [B, T, D] as flat [BT, D] ??
+            # Or just enforce 2D
+            if input_tensor.dim() > 2:
+                input_tensor = input_tensor.flatten(0, -2)
+
+            num_streams, dim = input_tensor.shape
+
+            # Initialize or Resize
+            if self.filter is None or self.filter.num_streams != num_streams or self.filter.dim != dim:
+                self.filter = TorchSmartClampKF(dt, num_streams, dim, device=self.device, dtype=self.dtype)
+
+            self.filter.update_device_to_match(input_tensor)
+
+            # Update Parameters
+            p_noise = self.process_noise_prop()
+            m_noise = self.meas_noise_prop()
+            clamp = self.clamp_prop()
+            accel_rej = self.accel_reject_prop()
+            max_accel = self.max_accel_prop()
+
+            self.filter.update_params(p_noise, m_noise, clamp, accel_rej, max_accel, dt)
+
+            # Execution
+            self.filter.predict()
+            filtered_pos = self.filter.update(input_tensor)
+
+            # Reshape output
+            if len(original_shape) > 2:
+                filtered_pos = filtered_pos.view(original_shape)
+            elif len(original_shape) == 1:
+                filtered_pos = filtered_pos.squeeze(0)
+
+            self.output_port.send(filtered_pos)
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
 
 @torch.jit.script
 def smart_clamp_quat_update_kernel(q, av, x, P, R, I_x, H, jitter, z_measured_q, dt: float, clamp_rad: float, max_accel_rad: float):
@@ -2164,47 +2178,51 @@ class TorchSmartClampQuaternionKFNode(TorchDeviceDtypeNode):
             self.filter.reset()
 
     def execute(self):
-        input_tensor = self.input_port()
-        if input_tensor is None:
-            return
-            
-        input_tensor = any_to_tensor(input_tensor, device=self.device, dtype=self.dtype)
-        
-        # Check Shape (Expect Nx4)
-        if input_tensor.dim() == 1 and input_tensor.shape[0] == 4:
-            input_tensor = input_tensor.unsqueeze(0)
-        
-        if input_tensor.dim() != 2 or input_tensor.shape[-1] != 4:
-            return # Invalid input
-            
-        num_streams = input_tensor.shape[0]
-        dt = self.dt_input()
-        if dt <= 0: dt = 1.0/60.0
+        try:
+            input_tensor = self.input_port()
+            if input_tensor is None:
+                return
 
-        if self.filter is None or self.filter.num_streams != num_streams:
-            self.filter = TorchSmartClampQuaternionKF(dt, num_streams, device=self.device, dtype=self.dtype)
-            self.filter.reset()
+            input_tensor = any_to_tensor(input_tensor, device=self.device, dtype=self.dtype)
 
-        if self.filter.device != self.device:
-            # Re-init on device change (simplest for now)
-            self.filter = TorchSmartClampQuaternionKF(dt, num_streams, device=self.device, dtype=self.dtype)
-            self.filter.reset()
+            # Check Shape (Expect Nx4)
+            if input_tensor.dim() == 1 and input_tensor.shape[0] == 4:
+                input_tensor = input_tensor.unsqueeze(0)
 
-        # Update Params
-        self.filter.update_params(
-            process_noise_q=self.process_noise_prop(),
-            measurement_noise_r=self.meas_noise_prop(),
-            clamp_angle_deg=self.clamp_prop(),
-            accel_rejection_factor=self.accel_reject_prop(),
-            max_accel_deg=self.max_accel_prop(),
-            dt=dt
-        )
+            if input_tensor.dim() != 2 or input_tensor.shape[-1] != 4:
+                return # Invalid input
 
-        # Predict & Update
-        self.filter.predict()
-        filtered_q = self.filter.update(input_tensor)
-        
-        self.output.send(filtered_q)
+            num_streams = input_tensor.shape[0]
+            dt = self.dt_input()
+            if dt <= 0: dt = 1.0/60.0
+
+            if self.filter is None or self.filter.num_streams != num_streams:
+                self.filter = TorchSmartClampQuaternionKF(dt, num_streams, device=self.device, dtype=self.dtype)
+                self.filter.reset()
+
+            if self.filter.device != self.device:
+                # Re-init on device change (simplest for now)
+                self.filter = TorchSmartClampQuaternionKF(dt, num_streams, device=self.device, dtype=self.dtype)
+                self.filter.reset()
+
+            # Update Params
+            self.filter.update_params(
+                process_noise_q=self.process_noise_prop(),
+                measurement_noise_r=self.meas_noise_prop(),
+                clamp_angle_deg=self.clamp_prop(),
+                accel_rejection_factor=self.accel_reject_prop(),
+                max_accel_deg=self.max_accel_prop(),
+                dt=dt
+            )
+
+            # Predict & Update
+            self.filter.predict()
+            filtered_q = self.filter.update(input_tensor)
+
+            self.output.send(filtered_q)
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
 
 class TorchHybridQuaternionKFNode(TorchDeviceDtypeNode):
     @staticmethod
@@ -2289,91 +2307,95 @@ class TorchHybridQuaternionKFNode(TorchDeviceDtypeNode):
         return torch.rad2deg(angle_rad)
 
     def execute(self):
-        input_tensor = any_to_tensor(self.input_port())
-        dt = 1.0/60.0 # Standardize or get from input? Tristate usually infers or fixed?
-        # Check parent node for dt input?
-        # Actually Tristate node had dt_input separate? No, looking at my view_file output it wasn't obvious.
-        # Let's add dt input to be safe.
-        # Wait, TristateBlendESEKFNode uses self.dt_input() in execute usually.
-        # I didn't verify if it has one. Let's add it.
-        
-        if input_tensor is None: return
-        
-        # Ensure 2D [S, 4]
-        if input_tensor.dim() == 1: input_tensor = input_tensor.unsqueeze(0)
-        if input_tensor.dim() != 2 or input_tensor.shape[-1] != 4: return
-        
-        num_streams = input_tensor.shape[0]
-        
-        if self.filter is None or self.filter.num_streams != num_streams:
-            self.filter = TorchSmartClampQuaternionKF(dt, num_streams, device=self.device, dtype=self.dtype)
-            self.reset_filter()
-            self.blended_alphas = torch.tensor([1.0, 0.0, 0.0], device=self.device, dtype=self.dtype).unsqueeze(0).repeat(num_streams, 1)
+        try:
+            input_tensor = any_to_tensor(self.input_port())
+            dt = 1.0/60.0 # Standardize or get from input? Tristate usually infers or fixed?
+            # Check parent node for dt input?
+            # Actually Tristate node had dt_input separate? No, looking at my view_file output it wasn't obvious.
+            # Let's add dt input to be safe.
+            # Wait, TristateBlendESEKFNode uses self.dt_input() in execute usually.
+            # I didn't verify if it has one. Let's add it.
 
-        self.filter.update_device_to_match(input_tensor)
-        if self.blended_alphas.device != self.device: self.blended_alphas = self.blended_alphas.to(self.device)
-        
-        # --- 1. Calculate Tristate Alphas ---
-        motion_deg_per_sec = torch.zeros(num_streams, device=self.device, dtype=self.dtype)
-        if self.last_input_quat is not None:
-            motion_deg_per_frame = self._calculate_angular_difference_deg(input_tensor, self.last_input_quat)
-            motion_deg_per_sec = motion_deg_per_frame / dt
-            
-        strength_resp_vec = torch.clamp((motion_deg_per_sec - self.motion_min) / (self.motion_max - self.motion_min + 1e-9), 0.0, 1.0)
-        
-        # Error prediction
-        # We need to use filter's AV to predict where we SHOULD be
-        # Then compare to input.
-        # Note: SmartClampKF stores state in self.filter.q, self.filter.av
-        
-        delta_q = angular_velocity_to_delta_q(self.filter.av, dt)
-        predicted_q_temp = q_mult(self.filter.q, delta_q)
-        error_deg = self._calculate_angular_difference_deg(input_tensor, predicted_q_temp)
-        strength_err_vec = torch.clamp((error_deg - self.error_min) / (self.error_max - self.error_min + 1e-9), 0.0, 1.0)
-        
-        # Blending
-        alpha_active = torch.maximum(strength_resp_vec, strength_err_vec)
-        total_strength = strength_resp_vec + strength_err_vec + 1e-9
-        
-        target_alpha_resp = alpha_active * (strength_resp_vec / total_strength)
-        target_alpha_err = alpha_active * (strength_err_vec / total_strength)
-        target_alpha_damp = 1.0 - target_alpha_resp - target_alpha_err
-        
-        target_alphas = torch.stack([target_alpha_damp, target_alpha_resp, target_alpha_err], dim=1)
-        blending_speed = self.blending_speed_in()
-        self.blended_alphas.lerp_(target_alphas, blending_speed)
-        
-        # Mix Params
-        param_stack = torch.stack([self.damp_tensor, self.resp_tensor, self.err_tensor], dim=0) # [3, 2]
-        blended_params = self.blended_alphas @ param_stack # [S, 2]
-        
-        # --- 2. Update Filter Params (Smart Clamp Integrated) ---
-        process_noise_q = blended_params[:, 1] # vel responsiveness
-        measurement_noise_r = blended_params[:, 0] # smoothness
-        
-        # We pass these to update_params.
-        # Note: SmartClampKF.update_params expects SCALARS or TENSORS?
-        # Looking at implementation: 
-        # q_diag_pos = torch.full(...) * pos_var. 
-        # If pos_var is tensor, it broadcasts.
-        # So passing tensors [S] is fine.
-        
-        self.filter.update_params(
-            process_noise_q=process_noise_q,
-            measurement_noise_r=measurement_noise_r,
-            clamp_angle_deg=self.clamp_prop(),
-            accel_rejection_factor=self.accel_reject_prop(),
-            max_accel_deg=self.max_accel_prop(),
-            dt=dt
-        )
-        
-        # --- 3. Run Filter ---
-        self.filter.predict()
-        filtered_q = self.filter.update(input_tensor)
-        
-        self.output_port.send(filtered_q)
-        self.alphas_output.send(self.blended_alphas)
-        self.last_input_quat = input_tensor.clone()
+            if input_tensor is None: return
+
+            # Ensure 2D [S, 4]
+            if input_tensor.dim() == 1: input_tensor = input_tensor.unsqueeze(0)
+            if input_tensor.dim() != 2 or input_tensor.shape[-1] != 4: return
+
+            num_streams = input_tensor.shape[0]
+
+            if self.filter is None or self.filter.num_streams != num_streams:
+                self.filter = TorchSmartClampQuaternionKF(dt, num_streams, device=self.device, dtype=self.dtype)
+                self.reset_filter()
+                self.blended_alphas = torch.tensor([1.0, 0.0, 0.0], device=self.device, dtype=self.dtype).unsqueeze(0).repeat(num_streams, 1)
+
+            self.filter.update_device_to_match(input_tensor)
+            if self.blended_alphas.device != self.device: self.blended_alphas = self.blended_alphas.to(self.device)
+
+            # --- 1. Calculate Tristate Alphas ---
+            motion_deg_per_sec = torch.zeros(num_streams, device=self.device, dtype=self.dtype)
+            if self.last_input_quat is not None:
+                motion_deg_per_frame = self._calculate_angular_difference_deg(input_tensor, self.last_input_quat)
+                motion_deg_per_sec = motion_deg_per_frame / dt
+
+            strength_resp_vec = torch.clamp((motion_deg_per_sec - self.motion_min) / (self.motion_max - self.motion_min + 1e-9), 0.0, 1.0)
+
+            # Error prediction
+            # We need to use filter's AV to predict where we SHOULD be
+            # Then compare to input.
+            # Note: SmartClampKF stores state in self.filter.q, self.filter.av
+
+            delta_q = angular_velocity_to_delta_q(self.filter.av, dt)
+            predicted_q_temp = q_mult(self.filter.q, delta_q)
+            error_deg = self._calculate_angular_difference_deg(input_tensor, predicted_q_temp)
+            strength_err_vec = torch.clamp((error_deg - self.error_min) / (self.error_max - self.error_min + 1e-9), 0.0, 1.0)
+
+            # Blending
+            alpha_active = torch.maximum(strength_resp_vec, strength_err_vec)
+            total_strength = strength_resp_vec + strength_err_vec + 1e-9
+
+            target_alpha_resp = alpha_active * (strength_resp_vec / total_strength)
+            target_alpha_err = alpha_active * (strength_err_vec / total_strength)
+            target_alpha_damp = 1.0 - target_alpha_resp - target_alpha_err
+
+            target_alphas = torch.stack([target_alpha_damp, target_alpha_resp, target_alpha_err], dim=1)
+            blending_speed = self.blending_speed_in()
+            self.blended_alphas.lerp_(target_alphas, blending_speed)
+
+            # Mix Params
+            param_stack = torch.stack([self.damp_tensor, self.resp_tensor, self.err_tensor], dim=0) # [3, 2]
+            blended_params = self.blended_alphas @ param_stack # [S, 2]
+
+            # --- 2. Update Filter Params (Smart Clamp Integrated) ---
+            process_noise_q = blended_params[:, 1] # vel responsiveness
+            measurement_noise_r = blended_params[:, 0] # smoothness
+
+            # We pass these to update_params.
+            # Note: SmartClampKF.update_params expects SCALARS or TENSORS?
+            # Looking at implementation:
+            # q_diag_pos = torch.full(...) * pos_var.
+            # If pos_var is tensor, it broadcasts.
+            # So passing tensors [S] is fine.
+
+            self.filter.update_params(
+                process_noise_q=process_noise_q,
+                measurement_noise_r=measurement_noise_r,
+                clamp_angle_deg=self.clamp_prop(),
+                accel_rejection_factor=self.accel_reject_prop(),
+                max_accel_deg=self.max_accel_prop(),
+                dt=dt
+            )
+
+            # --- 3. Run Filter ---
+            self.filter.predict()
+            filtered_q = self.filter.update(input_tensor)
+
+            self.output_port.send(filtered_q)
+            self.alphas_output.send(self.blended_alphas)
+            self.last_input_quat = input_tensor.clone()
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
 
 @torch.jit.script
 def persistence_quat_update_kernel(q, av, x, P, R, I_x, H, jitter, z_measured_q, dt: float, 
@@ -2430,11 +2452,7 @@ def persistence_quat_update_kernel(q, av, x, P, R, I_x, H, jitter, z_measured_q,
         # Check Violation
         # implied [S, 1], max_accel_rad scalar
         is_violation = (implied_accel > max_accel_rad).squeeze(-1) # [S] bool
-        
-        # DEBUG
-        if max_accel_rad < 1000.0:
-           print("DEBUG:", implied_accel.mean(), max_accel_rad, is_violation.float().mean())
-        
+
         # Update Counts
         # If violation, increment. If safe, reset to 0.
         new_counts = torch.where(is_violation, persistence_counts + 1, torch.zeros_like(persistence_counts))
@@ -2525,37 +2543,41 @@ class TorchPersistenceKFNode(TorchSmartClampQuaternionKFNode):
         self.persistence_prop = self.add_property('threshold_frames', widget_type='drag_int', default_value=2, min=1, max=10)
 
     def execute(self):
-        input_tensor = self.input_port() # Use correct port
-        if input_tensor is None: return
-        
-        input_tensor = any_to_tensor(input_tensor, device=self.device, dtype=self.dtype)
-        if input_tensor.dim() == 1 and input_tensor.shape[0] == 4:
-            input_tensor = input_tensor.unsqueeze(0)
-        
-        num_streams = input_tensor.shape[0]
-        dt = self.dt_input()
-        if dt <= 0: dt = 1.0/60.0
+        try:
+            input_tensor = self.input_port() # Use correct port
+            if input_tensor is None: return
 
-        if self.filter is None or self.filter.num_streams != num_streams or not isinstance(self.filter, TorchPersistenceQuaternionKF):
-            self.filter = TorchPersistenceQuaternionKF(dt, num_streams, device=self.device, dtype=self.dtype)
-            self.filter.reset()
+            input_tensor = any_to_tensor(input_tensor, device=self.device, dtype=self.dtype)
+            if input_tensor.dim() == 1 and input_tensor.shape[0] == 4:
+                input_tensor = input_tensor.unsqueeze(0)
 
-        if self.filter.device != self.device:
-            self.filter.update_device_to_match(input_tensor)
+            num_streams = input_tensor.shape[0]
+            dt = self.dt_input()
+            if dt <= 0: dt = 1.0/60.0
 
-        p_noise = self.process_noise_prop()
-        m_noise = self.meas_noise_prop()
-        clamp = self.clamp_prop()
-        accel_rej = self.accel_reject_prop()
-        max_accel = self.max_accel_prop()
-        persist = self.persistence_prop()
-        
-        self.filter.update_params(p_noise, m_noise, clamp, accel_rej, max_accel, dt, persist)
-        
-        self.filter.predict()
-        filtered_pos = self.filter.update(input_tensor)
-        
-        self.output.send(filtered_pos)
+            if self.filter is None or self.filter.num_streams != num_streams or not isinstance(self.filter, TorchPersistenceQuaternionKF):
+                self.filter = TorchPersistenceQuaternionKF(dt, num_streams, device=self.device, dtype=self.dtype)
+                self.filter.reset()
+
+            if self.filter.device != self.device:
+                self.filter.update_device_to_match(input_tensor)
+
+            p_noise = self.process_noise_prop()
+            m_noise = self.meas_noise_prop()
+            clamp = self.clamp_prop()
+            accel_rej = self.accel_reject_prop()
+            max_accel = self.max_accel_prop()
+            persist = self.persistence_prop()
+
+            self.filter.update_params(p_noise, m_noise, clamp, accel_rej, max_accel, dt, persist)
+
+            self.filter.predict()
+            filtered_pos = self.filter.update(input_tensor)
+
+            self.output.send(filtered_pos)
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
 
 
 # =============================================================================
@@ -3378,48 +3400,52 @@ class TorchJerkAwareQuatKFNode(TorchDeviceDtypeNode):
             self.filter.reset()
     
     def execute(self):
-        input_tensor = self.input_port()
-        if input_tensor is None:
-            return
-        
-        input_tensor = any_to_tensor(input_tensor, device=self.device, dtype=self.dtype)
-        
-        # Handle 1D input (single quaternion)
-        if input_tensor.dim() == 1 and input_tensor.shape[0] == 4:
-            input_tensor = input_tensor.unsqueeze(0)
-        
-        # Validate shape
-        if input_tensor.dim() != 2 or input_tensor.shape[-1] != 4:
-            return
-        
-        num_streams = input_tensor.shape[0]
-        dt = self.dt_input()
-        if dt <= 0:
-            dt = 1.0 / 60.0
-        
-        # Create or resize filter
-        if self.filter is None or self.filter.num_streams != num_streams:
-            self.filter = TorchJerkAwareQuatKF(dt, num_streams, device=self.device, dtype=self.dtype)
-            self.filter.reset()
-        
-        # Update device if needed
-        if self.filter.device != self.device:
-            self.filter.update_device_to_match(input_tensor)
-        
-        # Update parameters
-        self.filter.update_params(
-            jerk_threshold=self.jerk_threshold_prop(),
-            accel_limit=self.accel_limit_prop(),
-            velocity_threshold=self.velocity_threshold_prop(),
-            min_responsiveness=self.min_resp_prop(),
-            max_responsiveness=self.max_resp_prop(),
-            spike_recovery_frames=self.spike_recovery_prop(),
-            glitch_joint_threshold=self.glitch_threshold_prop(),
-            global_glitch_transition_frames=self.glitch_transition_prop(),
-            dt=dt
-        )
-        
-        # Filter
-        filtered = self.filter.filter(input_tensor)
-        
-        self.output.send(filtered)
+        try:
+            input_tensor = self.input_port()
+            if input_tensor is None:
+                return
+
+            input_tensor = any_to_tensor(input_tensor, device=self.device, dtype=self.dtype)
+
+            # Handle 1D input (single quaternion)
+            if input_tensor.dim() == 1 and input_tensor.shape[0] == 4:
+                input_tensor = input_tensor.unsqueeze(0)
+
+            # Validate shape
+            if input_tensor.dim() != 2 or input_tensor.shape[-1] != 4:
+                return
+
+            num_streams = input_tensor.shape[0]
+            dt = self.dt_input()
+            if dt <= 0:
+                dt = 1.0 / 60.0
+
+            # Create or resize filter
+            if self.filter is None or self.filter.num_streams != num_streams:
+                self.filter = TorchJerkAwareQuatKF(dt, num_streams, device=self.device, dtype=self.dtype)
+                self.filter.reset()
+
+            # Update device if needed
+            if self.filter.device != self.device:
+                self.filter.update_device_to_match(input_tensor)
+
+            # Update parameters
+            self.filter.update_params(
+                jerk_threshold=self.jerk_threshold_prop(),
+                accel_limit=self.accel_limit_prop(),
+                velocity_threshold=self.velocity_threshold_prop(),
+                min_responsiveness=self.min_resp_prop(),
+                max_responsiveness=self.max_resp_prop(),
+                spike_recovery_frames=self.spike_recovery_prop(),
+                glitch_joint_threshold=self.glitch_threshold_prop(),
+                global_glitch_transition_frames=self.glitch_transition_prop(),
+                dt=dt
+            )
+
+            # Filter
+            filtered = self.filter.filter(input_tensor)
+
+            self.output.send(filtered)
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
