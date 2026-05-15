@@ -308,6 +308,11 @@ class App:
         self.node_editors = []
         self.current_node_editor = 0
         self.frame_tasks = []
+        # Cross-thread callable dispatch: off-thread code (file dialogs,
+        # network handlers) appends (fn, args) under the lock; the main
+        # loop drains and invokes on the main thread once per frame.
+        self._main_thread_calls = []
+        self._main_thread_calls_lock = threading.Lock()
         self.variables = {}
         self.conduits = {}
         self.actions = {}
@@ -2043,6 +2048,14 @@ class App:
         if dest not in self.frame_tasks:
             self.frame_tasks.append(dest)
 
+    def queue_main_thread_call(self, fn, *args, **kwargs):
+        """Queue a callable to run on the main thread on the next frame.
+        Safe to call from any thread. Useful for off-thread workers (file
+        dialogs, network handlers) that need to invoke dpg APIs or trigger
+        node logic without racing the main render loop."""
+        with self._main_thread_calls_lock:
+            self._main_thread_calls.append((fn, args, kwargs))
+
     def register_node(self, label, factory, data=None):
         self.node_factory_container.add_node_factory(NodeFactory(label, factory, data))
         self.node_list.append(label)
@@ -2274,6 +2287,16 @@ class App:
                     except Exception as exc_:
                         print('Exception in DPG callback:')
                         traceback.print_exception(exc_)
+                    # Drain cross-thread main-thread calls (file dialogs, etc.).
+                    with self._main_thread_calls_lock:
+                        pending_calls = self._main_thread_calls
+                        self._main_thread_calls = []
+                    for fn, fn_args, fn_kwargs in pending_calls:
+                        try:
+                            fn(*fn_args, **fn_kwargs)
+                        except Exception as exc_:
+                            print('Exception in queued main-thread call:')
+                            traceback.print_exception(exc_)
                     self.frame_number += 1
                     self.frame_variable.set(self.frame_number)
                     self.frame_clock_conduit.transmit('bang')

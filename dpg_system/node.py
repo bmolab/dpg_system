@@ -48,6 +48,66 @@ def _get_resize_handle_dragging_theme():
     return _resize_handle_dragging_theme
 
 
+# Pin themes — built once per process, shared by every NodeInput and NodeOutput.
+# Previously each pin instance created its own six themes because the guard
+# flag was per-instance, leaking 6 themes per pin.
+_pin_active_theme = None
+_pin_active_array_theme = None
+_pin_active_tensor_theme = None
+_pin_active_list_theme = None
+_pin_active_string_theme = None
+_pin_active_bang_theme = None
+
+
+def _make_pin_theme(color):
+    with dpg.theme() as theme:
+        with dpg.theme_component(0):
+            dpg.add_theme_color(dpg.mvNodeCol_Pin, color, category=dpg.mvThemeCat_Nodes)
+    return theme
+
+
+def _get_pin_active_theme():
+    global _pin_active_theme
+    if _pin_active_theme is None or not dpg.does_item_exist(_pin_active_theme):
+        _pin_active_theme = _make_pin_theme((153, 212, 255))
+    return _pin_active_theme
+
+
+def _get_pin_active_array_theme():
+    global _pin_active_array_theme
+    if _pin_active_array_theme is None or not dpg.does_item_exist(_pin_active_array_theme):
+        _pin_active_array_theme = _make_pin_theme((0, 255, 0))
+    return _pin_active_array_theme
+
+
+def _get_pin_active_tensor_theme():
+    global _pin_active_tensor_theme
+    if _pin_active_tensor_theme is None or not dpg.does_item_exist(_pin_active_tensor_theme):
+        _pin_active_tensor_theme = _make_pin_theme((255, 0, 0))
+    return _pin_active_tensor_theme
+
+
+def _get_pin_active_list_theme():
+    global _pin_active_list_theme
+    if _pin_active_list_theme is None or not dpg.does_item_exist(_pin_active_list_theme):
+        _pin_active_list_theme = _make_pin_theme((255, 0, 255))
+    return _pin_active_list_theme
+
+
+def _get_pin_active_string_theme():
+    global _pin_active_string_theme
+    if _pin_active_string_theme is None or not dpg.does_item_exist(_pin_active_string_theme):
+        _pin_active_string_theme = _make_pin_theme((255, 128, 0))
+    return _pin_active_string_theme
+
+
+def _get_pin_active_bang_theme():
+    global _pin_active_bang_theme
+    if _pin_active_bang_theme is None or not dpg.does_item_exist(_pin_active_bang_theme):
+        _pin_active_bang_theme = _make_pin_theme((255, 255, 0))
+    return _pin_active_bang_theme
+
+
 class ResizeHandle:
     def __init__(self, uuid, target_uuid, axis='x', width_option=None, height_option=None,
                  sync_width=False, sync_height=True, square=False):
@@ -62,17 +122,7 @@ class ResizeHandle:
 
 
 class NodeOutput:
-    _pin_active_theme = None
-    _pin_active_string_theme = None
-    _pin_theme_created = False
-    _pin_active_array_theme = None
-    _pin_active_tensor_theme = None
-    _pin_active_list_theme = None
-    _pin_active_bang_theme = None
-
     def __init__(self, label: str = "output", node=None, pos=None):
-        if not self._pin_theme_created:
-            self.create_pin_themes()
         self.uuid = -1
         self._label = label
         self.label_uuid = None
@@ -96,27 +146,6 @@ class NodeOutput:
             self.label_uuid = dpg.add_text(self._label)
         else:
             dpg.set_value(self.label_uuid, self._label)
-
-    def create_pin_themes(self) -> None:
-        #   could add other colours?
-        with dpg.theme() as self._pin_active_theme:
-            with dpg.theme_component(0):
-                dpg.add_theme_color(dpg.mvNodeCol_Pin, (153, 212, 255), category=dpg.mvThemeCat_Nodes)
-        with dpg.theme() as self._pin_active_array_theme:
-            with dpg.theme_component(0):
-                dpg.add_theme_color(dpg.mvNodeCol_Pin, (0, 255, 0), category=dpg.mvThemeCat_Nodes)
-        with dpg.theme() as self._pin_active_tensor_theme:
-            with dpg.theme_component(0):
-                dpg.add_theme_color(dpg.mvNodeCol_Pin, (255, 0, 0), category=dpg.mvThemeCat_Nodes)
-        with dpg.theme() as self._pin_active_list_theme:
-            with dpg.theme_component(0):
-                dpg.add_theme_color(dpg.mvNodeCol_Pin, (255, 0, 255), category=dpg.mvThemeCat_Nodes)
-        with dpg.theme() as self._pin_active_string_theme:
-            with dpg.theme_component(0):
-                dpg.add_theme_color(dpg.mvNodeCol_Pin, (255, 128, 0), category=dpg.mvThemeCat_Nodes)
-        with dpg.theme() as self._pin_active_bang_theme:
-            with dpg.theme_component(0):
-                dpg.add_theme_color(dpg.mvNodeCol_Pin, (255, 255, 0), category=dpg.mvThemeCat_Nodes)
 
     def set_visibility(self, visibility_state: str = 'show_all') -> None:
         if visibility_state == 'show_all':
@@ -203,29 +232,29 @@ class NodeOutput:
 
     def send_internal(self, no_trigger=False) -> None:
         if self.output_always or self.new_output:
-            if self.node.visibility == 'show_all':
+            if self.node.visibility == 'show_all' and dpg.does_item_exist(self.uuid):
                 try:
                     if Node.app.color_code_pins:
                         t = self.sent_type
 
                         if t is np.ndarray:
-                            dpg.bind_item_theme(self.uuid, self._pin_active_array_theme)
-                        elif t is torch.Tensor:
-                            dpg.bind_item_theme(self.uuid, self._pin_active_tensor_theme)
+                            dpg.bind_item_theme(self.uuid, _get_pin_active_array_theme())
+                        elif torch_available and t is torch.Tensor:
+                            dpg.bind_item_theme(self.uuid, _get_pin_active_tensor_theme())
                         elif t is list:
-                            dpg.bind_item_theme(self.uuid, self._pin_active_list_theme)
+                            dpg.bind_item_theme(self.uuid, _get_pin_active_list_theme())
                         elif t is str:
                             if self.sent_bang:
-                                dpg.bind_item_theme(self.uuid, self._pin_active_bang_theme)
+                                dpg.bind_item_theme(self.uuid, _get_pin_active_bang_theme())
                             else:
-                                dpg.bind_item_theme(self.uuid, self._pin_active_string_theme)
+                                dpg.bind_item_theme(self.uuid, _get_pin_active_string_theme())
                         else:
-                            dpg.bind_item_theme(self.uuid, self._pin_active_theme)
+                            dpg.bind_item_theme(self.uuid, _get_pin_active_theme())
                     else:
-                        dpg.bind_item_theme(self.uuid, self._pin_active_theme)
+                        dpg.bind_item_theme(self.uuid, _get_pin_active_theme())
                     Node.app.get_current_editor().add_active_pin(self.uuid)
                 except Exception as e:
-                    pass
+                    print(f"NodeOutput pin theme error (node='{self.node.label}'): {e}")
             if not no_trigger:
                 for child in self._children: # we want to be able to step debug...dialog
                     self.send_to_one_child(child)
@@ -349,7 +378,7 @@ class NodeListOutput(NodeOutput):
 
     def set_value(self, data: Any) -> Union[str, List[Any]]:
         list_data = any_to_list(data)
-        if len(list_data) == 1 and type(data) is str:
+        if len(list_data) == 1 and isinstance(data, str):
             super().set_value(data)
             return data
         else:
@@ -399,7 +428,7 @@ class NodeArrayOutput(NodeOutput):
 class NodeTensorOutput(NodeOutput):
     def __init__(self, label: str = "output", node=None, pos=None):
         super().__init__(label, node, pos)
-        self.output_type = torch.Tensor
+        self.output_type = torch.Tensor if torch_available else None
 
     def send(self, data: Optional[Any] = None) -> None:
         if data is not None and torch_available:
@@ -548,7 +577,7 @@ class NodeProperty:
         pass
 
     def set(self, data, propagate=True):
-        if type(data) == list:
+        if isinstance(data, list):
             if len(data) == 1:
                 data = data[0]
             else:
@@ -1002,7 +1031,7 @@ class KnobFloat(FloatWidget):
 
 class InputFloat(FloatWidget):
     def _draw_widget(self):
-        if self.min is None: self.min = sys.float_info.min
+        if self.min is None: self.min = -sys.float_info.max
         if self.max is None: self.max = sys.float_info.max
         dpg.add_input_float(label=self._label, width=self.widget_width, tag=self.uuid,
                             user_data=self.node, default_value=self.default_value,
@@ -1360,14 +1389,12 @@ class WidgetFactory:
 
     @staticmethod
     def create(widget_type, label, **kwargs) -> BasePropertyWidget:
-        # Handle specific logic for kwargs that was in original init
-        # e.g., converting rows/columns from kwargs
-
         widget_class = WidgetFactory._REGISTRY.get(widget_type)
         if widget_class is None:
-            # Fallback or error handling. Returning base to avoid crash, though it won't draw much.
-            return BasePropertyWidget(label, widget_type=widget_type, **kwargs)
-
+            raise ValueError(
+                f"WidgetFactory: unknown widget_type {widget_type!r} "
+                f"(label={label!r}). Known types: {sorted(WidgetFactory._REGISTRY)}"
+            )
         return widget_class(label, widget_type=widget_type, **kwargs)
 
 
@@ -1379,17 +1406,7 @@ def PropertyWidget(label: str = "", uuid=None, node=None, widget_type=None, **kw
 
 
 class NodeInput:
-    _pin_active_theme = None
-    _pin_active_string_theme = None
-    _pin_theme_created = False
-    _pin_active_array_theme = None
-    _pin_active_tensor_theme = None
-    _pin_active_list_theme = None
-    _pin_active_bang_theme = None
-
     def __init__(self, label: str = "", uuid=None, node=None, widget_type=None, widget_uuid=None, widget_width=80, triggers_execution=False, trigger_button=False, default_value=None, min=None, max=None, cross_thread_latest=False, **kwargs):
-        if not self._pin_theme_created:
-            self.create_pin_themes()
         self._label = label
         if uuid is None:
             self.uuid = dpg.generate_uuid()
@@ -1490,27 +1507,6 @@ class NodeInput:
             dpg.bind_item_theme(self.uuid, theme=Node.app.invisible_theme)
         if self.widget is not None:
             self.widget.set_visibility(visibility_state)
-
-    def create_pin_themes(self) -> None:
-        self._pin_inactive_theme = dpg.theme()
-        with dpg.theme() as self._pin_active_theme:
-            with dpg.theme_component(0):
-                dpg.add_theme_color(dpg.mvNodeCol_Pin, (153, 212, 255), category=dpg.mvThemeCat_Nodes)
-        with dpg.theme() as self._pin_active_array_theme:
-            with dpg.theme_component(0):
-                dpg.add_theme_color(dpg.mvNodeCol_Pin, (0, 255, 0), category=dpg.mvThemeCat_Nodes)
-        with dpg.theme() as self._pin_active_tensor_theme:
-            with dpg.theme_component(0):
-                dpg.add_theme_color(dpg.mvNodeCol_Pin, (255, 0, 0), category=dpg.mvThemeCat_Nodes)
-        with dpg.theme() as self._pin_active_list_theme:
-            with dpg.theme_component(0):
-                dpg.add_theme_color(dpg.mvNodeCol_Pin, (255, 0, 255), category=dpg.mvThemeCat_Nodes)
-        with dpg.theme() as self._pin_active_string_theme:
-            with dpg.theme_component(0):
-                dpg.add_theme_color(dpg.mvNodeCol_Pin, (255, 128, 0), category=dpg.mvThemeCat_Nodes)
-        with dpg.theme() as self._pin_active_bang_theme:
-            with dpg.theme_component(0):
-                dpg.add_theme_color(dpg.mvNodeCol_Pin, (255, 255, 0), category=dpg.mvThemeCat_Nodes)
 
     def create(self, parent: int) -> None:
         self.node_attribute = dpg.node_attribute(parent=parent, attribute_type=dpg.mvNode_Attr_Input, user_data=self, id=self.uuid)
@@ -1621,9 +1617,9 @@ class NodeInput:
                 self.received_type = type(data)
             if not self.node.check_for_messages(data):
                 self.node.active_input = self
-                if type(data) == list and len(data) == 1 and type(data[0]) == str and data[0] == 'bang':
+                if isinstance(data, list) and len(data) == 1 and isinstance(data[0], str) and data[0] == 'bang':
                     data = data[0]
-                if type(data) == str and data == 'bang':
+                if isinstance(data, str) and data == 'bang':
                     self.received_bang = True
                     if self.bang_repeats_previous:
                         if self.widget:
@@ -1633,27 +1629,27 @@ class NodeInput:
 
                 self._data = data
                 self.fresh_input = True
-                if self.node.visibility == 'show_all':
+                if self.node.visibility == 'show_all' and dpg.does_item_exist(self.uuid):
                     try:
                         if Node.app.color_code_pins:
                             if self.received_type is list:
-                                dpg.bind_item_theme(self.uuid, self._pin_active_list_theme)
+                                dpg.bind_item_theme(self.uuid, _get_pin_active_list_theme())
                             elif self.received_type is np.ndarray:
-                                dpg.bind_item_theme(self.uuid, self._pin_active_array_theme)
-                            elif self.received_type is torch.Tensor:
-                                dpg.bind_item_theme(self.uuid, self._pin_active_tensor_theme)
+                                dpg.bind_item_theme(self.uuid, _get_pin_active_array_theme())
+                            elif torch_available and self.received_type is torch.Tensor:
+                                dpg.bind_item_theme(self.uuid, _get_pin_active_tensor_theme())
                             elif self.received_type is str:
                                 if self.received_bang:
-                                    dpg.bind_item_theme(self.uuid, self._pin_active_bang_theme)
+                                    dpg.bind_item_theme(self.uuid, _get_pin_active_bang_theme())
                                 else:
-                                    dpg.bind_item_theme(self.uuid, self._pin_active_string_theme)
+                                    dpg.bind_item_theme(self.uuid, _get_pin_active_string_theme())
                             else:
-                                dpg.bind_item_theme(self.uuid, self._pin_active_theme)
+                                dpg.bind_item_theme(self.uuid, _get_pin_active_theme())
                         else:
-                            dpg.bind_item_theme(self.uuid, self._pin_active_theme)
+                            dpg.bind_item_theme(self.uuid, _get_pin_active_theme())
                         Node.app.get_current_editor().add_active_pin(self.uuid)
                     except Exception as e:
-                        pass
+                        print(f"NodeInput pin theme error (node='{self.node.label}'): {e}")
                 if self.accepted_types:
                     if self.type_mask == 0:
                         self.type_mask = create_type_mask_from_list(self.accepted_types)
@@ -1726,7 +1722,7 @@ class NodeInput:
             return self.widget.value
 
     def set(self, data: Any, propagate: bool = True) -> None:
-        if type(data) == list:
+        if isinstance(data, list):
             if len(data) == 1:
                 data = data[0]
             else:
@@ -1761,6 +1757,11 @@ class NodeIntInput(NodeInput):
         if self.received_type is str and data == 'bang':
             self.received_bang = True
             data = self._data
+        else:
+            self.received_bang = False
+        if data is None:
+            super().receive_data(None, self.received_type)
+            return
         int_data = any_to_int(data, validate=True)
         super().receive_data(int_data, self.received_type)
 
@@ -1776,6 +1777,9 @@ class NodeFloatInput(NodeInput):
             data = self._data
         else:
             self.received_bang = False
+        if data is None:
+            super().receive_data(None, self.received_type)
+            return
         float_data = any_to_float(data, validate=True)
         super().receive_data(float_data, self.received_type)
 
@@ -1791,6 +1795,9 @@ class NodeBoolInput(NodeInput):
             data = self._data
         else:
             self.received_bang = False
+        if data is None:
+            super().receive_data(None, self.received_type)
+            return
         bool_data = any_to_bool(data)
         super().receive_data(bool_data, self.received_type)
 
@@ -1805,7 +1812,7 @@ class NodeStringInput(NodeInput):
 
     def receive_data(self, data: Any, orig_type: Optional[Type] = None) -> None:
         self.received_type = type(data)
-        if self.received_type == str and data == 'bang':
+        if self.received_type is str and data == 'bang':
             self.received_bang = True
             if self.bang_repeats_previous:
                 if self.widget:
@@ -1814,6 +1821,9 @@ class NodeStringInput(NodeInput):
                     data = self._data
         else:
             self.received_bang = False
+        if data is None:
+            super().receive_data(None, self.received_type)
+            return
         string_data = any_to_string(data, strip_returns=self.strip_returns)
         super().receive_data(string_data, self.received_type)
 
@@ -1829,6 +1839,9 @@ class NodeListInput(NodeInput):
             data = self._data
         else:
             self.received_bang = False
+        if data is None:
+            super().receive_data(None, self.received_type)
+            return
         list_data = any_to_list(data)
         super().receive_data(list_data, self.received_type)
 
@@ -1844,6 +1857,9 @@ class NodeArrayInput(NodeInput):
             data = self._data
         else:
             self.received_bang = False
+        if data is None:
+            super().receive_data(None, self.received_type)
+            return
         array_data = any_to_array(data, validate=True)
         super().receive_data(array_data, self.received_type)
 
@@ -1860,6 +1876,9 @@ class NodeTensorInput(NodeInput):
                 self.received_bang = True
             else:
                 self.received_bang = False
+            if data is None:
+                super().receive_data(None, self.received_type)
+                return
             tensor_data = any_to_tensor(data, validate=True)
             super().receive_data(tensor_data, self.received_type)
 
@@ -1872,6 +1891,9 @@ class NodeNumericalInput(NodeInput):
             self.to_numerical(default_value)
 
     def to_numerical(self, data: Any) -> None:
+        if data is None:
+            self.numerical_data = None
+            return
         t = type(data)
         if t == str:
             self.numerical_data = string_to_float_or_int(data)
@@ -2478,8 +2500,8 @@ class Node:
                 v = height_option()
                 if v:
                     handle_height = int(v)
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"add_resize_handle: height_option failed: {e}")
         btn_uuid = dpg.add_button(parent=parent, label='', width=4, height=handle_height)
         handle = ResizeHandle(btn_uuid, widget.uuid, axis, width_option, height_option)
         dpg.set_item_user_data(btn_uuid, handle)
@@ -2494,16 +2516,14 @@ class Node:
                     dpg.bind_item_handler_registry(uuid, "widget handler")
 
         for property_ in self.properties:
-            if property_.widget.widget not in ['checkbox', 'button', 'spacer', 'label', 'table']:
+            if property_.widget is not None and property_.widget.widget not in ['checkbox', 'button', 'spacer', 'label', 'table']:
                 for uuid in property_.widget.uuids:
                     dpg.bind_item_handler_registry(uuid, "widget handler")
-                # dpg.bind_item_handler_registry(property_.widget.uuid, "widget handler")
 
         for option in self.options:
-            if option.widget.widget not in ['checkbox', 'button', 'spacer', 'label', 'table']:
+            if option.widget is not None and option.widget.widget not in ['checkbox', 'button', 'spacer', 'label', 'table']:
                 for uuid in option.widget.uuids:
                     dpg.bind_item_handler_registry(uuid, "widget handler")
-                # dpg.bind_item_handler_registry(option.widget.uuid, "widget handler")
 
 
     def value_changed(self, widget_uuid, force=False):
@@ -2599,7 +2619,8 @@ class Node:
         self.add_handler_to_widgets()
         for option_att in self.options:
             dpg.hide_item(option_att.uuid)
-            dpg.hide_item(option_att.widget.uuid)
+            if option_att.widget is not None:
+                dpg.hide_item(option_att.widget.uuid)
         if self.presentation_state != 'hidden':
             self.set_visibility('show_all')
         self.created = True
@@ -2657,11 +2678,13 @@ class Node:
             if self.options_visible:
                 for option_att in self.options:
                     dpg.show_item(option_att.uuid)
-                    dpg.show_item(option_att.widget.uuid)
+                    if option_att.widget is not None:
+                        dpg.show_item(option_att.widget.uuid)
             else:
                 for option_att in self.options:
                     dpg.hide_item(option_att.uuid)
-                    dpg.hide_item(option_att.widget.uuid)
+                    if option_att.widget is not None:
+                        dpg.hide_item(option_att.widget.uuid)
 
     def show_options(self, message, value) -> None:
         if len(self.options) > 0:
@@ -2669,27 +2692,27 @@ class Node:
             if value:
                 for option_att in self.options:
                     dpg.show_item(option_att.uuid)
-                    dpg.show_item(option_att.widget.uuid)
+                    if option_att.widget is not None:
+                        dpg.show_item(option_att.widget.uuid)
             else:
                 for option_att in self.options:
                     dpg.hide_item(option_att.uuid)
-                    dpg.hide_item(option_att.widget.uuid)
+                    if option_att.widget is not None:
+                        dpg.hide_item(option_att.widget.uuid)
 
     def check_for_messages(self, in_data: Union[str, List[Any]]) -> bool:
         self.message_handled = False
-        t = type(in_data)
-        if t in [str, list]:
+        if isinstance(in_data, (str, list)):
             message = ''
             message_data = []
-            if t is str:
+            if isinstance(in_data, str):
                 message_list = in_data.split(' ')
                 message = message_list[0]
                 message_data = message_list[1:]
-            elif t == list:
-                if len(in_data) > 0:
-                    if type(in_data[0]) == str:
-                        message = in_data[0]
-                        message_data = in_data[1:]
+            else:
+                if len(in_data) > 0 and isinstance(in_data[0], str):
+                    message = in_data[0]
+                    message_data = in_data[1:]
             if message != '':
                 if len(self.message_handlers) > 0:
                     if message in self.message_handlers:
@@ -2712,10 +2735,12 @@ class Node:
     def on_deactivate(self, widget):
         pass
 
-    def property_message(self, message: str = '', args: List[Any] = []) -> None:
-        property = None
-        if message in self.property_registery:
-            property = self.property_registery[message]
+    def property_message(self, message: str = '', args: Optional[List[Any]] = None) -> None:
+        if args is None:
+            args = []
+        property = self.property_registery.get(message)
+        if property is None:
+            return
         if len(args) == 1:
             property.set(args[0])
         else:
@@ -2832,7 +2857,8 @@ class Node:
                     current = [dpg.get_value(u) for u in widget.uuids]
                 else:
                     current = dpg.get_value(widget.uuid)
-            except Exception:
+            except Exception as e:
+                print(f"restore_properties: could not read current widget value: {e}")
                 current = None
             if current == value:
                 return False
@@ -2973,7 +2999,7 @@ class PatcherInputNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.input_name = ''
-        if len(args) > 0:
+        if args and len(args) > 0:
             s, t = decode_arg(args, 0)
             if t == str:
                 self.input_name = s
@@ -3011,6 +3037,9 @@ class PatcherInputNode(Node):
     def custom_create(self, from_file):
         if self.patcher_node is not None:
             remote_input = self.patcher_node.add_patcher_input(self.input_name, self.input_out)
+            if remote_input is None:
+                print(f"PatcherInputNode: parent patcher is full, cannot add input '{self.input_name}'")
+                return
             if self.input_name == '':
                 self.input_name = remote_input.get_label()
                 self.input_out.set_label(self.input_name)
@@ -3031,7 +3060,7 @@ class PatcherOutputNode(Node):
         super().__init__(label, data, args)
         # print('create out')
         self.output_name = ''
-        if len(args) > 0:
+        if args and len(args) > 0:
             s, t = decode_arg(args, 0)
             if t == str:
                 self.output_name = s
@@ -3111,7 +3140,7 @@ class PatcherNode(Node):
         self.subpatcher_loaded_uuid = -1
 
         self.patcher_name = 'untitled'
-        if len(args) > 0:
+        if args and len(args) > 0:
             s, t = decode_arg(args, 0)
             if t == str:
                 self.patcher_name = s
@@ -3153,7 +3182,7 @@ class PatcherNode(Node):
 
     def change_input_name(self, old_name: str, new_name: str) -> None:
         for in_ in self.inputs:
-            if in_.get_label() is old_name:
+            if in_.get_label() == old_name:
                 in_.set_label(new_name)
 
     def change_output_name(self, old_name: str, new_name: str) -> None:
@@ -3213,6 +3242,7 @@ class PatcherNode(Node):
                     self.patcher_inputs[i].set_label(input_name)
                 self.update_inputs()
                 return self.patcher_inputs[i]
+        return None
 
     def remove_patcher_input(self, input_name: str, input: 'NodeInput') -> None:
         for i in range(self.max_input_count):
@@ -3566,7 +3596,7 @@ class PlaceholderArgsNode(Node):
         super().__init__(label, data, args)
         self.name = ''
 
-        if len(args) > 0:
+        if args and len(args) > 0:
             self.name = any_to_string(args[0])
         self.static_name = self.add_property(label='##static_name', widget_type='label', width=180)
         self.args_property = self.add_property(label='args', widget_type='text_input', width=180)
@@ -3667,7 +3697,7 @@ def dialog_cancel_callback(sender, app_data):
         if sender is not None:
             dpg.delete_item(sender)
     except Exception as e:
-        print(e)
+        print(f"dialog_cancel_callback delete error: {e}")
     Node.app.active_widget = -1
 
 def _windows_file_dialog(action="open", target_dir=".", default_name="", extensions=None):
@@ -3843,6 +3873,16 @@ class LoadDialog:
         self.parent = parent
         start_dir = _resolve_existing_dir(default_path)
 
+        def _main_thread_finish(load_path):
+            try:
+                if load_path:
+                    self.callback(load_path)
+                else:
+                    print('Load cancelled')
+            except Exception as e:
+                print(f'LoadDialog callback error: {e}')
+            Node.app.active_widget = -1
+
         def _run():
             load_path = ""
             try:
@@ -3860,14 +3900,8 @@ class LoadDialog:
                         print(f'LoadDialog crossfiledialog error: {e}')
             except Exception as e:
                 print(f'LoadDialog error: {e}')
-            try:
-                if load_path:
-                    self.callback(load_path)
-                else:
-                    print('Load cancelled')
-            except Exception as e:
-                print(f'LoadDialog callback error: {e}')
-            Node.app.active_widget = -1
+            # Marshal callback + dpg state mutation back to the main thread.
+            Node.app.queue_main_thread_call(_main_thread_finish, load_path)
 
         threading.Thread(target=_run, daemon=True).start()
 
@@ -3884,6 +3918,16 @@ class SaveDialog:
                 start_dir = _resolve_existing_dir(default_path)
             except Exception as e:
                 print(f'SaveDialog could not create {default_path}: {e}')
+
+        def _main_thread_finish(save_path):
+            try:
+                if save_path:
+                    self.callback(save_path)
+                else:
+                    print('Save cancelled')
+            except Exception as e:
+                print(f'SaveDialog callback error: {e}')
+            Node.app.active_widget = -1
 
         def _run():
             save_path = ""
@@ -3902,13 +3946,7 @@ class SaveDialog:
                         print(f'SaveDialog crossfiledialog error: {e}')
             except Exception as e:
                 print(f'SaveDialog error: {e}')
-            try:
-                if save_path:
-                    self.callback(save_path)
-                else:
-                    print('Save cancelled')
-            except Exception as e:
-                print(f'SaveDialog callback error: {e}')
-            Node.app.active_widget = -1
+            # Marshal callback + dpg state mutation back to the main thread.
+            Node.app.queue_main_thread_call(_main_thread_finish, save_path)
 
         threading.Thread(target=_run, daemon=True).start()
