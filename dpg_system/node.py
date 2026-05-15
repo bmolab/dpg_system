@@ -193,6 +193,8 @@ class NodeOutput:
                 break
 
     def set_value(self, data: Any) -> Any:
+        # Inline to break the circular import: basic_nodes.py imports Node from this module.
+        # After the first call this is a sys.modules dict lookup + getattr, not a re-execution.
         from dpg_system.basic_nodes import print_info
         if data is not None:
             self.new_output = True
@@ -2029,7 +2031,6 @@ class Node:
     def __init__(self, label: str, data: Any, args: Optional[List[str]] = None) -> None:
         self.label = label
         self.data = data
-        self.label = label
         self.uuid = dpg.generate_uuid()
         self.static_uuid = dpg.generate_uuid()
         self.inputs = []
@@ -2580,6 +2581,14 @@ class Node:
         fired = False
         last_trigger_input = None
         for inp in self._mailboxed_inputs:
+            # Lock-free fast path. Safe because:
+            # (a) Only this thread (main) ever sets _mailbox_pending = False.
+            # (b) Writer threads set _mailbox_pending = True under the lock and only
+            #     after that set self.node._mailbox_dirty = True, which we already
+            #     observed above. CPython's GIL acts as a release barrier on the
+            #     writer's GIL drop, so seeing dirty=True implies the pending=True
+            #     write is visible. A stale False read on the next tick is harmless —
+            #     the writer's next send re-fires both flags.
             if not inp._mailbox_pending:
                 continue
             with inp._mailbox_lock:
@@ -3737,8 +3746,12 @@ class _LinuxDialogServer:
     @classmethod
     def _start(cls):
         import subprocess
+        # sys.executable works in venvs, conda, NixOS, and system installs alike;
+        # the previous hard-coded /usr/bin/python3 broke on those.
+        # _linux_file_dialog falls back to zenity/kdialog if gi isn't importable
+        # by sys.executable, so a missing PyGObject in a venv is recoverable.
         cls._proc = subprocess.Popen(
-            ['/usr/bin/python3', cls._SERVER_SCRIPT],
+            [sys.executable, cls._SERVER_SCRIPT],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             text=True,

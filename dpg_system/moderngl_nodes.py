@@ -290,10 +290,29 @@ class MGLContextNode(Node):
         else:
             self.remove_frame_tasks()
 
+    def _ensure_texture(self):
+        # Pre-create a zero-filled raw texture so Metal has time to upload it before
+        # any dpg.add_image widget samples it. Without this, the texture is created
+        # and first sampled in the same DPG frame (during the first execute()), racing
+        # the Metal upload and producing one 'GLD_TEXTURE_INDEX_2D is unloadable' log
+        # at startup. After pre-warm, the existing execute() path takes the
+        # set_value() branch on its first run instead of add_raw_texture().
+        if self.texture_tag is not None and dpg.does_item_exist(self.texture_tag):
+            return
+        n_pixels = self.width * self.height * 4
+        if self._pixel_buf is None or self._pixel_buf.size != n_pixels:
+            self._pixel_buf = np.zeros(n_pixels, dtype=np.float32)
+        with dpg.texture_registry(show=False):
+            self.texture_tag = dpg.add_raw_texture(
+                self.width, self.height, self._pixel_buf,
+                format=dpg.mvFormat_Float_rgba
+            )
+
     def custom_create(self, from_file):
         if from_file and self.auto_render_input():
             self.add_frame_task()
         self.camera_fov_option.widget.set_speed(1.0)
+        self._ensure_texture()
 
     def frame_task(self):
         self.execute()

@@ -3,6 +3,7 @@ import math
 import time
 import numpy as np
 import random
+import traceback
 from dpg_system.node import Node, OriginNode, PatcherNode
 import json
 
@@ -33,7 +34,6 @@ class NodeEditor:
 
     def __init__(self, height=0, width=0, top_level_patcher=True):
         self._nodes = []
-        self._links = []
         self.subpatches = []
         self.parent_patcher = None
         self.height = height
@@ -81,10 +81,12 @@ class NodeEditor:
         # find dominant axis
         # align to that axis
         selected_nodes = dpg.get_selected_nodes(self.uuid)
-        x_min = 100000
-        x_max = -100000
-        y_min = 100000
-        y_max = -100000
+        if len(selected_nodes) <= 1:
+            return
+        x_min = float('inf')
+        x_max = float('-inf')
+        y_min = float('inf')
+        y_max = float('-inf')
 
         for node_uuid in selected_nodes:
             pos = dpg.get_item_pos(node_uuid)
@@ -118,10 +120,10 @@ class NodeEditor:
         if len(selected_nodes) <= 1:
             return
 
-        x_min = 100000
-        x_max = -100000
-        y_min = 100000
-        y_max = -100000
+        x_min = float('inf')
+        x_max = float('-inf')
+        y_min = float('inf')
+        y_max = float('-inf')
 
         for node_uuid in selected_nodes:
             pos = dpg.get_item_pos(node_uuid)
@@ -139,7 +141,7 @@ class NodeEditor:
 
             dest_dict = {}
             total_node_width = 0
-            real_x_max = -10000
+            real_x_max = float('-inf')
             center_acc = 0
             bottom_acc = 0
             for index, node_uuid in enumerate(selected_nodes):
@@ -156,6 +158,7 @@ class NodeEditor:
             total_gap = total_width - total_node_width
             gap = total_gap / (len(selected_nodes) - 1)
             center = center_acc / len(selected_nodes)
+            bottom = bottom_acc / len(selected_nodes)
             sorted_dest = sorted(dest_dict.items(), key=lambda item: item[1][0][0])
             x_acc = x_min
 
@@ -166,7 +169,7 @@ class NodeEditor:
                 elif align == 0:
                     pos = [x_acc, center - dest_data[1][2][1] / 2]
                 elif align == 1:
-                    pos = [x_acc, bottom_acc - dest_data[1][2][1]]
+                    pos = [x_acc, bottom - dest_data[1][2][1]]
                 else:
                     pos = [x_acc, dest_data[1][0][1]]
 
@@ -177,7 +180,7 @@ class NodeEditor:
 
             dest_dict = {}
             total_node_height = 0
-            real_y_max = -10000
+            real_y_max = float('-inf')
             center_acc = 0
 
             for index, node_uuid in enumerate(selected_nodes):
@@ -301,8 +304,8 @@ class NodeEditor:
         selected_nodes = dpg.get_selected_nodes(self.uuid)
         if len(selected_nodes) <= 1:
             return
-        x_min = 100000
-        x_max = -100000
+        x_min = float('inf')
+        x_max = float('-inf')
         for node_uuid in selected_nodes:
             pos = dpg.get_item_pos(node_uuid)
             if pos[0] < x_min:
@@ -320,6 +323,13 @@ class NodeEditor:
                 source_nodes.append(dpg.get_item_user_data(node_uuid))
             else:
                 dest_nodes.append(dpg.get_item_user_data(node_uuid))
+
+        # Filter so downstream connect_* methods can safely index outputs[0]/inputs[0].
+        # Sources need at least one output; dests need at least one input.
+        source_nodes = [n for n in source_nodes if n is not None and len(n.outputs) > 0]
+        dest_nodes = [n for n in dest_nodes if n is not None and len(n.inputs) > 0]
+        if len(source_nodes) == 0 or len(dest_nodes) == 0:
+            return
 #       if dest_nodes count > 0 and source_nodes count > 0
 #           connect first out of each source to first out of each dest
         if len(source_nodes) > 1 and len(dest_nodes) > 1:
@@ -473,7 +483,8 @@ class NodeEditor:
                     origin_screen[0] - editor_screen[0],
                     origin_screen[1] - editor_screen[1]
                 ]
-            except Exception:
+            except Exception as e:
+                print(f'first_frame: editor padding probe failed: {type(e).__name__}: {e}')
                 self._editor_padding = [0, 0]
         self.is_first_frame = False
 
@@ -485,11 +496,6 @@ class NodeEditor:
         self._nodes = []
         self.num_nodes = len(self._nodes)
         self.modified = True
-        for link_uuid in self._links:
-            dat = dpg.get_item_user_data(link_uuid)
-            out = dat[0]
-            child = dat[1]
-            out.remove_link(link_uuid, child)
         self.active_pins = []
 
     def node_cleanup(self, node_uuid):
@@ -586,7 +592,9 @@ class NodeEditor:
                 try:
                     live.load(nc)
                 except Exception as e:
-                    print(f'apply_snapshot: load failed for {live.label}: {e}')
+                    print(f'apply_snapshot: load failed for {live.label} (sid={snap_sid}): '
+                          f'{type(e).__name__}: {e}')
+                    traceback.print_exc()
                 sid_to_uuid[snap_sid] = live.uuid
             else:
                 # Recreate. node.load() will pick up sid from nc and re-establish stable_id.
@@ -605,7 +613,9 @@ class NodeEditor:
                         new_node.post_creation_callback()
                         sid_to_uuid[snap_sid] = new_node.uuid
                 except Exception as e:
-                    print(f'apply_snapshot: create failed for {node_name}: {e}')
+                    print(f'apply_snapshot: create failed for {node_name} (sid={snap_sid}): '
+                          f'{type(e).__name__}: {e}')
+                    traceback.print_exc()
 
         # Pass 2: live-only -> delete (skip origin and protected)
         for live_sid, live in list(live_by_sid.items()):
@@ -616,7 +626,9 @@ class NodeEditor:
             try:
                 self.remove_node(live)
             except Exception as e:
-                print(f'apply_snapshot: remove failed for {live.label}: {e}')
+                print(f'apply_snapshot: remove failed for {live.label} (sid={live_sid}): '
+                      f'{type(e).__name__}: {e}')
+                traceback.print_exc()
 
         # Pass 3: reconcile links
         # Build live tuples: (src_uuid, src_out_idx, dst_uuid, dst_in_idx) -> (output, link_uuid, dest_input)
@@ -657,7 +669,9 @@ class NodeEditor:
                 try:
                     output.remove_link(link_uuid, dest_input)
                 except Exception as e:
-                    print(f'apply_snapshot: remove_link failed: {e}')
+                    print(f'apply_snapshot: remove_link failed for key={key}: '
+                          f'{type(e).__name__}: {e}')
+                    traceback.print_exc()
 
         # Add snap links not in live
         live_by_uuid = {n.uuid: n for n in self._nodes}  # rebuild after deletes/creates
@@ -674,7 +688,9 @@ class NodeEditor:
             try:
                 src.outputs[src_out_idx].add_child(dst.inputs[dst_in_idx], self.uuid)
             except Exception as e:
-                print(f'apply_snapshot: add_link failed: {e}')
+                print(f'apply_snapshot: add_link failed for key={key}: '
+                      f'{type(e).__name__}: {e}')
+                traceback.print_exc()
 
         self.modified = True
 
@@ -703,8 +719,9 @@ class NodeEditor:
             try:
                 pos = dpg.get_item_pos(node.uuid)
                 dpg.set_item_pos(node.uuid, [pos[0] + dx, pos[1] + dy])
-            except Exception:
-                pass
+            except Exception as e:
+                print(f'pan_nodes: failed to move node {getattr(node, "label", "?")} '
+                      f'(uuid={node.uuid}): {type(e).__name__}: {e}')
 
     def home_nodes(self):
         """Shift all nodes so the origin node appears at the top-left of the editor.
@@ -730,10 +747,11 @@ class NodeEditor:
                 try:
                     pos = dpg.get_item_pos(node.uuid)
                     dpg.set_item_pos(node.uuid, [pos[0] - shift_x, pos[1] - shift_y])
-                except Exception:
-                    pass
+                except Exception as e:
+                    print(f'home_nodes: failed to move node {getattr(node, "label", "?")} '
+                          f'(uuid={node.uuid}): {type(e).__name__}: {e}')
         except Exception as e:
-            print(f'home_nodes error: {e}')
+            print(f'home_nodes error: {type(e).__name__}: {e}')
 
     def cut_selection(self):
         clip = self.copy_selection()
@@ -826,59 +844,70 @@ class NodeEditor:
 
     def copy_selection(self):
         self.app.loading = True
-        file_container = {}
-        nodes_container = {}
-        selected_node_objects = []
-        selected_nodes = dpg.get_selected_nodes(self.uuid)
-        subpatch_container = {}
+        try:
+            file_container = {}
+            nodes_container = {}
+            selected_node_objects = []
+            selected_nodes = dpg.get_selected_nodes(self.uuid)
+            subpatch_container = {}
 
-        # NOTE - sub-patcher objects should not move with mouse
-        for index, node in enumerate(self._nodes):
-            if node.uuid in selected_nodes:
-                if node.label == 'patcher':
-                    if node.patch_editor is not None:
-                        patch_container = {}
-                        node.patch_editor.containerize(patch_container)
-                        subpatch_container[index] = patch_container
-                        # we need to remove all subpatch nodes from drag list...
+            def _is_copyable(node):
+                # Origin (label == '') and other protected singletons must not be copied.
+                # uncontainerize() also skips empty-name nodes on the load side, but
+                # excluding them here keeps them out of the link-enumeration pass below
+                # and avoids serializing useless container entries.
+                if node.label == '' or getattr(node, 'do_not_delete', False):
+                    return False
+                return True
 
-        if len(subpatch_container) > 0:
-            file_container['patches'] = subpatch_container
-        for index, node in enumerate(self._nodes):
-            if node.uuid in selected_nodes:
-                selected_node_objects.append(node)
-                node_container = {}
-                node.save(node_container, index)
-                nodes_container[index] = node_container
-        file_container['nodes'] = nodes_container
+            # NOTE - sub-patcher objects should not move with mouse
+            for index, node in enumerate(self._nodes):
+                if node.uuid in selected_nodes and _is_copyable(node):
+                    if node.label == 'patcher':
+                        if node.patch_editor is not None:
+                            patch_container = {}
+                            node.patch_editor.containerize(patch_container)
+                            subpatch_container[index] = patch_container
+                            # we need to remove all subpatch nodes from drag list...
 
-        links_container = {}
-        link_index = 0
+            if len(subpatch_container) > 0:
+                file_container['patches'] = subpatch_container
+            for index, node in enumerate(self._nodes):
+                if node.uuid in selected_nodes and _is_copyable(node):
+                    selected_node_objects.append(node)
+                    node_container = {}
+                    node.save(node_container, index)
+                    nodes_container[index] = node_container
+            file_container['nodes'] = nodes_container
 
-        for node_index, node in enumerate(selected_node_objects):
-            # save links
-            for out_index, output in enumerate(node.outputs):
-                if len(output._children) > 0:
-                    for in_index, input in enumerate(output._children):
-                        link_container = {}
-                        link_container['source_node'] = node.uuid
-                        link_container['source_node_name'] = node.label
-                        link_container['source_output_index'] = out_index
-                        link_container['source_output_name'] = output.get_label()
-                        dest_node = input.node
-                        link_container['dest_node'] = dest_node.uuid
-                        link_container['dest_node_name'] = dest_node.label
-                        for node_in_index, test_input in enumerate(dest_node.inputs):
-                            if test_input.uuid == input.uuid:
-                                link_container['dest_input_index'] = node_in_index
-                                link_container['dest_input_name'] = test_input.get_label()
-                                links_container[link_index] = link_container
-                                link_index += 1
-                                break
-        file_container['links'] = links_container
-        # dpg.clear_selected_nodes(self.uuid)
-        self.app.loading = False
-        return file_container
+            links_container = {}
+            link_index = 0
+
+            for node_index, node in enumerate(selected_node_objects):
+                # save links
+                for out_index, output in enumerate(node.outputs):
+                    if len(output._children) > 0:
+                        for in_index, input in enumerate(output._children):
+                            link_container = {}
+                            link_container['source_node'] = node.uuid
+                            link_container['source_node_name'] = node.label
+                            link_container['source_output_index'] = out_index
+                            link_container['source_output_name'] = output.get_label()
+                            dest_node = input.node
+                            link_container['dest_node'] = dest_node.uuid
+                            link_container['dest_node_name'] = dest_node.label
+                            for node_in_index, test_input in enumerate(dest_node.inputs):
+                                if test_input.uuid == input.uuid:
+                                    link_container['dest_input_index'] = node_in_index
+                                    link_container['dest_input_name'] = test_input.get_label()
+                                    links_container[link_index] = link_container
+                                    link_index += 1
+                                    break
+            file_container['links'] = links_container
+            # dpg.clear_selected_nodes(self.uuid)
+            return file_container
+        finally:
+            self.app.loading = False
 
     def clear_loaded_uuids(self):
         # for uuid in self.app.created_nodes:
@@ -900,62 +929,85 @@ class NodeEditor:
         else:
             self.app.created_nodes = previously_created_nodes
         self.app.loading = True
-        if len(file_container) == 0:
-            return
+        try:
+            if len(file_container) == 0:
+                return
 
-        # Pasted/duplicated nodes are NEW nodes — must not inherit stable_ids from the source.
-        if 'nodes' in file_container:
-            for nc in file_container['nodes'].values():
-                if isinstance(nc, dict):
-                    nc.pop('sid', None)
+            # Pasted/duplicated nodes are NEW nodes — must not inherit stable_ids from the source.
+            if 'nodes' in file_container:
+                for nc in file_container['nodes'].values():
+                    if isinstance(nc, dict):
+                        nc.pop('sid', None)
 
-        self.uncontainerize(file_container, create_origin=origin)
-        for node_editor_uuid in self.app.links_containers:
-            new_links = {}
-            links_container = self.app.links_containers[node_editor_uuid]
-            for index, link_index in enumerate(links_container):
-                new_link = self.app.connect_link(links_container, index, link_index, node_editor_uuid)
-                new_links[link_index] = new_link
-                self.app.links_containers[node_editor_uuid] = new_links.copy()
+            self.uncontainerize(file_container, create_origin=origin)
+            for node_editor_uuid in self.app.links_containers:
+                new_links = {}
+                links_container = self.app.links_containers[node_editor_uuid]
+                for index, link_index in enumerate(links_container):
+                    new_link = self.app.connect_link(links_container, index, link_index, node_editor_uuid)
+                    new_links[link_index] = new_link
+                    self.app.links_containers[node_editor_uuid] = new_links.copy()
 
-        if clear_loaded_uuids:
-            for uuid in self.app.created_nodes:
-                node = self.app.created_nodes[uuid]
-                if node is not None:
-                    node.post_load_callback()
+            if clear_loaded_uuids:
+                for uuid in self.app.created_nodes:
+                    node = self.app.created_nodes[uuid]
+                    if node is not None:
+                        node.post_load_callback()
 
-            self.clear_loaded_uuids()
+                self.clear_loaded_uuids()
 
-        # now self.app.created_nodes dict has all created nodes
-        if drag:
-            self.app.dragging_created_nodes = True
-            self.app.drag_starts = {}
+            # now self.app.created_nodes dict has all created nodes
+            if drag:
+                self.app.dragging_created_nodes = True
+                self.app.drag_starts = {}
 
-            # we do not drag subpatch nodes
-            for node_uuid in self.duplicated_subpatch_nodes:
-                if node_uuid in self.app.created_nodes:
-                    del self.app.created_nodes[node_uuid]
+                # we do not drag subpatch nodes
+                for node_uuid in self.duplicated_subpatch_nodes:
+                    if node_uuid in self.app.created_nodes:
+                        del self.app.created_nodes[node_uuid]
 
-            for created_node in self.app.created_nodes:
-                node = self.app.created_nodes[created_node]
-                self.app.drag_starts[created_node] = dpg.get_item_pos(node.uuid)
-                # but top left most node should be at mouse...
-            if len(self.app.drag_starts) > 0:
-                sort = sorted(self.app.drag_starts.items(), key=lambda item: item[1][0])
-                left_most = sort[0][1][0]
-                sort = sorted(self.app.drag_starts.items(), key=lambda item: item[1][1])
-                top_most = sort[0][1][1]
-                left_top = [left_most + 30, top_most + 10]
-                self.app.dragging_ref = self.editor_pos_to_global_pos(left_top)
-                self.modified = True
-                self.app.loading = False
-                self.app.drag_create_nodes()
-        # else:
-        #     print('no drag starts')
+                for created_node in self.app.created_nodes:
+                    node = self.app.created_nodes[created_node]
+                    self.app.drag_starts[created_node] = dpg.get_item_pos(node.uuid)
+                    # but top left most node should be at mouse...
+                if len(self.app.drag_starts) > 0:
+                    sort = sorted(self.app.drag_starts.items(), key=lambda item: item[1][0])
+                    left_most = sort[0][1][0]
+                    sort = sorted(self.app.drag_starts.items(), key=lambda item: item[1][1])
+                    top_most = sort[0][1][1]
+                    left_top = [left_most + 30, top_most + 10]
+                    self.app.dragging_ref = self.editor_pos_to_global_pos(left_top)
+                    self.modified = True
+                    # Clear loading before drag_create_nodes — callee depends on the flag.
+                    self.app.loading = False
+                    self.app.drag_create_nodes()
+            # else:
+            #     print('no drag starts')
+        finally:
+            self.app.loading = False
+
+    def _origin_widget_uuid(self):
+        # Resolve self.origin.ref_property.widget.uuid safely; returns None if any
+        # link in the chain is missing (e.g. before create() finishes or during teardown).
+        if self.origin is None:
+            return None
+        ref_property = getattr(self.origin, 'ref_property', None)
+        if ref_property is None:
+            return None
+        widget = getattr(ref_property, 'widget', None)
+        if widget is None:
+            return None
+        return widget.uuid
 
     def global_pos_to_editor_pos(self, pos):
         panel_pos = dpg.get_item_pos(self.app.center_panel)
-        origin_pos = dpg.get_item_pos(self.origin.ref_property.widget.uuid)
+        origin_widget_uuid = self._origin_widget_uuid()
+        if origin_widget_uuid is None or self.origin is None:
+            editor_mouse_pos = pos
+            editor_mouse_pos[0] -= (panel_pos[0] + 8 - 4)
+            editor_mouse_pos[1] -= (panel_pos[1] + 8 - 15)
+            return editor_mouse_pos
+        origin_pos = dpg.get_item_pos(origin_widget_uuid)
         origin_node_pos = dpg.get_item_pos(self.origin.uuid)
         editor_mouse_pos = pos
         editor_mouse_pos[0] -= (panel_pos[0] + 8 + (origin_pos[0] - origin_node_pos[0]) - 4)
@@ -964,7 +1016,13 @@ class NodeEditor:
 
     def editor_pos_to_global_pos(self, pos):
         panel_pos = dpg.get_item_pos(self.app.center_panel)
-        origin_pos = dpg.get_item_pos(self.origin.ref_property.widget.uuid)
+        origin_widget_uuid = self._origin_widget_uuid()
+        if origin_widget_uuid is None or self.origin is None:
+            global_pos = pos
+            global_pos[0] += (panel_pos[0] + 8 - 4)
+            global_pos[1] += (panel_pos[1] + 8 - 30)
+            return global_pos
+        origin_pos = dpg.get_item_pos(origin_widget_uuid)
         origin_node_pos = dpg.get_item_pos(self.origin.uuid)
         global_pos = pos
         global_pos[0] += (panel_pos[0] + 8 + (origin_pos[0] - origin_node_pos[0]) - 4)
@@ -1156,29 +1214,29 @@ class NodeEditor:
     def save(self, path=None):
         if path is None:
             return
-            
+
         old_patch_name = getattr(self, 'patch_name', None)
-        
-        self.patch_name = path.split('/')[-1]
-        if '.' in self.patch_name:
-            parts = self.patch_name.split('.')
-            if len(parts) == 2:
-                if parts[1] == 'json':
-                    self.patch_name = parts[0]
+
+        self.patch_name = self._patch_name_from_path(path)
         self.file_path = path
-        
+
         # Broadcast the new name to nodes BEFORE we serialize their JSON state.
-        # This allows proxy widgets targeting the old patcher alias to organically rewrite their 
+        # This allows proxy widgets targeting the old patcher alias to organically rewrite their
         # internal `target_name_property`, meaning they save the *new* name to disk.
         if old_patch_name is not None and old_patch_name != self.patch_name:
             for node in self._nodes:
                 if hasattr(node, 'patcher_name_changed'):
                     node.patcher_name_changed(old_patch_name, self.patch_name)
 
-        with open(path, 'w') as f:
+        try:
             file_container = self.containerize()
-            # print(file_container)
-            json.dump(file_container, f, indent=4)
+            with open(path, 'w') as f:
+                json.dump(file_container, f, indent=4)
+        except Exception as e:
+            # Keep self.modified = True so the user knows the patch is unsaved.
+            print(f'save: failed to write {path}: {type(e).__name__}: {e}')
+            traceback.print_exc()
+            return
         self.app.set_current_tab_title(self.patch_name)
         self.modified = False
 
@@ -1248,7 +1306,10 @@ class NodeEditor:
                 args = []
                 if 'init' in node_container:
                     args_container = node_container['init']
-                    args = args_container.split(' ')
+                    # Skip the split when init is empty — ''.split(' ') == [''] which would
+                    # otherwise route into the len==1 branch and call create with name=''.
+                    if args_container != '':
+                        args = args_container.split(' ')
 
                 if len(args) > 1:
                     new_node = self.app.create_node_by_name_from_file(args[0], pos, args[1:])
@@ -1295,33 +1356,35 @@ class NodeEditor:
         self.modified = False
         self.is_first_frame = True
 
+    def _patch_name_from_path(self, path):
+        # Strip directory and a trailing .json extension to produce the display name.
+        name = path.split('/')[-1]
+        if '.' in name:
+            parts = name.split('.')
+            if len(parts) == 2 and parts[1] == 'json':
+                name = parts[0]
+        return name
+
     def load(self, path=''):
         try:
             if len(path) > 0:
                 with open(path, 'r') as f:
                     file_container = json.load(f)
                     self.file_path = path
-                    self.patch_name = self.file_path.split('/')[-1]
-                    if '.' in self.patch_name:
-                        parts = self.patch_name.split('.')
-                        if len(parts) == 2:
-                            if parts[1] == 'json':
-                                self.patch_name = parts[0]
+                    self.patch_name = self._patch_name_from_path(path)
                     self.app.add_to_recent(self.patch_name, path)
                     self.uncontainerize(file_container)
+                    # uncontainerize() resets file_path / patch_name from the file
+                    # container — restore the on-disk path/name so the editor reflects
+                    # where it was actually loaded from.
                     self.file_path = path
-                    self.patch_name = self.file_path.split('/')[-1]
-                    if '.' in self.patch_name:
-                        parts = self.patch_name.split('.')
-                        if len(parts) == 2:
-                            if parts[1] == 'json':
-                                self.patch_name = parts[0]
+                    self.patch_name = self._patch_name_from_path(path)
                     self.app.set_current_tab_title(self.patch_name)
                     self.modified = False
                     self.is_first_frame = True
-        except:
-            print('exception occurred during load')
-            pass
+        except Exception as e:
+            print(f'exception occurred during load of {path}: {type(e).__name__}: {e}')
+            traceback.print_exc()
 
     def setup_theme(self):
         self.node_scalers = {}

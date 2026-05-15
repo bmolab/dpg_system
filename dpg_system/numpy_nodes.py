@@ -1,9 +1,10 @@
 from copy import deepcopy
-from pyexpat import features
 import dearpygui.dearpygui as dpg
 from dpg_system.node import Node, NodeInput, LoadDialog, SaveDialog
 from dpg_system.conversion_utils import *
+import re
 import time
+import traceback
 import numpy as np
 from scipy.stats import median_abs_deviation
 
@@ -126,22 +127,25 @@ class NumpyGeneratorNode(Node):
         if dtype in self.dtype_dict:
             self.dtype = self.dtype_dict[dtype]
             if self.label == 'np.rand':
+                # self.min and self.max are NodeInputs — call them to read values.
+                cur_min = self.min()
+                cur_max = self.max()
                 if self.dtype == np.uint8:
-                    if self.min < 0:
+                    if cur_min < 0:
                         self.min.set(0.0)
-                    if self.max == 1.0 or self.max < 255:
+                    if cur_max == 1.0 or cur_max < 255:
                         self.max.set(255.0)
                 elif self.dtype == np.int64:
-                    if self.min < -32768:
+                    if cur_min < -32768:
                         self.min.set(-32768)
-                    if self.max == 1.0:
+                    if cur_max == 1.0:
                         self.max.set(32767)
                 elif self.dtype in [float, np.double, np.float32]:
-                    if self.min == -32768:
+                    if cur_min == -32768:
                         self.min.set(0.0)
-                    if self.max == 255:
+                    if cur_max == 255:
                         self.max.set(1.0)
-                    elif self.max == 32767:
+                    elif cur_max == 32767:
                         self.max.set(1.0)
 
     def execute(self):
@@ -399,7 +403,7 @@ class NumpyDotProductNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.operand = 0
+        self.operand = None
         self.input = self.add_input('in 1', triggers_execution=True)
         self.operand_input = self.add_input('in 2')
         self.output = self.add_output('dot product')
@@ -407,6 +411,8 @@ class NumpyDotProductNode(Node):
     def execute(self):
         if self.operand_input.fresh_input:
             self.operand = any_to_array(self.operand_input())
+        if self.operand is None:
+            return
         input_value = any_to_array(self.input())
 
         output_value = np.dot(input_value, self.operand)
@@ -422,7 +428,7 @@ class NumpyInnerOuterProductNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.operand = 0
+        self.operand = None
         self.input = self.add_input('in 1', triggers_execution=True)
         self.operand_input = self.add_input('in 2')
         if self.label == 'np.outer':
@@ -433,6 +439,8 @@ class NumpyInnerOuterProductNode(Node):
     def execute(self):
         if self.operand_input.fresh_input:
             self.operand = any_to_array(self.operand_input())
+        if self.operand is None:
+            return
         input_value = any_to_array(self.input())
 
         if self.label == 'np.outer':
@@ -452,7 +460,7 @@ class NumpyMatMulNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.operand = 0
+        self.operand = None
         self.input = self.add_input('in 1', triggers_execution=True)
         self.operand_input = self.add_input('in 2')
         self.output = self.add_output('mat mul result')
@@ -460,6 +468,8 @@ class NumpyMatMulNode(Node):
     def execute(self):
         if self.operand_input.fresh_input:
             self.operand = any_to_array(self.operand_input())
+        if self.operand is None:
+            return
         input_value = any_to_array(self.input())
 
         output_value = np.matmul(input_value, self.operand)
@@ -475,7 +485,7 @@ class NumpyCrossProductNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.operand = 0
+        self.operand = None
         self.input = self.add_input('in 1', triggers_execution=True)
         self.operand_input = self.add_input('in 2')
         self.output = self.add_output('cross product')
@@ -483,6 +493,8 @@ class NumpyCrossProductNode(Node):
     def execute(self):
         if self.operand_input.fresh_input:
             self.operand = any_to_array(self.operand_input())
+        if self.operand is None:
+            return
         input_value = any_to_array(self.input())
 
         output_value = np.cross(input_value, self.operand)
@@ -515,9 +527,12 @@ class NumpySqueezeNode(Node):
                     data = np.squeeze(data, axis=axis)
                     self.output.send(data)
                 else:
-                    print('axis to squeeze has a size not equal to 1')
+                    if self.app.verbose:
+                        print(f'{self.label}: axis {axis} has size {data.shape[axis]} '
+                              f'(not 1), cannot squeeze')
             else:
-                print('axis to squeeze is out of range')
+                if self.app.verbose:
+                    print(f'{self.label}: axis {axis} out of range for shape {data.shape}')
 
 
 class NumpyExpandDimsNode(Node):
@@ -671,7 +686,7 @@ class NumpyCropNode(Node):
     def execute(self):
         if self.input.fresh_input:
             data = any_to_array(self.input())
-            if type(data) == np.ndarray:
+            if isinstance(data, np.ndarray):
                 if len(data.shape) > 1:
                     if self.input_shape is None or data.shape != self.input_shape:
                         self.input_shape = data.shape
@@ -720,13 +735,14 @@ class NumpyClipNode(Node):
     def execute(self):
         if self.input.fresh_input:
             data = any_to_array(self.input())
-            if type(data) == np.ndarray:
+            if isinstance(data, np.ndarray):
                 if self.mode == 0:
                     self.output.send(np.clip(data, self.min, self.max))
                 elif self.mode == 1:
-                    self.output.send(np.min(data, self.min))
+                    # np.min is a reduction; np.minimum is the element-wise clamp.
+                    self.output.send(np.minimum(data, self.min))
                 elif self.mode == 2:
-                    self.output.send(np.max(data, self.max))
+                    self.output.send(np.maximum(data, self.max))
 
 
 class NumpyRollNode(Node):
@@ -783,6 +799,9 @@ class NumpyAddAlphaNode(Node):
                 mean = np.mean(data, axis=2, keepdims=True)
                 data = np.append(data, mean, axis=2)
                 self.output.send(data)
+            else:
+                if self.app.verbose:
+                    print(f'{self.label}: expected 3-D input (H, W, C), got shape {data.shape}')
 
 
 
@@ -807,17 +826,22 @@ class NumpyLineIntersectionNode(Node):
         self.relative_point = self.add_output('fraction of segment 2')
 
     def execute(self):
+        def _ok(p):
+            # Require a 1-D vector with at least 2 components (x, y).
+            # Without ndim check, scalar / 0-d input raises IndexError on shape[0].
+            return isinstance(p, np.ndarray) and p.ndim >= 1 and p.shape[0] >= 2
+
         a1 = any_to_array(self.point1_input())
-        if a1.shape[0] < 2:
+        if not _ok(a1):
             return
         a2 = any_to_array(self.point2_input())
-        if a2.shape[0] < 2:
+        if not _ok(a2):
             return
         b1 = any_to_array(self.point3_input())
-        if b1.shape[0] < 2:
+        if not _ok(b1):
             return
         b2 = any_to_array(self.point4_input())
-        if b2.shape[0] < 2:
+        if not _ok(b2):
             return
 
         intersection = self.get_intersect(a1, a2, b1, b2)
@@ -1013,8 +1037,10 @@ class NumpyReshapeNode(Node):
                 reshaped_array = np.reshape(input_array, self.shape)
                 self.output.send(reshaped_array)
             except Exception as e:
-                traceback.print_exception(e)
-                print(self.label, e)
+                print(f'{self.label}: reshape to {self.shape} failed for '
+                      f'shape {getattr(input_array, "shape", "?")}: '
+                      f'{type(e).__name__}: {e}')
+                traceback.print_exc()
 
 class NumpyUnaryLinearAlgebraNode(Node):
     operations = {
@@ -1070,7 +1096,13 @@ class NumpyDistanceFromTargetNode(NumpyNodeWithAxisNode):
     def execute(self):
         input_value = any_to_array(self.input())
         if self.target is not None:
-            diff = input_value - self.target
+            try:
+                diff = input_value - self.target
+            except ValueError as e:
+                if self.app.verbose:
+                    print(f'{self.label}: input shape {input_value.shape} incompatible '
+                          f'with target shape {self.target.shape}: {e}')
+                return
             if self.adjust_dim_option(input_value):
                 self.output.send(np.linalg.norm(diff, axis=self.axis))
 
@@ -1099,7 +1131,13 @@ class NumpyProximityToTargetNode(NumpyNodeWithAxisNode):
     def execute(self):
         input_value = any_to_array(self.input())
         if self.target is not None:
-            diff = input_value - self.target
+            try:
+                diff = input_value - self.target
+            except ValueError as e:
+                if self.app.verbose:
+                    print(f'{self.label}: input shape {input_value.shape} incompatible '
+                          f'with target shape {self.target.shape}: {e}')
+                return
             if self.adjust_dim_option(input_value):
                 distance = np.linalg.norm(diff, axis=self.axis)
                 proximity = (self.threshold() - distance) / self.threshold()
@@ -1161,7 +1199,13 @@ class NumpyProximityTriggerNode(NumpyNodeWithAxisNode):
         if self.arm_input():
             input_value = any_to_array(self.input())
             if self.target is not None:
-                diff = input_value - self.target
+                try:
+                    diff = input_value - self.target
+                except ValueError as e:
+                    if self.app.verbose:
+                        print(f'{self.label}: input shape {input_value.shape} incompatible '
+                              f'with target shape {self.target.shape}: {e}')
+                    return
                 if self.adjust_dim_option(input_value):
                     distance = np.linalg.norm(diff, axis=self.axis)
                     self.prox_out.send(distance)
@@ -1211,7 +1255,11 @@ class NumpyShapeNode(Node):
     def execute(self):
         if self.input.fresh_input:
             data = self.input()
+            if data is None:
+                return
             data = any_to_array(data)
+            if not isinstance(data, np.ndarray):
+                return
             shape = list(data.shape)
             self.output.send(shape)
 
@@ -1380,6 +1428,13 @@ class NumpyRollingBufferNode(Node):
         for arg in args:
             dimension = any_to_int(arg)
             self.shape.append(dimension)
+
+        # Args may be empty or contain zero/negative dims; the pointer logic in
+        # execute() assumes shape[0] >= 1 and all dims are positive. Fall back
+        # to a small default rather than constructing a degenerate buffer.
+        if len(self.shape) == 0 or any(d <= 0 for d in self.shape):
+            print(f'{self.label}: invalid shape from args {args!r}, falling back to [16]')
+            self.shape = [16]
 
         self.buffer_shape = self.shape.copy()
         self.buffer_shape[0] = self.buffer_shape[0] * 2
@@ -1584,7 +1639,9 @@ class NumpySubtensorNode(Node):
             sub_tensor = input_array[self.slice_obj]
             self.output.send(sub_tensor)
         except Exception as e:
-            print(f"NumpySubtensorNode Error: {e}")
+            print(f'{self.label}: slice {self.slice_obj} failed on shape '
+                  f'{input_array.shape}: {type(e).__name__}: {e}')
+            traceback.print_exc()
 
 
 class NumpyEditNode(Node):
@@ -1678,9 +1735,9 @@ class NumpyEditNode(Node):
                     dim_list_now.append(self.edited_array.shape[base + i])
 
             value_array = None
-            if type(self.value) is str:
+            if isinstance(self.value, str):
                 self.value = string_to_array(self.value)
-            if type(self.value) is float:
+            if isinstance(self.value, float):
                 if len(dim_list_now) == 2:
                     self.edited_array[dim_list_now[0]:dim_list_now[1]] = self.value
                 elif len(dim_list_now) == 4:
@@ -1689,9 +1746,9 @@ class NumpyEditNode(Node):
                     self.edited_array[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3], dim_list_now[4]:dim_list_now[5]] = self.value
                 elif len(dim_list_now) == 8:
                     self.edited_array[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3], dim_list_now[4]:dim_list_now[5], dim_list_now[6]:dim_list_now[7]] = self.value
-            elif type(self.value) is list:
+            elif isinstance(self.value, list):
                 value_array = any_to_array(self.value).copy()
-            elif type(self.value) is np.ndarray:
+            elif isinstance(self.value, np.ndarray):
                 value_array = self.value
             if value_array is not None:
                 if len(dim_list_now) == 2:
@@ -1810,7 +1867,8 @@ class NumpySequenceNode(Node):
             try:
                 self.load_array(path)
             except Exception as e:
-                print('no take file found:', path)
+                print(f'np.sequence: failed to load {path}: {type(e).__name__}: {e}')
+                traceback.print_exc()
 
     def load_npz_callback(self, load_path):
         if load_path != '':
@@ -1847,9 +1905,9 @@ class NumpyLoadNode(Node):
         self.data_output = self.add_output('dict out')
 
     def send_dict(self):
-        print('trying to send dict')
         if self.dict is not None:
-            print('sending dict', self.dict)
+            if self.app.verbose:
+                print(f'{self.label}: sending dict with keys {list(self.dict.keys())}')
             self.data_output.send(self.dict)
 
     def custom_create(self, from_file=False):
@@ -1874,10 +1932,12 @@ class NumpyLoadNode(Node):
             temp_dict = {key: npz_data[key] for key in npz_data.files}
             self.dict = deepcopy(temp_dict)
             npz_data.close()
-            print(self.dict)
+            if self.app.verbose:
+                print(f'{self.label}: loaded {path} with keys {list(self.dict.keys())}')
             self.data_output.send(self.dict)
         except Exception as e:
-            print(f'np.load error: {e}')
+            print(f'np.load error loading {path}: {type(e).__name__}: {e}')
+            traceback.print_exc()
 
 
 class NumpyAnyNode(Node):
@@ -1893,6 +1953,8 @@ class NumpyAnyNode(Node):
 
     def execute(self):
         a = self.input()
+        if a is None:
+            return
         a_arr = np.asarray(a)
         if a_arr.dtype != bool:
             a_arr = a_arr.astype(bool)
@@ -1913,6 +1975,8 @@ class NumpyAllNode(Node):
 
     def execute(self):
         a = self.input()
+        if a is None:
+            return
         a_arr = np.asarray(a)
         if a_arr.dtype != bool:
             a_arr = a_arr.astype(bool)
