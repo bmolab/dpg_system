@@ -859,6 +859,23 @@ class MGLSMPLHeatmapNode(Node):
         pose = any_to_array(pose_data)
         if pose is None:
             return None
+
+        # Detect wxyz quaternion input (assumed scalar-first, matching shadow_to_smpl
+        # and smpl_torque defaults) and convert to axis-angle. Trigger: 2-D array with
+        # last dim == 4, or flat 1-D size in {88, 96, 208} (22/24/52 joints * 4).
+        is_quat = False
+        if pose.ndim == 2 and pose.shape[-1] == 4:
+            is_quat = True
+        elif pose.ndim == 1 and pose.size in (88, 96, 208):
+            pose = pose.reshape(-1, 4)
+            is_quat = True
+        if is_quat:
+            from scipy.spatial.transform import Rotation as R_quat
+            quats_xyzw = np.empty_like(pose, dtype=np.float64)
+            quats_xyzw[:, :3] = pose[:, 1:4]
+            quats_xyzw[:, 3] = pose[:, 0]
+            pose = R_quat.from_quat(quats_xyzw).as_rotvec().astype(np.float32)
+
         pose = pose.flatten().astype(np.float32)
         if pose.shape[0] < 66:
             return None

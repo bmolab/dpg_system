@@ -1658,6 +1658,9 @@ class SMPLTorqueNode(SMPLNode):
                         return p24
                     elif p_in.size == 96: # 24*4
                         return p_in.reshape(1, 24, 4)
+                    elif p_in.size == 156: # 52*3 SMPL-H / AMASS axis-angle
+                        # Take SMPL body (first 24 joints); drop hand joints 24-51.
+                        return p_in[:72].reshape(1, 24, 3)
                 elif p_in.ndim == 2:
                     # (22, 3), (24, 3), (22, 4), (24, 4)
                     if p_in.shape[0] == 22:
