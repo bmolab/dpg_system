@@ -1127,21 +1127,10 @@ class TorchQuaternionESEKF:  # Renamed from UKF to EKF
 
         # --- Pre-allocated Constant Matrices for Optimization ---
         self.I_x = torch.eye(self.dim_x, device=device, dtype=dtype).unsqueeze(0) # [1, 6, 6]
-        self.H = torch.zeros(num_streams, self.dim_z, self.dim_x, device=device, dtype=dtype) # NOTE: swapped dims for broadcasting? No, H is usually z by x.
-        # Original code had H as [num_streams, x, z] but did K @ H.mT which means H was [x, z].
-        # Let's verify: K is [x, z]. P_update = ... K @ H^T.
-        # Standard EKF: y = z - Hx. H maps state space to measurement space. H is [z, x].
-        # The previous code had: H = zeros(..., x, z); H[:, :3, :3] = Eye.
-        # I_minus_KH = I - K @ H.transpose(-1, -2) => K [x, z] @ H.T [z, x] -> [x, x]. Correct.
-        # So H in previous code was effectively [x, z] layout?
-        # WAIT. In previous code:
-        # H = torch.zeros(self.num_streams, self.dim_x, self.dim_z, ...) => [S, 6, 3]
-        # H[:, :3, :3] = Eye
-        # I_minus_KH = I - K @ H.transpose(-1, -2) => K[6,3] @ H^T[3,6] = [6,6]. Yes.
-        # So "H" stored was actually H^T (or similar).
-        # Standard notation H is [z_dim, x_dim] = [3, 6].
-        # Let's store standard H [S, 3, 6] so we don't need to transpose it.
-        # H = [I3, 0]
+        # Standard EKF: y = z - H x. H maps state to measurement, so H is
+        # [z_dim, x_dim] = [3, 6]. (Earlier revisions of this file stored it
+        # transposed and then untransposed it on use; that double-assignment
+        # has been collapsed.)
         self.H = torch.zeros(num_streams, self.dim_z, self.dim_x, device=device, dtype=dtype)
         self.H[:, :3, :3] = torch.eye(self.dim_z, device=device, dtype=dtype)
         
@@ -1578,81 +1567,39 @@ class TorchSmartClampKF:
         self._reset_pending = False
         self.clamp_radius = 0.1 # Default
         self.accel_rejection_factor = 0.0
+        # Init the per-stream history tensors as None so update_params doesn't
+        # have to fall back to hasattr() to detect first run, and so
+        # update_device_to_match can find them by name on a device move.
         self.last_velocity = None
+        self.last_accel = None
 
     def update_params(self, process_noise_q, measurement_noise_r, clamp_radius, accel_rejection_factor, max_accel, dt):
+        # Note: max_accel is accepted for API parity with the quaternion KFs
+        # (the node passes it uniformly), but this linear KF doesn't currently
+        # use a max-acceleration guard.
         self.dt = dt
         self.clamp_radius = clamp_radius
         self.accel_rejection_factor = accel_rejection_factor
-        
-        # --- Accel Rejection Logic ---
-        # If enabled, checking for acceleration reversal
-        current_vel = self.x[:, self.dim:] # Estimated velocity
-        
+
+        # Acceleration-reversal rejection: shrink process noise when the
+        # estimated acceleration flips sign (a marker for high-frequency
+        # chatter). Needs two prior frames of history before it can compare,
+        # so we seed last_velocity / last_accel on the way to a full history.
+        # Previously the outer guard required `self.last_accel is not None`,
+        # but the only branch that *set* last_accel was inside that same
+        # guard — so last_accel stayed None forever and the comparison
+        # never fired. Always advance the history; only the scaling step
+        # is gated on having a comparison frame.
+        current_v = self.x[:, self.dim:]
         scaling_factor = 1.0
         if self.accel_rejection_factor > 0 and self.last_velocity is not None:
-            # Calc Accel (Change in Velocity)
-            # We don't have last_accel stored explicitly, but we can compare direction of Velocity Change
-            # Wait, noise manifests as high frequency velocity changes. 
-            # Rejection logic: If acceleration vector reverses (dot product < 0), suppress Process Noise.
-            # But we need PREVIOUS acceleration to compare against CURRENT acceleration.
-            # Accel_t = Vel_t - Vel_{t-1}
-            # Accel_{t-1} = Vel_{t-1} - Vel_{t-2}
-            
-            # Since we don't store Accel_{t-1}, let's just stick to a simpler heuristic or add state?
-            # actually we need to store last_velocity to compute current_accel, AND last_accel to compare.
-            pass 
-        
-        # To keep it efficient inside update_params:
-        # We can't do per-frame state logic easily here unless we store it.
-        # But update_params is called every frame before predict/update.
-        
-        # Let's modify process_noise_q based on the state BEFORE rebuilding Q.
-        # But we need the previous frame's acceleration.
-        
-        if self.accel_rejection_factor > 0 and hasattr(self, 'last_accel') and self.last_accel is not None:
-             # Calculate current acceleration (estimated)
-             # Note: self.x is the updated state from LAS frame (since we haven't predicted yet? No, we are about to predict)
-             # self.x is posterior from t-1.
-             # self.last_velocity is posterior velocity from t-2?
-             
-             # Actually, let's just use the logic from TristateBlend:
-             # It calculates accel *outside* and passes it in.
-             # But here we want the filter to be self-contained.
-             
-             # Let's perform the check here.
-             current_v = self.x[:, self.dim:]
-             if self.last_velocity is not None:
-                 curr_a = (current_v - self.last_velocity) / dt
-                 # Dot with last accel
-                 dot = (curr_a * self.last_accel).sum(dim=1, keepdim=True) # (S, 1)
-                 
-                 # Mask where dot < 0 (Reversal)
-                 reversal_mask = (dot < 0).float()
-                 
-                 # Apply damping
-                 # If reversal, divide process noise by (1 + factor)
-                 # factor = rejection * 10? Scaled 0-10 input.
-                 
-                 # New Q multiplier: 1 / (1 + factor * reversal)
-                 multiplier = 1.0 / (1.0 + self.accel_rejection_factor * reversal_mask * 100.0) # Boosted strength
-                 scaling_factor = multiplier
-                 
-                 self.last_accel = curr_a # Store for NEXT frame (actually we need to store it after update?)
-                 # Wait, if we update last_accel here, we are using (v_{t-1} - v_{t-2}). Correct.
-                 
-             else:
-                 if self.last_velocity is not None:
-                    self.last_accel = (current_v - self.last_velocity) / dt
-
-             self.last_velocity = current_v.clone()
-        else:
-             # First run init
-             if not hasattr(self, 'last_accel'):
-                 self.last_accel = None
-                 self.last_velocity = None
-             if self.last_velocity is None:
-                 self.last_velocity = self.x[:, self.dim:].clone()
+            curr_a = (current_v - self.last_velocity) / dt
+            if self.last_accel is not None:
+                dot = (curr_a * self.last_accel).sum(dim=1, keepdim=True)  # (S, 1)
+                reversal_mask = (dot < 0).float()
+                scaling_factor = 1.0 / (1.0 + self.accel_rejection_factor * reversal_mask * 100.0)
+            self.last_accel = curr_a
+        self.last_velocity = current_v.clone()
 
         # Apply Scaling to Q
         # Q is process noise. If we think it's noise/chatter, we want to REDUCE Q (trust model/prediction more, trust innovation less? No.)
@@ -1670,15 +1617,12 @@ class TorchSmartClampKF:
         pos_var = (q_eff * dt)**2
         vel_var = q_eff**2
         
+        # torch.full((S, D), 1.0) * pos_var broadcasts pos_var (scalar or
+        # [S, 1]) into a per-stream diag. The defunct `q_diag * 1.0` block
+        # that used to follow was a no-op left over from a prior refactor.
         q_diag_pos = torch.full((self.num_streams, self.dim), 1.0, device=self.device, dtype=self.dtype) * pos_var
         q_diag_vel = torch.full((self.num_streams, self.dim), 1.0, device=self.device, dtype=self.dtype) * vel_var
-        
-        # If scaling factor is per-stream (tensor), we need to broadcast properly
-        # q_eff is (S, 1) or scalar.
-        if isinstance(scaling_factor, torch.Tensor):
-             q_diag_pos = q_diag_pos * 1.0 # Ensure tensor
-             q_diag_vel = q_diag_vel * 1.0
-             
+
         Q_diag = torch.cat([q_diag_pos, q_diag_vel], dim=1)
         self.Q = torch.diag_embed(Q_diag)
 
@@ -1780,8 +1724,14 @@ class TorchSmartClampKF:
     def update_device_to_match(self, tensor):
         if tensor.device != self.device:
             self.device = tensor.device
-            for attr in ['x', 'P', 'F_base', 'H', 'Q', 'R', 'I_x', 'jitter']:
-                setattr(self, attr, getattr(self, attr).to(self.device))
+            # last_velocity / last_accel are populated lazily inside
+            # update_params and may be None. Guard with isinstance so the
+            # device move handles both the unset and tensor states.
+            for attr in ['x', 'P', 'F_base', 'H', 'Q', 'R', 'I_x', 'jitter',
+                         'last_velocity', 'last_accel']:
+                val = getattr(self, attr)
+                if isinstance(val, torch.Tensor):
+                    setattr(self, attr, val.to(self.device))
 
 
 class TorchSmartClampKFNode(TorchDeviceDtypeNode):
@@ -2041,13 +1991,14 @@ class TorchSmartClampQuaternionKF:
     def update_device_to_match(self, tensor):
         if tensor.device != self.device:
             self.device = tensor.device
-            for attr in ['q', 'av', 'x', 'P', 'F_base', 'H', 'Q', 'R', 'I_x', 'jitter']:
+            # last_av / last_accel are populated lazily inside update_params
+            # and may be None. The isinstance guard already in this loop
+            # handles both states; the previous attr list just omitted them.
+            for attr in ['q', 'av', 'x', 'P', 'F_base', 'H', 'Q', 'R', 'I_x', 'jitter',
+                         'last_av', 'last_accel']:
                 val = getattr(self, attr)
                 if isinstance(val, torch.Tensor):
                     setattr(self, attr, val.to(self.device))
-                else:
-                    # Handle list of tensors if any, but above are all tensors
-                    pass
 
     def update_params(self, process_noise_q, measurement_noise_r, clamp_angle_deg, accel_rejection_factor, max_accel_deg, dt):
         self.dt = dt
