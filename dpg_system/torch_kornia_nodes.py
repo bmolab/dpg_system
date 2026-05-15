@@ -24,9 +24,14 @@ class KorniaGrayscaleNode(TorchNode):
 
     def execute(self):
         input_tensor = self.input_to_torchvision_tensor()
-        if input_tensor is not None:
+        if input_tensor is None:
+            return
+        try:
             output_tensor = K.color.rgb_to_grayscale(input_tensor)
             self.output.send(output_tensor)
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
 
 
 class KorniaRGBToHLSNode(TorchNode):
@@ -41,10 +46,18 @@ class KorniaRGBToHLSNode(TorchNode):
         self.output = self.add_output('output')
 
     def execute(self):
-        input_tensor = self.input_to_torchvision_tensor().float()
-        if input_tensor is not None:
-            output_tensor = K.color.rgb_to_hls(input_tensor)
+        # Was: input_to_torchvision_tensor().float() then None-check — but
+        # .float() on None throws AttributeError before the check runs. Split
+        # the call so the None branch returns cleanly.
+        input_tensor = self.input_to_torchvision_tensor()
+        if input_tensor is None:
+            return
+        try:
+            output_tensor = K.color.rgb_to_hls(input_tensor.float())
             self.output.send(output_tensor)
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
 
 
 class KorniaColorMapNode(TorchNode):
@@ -59,12 +72,21 @@ class KorniaColorMapNode(TorchNode):
         self.output = self.add_output('output')
 
     def execute(self):
-        input_tensor = self.input_to_torchvision_tensor().float()
-        if input_tensor is not None:
-            if input_tensor.shape[-3] == 3:
+        input_tensor = self.input_to_torchvision_tensor()
+        if input_tensor is None:
+            return
+        try:
+            input_tensor = input_tensor.float()
+            # shape[-3] is the channel axis when the tensor is at least 3D.
+            # A 2D grayscale input doesn't have that axis, so guard the dim
+            # check before indexing to avoid an IndexError.
+            if input_tensor.dim() >= 3 and input_tensor.shape[-3] == 3:
                 input_tensor = K.color.rgb_to_grayscale(input_tensor)
             output_tensor = K.color.apply_colormap(input_tensor, K.color.AUTUMN())
             self.output.send(output_tensor)
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
 
 
 class KorniaCannyNode(TorchNode):
@@ -79,12 +101,18 @@ class KorniaCannyNode(TorchNode):
         self.output = self.add_output('output')
 
     def execute(self):
-        input_tensor = self.input_to_torchvision_tensor().float()
-        if input_tensor is not None:
+        input_tensor = self.input_to_torchvision_tensor()
+        if input_tensor is None:
+            return
+        try:
+            input_tensor = input_tensor.float()
             if len(input_tensor.shape) == 3:
                 input_tensor = input_tensor.unsqueeze(dim=0)
             magnitude, edges = K.filters.canny(input_tensor)
             self.output.send(edges[0])
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
 
 class KorniaSobelNode(TorchNode):
     @staticmethod
@@ -98,12 +126,18 @@ class KorniaSobelNode(TorchNode):
         self.output = self.add_output('output')
 
     def execute(self):
-        input_tensor = self.input_to_torchvision_tensor().float()
-        if input_tensor is not None:
+        input_tensor = self.input_to_torchvision_tensor()
+        if input_tensor is None:
+            return
+        try:
+            input_tensor = input_tensor.float()
             if len(input_tensor.shape) == 3:
                 input_tensor = input_tensor.unsqueeze(dim=0)
             edges = K.filters.sobel(input_tensor)
             self.output.send(edges[0])
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
 
 
 class KorniaGaussianBlurNode(TorchNode):
@@ -126,16 +160,26 @@ class KorniaGaussianBlurNode(TorchNode):
     def params_changed(self):
         self.sigma = self.sigma_property()
         if self.sigma <= 0:
+            # Push the clamped value back to the widget so the UI matches the
+            # value we'll actually pass to kornia. Previously we kept the user
+            # number on screen while silently filtering with sigma=0.1.
             self.sigma = 0.1
+            self.sigma_property.set(self.sigma)
         self.kernel_size = int(self.kernel_size_property())
 
     def execute(self):
-        input_tensor = self.input_to_torchvision_tensor().float()
-        if input_tensor is not None:
+        input_tensor = self.input_to_torchvision_tensor()
+        if input_tensor is None:
+            return
+        try:
+            input_tensor = input_tensor.float()
             if len(input_tensor.shape) == 3:
                 input_tensor = input_tensor.unsqueeze(dim=0)
             blur_tensor = K.filters.gaussian_blur2d(input_tensor, kernel_size=(self.kernel_size, self.kernel_size), sigma=(self.sigma, self.sigma))
             self.output.send(blur_tensor[0])
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
 
 
 class KorniaDOGResponseSingleNode(TorchNode):
@@ -164,9 +208,15 @@ class KorniaDOGResponseSingleNode(TorchNode):
 
 
     def execute(self):
-        input_tensor = self.input_to_torchvision_tensor().float()
-        if input_tensor is not None:
+        input_tensor = self.input_to_torchvision_tensor()
+        if input_tensor is None:
+            return
+        try:
+            input_tensor = input_tensor.float()
             if len(input_tensor.shape) == 3:
                 input_tensor = input_tensor.unsqueeze(dim=0)
             dog_tensor = K.feature.dog_response_single(input_tensor, self.sigma_1, self.sigma_2)
             self.output.send(dog_tensor[0])
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
