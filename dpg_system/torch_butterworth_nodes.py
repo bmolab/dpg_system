@@ -8,6 +8,7 @@ from dpg_system.node import Node
 from dpg_system.conversion_utils import *
 import numpy as np
 import torch
+import torch.nn.functional as F
 from dpg_system.torch_base_nodes import TorchDeviceDtypeNode
 import scipy
 
@@ -127,7 +128,12 @@ class TorchBandPassFilterBankNode(TorchDeviceDtypeNode):
         self.bands = []
         self.output = self.add_output('filtered')
         self.filter = None
-        self.capture = False
+        # Use a separate attribute name from the capture() method below. The
+        # button at line 110 stores a reference to the bound method at bind
+        # time, so the callback still works — but assigning self.capture = ...
+        # shadows the method on the instance and makes any later self.capture()
+        # call from elsewhere crash with TypeError.
+        self.capture_flag = False
         self.create_dtype_device_grad_properties(option=True)
         self.message_handlers['report_bands'] = self.report_bands
 
@@ -135,7 +141,7 @@ class TorchBandPassFilterBankNode(TorchDeviceDtypeNode):
         self.params_changed()
 
     def capture(self):
-        self.capture = True
+        self.capture_flag = True
 
     def report_bands(self, command, data):
         for index, band in enumerate(self.bands):
@@ -202,11 +208,15 @@ class TorchBandPassFilterBankNode(TorchDeviceDtypeNode):
     def execute(self):
         signal = self.input()
         if self.filter is not None:
-            if self.capture:
+            if self.capture_flag:
                 self.filter.capture(signal)
-                self.capture = False
+                self.capture_flag = False
             signal_out = self.filter.filter(signal)
-            self.output.send(signal_out)
+            # filter() returns None when coefficients couldn't be built — the
+            # diagnostic was already printed when params_changed ran, so just
+            # skip the send rather than pushing None downstream.
+            if signal_out is not None:
+                self.output.send(signal_out)
 
 
 class TorchIIR2Filter:
@@ -244,6 +254,8 @@ class TorchIIR2Filter:
         self.coefficients = self.create_coefficients()
 
     def capture(self, input_):
+        if self.coefficients is None:
+            return
         input_ = any_to_tensor(input_, device=self.device).flatten()
         if self.buffers is None or self.buffers.shape[3] != input_.shape[0]:
             self.allocate_buffers(input_.shape[0])
@@ -251,6 +263,8 @@ class TorchIIR2Filter:
 
 
     def filter(self, input_):
+        if self.coefficients is None:
+            return None
         shape = input_.shape
         input_ = any_to_tensor(input_, device=self.device).flatten()
         if self.buffers is None or self.buffers.shape[3] != input_.shape[0]:
@@ -301,25 +315,34 @@ class TorchIIR2Filter:
             print('Gave wrong filter design! Remember: butter, cheby1, cheby2.')
         elif self.filter_type not in self.filter_types_1 and self.filter_type not in self.filter_types_2:
             print('Gave wrong filter type! Remember: lowpass, highpass, bandpass, bandstop.')
-        elif self.fs < 0:
+        elif self.fs <= 0:
+            # fs == 0 would divide-by-zero in the Nyquist normalization below.
             print('The sampling frequency has to be positive!')
         else:
             self.error_flag = 0
         coefficient_set = None
-        coefficients = None
         #  we want shape of [order, 6, num_bands, 1]
         for index, band in enumerate(self.bands):
-            # if fs was given then the given cutoffs need to be normalised to Nyquist
+            # Reset per iteration so a failure in one design branch doesn't
+            # silently reuse the previous iteration's coefficients.
+            coefficients = None
+
+            # If fs was given the cutoffs need to be normalised to Nyquist.
+            # Build a fresh list rather than mutating the caller's bands —
+            # downstream code (e.g. TorchBandPassFilterBankNode.report_bands)
+            # reads self.bands for display in Hz, and repeated calls would
+            # otherwise rescale the already-rescaled values toward zero.
             if self.fs and self.error_flag == 0:
-                for i in range(len(band)):
-                    band[i] = band[i] / self.fs * 2
+                wn = [b / self.fs * 2 for b in band]
+            else:
+                wn = band
 
             if self.design == 'butter' and self.error_flag == 0:
-                coefficients = torch.from_numpy(signal.butter(self.order, band, self.filter_type, output='sos')).to(device=self.device, dtype=self.dtype)
+                coefficients = torch.from_numpy(signal.butter(self.order, wn, self.filter_type, output='sos')).to(device=self.device, dtype=self.dtype)
             elif self.design == 'cheby1' and self.error_flag == 0:
-                coefficients = torch.from_numpy(signal.cheby1(self.order, self.rp, band, self.filter_type, output='sos')).to(device=self.device, dtype=self.dtype)
+                coefficients = torch.from_numpy(signal.cheby1(self.order, self.rp, wn, self.filter_type, output='sos')).to(device=self.device, dtype=self.dtype)
             elif self.design == 'cheby2' and self.error_flag == 0:
-                coefficients = torch.from_numpy(signal.cheby2(self.order, self.rs, band, self.filter_type, output='sos')).to(device=self.device, dtype=self.dtype)
+                coefficients = torch.from_numpy(signal.cheby2(self.order, self.rs, wn, self.filter_type, output='sos')).to(device=self.device, dtype=self.dtype)
             #  coefficients shape is [order, 6]
             if coefficients is not None:
                 coefficients = coefficients.unsqueeze(-1)        # [order, 6, 1]
@@ -330,6 +353,14 @@ class TorchIIR2Filter:
                 else:
                     coefficient_set = torch.cat([coefficient_set, coefficients], dim=2)  # [order, 6, n]
 
+        if coefficient_set is None:
+            # No coefficients were produced — either error_flag was set above
+            # or self.bands was empty. Return None so the caller can detect
+            # the failure instead of crashing on the unsqueeze.
+            print('TorchIIR2Filter: could not build coefficients '
+                  f'(design={self.design!r}, filter_type={self.filter_type!r}, '
+                  f'fs={self.fs}, bands={len(self.bands)})')
+            return None
         coefficient_set = coefficient_set.unsqueeze(-1)  # [order, 6, num_bands, 1]]
         return coefficient_set
 
@@ -530,13 +561,6 @@ class TorchSavGolFilterNode(TorchDeviceDtypeNode):
         signal_out = self.filter.filter(signal_in)
 
         self.output_port.send(signal_out)
-
-
-import torch
-import torch.nn.functional as F
-
-import torch
-import torch.nn.functional as F
 
 
 # --- Helper Functions (JIT Compiled) ---
