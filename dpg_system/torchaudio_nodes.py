@@ -271,14 +271,17 @@ class TorchAudioSourceNode(TorchNode):
                     print('Audio Source format invalid: channels =', channels, 'rate =', sample_rate, 'format =', dtype_str)
 
     def audio_callback(self, indata, frame_count, time_info, flag):
-        torch_ready_numpy = indata.T
-        torch_audio_data = torch.from_numpy(torch_ready_numpy)
-        # numpy_audio_data = np.frombuffer(buffer=indata, dtype=np.float32).copy()
-        # chans = self.source.channels
-        # if chans > 1:
-        #     numpy_audio_data = numpy_audio_data.reshape(-1, chans).swapaxes(0, 1)
-        # torch_audio_data = torch.from_numpy(numpy_audio_data)
-        self.output.send(torch_audio_data)
+        # This runs on the sounddevice PortAudio thread. An uncaught
+        # exception here can silently kill the input stream — catch it
+        # broadly so the next callback still fires and the user sees the
+        # diagnostic instead of a stream that just stopped working.
+        try:
+            torch_ready_numpy = indata.T
+            torch_audio_data = torch.from_numpy(torch_ready_numpy)
+            self.output.send(torch_audio_data)
+        except Exception as e:
+            print(f'{self.label}: audio_callback: {type(e).__name__}: {e}')
+            traceback.print_exc()
 
     def stream_on_off(self):
         if self.stream_input():
@@ -783,22 +786,32 @@ class AudioMixer:
             self.stream = None
 
     def _audio_callback(self, outdata, frames, time, status):
-        # ... (This function remains exactly the same as the previous version) ...
-        if status: print(f'Stream status alert: {status}')
-        outdata.fill(0)
-        sounds_to_remove = []
-        with self._lock:
-            for sound_id, sound_data in list(self.active_sounds.items()):
-                chunk = sound_data['data'][sound_data['pos']: sound_data['pos'] + frames]
-                chunk_len = len(chunk)
-                if chunk_len > 0 and outdata[:chunk_len].shape == chunk.shape:
-                    outdata[:chunk_len] += chunk
-                sound_data['pos'] += chunk_len
-                if sound_data['pos'] >= len(sound_data['data']):
-                    sounds_to_remove.append(sound_id)
-            for sound_id in sounds_to_remove:
-                del self.active_sounds[sound_id]
-        np.clip(outdata, -1.0, 1.0, out=outdata)
+        # Runs on the PortAudio thread. An uncaught exception here can
+        # silently terminate the output stream, so wrap the body broadly.
+        # outdata must always end up with valid floats — fill with silence
+        # before doing anything else so we don't push uninitialised memory
+        # to the device if mixing throws.
+        try:
+            if status:
+                print(f'Stream status alert: {status}')
+            outdata.fill(0)
+            sounds_to_remove = []
+            with self._lock:
+                for sound_id, sound_data in list(self.active_sounds.items()):
+                    chunk = sound_data['data'][sound_data['pos']: sound_data['pos'] + frames]
+                    chunk_len = len(chunk)
+                    if chunk_len > 0 and outdata[:chunk_len].shape == chunk.shape:
+                        outdata[:chunk_len] += chunk
+                    sound_data['pos'] += chunk_len
+                    if sound_data['pos'] >= len(sound_data['data']):
+                        sounds_to_remove.append(sound_id)
+                for sound_id in sounds_to_remove:
+                    del self.active_sounds[sound_id]
+            np.clip(outdata, -1.0, 1.0, out=outdata)
+        except Exception as e:
+            print(f'AudioMixer._audio_callback: {type(e).__name__}: {e}')
+            traceback.print_exc()
+            outdata.fill(0)
 
     def play(self, waveform_np: np.ndarray):
         # ... (This function remains exactly the same) ...
@@ -817,18 +830,27 @@ class AudioMixer:
         return sound_id
 
     def stop(self, sound_id=None):
-        '''Stops the playback stream and clears all sounds.'''
+        '''Stops the playback stream and clears all sounds.
+
+        With sound_id: remove just that sound from the active mix. Two bugs
+        fixed here:
+          1. The dict mutation now happens under self._lock — it used to
+             race with _audio_callback's iteration over active_sounds.
+          2. Asking to stop a sound that's already finished used to fall
+             through to tearing down the entire output stream. Now an
+             unknown sound_id is treated as a no-op.
+        Without sound_id: tear down the stream and clear the mix as before.
+        '''
+        if sound_id is not None:
+            with self._lock:
+                self.active_sounds.pop(sound_id, None)
+            return
         if self.stream:
-            if sound_id is not None:
-                if sound_id in self.active_sounds:
-                    del self.active_sounds[sound_id]
-                    return
             self.stream.stop()
             self.stream.close()
             self.stream = None
         with self._lock:
             self.active_sounds.clear()
-        # print('AudioMixer stopped.')
 
 
 class AudioMixerNode(Node):
@@ -840,7 +862,6 @@ class AudioMixerNode(Node):
 
     @staticmethod
     def factory(name, data, args=None):
-        audio_mixer = None
         node = AudioMixerNode(name, data, args)
         return node
 
@@ -2191,8 +2212,9 @@ class TorchAudioFileStreamNode(TorchNode):
 
             print(f'Loaded: {file_name} → {waveform.shape[0]}ch, {out_sr}Hz, {duration:.1f}s')
         except Exception as e:
-            print(f'Error loading audio file: {e}')
-            import traceback
+            # traceback is already in scope via the conversion_utils star
+            # import; the local `import traceback` here was redundant.
+            print(f'{self.label}: error loading audio file: {type(e).__name__}: {e}')
             traceback.print_exc()
 
     # ── Playback control ──
@@ -2231,7 +2253,19 @@ class TorchAudioFileStreamNode(TorchNode):
     def frame_task(self):
         if not self.playing or self.waveform is None:
             return
+        # frame_task runs every frame, so an unhandled exception here would
+        # both flood the console and leave self.playing in an inconsistent
+        # state. Wrap the whole body, surface the error once per frame, and
+        # stop playback so the user can recover.
+        try:
+            self._emit_chunks_for_frame()
+        except Exception as e:
+            print(f'{self.label}: frame_task: {type(e).__name__}: {e}')
+            traceback.print_exc()
+            self.playing = False
+            self.remove_frame_tasks()
 
+    def _emit_chunks_for_frame(self):
         now = time.time()
         out_sr = int(self.sample_rate_prop())
         chunk_size = int(self.chunk_size_prop())
