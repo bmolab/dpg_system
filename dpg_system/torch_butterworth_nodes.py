@@ -178,28 +178,47 @@ class TorchBandPassFilterBankNode(TorchDeviceDtypeNode):
         self.filter = None
         self.low_cut = self.low_cut_property()
         self.high_cut = self.high_cut_property()
-        self.calc_bands()
         self.order = self.order_property()
         self.sample_frequency = self.sample_frequency_property()
         self.nyquist = self.sample_frequency * 0.5
         self.filter_type = self.filter_type_property()
         self.filter_design = self.filter_design_property()
+
+        # Validate before building bands / filter so we can give a clear
+        # message and leave self.filter = None instead of crashing later.
+        # calc_bands() does log10(low_cut) on the log branch and the IIR2
+        # normaliser divides by fs, both of which need positive values.
+        if self.sample_frequency <= 0:
+            print(f'{self.label}: sample frequency must be > 0, got {self.sample_frequency}')
+            return
+        if self.low_cut <= 0:
+            print(f'{self.label}: low cutoff must be > 0, got {self.low_cut}')
+            return
+        if self.num_bands() < 1:
+            print(f'{self.label}: number of bands must be >= 1, got {self.num_bands()}')
+            return
         if self.high_cut > self.nyquist:
             self.high_cut = self.nyquist - 1
         if self.low_cut > self.high_cut:
             self.low_cut = self.high_cut * .5
-        if self.filter_type in ['bandpass', 'bandstop']:
-            self.filter = TorchIIR2Filter(self.order, self.bands, filter_type=self.filter_type, design=self.filter_design, fs=self.sample_frequency, device=self.device, dtype=self.dtype)
-        elif self.filter_type == 'lowpass':
-            low_bands = []
-            for band in self.bands:
-                low_bands.append([band[1]])
-            self.filter = TorchIIR2Filter(self.order, low_bands, filter_type=self.filter_type, design=self.filter_design, fs=self.sample_frequency, device=self.device, dtype=self.dtype)
-        elif self.filter_type == 'highpass':
-            high_bands = []
-            for band in self.bands:
-                high_bands.append([band[1]])
-            self.filter = TorchIIR2Filter(self.order, high_bands, filter_type=self.filter_type, design=self.filter_design, fs=self.sample_frequency, device=self.device, dtype=self.dtype)
+
+        self.calc_bands()
+
+        try:
+            if self.filter_type in ['bandpass', 'bandstop']:
+                self.filter = TorchIIR2Filter(self.order, self.bands, filter_type=self.filter_type, design=self.filter_design, fs=self.sample_frequency, device=self.device, dtype=self.dtype)
+            elif self.filter_type == 'lowpass':
+                low_bands = [[band[1]] for band in self.bands]
+                self.filter = TorchIIR2Filter(self.order, low_bands, filter_type=self.filter_type, design=self.filter_design, fs=self.sample_frequency, device=self.device, dtype=self.dtype)
+            elif self.filter_type == 'highpass':
+                high_bands = [[band[1]] for band in self.bands]
+                self.filter = TorchIIR2Filter(self.order, high_bands, filter_type=self.filter_type, design=self.filter_design, fs=self.sample_frequency, device=self.device, dtype=self.dtype)
+        except Exception as e:
+            # scipy.signal.butter/cheby raise ValueError on bad cutoff/order
+            # combinations. Leave self.filter = None so the node no-ops.
+            print(f'{self.label}: failed to build filter: {type(e).__name__}: {e}')
+            traceback.print_exc()
+            self.filter = None
 
     def device_changed(self):
         super().device_changed()
@@ -207,16 +226,22 @@ class TorchBandPassFilterBankNode(TorchDeviceDtypeNode):
 
     def execute(self):
         signal = self.input()
-        if self.filter is not None:
+        if signal is None or self.filter is None:
+            return
+        try:
             if self.capture_flag:
                 self.filter.capture(signal)
                 self.capture_flag = False
             signal_out = self.filter.filter(signal)
-            # filter() returns None when coefficients couldn't be built — the
-            # diagnostic was already printed when params_changed ran, so just
-            # skip the send rather than pushing None downstream.
-            if signal_out is not None:
-                self.output.send(signal_out)
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
+            return
+        # filter() returns None when coefficients couldn't be built — the
+        # diagnostic was already printed when params_changed ran, so just
+        # skip the send rather than pushing None downstream.
+        if signal_out is not None:
+            self.output.send(signal_out)
 
 
 class TorchIIR2Filter:
@@ -500,7 +525,8 @@ class TorchSavGolFilterNode(TorchDeviceDtypeNode):
 
     def reset_filter(self):
         if self.filter:
-            print(f"Node '{self.label}': Resetting Parallel SavGol filter state.")
+            if self.app.verbose:
+                print(f"Node '{self.label}': Resetting Parallel SavGol filter state.")
             self.filter.reset()
 
     def params_changed(self):
@@ -510,7 +536,8 @@ class TorchSavGolFilterNode(TorchDeviceDtypeNode):
         self.normalize_output = self.normalize_property()
         if self.window_length % 2 == 0: self.window_length += 1
         if self.polyorder >= self.window_length: self.polyorder = self.window_length - 1
-        print(f"Node '{self.label}': Parameters changed. Filter will be recreated on next execution.")
+        if self.app.verbose:
+            print(f"Node '{self.label}': Parameters changed. Filter will be recreated on next execution.")
 
     def device_changed(self):
         super().device_changed()
@@ -526,7 +553,12 @@ class TorchSavGolFilterNode(TorchDeviceDtypeNode):
             return
 
         if not isinstance(signal_in, torch.Tensor):
-            signal_in = torch.tensor(signal_in, dtype=self.dtype, device=self.device)
+            try:
+                signal_in = torch.tensor(signal_in, dtype=self.dtype, device=self.device)
+            except Exception as e:
+                print(f"{self.label}: could not convert input to tensor: "
+                      f"{type(e).__name__}: {e}")
+                return
 
         # We now expect a 2D tensor [num_streams, num_components]
         if signal_in.dim() != 2:
@@ -538,8 +570,9 @@ class TorchSavGolFilterNode(TorchDeviceDtypeNode):
 
         # --- Lazy Instantiation or Resizing of the Filter ---
         if self.filter is None or self.filter.num_streams != num_streams or self.filter.num_components != num_components:
-            print(
-                f"Node '{self.label}': Instantiating/resizing Parallel SavGol filter for ({num_streams}, {num_components}).")
+            if self.app.verbose:
+                print(
+                    f"Node '{self.label}': Instantiating/resizing Parallel SavGol filter for ({num_streams}, {num_components}).")
             try:
                 # Use the new parallel filter class
                 self.filter = TorchParallelSavGolFilter(
@@ -551,14 +584,21 @@ class TorchSavGolFilterNode(TorchDeviceDtypeNode):
                     device=self.device,
                     dtype=self.dtype
                 )
-            except ValueError as e:
-                print(f"Error creating filter: {e}")
+            except Exception as e:
+                print(f"{self.label}: failed to create filter: "
+                      f"{type(e).__name__}: {e}")
+                traceback.print_exc()
                 self.filter = None
                 return
 
         # --- Run the parallel filter ---
         # The filter class now handles the parallel logic internally.
-        signal_out = self.filter.filter(signal_in)
+        try:
+            signal_out = self.filter.filter(signal_in)
+        except Exception as e:
+            print(f"{self.label}: {type(e).__name__}: {e}")
+            traceback.print_exc()
+            return
 
         self.output_port.send(signal_out)
 
