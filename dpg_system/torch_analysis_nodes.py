@@ -56,6 +56,12 @@ class TorchBinCountNode(TorchNode):
                 input_tensor = input_tensor.to(dtype=torch.int)
             if len(input_tensor.shape) > 1:
                 input_tensor = torch.flatten(input_tensor)
+            # torch.bincount requires non-negative ints; clamp at zero so we
+            # produce a meaningful histogram instead of raising at the boundary.
+            if input_tensor.numel() > 0 and bool((input_tensor < 0).any()):
+                if self.app.verbose:
+                    print(f'{self.label}: input contains negative values; clamping to 0')
+                input_tensor = torch.clamp_min(input_tensor, 0)
             output_tensor = torch.bincount(input_tensor)
             self.output.send(output_tensor)
 
@@ -80,7 +86,11 @@ class TorchBucketizeNode(TorchNode):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
             data = self.boundaries()
+            if data is None:
+                return
             boundaries_tensor = self.data_to_tensor(data, match_tensor=input_tensor)
+            if boundaries_tensor is None:
+                return
             output_tensor = torch.bucketize(input_tensor, boundaries_tensor, out_int32=self.output_int32(), right=self.right())
             self.output.send(output_tensor)
 
@@ -97,10 +107,10 @@ class TorchAnyAllNode(TorchNode):
         output_name = 'all'
         if self.label == 't.any':
             self.op = torch.any
-            output_name == 'any'
+            output_name = 'any'
 
         self.input = self.add_input('tensor in', triggers_execution=True)
-        self.output = self.add_output('tensor out')
+        self.output = self.add_output(output_name)
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -109,7 +119,7 @@ class TorchAnyAllNode(TorchNode):
             self.output.send(result)
 
 
-class TorchHistogramNode(TorchDeviceDtypeNode):
+class TorchHistogramNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
         node = TorchHistogramNode(name, data, args)
@@ -118,13 +128,14 @@ class TorchHistogramNode(TorchDeviceDtypeNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         bin_count = 100
-        min = 0
-        max = 0
+        # Histogram bounds; min == max == 0 tells torch.histc to use the data's range.
+        min_value = 0
+        max_value = 0
 
         self.input = self.add_input('', triggers_execution=True)
-        self.bin_count = self.add_input('bin count', widget_type='drag_int', default_value=bin_count)
-        self.min = self.add_input('min', widget_type='drag_float', default_value=min)
-        self.max = self.add_input('max', widget_type='drag_float', default_value=max)
+        self.bin_count = self.add_input('bin count', widget_type='drag_int', default_value=bin_count, min=1)
+        self.min = self.add_input('min', widget_type='drag_float', default_value=min_value)
+        self.max = self.add_input('max', widget_type='drag_float', default_value=max_value)
         self.output = self.add_output('histogram tensor out')
 
     def execute(self):
@@ -217,7 +228,10 @@ class TorchArgSortNode(TorchWithDimNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.input = self.add_input('tensor in', triggers_execution=True)
-        self.dim = -1
+        # Only override the default when no dim was passed in args; otherwise
+        # TorchWithDimNode has already parsed the user-supplied value.
+        if not self.dim_specified:
+            self.dim = -1
         descending = False
         stable = False
         if self.dim_specified:

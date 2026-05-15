@@ -5,7 +5,6 @@ from __future__ import print_function
 import threading
 import math
 import numpy as np
-import torch.fft
 
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
@@ -39,7 +38,7 @@ torchaudio_avail = True
 try:
     from dpg_system.torchaudio_nodes import *
 except Exception as e:
-    print('pyaudio not found - torchaudio nodes not available')
+    print(f'torchaudio nodes not available: {type(e).__name__}: {e}')
     torchaudio_avail = False
 
 speech_analysis_avail = True
@@ -244,14 +243,19 @@ class TorchBufferNode(TorchDeviceDtypeNode):
 
         if self.input.fresh_input:
             data = self.input()
-            t = type(data)
-            if t != torch.tensor:
+            # torch.tensor is a factory function, not a class — the previous
+            # `t != torch.tensor` check was always True and ran any_to_tensor
+            # on every input, including already-tensor inputs.
+            if not isinstance(data, torch.Tensor):
                 data = any_to_tensor(data)
             if self.update_style == t_TorchBufferFill:
-                self.buffer = data.detach().clone().to_device(self.device)
+                self.buffer = data.detach().clone().to(self.device)
             elif self.update_style == t_TorchCircularBufferSerialInput:
                 if self.sample_count != self.buffer.shape[0] or len(self.buffer.shape) > 1:
-                    self.buffer.resize_(self.sample_count)
+                    # resize_ across a dimensionality change leaves uninitialized
+                    # memory and emits a warning. Allocate a fresh zeroed tensor
+                    # instead — the loop below overwrites every cell anyway.
+                    self.buffer = torch.zeros(self.sample_count, dtype=self.dtype, device=self.device)
                     self.write_pos = 0
                 if self.write_pos > self.sample_count:
                     self.write_pos = 0
@@ -261,7 +265,11 @@ class TorchBufferNode(TorchDeviceDtypeNode):
                     front_size = self.sample_count - self.write_pos
                     back_size = data.shape[0] - front_size
                 if back_size > self.sample_count:
-                    self.buffer[:] = data[-back_size:]
+                    # Incoming data is larger than the whole buffer; just keep
+                    # the most recent sample_count samples. Previously sliced
+                    # data[-back_size:] which has length back_size, not sample_count,
+                    # causing a shape mismatch on assignment.
+                    self.buffer[:] = data[-self.sample_count:]
                     self.write_pos = 0
                 else:
                     self.buffer[self.write_pos:self.write_pos + front_size] = data[:front_size]
@@ -274,7 +282,11 @@ class TorchBufferNode(TorchDeviceDtypeNode):
                     self.write_pos = 0
             elif self.update_style == t_TorchCircularBufferParallelInput:
                 if len(self.buffer.shape) == 1 or self.buffer.shape[1] != data.shape[0]:
-                    self.buffer.resize_((self.sample_count, data.shape[0]))
+                    # Same reasoning as above: avoid resize_ across a dimensionality
+                    # change. The buffer fills incrementally so zeros are a safer
+                    # starting point than uninitialized memory.
+                    self.buffer = torch.zeros((self.sample_count, data.shape[0]),
+                                              dtype=self.dtype, device=self.device)
                     self.write_pos = 0
                 self.buffer[self.write_pos, :] = data
                 self.write_pos += 1
@@ -291,8 +303,13 @@ class TorchBufferNode(TorchDeviceDtypeNode):
         if self.index_input.fresh_input:
             index = any_to_int(self.index_input())
             if 0 <= index < self.sample_count:
-                output_sample = self.buffer[index].item()
-                self.output.send(output_sample)
+                sample = self.buffer[index]
+                # In parallel mode the buffer is 2-D and sample is a row tensor;
+                # .item() would raise. Send the row as a list of scalars instead.
+                if sample.ndim == 0:
+                    self.output.send(sample.item())
+                else:
+                    self.output.send(sample.tolist())
 
 
 class TorchRollingBuffer:
@@ -302,14 +319,19 @@ class TorchRollingBuffer:
         self.owner = None
         self.dtype = dtype
         self.device = device
-        if type(shape) == tuple:
+        if isinstance(shape, tuple):
             shape = list(shape)
-        if type(shape) == list:
+        if isinstance(shape, list):
             self.sample_count = shape[0]
-            self.breadth = shape[1]
-            if len(shape) > 1 and shape[1] > 1:
-                self.update_style = t_TorchCircularBufferParallelInput
+            # Single-dim shape (e.g. [256]) is treated as serial with breadth=1.
+            if len(shape) > 1:
+                self.breadth = shape[1]
+                if shape[1] > 1:
+                    self.update_style = t_TorchCircularBufferParallelInput
+                else:
+                    self.update_style = t_TorchCircularBufferSerialInput
             else:
+                self.breadth = 1
                 self.update_style = t_TorchCircularBufferSerialInput
         else:
             length = any_to_int(shape)
@@ -337,13 +359,14 @@ class TorchRollingBuffer:
         self.allocate((self.sample_count, self.breadth))
 
     def get_value(self, x):
-        if self.buffer.shape[1] > x >= 0:
+        # x is a row index into self.buffer (samples axis), so bound by shape[0].
+        if 0 <= x < self.buffer.shape[0]:
             return self.buffer[x, 0].item()
 
     def set_value(self, x, value):
         if not self.lock.locked():
             if self.lock.acquire(blocking=False):
-                if x < self.buffer.shape[1] and x >= 0:
+                if 0 <= x < self.buffer.shape[0]:
                     self.buffer[x, 0] = value
                 self.lock.release()
 
@@ -351,7 +374,7 @@ class TorchRollingBuffer:
         if not self.lock.locked():
             if self.lock.acquire(blocking=False):
                 self.write_pos = pos
-            self.lock.release()
+                self.lock.release()
 
     def update(self, incoming):
         if not self.lock.locked():
@@ -386,7 +409,12 @@ class TorchRollingBuffer:
                         front_size = self.sample_count - self.write_pos
                         back_size = incoming.shape[0] - front_size
                     if back_size > self.sample_count:
-                        self.buffer[:self.sample_count, 0] = self.buffer[self.sample_count:, 0] = incoming[-back_size:]
+                        # Incoming wraps past the buffer; keep the most recent
+                        # sample_count samples. Previously sliced incoming[-back_size:]
+                        # (length back_size), mismatching the LHS slice length.
+                        recent = incoming[-self.sample_count:]
+                        self.buffer[:self.sample_count, 0] = recent
+                        self.buffer[self.sample_count:, 0] = recent
                         self.write_pos = 0
                         self.lock.release()
                     else:
@@ -429,31 +457,49 @@ class TorchRollingBuffer:
         return None
 
     def release_buffer(self):
-        if self.lock.locked and self.in_get_buffer:
+        if self.lock.locked() and self.in_get_buffer:
             self.in_get_buffer = False
             self.lock.release()
 
     def allocate(self, shape):
         self.lock.acquire(blocking=True)
-        if self.update_style == t_TorchBufferFill:
-            self.breadth = shape[1]
-            self.sample_count = shape[0]
-            self.buffer = torch.zeros(shape, dtype=self.dtype, device=self.device)
-        elif self.update_style == t_TorchCircularBufferSerialInput:
-            self.sample_count = shape[0]
-            self.breadth = 1
-            if len(shape) > 1:
-                if shape[0] == 1:
-                    self.sample_count = shape[1]
-            self.buffer = torch.zeros((self.sample_count * 2, 1), dtype=self.dtype, device=self.device)
-        elif self.update_style == t_TorchCircularBufferParallelInput:
-            self.sample_count = shape[0]
-            self.breadth = shape[1]
-            self.buffer = torch.zeros((self.sample_count * 2, self.breadth), dtype=self.dtype, device=self.device)
-        self.write_pos = 0
-        if self.buffer_changed_callback is not None:
-            self.buffer_changed_callback(self)
-        self.lock.release()
+        try:
+            # Compute target buffer shape under the current update_style first,
+            # then short-circuit when the existing buffer already matches.
+            if self.update_style == t_TorchBufferFill:
+                target_sample_count = shape[0]
+                target_breadth = shape[1]
+                target_shape = shape
+            elif self.update_style == t_TorchCircularBufferSerialInput:
+                target_sample_count = shape[0]
+                target_breadth = 1
+                if len(shape) > 1 and shape[0] == 1:
+                    target_sample_count = shape[1]
+                target_shape = (target_sample_count * 2, 1)
+            elif self.update_style == t_TorchCircularBufferParallelInput:
+                target_sample_count = shape[0]
+                target_breadth = shape[1]
+                target_shape = (target_sample_count * 2, target_breadth)
+            else:
+                return
+
+            if (self.buffer is not None
+                    and tuple(self.buffer.shape) == tuple(target_shape)
+                    and self.buffer.dtype == self.dtype
+                    and self.buffer.device == self.device):
+                # Already the right size/dtype/device — keep contents, don't rebuild.
+                self.sample_count = target_sample_count
+                self.breadth = target_breadth
+                return
+
+            self.sample_count = target_sample_count
+            self.breadth = target_breadth
+            self.buffer = torch.zeros(target_shape, dtype=self.dtype, device=self.device)
+            self.write_pos = 0
+            if self.buffer_changed_callback is not None:
+                self.buffer_changed_callback(self)
+        finally:
+            self.lock.release()
 
 
 class TorchRollingBufferNode(TorchDeviceDtypeNode):
@@ -502,15 +548,17 @@ class TorchRollingBufferNode(TorchDeviceDtypeNode):
 
         if self.input.fresh_input:
             data = self.input()
-            t = type(data)
-            if t != torch.tensor:
+            if not isinstance(data, torch.Tensor):
                 data = any_to_tensor(data)
 
             self.rolling_buffer.update(data)
             output_buffer = self.rolling_buffer.get_buffer()
             if output_buffer is not None:
-                self.output.send(output_buffer)
-                del output_buffer
+                # get_buffer() returns a view into the underlying tensor.
+                # Clone before release so downstream consumers can't be racing
+                # the writer once the lock drops.
+                snapshot = output_buffer.clone()
                 self.rolling_buffer.release_buffer()
+                self.output.send(snapshot)
 
 

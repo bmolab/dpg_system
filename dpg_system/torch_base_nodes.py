@@ -15,8 +15,12 @@ class TorchNode(Node):
             input_tensor = self.input()
             if input_tensor is None:
                 return input_tensor
-            if type(input_tensor) != torch.Tensor:
+            if not isinstance(input_tensor, torch.Tensor):
                 input_tensor = any_to_tensor(input_tensor, validate=True)
+            # Treat empty tensors as "no data" — most downstream nodes call
+            # shape-dependent ops that don't handle 0-element inputs gracefully.
+            # Callers that need to distinguish empty from missing should access
+            # self.input() directly.
             if input_tensor is not None and input_tensor.numel() > 0:
                 return input_tensor
         return None
@@ -28,36 +32,47 @@ class TorchNode(Node):
             device = match_tensor.device
             dtype = match_tensor.dtype
             requires_grad = match_tensor.requires_grad
-        if type(input_tensor) != torch.Tensor:
+        if not isinstance(input_tensor, torch.Tensor):
             input_tensor = any_to_tensor(input_tensor, device, dtype, requires_grad)
         else:
-            input_tensor = input_tensor.to(device, dtype, requires_grad)
+            # Tensor.to() positional signature is (device, dtype, non_blocking, copy).
+            # Passing requires_grad as the third positional silently turns into
+            # non_blocking=True and drops requires_grad. Set it on the tensor instead.
+            input_tensor = input_tensor.to(device=device, dtype=dtype)
+            if input_tensor.requires_grad != requires_grad:
+                input_tensor.requires_grad_(requires_grad)
         return input_tensor
 
-    def data_to_torchvision_tensor(self, input_tensor):
+    def data_to_torchvision_tensor(self, input_tensor, format='auto'):
+        """Coerce *input_tensor* into a CHW-ordered torch tensor.
+
+        format:
+          'chw'  — input is already (C, H, W); no transpose.
+          'hwc'  — input is (H, W, C); transpose to (C, H, W).
+          'auto' — heuristic: assume HWC when the trailing dim is small
+                   (<= 5, i.e. RGB/RGBA) and the 3rd-from-last is large.
+                   Ambiguous on small square images; pass 'chw' or 'hwc'
+                   explicitly if you know the layout.
+        """
         if input_tensor is None:
             return input_tensor
-        if type(input_tensor) != torch.Tensor:
+        if not isinstance(input_tensor, torch.Tensor):
             input_tensor = any_to_tensor(input_tensor)
-        if len(input_tensor.shape) > 2:
-            if input_tensor.shape[-3] > 5:
-                if input_tensor.shape[-1] <= 5:
-                    input_tensor = input_tensor.transpose(-1, -3).transpose(-1, -2)
+        if input_tensor.ndim < 3:
+            return input_tensor
+        if format == 'chw':
+            return input_tensor
+        if format == 'hwc':
+            return input_tensor.transpose(-1, -3).transpose(-1, -2)
+        # auto
+        if input_tensor.shape[-3] > 5 and input_tensor.shape[-1] <= 5:
+            input_tensor = input_tensor.transpose(-1, -3).transpose(-1, -2)
         return input_tensor
 
-    def input_to_torchvision_tensor(self):
-        if self.input is not None:
-            input_tensor = self.input()
-            if input_tensor is None:
-                return input_tensor
-            if type(input_tensor) != torch.Tensor:
-                input_tensor = any_to_tensor(input_tensor)
-            if len(input_tensor.shape) > 2:
-                if input_tensor.shape[-3] > 5:
-                    if input_tensor.shape[-1] <= 5:
-                        input_tensor = input_tensor.transpose(-1, -3).transpose(-1, -2)
-            return input_tensor
-        return None
+    def input_to_torchvision_tensor(self, format='auto'):
+        if self.input is None:
+            return None
+        return self.data_to_torchvision_tensor(self.input(), format=format)
 
 
 class TorchDeviceDtypeNode(TorchNode):
@@ -118,6 +133,7 @@ class TorchDeviceDtypeNode(TorchNode):
 
     def device_changed(self):
         device_name = self.device_input()
+        self.device_string = device_name
         self.device = torch.device(device_name)
 
     def requires_grad_changed(self):
@@ -126,6 +142,7 @@ class TorchDeviceDtypeNode(TorchNode):
     def dtype_changed(self):
         dtype = self.dtype_input()
         if dtype in self.dtype_dict:
+            self.dtype_string = dtype
             self.dtype = self.dtype_dict[dtype]
 
     def create_dtype_dict(self):
@@ -153,12 +170,23 @@ class TorchDeviceDtypeNode(TorchNode):
 
     def create_device_list(self):
         device_list = ['cpu']
-        if torch.backends.mps.is_available():
-            device_string = 'mps'
-            device_list.append(device_string)
-        if torch.cuda.is_available():
-            device_string = 'cuda'
-            device_list.append(device_string)
+        # Guard each probe in its own try — some backends raise rather than
+        # report unavailability if the underlying driver/library is broken.
+        try:
+            if torch.backends.mps.is_available():
+                device_list.append('mps')
+        except Exception:
+            pass
+        try:
+            if torch.cuda.is_available():
+                device_list.append('cuda')
+        except Exception:
+            pass
+        try:
+            if hasattr(torch, 'xpu') and torch.xpu.is_available():
+                device_list.append('xpu')
+        except Exception:
+            pass
         return device_list
 
 
@@ -208,8 +236,11 @@ class TorchWithDimNode(TorchNode):
             self.dim_specified = True
 
     def add_dim_input(self):
-        if self.dim_specified:
-            self.dim_input = self.add_input('dim', widget_type='input_int', default_value=self.dim, callback=self.dim_changed)
+        # Callers decide whether to expose dim based on their semantics (typically
+        # gating on self.dim_specified). When called, this unconditionally creates
+        # the widget; previously a redundant internal `if self.dim_specified` made
+        # the method a no-op when called outside the gated pattern.
+        self.dim_input = self.add_input('dim', widget_type='input_int', default_value=self.dim, callback=self.dim_changed)
 
     def dim_changed(self):
         if self.dim_input is not None:

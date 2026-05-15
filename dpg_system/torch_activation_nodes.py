@@ -62,7 +62,6 @@ def register_torch_activation_nodes():
     Node.app.register_node('t.special.zeta', TorchSpecialTwoTensorOrNumberNode.factory)
     Node.app.register_node('t.special.xlogy', TorchSpecialTwoTensorOrNumberNode.factory)
     Node.app.register_node('t.special.xlog1py', TorchSpecialTwoTensorOrNumberNode.factory)
-    Node.app.register_node('t.special.xlog1py', TorchSpecialTwoTensorOrNumberNode.factory)
     Node.app.register_node('t.special.gammainc', TorchSpecialTwoTensorNode.factory)
     Node.app.register_node('t.special.gammaincc', TorchSpecialTwoTensorNode.factory)
 
@@ -84,8 +83,10 @@ class TorchNNThresholdNode(TorchNode):
 
         self.input = self.add_input('tensor in', triggers_execution=True)
         self.threshold = self.add_input('threshold', widget_type='drag_float', default_value=threshold, callback=self.params_changed)
-        self.replace = self.add_input('replacenent', widget_type='drag_float', default_value=replace, callback=self.params_changed)
-        self.op = torch.nn.Threshold(self.threshold, self.replace)
+        self.replace = self.add_input('replacement', widget_type='drag_float', default_value=replace, callback=self.params_changed)
+        # Call the NodeInputs to read their numeric values — torch.nn.Threshold
+        # stores its args verbatim and would otherwise hold NodeInput objects.
+        self.op = torch.nn.Threshold(self.threshold(), self.replace())
         self.output = self.add_output('output')
 
     def params_changed(self):
@@ -98,10 +99,11 @@ class TorchNNThresholdNode(TorchNode):
 
 
 class TorchActivationNode(TorchNode):
+    # hardtanh is dispatched to TorchActivationTwoParamNode (it takes min/max);
+    # entry intentionally absent here.
     op_dict = {
     't.nn.relu': torch.nn.functional.relu,
     't.nn.hardswish': torch.nn.functional.hardswish,
-    't.nn.hardtanh': torch.nn.functional.hardtanh,
     't.nn.relu6': torch.nn.functional.relu6,
     't.nn.selu': torch.nn.functional.selu,
     't.nn.glu': torch.nn.functional.glu,
@@ -153,18 +155,21 @@ class TorchActivationTwoParamNode(TorchNode):
 
         if self.label == 't.nn.hardtanh':
             self.op = torch.nn.functional.hardtanh
-        if self.label == 't.nn.rrelu':
+        elif self.label == 't.nn.rrelu':
             self.op = torch.nn.functional.rrelu
             param_1_name = 'lower'
             param_2_name = 'upper'
             parameter_1 = 0.125
             parameter_2 = 0.3333333333333
-        if self.label == 't.nn.softplus':
+        elif self.label == 't.nn.softplus':
             self.op = torch.nn.functional.softplus
             param_1_name = 'beta'
             param_2_name = 'threshold'
             parameter_1 = 1.0
             parameter_2 = 20
+        else:
+            print(f'TorchActivationTwoParamNode: unknown label {self.label!r}, '
+                  f'falling back to hardtanh defaults')
 
         self.input = self.add_input('tensor in', triggers_execution=True)
         self.parameter_1 = self.add_input(param_1_name, widget_type='drag_float', default_value=parameter_1)
@@ -195,6 +200,9 @@ class TorchActivationThreeParamNode(TorchNode):
 
         if self.label == 't.nn.gumbel_softmax':
             self.op = torch.nn.functional.gumbel_softmax
+        else:
+            print(f'TorchActivationThreeParamNode: unknown label {self.label!r}, '
+                  f'falling back to gumbel_softmax defaults')
 
         self.input = self.add_input('tensor in', triggers_execution=True)
         self.parameter_1 = self.add_input(param_1_name, widget_type='drag_float', default_value=parameter_1)
@@ -274,6 +282,9 @@ class TorchActivationOneParamNode(TorchNode):
             self.op = torch.nn.functional.softshrink
             param_name = 'lambda'
             parameter = 0.5
+        else:
+            print(f'TorchActivationOneParamNode: unknown label {self.label!r}, '
+                  f'falling back to elu defaults')
 
         self.input = self.add_input('tensor in', triggers_execution=True)
         self.parameter = self.add_input(param_name, widget_type='drag_float', default_value=parameter)
@@ -472,9 +483,11 @@ class TorchSpecialMultiGammaLnNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        p = 1e-8
+        # multigammaln requires p >= 1 (dim of the multivariate gamma). The
+        # previous 1e-8 default coerced to 0 through the input_int widget.
+        p = 1
         self.input = self.add_input('tensor in', triggers_execution=True)
-        self.p = self.add_input('p', widget_type='input_int', default_value=p)
+        self.p = self.add_input('p', widget_type='input_int', default_value=p, min=1)
         self.output = self.add_output('tensor out')
 
     def execute(self):

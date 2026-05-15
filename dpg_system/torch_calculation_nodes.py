@@ -159,7 +159,7 @@ class TorchDistributionTensorOneParamNode(TorchNode):
             if self.label == 't.exponential':
                 out_tensor.exponential_(self.param_1())
             elif self.label == 't.geometric':
-                out_tensor.log_normal_(self.param_1())
+                out_tensor.geometric_(self.param_1())
             self.output.send(out_tensor)
 
 
@@ -230,7 +230,7 @@ class TorchCDistanceNode(TorchNode):
 class TorchDistanceNode(TorchNode):
     @staticmethod
     def factory(name, data, args=None):
-        node = TorchCDistanceNode(name, data, args)
+        node = TorchDistanceNode(name, data, args)
         return node
 
     def __init__(self, label: str, data, args):
@@ -249,12 +249,14 @@ class TorchDistanceNode(TorchNode):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
             if self.input2 is not None:
+                # t.dist: distance between two tensors. Skip if the second
+                # tensor isn't connected/convertible yet.
                 input2 = self.data_to_tensor(self.input2(), match_tensor=input_tensor)
-                if input2 is not None:
-                    euclidean_length = torch.dist(input_tensor, torch.zeros_like(input_tensor))
-                else:
-                    euclidean_length = torch.dist(input_tensor, input_tensor)
+                if input2 is None:
+                    return
+                euclidean_length = torch.dist(input_tensor, input2)
             else:
+                # t.length: distance from the origin.
                 euclidean_length = torch.dist(input_tensor, torch.zeros_like(input_tensor))
 
             self.output.send(euclidean_length.item())
@@ -270,7 +272,10 @@ class TorchDiffNode(TorchWithDimNode):
         super().__init__(label, data, args)
 
         self.input = self.add_input('tensor in', triggers_execution=True)
-        self.dim = -1
+        # Only override the default when no dim was passed in args; otherwise
+        # TorchWithDimNode has already parsed the user-supplied value.
+        if not self.dim_specified:
+            self.dim = -1
         n = 1
         self.n = self.add_input('n', widget_type='input_int', default_value=n)
         if self.dim_specified:
@@ -287,7 +292,7 @@ class TorchDiffNode(TorchWithDimNode):
                     result = torch.diff(input_tensor, n=self.n())
                 self.output.send(result)
             except Exception as e:
-                traceback.print_exception(e)
+                traceback.print_exc()
                 if self.app.verbose:
                     print(self.label, e)
 
@@ -302,7 +307,8 @@ class TorchEnergyNode(TorchWithDimNode):
         super().__init__(label, data, args)
 
         self.input = self.add_input('tensor in', triggers_execution=True)
-        self.dim = -1
+        if not self.dim_specified:
+            self.dim = -1
         n = 1
         self.n = self.add_input('n', widget_type='input_int', default_value=n)
         if self.dim_specified:
@@ -320,7 +326,7 @@ class TorchEnergyNode(TorchWithDimNode):
                 result = result.abs().sum()
                 self.output.send(result)
             except Exception as e:
-                traceback.print_exception(e)
+                traceback.print_exc()
                 if self.app.verbose:
                     print(self.label, e)
 
@@ -404,10 +410,14 @@ class TorchLCMGCDNode(TorchNode):
         super().__init__(label, data, args)
 
         self.op = torch.gcd
+        # Default label matches the default op; override only when the lookup
+        # actually selects a different op. Previously this branch unconditionally
+        # set output_name = 'lcm' even for t.gcd.
         output_name = 'gcd'
         if self.label in self.op_dict:
             self.op = self.op_dict[self.label]
-            output_name = 'lcm'
+            if self.label == 't.lcm':
+                output_name = 'lcm'
         self.input = self.add_input('tensor a in', triggers_execution=True)
         self.input_2 = self.add_input('tensor b in')
 
@@ -468,7 +478,8 @@ class TorchMeanMedianNode(TorchWithDimNode):
         self.op = torch.mean
         if self.label in self.op_dict:
             self.op = self.op_dict[self.label]
-        self.dim = -1
+        if not self.dim_specified:
+            self.dim = -1
         keep_dims = False
         if self.dim_specified:
             self.add_dim_input()
@@ -606,12 +617,14 @@ class TorchClampNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+        min_value = 0.0
+        max_value = 1.0
         if len(args) > 1:
-            min = any_to_float(args[0])
-            max = any_to_float(args[1])
+            min_value = any_to_float(args[0])
+            max_value = any_to_float(args[1])
         self.input = self.add_input('tensor in', triggers_execution=True)
-        self.min = self.add_input('min', widget_type='drag_float', default_value=min)
-        self.max = self.add_input('max', widget_type='drag_float', default_value=max)
+        self.min = self.add_input('min', widget_type='drag_float', default_value=min_value)
+        self.max = self.add_input('max', widget_type='drag_float', default_value=max_value)
         self.output = self.add_output('output')
 
     def execute(self):
@@ -817,7 +830,7 @@ class TorchPCALowRankNode(TorchNode):
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            u, s, v = torch.pca.low_rank(input_tensor, center=self.center(), niter=self.niter())
+            u, s, v = torch.pca_lowrank(input_tensor, center=self.center(), niter=self.niter())
             self.v_output.send(v)
             self.s_output.send(s)
             self.u_output.send(u)
@@ -839,7 +852,7 @@ class TorchLinalgEigenNode(TorchNode):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
             if len(input_tensor.shape) > 1:
-                if input_tensor.shape[-1] == input_tensor.shape[-1]:
+                if input_tensor.shape[-1] == input_tensor.shape[-2]:
                     l, v = torch.linalg.eig(input_tensor)
                     self.v_output.send(v)
                     self.l_output.send(l)
