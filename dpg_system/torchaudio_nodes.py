@@ -338,7 +338,6 @@ class TorchAudioVADNode(TorchNode):
     def execute(self):
         data = self.input_to_tensor()
         if data is not None:
-            print('trigger', self.trigger_level())
             active_audio = torchaudio.functional.vad(data, self.rate(), trigger_level=self.trigger_level(), noise_reduction_amount=self.noise_reduction())
             self.vad_output.send(active_audio)
 
@@ -400,7 +399,10 @@ class TorchAudioLoudnessNode(TorchNode):
         data = self.input_to_tensor()
         if data is not None:
             if len(data.shape) < 2:
-                data.unsqueeze(dim=0)
+                # Was: data.unsqueeze(dim=0) — not in-place, the result was
+                # discarded and data stayed 1D. Rebind so a 1D input is
+                # actually promoted to [1, N] before the loudness call.
+                data = data.unsqueeze(dim=0)
             if data.shape[-1] < 6400:
                 print(self.label, 'too few samples to calculate loudness (min 6400)')
             else:
@@ -441,7 +443,13 @@ class TorchAudioFileNode(TorchNode):
         self.sample_rate = None
         self.trigger_input = self.add_input('trigger', triggers_execution=True, trigger_button=True)
         self.path_input = self.add_input('path in', callback=self.load_file)
-        self.load_file = self.add_input('load file', widget_type='button', callback=self.request_load_file)
+        # Use a separate attribute for the button so the load_file() method
+        # defined below stays reachable via self.load_file. The previous
+        # `self.load_file = self.add_input(...)` shadowed the method on the
+        # instance; the button still worked (its callback was request_load_file,
+        # not load_file), but any later self.load_file() call would invoke the
+        # NodeInput instead of the method.
+        self.load_button = self.add_input('load file', widget_type='button', callback=self.request_load_file)
         self.file_name = self.add_label('')
 
         self.output = self.add_output('audio data out')
@@ -470,6 +478,10 @@ class TorchAudioFileNode(TorchNode):
         self.load_file_with_path(filepath)
 
     def execute(self):
+        # No file loaded yet — sample_rate / waveform are still None and
+        # int(None) / output.send(None) both crash. Bail rather than tear down.
+        if self.waveform is None or self.sample_rate is None:
+            return
         self.sample_rate_out.send(int(self.sample_rate))
         self.output.send(self.waveform)
 
@@ -489,10 +501,18 @@ class TorchAudioPlaySoundNode(TorchNode):
         self.trigger_input = self.add_input('trigger', widget_type='button', callback=self.play)
         self.input = self.add_input('audio tensor in', triggers_execution=True)
         self.path_input = self.add_input('path in', callback=self.load_file)
-        self.load_file = self.add_input('load file', widget_type='button', callback=self.request_load_file)
+        # Separate attribute for the button so the load_file() method below
+        # isn't shadowed by the NodeInput instance.
+        self.load_button = self.add_input('load file', widget_type='button', callback=self.request_load_file)
         self.file_name = self.add_label('')
         self.stop_button = self.add_input('stop', widget_type='button', callback=self.stop)
         self.last_sound_id = None
+        # Pre-declare the per-instance waveform buffers so play()'s
+        # `stored_waveform_np is not None` guard has an attribute to test
+        # against — previously hitting the play button before any audio had
+        # been loaded raised AttributeError.
+        self.waveform_np = None
+        self.stored_waveform_np = None
 
     def request_load_file(self):
         loader = LoadDialog(self, self.load_file_callback, extensions=['.aif', '.wav', '.mp3'])
@@ -506,7 +526,7 @@ class TorchAudioPlaySoundNode(TorchNode):
             print(f'File not found at: {filepath}')
             return None, None
 
-            # torchaudio.load returns a tuple of (waveform, sample_rate)
+        # torchaudio.load returns a tuple of (waveform, sample_rate)
         self.waveform, self.sample_rate = torchaudio.load(filepath)
         if not self.waveform.is_cpu:
             self.waveform = self.waveform.cpu()
@@ -540,6 +560,8 @@ class TorchAudioPlaySoundNode(TorchNode):
 
     def execute(self):
         waveform = self.input_to_tensor()
+        if waveform is None:
+            return
         if not waveform.is_cpu:
             waveform = waveform.cpu()
         if waveform.ndim == 1:
@@ -572,7 +594,9 @@ class TorchAudioMultiPlayerNode(TorchNode):
         self.trigger_input = self.add_input('trigger', widget_type='button', callback=self.play)
         self.input = self.add_input('audio tensor in', triggers_execution=True)
         self.path_input = self.add_input('path in', callback=self.load_file)
-        self.load_file = self.add_input('load file', widget_type='button', callback=self.request_load_file)
+        # Separate attribute for the button so the load_file() method below
+        # isn't shadowed by the NodeInput instance.
+        self.load_button = self.add_input('load file', widget_type='button', callback=self.request_load_file)
         self.file_name = self.add_label('')
         self.remove = self.add_input('remove wave', callback=self.remove_wave)
         self.clear_button = self.add_input('clear waves', callback=self.clear_waves)
@@ -581,6 +605,10 @@ class TorchAudioMultiPlayerNode(TorchNode):
         self.waves = {}
         self.player_ids = {}
         self.last_loaded = None
+        # Pre-declared so execute()'s in-place numpy buffer pattern doesn't
+        # silently assume these attributes exist on first call.
+        self.waveform_np = None
+        self.stored_waveform_np = None
 
     def request_load_file(self):
         loader = LoadDialog(self, self.load_file_callback, extensions=['.aif', '.wav', '.mp3'])
@@ -648,6 +676,8 @@ class TorchAudioMultiPlayerNode(TorchNode):
 
     def execute(self):
         waveform = self.input_to_tensor()
+        if waveform is None:
+            return
         if not waveform.is_cpu:
             waveform = waveform.cpu()
         if waveform.ndim == 1:
