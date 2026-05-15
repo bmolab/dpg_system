@@ -2451,6 +2451,7 @@ class ShadowToSMPLNode(Node):
         self.corrections_prop = self.add_property('rest_pose_corrections', widget_type='checkbox', default_value=False)
         self.output_up_axis_prop = self.add_property('output_up_axis', widget_type='combo', default_value='Z-up')
         self.output_up_axis_prop.widget.combo_items = ['Y-up', 'Z-up']
+        self.floor_height_prop = self.add_property('floor_height', widget_type='drag_float', default_value=0.0)
 
         self.pose_output = self.add_output('pose')
         self.trans_output = self.add_output('trans')
@@ -2460,6 +2461,7 @@ class ShadowToSMPLNode(Node):
 
         self._betas = None
         self._gender = 'neutral'
+        self._warned_no_positions = False
 
         # C_i corrections (24 Rotation objects)
         self._C = [Rotation.identity()] * 24
@@ -2692,10 +2694,13 @@ class ShadowToSMPLNode(Node):
             return
 
         # Re-order to SMPL (22) joint order based on input format
-        if shadow_data.shape[0] == 37:
+        n_quats = shadow_data.shape[0]
+        if n_quats == 37:
             smpl_quats = JointTranslator.translate_from_shadow_to_smpl(shadow_data)
-        elif shadow_data.shape[0] == 20:
+            pelvis_idx = 4   # shadow index for PelvisAnchor
+        elif n_quats == 20:
             smpl_quats = JointTranslator.translate_from_bmolab_active_to_smpl(shadow_data)
+            pelvis_idx = 5   # bmolab active index for pelvis_anchor
         else:
             return
 
@@ -2725,26 +2730,40 @@ class ShadowToSMPLNode(Node):
             root_rot = Rotation.from_quat(smpl_quats[0], scalar_first=True)
             smpl_quats[0] = (R_yup_to_zup * root_rot).as_quat(scalar_first=True)
 
-        # Extract root position
+        # Extract root position.
+        # Format-aware pelvis row: 37-joint shadow uses index 4 (PelvisAnchor),
+        # 20-joint active uses index 5 (pelvis_anchor).
         raw_positions = self.positions_input()
+        p = None
         if raw_positions is not None:
             positions = any_to_array(raw_positions)
-            p = None
             if positions.ndim == 1 and positions.size == 3:
+                # Pre-extracted trans vector
                 p = positions
-            elif positions.ndim == 1 and positions.size >= 15:
+            elif positions.ndim == 1 and positions.size >= (pelvis_idx + 1) * 3:
                 positions = positions.reshape(-1, 3)
-                if positions.shape[0] > 4:
-                    p = positions[4]
-            elif positions.ndim == 2 and positions.shape[0] > 4:
-                p = positions[4]
-            if p is not None:
-                if z_up:
-                    # Y-up → Z-up: [x, y, z] → [x, -z, y]
-                    trans = np.array([p[0], -p[2], p[1]], dtype=np.float32)
-                else:
-                    trans = p.astype(np.float32)
-                self.trans_output.send(trans)
+                if positions.shape[0] > pelvis_idx:
+                    p = positions[pelvis_idx]
+            elif positions.ndim == 2 and positions.shape[0] > pelvis_idx:
+                p = positions[pelvis_idx]
+
+        if p is not None:
+            if z_up:
+                # Y-up → Z-up: [x, y, z] → [x, -z, y]
+                trans = np.array([p[0], -p[2], p[1]], dtype=np.float32)
+            else:
+                trans = p.astype(np.float32)
+            # Floor offset subtracted from the output's up-axis component
+            floor = float(self.floor_height_prop())
+            if floor != 0.0:
+                up_idx = 2 if z_up else 1
+                trans[up_idx] -= floor
+        else:
+            if not self._warned_no_positions:
+                print("ShadowToSMPLNode: 'positions' input not connected (or malformed) — emitting zero trans. Wire shadow body_pos_N to enable root translation.")
+                self._warned_no_positions = True
+            trans = np.zeros(3, dtype=np.float32)
+        self.trans_output.send(trans)
 
         # Output format
         if self.output_format_prop() == 'axis_angle':
