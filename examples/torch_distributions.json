@@ -1,24 +1,26 @@
 {
-    "height": 1087,
-    "width": 1664,
+    "height": 1198,
+    "width": 1280,
     "position": [
-        100,
-        100
+        679,
+        129
     ],
-    "id": 160,
+    "id": 204,
     "name": "torch_distributions",
-    "path": "/Users/drokeby/PycharmProjects/dpg_system/examples/torch_distributions.json",
+    "path": "/Users/drokeby/dpg_system/examples/torch_distributions.json",
     "nodes": {
         "0": {
             "name": "",
-            "id": 185,
+            "id": 235,
+            "sid": 1,
             "position_x": 0,
             "position_y": 0,
             "width": 9,
             "height": 30,
-            "visibility": "show_all",
+            "visibility": "hidden",
             "draggable": true,
-            "presentation_state": "show_all",
+            "protected": true,
+            "presentation_state": "hidden",
             "properties": {
                 "0": {
                     "name": "",
@@ -29,113 +31,97 @@
         },
         "1": {
             "name": "t.bernoulli",
-            "id": 235,
+            "id": 337,
+            "sid": 2,
             "position_x": 219,
             "position_y": 18,
             "width": 76,
-            "height": 48,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "2": {
             "name": "t.poisson",
-            "id": 250,
-            "position_x": 223,
-            "position_y": 229,
+            "id": 344,
+            "sid": 3,
+            "position_x": 197,
+            "position_y": 232,
             "width": 70,
-            "height": 48,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "3": {
             "name": "heat_map",
-            "id": 265,
+            "id": 351,
+            "sid": 4,
             "position_x": 309,
             "position_y": 17,
             "width": 136,
-            "height": 180,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "style",
-                    "value": "heat_map",
-                    "value_type": "string"
-                },
-                "1": {
                     "name": "color",
                     "value": "viridis",
                     "value_type": "string"
                 },
-                "2": {
-                    "name": "sample count",
-                    "value": 64,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "array fills plot",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "4": {
+                "1": {
                     "name": "width",
                     "value": 128,
                     "value_type": "int"
                 },
-                "5": {
+                "2": {
                     "name": "height",
                     "value": 128,
                     "value_type": "int"
                 },
-                "6": {
-                    "name": "min x",
-                    "value": 0.0,
-                    "value_type": "float"
+                "3": {
+                    "name": "sample count",
+                    "value": 64,
+                    "value_type": "int"
                 },
-                "7": {
-                    "name": "max x",
-                    "value": 64.0,
-                    "value_type": "float"
-                },
-                "8": {
+                "4": {
                     "name": "min y",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "9": {
+                "5": {
                     "name": "max y",
                     "value": 1.0,
                     "value_type": "float"
                 },
-                "10": {
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
                     "name": "number format",
                     "value": "",
                     "value_type": "string"
-                },
-                "11": {
-                    "name": "continuous output",
-                    "value": false,
-                    "value_type": "bool"
                 }
             }
         },
         "4": {
             "init": "t.rand 64 64",
             "name": "t.rand",
-            "id": 324,
+            "id": 393,
+            "sid": 5,
             "position_x": 16,
             "position_y": 16,
             "width": 163,
-            "height": 156,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "",
+                    "name": "input",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -145,39 +131,40 @@
                     "value_type": "string"
                 },
                 "2": {
-                    "name": "device",
-                    "value": "cpu",
-                    "value_type": "string"
-                },
-                "3": {
-                    "name": "dtype",
-                    "value": "float32",
-                    "value_type": "string"
-                },
-                "4": {
-                    "name": "requires_grad",
-                    "value": false,
-                    "value_type": "bool"
-                },
-                "5": {
                     "name": "min",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "6": {
+                "3": {
                     "name": "max",
                     "value": 1.0,
                     "value_type": "float"
+                },
+                "4": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
                 }
             }
         },
         "5": {
             "name": "t.cauchy",
-            "id": 382,
+            "id": 418,
+            "sid": 6,
             "position_x": 171,
             "position_y": 433,
             "width": 129,
-            "height": 84,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -196,84 +183,66 @@
         },
         "6": {
             "name": "heat_map",
-            "id": 409,
+            "id": 431,
+            "sid": 7,
             "position_x": 317,
             "position_y": 429,
             "width": 136,
-            "height": 180,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "style",
-                    "value": "heat_map",
-                    "value_type": "string"
-                },
-                "1": {
                     "name": "color",
                     "value": "viridis",
                     "value_type": "string"
                 },
-                "2": {
-                    "name": "sample count",
-                    "value": 64,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "array fills plot",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "4": {
+                "1": {
                     "name": "width",
                     "value": 128,
                     "value_type": "int"
                 },
-                "5": {
+                "2": {
                     "name": "height",
                     "value": 128,
                     "value_type": "int"
                 },
-                "6": {
-                    "name": "min x",
-                    "value": 0.0,
+                "3": {
+                    "name": "sample count",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": -10.0,
                     "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 10.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
                 },
                 "7": {
-                    "name": "max x",
-                    "value": 64.0,
-                    "value_type": "float"
-                },
-                "8": {
-                    "name": "min y",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "9": {
-                    "name": "max y",
-                    "value": 100.0,
-                    "value_type": "float"
-                },
-                "10": {
                     "name": "number format",
                     "value": "",
                     "value_type": "string"
-                },
-                "11": {
-                    "name": "continuous output",
-                    "value": false,
-                    "value_type": "bool"
                 }
             }
         },
         "7": {
             "name": "t.normal",
             "id": 468,
+            "sid": 8,
             "position_x": 179,
             "position_y": 636,
             "width": 117,
-            "height": 84,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -292,84 +261,66 @@
         },
         "8": {
             "name": "heat_map",
-            "id": 495,
+            "id": 481,
+            "sid": 9,
             "position_x": 316,
             "position_y": 634,
             "width": 136,
-            "height": 180,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "style",
-                    "value": "heat_map",
-                    "value_type": "string"
-                },
-                "1": {
                     "name": "color",
                     "value": "viridis",
                     "value_type": "string"
                 },
-                "2": {
-                    "name": "sample count",
-                    "value": 64,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "array fills plot",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "4": {
+                "1": {
                     "name": "width",
                     "value": 128,
                     "value_type": "int"
                 },
-                "5": {
+                "2": {
                     "name": "height",
                     "value": 128,
                     "value_type": "int"
                 },
-                "6": {
-                    "name": "min x",
-                    "value": 0.0,
+                "3": {
+                    "name": "sample count",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": -2.0,
                     "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
                 },
                 "7": {
-                    "name": "max x",
-                    "value": 64.0,
-                    "value_type": "float"
-                },
-                "8": {
-                    "name": "min y",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "9": {
-                    "name": "max y",
-                    "value": 6.0,
-                    "value_type": "float"
-                },
-                "10": {
                     "name": "number format",
                     "value": "",
                     "value_type": "string"
-                },
-                "11": {
-                    "name": "continuous output",
-                    "value": false,
-                    "value_type": "bool"
                 }
             }
         },
         "9": {
             "name": "t.log_normal",
-            "id": 554,
+            "id": 518,
+            "sid": 10,
             "position_x": 174,
             "position_y": 834,
             "width": 117,
-            "height": 84,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -388,84 +339,66 @@
         },
         "10": {
             "name": "heat_map",
-            "id": 581,
+            "id": 531,
+            "sid": 11,
             "position_x": 316,
             "position_y": 825,
             "width": 136,
-            "height": 180,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "style",
-                    "value": "heat_map",
-                    "value_type": "string"
-                },
-                "1": {
                     "name": "color",
                     "value": "viridis",
                     "value_type": "string"
                 },
-                "2": {
-                    "name": "sample count",
-                    "value": 64,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "array fills plot",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "4": {
+                "1": {
                     "name": "width",
                     "value": 128,
                     "value_type": "int"
                 },
-                "5": {
+                "2": {
                     "name": "height",
                     "value": 128,
                     "value_type": "int"
                 },
-                "6": {
-                    "name": "min x",
-                    "value": 0.0,
-                    "value_type": "float"
+                "3": {
+                    "name": "sample count",
+                    "value": 64,
+                    "value_type": "int"
                 },
-                "7": {
-                    "name": "max x",
-                    "value": 64.0,
-                    "value_type": "float"
-                },
-                "8": {
+                "4": {
                     "name": "min y",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "9": {
+                "5": {
                     "name": "max y",
-                    "value": 5.0,
+                    "value": 4.0,
                     "value_type": "float"
                 },
-                "10": {
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
                     "name": "number format",
                     "value": "",
                     "value_type": "string"
-                },
-                "11": {
-                    "name": "continuous output",
-                    "value": false,
-                    "value_type": "bool"
                 }
             }
         },
         "11": {
             "name": "t.uniform",
-            "id": 640,
+            "id": 568,
+            "sid": 12,
             "position_x": 493,
             "position_y": 22,
             "width": 117,
-            "height": 84,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -484,84 +417,193 @@
         },
         "12": {
             "name": "heat_map",
-            "id": 667,
+            "id": 581,
+            "sid": 13,
             "position_x": 629,
             "position_y": 21,
             "width": 136,
-            "height": 180,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "style",
-                    "value": "heat_map",
-                    "value_type": "string"
-                },
-                "1": {
                     "name": "color",
                     "value": "viridis",
                     "value_type": "string"
                 },
-                "2": {
-                    "name": "sample count",
-                    "value": 64,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "array fills plot",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "4": {
+                "1": {
                     "name": "width",
                     "value": 128,
                     "value_type": "int"
                 },
-                "5": {
+                "2": {
                     "name": "height",
                     "value": 128,
                     "value_type": "int"
                 },
-                "6": {
-                    "name": "min x",
-                    "value": 0.0,
-                    "value_type": "float"
+                "3": {
+                    "name": "sample count",
+                    "value": 64,
+                    "value_type": "int"
                 },
-                "7": {
-                    "name": "max x",
-                    "value": 64.0,
-                    "value_type": "float"
-                },
-                "8": {
+                "4": {
                     "name": "min y",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "9": {
+                "5": {
                     "name": "max y",
                     "value": 1.0,
                     "value_type": "float"
                 },
-                "10": {
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
                     "name": "number format",
                     "value": "",
                     "value_type": "string"
-                },
-                "11": {
-                    "name": "continuous output",
-                    "value": false,
-                    "value_type": "bool"
                 }
             }
         },
         "13": {
+            "name": "heat_map",
+            "id": 618,
+            "sid": 15,
+            "position_x": 633,
+            "position_y": 230,
+            "width": 136,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 5.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                }
+            }
+        },
+        "14": {
+            "name": "heat_map",
+            "id": 665,
+            "sid": 18,
+            "position_x": 311,
+            "position_y": 229,
+            "width": 136,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 5.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                }
+            }
+        },
+        "15": {
+            "name": "load_bang",
+            "id": 702,
+            "sid": 19,
+            "position_x": 47,
+            "position_y": 224,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "trigger",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "16": {
             "name": "t.exponential",
-            "id": 726,
-            "position_x": 481,
-            "position_y": 232,
+            "id": 709,
+            "sid": 21,
+            "position_x": 472,
+            "position_y": 233,
             "width": 129,
-            "height": 66,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -573,357 +615,250 @@
                 }
             }
         },
-        "14": {
-            "name": "heat_map",
-            "id": 747,
-            "position_x": 633,
-            "position_y": 231,
-            "width": 136,
-            "height": 180,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "style",
-                    "value": "heat_map",
-                    "value_type": "string"
-                },
-                "1": {
-                    "name": "color",
-                    "value": "viridis",
-                    "value_type": "string"
-                },
-                "2": {
-                    "name": "sample count",
-                    "value": 64,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "array fills plot",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "4": {
-                    "name": "width",
-                    "value": 128,
-                    "value_type": "int"
-                },
-                "5": {
-                    "name": "height",
-                    "value": 128,
-                    "value_type": "int"
-                },
-                "6": {
-                    "name": "min x",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "7": {
-                    "name": "max x",
-                    "value": 64.0,
-                    "value_type": "float"
-                },
-                "8": {
-                    "name": "min y",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "9": {
-                    "name": "max y",
-                    "value": 10.0,
-                    "value_type": "float"
-                },
-                "10": {
-                    "name": "number format",
-                    "value": "",
-                    "value_type": "string"
-                },
-                "11": {
-                    "name": "continuous output",
-                    "value": false,
-                    "value_type": "bool"
-                }
-            }
-        },
-        "15": {
+        "17": {
             "name": "t.geometric",
-            "id": 806,
-            "position_x": 507,
-            "position_y": 431,
+            "id": 790,
+            "sid": 49,
+            "position_x": 514,
+            "position_y": 455,
             "width": 99,
-            "height": 66,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "p",
-                    "value": 1.0,
+                    "value": 0.5,
                     "value_type": "float"
-                }
-            }
-        },
-        "16": {
-            "name": "heat_map",
-            "id": 827,
-            "position_x": 630,
-            "position_y": 430,
-            "width": 136,
-            "height": 180,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "style",
-                    "value": "heat_map",
-                    "value_type": "string"
-                },
-                "1": {
-                    "name": "color",
-                    "value": "viridis",
-                    "value_type": "string"
-                },
-                "2": {
-                    "name": "sample count",
-                    "value": 64,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "array fills plot",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "4": {
-                    "name": "width",
-                    "value": 128,
-                    "value_type": "int"
-                },
-                "5": {
-                    "name": "height",
-                    "value": 128,
-                    "value_type": "int"
-                },
-                "6": {
-                    "name": "min x",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "7": {
-                    "name": "max x",
-                    "value": 64.0,
-                    "value_type": "float"
-                },
-                "8": {
-                    "name": "min y",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "9": {
-                    "name": "max y",
-                    "value": 1024.0,
-                    "value_type": "float"
-                },
-                "10": {
-                    "name": "number format",
-                    "value": "",
-                    "value_type": "string"
-                },
-                "11": {
-                    "name": "continuous output",
-                    "value": false,
-                    "value_type": "bool"
-                }
-            }
-        },
-        "17": {
-            "name": "heat_map",
-            "id": 886,
-            "position_x": 311,
-            "position_y": 230,
-            "width": 136,
-            "height": 180,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "style",
-                    "value": "heat_map",
-                    "value_type": "string"
-                },
-                "1": {
-                    "name": "color",
-                    "value": "viridis",
-                    "value_type": "string"
-                },
-                "2": {
-                    "name": "sample count",
-                    "value": 64,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "array fills plot",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "4": {
-                    "name": "width",
-                    "value": 128,
-                    "value_type": "int"
-                },
-                "5": {
-                    "name": "height",
-                    "value": 128,
-                    "value_type": "int"
-                },
-                "6": {
-                    "name": "min x",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "7": {
-                    "name": "max x",
-                    "value": 64.0,
-                    "value_type": "float"
-                },
-                "8": {
-                    "name": "min y",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "9": {
-                    "name": "max y",
-                    "value": 6.0,
-                    "value_type": "float"
-                },
-                "10": {
-                    "name": "number format",
-                    "value": "",
-                    "value_type": "string"
-                },
-                "11": {
-                    "name": "continuous output",
-                    "value": false,
-                    "value_type": "bool"
                 }
             }
         },
         "18": {
-            "name": "load_bang",
-            "id": 975,
-            "position_x": 47,
-            "position_y": 224,
-            "width": 64,
-            "height": 48,
+            "name": "heat_map",
+            "id": 810,
+            "sid": 51,
+            "position_x": 639,
+            "position_y": 446,
+            "width": 136,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
-            "presentation_state": "show_all"
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 10.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "string"
+                }
+            }
         }
     },
     "links": {
         "0": {
-            "source_node": 235,
+            "source_node": 337,
+            "source_node_name": "t.bernoulli",
             "source_output_index": 0,
-            "dest_node": 265,
-            "dest_input_index": 0
+            "source_output_name": "tensor out",
+            "dest_node": 351,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
         },
         "1": {
-            "source_node": 250,
+            "source_node": 344,
+            "source_node_name": "t.poisson",
             "source_output_index": 0,
-            "dest_node": 886,
-            "dest_input_index": 0
+            "source_output_name": "tensor out",
+            "dest_node": 665,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
         },
         "2": {
-            "source_node": 324,
+            "source_node": 393,
+            "source_node_name": "t.rand",
             "source_output_index": 0,
-            "dest_node": 235,
-            "dest_input_index": 0
+            "source_output_name": "random tensor",
+            "dest_node": 337,
+            "dest_node_name": "t.bernoulli",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
         },
         "3": {
-            "source_node": 324,
+            "source_node": 393,
+            "source_node_name": "t.rand",
             "source_output_index": 0,
-            "dest_node": 250,
-            "dest_input_index": 0
+            "source_output_name": "random tensor",
+            "dest_node": 344,
+            "dest_node_name": "t.poisson",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
         },
         "4": {
-            "source_node": 324,
+            "source_node": 393,
+            "source_node_name": "t.rand",
             "source_output_index": 0,
-            "dest_node": 382,
-            "dest_input_index": 0
+            "source_output_name": "random tensor",
+            "dest_node": 418,
+            "dest_node_name": "t.cauchy",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
         },
         "5": {
-            "source_node": 324,
+            "source_node": 393,
+            "source_node_name": "t.rand",
             "source_output_index": 0,
+            "source_output_name": "random tensor",
             "dest_node": 468,
-            "dest_input_index": 0
+            "dest_node_name": "t.normal",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
         },
         "6": {
-            "source_node": 324,
+            "source_node": 393,
+            "source_node_name": "t.rand",
             "source_output_index": 0,
-            "dest_node": 554,
-            "dest_input_index": 0
+            "source_output_name": "random tensor",
+            "dest_node": 518,
+            "dest_node_name": "t.log_normal",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
         },
         "7": {
-            "source_node": 324,
+            "source_node": 393,
+            "source_node_name": "t.rand",
             "source_output_index": 0,
-            "dest_node": 640,
-            "dest_input_index": 0
+            "source_output_name": "random tensor",
+            "dest_node": 568,
+            "dest_node_name": "t.uniform",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
         },
         "8": {
-            "source_node": 324,
+            "source_node": 393,
+            "source_node_name": "t.rand",
             "source_output_index": 0,
-            "dest_node": 726,
-            "dest_input_index": 0
+            "source_output_name": "random tensor",
+            "dest_node": 709,
+            "dest_node_name": "t.exponential",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
         },
         "9": {
-            "source_node": 324,
+            "source_node": 393,
+            "source_node_name": "t.rand",
             "source_output_index": 0,
-            "dest_node": 806,
-            "dest_input_index": 0
+            "source_output_name": "random tensor",
+            "dest_node": 790,
+            "dest_node_name": "t.geometric",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
         },
         "10": {
-            "source_node": 382,
+            "source_node": 418,
+            "source_node_name": "t.cauchy",
             "source_output_index": 0,
-            "dest_node": 409,
-            "dest_input_index": 0
+            "source_output_name": "tensor out",
+            "dest_node": 431,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
         },
         "11": {
             "source_node": 468,
+            "source_node_name": "t.normal",
             "source_output_index": 0,
-            "dest_node": 495,
-            "dest_input_index": 0
+            "source_output_name": "tensor out",
+            "dest_node": 481,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
         },
         "12": {
-            "source_node": 554,
+            "source_node": 518,
+            "source_node_name": "t.log_normal",
             "source_output_index": 0,
-            "dest_node": 581,
-            "dest_input_index": 0
+            "source_output_name": "tensor out",
+            "dest_node": 531,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
         },
         "13": {
-            "source_node": 640,
+            "source_node": 568,
+            "source_node_name": "t.uniform",
             "source_output_index": 0,
-            "dest_node": 667,
-            "dest_input_index": 0
+            "source_output_name": "tensor out",
+            "dest_node": 581,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
         },
         "14": {
-            "source_node": 726,
+            "source_node": 702,
+            "source_node_name": "load_bang",
             "source_output_index": 0,
-            "dest_node": 747,
-            "dest_input_index": 0
+            "source_output_name": "out",
+            "dest_node": 393,
+            "dest_node_name": "t.rand",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
         },
         "15": {
-            "source_node": 806,
+            "source_node": 709,
+            "source_node_name": "t.exponential",
             "source_output_index": 0,
-            "dest_node": 827,
-            "dest_input_index": 0
+            "source_output_name": "tensor out",
+            "dest_node": 618,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
         },
         "16": {
-            "source_node": 975,
+            "source_node": 790,
+            "source_node_name": "t.geometric",
             "source_output_index": 0,
-            "dest_node": 324,
-            "dest_input_index": 0
+            "source_output_name": "tensor out",
+            "dest_node": 810,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
         }
     }
 }
