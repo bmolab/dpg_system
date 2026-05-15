@@ -22,11 +22,17 @@ class TorchMSELossNode(TorchNode):
 
     def execute(self):
         input_tensor = self.input_to_tensor()
-        if input_tensor is not None:
-            target_tensor = self.data_to_tensor(self.target_input(), match_tensor=input_tensor)
-            if target_tensor is not None:
-                loss = torch.nn.functional.mse_loss(input_tensor, target_tensor, reduction='sum')
-                self.loss_output.send(loss.item())
+        if input_tensor is None:
+            return
+        target_tensor = self.data_to_tensor(self.target_input(), match_tensor=input_tensor)
+        if target_tensor is None:
+            return
+        try:
+            loss = torch.nn.functional.mse_loss(input_tensor, target_tensor, reduction='sum')
+            self.loss_output.send(loss.item())
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
 
 
 class TorchL1LossNode(TorchNode):
@@ -43,11 +49,17 @@ class TorchL1LossNode(TorchNode):
 
     def execute(self):
         input_tensor = self.input_to_tensor()
-        if input_tensor is not None:
-            target_tensor = self.data_to_tensor(self.target_input(), match_tensor=input_tensor)
-            if target_tensor is not None:
-                loss = torch.nn.functional.l1_loss(input_tensor, target_tensor, reduction='sum')
-                self.loss_output.send(loss.item())
+        if input_tensor is None:
+            return
+        target_tensor = self.data_to_tensor(self.target_input(), match_tensor=input_tensor)
+        if target_tensor is None:
+            return
+        try:
+            loss = torch.nn.functional.l1_loss(input_tensor, target_tensor, reduction='sum')
+            self.loss_output.send(loss.item())
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
 
 
 class TorchCrossEntropyLossNode(TorchNode):
@@ -64,9 +76,18 @@ class TorchCrossEntropyLossNode(TorchNode):
 
     def execute(self):
         input_tensor = self.input_to_tensor()
-        if input_tensor is not None:
-            target_tensor = self.data_to_tensor(self.target_input(), match_tensor=input_tensor)
-            if target_tensor is not None:
-                loss = torch.nn.functional.cross_entropy(input_tensor, target_tensor)
-                self.loss_output.send(loss.item())
+        if input_tensor is None:
+            return
+        target_tensor = self.data_to_tensor(self.target_input(), match_tensor=input_tensor)
+        if target_tensor is None:
+            return
+        try:
+            loss = torch.nn.functional.cross_entropy(input_tensor, target_tensor)
+            self.loss_output.send(loss.item())
+        except Exception as e:
+            # cross_entropy is picky about target dtype/shape (class indices
+            # must be long; soft targets must match input shape). The error
+            # message from torch is the most informative thing to surface.
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
 
