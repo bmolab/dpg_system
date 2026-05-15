@@ -97,6 +97,33 @@ class Client:
         else:
             return False
 
+    def flush(self, max_messages=100000):
+        """
+        Drain any buffered incoming messages on the socket, preserving the
+        connection. Returns the number of messages discarded. Reads full
+        framed messages so the protocol state stays aligned.
+        """
+        if None == self.__socket:
+            return 0
+
+        count = 0
+        fd = self.__socket.fileno()
+        while count < max_messages:
+            try:
+                ready, _, _ = select.select([fd], [], [], 0)
+            except Exception:
+                break
+            if not ready:
+                break
+            # Generous per-message timeout so partial-frame reads can complete
+            # and we don't leave a half-message in the buffer (which would
+            # corrupt the framing for subsequent reads).
+            data = self.readData(time_out_second=0.1)
+            if data is None:
+                break
+            count += 1
+        return count
+
     def waitForData(self, time_out_second=None):
         """
         Wait until there is incoming data on this client

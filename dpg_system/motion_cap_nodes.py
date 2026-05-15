@@ -2054,7 +2054,11 @@ class MotionShadowNode(MoCapNode):
         self.thread = threading.Thread(target=shadow_service_loop)
         self.thread_started = False
         self.direct_out = self.add_property('direct_out', widget_type='checkbox', default_value=False, callback=self.direct_out_changed)
-        xml_definition = \
+        self.flush_button = self.add_input('flush', widget_type='button', callback=self.request_flush)
+        self.reconnect_button = self.add_input('reconnect', widget_type='button', callback=self.request_reconnect)
+        self._flush_requested = False
+        self._reconnect_requested = False
+        self._xml_definition = \
             "<?xml version=\"1.0\"?>" \
             "<configurable inactive=\"1\">" \
             "<Lq/>" \
@@ -2062,7 +2066,7 @@ class MotionShadowNode(MoCapNode):
             "</configurable>"
 
         if self.client:
-            if self.client.writeData(xml_definition):
+            if self.client.writeData(self._xml_definition):
                 print("Sent active channel definition to Configurable service")
 
         self.body_quat_1 = self.add_output('body 1 quaternions')
@@ -2102,7 +2106,51 @@ class MotionShadowNode(MoCapNode):
         else:
             self.add_frame_task()
 
+    def request_flush(self):
+        # Defer the socket op to the service thread to avoid racing readData().
+        self._flush_requested = True
+
+    def request_reconnect(self):
+        # Defer the socket op to the service thread to avoid racing readData().
+        self._reconnect_requested = True
+
+    def _perform_flush(self):
+        if self.client is None:
+            return
+        try:
+            n = self.client.flush()
+            print(f"shadow: flushed {n} buffered frames")
+        except Exception as e:
+            print(f"shadow: flush failed: {e}")
+
+    def _perform_reconnect(self):
+        try:
+            if self.client is not None:
+                try:
+                    self.client.close()
+                except Exception:
+                    pass
+                self.client = None
+            self.client = shadow.Client("", 32076)
+            # Force re-receipt of the joint name map on the next <?xml ...>.
+            self.joints_mapped = False
+            if self.client.writeData(self._xml_definition):
+                print("shadow: reconnected, re-sent active channel definition")
+            else:
+                print("shadow: reconnected but channel definition write failed")
+        except Exception as e:
+            print(f"shadow: reconnect failed: {e}")
+            self.client = None
+
     def receive_data(self):
+        if self._reconnect_requested:
+            self._reconnect_requested = False
+            self._perform_reconnect()
+            if self.client is None:
+                return
+        if self._flush_requested:
+            self._flush_requested = False
+            self._perform_flush()
         if self.client:
             data = self.client.readData()
             if data is not None:
