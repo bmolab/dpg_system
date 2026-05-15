@@ -53,8 +53,9 @@ class TorchWindowNode_(TorchDeviceDtypeNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        if self.label in self.op_dict:
-            self.op = self.op_dict[self.label]
+        # Fall back to hann so an unknown label still produces a usable window
+        # instead of an AttributeError in execute().
+        self.op = self.op_dict.get(self.label, torch.signal.windows.hann)
         window_type = self.label.split('.')[-1]
 
         self.param_1_name = ''
@@ -77,7 +78,8 @@ class TorchWindowNode_(TorchDeviceDtypeNode):
         self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
         self.window_type = self.add_input('type', widget_type='combo', widget_width=120, default_value=window_type, callback=self.window_type_changed)
         self.window_type.widget.combo_items = list(self.param_dict.keys())
-        self.m = self.add_input('m', widget_type='drag_int', default_value=m)
+        # m is the window length — torch rejects values < 0 with a cryptic error.
+        self.m = self.add_input('m', widget_type='drag_int', default_value=m, min=1)
         self.param_1 = self.add_input(self.param_1_name, widget_type='drag_float', default_value=self.default_1)
         self.param_2 = self.add_input(self.param_2_name, widget_type='drag_float', default_value=self.default_2)
         self.sym = self.add_input('sym', widget_type='checkbox', default_value=sym)
@@ -95,6 +97,11 @@ class TorchWindowNode_(TorchDeviceDtypeNode):
         self.label = 't.window.' + self.window_type()
         if self.label in self.op_dict:
             self.op = self.op_dict[self.label]
+        else:
+            # Keep going with a sensible default if the combo picked up an
+            # unregistered name (e.g. a typo'd preset).
+            print(f'{self.label}: unknown window, falling back to hann')
+            self.op = torch.signal.windows.hann
         self.set_title(self.label)
         param_list = []
         if self.window_type() in self.param_dict:
@@ -121,24 +128,51 @@ class TorchWindowNode_(TorchDeviceDtypeNode):
             self.param_2.hide()
 
     def execute(self):
-        window_tensor = None
-        if self.param_1_name == '':
-            window_tensor = self.op(self.m(), sym=self.sym(), dtype=self.dtype, device=self.device)
-        elif self.label == 't.window.gaussian':
-            window_tensor = self.op(self.m(), std=self.param_1(), sym=self.sym(), dtype=self.dtype, device=self.device)
-        elif self.label == 't.window.general_hamming':
-            window_tensor = self.op(self.m(), alpha=self.param_1(), sym=self.sym(), dtype=self.dtype, device=self.device)
-        elif self.label == 't.window.kaiser':
-            window_tensor = self.op(self.m(), beta=self.param_1(), sym=self.sym(), dtype=self.dtype, device=self.device)
-        elif self.label == 't.window.exponential':
-            if self.sym:
-                window_tensor = self.op(self.m(), tau=self.param_2(), sym=self.sym(), dtype=self.dtype,
-                                        device=self.device)
+        m = self.m()
+        sym = self.sym()
+        common = {'sym': sym, 'dtype': self.dtype, 'device': self.device,
+                  'requires_grad': self.requires_grad}
+
+        try:
+            if self.param_1_name == '':
+                window_tensor = self.op(m, **common)
+            elif self.label == 't.window.gaussian':
+                std = self.param_1()
+                if std <= 0:
+                    print(f'{self.label}: std must be > 0, got {std}')
+                    return
+                window_tensor = self.op(m, std=std, **common)
+            elif self.label == 't.window.general_hamming':
+                window_tensor = self.op(m, alpha=self.param_1(), **common)
+            elif self.label == 't.window.kaiser':
+                beta = self.param_1()
+                if beta < 0:
+                    print(f'{self.label}: beta must be >= 0, got {beta}')
+                    return
+                window_tensor = self.op(m, beta=beta, **common)
+            elif self.label == 't.window.exponential':
+                tau = self.param_2()
+                if tau <= 0:
+                    print(f'{self.label}: tau must be > 0, got {tau}')
+                    return
+                # torch.signal.windows.exponential rejects center when sym=True
+                # (center then defaults to M/2). Only pass center on the
+                # asymmetric path. Previously this was gated on `if self.sym:`
+                # (truthy NodeInput, never False), so the asym branch was dead.
+                if sym:
+                    window_tensor = self.op(m, tau=tau, **common)
+                else:
+                    window_tensor = self.op(m, center=self.param_1(), tau=tau, **common)
             else:
-                window_tensor = self.op(self.m(), center=self.param_1(), tau=self.param_2(), sym=self.sym(), dtype=self.dtype,
-                                        device=self.device)
-        if window_tensor is not None:
-            self.output.send(window_tensor)
+                if self.app.verbose:
+                    print(f'{self.label}: no execute branch matched, skipping')
+                return
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
+            return
+
+        self.output.send(window_tensor)
 
 
 class TorchFFTNode(TorchWithDimNode):
@@ -156,20 +190,29 @@ class TorchFFTNode(TorchWithDimNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.op = torch.fft.fft
-        if self.label in self.op_dict:
-            self.op = self.op_dict[self.label]
+        self.op = self.op_dict.get(self.label, torch.fft.fft)
         self.input = self.add_input('tensor in', triggers_execution=True)
         norm = 'backward'
         if self.dim_specified:
             self.add_dim_input()
         self.norm = self.add_input('norm', widget_type='combo', default_value=norm)
         self.norm.widget.combo_items = ['forward', 'backward', 'ortho']
-        self.output = self.add_output('histogram tensor out')
+        self.output = self.add_output('fft tensor out')
         self.help_file_name = 't.fft_help'
 
     def execute(self):
         input_tensor = self.input_to_tensor()
-        if input_tensor is not None:
-            fft_tensor = self.op(input_tensor, norm=self.norm())
+        if input_tensor is None:
+            return
+        try:
+            # The dim widget previously did nothing — dim= was never forwarded
+            # to the op. Pass it through when the user has specified a dim;
+            # otherwise let torch use its default (-1).
+            if self.dim_specified:
+                fft_tensor = self.op(input_tensor, dim=self.dim, norm=self.norm())
+            else:
+                fft_tensor = self.op(input_tensor, norm=self.norm())
             self.output.send(fft_tensor)
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
