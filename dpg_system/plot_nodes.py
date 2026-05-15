@@ -541,6 +541,10 @@ class HeatMapNode(BasePlotNode):
         super().change_range()
         # Heat maps always have a Y-axis from 0.0 to 1.0 representing row index.
         dpg.set_axis_limits(self.y_axis, 0.0, 1.0)
+        # Keep the heat_series color scale in sync with min_y/max_y so the
+        # value→color mapping reflects user edits without needing a recreate.
+        if dpg.does_item_exist(self.plot_data_tag[0]):
+            dpg.configure_item(self.plot_data_tag[0], scale_min=self.min_y, scale_max=self.max_y)
 
     def adjust_to_sample_count_change(self):
         if self.rows != self.pending_rows and self.pending_rows is not None:
@@ -613,8 +617,9 @@ class HeatMapNode(BasePlotNode):
                         self.add_frame_task()
                         return
 
-                    processed_data = (data_array + self.offset) / self.range
-                    self.y_data.update(processed_data)
+                    # Pass raw values; DPG maps them to colors using the
+                    # heat_series scale_min/scale_max (= self.min_y/self.max_y).
+                    self.y_data.update(data_array)
 
                 elif mode == 'heat_scroll':
                     # Logic from the original HeatScrollNode
@@ -625,8 +630,7 @@ class HeatMapNode(BasePlotNode):
                         self.add_frame_task()
                         return
 
-                    processed_data = (data_array.reshape((rows, 1)) + self.offset) / self.range
-                    self.y_data.update(processed_data)
+                    self.y_data.update(data_array.reshape((rows, 1)))
 
         # This part is common to both modes
         buffer = self.y_data.get_buffer()
