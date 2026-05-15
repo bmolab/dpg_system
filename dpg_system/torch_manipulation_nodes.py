@@ -74,7 +74,7 @@ class TorchUnsqueezeNode(TorchWithDimNode):
         super().__init__(label, data, args)
         self.input = self.add_input('tensor in', triggers_execution=True)
         if self.dim_specified:
-            self.dim_input = self.add_input('dim', widget_type='input_int', default_value=self.dim, callback=self.dim_changed)
+            self.add_dim_input()
         self.output = self.add_output('output')
 
     def execute(self):
@@ -253,6 +253,11 @@ class TorchStackCatNode(TorchNode):
         self.dim = 0
         if len(args) > 0:
             self.input_count = string_to_int(args[0])
+        # Clamp to >= 1 so the trigger input is always present and the dim/output
+        # widgets land at predictable indices. Zero or negative would silently
+        # produce a node with no secondary inputs.
+        if self.input_count < 1:
+            self.input_count = 1
         self.other_inputs = []
         self.input = self.add_input('tensor 1', triggers_execution=True)
         for i in range(self.input_count - 1):
@@ -315,14 +320,17 @@ class TorchCatNode(TorchStackCatNode):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
             cat_list = [input_tensor]
+            # Normalize negative dim so the shape-compat loop can compare against j.
+            ndim = len(input_tensor.shape)
+            normalized_dim = self.dim if self.dim >= 0 else self.dim + ndim
             for i in range(self.input_count - 1):
                 an_in = self.other_inputs[i]
                 a_tensor = self.data_to_tensor(an_in(), match_tensor=input_tensor)
                 if a_tensor is not None:
-                    if len(a_tensor.shape) == len(input_tensor.shape):
+                    if len(a_tensor.shape) == ndim:
                         ok_shape = True
                         for j in range(len(a_tensor.shape)):
-                            if j != self.dim:
+                            if j != normalized_dim:
                                 if a_tensor.shape[j] != input_tensor.shape[j]:
                                     ok_shape = False
                                     if self.app.verbose:
@@ -333,7 +341,7 @@ class TorchCatNode(TorchStackCatNode):
                     else:
                         if self.app.verbose:
                             print('t.cat input tensor ' + str(i) + ' has wrong number of dimensions')
-            if self.dim < len(input_tensor.shape):
+            if -ndim <= self.dim < ndim:
                 output_tensor = torch.cat(cat_list, self.dim)
                 self.output.send(output_tensor)
             else:
@@ -352,6 +360,9 @@ class TorchHStackNode(TorchNode):
         self.input_count = 2
         if len(args) > 0:
             self.input_count = string_to_int(args[0])
+        # Same clamp rationale as TorchStackCatNode.
+        if self.input_count < 1:
+            self.input_count = 1
         self.op = torch.hstack
         if self.label in ['t.vstack', 't.row_stack']:
             self.op = torch.vstack
@@ -415,10 +426,11 @@ class TorchChunkNode(TorchNode):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
             if -1 - len(input_tensor.shape) < self.dim < len(input_tensor.shape):
-                if self.splits < input_tensor.shape[self.dim]:
+                # splits == dim_size is valid (each chunk holds one element).
+                if self.splits <= input_tensor.shape[self.dim]:
                     tensors = self.op(input_tensor, self.splits, self.dim)
                     for idx, tensor_ in enumerate(tensors):
-                        if idx < len(self.outputs):
+                        if idx < len(self.tensor_outputs):
                             self.tensor_outputs[idx].send(tensor_)
 
 
@@ -643,8 +655,8 @@ class TorchRollNode(TorchNode):
             self.output.send(rolled)
 
         except Exception as e:
-            traceback.print_exception(type(e), e, e.__traceback__)
-            print(f"Node {self.label} Error: {e}")
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
 
 
 class TorchSubtensorNode(TorchNode):
@@ -657,8 +669,9 @@ class TorchSubtensorNode(TorchNode):
         super().__init__(label, data, args)
         self.slice_obj = (slice(None),)
 
-        # Determine default string
-        index_string = ''.join(args) if args else ':'
+        # Determine default string. Coerce args to strings — they may come in as
+        # ints from the parsed-arg path; raw ''.join() would raise TypeError.
+        index_string = ''.join(any_to_string(a) for a in args) if args else ':'
 
         self.input = self.add_input('tensor in', triggers_execution=True)
         self.indices_input = self.add_input(
@@ -745,7 +758,9 @@ class TorchSubtensorNode(TorchNode):
         except Exception as e:
             # If dimensions matched but something else was wrong (e.g. index out of bounds),
             # we print the error to help debug.
-            print(f"TorchSubtensorNode Error: {e}")
+            print(f'{self.label}: slice {self.slice_obj} failed on shape '
+                  f'{input_tensor.shape}: {type(e).__name__}: {e}')
+            traceback.print_exc()
 
 
 class TorchSelectNode(TorchNode):
@@ -806,8 +821,8 @@ class TorchMaskedSelectNode(TorchNode):
                         out_tensor = torch.masked_select(input_tensor, mask_tensor)
                         self.out.send(out_tensor)
                     except Exception as e:
-                        traceback.print_exception(e)
-                        print(self.label, e)
+                        print(f'{self.label}: {type(e).__name__}: {e}')
+                        traceback.print_exc()
 
 
 class TorchTakeNode(TorchNode):
@@ -833,8 +848,8 @@ class TorchTakeNode(TorchNode):
                         taken = torch.take(input_tensor, index_tensor)
                         self.output.send(taken)
                     except Exception as e:
-                        traceback.print_exception(e)
-                        print(self.label, e)
+                        print(f'{self.label}: {type(e).__name__}: {e}')
+                        traceback.print_exc()
                 else:
                     if self.app.verbose:
                         print(self.label, ' no index tensor')
@@ -869,8 +884,8 @@ class TorchTakeAlongDimNode(TorchWithDimNode):
                             taken = torch.take_along_dim(input_tensor, indices=index_tensor, dim=self.dim)
                             self.output.send(taken)
                         except Exception as e:
-                            traceback.print_exception(e)
-                            print(self.label, 'failed')
+                            print(f'{self.label}: {type(e).__name__}: {e}')
+                            traceback.print_exc()
                 else:
                     if self.app.verbose:
                         print(self.label, ' no index tensor')
@@ -910,8 +925,8 @@ class TorchScatterNode(TorchWithDimNode):
                                 taken = torch.scatter(input_tensor, self.dim, index_tensor, source_tensor)
                                 self.output.send(taken)
                             except Exception as e:
-                                traceback.print_exception(e)
-                                print(self.label, 'failed')
+                                print(f'{self.label}: {type(e).__name__}: {e}')
+                                traceback.print_exc()
                         else:
                             if self.app.verbose:
                                 print(self.label, ' no index tensor')
@@ -937,7 +952,7 @@ class TorchScatterHoldNode(TorchNode):
             length = any_to_int(args[0])
         self.dim_specified = True
         self.input = self.add_input('list of index value pairs', triggers_execution=True)
-        self.length_input = self.add_input('length of target tensor', widget_type='drag_int', default_value=length, min=0, callback=self.resize)
+        self.length_input = self.add_input('length of target tensor', widget_type='drag_int', default_value=length, min=1, callback=self.resize)
         self.clear_in = self.add_input('clear', widget_type='button', callback=self.clear)
         self.output = self.add_output('output')
         self.accum = torch.zeros(length)
@@ -951,6 +966,12 @@ class TorchScatterHoldNode(TorchNode):
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
+            # Pairs are (index, value); we need an even number of elements.
+            if input_tensor.numel() % 2 != 0:
+                if self.app.verbose:
+                    print(f'{self.label}: expected even-numel tensor of '
+                          f'(index, value) pairs, got {input_tensor.numel()} elements')
+                return
             pairs_tensor = input_tensor.view(-1, 2).transpose(0, 1)
             indices = pairs_tensor[0].type(torch.int64)
             indices = indices.clamp(0, self.length_input() - 1)
@@ -959,7 +980,8 @@ class TorchScatterHoldNode(TorchNode):
                 self.accum.scatter_(0, indices, values)
                 self.output.send(self.accum)
             except Exception as e:
-                print(e)
+                print(f'{self.label}: {type(e).__name__}: {e}')
+                traceback.print_exc()
 
 
 class TorchIndexSelectNode(TorchWithDimNode):

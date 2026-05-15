@@ -1,5 +1,3 @@
-import torch.distributions.poisson
-
 from dpg_system.torch_base_nodes import *
 
 def register_torch_generator_nodes():
@@ -26,6 +24,8 @@ def register_torch_generator_nodes():
     Node.app.register_node('t.dist.beta', TorchDistributionAlphaBetaNode.factory)
     Node.app.register_node('t.dist.fisher_snedecor', TorchDistributionFisherSnedecorNode.factory)
     Node.app.register_node('t.dist.gamma', TorchDistributionGammaNode.factory)
+    Node.app.register_node('t.dist.gumbel', TorchDistributionLocScaleNode.factory)
+    # Keep the old typo as an alias so saved patches using 't.dist.gumble' still load.
     Node.app.register_node('t.dist.gumble', TorchDistributionLocScaleNode.factory)
     Node.app.register_node('t.dist.laplace', TorchDistributionLocScaleNode.factory)
     Node.app.register_node('t.dist.kumaraswamy', TorchDistributionAlphaBetaNode.factory)
@@ -166,100 +166,13 @@ class TorchGeneratorNode(TorchDeviceDtypeNode):
         elif self.label == 't.zeros':
             out_array = torch.zeros(**kwargs)
 
-        self.output.send(out_array)
+        else:
+            # Defensive fallback: registered labels are rand/ones/zeros, but if
+            # some future caller wires this factory to a new label, fall back
+            # to zeros rather than raising UnboundLocalError.
+            print(f'TorchGeneratorNode: unknown label {self.label!r}, returning zeros')
+            out_array = torch.zeros(**kwargs)
 
-
-class TorchGeneratorNode_o(TorchDeviceDtypeNode):
-    @staticmethod
-    def factory(name, data, args=None):
-        node = TorchGeneratorNode(name, data, args)
-        return node
-
-    def __init__(self, label: str, data, args):
-        super().__init__(label, data, args)
-
-        self.shape = []
-        for i in range(len(args)):
-            d, t = decode_arg(args, i)
-            if t == int:
-                self.shape += (d,)
-        if len(self.shape) == 0:
-            self.shape = [1]
-
-        self.input = self.add_input('###input', widget_type='button', widget_width=16, triggers_execution=True)
-
-        self.shape_input = self.add_input('shape', widget_type='text_input', default_value=str(self.shape), callback=self.shape_changed)
-        # self.shape_properties = []
-        # for i in range(len(self.shape)):
-        #     self.shape_properties.append(self.add_property('dim ' + str(i), widget_type='input_int', default_value=self.shape[i]))
-
-        self.setup_dtype_device_grad(args)
-
-        if self.label == 't.rand':
-            self.min = 0
-            self.max = 1
-            self.min_input = self.add_input('min', widget_type='drag_float', default_value=self.min,
-                                            callback=self.range_changed)
-            self.max_input = self.add_input('max', widget_type='drag_float', default_value=self.max,
-                                            callback=self.range_changed)
-
-        out_label = 'random tensor'
-        if self.label == 't.ones':
-            out_label = 'tensor of ones'
-        elif self.label == 't.zeros':
-            out_label = 'tensor of zeros'
-        self.output = self.add_output(out_label)
-        self.create_dtype_device_grad_properties()
-
-
-    def range_changed(self):
-        self.min = self.min_input()
-        self.max = self.max_input()
-
-    def shape_changed(self):
-        shape_text = self.shape_input()
-        shape_list = re.findall(r'[-+]?\d+', shape_text)
-        shape = []
-        for dim_text in shape_list:
-            shape.append(any_to_int(dim_text))
-        self.shape = shape
-
-    def dtype_changed(self):
-        super().dtype_changed()
-        if self.label == 't.rand':
-            if self.dtype == torch.uint8:
-                if self.min < 0:
-                    self.min_input.set(0.0)
-                if self.max == 1.0 or self.max < 255:
-                    self.max_input.set(255.0)
-            elif self.dtype == torch.int64:
-                if self.min < -32768:
-                    self.min_input.set(-32768)
-                if self.max == 1.0:
-                    self.max_input.set(32767)
-            elif self.dtype in [torch.float, torch.double, torch.float32, torch.float16, torch.bfloat16]:
-                if self.min == -32768:
-                    self.min_input.set(0.0)
-                if self.max == 255:
-                    self.max_input.set(1.0)
-                elif self.max == 32767:
-                    self.max_input.set(1.0)
-            self.range_changed()
-
-    def execute(self):
-        size = tuple(self.shape)
-        if self.label == 't.rand':
-            if self.dtype in [torch.float, torch.float32, torch.double, torch.float16, torch.bfloat16, torch.complex32, torch.complex64, torch.complex128]:
-                range_ = self.max - self.min
-                out_array = torch.rand(size=size, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad) * range_ + self.min
-            elif self.dtype in [torch.int64, torch.uint8]:
-                out_array = torch.randint(low=int(self.min), high=int(self.max), size=size, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad)
-            elif self.dtype == torch.bool:
-                out_array = torch.randint(low=0, high=1, size=size, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad)
-        elif self.label == 't.ones':
-            out_array = torch.ones(size=size, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad)
-        elif self.label == 't.zeros':
-            out_array = torch.zeros(size=size, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad)
         self.output.send(out_array)
 
 
@@ -309,6 +222,10 @@ class TorchDistributionNode(TorchNode):
         pass
 
     def execute(self):
+        if self.distribution is None:
+            if self.app.verbose:
+                print(f'{self.label}: distribution not initialized')
+            return
         size = tuple(self.shape)
         out_array = self.distribution.sample(sample_shape=size)
         self.output.send(out_array)
@@ -429,10 +346,12 @@ class TorchDistributionWithRateNode(TorchDistributionNode):
         self.output = self.add_output('random tensor')
 
     def params_changed(self):
+        # Previously hardcoded 1.0 for both branches — the param widget did
+        # nothing. Read the live param_1 value instead.
         if self.label == 't.dist.half_cauchy':
-            self.distribution = self.dist(scale=1.0)
+            self.distribution = self.dist(scale=self.param_1())
         else:
-            self.distribution = self.dist(rate=1.0)
+            self.distribution = self.dist(rate=self.param_1())
 
 
 class TorchDistributionHalfNormalNode(TorchDistributionNode):
@@ -458,6 +377,9 @@ class TorchDistributionLocScaleNode(TorchDistributionNode):
     dist_dict = {
         't.dist.cauchy': torch.distributions.cauchy.Cauchy,
         't.dist.gumbel': torch.distributions.gumbel.Gumbel,
+        # Legacy spelling kept so old saved patches still pick up the right dist
+        # instead of silently falling through to the Cauchy default.
+        't.dist.gumble': torch.distributions.gumbel.Gumbel,
         't.dist.laplace': torch.distributions.laplace.Laplace,
         't.dist.log_normal': torch.distributions.log_normal.LogNormal,
         't.dist.normal': torch.distributions.normal.Normal
@@ -475,6 +397,8 @@ class TorchDistributionLocScaleNode(TorchDistributionNode):
         if self.label in self.dist_dict:
             self.dist = self.dist_dict[self.label]
         else:
+            print(f'TorchDistributionLocScaleNode: unknown label {self.label!r}, '
+                  f'falling back to Cauchy')
             self.dist = self.dist_dict['t.dist.cauchy']
         self.distribution = self.dist(loc=0.0, scale=1.0)
 
@@ -525,6 +449,8 @@ class TorchDistributionAlphaBetaNode(TorchDistributionNode):
         if self.label in self.dist_dict:
             self.dist = self.dist_dict[self.label]
         else:
+            print(f'TorchDistributionAlphaBetaNode: unknown label {self.label!r}, '
+                  f'falling back to Beta')
             self.dist = torch.distributions.beta.Beta
 
         self.add_param_1('alpha', default_value=default_alpha, min=0.000001)
@@ -707,7 +633,7 @@ class TorchGeneratorLikeNode(TorchDeviceDtypeNode):
 
     def dtype_changed(self):
         super().dtype_changed()
-        if self.label == 't.rand':
+        if self.label == 't.rand_like':
             if self.dtype == torch.uint8:
                 if self.min < 0:
                     self.min_input.set(0.0)
@@ -730,17 +656,18 @@ class TorchGeneratorLikeNode(TorchDeviceDtypeNode):
     def execute(self):
         if self.input.fresh_input:
             data = self.input()
-            if type(data) == torch.Tensor:
+            if isinstance(data, torch.Tensor):
                 shape = data.shape
                 size = tuple(shape)
                 if self.label == 't.rand_like':
                     if self.dtype in [torch.float, torch.float32, torch.double, torch.float16, torch.bfloat16, torch.complex32, torch.complex64, torch.complex128]:
                         range_ = self.max - self.min
-                        out_array = torch.rand(size=size, device=self.device, dtype=self.dtype) * range_ + self.min
+                        out_array = torch.rand(size=size, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad) * range_ + self.min
                     elif self.dtype in [torch.int64, torch.uint8]:
                         out_array = torch.randint(low=int(self.min), high=int(self.max), size=size, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad)
                     elif self.dtype == torch.bool:
-                        out_array = torch.randint(low=0, high=1, size=size, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad)
+                        # randint high is exclusive; high=2 gives 0s and 1s.
+                        out_array = torch.randint(low=0, high=2, size=size, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad)
                 elif self.label == 't.ones_like':
                     out_array = torch.ones(size=size, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad)
                 elif self.label == 't.zeros_like':
@@ -812,10 +739,12 @@ class TorchRangeNode(TorchDeviceDtypeNode):
         self.stop = 1.0
         self.step = .01
 
+        # torch.range was removed in PyTorch 1.0. Route t.range through
+        # torch.arange and adjust the stop in execute() so the produced
+        # sequence still includes the upper endpoint (the old t.range behavior).
         self.op = torch.arange
         out_label = 'arange out'
         if self.label == 't.range':
-            self.op = torch.range
             out_label = 'range out'
 
         if len(args) > 0:
@@ -846,7 +775,13 @@ class TorchRangeNode(TorchDeviceDtypeNode):
         self.start = self.start_property()
         self.stop = self.stop_property()
         self.step = self.step_property()
-        out_array = self.op(self.start, self.stop, self.step, dtype=self.dtype, device=self.device, requires_grad=self.requires_grad)
+        # arange's stop is exclusive; the legacy t.range was inclusive.
+        # Nudge the stop by half a step for t.range so the upper endpoint is included
+        # without overshooting due to float accumulation.
+        effective_stop = self.stop
+        if self.label == 't.range' and self.step != 0:
+            effective_stop = self.stop + self.step / 2.0
+        out_array = self.op(self.start, effective_stop, self.step, dtype=self.dtype, device=self.device, requires_grad=self.requires_grad)
         self.output.send(out_array)
 
 

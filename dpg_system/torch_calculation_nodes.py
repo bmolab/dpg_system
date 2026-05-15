@@ -127,9 +127,29 @@ class TorchDistributionTensorNode(TorchNode):
 
     def execute(self):
         input_tensor = self.input_to_tensor()
-        if input_tensor is not None:
+        if input_tensor is None:
+            return
+        # torch.bernoulli requires input in [0, 1]; torch.poisson requires >= 0.
+        # Validate before calling so the user gets a clear message instead of
+        # the cryptic underlying RuntimeError.
+        if self.label == 't.bernoulli':
+            if input_tensor.min() < 0 or input_tensor.max() > 1:
+                if self.app.verbose:
+                    print(f'{self.label}: input must be in [0, 1], got '
+                          f'[{input_tensor.min().item():.4g}, {input_tensor.max().item():.4g}]')
+                return
+        elif self.label == 't.poisson':
+            if input_tensor.min() < 0:
+                if self.app.verbose:
+                    print(f'{self.label}: input must be non-negative, got '
+                          f'min {input_tensor.min().item():.4g}')
+                return
+        try:
             out_tensor = self.op(input_tensor)
             self.output.send(out_tensor)
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
 
 
 class TorchDistributionTensorOneParamNode(TorchNode):
@@ -141,14 +161,28 @@ class TorchDistributionTensorOneParamNode(TorchNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         param_1_name = ''
-        param_1 = 1
+        param_1 = 1.0
+        param_min = None
+        param_max = None
         if self.label == 't.exponential':
             param_1_name = 'lambda'
+            # exponential_ requires lambda > 0
+            param_1 = 1.0
+            param_min = 1e-6
         elif self.label == 't.geometric':
             param_1_name = 'p'
+            # geometric_ requires p in (0, 1) — exclusive at both ends.
+            param_1 = 0.5
+            param_min = 1e-6
+            param_max = 1.0 - 1e-6
 
         self.input = self.add_input('tensor in', triggers_execution=True)
-        self.param_1 = self.add_input(param_1_name, widget_type='drag_float', default_value=param_1)
+        kwargs = {'widget_type': 'drag_float', 'default_value': param_1}
+        if param_min is not None:
+            kwargs['min'] = param_min
+        if param_max is not None:
+            kwargs['max'] = param_max
+        self.param_1 = self.add_input(param_1_name, **kwargs)
         self.output = self.add_output('tensor out')
         self.help_file_name = 't.distributions_help'
 
@@ -582,31 +616,36 @@ class TorchComplexNode(TorchNode):
 
     def execute(self):
         real_tensor = self.input_to_tensor()
-        if real_tensor is not None:
-            data = self.imag_input()
-            if data is not None:
-                imag_tensor = self.data_to_tensor(data, match_tensor=real_tensor)
-                if imag_tensor is not None:
-                    if real_tensor.shape == imag_tensor.shape:
-                        if real_tensor.dtype in [torch.float16, torch.float32, torch.float64]:
-                            if real_tensor.dtype == imag_tensor.dtype:
-                                complex_tensor = torch.complex(real_tensor, imag_tensor)
-                                self.output.send(complex_tensor)
-                            else:
-                                if self.app.verbose:
-                                    print(self.label, 'real and imaginary tensor dtypes don\'t match', real_tensor.dtype, imag_tensor.dtype)
-                        else:
-                            if self.app.verbose:
-                                print(self.label, 'real tensor wrong dtype', real_tensor.dtype)
-                    else:
-                        if self.app.verbose:
-                            print(self.label, 'imaginary tensor is None')
-                else:
-                    if self.app.verbose:
-                        print(self.label, 'no input for imaginary tensor')
-        else:
+        if real_tensor is None:
             if self.app.verbose:
                 print(self.label, 'real tensor is None')
+            return
+        data = self.imag_input()
+        if data is None:
+            if self.app.verbose:
+                print(self.label, 'no input for imaginary tensor')
+            return
+        imag_tensor = self.data_to_tensor(data, match_tensor=real_tensor)
+        if imag_tensor is None:
+            if self.app.verbose:
+                print(self.label, 'could not convert imaginary input to tensor')
+            return
+        if real_tensor.shape != imag_tensor.shape:
+            if self.app.verbose:
+                print(self.label, 'real and imaginary tensors have different shapes',
+                      real_tensor.shape, imag_tensor.shape)
+            return
+        if real_tensor.dtype not in [torch.float16, torch.float32, torch.float64]:
+            if self.app.verbose:
+                print(self.label, 'real tensor wrong dtype', real_tensor.dtype)
+            return
+        if real_tensor.dtype != imag_tensor.dtype:
+            if self.app.verbose:
+                print(self.label, "real and imaginary tensor dtypes don't match",
+                      real_tensor.dtype, imag_tensor.dtype)
+            return
+        complex_tensor = torch.complex(real_tensor, imag_tensor)
+        self.output.send(complex_tensor)
 
 
 class TorchClampNode(TorchNode):
@@ -701,14 +740,11 @@ class TorchCopySignNode(TorchNode):
                     try:
                         self.output.send(torch.copysign(input_tensor, sign_tensor))
                     except Exception as error:
-                        traceback.print_exception(error)
-                        print('t.copysign:', error)
+                        print(f't.copysign: {type(error).__name__}: {error}')
+                        traceback.print_exc()
 
 
 class CosineSimilarityNode(TorchNode):
-    cos = None
-    inited = False
-
     @staticmethod
     def factory(name, data, args=None):
         node = CosineSimilarityNode(name, data, args)
@@ -717,9 +753,10 @@ class CosineSimilarityNode(TorchNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.vector_2 = None
-        if not self.inited:
-            self.cos = torch.nn.CosineSimilarity(dim=0, eps=1e-6)
-            self.inited = True
+        # CosineSimilarity is stateless; per-instance construction is fine and
+        # avoids the confused class-level/instance-level "inited" pattern that
+        # was here before (which never actually short-circuited).
+        self.cos = torch.nn.CosineSimilarity(dim=0, eps=1e-6)
         self.input = self.add_input('input 1', triggers_execution=True)
         self.input2 = self.add_input('input 2')
         self.output = self.add_output('output')
@@ -734,8 +771,8 @@ class CosineSimilarityNode(TorchNode):
                         similarity = self.cos(vector_1, self.vector_2)
                         self.output.send(similarity.item())
                     except Exception as e:
-                        traceback.print_exception(e)
-                        print(self.label, e)
+                        print(f'{self.label}: {type(e).__name__}: {e}')
+                        traceback.print_exc()
 
 
 class TorchNormalizeNode(TorchNode):
