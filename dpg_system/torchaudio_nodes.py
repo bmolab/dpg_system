@@ -313,11 +313,16 @@ class TorchAudioKaldiPitchNode(TorchNode):
 
     def execute(self):
         data = self.input_to_tensor()
-        if data is not None:
+        if data is None:
+            return
+        try:
             pitch_feature = torchaudio.functional.compute_kaldi_pitch(data, self.rate())
             nccf, pitch = pitch_feature[..., 0], pitch_feature[..., 1]
             self.nccf_output.send(nccf)
             self.pitch_output.send(pitch)
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
 
 
 class TorchAudioVADNode(TorchNode):
@@ -337,9 +342,14 @@ class TorchAudioVADNode(TorchNode):
 
     def execute(self):
         data = self.input_to_tensor()
-        if data is not None:
+        if data is None:
+            return
+        try:
             active_audio = torchaudio.functional.vad(data, self.rate(), trigger_level=self.trigger_level(), noise_reduction_amount=self.noise_reduction())
             self.vad_output.send(active_audio)
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
 
 
 class TorchAudioGainNode(TorchNode):
@@ -357,9 +367,14 @@ class TorchAudioGainNode(TorchNode):
 
     def execute(self):
         data = self.input_to_tensor()
-        if data is not None:
+        if data is None:
+            return
+        try:
             active_audio = torchaudio.functional.gain(data, self.gain())
             self.output.send(active_audio)
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
 
 
 class TorchAudioContrastNode(TorchNode):
@@ -377,9 +392,14 @@ class TorchAudioContrastNode(TorchNode):
 
     def execute(self):
         data = self.input_to_tensor()
-        if data is not None:
+        if data is None:
+            return
+        try:
             active_audio = torchaudio.functional.contrast(data, self.contrast())
             self.output.send(active_audio)
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
 
 
 # loudness needs minimum of 6400 chunk size????
@@ -397,17 +417,22 @@ class TorchAudioLoudnessNode(TorchNode):
 
     def execute(self):
         data = self.input_to_tensor()
-        if data is not None:
-            if len(data.shape) < 2:
-                # Was: data.unsqueeze(dim=0) — not in-place, the result was
-                # discarded and data stayed 1D. Rebind so a 1D input is
-                # actually promoted to [1, N] before the loudness call.
-                data = data.unsqueeze(dim=0)
-            if data.shape[-1] < 6400:
-                print(self.label, 'too few samples to calculate loudness (min 6400)')
-            else:
-                active_audio = torchaudio.functional.loudness(data, self.rate())
-                self.loudness_output.send(active_audio)
+        if data is None:
+            return
+        if len(data.shape) < 2:
+            # Was: data.unsqueeze(dim=0) — not in-place, the result was
+            # discarded and data stayed 1D. Rebind so a 1D input is
+            # actually promoted to [1, N] before the loudness call.
+            data = data.unsqueeze(dim=0)
+        if data.shape[-1] < 6400:
+            print(self.label, 'too few samples to calculate loudness (min 6400)')
+            return
+        try:
+            active_audio = torchaudio.functional.loudness(data, self.rate())
+            self.loudness_output.send(active_audio)
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
 
 
 class TorchAudioOverdriveNode(TorchNode):
@@ -426,9 +451,14 @@ class TorchAudioOverdriveNode(TorchNode):
 
     def execute(self):
         data = self.input_to_tensor()
-        if data is not None:
+        if data is None:
+            return
+        try:
             overdriven_audio = torchaudio.functional.overdrive(data, self.gain(), self.colour())
             self.output.send(overdriven_audio)
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
 
 
 class TorchAudioFileNode(TorchNode):
@@ -482,8 +512,12 @@ class TorchAudioFileNode(TorchNode):
         # int(None) / output.send(None) both crash. Bail rather than tear down.
         if self.waveform is None or self.sample_rate is None:
             return
-        self.sample_rate_out.send(int(self.sample_rate))
-        self.output.send(self.waveform)
+        try:
+            self.sample_rate_out.send(int(self.sample_rate))
+            self.output.send(self.waveform)
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
 
 
 class TorchAudioPlaySoundNode(TorchNode):
@@ -562,20 +596,21 @@ class TorchAudioPlaySoundNode(TorchNode):
         waveform = self.input_to_tensor()
         if waveform is None:
             return
-        if not waveform.is_cpu:
-            waveform = waveform.cpu()
-        if waveform.ndim == 1:
-            # If mono, add a channel dimension
-            waveform = waveform.unsqueeze(1)
-        elif waveform.shape[1] > waveform.shape[0]:
-            waveform = waveform.T
-        self.waveform_np = waveform.numpy()
-        self.stored_waveform_np = self.waveform_np.copy()
         try:
+            if not waveform.is_cpu:
+                waveform = waveform.cpu()
+            if waveform.ndim == 1:
+                # If mono, add a channel dimension
+                waveform = waveform.unsqueeze(1)
+            elif waveform.shape[1] > waveform.shape[0]:
+                waveform = waveform.T
+            self.waveform_np = waveform.numpy()
+            self.stored_waveform_np = self.waveform_np.copy()
             if AudioMixerNode.audio_mixer is not None:
                 self.last_sound_id = AudioMixerNode.audio_mixer.play(self.waveform_np)
         except Exception as e:
-            print(f'Error sending sound to mixer: {e}')
+            print(f'{self.label}: {type(e).__name__}: {e}')
+            traceback.print_exc()
         return self.last_sound_id
 
 
