@@ -25,9 +25,10 @@ class Sample:
             self.loop_end = len(self.data)
         else:
             self.loop_end = loop_end
-        
-        # Ensure loop_end is at least loop_start
+
+        # Ensure loop_end is at least loop_start + 1, but never beyond the data
         self.loop_end = max(self.loop_end, self.loop_start + 1)
+        self.loop_end = min(self.loop_end, len(self.data))
 
 
         self.sample_start = sample_start
@@ -1011,25 +1012,39 @@ class SamplerEngine:
         self.output_level = 0.0
 
     def start(self):
-        self.stream = sd.OutputStream(
-            samplerate=self.sample_rate,
-            channels=self.channels,
-            callback=self.audio_callback,
-            blocksize=512
-        )
-        self.stream.start()
+        try:
+            self.stream = sd.OutputStream(
+                samplerate=self.sample_rate,
+                channels=self.channels,
+                callback=self.audio_callback,
+                blocksize=512
+            )
+            self.stream.start()
+        except (sd.PortAudioError, OSError) as e:
+            print(f"SamplerEngine: failed to open audio output ({e})")
+            self.stream = None
+            self.active = False
+            return False
         self.active = True
+        return True
 
     def stop(self):
         if self.stream:
             self.master_volume = 0.0
             sd.sleep(100)
             self.active = False
-            self.stream.stop()
-            self.stream.close()
+            try:
+                self.stream.stop()
+                self.stream.close()
+            except (sd.PortAudioError, OSError) as e:
+                print(f"SamplerEngine: error closing audio stream ({e})")
+            self.stream = None
 
     def set_master_volume(self, vol):
-        self.master_volume = max(0.0, float(vol))
+        try:
+            self.master_volume = max(0.0, float(vol))
+        except (ValueError, TypeError):
+            pass
 
     def play_voice(self, voice_index, sample, volume=None, pitch=None, mode='normal', start_pos=None):
         if 0 <= voice_index < 128:
@@ -1094,28 +1109,35 @@ class SamplerEngine:
 
         active_voices = 0
         for v in self.voices:
-            # We process even if not 'active' to catch tail end of releases? 
+            # We process even if not 'active' to catch tail end of releases?
             # The process method checks active and returns zeros efficiently.
-            # But we can optimize by checking a flag? 
+            # But we can optimize by checking a flag?
             # Voice.active is set/unset inside process() sometimes (end of decay).
             # But checking it here is RACY if we don't own it.
             # Voice state is owned by audio thread (us). So it is safe to read.
-            
+
             # Optimization: Check if active before calling process (save function overhead)
             # BUT process() handles the command queue! We must call process() if there are pending commands!
             if v.active or not v._command_queue.empty():
-                voice_out = v.process(frames, self.channels)
+                try:
+                    voice_out = v.process(frames, self.channels)
+                except Exception as e:
+                    # Never let a voice exception take down the audio thread.
+                    # Disable the voice and surface the error once.
+                    v.active = False
+                    print(f"SamplerEngine: voice exception, disabling voice ({e})")
+                    continue
                 mix += voice_out
                 active_voices += 1
 
         mix *= self.master_volume
-        
+
         # Calculate Level (Peak)
         if mix.size > 0:
             self.output_level = np.max(np.abs(mix))
         else:
             self.output_level = 0.0
-            
+
         np.clip(mix, -1.0, 1.0, out=mix)
 
         if not self.active: mix.fill(0)
