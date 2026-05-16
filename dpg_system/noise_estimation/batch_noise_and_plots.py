@@ -15,8 +15,9 @@ def main():
     outdir = Path(args.outdir).resolve()
     outdir.mkdir(parents=True, exist_ok=True)
 
-    estimate_py = Path("estimate_noise_Lucy.py").resolve()
-    plot_py = Path("plot_hist.py").resolve()
+    this_dir = Path(__file__).resolve().parent
+    estimate_py = this_dir / "estimate_noise_Lucy.py"
+    plot_py = this_dir / "plot_hist.py"
 
     # Top-level AMASS datasets = subfolders under AMASS
     dataset_dirs = sorted([d for d in amass_root.glob(args.pattern) if d.is_dir()])
