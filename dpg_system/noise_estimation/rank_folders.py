@@ -2,9 +2,11 @@ import json
 import glob
 import os
 
+_this_dir = os.path.dirname(os.path.abspath(__file__))
+
 rows = []
 
-for f in glob.glob("noise_reports/result_*.json"):
+for f in glob.glob(os.path.join(_this_dir, "noise_reports", "result_*.json")):
     with open(f) as fp:
         data = json.load(fp)
 
