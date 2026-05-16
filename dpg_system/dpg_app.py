@@ -2257,7 +2257,7 @@ class App:
                     if not self.gl_on_separate_thread:
                         hold_context = self.set_dpg_gl_context()
 
-                    now = time.time()
+                    now = time.perf_counter()
                     for node_editor in self.node_editors:
                         node_editor.reset_pins()
                     self.trace_indent = ''
@@ -2274,13 +2274,9 @@ class App:
                             except Exception as exc_:
                                 print(f"Exception in frame_task for node '{task.label}':")
                                 traceback.print_exception(exc_)
-                        if not self.global_trace:
-                            self.trace = False
                     for node_editor in self.node_editors:
                         if node_editor.is_first_frame:
                             node_editor.first_frame()
-                    if not self.global_trace:
-                        self.trace = False
                     jobs = dpg.get_callback_queue()  # retrieves and clears queue
                     try:
                         dpg.run_callbacks(jobs)
@@ -2306,7 +2302,7 @@ class App:
                     dpg.render_dearpygui_frame()
                     if not self.global_trace:
                         self.trace = False
-                    then = time.time()
+                    then = time.perf_counter()
 
                     #  openGL separate thread?
                     if not self.gl_on_separate_thread:
