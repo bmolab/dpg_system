@@ -1993,10 +1993,12 @@ class PipoMotionSourceNode(Node):
     def osc_handler(self, address, *args):
         if self.lock.acquire(blocking=True):
             try:
+                value = 0.0
                 if len(args) > 0:
-                    value = float(args[0])
-                else:
-                    value = 0.0
+                    try:
+                        value = float(args[0])
+                    except (ValueError, TypeError):
+                        return
 
                 if address == '/motion/yaw':
                     self.yaw_output.send(value)
@@ -2093,10 +2095,12 @@ class PipoRangeSourceNode(Node):
     def osc_handler(self, address, *args):
         if self.lock.acquire(blocking=True):
             try:
+                value = 0.0
                 if len(args) > 0:
-                    value = float(args[0])
-                else:
-                    value = 0.0
+                    try:
+                        value = float(args[0])
+                    except (ValueError, TypeError):
+                        return
                 if address == '/range/dist':
                     self.dist_output.send(value)
             finally:
@@ -2373,7 +2377,8 @@ class OSCReceiver:
 
         if args is not None:
             if len(args) == 1: # assuming default source
-                self.address = args[0] if args[0].startswith('/') else '/' + args[0]
+                a0 = any_to_string(args[0])
+                self.address = a0 if a0.startswith('/') else '/' + a0
                 # Check if we're inside an oscq_host scope first
                 host_name = None
                 editor = Node.app.get_current_editor()
@@ -2388,8 +2393,9 @@ class OSCReceiver:
                     if not self.find_source_node(self.name):
                         self.osc_manager.create_source(self.name)
             elif len(args) == 2:
-                self.name = args[0]
-                self.address = args[1] if args[1].startswith('/') else '/' + args[1]
+                self.name = any_to_string(args[0])
+                a1 = any_to_string(args[1])
+                self.address = a1 if a1.startswith('/') else '/' + a1
 
     def name_changed(self, force=False):
         if self.source_name_property is not None:
@@ -2824,12 +2830,14 @@ class OSCSender:
                                  if not getattr(t, '_is_browse_device', False)]
                 if len(local_targets) == 1:
                     self.name = local_targets[0]
-                self.address = args[0] if args[0].startswith('/') else '/' + args[0]
+                a0 = any_to_string(args[0])
+                self.address = a0 if a0.startswith('/') else '/' + a0
             if len(args) >= 2:
                 if not is_number(args[0]):
-                    self.name = args[0]
+                    self.name = any_to_string(args[0])
                 if len(args) > 1:
-                    self.address = args[1] if args[1].startswith('/') else '/' + args[1]
+                    a1 = any_to_string(args[1])
+                    self.address = a1 if a1.startswith('/') else '/' + a1
 
         self.osc_path = ''
         self.target_name_property = None
@@ -4055,9 +4063,8 @@ class OSCValueNode(ValueNode, OSCWidget):
         data = any_to_list(data)
 
         if self.label not in ['osc_string', 'osc_message']:
-            if type(data[0]) == str:
-                if data[0][0] == '/':
-                    return
+            if len(data) > 0 and isinstance(data[0], str) and data[0].startswith('/'):
+                return
         if self.label == 'osc_string':
             data = any_to_string(data)
             if self.space_replacement():
@@ -4251,9 +4258,8 @@ class OSCToggleNode(ToggleNode, OSCWidget):
             self._suppress_next_receive = False
             return
         data = any_to_list(data)
-        if type(data[0]) == str:
-            if data[0] == '/':
-                return
+        if len(data) > 0 and isinstance(data[0], str) and data[0].startswith('/'):
+            return
         self.value = any_to_bool(data)
         # Set widget without triggering the checkbox callback
         self.input.set(self.value, propagate=False)
@@ -4326,9 +4332,8 @@ class OSCMenuNode(MenuNode, OSCWidget):
             self._suppress_next_receive = False
             return
         data = any_to_list(data)
-        if type(data[0]) == str:
-            if data[0][0] == '/':
-                return
+        if len(data) > 0 and isinstance(data[0], str) and data[0].startswith('/'):
+            return
         self.choice.set(data)
         self.set_choice_internal()
 
@@ -4421,9 +4426,8 @@ class OSCRadioButtonsNode(RadioButtonsNode, OSCWidget):
             self._suppress_next_receive = False
             return
         data = any_to_list(data)
-        if type(data[0]) == str:
-            if data[0][0] == '/':
-                return
+        if len(data) > 0 and isinstance(data[0], str) and data[0].startswith('/'):
+            return
         value = any_to_int(data)
         self.radio_group.set(value)
         RadioButtonsNode.execute(self)
@@ -4484,9 +4488,15 @@ class OSCVectorNode(Node, OSCWidget):
                 dim_args.append(a)
 
         if len(dim_args) >= 1:
-            self.rows = int(dim_args[0])
+            try:
+                self.rows = int(dim_args[0])
+            except (ValueError, TypeError):
+                pass
         if len(dim_args) >= 2:
-            self.cols = int(dim_args[1])
+            try:
+                self.cols = int(dim_args[1])
+            except (ValueError, TypeError):
+                pass
 
         self.cols = max(1, min(self.cols, 16))
         self.rows = max(1, min(self.rows, self.MAX_ROWS))
