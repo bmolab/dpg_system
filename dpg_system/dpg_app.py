@@ -357,6 +357,7 @@ class App:
         self.undo_stack_max = 50
         self._pending_drag_snapshot = None  # (editor, positions_fingerprint) speculatively pushed on mouse-down
         self._pending_widget_edit = None    # (editor, widget_uuid, before_value) speculatively pushed on widget-activated
+        self._pending_help_target = None    # (node, mouse_down_pos) captured on alt-mouse-down, fired on mouse-up
         self.saving_to_lib = False
         self.project_name = os.path.basename(__file__).split('.')[0]
         self.currently_loading_patch_name = ''
@@ -1127,13 +1128,19 @@ class App:
                     node_object = dpg.get_item_user_data(selected_nodes_uuid)
                     node_object.toggle_show_hide_options()
 
-    def help_handler(self):
-        if self.not_focussed_on_widget():
-            if self.get_current_editor() is not None and not self.get_current_editor().presenting:
-                selected_nodes_uuids = dpg.get_selected_nodes(self.get_current_editor().uuid)
-                node_uuid = selected_nodes_uuids[0]
-                node = dpg.get_item_user_data(node_uuid)
-                node.get_help()
+    def help_handler(self, node=None):
+        if not self.not_focussed_on_widget():
+            return
+        editor = self.get_current_editor()
+        if editor is None or editor.presenting:
+            return
+        if node is None:
+            selected_nodes_uuids = dpg.get_selected_nodes(editor.uuid)
+            if not selected_nodes_uuids:
+                return
+            node = dpg.get_item_user_data(selected_nodes_uuids[0])
+        if node is not None and hasattr(node, 'get_help'):
+            node.get_help()
 
     def M_handler(self):
         if self.control_or_command_down():
@@ -1469,7 +1476,20 @@ class App:
             editor = self.get_current_editor()
             if editor is not None and not editor.presenting:
                 if self.alt_down():
-                    self.help_handler()
+                    # Resolve a help target now, but defer the tab switch
+                    # until mouse-up. If we open the help tab on mouse-down,
+                    # DPG keeps tracking a drag on the clicked node across
+                    # the switch — the mouse travels to the help-tab close
+                    # button, and when the user returns to the original
+                    # editor, DPG snaps the node to the far-away cursor.
+                    hovered = self.hovered_item
+                    target = getattr(hovered, 'node', hovered)
+                    if target is None or not hasattr(target, 'get_help'):
+                        selected = dpg.get_selected_nodes(editor.uuid)
+                        if selected:
+                            target = dpg.get_item_user_data(selected[0])
+                    if target is not None and hasattr(target, 'get_help'):
+                        self._pending_help_target = (target, dpg.get_mouse_pos(local=False))
                 else:
                     # Speculative undo capture for node drags. DPG handles node movement
                     # internally with no callback, so we snapshot now and rollback on
@@ -1487,6 +1507,17 @@ class App:
         return tuple((n.uuid, *dpg.get_item_pos(n.uuid)) for n in editor._nodes)
 
     def mouse_up_handler(self, sender=None, app_data=None, user_data=None):
+        if self._pending_help_target is not None:
+            target, down_pos = self._pending_help_target
+            self._pending_help_target = None
+            try:
+                up_pos = dpg.get_mouse_pos(local=False)
+                dx = up_pos[0] - down_pos[0]
+                dy = up_pos[1] - down_pos[1]
+                if dx * dx + dy * dy <= 25:  # ≤5px = click, not drag
+                    self.help_handler(node=target)
+            except Exception as e:
+                print(f'help fire on mouse-up failed: {e}')
         if self.resize_drag is not None:
             from dpg_system.node import _get_resize_handle_theme
             rh = self.resize_drag

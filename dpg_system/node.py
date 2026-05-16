@@ -2313,6 +2313,10 @@ class Node:
                         if title == self.label + '_help':
                             Node.app.select_tab(tab)
                             return
+                # Force a new tab — without this, load_from_file falls into
+                # its merge-into-current-editor branch when fresh_patcher is
+                # False, silently dropping help nodes into the active patch.
+                Node.app.fresh_patcher = True
                 Node.app.load_from_file(str(temp_path.resolve()))
 
     def add_display(self, label: str = "", uuid=None, width=80, callback=None):
