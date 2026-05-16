@@ -1038,6 +1038,9 @@ class CounterNode(Node):
         next_val = self.current_value + self.step
         max_val = self.max_count
 
+        if max_val <= 0:
+            return
+
         # 1. Determine Carry State (-1, 0, or 1)
         if next_val < 0:
             carry = -1
@@ -1116,6 +1119,9 @@ class RangeCounterNode(Node):
         start = self.start_count
         end = self.end_count
         gap = end - start + 1
+
+        if gap <= 0:
+            return
 
         # Calculate potential next value
         next_val = self.current_value + self.step
@@ -1216,6 +1222,8 @@ class SwitchNode(Node):
                 self.switch_inputs[i].triggers_execution = False
 
     def execute(self):
+        if not (0 < self.state <= self.num_switches):
+            return
         received = self.switch_inputs[self.state - 1]()
         self.out.send(received)
 
@@ -1313,6 +1321,8 @@ class UnpackNode(Node):
                 for j in reversed(range(out_count)):
                     self.outputs[j].send(listing[j])
             elif t == np.ndarray:
+                if value.ndim == 0:
+                    return
                 out_count = value.shape[0]
                 if out_count > self.num_outs:
                     out_count = self.num_outs
@@ -1320,6 +1330,8 @@ class UnpackNode(Node):
                     self.outputs[j].send(value[j])
             elif torch_available:
                 if t == torch.Tensor:
+                    if value.dim() == 0:
+                        return
                     out_count = value.shape[0]
                     if out_count > self.num_outs:
                         out_count = self.num_outs
@@ -1448,7 +1460,7 @@ class PackNode(Node):
                     try:
                         out_array = np.stack(out_list)
                         self.output.send(out_array)
-                    except:
+                    except (ValueError, TypeError):
                         self.output.send(out_list)
                 else:
                     for i in range(self.num_ins):
@@ -1477,7 +1489,7 @@ class PackNode(Node):
                     try:
                         out_tensor = torch.stack(out_list)
                         self.output.send(out_tensor)
-                    except:
+                    except (RuntimeError, TypeError):
                         self.output.send(out_list)
                 else:
                     for i in range(self.num_ins):
@@ -2504,6 +2516,8 @@ class DictExtractNode(Node):
 
     def execute(self):
         received_dict = self.input()
+        if not isinstance(received_dict, dict):
+            return
         if len(self.extract_keys) == 0:
             self.adjust_keys(received_dict)
         include_key = self.include_key_in_output_option()
@@ -2538,6 +2552,8 @@ class DictRetrieveNode(Node):
 
     def execute(self):
         received_dict = self.input()
+        if not isinstance(received_dict, dict):
+            return
         self.dict = copy.deepcopy(received_dict)
         if self.key in self.dict:
             self.output.send(self.dict[self.key])
@@ -2556,6 +2572,8 @@ class DictStreamNode(Node):
 
     def execute(self):
         received_dict = self.input()
+        if not isinstance(received_dict, dict):
+            return
         keys = list(received_dict.keys())
         for key in keys:
             self.output.send([key, received_dict[key]])
@@ -2584,7 +2602,7 @@ class ConstructDictNode(Node):
         incoming = self.data_input()
         if type(incoming) is str:
             incoming = string_to_list(incoming)
-        if type(incoming) is list:
+        if type(incoming) is list and len(incoming) > 0:
             key = incoming[0]
             value = incoming[1:]
             self.dict[key] = value
@@ -2671,7 +2689,7 @@ class DictReplaceNode(Node):
                 if isinstance(pair[0], str) and isinstance(pair[1], str):
                     self.dict[pair[0]] = pair[1]
             elif len(pair) == 1:
-                self.dict.pop(pair[0])
+                self.dict.pop(pair[0], None)
         self.update_dict()
 
     def update_dict(self):
@@ -2763,6 +2781,8 @@ class DictNode(Node):
     def random_retrieve(self, message='', data=[]):
         key_list = list(self.collection.keys())
         count = len(key_list)
+        if count == 0:
+            return
         random_index = random.randint(0, count - 1)
         key = key_list[random_index]
         value = self.collection[key]
@@ -2831,12 +2851,17 @@ class DictNode(Node):
             print('no file chosen')
 
     def save_data(self, path):
-        with open(path, 'w') as f:
-            json.dump(self.collection, f, indent=4, cls=NumpyTorchEncoder)
+        try:
+            with open(path, 'w') as f:
+                json.dump(self.collection, f, indent=4, cls=NumpyTorchEncoder)
+        except (OSError, TypeError, ValueError) as e:
+            print(f"DictNode save failed for {path}: {e}")
+            return False
         self.path = path
         self.file_name = path.split('/')[-1]
         self.file_name = self.file_name.split('.')[0]
         self.collection_name_input.set(self.file_name)
+        return True
 
     def save_message(self, message='', data=[]):
         if len(data) > 0:
@@ -2869,15 +2894,19 @@ class DictNode(Node):
             self.load_dialog()
 
     def load_data(self, path):
-        if os.path.exists(path):
+        if not os.path.exists(path):
+            return False
+        try:
             with open(path, 'r') as f:
                 self.collection = json.load(f)
-                self.path = path
-                self.file_name = path.split('/')[-1]
-                self.file_name = self.file_name.split('.')[0]
-                self.collection_name_input.set(self.file_name)
-                return True
-        return False
+        except (OSError, json.JSONDecodeError, ValueError) as e:
+            print(f"DictNode load failed for {path}: {e}")
+            return False
+        self.path = path
+        self.file_name = path.split('/')[-1]
+        self.file_name = self.file_name.split('.')[0]
+        self.collection_name_input.set(self.file_name)
+        return True
 
     def clear(self):
         self.collection = {}
@@ -2958,6 +2987,8 @@ class DictNode(Node):
                     self.unmatched_output.send(data)
 
             elif t in [list]:
+                if len(data) == 0:
+                    return
                 index = any_to_string(data[0])
                 if index == 'delete':
                     if len(data) > 1:
@@ -2994,8 +3025,13 @@ class DictNode(Node):
             t = type(data)
 
             if t is str:
+                if len(data) == 0:
+                    return
                 if data[0] == '{':
-                    data = json.loads(data)
+                    try:
+                        data = json.loads(data)
+                    except (json.JSONDecodeError, ValueError):
+                        return
                     t = dict
                 else:
                     data = string_to_list(data)
@@ -3003,6 +3039,8 @@ class DictNode(Node):
             if t is dict:
                 self.collection = copy.deepcopy(data)
             elif t == list:
+                if len(data) == 0:
+                    return
                 index = data[0]
                 if type(index) not in [str, int]:
                     index = any_to_string(data[0])
@@ -3291,7 +3329,8 @@ class ConduitReceiveNode(Node):
 
     def conduit_name_changed(self):
         conduit_name = self.conduit_name_option()
-        self.conduit.detach_client(self)
+        if self.conduit is not None:
+            self.conduit.detach_client(self)
         self.conduit = None
         self.conduit_name = conduit_name
         self.conduit = self.app.find_conduit(self.conduit_name)
@@ -3338,7 +3377,8 @@ class VariableNode(Node):
 
     def variable_name_changed(self):
         variable_name = self.variable_name_property()
-        self.variable.detach_client(self)
+        if self.variable is not None:
+            self.variable.detach_client(self)
         self.variable = None
         self.variable_name = variable_name
         self.variable = self.app.find_variable(self.variable_name)
@@ -3494,6 +3534,8 @@ class StreamListNode(Node):
 
     def execute(self):
         incoming = self.list_in()
+        if not isinstance(incoming, (list, tuple, np.ndarray)):
+            return
         for item in incoming:
             self.stream_out.send(item)
 
@@ -3605,24 +3647,33 @@ class NPZDirectoryIteratorNode(Node):
             self._did_resume = False
 
     def reset_iterator(self):
+        if self.iterator is None:
+            return
         self.iterator.reset()
         self.current_file = None
         self._did_resume = False
 
     def execute(self):
         if self.resume() and not self._did_resume:
-            if os.path.exists(self.saving_path()):
-                with open(self.saving_path(), "r") as f:
-                    target_file = os.path.abspath(json.load(f)["file_path"])
+            if os.path.exists(self.saving_path()) and self.iterator is not None:
+                target_file = None
                 try:
-                    while True:
-                        path = self.iterator.next_file()
-                        if os.path.abspath(path) == target_file:
-                            # path = self.iterator.next_file()
-                            self.output.send(path)
-                            break
-                except StopIteration:
-                    self.done_output.send('bang')
+                    with open(self.saving_path(), "r") as f:
+                        state = json.load(f)
+                    if isinstance(state, dict) and "file_path" in state:
+                        target_file = os.path.abspath(state["file_path"])
+                except (OSError, json.JSONDecodeError, ValueError) as e:
+                    print(f"NPZDirectoryIteratorNode resume read failed: {e}")
+                if target_file is not None:
+                    try:
+                        while True:
+                            path = self.iterator.next_file()
+                            if os.path.abspath(path) == target_file:
+                                # path = self.iterator.next_file()
+                                self.output.send(path)
+                                break
+                    except StopIteration:
+                        self.done_output.send('bang')
             self._did_resume = True
             return
 
@@ -3632,9 +3683,11 @@ class NPZDirectoryIteratorNode(Node):
                 self.current_file = os.path.abspath(file_name)
                 self.output.send(file_name)
 
-                with open(self.saving_path(), "w") as f:
-                    json.dump(
-                        {"file_path": self.current_file}, f)
+                try:
+                    with open(self.saving_path(), "w") as f:
+                        json.dump({"file_path": self.current_file}, f)
+                except OSError as e:
+                    print(f"NPZDirectoryIteratorNode state write failed: {e}")
 
         except StopIteration:
             self.done_output.send('bang')
