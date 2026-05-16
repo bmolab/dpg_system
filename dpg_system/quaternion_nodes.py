@@ -1080,13 +1080,13 @@ class TrackerAlignNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.tracker_pos_input = self.add_input('tracker pos', triggers_execution=True)  # [x, y, z]
+        self.imu_root_input = self.add_input('imu root quat', triggers_execution=True)  # [w, x, y, z] scalar first
+        self.tracker_pos_input = self.add_input('tracker pos')  # [x, y, z]
         self.tracker_quat_input = self.add_input('tracker quat')  # [x, y, z, w] scalar last
-        self.imu_root_input = self.add_input('imu root quat')  # [w, x, y, z] scalar first
         self.body_offset_input = self.add_input('body offset')  # [x, y, z] offset from IMU root to tracker in body-local coords
         self.calibrate_prop = self.add_property('calibrate', widget_type='button', callback=self.do_calibrate)
         self.continuous_opt = self.add_option('continuous', widget_type='checkbox', default_value=True)
-        self.smoothing_opt = self.add_option('smoothing', widget_type='drag_float', default_value=0.95, min_value=0.0, max_value=0.999)
+        self.smoothing_opt = self.add_option('smoothing', widget_type='drag_float', default_value=0.88, min_value=0.0, max_value=0.999)
 
         self.corrected_pos_output = self.add_output('corrected pos')
         self.correction_quat_output = self.add_output('correction quat')
