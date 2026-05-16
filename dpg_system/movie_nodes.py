@@ -734,13 +734,21 @@ class MovieClipDictNode(Node):
         """Send a play or loop command for the named clip."""
         if clip_name is None:
             clip_name = self._selected_clip_name()
-        if clip_name and clip_name in self.clips:
-            spec = self.clips[clip_name]
+        if not clip_name or clip_name not in self.clips:
+            return
+        spec = self.clips[clip_name]
+        if not isinstance(spec, (list, tuple)) or len(spec) < 2:
+            print(f'MovieClipDict: clip "{clip_name}" has malformed spec: {spec}')
+            return
+        try:
             start = int(spec[0])
             end = int(spec[1])
             speed = float(spec[2]) if len(spec) > 2 else 1.0
-            self.command_output.send(f'{command} {start} {end} {speed}')
-            self.clip_spec_output.send(spec)
+        except (ValueError, TypeError) as e:
+            print(f'MovieClipDict: clip "{clip_name}" has non-numeric spec ({e})')
+            return
+        self.command_output.send(f'{command} {start} {end} {speed}')
+        self.clip_spec_output.send(spec)
 
     def play_clip_pressed(self):
         self._send_clip_command('play')
@@ -786,9 +794,13 @@ class MovieClipDictNode(Node):
             name = str(message_data[0])
             if len(message_data) >= 3:
                 # Explicit spec provided
-                start = int(message_data[1])
-                end = int(message_data[2])
-                speed = float(message_data[3]) if len(message_data) > 3 else 1.0
+                try:
+                    start = int(message_data[1])
+                    end = int(message_data[2])
+                    speed = float(message_data[3]) if len(message_data) > 3 else 1.0
+                except (ValueError, TypeError) as e:
+                    print(f'MovieClipDict: store "{name}" rejected non-numeric spec ({e})')
+                    return
                 self.clips[name] = [start, end, speed]
             elif self.current_clip_spec is not None:
                 self.clips[name] = list(self.current_clip_spec)
@@ -873,8 +885,12 @@ class MovieClipDictNode(Node):
             self._save_to_file(path)
 
     def _save_to_file(self, path):
-        with open(path, 'w') as f:
-            json.dump(self.clips, f, indent=4)
+        try:
+            with open(path, 'w') as f:
+                json.dump(self.clips, f, indent=4)
+        except (OSError, TypeError, ValueError) as e:
+            print(f'MovieClipDict: save failed for {path}: {e}')
+            return
         self.file_label.set(os.path.basename(path))
         print(f'MovieClipDict: saved {len(self.clips)} clips to {path}')
 
@@ -890,12 +906,21 @@ class MovieClipDictNode(Node):
             self._load_from_file(path)
 
     def _load_from_file(self, path):
-        if os.path.exists(path):
+        if not os.path.exists(path):
+            return
+        try:
             with open(path, 'r') as f:
-                self.clips = json.load(f)
-            self._update_listbox()
-            self.file_label.set(os.path.basename(path))
-            print(f'MovieClipDict: loaded {len(self.clips)} clips from {path}')
+                loaded = json.load(f)
+        except (OSError, json.JSONDecodeError, ValueError) as e:
+            print(f'MovieClipDict: load failed for {path}: {e}')
+            return
+        if not isinstance(loaded, dict):
+            print(f'MovieClipDict: {path} did not contain a clip dictionary')
+            return
+        self.clips = loaded
+        self._update_listbox()
+        self.file_label.set(os.path.basename(path))
+        print(f'MovieClipDict: loaded {len(self.clips)} clips from {path}')
 
     # ------------------------------------------------------------------
     # Persistence
@@ -905,6 +930,7 @@ class MovieClipDictNode(Node):
         container['clips'] = self.clips
 
     def load_custom(self, container):
-        if 'clips' in container:
-            self.clips = container['clips']
+        loaded = container.get('clips')
+        if isinstance(loaded, dict):
+            self.clips = loaded
             self._update_listbox()
