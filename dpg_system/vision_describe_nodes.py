@@ -121,6 +121,8 @@ class VisionDescribeBase(Node):
     @staticmethod
     def _prepare_image(image_array, max_dim):
         """Downscale numpy image and convert to PIL."""
+        if image_array.ndim not in (2, 3) or image_array.size == 0:
+            return None
         if image_array.ndim == 3 and image_array.shape[2] == 4:
             image_array = image_array[:, :, :3]
         if image_array.dtype != np.uint8:
@@ -132,9 +134,12 @@ class VisionDescribeBase(Node):
         pil_image = Image.fromarray(image_array)
 
         w, h = pil_image.size
+        if w == 0 or h == 0:
+            return None
         if max(w, h) > max_dim:
             scale = max_dim / max(w, h)
-            new_w, new_h = int(w * scale), int(h * scale)
+            new_w = max(1, int(w * scale))
+            new_h = max(1, int(h * scale))
             pil_image = pil_image.resize((new_w, new_h), Image.LANCZOS)
 
         return pil_image
@@ -188,6 +193,8 @@ class VisionDescribeBase(Node):
                     torch.mps.empty_cache()
 
                 pil_image = self._prepare_image(image_array, max_dim)
+                if pil_image is None:
+                    continue
 
                 with torch.no_grad():
                     answer = self._run_inference(pil_image, prompt, max_tokens, **extra)
@@ -208,6 +215,8 @@ class VisionDescribeBase(Node):
         self._worker_event.set()
         if self._worker_thread.is_alive():
             self._worker_thread.join(timeout=2.0)
+            if self._worker_thread.is_alive():
+                print(f'[{self.__class__.__name__}] worker thread did not exit within 2s')
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -296,10 +305,15 @@ class MoondreamDescribeNode(VisionDescribeBase):
         settings = {"max_tokens": max_tokens}
         if mode == 'caption':
             result = cls._model.caption(pil_image, length=caption_length, settings=settings)
-            return result.get("caption", "")
+            key = "caption"
         else:
             result = cls._model.query(pil_image, question=prompt, settings=settings)
-            return result.get("answer", "")
+            key = "answer"
+        if isinstance(result, dict):
+            return result.get(key, "")
+        if isinstance(result, str):
+            return result
+        return ""
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
