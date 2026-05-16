@@ -609,12 +609,16 @@ class SpeechProsodyNode(Node):
         elif isinstance(raw, np.ndarray):
             f0_new = raw.astype(np.float32).flatten()
         elif isinstance(raw, (list, tuple)):
-            f0_new = np.array(raw, dtype=np.float32)
-        else:
-            # single value — wrap
+            try:
+                f0_new = np.array(raw, dtype=np.float32)
+            except (ValueError, TypeError):
+                return
+        elif isinstance(raw, (int, float, bool, np.number)):
             f0_new = np.array([float(raw)], dtype=np.float32)
+        else:
+            return  # unrecognised type (str, dict, etc.)
 
-        if len(f0_new) == 0:
+        if f0_new.size == 0:
             return
 
         # We don't have per-frame voiced_prob from raw f0, so derive from f0 > 0
