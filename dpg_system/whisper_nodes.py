@@ -587,6 +587,8 @@ class AudioCapture:
     def feed_external(self, audio: np.ndarray, sample_rate: int = 16000):
         """Feed externally-sourced audio into the buffer (from a node input).
         Handles downsampling to 16kHz, mono conversion, VAD, and gain."""
+        if not isinstance(audio, np.ndarray) or audio.ndim == 0:
+            return
         if not self.audio_ready and not self.external_mode:
             # Auto-init in external mode (no mic needed)
             self.external_mode = True
@@ -879,9 +881,12 @@ class WhisperProcessor:
             # Run inference
             lang_code = self.language
             if lang_code != "auto":
-                idx = LANG_LIST.index(lang_code) if lang_code in LANG_LIST else 0
-                if 0 < idx < len(LANG_CODES):
-                    lang_code = LANG_CODES[idx]
+                if lang_code in LANG_LIST:
+                    idx = LANG_LIST.index(lang_code)
+                    if 0 < idx < len(LANG_CODES):
+                        lang_code = LANG_CODES[idx]
+                else:
+                    lang_code = "auto"
 
             segments, detected_lang = self.backend.transcribe(
                 audio_data, language=lang_code, translate=self.translate
@@ -1591,6 +1596,8 @@ class WhisperNode(Node):
         self.audio_capture.pause()
         if self.thread is not None and self.thread.is_alive():
             self.thread.join(timeout=3.0)
+            if self.thread.is_alive():
+                print("Whisper: processing thread did not exit within 3s")
         self.thread = None
 
     def _processing_thread(self):
