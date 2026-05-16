@@ -568,7 +568,9 @@ class OSCQueryBrowseNode(Node, OSCBase):
         words = query.lower().split()
 
         # Use the browser's search for each word, then intersect
-        browser = self.osc_manager.oscquery_browser
+        browser = self.osc_manager.oscquery_browser if self.osc_manager else None
+        if browser is None or not hasattr(browser, '_lock'):
+            return
         all_results = []
 
         with browser._lock:
@@ -614,10 +616,11 @@ class OSCQueryBrowseNode(Node, OSCBase):
 
         if 'TYPE' in tree_node:
             results.append((current_path, tree_node))
-        if 'CONTENTS' in tree_node:
+        contents = tree_node.get('CONTENTS')
+        if isinstance(contents, dict):
             if current_path:  # don't add root
                 results.append((current_path, tree_node))
-            for key, child in tree_node['CONTENTS'].items():
+            for key, child in contents.items():
                 child_path = current_path + '/' + key
                 results.extend(self._collect_all_paths(child, child_path))
         return results
@@ -1249,10 +1252,13 @@ class OSCQueryBrowseNode(Node, OSCBase):
     def _collect_leaves_with_paths(self, tree_node, base_path):
         """Collect all leaf parameters (with TYPE) under a tree node, depth-first."""
         results = []
+        if not isinstance(tree_node, dict):
+            return results
         if 'TYPE' in tree_node:
             results.append((base_path, tree_node))
-        if 'CONTENTS' in tree_node:
-            for key, child in tree_node['CONTENTS'].items():
+        contents = tree_node.get('CONTENTS')
+        if isinstance(contents, dict):
+            for key, child in contents.items():
                 child_path = base_path + '/' + key
                 results.extend(self._collect_leaves_with_paths(child, child_path))
         return results
