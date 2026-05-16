@@ -97,18 +97,25 @@ class MGLBodyOrientationNode(MGLBodyNode):
 
     def _disk_per_scales_changed(self):
         val = self.disk_per_scales_input()
-        if val is not None:
-            val = any_to_array(val).astype(np.float32).flatten()
-            for i in range(min(self.disk_count, len(val))):
-                self.disk_per_scales[i] = val[i]
+        if val is None:
+            return
+        arr = any_to_array(val)
+        if arr is None:
+            return
+        arr = arr.astype(np.float32).flatten()
+        for i in range(min(self.disk_count, len(arr))):
+            self.disk_per_scales[i] = arr[i]
 
     def _disk_colors_changed(self):
         for i in range(self.disk_count):
             val = self.disk_color_inputs[i]()
-            if val is not None:
-                val = any_to_array(val)
-                if val.ndim == 1 and val.shape[0] == 4:
-                    self.disk_colors[i] = val.astype(np.float32)
+            if val is None:
+                continue
+            arr = any_to_array(val)
+            if arr is None:
+                continue
+            if arr.ndim == 1 and arr.shape[0] == 4:
+                self.disk_colors[i] = arr.astype(np.float32)
 
     def _invalidate_disk_ring(self):
         self._disk_vao = None
@@ -230,13 +237,15 @@ class MGLBodyOrientationNode(MGLBodyNode):
         if self.disk_axis_angle_input.fresh_input:
             data = self.disk_axis_angle_input()
             if data is not None:
-                arr = any_to_array(data).astype(np.float32)
-                # Auto-detect: [20, 7, 3, 3] = rotation matrices, [20, 7, 3] = axis-angle
-                if arr.ndim == 4 and arr.shape[2] == 3 and arr.shape[3] == 3:
-                    self._orientations_are_matrices = True
-                else:
-                    self._orientations_are_matrices = False
-                self.disk_orientations = arr
+                arr = any_to_array(data)
+                if arr is not None and arr.ndim >= 2:
+                    arr = arr.astype(np.float32)
+                    # Auto-detect: [20, 7, 3, 3] = rotation matrices, [20, 7, 3] = axis-angle
+                    if arr.ndim == 4 and arr.shape[2] == 3 and arr.shape[3] == 3:
+                        self._orientations_are_matrices = True
+                    else:
+                        self._orientations_are_matrices = False
+                    self.disk_orientations = arr
 
         super().execute()
 
@@ -276,6 +285,10 @@ class MGLBodyOrientationNode(MGLBodyNode):
         orient_data = self.disk_orientations
         use_matrices = self._orientations_are_matrices
 
+        # Need at least (joints, disks, ...) — 1-D data has no per-disk axis
+        if orient_data.ndim < 2:
+            return
+
         for joint_idx in range(t_ActiveJointCount):
             if joint_idx == t_PelvisAnchor:
                 continue
@@ -289,6 +302,11 @@ class MGLBodyOrientationNode(MGLBodyNode):
                 continue
 
             joint_data = orient_data[joint_idx]  # (7, 3, 3) or (7, 3) or (7, 4)
+
+            # Matrix path needs (disk_count, 3, 3); axis-angle needs (disk_count, 3|4)
+            min_dims = 3 if use_matrices else 2
+            if joint_data.ndim < min_dims:
+                continue
 
             for d in range(min(self.disk_count, joint_data.shape[0])):
                 if use_matrices:
@@ -396,7 +414,14 @@ class MGLBodyOrientationNode(MGLBodyNode):
             super().load_custom(container)
         for i in range(self.disk_count):
             name = 'disk_color_' + str(i)
-            if name in container:
-                self.disk_colors[i] = np.array(container[name], dtype=np.float32)
-                self.disk_color_inputs[i].set(self.disk_colors[i])
+            if name not in container:
+                continue
+            try:
+                color = np.array(container[name], dtype=np.float32)
+            except (ValueError, TypeError):
+                continue
+            if color.shape != (4,):
+                continue
+            self.disk_colors[i] = color
+            self.disk_color_inputs[i].set(self.disk_colors[i])
         self._disk_colors_changed()
