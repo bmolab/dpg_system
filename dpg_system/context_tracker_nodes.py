@@ -265,11 +265,15 @@ class ContextTrackerNode(Node):
         elif type(data) == str:
             # Try loading as JSON file path
             if os.path.exists(data):
-                with open(data, 'r') as f:
-                    vocab_list = json.load(f)
-                    if type(vocab_list) == list:
-                        for item in vocab_list:
-                            target_set.add(str(item).lower())
+                try:
+                    with open(data, 'r') as f:
+                        vocab_list = json.load(f)
+                except (OSError, json.JSONDecodeError, ValueError) as e:
+                    print(f"ContextTrackerNode vocab load failed for {data}: {e}")
+                    return
+                if type(vocab_list) == list:
+                    for item in vocab_list:
+                        target_set.add(str(item).lower())
     # --- Clear ---
     def clear_all(self, value=None):
         for name in self.slot_names:
