@@ -234,7 +234,7 @@ class NodeOutput:
 
     def send_internal(self, no_trigger=False) -> None:
         if self.output_always or self.new_output:
-            if self.node.visibility == 'show_all' and dpg.does_item_exist(self.uuid):
+            if Node.app.show_active_pins and self.node.visibility == 'show_all' and dpg.does_item_exist(self.uuid):
                 try:
                     if Node.app.color_code_pins:
                         t = self.sent_type
@@ -315,11 +315,12 @@ class NodeIntOutput(NodeOutput):
         self.output_type = int
 
     def send(self, data: Optional[Any] = None) -> None:
-        if data is not None:
-            int_data = any_to_int(data)
-            super().send(int_data)
-        else:
+        if data is None:
             super().send()
+        elif type(data) is int:
+            super().send(data)
+        else:
+            super().send(any_to_int(data))
 
     def set_value(self, data: Any) -> int:
         int_data = any_to_int(data)
@@ -333,11 +334,12 @@ class NodeFloatOutput(NodeOutput):
         self.output_type = float
 
     def send(self, data: Optional[Any] = None) -> None:
-        if data is not None:
-            float_data = any_to_float(data)
-            super().send(float_data)
-        else:
+        if data is None:
             super().send()
+        elif type(data) is float:
+            super().send(data)
+        else:
+            super().send(any_to_float(data))
 
     def set_value(self, data: Any) -> float:
         float_data = any_to_float(data)
@@ -351,11 +353,12 @@ class NodeBoolOutput(NodeOutput):
         self.output_type = bool
 
     def send(self, data: Optional[Any] = None) -> None:
-        if data is not None:
-            bool_data = any_to_bool(data)
-            super().send(bool_data)
-        else:
+        if data is None:
             super().send()
+        elif type(data) is bool:
+            super().send(data)
+        else:
+            super().send(any_to_bool(data))
 
     def set_value(self, data: Any) -> bool:
         bool_data = any_to_bool(data)
@@ -369,14 +372,15 @@ class NodeListOutput(NodeOutput):
         self.output_type = list
 
     def send(self, data: Optional[Any] = None) -> None:
-        if data is not None:
-            list_data = any_to_list(data)
+        if data is None:
+            super().send()
+        elif type(data) is list:
+            super().send(data)
+        else:
             # if len(list_data) == 1 and type(data) is str:
             #     super().send(data)
             # else:
-            super().send(list_data)
-        else:
-            super().send()
+            super().send(any_to_list(data))
 
     def set_value(self, data: Any) -> Union[str, List[Any]]:
         list_data = any_to_list(data)
@@ -415,11 +419,12 @@ class NodeArrayOutput(NodeOutput):
         self.output_type = np.ndarray
 
     def send(self, data: Optional[Any] = None) -> None:
-        if data is not None:
-            array_data = any_to_array(data)
-            super().send(array_data)
-        else:
+        if data is None:
             super().send()
+        elif type(data) is np.ndarray:
+            super().send(data)
+        else:
+            super().send(any_to_array(data))
 
     def set_value(self, data: Any) -> np.ndarray:
         array_value = any_to_array(data)
@@ -433,11 +438,12 @@ class NodeTensorOutput(NodeOutput):
         self.output_type = torch.Tensor if torch_available else None
 
     def send(self, data: Optional[Any] = None) -> None:
-        if data is not None and torch_available:
-            tensor_data = any_to_tensor(data)
-            super().send(tensor_data)
-        else:
+        if data is None or not torch_available:
             super().send()
+        elif type(data) is torch.Tensor:
+            super().send(data)
+        else:
+            super().send(any_to_tensor(data))
     def set_value(self, data: Any) -> Optional[torch.Tensor]:
         if torch_available:
             tensor_value = any_to_tensor(data)
@@ -1631,7 +1637,7 @@ class NodeInput:
 
                 self._data = data
                 self.fresh_input = True
-                if self.node.visibility == 'show_all' and dpg.does_item_exist(self.uuid):
+                if Node.app.show_active_pins and self.node.visibility == 'show_all' and dpg.does_item_exist(self.uuid):
                     try:
                         if Node.app.color_code_pins:
                             if self.received_type is list:

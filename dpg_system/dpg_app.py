@@ -282,6 +282,7 @@ class App:
         self.trace_menu_item = -1
         self.minimap_menu_item = -1
         self.colour_code_pins_menu_item = -1
+        self.show_active_pins_menu_item = -1
         self.window_padding = [4, 3]
         self.frame_padding = [4, 0]
         self.cell_padding = [4, 2]
@@ -331,6 +332,7 @@ class App:
         self.drag_starts = {}
 
         self.color_code_pins = True
+        self.show_active_pins = True
         # self.global_theme = None
         # self.borderless_child_theme = None
         self.active_widget = -1
@@ -608,6 +610,10 @@ class App:
         if self.colour_code_pins_menu_item != -1:
             self.color_code_pins = dpg.get_value(self.colour_code_pins_menu_item)
 
+    def set_show_active_pins(self):
+        if self.show_active_pins_menu_item != -1:
+            self.show_active_pins = dpg.get_value(self.show_active_pins_menu_item)
+
     def show_log(self):
         if self.show_log_menu_item != -1:
             show = dpg.get_value(self.show_log_menu_item)
@@ -824,7 +830,11 @@ class App:
                 dpg.add_separator()
 
                 self.colour_code_pins_menu_item = dpg.add_menu_item(label="Colour Code Pins", check=True,
+                                                                    default_value=True,
                                                                     callback=self.set_colour_code_pines)
+                self.show_active_pins_menu_item = dpg.add_menu_item(label="Show Active Pins", check=True,
+                                                                    default_value=True,
+                                                                    callback=self.set_show_active_pins)
                 dpg.add_separator()
 
                 dpg.add_menu_item(label='osc status', callback=self.print_osc_state)
