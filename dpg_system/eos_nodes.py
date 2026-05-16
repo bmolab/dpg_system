@@ -56,8 +56,8 @@ class ColorSourceNode(OSCSender, Node):
 
         if len(args) > 0:
             for i in range(len(args)):
-                if is_number(args[0]):
-                    self.channel = any_to_int(args[0])
+                if is_number(args[i]):
+                    self.channel = any_to_int(args[i])
                     break
 
         self.intensity_input = self.add_input('intensity', widget_type='slider_int', widget_width=120, min=0, max=100, default_value=self.intensity, callback=self.intensity_changed)
@@ -216,14 +216,18 @@ class OSCSendEOSNode(Node, OSCBase, OSCSender, OSCRegistrableMixin):
 
     def change_in_value(self):
         data = self.input()
+        if data is None:
+            return
         t = type(data)
         if t not in [str, int, float, bool, np.int64, np.double]:
-            data = list(data)
+            try:
+                data = list(data)
+            except TypeError:
+                return
             data, homogenous, types = list_to_hybrid_list(data)
-        if data is not None:
-            if self.target and self.address != '':
-                address = '/eos/user/99/chan/' + str(self.target_channel_property()) + '/param/' + self.address
-                self.target.send_message(address, data)
+        if data is not None and self.target and self.address != '':
+            address = '/eos/user/99/chan/' + str(self.target_channel_property()) + '/param/' + self.address
+            self.target.send_message(address, data)
 
     def execute(self):
         self.change_in_value()
