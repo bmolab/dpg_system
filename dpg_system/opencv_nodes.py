@@ -42,12 +42,12 @@ class CVImageNode(Node):
         path = self.path_input()
         if type(path) == list:
             path = list_to_string(path)
-        elif type(path) == str:
-            path = path
         if type(path) == str and path != '':
             self.image = cv2.imread(path, cv2.IMREAD_COLOR)
-            if self.image is not None:
-                self.execute()
+            if self.image is None:
+                print(f"CVImageNode: failed to read image: {path}")
+                return
+            self.execute()
 
     def execute(self):
         if self.image is not None:
@@ -130,16 +130,24 @@ class CVVideoCaptureNode(Node):
     def cleanup(self):
         self.remove_frame_tasks()
         if self.cap is not None:
-            self.cap.release()
+            try:
+                self.cap.release()
+            except cv2.error:
+                pass
+            self.cap = None
 
     def frame_task(self):
         if self.cap is None:
             return
-        ret, frame = self.cap.read()
-        if not ret:
-            print("Can't receive frame (stream end?)")
+        try:
+            ret, frame = self.cap.read()
+            if not ret:
+                print("Can't receive frame (stream end?)")
+                return
+            rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        except cv2.error as e:
+            print(f"CVVideoCaptureNode: capture error ({e})")
             return
-        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         self.output.send(rgb)
 
     def execute(self):
