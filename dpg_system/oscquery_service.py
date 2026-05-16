@@ -42,7 +42,8 @@ class OSCQueryHTTPHandler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         path = parsed.path
         query = parsed.query
-        query_params = dict(p.split('=') for p in query.split('&') if '=' in p) if query else {}
+        # split('=', 1) so values containing '=' don't break the dict comprehension
+        query_params = dict(p.split('=', 1) for p in query.split('&') if '=' in p) if query else {}
 
         server_data = self.server.oscquery_data  # set by OSCQueryServer
 
@@ -51,12 +52,17 @@ class OSCQueryHTTPHandler(BaseHTTPRequestHandler):
             ip = query_params.get('ip', '')
             port = query_params.get('port', '')
             if ip and port:
+                try:
+                    port_int = int(port)
+                except (ValueError, TypeError):
+                    self.send_error(400, "Invalid port parameter")
+                    return
                 subscribers = server_data.get('subscribers', [])
-                entry = (ip, int(port))
+                entry = (ip, port_int)
                 if entry not in subscribers:
                     subscribers.append(entry)
                     server_data['subscribers'] = subscribers
-                self._send_json({'status': 'subscribed', 'ip': ip, 'port': int(port)})
+                self._send_json({'status': 'subscribed', 'ip': ip, 'port': port_int})
             else:
                 self.send_error(400, "Missing ip or port parameter")
             return
@@ -65,11 +71,16 @@ class OSCQueryHTTPHandler(BaseHTTPRequestHandler):
             ip = query_params.get('ip', '')
             port = query_params.get('port', '')
             if ip and port:
+                try:
+                    port_int = int(port)
+                except (ValueError, TypeError):
+                    self.send_error(400, "Invalid port parameter")
+                    return
                 subscribers = server_data.get('subscribers', [])
-                entry = (ip, int(port))
+                entry = (ip, port_int)
                 if entry in subscribers:
                     subscribers.remove(entry)
-                self._send_json({'status': 'unsubscribed', 'ip': ip, 'port': int(port)})
+                self._send_json({'status': 'unsubscribed', 'ip': ip, 'port': port_int})
             else:
                 self.send_error(400, "Missing ip or port parameter")
             return
@@ -102,7 +113,9 @@ class OSCQueryHTTPHandler(BaseHTTPRequestHandler):
         components = [c for c in path.split('/') if c]
         current = registry
         for comp in components:
-            if 'CONTENTS' in current and comp in current['CONTENTS']:
+            if not isinstance(current, dict):
+                return None
+            if 'CONTENTS' in current and isinstance(current['CONTENTS'], dict) and comp in current['CONTENTS']:
                 current = current['CONTENTS'][comp]
             elif comp in current:
                 current = current[comp]
