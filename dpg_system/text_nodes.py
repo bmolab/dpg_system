@@ -75,8 +75,10 @@ class TextChangeNode(Node):
             input_text = ''.join(input_text)
         if type(input_text) == str:
             word_list = input_text.split(' ')
+        elif isinstance(input_text, (list, tuple)):
+            word_list = list(input_text)
         else:
-            word_list = input_text
+            return
         new_words = []
         dead_words = []
         out_words = []
@@ -275,13 +277,13 @@ class WordFirstLetterNode(Node):
 
     def execute(self):
         data = any_to_string(self.input()).lower()
-        if len(self.find_list) > 0:
-
-            for index, first_letter_trigger in enumerate(self.find_list):
-                if data[0] == first_letter_trigger:
-                    self.trigger_outputs[index].send('bang')
-                elif data.find(' ' + first_letter_trigger) != -1:
-                    self.trigger_outputs[index].send('bang')
+        if len(data) == 0 or len(self.find_list) == 0:
+            return
+        for index, first_letter_trigger in enumerate(self.find_list):
+            if data[0] == first_letter_trigger:
+                self.trigger_outputs[index].send('bang')
+            elif data.find(' ' + first_letter_trigger) != -1:
+                self.trigger_outputs[index].send('bang')
 
 
 class GatherSentences(Node):
@@ -433,7 +435,10 @@ class CharConverterNode(Node):
 
     def execute(self):
         code = any_to_int(self.input())
-        char = chr(code)
+        try:
+            char = chr(code)
+        except (ValueError, OverflowError, TypeError):
+            return
         self.output.send(char)
 
 
@@ -595,9 +600,14 @@ class TextFileNode(Node):
 
     def save_data(self, path):
         self.text_contents = self.text_editor()
-        with open(path, 'w+') as f:
-            f.write(self.text_contents)
+        try:
+            with open(path, 'w+') as f:
+                f.write(self.text_contents)
+        except OSError as e:
+            print(f"TextFile node save failed for {path}: {e}")
+            return False
         self.file_name_property.set(path)
+        return True
 
     def save_message(self):
         data = self.save_button()
@@ -631,10 +641,14 @@ class TextFileNode(Node):
         try:
             with open(path, 'r') as f:
                 self.text_contents = f.read()
-            self.file_name_property.set(path)
-            self.text_editor.set(self.text_contents)
         except FileNotFoundError:
             print('TextFile node error:', path, 'not found')
+            return
+        except (OSError, UnicodeDecodeError) as e:
+            print(f"TextFile node load failed for {path}: {e}")
+            return
+        self.file_name_property.set(path)
+        self.text_editor.set(self.text_contents)
 
     def execute(self):
         if self.active_input == self.dump_button:
@@ -694,10 +708,12 @@ class WordGateNode(Node):
 
     def load_dict(self):
         path = self.dict_path_in()
-        if type(path) is str:
-            if os.path.exists(path):
+        if type(path) is str and os.path.exists(path):
+            try:
                 with open(path, 'r') as f:
                     self.gate_dict = json.load(f)
+            except (OSError, json.JSONDecodeError, ValueError) as e:
+                print(f"WordGate load_dict failed for {path}: {e}")
 
     def include_word(self):
         word = self.add_word_input()
@@ -764,10 +780,13 @@ class FuzzyMatchNode(Node):
             self.list_path = args[0]
             path = self.list_path.split('/')[-1]
             self.file_name.set(path)
-            f = open(args[0])
-            data = json.load(f)
-            for artist in data:
-                self.option_list.append(artist)
+            try:
+                with open(args[0]) as f:
+                    data = json.load(f)
+                for artist in data:
+                    self.option_list.append(artist)
+            except (OSError, json.JSONDecodeError, ValueError, TypeError) as e:
+                print(f"FuzzyMatch init load failed for {args[0]}: {e}")
 
     def load_match_file(self):
         LoadDialog(self, callback=self.load_match_file_callback, extensions=['.json'])
@@ -791,14 +810,18 @@ class FuzzyMatchNode(Node):
     def load_match_file_from_json(self, path):
         print('load from json')
         self.list_path = path
-        if os.path.exists(path):
+        if not os.path.exists(path):
+            return
+        try:
             with open(path, 'r') as f:
-                path = self.list_path.split('/')[-1]
-                self.file_name.set(path)
                 data = json.load(f)
-                self.option_list = []
-                for artist in data:
-                    self.option_list.append(artist)
+        except (OSError, json.JSONDecodeError, ValueError) as e:
+            print(f"FuzzyMatch load failed for {path}: {e}")
+            return
+        self.file_name.set(self.list_path.split('/')[-1])
+        self.option_list = []
+        for artist in data:
+            self.option_list.append(artist)
 
     def execute(self):
         if self.input.fresh_input:
@@ -879,6 +902,8 @@ class FuzzyMatchNode(Node):
     def fuzzy_score(self, test):
         scores = {}
         for index, node_name in enumerate(self.option_list):
+            if not node_name:
+                continue
             ratio = fuzz.partial_ratio(node_name.lower(), test.lower())
             full_ratio = fuzz.ratio(node_name.lower(), test.lower())        # partial matchi should be less important if size diff is big
             len_ratio = len(test) / len(node_name)
@@ -920,9 +945,10 @@ class SplitNode(Node):
 
     def execute(self):
         in_string = self.input()
-        t = type(in_string)
-        if t == list:
-            in_string = ' '.join(in_string)
+        if isinstance(in_string, list):
+            in_string = ' '.join(any_to_string(x) for x in in_string)
+        elif not isinstance(in_string, str):
+            in_string = any_to_string(in_string)
         if self.split_token == '':
             splits = in_string.split()
         elif self.split_token == '<return>':
@@ -952,16 +978,13 @@ class JoinNode(Node):
 
     def execute(self):
         in_list = self.input()
-        t = type(in_list)
-        if t == str:
+        if isinstance(in_list, str):
             in_list = in_list.split(' ')
-            t = list
-        elif t != list:
+        elif not isinstance(in_list, list):
             in_list = any_to_list(in_list)
-        if t is list:
-            for index, el in enumerate(in_list):
-                in_list[index] = any_to_string(el)
-
+        if not isinstance(in_list, list):
+            return
+        in_list = [any_to_string(el) for el in in_list]
         joined = self.join_token().join(in_list)
         self.output.send(joined)
 
