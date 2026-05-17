@@ -151,7 +151,12 @@ class DifferentiateNode(Node):
             output = np.zeros_like(received)
             self.output.send(output)
 
-        self.previous_value = received.copy()
+        # Scalars (int/float/bool) don't have .copy(); they're immutable so
+        # binding the value directly is safe.
+        if hasattr(received, 'copy'):
+            self.previous_value = received.copy()
+        else:
+            self.previous_value = received
         self.previousType = t
 
 
@@ -341,8 +346,13 @@ class SignalNode(Node):
             for arg in self.ordered_args:
                 if arg in ['sin', 'cos', 'saw', 'square', 'triangle', 'random']:
                     self.shape = arg
-                elif float(arg) != 0:
-                    self.period = float(arg)
+                else:
+                    try:
+                        val = float(arg)
+                    except (ValueError, TypeError):
+                        continue
+                    if val != 0:
+                        self.period = val
 
         self.on_off_input = self.add_input('on', widget_type='checkbox', triggers_execution=True, callback=self.start_stop)
         self.period_input = self.add_input('period', widget_type='drag_float', default_value=self.period, callback=self.change_period)
@@ -788,7 +798,7 @@ class RangerNode(Node):
                 range = self.inMax - self.inMin
                 if range == 0:
                     range = 1e-5
-                out = (in_value - self.inMin) / range
+                out = (inData - self.inMin) / range
                 out = (self.outMax - self.outMin) * out + self.outMin
                 if self.clamp_input():
                     out = out.clip(self.outMin, self.outMax)
@@ -804,7 +814,7 @@ class RangerNode(Node):
                 range = self.inMax - self.inMin
                 if range == 0:
                     range = 1e-5
-                out = (in_value - self.inMin) / range
+                out = (inData - self.inMin) / range
                 out = (self.outMax - self.outMin) * out + self.outMin
                 if self.clamp_input():
                     out = out.clamp(self.outMin, self.outMax)
@@ -1148,10 +1158,14 @@ class AdaptiveQuaternionFilterNode(Node):
         self.degree = self.degree * adapt_smooth + degree * (1.0 - adapt_smooth)
 
         self.accum = self.accum * self.degree + input_value * (1.0 - self.degree)
-        if type(self.accum) is torch.tensor:
-            self.accum = self.accum / torch.norm(self.accum)
-        elif type(self.accum) is np.ndarray:
-            self.accum = self.accum / np.linalg.norm(self.accum)
+        if self.app.torch_available and isinstance(self.accum, torch.Tensor):
+            norm = torch.norm(self.accum)
+            if norm > 1e-9:
+                self.accum = self.accum / norm
+        elif isinstance(self.accum, np.ndarray):
+            norm = np.linalg.norm(self.accum)
+            if norm > 1e-9:
+                self.accum = self.accum / norm
         self.current_degree_out.send(self.degree)
         self.output.send(self.accum)
 
@@ -1806,7 +1820,11 @@ class OneEuroFilterNode(Node):
         if self.filter:
             self.filter._mincutoff = float(self.min_cutoff)
             self.filter._beta = float(self.beta)
-            self.filter._framerate = float(self.dt())
+            # OneEuroFilter stores rate as _freq; setting _framerate did
+            # nothing (the dt widget had no effect on filter behavior).
+            dt_val = float(self.dt())
+            if dt_val > 0:
+                self.filter._freq = 1.0 / dt_val
             if self.d_cutoff == 0.0:
                 self.filter._dcutoff = float(self.d_cutoff) + 1e-6
             else:
@@ -1966,5 +1984,4 @@ class PhysicsFilterNode(Node):
                 self.output.send(out_val)
                 
         except Exception as e:
-             # print(f"PhysicsFilterNode Error: {e}")
-             pass
+            print(f"PhysicsFilterNode error: {e}")
