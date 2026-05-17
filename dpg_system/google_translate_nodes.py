@@ -9,7 +9,8 @@ import os
 import html
 import urllib.parse
 import threading
-from queue import Queue
+import traceback
+from queue import Queue, Empty, Full
 import time
 from google.cloud import translate_v2 as translate
 # from google.cloud import storage
@@ -110,7 +111,7 @@ class EasyGoogleTranslate:
             timeout = self.timeout
         if len(text) > 5000:
             print('\nError: It can only detect 5000 characters at once. (%d characters found.)'%(len(text)))
-            exit(0)
+            return None
         if type(target_language) is list:
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 futures = [executor.submit(self.make_request, target, source_language, text, timeout) for target in target_language]
@@ -121,11 +122,14 @@ class EasyGoogleTranslate:
     def translate_file(self, file_path, target_language='', source_language='', timeout=''):
         if not os.path.isfile(file_path):
             print('\nError: The file or path is incorrect.')
-            exit(0)
-        f = open(file_path)
-        text = self.translate(f.read(), target_language, source_language, timeout)
-        f.close()
-        return text
+            return None
+        try:
+            with open(file_path) as f:
+                contents = f.read()
+        except OSError as e:
+            print(f'\nError reading {file_path}: {e}')
+            return None
+        return self.translate(contents, target_language, source_language, timeout)
 
 languages = {
 'auto':'auto',
@@ -266,19 +270,32 @@ languages = {
 }
 
 def service_google_translate():
-    while True:
-        for instance in GoogleTranslateNode.instances:
+    while not GoogleTranslateNode._stop_event.is_set():
+        for instance in list(GoogleTranslateNode.instances):
             try:
                 instance.service_queue()
             except Exception as e:
-                print('service_google_translate')
+                print('service_google_translate:', e)
                 traceback.print_exception(e)
-
-        time.sleep(0.1)
+        GoogleTranslateNode._stop_event.wait(0.1)
 
 
 class GoogleTranslateNode(Node):
     instances = []
+    _stop_event = threading.Event()
+    _service_thread = None
+    _service_thread_lock = threading.Lock()
+
+    @classmethod
+    def _ensure_service_thread(cls):
+        with cls._service_thread_lock:
+            if cls._service_thread is None or not cls._service_thread.is_alive():
+                cls._stop_event.clear()
+                cls._service_thread = threading.Thread(
+                    target=service_google_translate, daemon=True
+                )
+                cls._service_thread.start()
+
     @staticmethod
     def factory(name, data, args=None):
         node = GoogleTranslateNode(name, data, args)
@@ -306,11 +323,19 @@ class GoogleTranslateNode(Node):
         self.timeout = self.add_input('time out', widget_type='drag_float', default_value=5.0)
         self.output = self.add_output('translation out')
 
-        GoogleTranslateNode.instances.append(self)
         self.active = False
         self.phrase_queue = Queue(16)
-        self.thread = threading.Thread(target=service_google_translate)
-        self.thread.start()
+        GoogleTranslateNode.instances.append(self)
+        GoogleTranslateNode._ensure_service_thread()
+
+    def custom_cleanup(self):
+        while not self.phrase_queue.empty():
+            try:
+                self.phrase_queue.get_nowait()
+            except Empty:
+                break
+        if self in GoogleTranslateNode.instances:
+            GoogleTranslateNode.instances.remove(self)
 
     def language_changed(self):
         src = self.source_language_input()
@@ -324,33 +349,30 @@ class GoogleTranslateNode(Node):
     def execute(self):
         self.text_to_translate = any_to_string(self.input())
         if len(self.text_to_translate) > 0:
-            self.phrase_queue.put(self.text_to_translate)
-
-        # if self.translator is not None:
-        #     result = self.translator.translate(any_to_string(self.input()))
-        #     self.output.send(result)
+            try:
+                self.phrase_queue.put_nowait(self.text_to_translate)
+            except Full:
+                print('GoogleTranslate: phrase queue full, dropping text')
 
     def service_queue(self):
         if not self.active and not self.phrase_queue.empty() and self.translator is not None:
             self.active = True
-            timeout = self.timeout()
-            self.translator.timeout = timeout
-            if self.queue_input():
-                text = self.phrase_queue.get()
+            try:
                 timeout = self.timeout()
                 self.translator.timeout = timeout
-                result = self.translator.translate(text)
-                if result is not None:
-                    self.output.send(result)
-            else:
-                text = ''
-                size = self.phrase_queue.qsize()
-                for i in range(size):
+                if self.queue_input():
                     text = self.phrase_queue.get()
-                result = self.translator.translate(text)
+                    result = self.translator.translate(text)
+                else:
+                    text = ''
+                    size = self.phrase_queue.qsize()
+                    for i in range(size):
+                        text = self.phrase_queue.get()
+                    result = self.translator.translate(text)
                 if result is not None:
                     self.output.send(result)
-            self.active = False
+            finally:
+                self.active = False
 
 
 #
@@ -360,18 +382,31 @@ class GoogleTranslateNode(Node):
 # print(result)
 
 def service_google_translate_api():
-    while True:
-        for instance in GoogleTranslateAPINode.instances:
+    while not GoogleTranslateAPINode._stop_event.is_set():
+        for instance in list(GoogleTranslateAPINode.instances):
             try:
                 instance.service_queue()
             except Exception as e:
-                print('service_google_translate_api')
+                print('service_google_translate_api:', e)
                 traceback.print_exception(e)
-
-        time.sleep(0.1)
+        GoogleTranslateAPINode._stop_event.wait(0.1)
 
 class GoogleTranslateAPINode(Node):
     instances = []
+    _stop_event = threading.Event()
+    _service_thread = None
+    _service_thread_lock = threading.Lock()
+
+    @classmethod
+    def _ensure_service_thread(cls):
+        with cls._service_thread_lock:
+            if cls._service_thread is None or not cls._service_thread.is_alive():
+                cls._stop_event.clear()
+                cls._service_thread = threading.Thread(
+                    target=service_google_translate_api, daemon=True
+                )
+                cls._service_thread.start()
+
     @staticmethod
     def factory(name, data, args=None):
         node = GoogleTranslateAPINode(name, data, args)
@@ -388,7 +423,15 @@ class GoogleTranslateAPINode(Node):
             if len(args) > 1:
                 self.target_language = args[1]
 
-        self.translate_client = translate.Client()
+        # translate.Client() raises if GOOGLE_APPLICATION_CREDENTIALS isn't
+        # set up — let node creation proceed in a disabled state so the user
+        # gets a node with a clear "no credentials" diagnostic instead of a
+        # crashed construct.
+        try:
+            self.translate_client = translate.Client()
+        except Exception as e:
+            print(f'GoogleTranslateAPINode: translate.Client() failed ({e}); node disabled')
+            self.translate_client = None
 
         self.input = self.add_input('text in', triggers_execution=True)
 
@@ -401,16 +444,27 @@ class GoogleTranslateAPINode(Node):
 
         self.output = self.add_output('translation out')
 
-        GoogleTranslateAPINode.instances.append(self)
         self.active = False
         self.phrase_queue = Queue(16)
-        self.thread = threading.Thread(target=service_google_translate_api)
-        self.thread.start()
+        GoogleTranslateAPINode.instances.append(self)
+        GoogleTranslateAPINode._ensure_service_thread()
+
+    def custom_cleanup(self):
+        while not self.phrase_queue.empty():
+            try:
+                self.phrase_queue.get_nowait()
+            except Empty:
+                break
+        if self in GoogleTranslateAPINode.instances:
+            GoogleTranslateAPINode.instances.remove(self)
 
     def execute(self):
         self.text_to_translate = any_to_string(self.input())
         if len(self.text_to_translate) > 0:
-            self.phrase_queue.put(self.text_to_translate)
+            try:
+                self.phrase_queue.put_nowait(self.text_to_translate)
+            except Full:
+                print('GoogleTranslateAPI: phrase queue full, dropping text')
 
     def translate(self, text):
         if isinstance(text, bytes):
@@ -428,20 +482,19 @@ class GoogleTranslateAPINode(Node):
     def service_queue(self):
         if not self.active and not self.phrase_queue.empty() and self.translate_client is not None:
             self.active = True
-            if self.queue_input():
-                text = self.phrase_queue.get()
-                result = self.translate(text)
-
-                if result is not None:
-                    self.output.send(result)
-            else:
-                text = ''
-                size = self.phrase_queue.qsize()
-                for i in range(size):
+            try:
+                if self.queue_input():
                     text = self.phrase_queue.get()
-                result = self.translate(text)
+                    result = self.translate(text)
+                else:
+                    text = ''
+                    size = self.phrase_queue.qsize()
+                    for i in range(size):
+                        text = self.phrase_queue.get()
+                    result = self.translate(text)
                 if result is not None:
                     self.output.send(result)
-            self.active = False
+            finally:
+                self.active = False
 
 
