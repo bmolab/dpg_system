@@ -24,7 +24,7 @@ from typing import Iterator, Union
 # api_key = 'xxxxxxxx....'
 # (your api key)
 
-from elevenlabs_key import api_key
+from dpg_system.elevenlabs_key import api_key
 
 def register_elevenlabs_nodes():
     Node.app.register_node("eleven_labs", ElevenLabsNode.factory)

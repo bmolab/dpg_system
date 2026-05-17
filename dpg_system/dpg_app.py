@@ -114,8 +114,14 @@ for import_name in to_be_imported:
         globals()[import_name] = import_module('dpg_system.' + import_name)
         print('Imported ' + import_name)
         imported.append(import_name)
-    except ModuleNotFoundError:
-        print('No module named ' + import_name)
+    except ModuleNotFoundError as e:
+        # If the missing module IS the one we tried to load, say so plainly.
+        # Otherwise the failure is a transitive dependency — name it explicitly
+        # so the user knows what to install/fix instead of chasing a phantom.
+        if e.name in (import_name, 'dpg_system.' + import_name):
+            print('No module named ' + import_name)
+        else:
+            print(f'Skipped {import_name}: missing dependency {e.name!r}')
 
 def widget_active(source, data, user_data):
     pass
