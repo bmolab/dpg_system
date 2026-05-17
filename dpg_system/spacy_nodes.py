@@ -1,5 +1,9 @@
 import spacy
-import en_core_web_lg
+
+try:
+    import en_core_web_lg  # noqa: F401 — ensures the model package is importable when installed.
+except Exception as _e:
+    print('spacy_nodes: en_core_web_lg import failed:', _e)
 
 from spacy import displacy
 from dpg_system.node import Node
@@ -56,7 +60,13 @@ class SpacyNode(Node):
         super().__init__(label, data, args)
 
         if self.__class__.nlp is None:
-            self.__class__.nlp = spacy.load('en_core_web_lg')
+            try:
+                self.__class__.nlp = spacy.load('en_core_web_lg')
+            except Exception as e:
+                # Leave self.nlp as None so subclasses can short-circuit
+                # rather than crashing node construction.
+                print('spacy_nodes: spacy.load(en_core_web_lg) failed:', e)
+                self.__class__.nlp = None
 
 
 class SpacyConfusionMatrixNode(SpacyNode):
@@ -76,20 +86,47 @@ class SpacyConfusionMatrixNode(SpacyNode):
         self.vectors_2 = []
 
     def execute(self):
+        if self.nlp is None:
+            return
+
         if self.input2.fresh_input:
             self.vectors_2 = []
-            self.data2 = self.input2()
+            data2 = self.input2()
+            if not isinstance(data2, (list, tuple)):
+                data2 = [] if data2 is None else [data2]
+            self.data2 = data2
             for word in self.data2:
-                self.vectors_2.append(self.nlp(word).vector)
+                try:
+                    self.vectors_2.append(self.nlp(any_to_string(word)).vector)
+                except Exception as e:
+                    print('spacy_confusion: vector lookup failed for', word, ':', e)
+                    self.vectors_2.append(None)
 
         if self.data2 is not None and len(self.data2) > 0:
             self.vectors = []
             data1 = self.input()
-            self.confusion_matrix = np.ndarray((len(self.data2), len(data1)))
+            if not isinstance(data1, (list, tuple)):
+                data1 = [] if data1 is None else [data1]
+            if len(data1) == 0:
+                return
+            # np.zeros is the safe initializer; np.ndarray returns uninitialized
+            # memory and any unset cell leaks whatever was there.
+            self.confusion_matrix = np.zeros((len(self.data2), len(data1)))
             for index, word in enumerate(data1):
-                vector_ = self.nlp(word).vector
+                try:
+                    vector_ = self.nlp(any_to_string(word)).vector
+                except Exception as e:
+                    print('spacy_confusion: vector lookup failed for', word, ':', e)
+                    continue
                 for index2, word2 in enumerate(self.data2):
-                    sim = 1-spatial.distance.cosine(vector_, self.vectors_2[index2])
+                    v2 = self.vectors_2[index2]
+                    if v2 is None:
+                        continue
+                    try:
+                        sim = 1 - spatial.distance.cosine(vector_, v2)
+                    except Exception as e:
+                        print('spacy_confusion: cosine failed:', e)
+                        continue
                     self.confusion_matrix[index2, index] = sim
             self.output.send(self.confusion_matrix)
 
@@ -109,10 +146,20 @@ class PhraseVectorNode(SpacyNode):
         self.output = self.add_output('phrase vector out')
 
     def execute(self):
+        if self.nlp is None:
+            return
         if self.input.fresh_input:
             sentence = self.input()
+            if sentence is None:
+                return
             self.sentence = any_to_string(sentence)
-            self.doc = self.nlp(self.sentence)
+            if not self.sentence:
+                return
+            try:
+                self.doc = self.nlp(self.sentence)
+            except Exception as e:
+                print('spacy_vector: nlp() failed:', e)
+                return
             vector = self.doc.vector
             self.output.send(vector)
 
@@ -135,16 +182,32 @@ class PhraseSimilarityNode(SpacyNode):
         self.output = self.add_output('phrase similarity out')
 
     def execute(self):
+        if self.nlp is None:
+            return
         if self.input.fresh_input:
             sentence = self.input()
-            self.sentence = any_to_string(sentence)
-            self.doc = self.nlp(self.sentence)
+            if sentence is not None:
+                self.sentence = any_to_string(sentence)
+                try:
+                    self.doc = self.nlp(self.sentence) if self.sentence else None
+                except Exception as e:
+                    print('spacy_similarity: nlp() failed:', e)
+                    self.doc = None
         if self.input2.fresh_input:
             sentence = self.input2()
-            self.sentence2 = any_to_string(sentence)
-            self.doc2 = self.nlp(self.sentence2)
+            if sentence is not None:
+                self.sentence2 = any_to_string(sentence)
+                try:
+                    self.doc2 = self.nlp(self.sentence2) if self.sentence2 else None
+                except Exception as e:
+                    print('spacy_similarity: nlp() failed:', e)
+                    self.doc2 = None
         if self.doc is not None and self.doc2 is not None:
-            sim = self.doc2.similarity(self.doc)
+            try:
+                sim = self.doc2.similarity(self.doc)
+            except Exception as e:
+                print('spacy_similarity: similarity failed:', e)
+                return
             self.output.send(sim)
 
 
@@ -161,10 +224,20 @@ class LemmaNode(SpacyNode):
         self.output = self.add_output('lemmas out')
 
     def execute(self):
+        if self.nlp is None:
+            return
         if self.input.fresh_input:
             self.sentence = self.input()
+            if self.sentence is None:
+                return
             self.sentence = any_to_string(self.sentence)
-            self.doc = self.nlp(self.sentence)
+            if not self.sentence:
+                return
+            try:
+                self.doc = self.nlp(self.sentence)
+            except Exception as e:
+                print('lemma: nlp() failed:', e)
+                return
             lemma_list = []
             for word in self.doc:
                 lemma_list.append(word.lemma_)
@@ -314,14 +387,23 @@ class RephraseNode(SpacyNode):
                     self.trigger_bare_tree(data[0])
 
     def execute(self):
+        if self.nlp is None:
+            return
         if self.clip_score_input.fresh_input:
             self.clip_score = self.clip_score_input()
         if self.input.fresh_input:
-            input = self.input()
-            # handled, do_output = self.check_for_messages(input)
+            incoming = self.input()
+            if incoming is None:
+                return
+            # handled, do_output = self.check_for_messages(incoming)
             # if not handled:
-            sentence = any_to_string(input)
-            self.parse(sentence, self.clip_score)
+            sentence = any_to_string(incoming)
+            if not sentence:
+                return
+            try:
+                self.parse(sentence, self.clip_score)
+            except Exception as e:
+                print('rephrase: parse failed:', e)
 
     def phrase_list_to_string(self, in_list):
         string = ''
@@ -664,7 +746,13 @@ class RephraseNode(SpacyNode):
         return new_sentence
 
     def noun_token_is_plural(self, noun_token):
-        return noun_token.morph.get('Number')[0] == 'Plur'
+        try:
+            number = noun_token.morph.get('Number')
+        except Exception:
+            return False
+        if not number:
+            return False
+        return number[0] == 'Plur'
 
     def try_replace_noun_phrase(self, incoming_phrase, new_token, conjunction=None, strip_det=False):
         # incoming_phrase is the new incoming phrase
@@ -789,7 +877,13 @@ class RephraseNode(SpacyNode):
     def conditional_parse(self, sentence, strip_det=False, clip_score=0.0):
         if self.doc is None:
             return ''
-        self.new_doc = self.nlp(sentence)
+        try:
+            self.new_doc = self.nlp(sentence)
+        except Exception as e:
+            print('rephrase: nlp() failed in conditional_parse:', e)
+            return ''
+        if len(self.new_doc) == 0:
+            return ''
         if self.new_doc[0].lower_ == 'not':
             root_token = self.new_doc[1:].root
             if root_token.pos_ == 'ADJ':
@@ -821,6 +915,9 @@ class RephraseNode(SpacyNode):
         for new_index, new_token in enumerate(self.new_doc):
             if new_token.dep_ == 'ROOT':
                 root = new_token
+
+        if root is None:
+            return ''
 
         complexity = self.phrase_complexity(self.new_doc)
 
@@ -924,28 +1021,6 @@ class RephraseNode(SpacyNode):
             return object
         return prep_object
 
-    def choose_focus_noun(self):
-        subject = None
-        object = None
-        prep_object = None
-
-        for t in self.doc:
-            if t.dep_ in ['nsubj', 'nsubjpass']:
-                subject = t
-                break
-            elif t.dep_ == 'dobj':
-                if object is None:
-                    object = t
-            elif t.dep_ == 'pobj':
-                if prep_object is None:
-                    prep_object = t
-
-        if subject is not None:
-            return subject
-        elif object is not None:
-            return object
-        return prep_object
-
     def fix_article(self, token_list, new_token, old_token):
         new_is_plural = self.noun_token_is_plural(new_token)
         if new_is_plural and token_list[0].pos_ == 'DET':
@@ -964,7 +1039,7 @@ class RephraseNode(SpacyNode):
             else:
                 if self.noun_token_is_plural(old_token):
                     if new_token.pos_ != 'PROPN':
-                        token_list.prepend(self.token_a)
+                        token_list.insert(0, self.token_a)
 
         if len(token_list) > 1:
             if token_list[0].text == 'a':
