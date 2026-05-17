@@ -59,17 +59,40 @@ def create_cairo_font_face_for_file (filename, faceindex=0, loadoptions=0):
     global _ft_destroy_key
     global _surface
 
+    if not isinstance(filename, str):
+        raise TypeError(f'create_cairo_font_face_for_file: filename must be str, got {type(filename).__name__}')
+
     CAIRO_STATUS_SUCCESS = 0
     FT_Err_Ok = 0
 
     if not _initialized:
         # find shared objects
-        if platform.system() == "Darwin":
-            _freetype_so = ct.CDLL("libfreetype.6.dylib")
-            _cairo_so = ct.CDLL("libcairo.2.dylib")
-        elif platform.system() == "Linux":
-            _freetype_so = ct.CDLL("libfreetype.so.6")
-            _cairo_so = ct.CDLL("libcairo.so.2")
+        system = platform.system()
+        if system == "Darwin":
+            freetype_names = ["libfreetype.6.dylib"]
+            cairo_names = ["libcairo.2.dylib"]
+        elif system == "Linux":
+            freetype_names = ["libfreetype.so.6"]
+            cairo_names = ["libcairo.so.2"]
+        elif system == "Windows":
+            # Common DLL names for FreeType / Cairo on Windows (MSYS2,
+            # GTK runtime, conda-forge, etc.). Try each in turn.
+            freetype_names = ["libfreetype-6.dll", "freetype.dll", "freetype6.dll"]
+            cairo_names = ["libcairo-2.dll", "cairo.dll"]
+        else:
+            raise RuntimeError(f'create_cairo_font_face_for_file: unsupported platform {system!r}')
+
+        def _try_load(names):
+            last_err = None
+            for n in names:
+                try:
+                    return ct.CDLL(n)
+                except OSError as e:
+                    last_err = e
+            raise RuntimeError(f'Could not load any of {names}: {last_err}')
+
+        _freetype_so = _try_load(freetype_names)
+        _cairo_so = _try_load(cairo_names)
 
         _cairo_so.cairo_ft_font_face_create_for_ft_face.restype = ct.c_void_p
         _cairo_so.cairo_ft_font_face_create_for_ft_face.argtypes = [ ct.c_void_p, ct.c_int ]
@@ -149,8 +172,15 @@ def create_cairo_font_face_for_file (filename, faceindex=0, loadoptions=0):
         #end if
 
     finally :
-        _cairo_so.cairo_font_face_destroy(cr_face)
-        _freetype_so.FT_Done_Face(ft_face)
+        # Either of these is None on certain code paths:
+        #   cr_face is None if cairo_ft_font_face_create_for_ft_face hasn't
+        #     run yet (e.g. FT_New_Face failed).
+        #   ft_face is set to None at line 139 after Cairo takes ownership;
+        #     calling FT_Done_Face(None) can segfault.
+        if cr_face is not None:
+            _cairo_so.cairo_font_face_destroy(cr_face)
+        if ft_face is not None and (not isinstance(ft_face, ct.c_void_p) or ft_face.value):
+            _freetype_so.FT_Done_Face(ft_face)
     #end try
 
     # get back Cairo font face as a Python object
