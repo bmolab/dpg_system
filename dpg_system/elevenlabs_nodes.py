@@ -12,14 +12,19 @@ from elevenlabs import stream
 from elevenlabs.types import VoiceSettings
 from elevenlabs.client import ElevenLabs
 from elevenlabs.play import play
-from queue import Queue
+from queue import Queue, Empty, Full
 import threading
 import traceback
 import time
 import shutil
 import subprocess
 from typing import Iterator, Union
-api_key = 'be1eae804441ec11f0fe872f82ad44f3'
+
+# create a file called elevenlabs_key.py and put in
+# api_key = 'xxxxxxxx....'
+# (your api key)
+
+from elevenlabs_key import api_key
 
 def register_elevenlabs_nodes():
     Node.app.register_node("eleven_labs", ElevenLabsNode.factory)
@@ -76,8 +81,12 @@ class Streamer:
                 if self.force_stop:
                     audio = b""
                     break
-                mpv_process.stdin.write(chunk)  # type: ignore
-                mpv_process.stdin.flush()  # type: ignore
+                try:
+                    mpv_process.stdin.write(chunk)  # type: ignore
+                    mpv_process.stdin.flush()  # type: ignore
+                except (BrokenPipeError, OSError) as e:
+                    print('ElevenLabs Streamer: mpv write failed', e)
+                    break
 
                 audio += chunk
                 if self.force_stop:
@@ -85,7 +94,10 @@ class Streamer:
                     break
 
         if mpv_process.stdin:
-            mpv_process.stdin.close()
+            try:
+                mpv_process.stdin.close()
+            except (BrokenPipeError, OSError):
+                pass
         if self.force_stop:
              mpv_process.terminate()
              self.force_stop = False
@@ -95,19 +107,33 @@ class Streamer:
         return audio
 
 def service_eleven_labs():
-    while True:
-        for instance in ElevenLabsNode.instances:
+    while not ElevenLabsNode._stop_event.is_set():
+        # Snapshot to avoid mutation-during-iteration if a node is destroyed mid-loop
+        for instance in list(ElevenLabsNode.instances):
             try:
                 instance.service_queue()
             except Exception as e:
                 print('service_eleven_labs:', e)
                 traceback.print_exception(e)
-
-        time.sleep(0.1)
+        ElevenLabsNode._stop_event.wait(0.1)
 
 
 class ElevenLabsNode(Node):
     instances = []
+    _stop_event = threading.Event()
+    _service_thread = None
+    _service_thread_lock = threading.Lock()
+
+    @classmethod
+    def _ensure_service_thread(cls):
+        with cls._service_thread_lock:
+            if cls._service_thread is None or not cls._service_thread.is_alive():
+                cls._stop_event.clear()
+                cls._service_thread = threading.Thread(
+                    target=service_eleven_labs, daemon=True
+                )
+                cls._service_thread.start()
+
     @staticmethod
     def factory(name, data, args=None):
         node = ElevenLabsNode(name, data, args)
@@ -182,10 +208,23 @@ class ElevenLabsNode(Node):
         self.previously_active = False
         self.backlog = False
         self.voice_settings = None
-        ElevenLabsNode.instances.append(self)
         self.phrase_queue = Queue(16)
-        self.thread = threading.Thread(target=service_eleven_labs)
-        self.thread.start()
+        ElevenLabsNode.instances.append(self)
+        ElevenLabsNode._ensure_service_thread()
+
+    def custom_cleanup(self):
+        # Stop any in-flight playback and drain the queue
+        try:
+            self.streamer.do_stop()
+        except Exception:
+            pass
+        while not self.phrase_queue.empty():
+            try:
+                self.phrase_queue.get_nowait()
+            except Empty:
+                break
+        if self in ElevenLabsNode.instances:
+            ElevenLabsNode.instances.remove(self)
 
     def voice_changed(self):
         current_voice_name = self.voice_name_input()
@@ -203,7 +242,11 @@ class ElevenLabsNode(Node):
             self.text_to_speak = any_to_string(self.text_input())
             if len(self.text_to_speak) > 0:
                 self.add_frame_task()
-                self.phrase_queue.put(self.text_to_speak)
+                try:
+                    self.phrase_queue.put_nowait(self.text_to_speak)
+                except Full:
+                    print('ElevenLabs: phrase queue full, dropping text')
+                    return
                 if self.phrase_queue.qsize() > 1:
                     self.backlog = True
                     self.backlog_out.send(self.backlog)
@@ -216,44 +259,51 @@ class ElevenLabsNode(Node):
         self.streamer.hard_stop()
         while not self.phrase_queue.empty():
             try:
-                self.phrase_queue.get(block=False)
-            except Exception as e:
-                continue
+                self.phrase_queue.get_nowait()
+            except Empty:
+                break
             self.phrase_queue.task_done()
 
     def stop_streaming(self):
         self.streamer.do_stop()
         while not self.phrase_queue.empty():
             try:
-                self.phrase_queue.get(block=False)
-            except Exception as e:
-                continue
+                self.phrase_queue.get_nowait()
+            except Empty:
+                break
             self.phrase_queue.task_done()
 
     def service_queue(self):
         if not self.active and not self.phrase_queue.empty() and self.client is not None and self.voice_id is not None:
             self.active = True
-            text = self.phrase_queue.get()
-            if self.phrase_queue.qsize() == 0:
-                self.backlog = False
-                self.backlog_out.send(False)
-            model_name = self.model_choice()
-            model = self.model_dict.get(model_name, 'eleven_turbo_v2_5')
-            latency = int(self.latency())
-            settings = VoiceSettings(stability=self.stability(), similarity_boost=self.similarity_boost(), style=self.style(), speed=self.speed())
-
-            self.audio_stream = self.client.text_to_speech.stream(
-                voice_id=self.voice_id,
-                text=text,
-                model_id=model,
-                voice_settings=settings,
-                optimize_streaming_latency=latency
-            )
             try:
-                audio = self.streamer.stream(self.audio_stream)
-            except Exception as e:
-                print(e)
-            self.active = False
+                text = self.phrase_queue.get()
+                if self.phrase_queue.qsize() == 0:
+                    self.backlog = False
+                    self.backlog_out.send(False)
+                model_name = self.model_choice()
+                model = self.model_dict.get(model_name, 'eleven_turbo_v2_5')
+                latency = int(self.latency())
+                settings = VoiceSettings(stability=self.stability(), similarity_boost=self.similarity_boost(), style=self.style(), speed=self.speed())
+
+                try:
+                    self.audio_stream = self.client.text_to_speech.stream(
+                        voice_id=self.voice_id,
+                        text=text,
+                        model_id=model,
+                        voice_settings=settings,
+                        optimize_streaming_latency=latency
+                    )
+                except Exception as e:
+                    print('ElevenLabs API error:', e)
+                    return
+
+                try:
+                    audio = self.streamer.stream(self.audio_stream)
+                except Exception as e:
+                    print(e)
+            finally:
+                self.active = False
 
     def frame_task(self):
         if self.active != self.previously_active:
