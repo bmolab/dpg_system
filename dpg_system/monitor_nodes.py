@@ -1,8 +1,9 @@
 import subprocess
-import numpy as np
+import platform
+
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
-import platform
+
 
 def register_monitor_nodes():
     Node.app.register_node('display_info', DisplayInfoNode.factory)
@@ -17,50 +18,114 @@ class DisplayData:
         self.primary = False
 
 
-if platform.system() == 'Darwin':
-    print('Darwin')
-    import Quartz.CoreGraphics
+_PLATFORM = platform.system()
+_Quartz = None
+if _PLATFORM == 'Darwin':
+    try:
+        import Quartz.CoreGraphics as _Quartz
+    except Exception as e:
+        print('display_info: Quartz import failed:', e)
+        _Quartz = None
 
-    # ids = Quartz.CGDisplayCopyAllDisplayIDs()
-    # print(ids)
 
-if platform.system() == "Linux":
-    def get_displays():
-        result = subprocess.run(['xrandr', '--listactivemonitors'], stdout=subprocess.PIPE, text=True)
-        display_info = result.stdout
-        display_info = display_info.split('\n')
-        display_count = int(display_info[0].split(' ')[-1])
+def _parse_xrandr_monitor_line(line):
+    parts = [p for p in line.split(' ') if p != '']
+    if len(parts) < 3:
+        return None
+    d = DisplayData()
+    try:
+        d.id = int(parts[0].split(':')[0])
+    except ValueError:
+        d.id = -1
+
+    connection = parts[1]
+    if '+' in connection:
+        connection = connection.split('+')[-1]
+    if '*' in connection:
+        d.primary = True
+        connection = connection.split('*')[-1]
+    d.connection = connection
+
+    # parts[2] looks like "1920/509x1080/286+0+0" (or without the "/N" physical
+    # size sections). Splitting on '+' yields [res, x_offset, y_offset].
+    geom_sections = parts[2].split('+')
+    if len(geom_sections) >= 3:
+        d.offsets = [any_to_int(geom_sections[1]), any_to_int(geom_sections[2])]
+    res_split = geom_sections[0].split('x')
+    if len(res_split) >= 2:
+        d.resolution = [
+            any_to_int(res_split[0].split('/')[0]),
+            any_to_int(res_split[1].split('/')[0]),
+        ]
+    return d
+
+
+def _get_displays_linux():
+    try:
+        result = subprocess.run(
+            ['xrandr', '--listactivemonitors'],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+        )
+    except FileNotFoundError:
+        print('display_info: xrandr not found on PATH')
+        return []
+    except Exception as e:
+        print('display_info: xrandr invocation failed:', e)
+        return []
+
+    if result.returncode != 0:
+        print('display_info: xrandr exited with status', result.returncode)
+        return []
+
+    displays = []
+    # First line is "Monitors: N"; subsequent lines describe each monitor.
+    for line in result.stdout.split('\n')[1:]:
+        if not line.strip():
+            continue
+        try:
+            d = _parse_xrandr_monitor_line(line)
+        except Exception as e:
+            print('display_info: failed to parse xrandr line', repr(line), ':', e)
+            continue
+        if d is not None:
+            displays.append(d)
+    return displays
+
+
+def _get_displays_darwin():
+    if _Quartz is None:
+        return []
+    try:
+        err, ids, count = _Quartz.CGGetActiveDisplayList(16, None, None)
+        if err != 0:
+            print('display_info: CGGetActiveDisplayList error', err)
+            return []
+        main_id = _Quartz.CGMainDisplayID()
         displays = []
-        for i in range(len(display_info) - 1):
+        for display_id in list(ids)[:count]:
             d = DisplayData()
-
-            if display_info[i + 1] != '':
-                display_data = display_info[i + 1].split(' ')
-                display_data_stripped = []
-                for dd in display_data:
-                    if dd != '':
-                        display_data_stripped.append(dd)
-                display_number = int(display_data_stripped[0].split(':')[0])
-                d.id = display_number
-                display_connection = display_data_stripped[1]
-                if '+' in display_connection:
-                    display_connection = display_connection.split('+')[-1]
-                if '*' in display_connection:
-                    primary_display = i
-                    d.primary = True
-                    display_connection = display_connection.split('*')[-1]
-                d.connection = display_connection
-                display_res = display_data_stripped[2]
-                res = display_res.split('+')
-                x_offset = any_to_int(res[1]) # fix
-                y_offset = any_to_int(res[2])
-                d.offsets = [x_offset, y_offset]
-                res_break = res[0].split('x')
-                res_x = any_to_int(res_break[0].split('/')[0])
-                res_y = any_to_int(res_break[1].split('/')[0])
-                d.resolution = [res_x, res_y]
-                displays.append(d)
+            try:
+                d.id = int(display_id)
+                bounds = _Quartz.CGDisplayBounds(display_id)
+                d.offsets = [int(bounds.origin.x), int(bounds.origin.y)]
+                d.resolution = [int(bounds.size.width), int(bounds.size.height)]
+                d.primary = (display_id == main_id)
+            except Exception as e:
+                print('display_info: failed to read display', display_id, ':', e)
+                continue
+            displays.append(d)
         return displays
+    except Exception as e:
+        print('display_info: Quartz enumeration failed:', e)
+        return []
+
+
+def get_displays():
+    if _PLATFORM == 'Linux':
+        return _get_displays_linux()
+    if _PLATFORM == 'Darwin':
+        return _get_displays_darwin()
+    return []
 
 
 class DisplayInfoNode(Node):
@@ -82,27 +147,39 @@ class DisplayInfoNode(Node):
 
         self.output = self.add_output('data out')
 
+    def _set_empty(self):
+        self.primary_property.set(False)
+        self.connection_property.set('')
+        self.width_property.set(0)
+        self.height_property.set(0)
+        self.x_offset_property.set(0)
+        self.y_offset_property.set(0)
+
     def execute(self):
-        which = self.input()
-        displays = get_displays()
+        try:
+            which = any_to_int(self.input())
+        except Exception:
+            which = 0
+
+        try:
+            displays = get_displays()
+        except Exception as e:
+            print('display_info: get_displays failed:', e)
+            displays = []
+
         if 0 <= which < len(displays):
-            self.primary_property.set(displays[which].primary)
-            self.connection_property.set(displays[which].connection)
-            self.width_property.set(displays[which].resolution[0])
-            self.height_property.set(displays[which].resolution[1])
-            self.x_offset_property.set(displays[which].offsets[0])
-            self.y_offset_property.set(displays[which].offsets[1])
-            out_data = [displays[which].resolution[0], displays[which].resolution[1], displays[which].offsets[0], displays[which].offsets[1], displays[which].connection, displays[which].primary]
-            self.output.send(out_data)
+            d = displays[which]
+            self.primary_property.set(d.primary)
+            self.connection_property.set(d.connection)
+            self.width_property.set(d.resolution[0])
+            self.height_property.set(d.resolution[1])
+            self.x_offset_property.set(d.offsets[0])
+            self.y_offset_property.set(d.offsets[1])
+            out_data = [d.resolution[0], d.resolution[1], d.offsets[0], d.offsets[1], d.connection, d.primary]
         else:
-            self.primary_property.set(False)
-            self.connection_property.set('')
-            self.width_property.set(0)
-            self.height_property.set(0)
-            self.x_offset_property.set(0)
-            self.y_offset_property.set(0)
+            self._set_empty()
             out_data = [0, 0, 0, 0, '', False]
-            self.output.send(out_data)
+        self.output.send(out_data)
 
     def custom_create(self, from_file):
         self.execute()
