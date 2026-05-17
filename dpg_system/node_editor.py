@@ -1066,6 +1066,8 @@ class NodeEditor:
 
     def reveal_hidden(self):
         for node in self._nodes:
+            if node is self.origin:
+                continue
             node.set_visibility('show_all')
 
     def remember_presentation(self):

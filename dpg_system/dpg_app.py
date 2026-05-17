@@ -532,7 +532,7 @@ class App:
                 dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
                 dpg.add_theme_color(dpg.mvThemeCol_SliderGrab, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
                 dpg.add_theme_color(dpg.mvThemeCol_SliderGrabActive, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
-                dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (0, 0, 0, 0), category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
 
                 dpg.add_theme_color(dpg.mvThemeCol_Text, (0, 0, 0, 0), category=dpg.mvThemeCat_Core)
 
