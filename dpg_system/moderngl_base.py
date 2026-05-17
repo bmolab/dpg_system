@@ -309,8 +309,11 @@ class MGLNativeWindow:
             return
         gfw = _glfw()
         if gfw:
-            gfw.glfwDestroyWindow.argtypes = [ctypes.c_void_p]
-            gfw.glfwDestroyWindow(self._win)
+            try:
+                gfw.glfwDestroyWindow.argtypes = [ctypes.c_void_p]
+                gfw.glfwDestroyWindow(self._win)
+            except Exception as e:
+                print(f'[MGLNativeWindow] destroy error: {e}')
         self._win = None
         self._visible = False
 
@@ -487,19 +490,17 @@ class MGLRenderTarget:
         self.create()
 
     def release(self):
-        if self.texture: self.texture.release()
-        if self.depth_texture: self.depth_texture.release()
-        if self.fbo: self.fbo.release()
-        if self.msaa_texture: self.msaa_texture.release()
-        if self.msaa_depth_texture: self.msaa_depth_texture.release()
-        if self.msaa_fbo: self.msaa_fbo.release()
-        
-        self.texture = None
-        self.depth_texture = None
-        self.fbo = None
-        self.msaa_texture = None
-        self.msaa_depth_texture = None
-        self.msaa_fbo = None
+        # During context loss or process shutdown, individual release() calls
+        # can raise. Don't let one failure abort the rest and leak the others.
+        for attr in ('texture', 'depth_texture', 'fbo',
+                     'msaa_texture', 'msaa_depth_texture', 'msaa_fbo'):
+            obj = getattr(self, attr, None)
+            if obj is not None:
+                try:
+                    obj.release()
+                except Exception:
+                    pass
+            setattr(self, attr, None)
 
     def create(self):
         # 1. Standard Texture & FBO (Resolve Target)
@@ -524,10 +525,16 @@ class MGLRenderTarget:
                     success = True
                     break
                 except Exception as e:
-                    # Release partials
-                    if self.msaa_texture: self.msaa_texture.release()
-                    if self.msaa_depth_texture: self.msaa_depth_texture.release()
-                    if self.msaa_fbo: self.msaa_fbo.release()
+                    # Release partials — any of these can also throw if the
+                    # context refused MSAA at this sample count; swallow them.
+                    for attr in ('msaa_texture', 'msaa_depth_texture', 'msaa_fbo'):
+                        obj = getattr(self, attr, None)
+                        if obj is not None:
+                            try:
+                                obj.release()
+                            except Exception:
+                                pass
+                            setattr(self, attr, None)
             
             if not success:
                 print("MGLRenderTarget: MSAA failed, falling back to 0 samples")
@@ -548,10 +555,13 @@ class MGLRenderTarget:
 
     def get_pixel_data(self):
         # Resolve MSAA if needed
-        if self.samples > 0 and self.msaa_fbo:
-            self.ctx.copy_framebuffer(self.fbo, self.msaa_fbo)
-        if self.fbo:
-            return self.fbo.read(components=4)
+        try:
+            if self.samples > 0 and self.msaa_fbo:
+                self.ctx.copy_framebuffer(self.fbo, self.msaa_fbo)
+            if self.fbo:
+                return self.fbo.read(components=4)
+        except Exception as e:
+            print(f'MGLRenderTarget.get_pixel_data error: {e}')
         return None
 
 
@@ -566,7 +576,7 @@ class MGLContext:
 
     def __init__(self):
         if MGLContext._instance is not None:
-            raise Exception("This class is a singleton!")
+            raise RuntimeError("MGLContext is a singleton; use MGLContext.get_instance()")
         
         # On Linux we defer ALL GL context creation to _ensure_initialized()
         # which is called from __enter__ when DPG's GLFW context is guaranteed
@@ -968,6 +978,8 @@ class MGLContext:
 
     # Legacy update_framebuffer for simple singleton usage
     def update_framebuffer(self, width, height, samples=None):
+        if self.ctx is None or self.active_target is None:
+            return
         if samples is None: samples = self.active_target.samples
         # Check if active target matches
         t = self.active_target
@@ -983,12 +995,16 @@ class MGLContext:
                 pass
 
     def clear(self, r=0.0, g=0.0, b=0.0, a=1.0):
+        if self.active_target is None or self.ctx is None:
+            return
         self.active_target.clear(r, g, b, a)
         # Reset stacks
         self.model_matrix_stack = [np.identity(4, dtype=np.float32)]
         self.ctx.enable(moderngl.DEPTH_TEST | moderngl.CULL_FACE | moderngl.BLEND | moderngl.PROGRAM_POINT_SIZE)
 
     def get_pixel_data(self):
+        if self.active_target is None:
+            return None
         return self.active_target.get_pixel_data()
 
     def update_lights(self, prog):
@@ -1199,49 +1215,55 @@ class MGLContext:
         if not self._pyglet_window:
             return False
 
-        # Resolve MSAA if needed
-        if render_target.samples > 0 and render_target.msaa_fbo:
-            self.ctx.copy_framebuffer(render_target.fbo, render_target.msaa_fbo)
+        try:
+            # Resolve MSAA if needed
+            if render_target.samples > 0 and render_target.msaa_fbo:
+                self.ctx.copy_framebuffer(render_target.fbo, render_target.msaa_fbo)
 
-        # Lazily create blit shader + fullscreen quad VAO
-        if not hasattr(self, '_blit_prog') or self._blit_prog is None:
-            self._blit_prog = self.ctx.program(
-                vertex_shader='''
-                    #version 330
-                    in vec2 in_pos;
-                    out vec2 v_uv;
-                    void main() {
-                        gl_Position = vec4(in_pos, 0.0, 1.0);
-                        v_uv = in_pos * 0.5 + 0.5;
-                    }
-                ''',
-                fragment_shader='''
-                    #version 330
-                    uniform sampler2D tex;
-                    in vec2 v_uv;
-                    out vec4 f_color;
-                    void main() {
-                        f_color = texture(tex, v_uv);
-                    }
-                '''
-            )
-            verts = np.array([-1, -1, 1, -1, -1, 1, 1, 1], dtype='f4')
-            vbo = self.ctx.buffer(verts.tobytes())
-            self._blit_vao = self.ctx.simple_vertex_array(
-                self._blit_prog, vbo, 'in_pos')
+            # Lazily create blit shader + fullscreen quad VAO
+            if not hasattr(self, '_blit_prog') or self._blit_prog is None:
+                self._blit_prog = self.ctx.program(
+                    vertex_shader='''
+                        #version 330
+                        in vec2 in_pos;
+                        out vec2 v_uv;
+                        void main() {
+                            gl_Position = vec4(in_pos, 0.0, 1.0);
+                            v_uv = in_pos * 0.5 + 0.5;
+                        }
+                    ''',
+                    fragment_shader='''
+                        #version 330
+                        uniform sampler2D tex;
+                        in vec2 v_uv;
+                        out vec4 f_color;
+                        void main() {
+                            f_color = texture(tex, v_uv);
+                        }
+                    '''
+                )
+                verts = np.array([-1, -1, 1, -1, -1, 1, 1, 1], dtype='f4')
+                vbo = self.ctx.buffer(verts.tobytes())
+                self._blit_vao = self.ctx.simple_vertex_array(
+                    self._blit_prog, vbo, 'in_pos')
 
-        render_target.texture.use(location=0)
-        self._blit_prog['tex'].value = 0
+            render_target.texture.use(location=0)
+            self._blit_prog['tex'].value = 0
 
-        fb_w, fb_h = self._pyglet_window.get_framebuffer_size()
-        self.ctx.screen.viewport = (0, 0, fb_w, fb_h)
-        self.ctx.screen.use()
+            fb_w, fb_h = self._pyglet_window.get_framebuffer_size()
+            self.ctx.screen.viewport = (0, 0, fb_w, fb_h)
+            self.ctx.screen.use()
 
-        self.ctx.disable(moderngl.DEPTH_TEST)
-        self._blit_vao.render(moderngl.TRIANGLE_STRIP)
-        self.ctx.enable(moderngl.DEPTH_TEST)
+            self.ctx.disable(moderngl.DEPTH_TEST)
+            self._blit_vao.render(moderngl.TRIANGLE_STRIP)
+            self.ctx.enable(moderngl.DEPTH_TEST)
 
-        self._pyglet_window.flip()
+            self._pyglet_window.flip()
+        except Exception as e:
+            # Pyglet flip / resize / fullscreen-toggle races can throw here.
+            # Skip the frame; the next one usually succeeds.
+            print(f'MGLContext.blit_to_window error: {e}')
+            return False
         return True
 
 
