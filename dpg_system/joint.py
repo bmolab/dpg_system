@@ -1,5 +1,6 @@
 from pyquaternion import Quaternion
 import json
+import traceback
 import numpy as np
 from OpenGL.GL import *
 from OpenGL.GLU import *
@@ -213,6 +214,11 @@ class BaseJoint:
             limb_vector = self.bone_translation.copy()  # vector defining limb extension from parent joint at T-Pose
 
             scale = float(np.linalg.norm(limb_vector) ) # limb length
+            if scale < 1e-9:
+                # Zero-length limb vector: matrix is undefined. Leave self.matrix
+                # alone and bail before the divide-by-zero produces NaN/inf.
+                print(f'set_matrix: zero-length bone_translation for joint {self.name}, skipping')
+                return
             self.base_dims[0] = scale
             self.dims[0] = scale * self.length_scaler
 
