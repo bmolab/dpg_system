@@ -57,11 +57,11 @@ class AmbientPromptNode(Node):
             if len(prompt) == 2:
                 if type(prompt[0]) == str:
                     self.subprompts[index] = prompt[0]
-                if type(prompt[1]) in [float, int]:
-                    relative_weight = prompt[1]
+                if isinstance(prompt[1], (float, int, np.floating, np.integer)):
+                    relative_weight = float(prompt[1])
                 elif type(prompt[1]) == str:
                     relative_weight = any_to_float(prompt[1])
-        if self.subprompts[index][-1] == ' ':
+        if self.subprompts[index] and self.subprompts[index][-1] == ' ':
             self.subprompts[index] = self.subprompts[index][:-1]
 
         self.subprompt_weights[index] = relative_weight
@@ -123,12 +123,14 @@ class WeightedPromptNode(Node):
             dpg.set_item_width(self.prompt_inputs[i].widget.uuid, self.width_option())
 
     def clear(self):
+        # Reset per-input state once, not once per iteration. Previously
+        # the inside-loop reset left self.subprompts with length 1 (just
+        # the last iteration's append) instead of self.count, so the next
+        # process_prompt(index) for index >= 1 raised IndexError.
         for i in range(self.count):
             self.prompt_inputs[i].set('')
-            self.subprompts = []
-            self.subprompt_weights = []
-            self.subprompts.append('')
-            self.subprompt_weights.append(0.0)
+        self.subprompts = [''] * self.count
+        self.subprompt_weights = [0.0] * self.count
         self.output.send([])
 
     def process_prompt(self, index):
