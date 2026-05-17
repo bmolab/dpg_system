@@ -327,25 +327,30 @@ class ViscaNode(Node):
         self.send_packet(self.build_visca_command(cmd))
 
     def rx_loop(self):
-        if self.connected and self.socket:
-            try:
-                data, addr = self.socket.recvfrom(1024)
-                if self.print_debug_opt():
-                    print(f"VISCA RX ({addr[0]}:{addr[1]}) | {' '.join(f'{b:02X}' for b in data)}")
-            except socket.timeout:
-                pass
-            except OSError:
-                # Socket closed or error
-                pass
-            except Exception as e:
-                if self.print_debug_opt():
-                    print(f"VISCA RX Error: {e}")
-        else:
-            time.sleep(0.1)
+        while self.rx_running:
+            if self.connected and self.socket:
+                try:
+                    data, addr = self.socket.recvfrom(1024)
+                    if self.print_debug_opt():
+                        print(f"VISCA RX ({addr[0]}:{addr[1]}) | {' '.join(f'{b:02X}' for b in data)}")
+                except socket.timeout:
+                    pass
+                except OSError:
+                    # Socket closed or error — give the create_socket path a chance
+                    time.sleep(0.1)
+                except Exception as e:
+                    if self.print_debug_opt():
+                        print(f"VISCA RX Error: {e}")
+            else:
+                time.sleep(0.1)
 
     def create_socket(self):
         if self.socket:
-            self.socket.close()
+            try:
+                self.socket.close()
+            except OSError:
+                pass
+            self.socket = None
         try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -473,45 +478,49 @@ class ViscaNode(Node):
         # Bytes are: 0A 0B 0C 0D.
         # Yes, nibblized!
         
-        # Helper to nibblize
+        # Helper to nibblize as 16-bit signed two's complement.
         def to_nibbles(val):
-            # Val is int.
-            # Handle negative (two's complement 16 bit? or just 4 nibbles?)
-            # Usually 16-bit signed integer for Pan/Tilt.
             val = int(val)
+            # Clamp to signed-int16 range so out-of-range UI values don't
+            # silently truncate the upper nibbles.
+            if val < -32768:
+                val = -32768
+            elif val > 32767:
+                val = 32767
             if val < 0:
-                val = (1 << 16) + val # 2's complement for 16 bit
-            
-            # Now we have 0 to 65535.
-            # 0xABCD
-            n1 = (val >> 12) & 0xF
-            n2 = (val >> 8) & 0xF
-            n3 = (val >> 4) & 0xF
-            n4 = val & 0xF
-            return [n1, n2, n3, n4] # Actually need 0Y .. so [n1, n2, n3, n4] is correct if we prefix 0.
-            
+                val = (1 << 16) + val  # 2's complement
+            return [
+                (val >> 12) & 0xF,
+                (val >> 8) & 0xF,
+                (val >> 4) & 0xF,
+                val & 0xF,
+            ]
+
         p_nibbles = to_nibbles(pan)
         t_nibbles = to_nibbles(tilt)
-        
+
         # 81 01 06 02 VV WW 0Y 0Y 0Y 0Y 0Z 0Z 0Z 0Z FF
-        # We need to construct the inner core (06 02 ...) if using build_visca
-        # Or just build the whole thing.
-        # Let's use build_visca_command which takes the inner part (Command Data).
-        # Inner: 06 02 VV WW ...
-        
+        # Inner payload (what build_visca_command will wrap):
+        #   06 02 VV WW 0Y 0Y 0Y 0Y 0Z 0Z 0Z 0Z
         payload = bytearray([0x06, 0x02, vv, ww])
-        payload.extend(p_nibbles) # 0Y 0Y 0Y 0Y? No wait, bytearray takes bytes.
-        # We need [0x0Y, 0x0Y, ...]
-        
         for n in p_nibbles:
-            payload.append(n) # n is 0-15, which is 0x0N. Correct.
-            
+            payload.append(n)
         for n in t_nibbles:
             payload.append(n)
-            
+
         self.send_packet(self.build_visca_command(payload))
 
     def cleanup(self):
         self.rx_running = False
+        if self.rx_thread is not None and self.rx_thread.is_alive():
+            # The rx_loop polls with a 0.5 s socket timeout, so this should
+            # observe rx_running=False within ~500 ms in practice.
+            self.rx_thread.join(timeout=1.5)
+            if self.rx_thread.is_alive():
+                print('ViscaNode: rx thread did not exit within 1.5s')
         if self.socket:
-            self.socket.close()
+            try:
+                self.socket.close()
+            except OSError:
+                pass
+            self.socket = None
