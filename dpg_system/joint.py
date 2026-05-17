@@ -200,10 +200,12 @@ class BaseJoint:
         if self.matrix is not None:
             self.mass = self.dims.copy()
             for child_index in self.children:
-                child = self.body.joints[child_index]
-                self.mass[0] += self.dims[0]
-                self.mass[1] += self.dims[1]
-                self.mass[2] += self.dims[2]
+                child = self.body.joints.get(child_index)
+                if child is None:
+                    continue
+                self.mass[0] += child.dims[0]
+                self.mass[1] += child.dims[1]
+                self.mass[2] += child.dims[2]
 
     def translate_along_bone(self):
         glTranslatef(self.bone_translation[0] * self.length_scaler, self.bone_translation[1] * self.length_scaler, self.bone_translation[2] * self.length_scaler)
