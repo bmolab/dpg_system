@@ -66,23 +66,19 @@ class NDIReceiverNode(Node):
     def refresh_sources(self):
         if self.receiver:
             sources = self.receiver.find_sources(timeout_secs=2.0)
-            # Store source objects or just names? NDIReceiver.connect takes name or object.
-            # But the combo box needs strings.
-            self.source_list = sources # Keep full objects if needed, but current NDIReceiver.find_sources returns objects I think?
-            # actually my NDIReceiver.find_sources returns a list of NDIlib_source objects usually?
-            # Let's check my implementation of ndi_receiver.py.
-            # It returns a list of sources. And connect can handle strings (via search) or objects.
-            
-            # Let's verify what find_sources returns. In my implementation it returned 'sources' from find_get_current_sources
-            # which are NDIlib objects.
-            
-            source_names = [s.ndi_name for s in self.source_list]
+            self.source_list = sources or []
+
+            # Skip sources whose .ndi_name access raises instead of
+            # dropping the whole list on one bad entry.
+            source_names = []
+            for s in self.source_list:
+                try:
+                    source_names.append(s.ndi_name)
+                except Exception:
+                    continue
+
             self.source_selector.widget.combo_items = source_names
             dpg.configure_item(self.source_selector.widget.uuid, items=source_names)
-            
-            if source_names:
-                # Optional: Auto-select first if none selected?
-                pass
 
     def change_source(self):
         name = self.source_selector()
@@ -109,6 +105,11 @@ class NDIReceiverNode(Node):
 
     def toggle_streaming(self):
         on = self.on_off()
+        if self.receiver is None:
+            if on:
+                print('NDIReceiverNode: receiver not initialized, cannot start streaming')
+                self.on_off.set(False, propagate=False)
+            return
         if on != self.streaming:
             if on:
                 if not self.receiver.connected_source:
@@ -116,7 +117,7 @@ class NDIReceiverNode(Node):
                    name = self.source_selector()
                    if name:
                        self.receiver.connect(name)
-                
+
                 # Start threaded capture
                 self.receiver.start_capture()
                 self.add_frame_task()
