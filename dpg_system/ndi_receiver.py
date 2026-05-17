@@ -146,23 +146,30 @@ class NDIReceiver:
         """
         if self.bandwidth != bandwidth:
             self.bandwidth = bandwidth
-            
+
             was_running = self.running
             if was_running:
                 self.stop_capture()
-            
+
             # Destroy old receiver
             if self.ndi_recv:
-                ndi.recv_destroy(self.ndi_recv)
+                try:
+                    ndi.recv_destroy(self.ndi_recv)
+                except Exception as e:
+                    print(f'NDIReceiver: recv_destroy failed during bandwidth change: {e}')
                 self.ndi_recv = None
-                
+
             # Recreate
-            self._create_receiver()
-            
+            try:
+                self._create_receiver()
+            except RuntimeError as e:
+                print(f'NDIReceiver: failed to recreate receiver: {e}')
+                return
+
             # Reconnect if we were connected
-            if self.connected_source:
+            if self.connected_source and self.ndi_recv is not None:
                 ndi.recv_connect(self.ndi_recv, self.connected_source)
-                
+
             if was_running:
                 self.start_capture()
 
@@ -216,22 +223,22 @@ class NDIReceiver:
             for s in sources:
                 try:
                     name = s.ndi_name
-                except:
+                except Exception:
                     continue
-                    
+
                 if source == name or source in name:
                     target_source = s
                     break
-            
+
             if target_source is None:
                 print(f"Could not find source: {source}")
                 return False
         else:
             target_source = source
-            
+
         try:
             print(f"Connecting to {target_source.ndi_name}...")
-        except:
+        except Exception:
             print("Connecting to <Unknown Source Name>...")
             
         ndi.recv_connect(self.ndi_recv, target_source)
@@ -251,7 +258,11 @@ class NDIReceiver:
         """Stop the background capture thread."""
         self.running = False
         if self.capture_thread:
-            self.capture_thread.join()
+            # 2 s upper bound: the loop polls with timeout_ms=50, so it should
+            # observe self.running=False within ~50 ms in practice.
+            self.capture_thread.join(timeout=2.0)
+            if self.capture_thread.is_alive():
+                print('NDIReceiver: capture thread did not exit within 2s')
             self.capture_thread = None
 
     def _capture_loop(self):
@@ -259,15 +270,21 @@ class NDIReceiver:
         print("NDI Capture thread started.")
         while self.running:
             # Use a short timeout so we can check 'running' frequently
-            # But not too short to cause busy waiting if NDI is slow. 
+            # But not too short to cause busy waiting if NDI is slow.
             # 50ms is decent (20fps min polling), but usually NDI returns faster if frame exists.
-            frame, ts = self.receive_array(timeout_ms=50)
-            
+            try:
+                frame, ts = self.receive_array(timeout_ms=50)
+            except Exception as e:
+                # Never let an NDI/decoder fault take down the capture thread.
+                print(f'NDIReceiver capture error (non-fatal): {e}')
+                time.sleep(0.05)
+                continue
+
             if frame is not None:
                 with self.lock:
                     self.latest_frame = frame
                     self.latest_ts = ts
-                    
+
         print("NDI Capture thread user stopped.")
 
     def read(self):
@@ -328,10 +345,16 @@ class NDIReceiver:
                 
         elif t == ndi.FRAME_TYPE_AUDIO:
             # We ignore audio for this task, but we must free it
-            ndi.recv_free_audio_v2(self.ndi_recv, a)
+            try:
+                ndi.recv_free_audio_v2(self.ndi_recv, a)
+            except Exception as e:
+                print(f'NDIReceiver: recv_free_audio_v2 failed: {e}')
         elif t == ndi.FRAME_TYPE_METADATA:
-            ndi.recv_free_metadata(self.ndi_recv, m)
-            
+            try:
+                ndi.recv_free_metadata(self.ndi_recv, m)
+            except Exception as e:
+                print(f'NDIReceiver: recv_free_metadata failed: {e}')
+
         return None, None
 
     def receive_tensor(self, timeout_ms=1000, device='cpu'):
@@ -369,10 +392,21 @@ class NDIReceiver:
         """Clean up resources."""
         self.stop_capture()
         if self.ndi_recv:
-            ndi.recv_destroy(self.ndi_recv)
+            try:
+                ndi.recv_destroy(self.ndi_recv)
+            except Exception as e:
+                print(f'NDIReceiver: recv_destroy failed: {e}')
+            self.ndi_recv = None
         if self.ndi_find:
-            ndi.find_destroy(self.ndi_find)
-        ndi.destroy()
+            try:
+                ndi.find_destroy(self.ndi_find)
+            except Exception as e:
+                print(f'NDIReceiver: find_destroy failed: {e}')
+            self.ndi_find = None
+        try:
+            ndi.destroy()
+        except Exception as e:
+            print(f'NDIReceiver: ndi.destroy() failed: {e}')
 
 
 def main():
