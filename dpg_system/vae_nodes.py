@@ -67,10 +67,16 @@ class VAENode(Node):
         self.model = VAE(self.input_dim, self.hidden_dim, self.latent_dim)
 
     def load_model(self):
-        path = self.model_path_in()
-        if os.path.exists(path):
-            self.model.load_state_dict(torch.load(path, map_location='cpu'))
+        path = any_to_string(self.model_path_in())
+        if not path or not os.path.exists(path):
+            print(f'VAENode: model path not found: {path!r}')
+            return
+        try:
+            state_dict = torch.load(path, map_location='cpu')
+            self.model.load_state_dict(state_dict)
             self.model = self.model.to(self.device)
+        except Exception as e:
+            print(f'VAENode: failed to load model from {path}: {e}')
 
     def execute(self):
         if self.active_input == self.latent_in:
@@ -591,11 +597,15 @@ class BatchFlatten(nn.Module):
         return x.view(x.shape[0], -1)
 
 def exprdir2model(expr_dir, model_cfg_override: dict = None):
-    if not os.path.exists(expr_dir): raise ValueError(f'Could not find the experiment directory: {expr_dir}')
+    if not os.path.exists(expr_dir):
+        raise ValueError(f'Could not find the experiment directory: {expr_dir}')
 
     model_snapshots_dir = osp.join(expr_dir, 'snapshots')
     available_ckpts = sorted(glob.glob(osp.join(model_snapshots_dir, '*.ckpt')), key=osp.getmtime)
-    assert len(available_ckpts) > 0, ValueError('No checkpoint found at {}'.format(model_snapshots_dir))
+    # Was `assert len(available_ckpts) > 0` — python -O strips asserts,
+    # so this validation could silently disappear in optimized builds.
+    if len(available_ckpts) == 0:
+        raise ValueError(f'No checkpoint found at {model_snapshots_dir}')
     trained_weights_fname = available_ckpts[-1]
 
     slash = '/'
@@ -606,6 +616,8 @@ def exprdir2model(expr_dir, model_cfg_override: dict = None):
     if len(model_cfg_fname) == 0:
         model_cfg_fname = glob.glob(osp.join(slash.join(trained_weights_fname.split(slash)[:-2]), '*.yaml'))
 
+    if len(model_cfg_fname) == 0:
+        raise ValueError(f'No .yaml config found near {trained_weights_fname}')
     model_cfg_fname = model_cfg_fname[0]
     model_cfg = OmegaConf.load(model_cfg_fname)
     if model_cfg_override:
@@ -645,7 +657,10 @@ def load_model(expr_dir, model_code=None,
         print('No GPU detected. Loading on CPU!')
         state_dict = torch.load(trained_weights_fname, map_location=torch.device('cpu'))['state_dict']
     else:
-        state_dict = torch.load(trained_weights_fname)['state_dict']
+        # Pass map_location='cuda' so a checkpoint saved on a different
+        # device (different CUDA index, or MPS) loads onto the current GPU
+        # instead of failing.
+        state_dict = torch.load(trained_weights_fname, map_location='cuda')['state_dict']
     if remove_words_in_model_weights is not None:
         words = '{}'.format(remove_words_in_model_weights)
         state_dict = {k.replace(words, '') if k.startswith(words) else k: v for k, v in state_dict.items()}
@@ -701,10 +716,14 @@ class VPoserNode(Node):
 
     def load_model(self):
         path = any_to_string(self.model_path_in())
-        if os.path.exists(path):
-            self.model = load_model(path, model_code=VPoser, remove_words_in_model_weights='vp_model.', disable_grad=True)[0]
-            # self.model.load_state_dict(torch.load(path, map_location='cpu'))
-            self.model = self.model.to(self.device)
+        if not path or not os.path.exists(path):
+            print(f'VPoserNode: model path not found: {path!r}')
+            return
+        try:
+            loaded = load_model(path, model_code=VPoser, remove_words_in_model_weights='vp_model.', disable_grad=True)[0]
+            self.model = loaded.to(self.device)
+        except (ValueError, OSError, KeyError, RuntimeError) as e:
+            print(f'VPoserNode: failed to load model from {path}: {e}')
 
     def execute(self):
         if self.active_input == self.latent_in:
@@ -1134,10 +1153,14 @@ class VPoser6DNode(Node):
 
     def load_model(self):
         path = any_to_string(self.model_path_in())
-        if os.path.exists(path):
-            self.model = load_model(path, model_code=VPoser6D, remove_words_in_model_weights='vp_model.', disable_grad=True)[0]
-            # self.model.load_state_dict(torch.load(path, map_location='cpu'))
-            self.model = self.model.to(self.device)
+        if not path or not os.path.exists(path):
+            print(f'VPoser6DNode: model path not found: {path!r}')
+            return
+        try:
+            loaded = load_model(path, model_code=VPoser6D, remove_words_in_model_weights='vp_model.', disable_grad=True)[0]
+            self.model = loaded.to(self.device)
+        except (ValueError, OSError, KeyError, RuntimeError) as e:
+            print(f'VPoser6DNode: failed to load model from {path}: {e}')
 
     def execute(self):
         self.model.calc_mean = self.sample_or_mean_in()
