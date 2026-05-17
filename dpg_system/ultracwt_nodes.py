@@ -2,18 +2,30 @@ from typing import Callable
 
 import numpy as np
 import torch
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-from scipy.signal import stft
 import scipy.signal as signal
 # from fast_cwt import fast_cwt
 #from time import time
 import threading
-import dearpygui.dearpygui as dpg
 from dpg_system.node import Node
 from dpg_system.matrix_nodes import RollingBuffer
 from dpg_system.conversion_utils import *
 from dpg_system.torch_nodes import TorchRollingBuffer, TorchDeviceDtypeNode
+
+
+def _coerce_widths(raw, default=None):
+    """Return a non-empty list of positive numeric widths, or default."""
+    cleaned = []
+    if isinstance(raw, (list, tuple)):
+        for w in raw:
+            try:
+                v = float(w)
+            except (TypeError, ValueError):
+                continue
+            if v > 0:
+                cleaned.append(v)
+    if not cleaned:
+        return list(default) if default is not None else [1.0]
+    return cleaned
 
 
 def register_ultracwt_nodes():
@@ -29,6 +41,7 @@ class NumpyUltraCWTNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
+        args = args or []
         self.subframe_size = 1000
         self.widths = list(range(1, 100, 10))
         if len(args) > 0:
@@ -38,7 +51,15 @@ class NumpyUltraCWTNode(Node):
             if widths_type == list:
                 self.widths = widths
 
-        self.cwt = MyCWT(signal.morlet2, self.subframe_size, self.widths)
+        if self.subframe_size < 1:
+            self.subframe_size = 1
+        self.widths = _coerce_widths(self.widths, default=list(range(1, 100, 10)))
+
+        try:
+            self.cwt = MyCWT(signal.morlet2, self.subframe_size, self.widths)
+        except Exception as e:
+            print('ultracwt: failed to build MyCWT:', e)
+            self.cwt = None
         self.input = self.add_input('in 1', triggers_execution=True)
 
         self.frame_size_widget = self.add_input('scales', widget_type='drag_int', default_value=self.subframe_size)
@@ -53,27 +74,56 @@ class NumpyUltraCWTNode(Node):
         self.output = self.add_output('cwt out')
 
     def frame_size_changed(self, val=0):
-        self.cwt = None
-        self.subframe_size = self.frame_size_widget()
-        self.cwt = MyCWT(signal.morlet2, self.subframe_size, self.widths)
+        try:
+            new_size = any_to_int(self.frame_size_widget())
+        except Exception:
+            return
+        if new_size < 1:
+            new_size = 1
+        self.subframe_size = new_size
+        try:
+            self.cwt = MyCWT(signal.morlet2, self.subframe_size, self.widths)
+        except Exception as e:
+            print('ultracwt: rebuild failed:', e)
 
     def widths_changed(self, val=0):
-        self.cwt = None
-        widths = self.widths_property()
-        widths_list = re.findall(r'[-+]?\d+', widths)
-        widths = []
+        widths_text = self.widths_property()
+        widths_list = re.findall(r'[-+]?\d+', widths_text or '')
+        parsed = []
         for dim_text in widths_list:
-            widths.append(any_to_int(dim_text))
-        self.widths = widths
-        self.cwt = MyCWT(signal.morlet2, self.subframe_size, self.widths)
+            try:
+                parsed.append(any_to_int(dim_text))
+            except Exception:
+                continue
+        new_widths = _coerce_widths(parsed, default=self.widths)
+        try:
+            new_cwt = MyCWT(signal.morlet2, self.subframe_size, new_widths)
+        except Exception as e:
+            print('ultracwt: rebuild failed:', e)
+            return
+        self.widths = new_widths
+        self.cwt = new_cwt
 
     def execute(self):
-        input_value = any_to_array(self.input())
-        if self.cwt != None:
+        if self.cwt is None:
+            return
+        try:
+            input_value = any_to_array(self.input())
+        except Exception as e:
+            print('ultracwt: input coercion failed:', e)
+            return
+        if input_value is None or np.asarray(input_value).ndim == 0:
+            return
+        try:
             mode = self.cwt_mode()
             self.cwt.set_mode(mode)
             cwt_out = self.cwt.receive_new_data(input_value)
-            self.output.send(cwt_out)
+        except Exception as e:
+            print('ultracwt: cwt step failed:', e)
+            return
+        if cwt_out is None:
+            return
+        self.output.send(cwt_out)
 
 
 class MyCWT:
@@ -145,10 +195,8 @@ class MyCWT:
         reset the calculation to the beginning
         """
         self.current_subframe = 0
-        self.ultra_last_frame = np.zeros([len(self.widths), self.subframe_size], dtype=self.dtype)
-        # # self.scipy_last_frame = np.zeros([len(self.widths), self.subframe_size], dtype=self.dtype)
-        # self.ultra_last_frame_2 = np.zeros([len(self.widths), self.subframe_size], dtype=self.dtype)
-        # self.ultra_skewed_last_frame = np.zeros([len(self.widths), self.subframe_size], dtype=self.dtype)
+        batch = self.ultra_last_frame.shape[0] if self.ultra_last_frame.ndim == 3 else 1
+        self.ultra_last_frame = np.zeros([batch, len(self.widths), self.subframe_size], dtype=self.dtype)
 
     def ultra_cwt(self):
         """
@@ -156,7 +204,10 @@ class MyCWT:
 
         :return: The cwt result for the current frame
         """
-        self.ultra_last_frame[:, :-1] = self.ultra_last_frame[:, 1:]
+        # Shift along the time axis (last dim), not the widths axis. The
+        # original [:, :-1] = [:, 1:] sliced over widths and garbled output
+        # whenever len(widths) > 1.
+        self.ultra_last_frame[:, :, :-1] = self.ultra_last_frame[:, :, 1:]
         convolve_data = self.input_buffer.get_buffer()
         if convolve_data is None:
             return None
@@ -182,6 +233,7 @@ class TorchUltraCWTNode(TorchDeviceDtypeNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
+        args = args or []
         self.subframe_size = 1000
         self.widths = [1.4, 2, 2.8, 4, 5.6, 8, 11.3, 16, 22.6, 32, 45.2, 64]
         if len(args) > 0:
@@ -191,12 +243,23 @@ class TorchUltraCWTNode(TorchDeviceDtypeNode):
             if widths_type == list:
                 self.widths = widths
 
+        if self.subframe_size < 1:
+            self.subframe_size = 1
+        self.widths = _coerce_widths(
+            self.widths,
+            default=[1.4, 2, 2.8, 4, 5.6, 8, 11.3, 16, 22.6, 32, 45.2, 64],
+        )
+
         self.setup_dtype_device_grad(args)
         self.dtype = torch.float32
         self.width_lock = threading.Lock()
         # self.dtype_input.set('complex64')
 
-        self.cwt = MyTorchCWT(signal.morlet2, self.subframe_size, self.widths, dtype=self.dtype, device=self.device)
+        try:
+            self.cwt = MyTorchCWT(signal.morlet2, self.subframe_size, self.widths, dtype=self.dtype, device=self.device)
+        except Exception as e:
+            print('t.ultracwt: failed to build MyTorchCWT:', e)
+            self.cwt = None
         self.input = self.add_input('in 1', triggers_execution=True)
 
         self.frame_size_widget = self.add_input('frame size', widget_type='drag_int', default_value=self.subframe_size)
@@ -215,36 +278,79 @@ class TorchUltraCWTNode(TorchDeviceDtypeNode):
 
     def device_changed(self):
         super().device_changed()
-        self.cwt.device_changed(self.device)
+        if self.cwt is not None:
+            try:
+                self.cwt.device_changed(self.device)
+            except Exception as e:
+                print('t.ultracwt: device_changed failed:', e)
 
     def frame_size_changed(self, val=0):
-        self.cwt = None
-        self.subframe_size = self.frame_size_widget()
-        self.cwt = MyTorchCWT(signal.morlet2, self.subframe_size, self.widths, dtype=self.dtype, device=self.device)
+        try:
+            new_size = any_to_int(self.frame_size_widget())
+        except Exception:
+            return
+        if new_size < 1:
+            new_size = 1
+        self.subframe_size = new_size
+        try:
+            self.cwt = MyTorchCWT(signal.morlet2, self.subframe_size, self.widths, dtype=self.dtype, device=self.device)
+        except Exception as e:
+            print('t.ultracwt: rebuild failed:', e)
 
     def widths_changed(self, val=0):
         self.width_lock.acquire(blocking=True)
-        self.cwt = None
-        widths = self.widths_property()
-        widths_list = re.findall(r'[-+]?\d*\.\d+|\d+', widths)
-        print(widths_list)
-        widths = []
-        for dim_text in widths_list:
-            widths.append(any_to_float(dim_text))
-        self.widths = widths
-        self.cwt = MyTorchCWT(signal.morlet2, self.subframe_size, self.widths, dtype=self.dtype, device=self.device)
-        self.width_lock.release()
+        try:
+            widths_text = self.widths_property()
+            widths_list = re.findall(r'[-+]?\d*\.\d+|\d+', widths_text or '')
+            parsed = []
+            for dim_text in widths_list:
+                try:
+                    parsed.append(any_to_float(dim_text))
+                except Exception:
+                    continue
+            new_widths = _coerce_widths(parsed, default=self.widths)
+            try:
+                new_cwt = MyTorchCWT(signal.morlet2, self.subframe_size, new_widths, dtype=self.dtype, device=self.device)
+            except Exception as e:
+                print('t.ultracwt: rebuild failed:', e)
+                return
+            self.widths = new_widths
+            self.cwt = new_cwt
+        finally:
+            self.width_lock.release()
 
     def execute(self):
-        if self.width_lock.acquire(blocking=False):
-            input_value = any_to_tensor(self.input(), dtype=self.dtype, device=self.device)
-            input_value = torch.flatten(input_value)
-            if self.cwt != None:
-                cwt_out, phase_out = self.cwt.receive_new_data(input_value, self.unskew_property(), self.unskew_scale_property(), self.attentuate_property())
-                if phase_out is not None:
-                    self.phase_out.send(phase_out)
-                if cwt_out is not None:
-                    self.output.send(cwt_out)
+        if not self.width_lock.acquire(blocking=False):
+            return
+        try:
+            if self.cwt is None:
+                return
+            raw = self.input()
+            if raw is None:
+                return
+            try:
+                input_value = any_to_tensor(raw, dtype=self.dtype, device=self.device)
+                input_value = torch.flatten(input_value)
+            except Exception as e:
+                print('t.ultracwt: input coercion failed:', e)
+                return
+            if input_value.numel() == 0:
+                return
+            try:
+                cwt_out, phase_out = self.cwt.receive_new_data(
+                    input_value,
+                    self.unskew_property(),
+                    self.unskew_scale_property(),
+                    self.attentuate_property(),
+                )
+            except Exception as e:
+                print('t.ultracwt: cwt step failed:', e)
+                return
+            if phase_out is not None:
+                self.phase_out.send(phase_out)
+            if cwt_out is not None:
+                self.output.send(cwt_out)
+        finally:
             self.width_lock.release()
 
 
@@ -324,8 +430,9 @@ class MyTorchCWT:
         reset the calculation to the beginning
         """
         self.current_subframe = 0
-        self.ultra_last_frame = torch.zeros([len(self.widths), self.subframe_size], dtype=self.result_dtype, device=self.device)
-        self.ultra_last_phase = torch.zeros([len(self.widths), self.subframe_size], dtype=self.result_dtype, device=self.device)
+        batch = self.ultra_last_frame.shape[0] if self.ultra_last_frame.ndim == 3 else 1
+        self.ultra_last_frame = torch.zeros([batch, len(self.widths), self.subframe_size], dtype=self.result_dtype, device=self.device)
+        self.ultra_last_phase = torch.zeros([batch, len(self.widths), self.subframe_size], dtype=self.result_dtype, device=self.device)
 
     def ultra_cwt(self, unskew=False, unskew_scale=5, attenuate=True):
         """
