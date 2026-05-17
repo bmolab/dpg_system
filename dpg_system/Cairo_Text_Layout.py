@@ -94,19 +94,17 @@ class LLMLayout:
         self.cursor_position = [pos[0], self.active_line * self.leading]
 
     def get_font(self, path):
-        if path != '':
-            self.face.append(create_cairo_font_face_for_file(path, 0))
-        # self.face.append(create_cairo_font_face_for_file("/usr/share/fonts/truetype/liberation/LiberationSerif-Regular.ttf", 0))
-        # self.face.append(create_cairo_font_face_for_file("/usr/share/fonts/type1/gsfonts/n021003l.pfb", 0))
-        # self.face.append(create_cairo_font_face_for_file("/usr/share/fonts/type1/gsfonts/b018012l.pfb", 0))  # Bookman Light
-        # self.face.append(create_cairo_font_face_for_file("/usr/share/fonts/type1/gsfonts/c059013l.pfb", 0))  # New Century Schoolbook
-### for MacOS: 
-        else:
-            self.face.append(create_cairo_font_face_for_file("Inconsolata-g.otf",
-                                                                 0))  # New Century Schoolbook
-        # self.face.append(create_cairo_font_face_for_file("/Library/Fonts/RODE Noto Sans CJK SC R.otf", 0))  # utility
+        # Try the requested path first, then fall back to Inconsolata-g.otf,
+        # then accept Cairo's default toy face so a missing font file never
+        # crashes node construction.
+        target = path if path != '' else "Inconsolata-g.otf"
+        try:
+            self.face.append(create_cairo_font_face_for_file(target, 0))
+        except Exception as e:
+            print(f'LLMLayout: failed to load font {target!r} ({e}); using Cairo default')
 
-        self.cr.set_font_face(self.face[0])
+        if self.face:
+            self.cr.set_font_face(self.face[0])
         self.cr.set_font_size(self.font_size)
 
     def clear_layout(self):
@@ -140,17 +138,17 @@ class LLMLayout:
 
     @jit
     def add_word_with_probability(self, word, prob, token_id):
-        color_index = int(prob * 255.0)
+        color_index = max(0, min(int(prob * 255.0), 255))
         prob_color = (self.cmap[color_index][0], self.cmap[color_index][1], self.cmap[color_index][2])
         self.add_word(word, prob_color, token_id)
 
     def add_word_with_spread(self, word, spread, token_id):
-        color_index = int(spread * 255.0)
+        color_index = max(0, min(int(spread * 255.0), 255))
         spread_color = (self.cmap[color_index][0], self.cmap[color_index][1], self.cmap[color_index][2])
         self.add_word(word, spread_color, token_id)
 
     def add_word_with_temp(self, word, spread, token_id):
-        color_index = int(spread * 127.0)
+        color_index = max(0, min(int(spread * 127.0), 255))
         spread_color = (self.cmap[color_index][0], self.cmap[color_index][1], self.cmap[color_index][2])
         self.add_word(word, spread_color, token_id)
 
@@ -182,19 +180,26 @@ class LLMLayout:
     #                 self.cursor_position[0] = self.paragraph_indent
 
     def trailing_returns(self):
-        for i in range(len(self.layout)):
-            j = 1 + 1
-            if self.layout[1][-j] != '\n':
-                return i
-        return len(self.layout)
+        # Count layout elements at the tail whose word ends with '\n'.
+        # The previous implementation always indexed self.layout[1][-2]
+        # regardless of i and could never return the intended count.
+        count = 0
+        for i in range(len(self.layout) - 1, -1, -1):
+            word = self.layout[i][1]
+            if word and word[-1] == '\n':
+                count += 1
+            else:
+                break
+        return count
 
     def remove_in_progress(self):
         new_layout = self.layout[0:self.in_progress_start].copy()
-        pos = new_layout[-1][0]
-        diffY = pos[1] - self.in_progress_previous_position[1]
-        if diffY != 0:
-            for element in new_layout:
-                element[0][1] -= diffY
+        if new_layout:
+            pos = new_layout[-1][0]
+            diffY = pos[1] - self.in_progress_previous_position[1]
+            if diffY != 0:
+                for element in new_layout:
+                    element[0][1] -= diffY
         self.cursor_position[0] = 0
 
         del self.layout
@@ -257,12 +262,12 @@ class LLMLayout:
         self.choice_menu_position = [self.layout[-1][0][0], self.layout[-1][0][1] + self.list_leading]
 
     def add_word_with_probability_to_list(self, word, prob, pos, token_id):
-        color_index = int(prob * 255.0)
+        color_index = max(0, min(int(prob * 255.0), 255))
         prob_color = (self.cmap[color_index][0], self.cmap[color_index][1], self.cmap[color_index][2])
         self.add_word_to_list(word, prob_color, pos, token_id)
 
     def add_word_with_spread_to_list(self, word, spread, pos, token_id):
-        color_index = int(spread * 255.0)
+        color_index = max(0, min(int(spread * 255.0), 255))
         spread_color = (self.cmap[color_index][0], self.cmap[color_index][1], self.cmap[color_index][2])
         self.add_word_to_list(word, spread_color, pos, token_id)
 
@@ -357,7 +362,8 @@ class LLMLayout:
     def draw_layout(self):
         self.scroll_position_to_active_line()
         self.erase_rect()
-        self.cr.set_font_face(self.face[self.which_font])
+        if self.face and 0 <= self.which_font < len(self.face):
+            self.cr.set_font_face(self.face[self.which_font])
         self.cr.set_font_size(self.font_size)
 
         for index, element in enumerate(self.layout):
@@ -600,22 +606,19 @@ class CairoTextLayout:
         self.paragraph_indent = self.font_size * paragraph_indent_scaler
 
     def get_font(self, path):
+        # Try the requested path first, then fall back to Inconsolata-g.otf,
+        # then accept Cairo's default toy face so a missing font file never
+        # crashes node construction.
         self.face = []
-        if path != '':
-            self.face.append(create_cairo_font_face_for_file(path, 0))
-        # self.face.append(create_cairo_font_face_for_file("/usr/share/fonts/truetype/liberation/LiberationSerif-Regular.ttf", 0))
-        # self.face.append(create_cairo_font_face_for_file("/usr/share/fonts/type1/gsfonts/n021003l.pfb", 0))
-        # self.face.append(create_cairo_font_face_for_file("/usr/share/fonts/type1/gsfonts/b018012l.pfb", 0))  # Bookman Light
-        # self.face.append(create_cairo_font_face_for_file("/usr/share/fonts/type1/gsfonts/c059013l.pfb", 0))  # New Century Schoolbook
-        ### for MacOS:
-        else:
-            self.face.append(
-                    create_cairo_font_face_for_file("Inconsolata-g.otf",
-                                                    0))  # utility
-         # self.face.append(create_cairo_font_face_for_file("/Library/Fonts/RODE Noto Sans CJK SC R.otf", 0))  # utility
+        target = path if path != '' else "Inconsolata-g.otf"
+        try:
+            self.face.append(create_cairo_font_face_for_file(target, 0))
+        except Exception as e:
+            print(f'CairoTextLayout: failed to load font {target!r} ({e}); using Cairo default')
 
-        self.cr.set_font_face(self.face[- 1])
-        self.which_font = len(self.face) - 1
+        if self.face:
+            self.cr.set_font_face(self.face[-1])
+        self.which_font = max(len(self.face) - 1, 0)
         self.cr.set_font_size(self.font_size)
 
 
@@ -668,11 +671,17 @@ class CairoTextLayout:
             self.add_element_to_layout(new_element)
 
     def trailing_returns(self):
-        for i in range(len(self.layout)):
-            j = 1 + 1
-            if self.layout[1][-j] != '\n':
-                return i
-        return len(self.layout)
+        # Count layout elements at the tail whose word ends with '\n'.
+        # The previous implementation always indexed self.layout[1][-2]
+        # regardless of i and could never return the intended count.
+        count = 0
+        for i in range(len(self.layout) - 1, -1, -1):
+            word = self.layout[i][1]
+            if word and word[-1] == '\n':
+                count += 1
+            else:
+                break
+        return count
 
     def add_element_to_layout(self, element):
         extents = self.cr.text_extents(element[1])
@@ -792,7 +801,8 @@ class CairoTextLayout:
     def draw_layout(self):
         self.scroll_position_to_active_line()
         self.erase_rect()
-        self.cr.set_font_face(self.face[self.which_font])
+        if self.face and 0 <= self.which_font < len(self.face):
+            self.cr.set_font_face(self.face[self.which_font])
         self.cr.set_font_size(self.font_size)
 
         for index, element in enumerate(self.layout):
