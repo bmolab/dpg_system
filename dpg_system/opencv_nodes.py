@@ -1,10 +1,6 @@
 import numpy as np
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
-import quaternion
-import freetype
-from dpg_system.open_gl_base import *
-from dpg_system.glfw_base import *
 import cv2
 import dearpygui.dearpygui as dpg
 

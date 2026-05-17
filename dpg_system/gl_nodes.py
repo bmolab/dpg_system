@@ -3,7 +3,7 @@ from dpg_system.node import Node
 from dpg_system.conversion_utils import *
 import quaternion
 import freetype
-from dpg_system.open_gl_base import *
+from dpg_system.body_base import *
 from dpg_system.glfw_base import *
 from dpg_system.colormaps import _viridis_data, _magma_data, _plasma_data, _inferno_data, make_heatmap, make_coldmap
 # can create command parsers for various types of GLObjects?
