@@ -36,14 +36,24 @@ class OneEuroFilter:
         self._last_time = None
         
     def _alpha(self, cutoff):
+        # Clamp cutoff to a small positive value. cutoff <= 0 (legal via UI
+        # widgets if min_cutoff and beta are both 0) would cause a divide
+        # by zero and produce NaN/inf alpha that breaks the filter for the
+        # rest of its lifetime.
+        cutoff = np.maximum(cutoff, 1e-6)
         te = 1.0 / self._freq
         tau = 1.0 / (2.0 * np.pi * cutoff)
         return 1.0 / (1.0 + tau / te)
 
     def __call__(self, x, timestamp=None):
-        # Update framerate if timestamp provided
+        # Update framerate if timestamp provided. Skip the update if the
+        # timestamp delta is non-positive (duplicate / out-of-order / replayed
+        # frame) — otherwise self._freq goes to inf or negative and poisons
+        # every subsequent _alpha() call.
         if self._last_time is not None and timestamp is not None:
-            self._freq = 1.0 / (timestamp - self._last_time)
+            dt = timestamp - self._last_time
+            if dt > 0:
+                self._freq = 1.0 / dt
         self._last_time = timestamp
         
         # Estimate derivative (edx) of signal from raw value
