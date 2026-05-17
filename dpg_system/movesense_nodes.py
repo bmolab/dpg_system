@@ -1,20 +1,16 @@
-import dearpygui.dearpygui as dpg
-import math
-import numpy as np
-import random
-import time
-from dpg_system.node import Node
-import threading
-from dpg_system.conversion_utils import *
-import json
-from fuzzywuzzy import fuzz
 import asyncio
 import signal
 import struct
+import threading
+from functools import reduce
+
+from dpg_system.node import Node
+from dpg_system.conversion_utils import *
+
 from bleak import BleakClient
 from bleak import _logger as logger
 from bleak import discover
-from functools import reduce
+
 
 def register_movesense_nodes():
     Node.app.register_node('movesense', MoveSenseNode.factory)
@@ -28,21 +24,25 @@ NOTIFY_CHARACTERISTIC_UUID = (
     "34800002-7185-4d5d-b431-630e7050e8f0"
 )
 
+# Per-sample payload is [type byte, timestamp (uint32 at offset 2),
+# ax/ay/az (float32 at offsets 6/10/14)]. Bytes 0..17 inclusive.
+_ACC_PAYLOAD_MIN_LEN = 18
+
 
 class DataView:
     def __init__(self, array, bytes_per_element=1):
         """
         bytes_per_element is the size of each element in bytes.
-        By default we are assume the array is one byte per element.
+        By default we assume the array is one byte per element.
         """
         self.array = array
-        self.bytes_per_element = 1
+        self.bytes_per_element = bytes_per_element
 
     def __get_binary(self, start_index, byte_count, signed=False):
         integers = [self.array[start_index + x] for x in range(byte_count)]
-        bytes = [integer.to_bytes(
+        as_bytes = [integer.to_bytes(
             self.bytes_per_element, byteorder='little', signed=signed) for integer in integers]
-        return reduce(lambda a, b: a + b, bytes)
+        return reduce(lambda a, b: a + b, as_bytes)
 
     def get_uint_16(self, start_index):
         bytes_to_read = 2
@@ -64,9 +64,6 @@ class DataView:
 
 
 class MoveSenseNode(Node):
-    # comment_theme = None
-    # inited = False
-
     @staticmethod
     def factory(name, data, args=None):
         node = MoveSenseNode(name, data, args)
@@ -74,6 +71,7 @@ class MoveSenseNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+        args = args or []
         self.end_of_serial = '000431'
         if len(args) > 0:
             self.end_of_serial = any_to_string(args[0])
@@ -84,16 +82,11 @@ class MoveSenseNode(Node):
         self.queue = None
         self.client_task = None
         self.consumer_task = None
-        devices = discover()
-        found = False
-        address = None
-        for d in devices:
-            print("device:", d)
-            if d.name and d.name.endswith(self.end_of_serial):
-                print("device found")
-                address = d.address
-                found = True
-                break
+        # NB: BLE discovery and the client task are async (see init_queue /
+        # run_ble_client below). They are not wired up to the node yet —
+        # the previous synchronous discover() call here couldn't work
+        # because discover() is a coroutine function; the result was
+        # discarded immediately even when it didn't outright raise.
 
 
 async def init_queue(node):
@@ -112,21 +105,41 @@ async def run_queue_consumer(queue: asyncio.Queue):
             )
             break
         else:
-            logger.info("received: " + data)
+            logger.info("received: " + str(data))
+
+
+def _install_signal_handler(handler):
+    """signal.signal only works on the main thread; in a worker thread it
+    raises ValueError. Swallow that so the BLE client survives."""
+    if threading.current_thread() is not threading.main_thread():
+        return
+    try:
+        signal.signal(signal.SIGINT, handler)
+        signal.signal(signal.SIGTERM, handler)
+    except (ValueError, OSError) as e:
+        logger.info("could not install signal handlers: %s", e)
 
 
 async def run_ble_client(end_of_serial: str, queue: asyncio.Queue):
-    # Check the device is available
-    devices = await discover()
-    found = False
     address = None
+    try:
+        devices = await discover()
+    except Exception as e:
+        logger.info("BLE discover failed: %s", e)
+        await queue.put(None)
+        return
+
     for d in devices:
         print("device:", d)
         if d.name and d.name.endswith(end_of_serial):
             print("device found")
             address = d.address
-            found = True
             break
+
+    if address is None:
+        await queue.put(None)
+        print("Sensor  ******" + end_of_serial, "not found!")
+        return
 
     # This event is set if device disconnects or ctrl+c is pressed
     disconnected_event = asyncio.Event()
@@ -140,52 +153,67 @@ async def run_ble_client(end_of_serial: str, queue: asyncio.Queue):
 
     async def notification_handler(sender, data):
         """Simple notification handler which prints the data received."""
-        d = DataView(data)
-        # Dig data from the binary
-        msg = "Data: ts: {}, ax: {}, ay: {}, az: {}".format(d.get_uint_32(2), d.get_float_32(6), d.get_float_32(10), d.get_float_32(14))
-        # queue message for later consumption
-        await queue.put(msg)
+        if data is None or len(data) < _ACC_PAYLOAD_MIN_LEN:
+            return
+        try:
+            d = DataView(data)
+            msg = "Data: ts: {}, ax: {}, ay: {}, az: {}".format(
+                d.get_uint_32(2),
+                d.get_float_32(6),
+                d.get_float_32(10),
+                d.get_float_32(14),
+            )
+        except Exception as e:
+            logger.info("notification parse failed: %s", e)
+            return
+        try:
+            await queue.put(msg)
+        except Exception as e:
+            logger.info("queue put failed: %s", e)
 
-    if found:
+    try:
         async with BleakClient(address, disconnected_callback=disconnect_callback) as client:
-
-            loop = asyncio.get_event_loop()
-            # Add signal handler for ctrl+c
-            signal.signal(signal.SIGINT, raise_graceful_exit)
-            signal.signal(signal.SIGTERM, raise_graceful_exit)
+            _install_signal_handler(raise_graceful_exit)
 
             # Start notifications and subscribe to acceleration @ 13Hz
             logger.info("Enabling notifications")
             await client.start_notify(NOTIFY_CHARACTERISTIC_UUID, notification_handler)
             logger.info("Subscribing datastream")
-            await client.write_gatt_char(WRITE_CHARACTERISTIC_UUID, bytearray([1, 99]) + bytearray("/Meas/Acc/13", "utf-8"), response=True)
+            await client.write_gatt_char(
+                WRITE_CHARACTERISTIC_UUID,
+                bytearray([1, 99]) + bytearray("/Meas/Acc/13", "utf-8"),
+                response=True,
+            )
 
             # Run until disconnect event is set
             await disconnected_event.wait()
             logger.info(
                 "Disconnect set by ctrl+c or real disconnect event. Check Status:")
 
-            # Check the conection status to infer if the device disconnected or crtl+c was pressed
-            status = client.is_connected
+            # Check the connection status to infer if the device disconnected or ctrl+c was pressed
+            try:
+                status = client.is_connected
+            except Exception as e:
+                logger.info("is_connected check failed: %s", e)
+                status = False
             logger.info("Connected: {}".format(status))
 
             # If status is connected, unsubscribe and stop notifications
             if status:
-                logger.info("Unsubscribe")
-                await client.write_gatt_char(WRITE_CHARACTERISTIC_UUID, bytearray([2, 99]), response=True)
-                logger.info("Stop notifications")
-                await client.stop_notify(NOTIFY_CHARACTERISTIC_UUID)
-
-            # Signal consumer to exit
-            await queue.put(None)
+                try:
+                    logger.info("Unsubscribe")
+                    await client.write_gatt_char(WRITE_CHARACTERISTIC_UUID, bytearray([2, 99]), response=True)
+                    logger.info("Stop notifications")
+                    await client.stop_notify(NOTIFY_CHARACTERISTIC_UUID)
+                except Exception as e:
+                    logger.info("teardown write failed: %s", e)
 
             await asyncio.sleep(0.1)
-
-    else:
+    except Exception as e:
+        logger.info("BLE client session failed: %s", e)
+    finally:
         # Signal consumer to exit
-        await queue.put(None)
-        print("Sensor  ******" + end_of_serial, "not found!")
-
-
-
-
+        try:
+            await queue.put(None)
+        except Exception:
+            pass
