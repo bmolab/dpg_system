@@ -112,7 +112,8 @@ else:
 for import_name in to_be_imported:
     try:
         globals()[import_name] = import_module('dpg_system.' + import_name)
-        print('Imported ' + import_name)
+        bare_import_name = import_name.split('_')[0]
+        print('Imported ' + bare_import_name)
         imported.append(import_name)
     except ModuleNotFoundError as e:
         # If the missing module IS the one we tried to load, say so plainly.

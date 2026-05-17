@@ -22,6 +22,8 @@ def register_interface_nodes():
     Node.app.register_node("set_reset", ToggleNode.factory)
     Node.app.register_node("button", ButtonNode.factory)
     Node.app.register_node("b", ButtonNode.factory)
+    Node.app.register_node("pan_view", PanViewNode.factory)
+    Node.app.register_node("home_view", HomeViewNode.factory)
     Node.app.register_node("mouse", MouseNode.factory)
     Node.app.register_node("float", ValueNode.factory)
     Node.app.register_node("int", ValueNode.factory)
@@ -69,7 +71,72 @@ def register_interface_nodes():
     Node.app.register_node('envelope', EnvelopeNode.factory)
 
 
-class ButtonNode(Node):
+_view_button_chromeless_theme = None
+
+
+def _get_view_button_chromeless_theme():
+    global _view_button_chromeless_theme
+    if _view_button_chromeless_theme is None:
+        with dpg.theme() as _view_button_chromeless_theme:
+            with dpg.theme_component(dpg.mvAll):
+                dpg.add_theme_color(dpg.mvNodeCol_NodeBackground, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundHovered, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundSelected, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_NodeOutline, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                dpg.add_theme_color(dpg.mvNodeCol_TitleBar, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+    return _view_button_chromeless_theme
+
+
+class _HideTitleBarMixin:
+    """Adds a `hide_title_bar` checkbox option that renders the node chromeless
+    (transparent background/outline, no label) like ClosePatchNode."""
+
+    def _add_hide_title_bar_option(self, default_value=True):
+        self.hide_title_bar = self.add_option(
+            'hide_title_bar', widget_type='checkbox',
+            default_value=default_value, callback=self._apply_title_bar_visibility)
+
+    def _apply_title_bar_visibility(self):
+        if self.hide_title_bar():
+            dpg.bind_item_theme(self.uuid, _get_view_button_chromeless_theme())
+            dpg.configure_item(self.uuid, label='')
+        else:
+            # Re-run visibility to restore the right base theme (global / locked / do_not_delete).
+            self.set_visibility(getattr(self, 'visibility', 'show_all'))
+
+    def set_custom_visibility(self):
+        if self.hide_title_bar():
+            dpg.configure_item(self.uuid, label='')
+            dpg.bind_item_theme(self.uuid, _get_view_button_chromeless_theme())
+
+
+class _ViewButtonNodeMixin(_HideTitleBarMixin):
+    """Adds the chromeless option plus a `title` text option that drives the
+    button's label/width, and 28px button height, for view-control nodes."""
+
+    def _add_view_button_options(self, default_title=''):
+        self.title = self.add_option('title', widget_type='text_input',
+                                     default_value=default_title, callback=self.title_changed)
+        self._add_hide_title_bar_option(default_value=True)
+
+    def title_changed(self):
+        new_title = self.title()
+        dpg.set_item_label(self.input.widget.uuid, new_title)
+        if new_title == '':
+            dpg.set_item_width(self.input.widget.uuid, 14)
+        else:
+            width = self.input.widget.get_label_width(minimum_width=14)
+            dpg.set_item_width(self.input.widget.uuid, width)
+        dpg.set_item_height(self.input.widget.uuid, 28)
+
+    def _apply_view_button_styling(self):
+        dpg.set_item_height(self.input.widget.uuid, 28)
+        if self.title() != '':
+            self.title_changed()
+        self._apply_title_bar_visibility()
+
+
+class ButtonNode(_HideTitleBarMixin, Node):
     @staticmethod
     def factory(name, data, args=None):
         node = ButtonNode(name, data, args)
@@ -97,6 +164,9 @@ class ButtonNode(Node):
         self.width = self.add_option('width', widget_type='input_int', default_value=14, min=14, max=None, callback=self.size_changed)
         self.height = self.add_option('height', widget_type='input_int', default_value=14, min=14, max=None, callback=self.size_changed)
         self.flash_duration = self.add_option('flash_duration', widget_type='drag_float', min=0, max=1.0, default_value=flash_duration)
+        self.color = self.add_option('color', widget_type='color_picker', default_value=[0.0, 0.0, 0.0, 0.0], callback=self.color_changed)
+        self._add_hide_title_bar_option(default_value=False)
+        self._color_theme = None
 
     def size_changed(self):
         dpg.set_item_width(self.input.widget.uuid, self.width())
@@ -130,6 +200,30 @@ class ButtonNode(Node):
             dpg.set_item_width(self.input.widget.uuid, width)
             self.width.set(width)
 
+    def _rebuild_color_theme(self):
+        c = self.color()
+        if c is None or len(c) < 4 or c[3] <= 0:
+            self._color_theme = None
+            return
+        r, g, b, a = c[0], c[1], c[2], c[3]
+        base = (int(r), int(g), int(b), int(a))
+        hov = (min(base[0] + 30, 255), min(base[1] + 30, 255), min(base[2] + 30, 255), base[3])
+        with dpg.theme() as theme:
+            with dpg.theme_component(dpg.mvAll):
+                dpg.add_theme_color(dpg.mvThemeCol_Button, base, category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, base, category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, hov, category=dpg.mvThemeCat_Core)
+                dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 8, category=dpg.mvThemeCat_Core)
+        self._color_theme = theme
+
+    def color_changed(self):
+        self._rebuild_color_theme()
+        if time.time() >= self.target_time and dpg.does_item_exist(self.input.widget.uuid):
+            dpg.bind_item_theme(
+                self.input.widget.uuid,
+                self._color_theme if self._color_theme is not None else Node.inactive_theme,
+            )
+
     def clicked_function(self, input=None):
         self.target_time = time.time() + self.flash_duration()
         dpg.bind_item_theme(self.input.widget.uuid, Node.active_theme)
@@ -142,6 +236,8 @@ class ButtonNode(Node):
         if width < 14:
             width = 14
         dpg.set_item_width(self.input.widget.uuid, width)
+        self._apply_title_bar_visibility()
+        self.color_changed()
 
     def custom_cleanup(self):
         self.remove_frame_tasks()
@@ -150,11 +246,100 @@ class ButtonNode(Node):
         now = time.time()
         if now >= self.target_time:
             if dpg.does_item_exist(self.input.widget.uuid):
-                dpg.bind_item_theme(self.input.widget.uuid, Node.inactive_theme)
+                dpg.bind_item_theme(
+                    self.input.widget.uuid,
+                    self._color_theme if self._color_theme is not None else Node.inactive_theme,
+                )
             self.remove_frame_tasks()
 
     def execute(self):
         self.output.send(self.message())
+
+
+class PanViewNode(_ViewButtonNodeMixin, Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = PanViewNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        default_h = 0
+        default_v = 0
+        if args is not None:
+            if len(args) > 0:
+                v, t = decode_arg(args, 0)
+                if t in (int, float):
+                    default_h = int(v)
+            if len(args) > 1:
+                v, t = decode_arg(args, 1)
+                if t in (int, float):
+                    default_v = int(v)
+
+        self.input = self.add_input('', triggers_execution=True, widget_type='button', widget_width=14, callback=self.clicked_function)
+        self._add_view_button_options(default_title='pan')
+        self.h_offset = self.add_option('h_offset', widget_type='input_int', default_value=default_h)
+        self.v_offset = self.add_option('v_offset', widget_type='input_int', default_value=default_v)
+
+    def custom_create(self, from_file):
+        self._apply_view_button_styling()
+
+    def clicked_function(self, input=None):
+        self.do_pan()
+
+    def execute(self):
+        self.do_pan()
+
+    def do_pan(self):
+        editor = Node.app.get_current_editor()
+        if editor is None or getattr(editor, 'presenting', False):
+            return
+        h = self.h_offset()
+        v = self.v_offset()
+        if h == 0 and v == 0:
+            return
+        editor.pan_nodes(-h, -v)
+
+
+class HomeViewNode(_ViewButtonNodeMixin, Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = HomeViewNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+
+        self.input = self.add_input('', triggers_execution=True, widget_type='button', widget_width=14, callback=self.clicked_function)
+        self._add_view_button_options(default_title='home')
+
+    def custom_create(self, from_file):
+        self._apply_view_button_styling()
+
+    def clicked_function(self, input=None):
+        # Defer to the next frame so dpg has settled all click-time layout
+        # (focus follow, widget activation) before we read screen positions.
+        # Calling home_nodes() directly here behaves differently from the
+        # 'h' key handler — it can alternate between two views.
+        self._home_pending = True
+        self.add_frame_task()
+
+    def execute(self):
+        self._home_pending = True
+        self.add_frame_task()
+
+    def frame_task(self):
+        if getattr(self, '_home_pending', False):
+            self._home_pending = False
+            self.do_home()
+        self.remove_frame_tasks()
+
+    def do_home(self):
+        editor = Node.app.get_current_editor()
+        if editor is None or getattr(editor, 'presenting', False):
+            return
+        editor.home_nodes()
 
 
 class MenuNode(Node):

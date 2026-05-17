@@ -813,6 +813,7 @@ class OpenTakeNode(MoCapNode):
                 print('no take file found:', path)
 
     def first_frame(self):
+        super().first_frame()
         if len(self.global_dict) > 0:
             self.global_params_out.send(self.global_dict)
             self.force_frame = False

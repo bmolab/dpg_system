@@ -15,6 +15,7 @@ import itertools
 from typing import List, Any, Callable, Union, Tuple, Optional, Dict, Set, Type, TypeVar, cast
 
 from dpg_system.node import Node, SaveDialog, LoadDialog
+from dpg_system.interface_nodes import _ViewButtonNodeMixin, _get_view_button_chromeless_theme
 
 import threading
 from dpg_system.conversion_utils import *
@@ -413,7 +414,7 @@ class ClosePatchNode(Node):
         dpg.bind_item_theme(self.uuid, ClosePatchNode.theme)
 
 
-class SaveNode(Node):
+class SaveNode(_ViewButtonNodeMixin, Node):
     @staticmethod
     def factory(name, data, args=None):
         node = SaveNode(name, data, args)
@@ -422,10 +423,11 @@ class SaveNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.input = self.add_input('save', widget_type='button', callback=self.save_call)
+        self._add_view_button_options()
 
     def custom_create(self, from_file):
         self.input.widget.set_active_theme(Node.active_theme_green)
-        dpg.set_item_height(self.input.widget.uuid, 28)
+        self._apply_view_button_styling()
 
     def save_call(self):
         Node.app.save_nodes()

@@ -633,5 +633,3 @@ class JointTranslator():
 
     def __init__(self, label, data, args):
         pass
-
-print('body_defs done')
