@@ -999,31 +999,66 @@ class NodeEditor:
             return None
         return widget.uuid
 
+    def _safe_get_item_pos(self, uuid, label):
+        # Returns [x, y] or None if the item is gone / DPG state is unqueryable.
+        # SystemError covers the "<built-in function get_item_state> returned a result
+        # with an exception set" case where DPG's C side is in a bad spot.
+        if uuid is None or not dpg.does_item_exist(uuid):
+            return None
+        try:
+            return dpg.get_item_pos(uuid)
+        except (SystemError, Exception) as e:
+            print(f'_safe_get_item_pos({label}, uuid={uuid}) failed: {type(e).__name__}: {e}')
+            return None
+
+    def _validate_origin(self):
+        # If self.origin points at a node whose DPG item is gone, clear the reference
+        # so subsequent geometry queries don't repeatedly hit the same bad UUID.
+        if self.origin is None:
+            return
+        origin_uuid = getattr(self.origin, 'uuid', None)
+        if origin_uuid is None or not dpg.does_item_exist(origin_uuid):
+            print(f'_validate_origin: dropping stale origin (uuid={origin_uuid})')
+            self.origin = None
+
     def global_pos_to_editor_pos(self, pos):
-        panel_pos = dpg.get_item_pos(self.app.center_panel)
+        self._validate_origin()
+        panel_pos = self._safe_get_item_pos(self.app.center_panel, 'center_panel') or [0, 0]
         origin_widget_uuid = self._origin_widget_uuid()
         if origin_widget_uuid is None or self.origin is None:
             editor_mouse_pos = pos
             editor_mouse_pos[0] -= (panel_pos[0] + 8 - 4)
             editor_mouse_pos[1] -= (panel_pos[1] + 8 - 15)
             return editor_mouse_pos
-        origin_pos = dpg.get_item_pos(origin_widget_uuid)
-        origin_node_pos = dpg.get_item_pos(self.origin.uuid)
+        origin_pos = self._safe_get_item_pos(origin_widget_uuid, 'origin_widget')
+        origin_node_pos = self._safe_get_item_pos(self.origin.uuid, 'origin_node')
+        if origin_pos is None or origin_node_pos is None:
+            # Fall back to the no-origin formula rather than propagating bad state.
+            editor_mouse_pos = pos
+            editor_mouse_pos[0] -= (panel_pos[0] + 8 - 4)
+            editor_mouse_pos[1] -= (panel_pos[1] + 8 - 15)
+            return editor_mouse_pos
         editor_mouse_pos = pos
         editor_mouse_pos[0] -= (panel_pos[0] + 8 + (origin_pos[0] - origin_node_pos[0]) - 4)
         editor_mouse_pos[1] -= (panel_pos[1] + 8 + (origin_pos[1] - origin_node_pos[1]) - 15)
         return editor_mouse_pos
 
     def editor_pos_to_global_pos(self, pos):
-        panel_pos = dpg.get_item_pos(self.app.center_panel)
+        self._validate_origin()
+        panel_pos = self._safe_get_item_pos(self.app.center_panel, 'center_panel') or [0, 0]
         origin_widget_uuid = self._origin_widget_uuid()
         if origin_widget_uuid is None or self.origin is None:
             global_pos = pos
             global_pos[0] += (panel_pos[0] + 8 - 4)
             global_pos[1] += (panel_pos[1] + 8 - 30)
             return global_pos
-        origin_pos = dpg.get_item_pos(origin_widget_uuid)
-        origin_node_pos = dpg.get_item_pos(self.origin.uuid)
+        origin_pos = self._safe_get_item_pos(origin_widget_uuid, 'origin_widget')
+        origin_node_pos = self._safe_get_item_pos(self.origin.uuid, 'origin_node')
+        if origin_pos is None or origin_node_pos is None:
+            global_pos = pos
+            global_pos[0] += (panel_pos[0] + 8 - 4)
+            global_pos[1] += (panel_pos[1] + 8 - 30)
+            return global_pos
         global_pos = pos
         global_pos[0] += (panel_pos[0] + 8 + (origin_pos[0] - origin_node_pos[0]) - 4)
         global_pos[1] += (panel_pos[1] + 8 + (origin_pos[1] - origin_node_pos[1]) - 30)

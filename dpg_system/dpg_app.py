@@ -1056,16 +1056,27 @@ class App:
         pass
 
     def place_node(self, node):
-        mouse_pos = dpg.get_mouse_pos(local=False)
         editor = self.get_current_editor()
-        if editor is not None:
-            try:
-                self.snapshot_for_undo()
-                editor_mouse_pos = editor.global_pos_to_editor_pos(mouse_pos)
-                node.create(editor.uuid, pos=editor_mouse_pos)
-                editor.add_node(node)
-            except Exception as e:
-                print('place_node', e)
+        if editor is None:
+            return
+        step = 'get_mouse_pos'
+        try:
+            mouse_pos = dpg.get_mouse_pos(local=False)
+            step = 'snapshot_for_undo'
+            self.snapshot_for_undo()
+            step = 'global_pos_to_editor_pos'
+            editor_mouse_pos = editor.global_pos_to_editor_pos(mouse_pos)
+            step = f'node.create (label={getattr(node, "label", "?")})'
+            node.create(editor.uuid, pos=editor_mouse_pos)
+            step = 'add_node'
+            editor.add_node(node)
+        except Exception as e:
+            print(f'place_node failed at step={step}: {type(e).__name__}: {e}')
+            print(f'  editor.uuid={getattr(editor, "uuid", None)} '
+                  f'center_panel={getattr(self, "center_panel", None)} '
+                  f'origin={getattr(editor, "origin", None)} '
+                  f'origin.uuid={getattr(getattr(editor, "origin", None), "uuid", None)}')
+            traceback.print_exc()
 
     def int_handler(self):
         if self.not_focussed_on_widget():
@@ -2214,6 +2225,7 @@ class App:
         with dpg.window() as main_window:
             global dpg_app
             if opengl_active:
+                glfw.init()
                 self.window_context = glfw.get_current_context()
             self.main_window_id = main_window
             dpg.bind_item_theme(main_window, self.global_theme)
