@@ -23,7 +23,10 @@ class NumpySocket(socket.socket):
         if not isinstance(frame, np.ndarray):
             raise TypeError("input frame is not a valid numpy array")  # should this just call super intead?
 
-        out = self.__pack_latent_frame(frame)
+        # __pack_latent_frame requires (frame, position, serial); using it
+        # with one arg raised TypeError on every send. __pack_frame is the
+        # single-arg packer that pairs with recv().
+        out = self.__pack_frame(frame)
         super().sendall(out)
         logging.debug("frame sent")
 
@@ -37,12 +40,11 @@ class NumpySocket(socket.socket):
             frameBuffer = bytearray()
 
         while True:
-            data = np.array([])
-            try:
-                data = super().recv(bufsize)
-            except Exception as e:
-                if length is None:
-                    raise e
+            # Previously this swallowed exceptions and returned np.array([])
+            # after the length header had been read, silently discarding a
+            # partial frame. Let socket errors propagate so the caller can
+            # reconnect.
+            data = super().recv(bufsize)
 
             if len(data) == 0:
                 return np.array([])
@@ -61,12 +63,13 @@ class NumpySocket(socket.socket):
                     # leave any remaining bytes in the frameBuffer!
                     length_str, ignored, frameBuffer = frameBuffer.partition(b':')
                     if len(length_str) > 16:
-                        print('recv length_str longer than 16 bytes')
-                    else:
-                        try:
-                            length = int(length_str)
-                        except Exception as e:
-                            print('recv length_str does not convert to int')
+                        raise ValueError(f'NumpySocket.recv: length header longer than 16 bytes ({len(length_str)}); stream is desynced')
+                    try:
+                        length = int(length_str)
+                    except ValueError:
+                        # length_str is not an integer — the stream is
+                        # corrupt and we cannot resync, so surface it.
+                        raise ValueError(f'NumpySocket.recv: length header {length_str!r} is not an int; stream is desynced')
 
                 # print(len(frameBuffer), end='')
                 if len(frameBuffer) < length:
@@ -99,12 +102,7 @@ class NumpySocket(socket.socket):
             frameBuffer = bytearray()
 
         while True:
-            data = np.array([])
-            try:
-                data = super().recv(bufsize)
-            except Exception as e:
-                if length is None:
-                    raise e
+            data = super().recv(bufsize)
 
             if len(data) == 0:
                 return np.array([])
@@ -123,12 +121,11 @@ class NumpySocket(socket.socket):
                     # leave any remaining bytes in the frameBuffer!
                     length_str, ignored, frameBuffer = frameBuffer.partition(b':')
                     if len(length_str) > 16:
-                        print('recv length_str longer than 16 bytes')
-                    else:
-                        try:
-                            length = int(length_str)
-                        except Exception as e:
-                            print('recv length_str does not convert to int')
+                        raise ValueError(f'NumpySocket.recv_latents: length header longer than 16 bytes ({len(length_str)}); stream is desynced')
+                    try:
+                        length = int(length_str)
+                    except ValueError:
+                        raise ValueError(f'NumpySocket.recv_latents: length header {length_str!r} is not an int; stream is desynced')
 
                 # print(len(frameBuffer), end='')
                 if len(frameBuffer) < length:
@@ -147,9 +144,11 @@ class NumpySocket(socket.socket):
             if not loop:
                 break
 
-        frame = np.load(BytesIO(frameBuffer), allow_pickle=True)['frame']
-        position = np.load(BytesIO(frameBuffer), allow_pickle=True)['position']
-        serial = np.load(BytesIO(frameBuffer), allow_pickle=True)['serial']
+        # Parse the npz blob once instead of three times.
+        loaded = np.load(BytesIO(frameBuffer), allow_pickle=True)
+        frame = loaded['frame']
+        position = loaded['position']
+        serial = loaded['serial']
         logging.debug("frame received")
         return frame, position, serial
 
