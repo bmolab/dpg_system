@@ -17,12 +17,13 @@ class MyGLContext:
 
     def __init__(self, name='untitled', width=640, height=480, samples=1):
 
-        if not self.inited:
+        if not MyGLContext.inited:
             if not glfw.init():
-                print("library is not initialized")
+                print("MyGLContext: glfw.init() failed; GLFW unavailable")
+                self.window = None
                 return
             # MyGLContext.gl_thread = threading.Thread(target=run_gl_thread)
-            self.inited = True
+            MyGLContext.inited = True
 #        Create a windowed mode window and its OpenGL context
         self.rotation_angle = 0
         self.d_x = 0
@@ -40,6 +41,9 @@ class MyGLContext:
             glfw.window_hint(glfw.SAMPLES, samples)
         # glfw.window_hint(glfw.SCALE_TO_MONITOR, False)
         self.window = glfw.create_window(width, height, name, None, None)
+        if not self.window:
+            print(f'MyGLContext: glfw.create_window({width}x{height}, {name!r}) failed; degrading to no-op')
+            return
         if self.window:
             # print('window created')
             glfw.make_context_current(self.window)
@@ -85,31 +89,43 @@ class MyGLContext:
 
     def close(self):
         if self.window:
-            glfw.destroy_window(self.window)
+            try:
+                glfw.destroy_window(self.window)
+            except Exception as e:
+                print(f'MyGLContext.close: glfw.destroy_window failed ({e})')
+            self.window = None
  #       glfw.terminate()
 
     def set_fov(self, fov):
         self.pending_fov = fov
 
     def update_fov(self):
-        if self.pending_fov != self.fov:
-            if self.window:
-                aspect = self.width / self.height
-                # print('fov', self.pending_fov, aspect)
-                current_matrix_mode = gl.glGetInteger(gl.GL_MATRIX_MODE)
-                gl.glMatrixMode(gl.GL_PROJECTION)
-                projectionD = gl.glGetDoublev(gl.GL_PROJECTION_MATRIX)
-                gl.glLoadIdentity()
-                fov_radians = self.pending_fov / 180. * math.pi
-                cotan = 1.0 / math.tan(fov_radians / 2.0)
-                far = 1000
-                near = 0.1
-                m = np.array([cotan / aspect, 0.0, 0.0, 0.0, 0.0, cotan, 0.0, 0.0, 0.0, 0.0, (far + near) / (near - far), -1.0, 0.0, 0.0, (2.0 * far * near) / (near - far), 0.0])
-                m = m.reshape((4, 4))
-                gl.glMultMatrixd(m)
-                gl.glMatrixMode(current_matrix_mode)
-#                glu.gluPerspective(self.pending_fov, aspect, .1, 1000.0)
-                self.fov = self.pending_fov
+        if self.pending_fov == self.fov:
+            return
+        if not self.window:
+            return
+        # Guard degenerate inputs: height==0 (divide-by-zero on aspect) and
+        # pending_fov at 0 or 180 (tan goes to 0 or inf, producing a bad
+        # projection matrix that breaks every subsequent draw).
+        if self.height == 0:
+            return
+        if self.pending_fov <= 0 or self.pending_fov >= 180:
+            print(f'MyGLContext.update_fov: invalid fov {self.pending_fov}, skipping')
+            return
+        aspect = self.width / self.height
+        current_matrix_mode = gl.glGetInteger(gl.GL_MATRIX_MODE)
+        gl.glMatrixMode(gl.GL_PROJECTION)
+        projectionD = gl.glGetDoublev(gl.GL_PROJECTION_MATRIX)
+        gl.glLoadIdentity()
+        fov_radians = self.pending_fov / 180. * math.pi
+        cotan = 1.0 / math.tan(fov_radians / 2.0)
+        far = 1000
+        near = 0.1
+        m = np.array([cotan / aspect, 0.0, 0.0, 0.0, 0.0, cotan, 0.0, 0.0, 0.0, 0.0, (far + near) / (near - far), -1.0, 0.0, 0.0, (2.0 * far * near) / (near - far), 0.0])
+        m = m.reshape((4, 4))
+        gl.glMultMatrixd(m)
+        gl.glMatrixMode(current_matrix_mode)
+        self.fov = self.pending_fov
 
     def on_key(self, window, key, scancode, action, mods):
         if action == glfw.PRESS:
