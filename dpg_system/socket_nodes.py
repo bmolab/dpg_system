@@ -79,11 +79,23 @@ class UDPSendSocket:
 
     def cleanup(self):
         if self.sock is not None:
-            self.sock.shutdown(socket.SHUT_RDWR)
-            self.sock.close()
+            try:
+                self.sock.shutdown(socket.SHUT_RDWR)
+            except OSError:
+                # UDP is connectionless; shutdown often errors with
+                # ENOTCONN. Safe to ignore.
+                pass
+            try:
+                self.sock.close()
+            except OSError:
+                pass
+            self.sock = None
 
     def send(self, data):
-        self.sock.sendto(data, (self.ip, self.port))
+        try:
+            self.sock.sendto(data, (self.ip, self.port))
+        except OSError as e:
+            print(f'UDPSendSocket send to {self.ip}:{self.port} failed: {e}')
 
 
 class UDPReceiveSocket:
@@ -102,8 +114,15 @@ class UDPReceiveSocket:
 
     def cleanup(self):
         if self.sock is not None:
-            self.sock.shutdown(socket.SHUT_RDWR)
-            self.sock.close()
+            try:
+                self.sock.shutdown(socket.SHUT_RDWR)
+            except OSError:
+                pass
+            try:
+                self.sock.close()
+            except OSError:
+                pass
+            self.sock = None
 
     def receive(self):
         try:
@@ -127,6 +146,8 @@ class UDPNumpySendNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+        self.ip = '127.0.0.1'
+        self.port = 3500
         if len(args) > 0:
             ip = args[0]
             if string_is_valid_ip(ip):
@@ -516,8 +537,14 @@ class TCPNumpySendNode(Node):
     def custom_cleanup(self):
         if self.numpysocket is not None:
             if self.connected:
-                self.numpysocket.shutdown(socket.SHUT_RDWR)
-                self.numpysocket.close()
+                try:
+                    self.numpysocket.shutdown(socket.SHUT_RDWR)
+                except OSError:
+                    pass
+                try:
+                    self.numpysocket.close()
+                except OSError:
+                    pass
             self.numpysocket = None
 
 
@@ -654,8 +681,14 @@ class TCPNumpySendLatentNode(Node):
     def custom_cleanup(self):
         if self.numpysocket is not None:
             if self.connected:
-                self.numpysocket.shutdown(socket.SHUT_RDWR)
-                self.numpysocket.close()
+                try:
+                    self.numpysocket.shutdown(socket.SHUT_RDWR)
+                except OSError:
+                    pass
+                try:
+                    self.numpysocket.close()
+                except OSError:
+                    pass
             self.numpysocket = None
 
 
@@ -701,10 +734,20 @@ class TCPNumpyReceiveNode(Node):
         self.connected_out = self.add_output('connected')
 
     def get_default_ip(self):
+        # The connect-to-8.8.8.8 trick is the standard way to discover the
+        # local interface IP that routes externally, but it raises OSError
+        # when offline. Fall back to 127.0.0.1 so node creation doesn't crash.
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(('8.8.8.8', 80))
-        self.serving_ip = s.getsockname()[0]
-        s.close()
+        try:
+            s.connect(('8.8.8.8', 80))
+            self.serving_ip = s.getsockname()[0]
+        except OSError:
+            self.serving_ip = '127.0.0.1'
+        finally:
+            try:
+                s.close()
+            except OSError:
+                pass
 
     def post_creation_callback(self):
         if self.app.verbose:
@@ -863,7 +906,11 @@ class TCPNumpyReceiveNode(Node):
         self.running = False
         if self.app.verbose:
             print('join')
-        self.receive_thread.join()
+        # The receive thread polls select() with a 1s timeout and recv() can
+        # block — cap the join so shutdown doesn't hang the process.
+        self.receive_thread.join(timeout=3.0)
+        if self.receive_thread.is_alive():
+            print('tcp_numpy_receive: thread did not exit within 3s')
         if self.app.verbose:
             print('joined')
 
@@ -913,10 +960,20 @@ class TCPNumpyReceiveLatentNode(Node):
         self.connected_out = self.add_output('connected')
 
     def get_default_ip(self):
+        # The connect-to-8.8.8.8 trick is the standard way to discover the
+        # local interface IP that routes externally, but it raises OSError
+        # when offline. Fall back to 127.0.0.1 so node creation doesn't crash.
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(('8.8.8.8', 80))
-        self.serving_ip = s.getsockname()[0]
-        s.close()
+        try:
+            s.connect(('8.8.8.8', 80))
+            self.serving_ip = s.getsockname()[0]
+        except OSError:
+            self.serving_ip = '127.0.0.1'
+        finally:
+            try:
+                s.close()
+            except OSError:
+                pass
 
     def post_creation_callback(self):
         if self.app.verbose:
@@ -1097,7 +1154,11 @@ class TCPNumpyReceiveLatentNode(Node):
         self.running = False
         if self.app.verbose:
             print('join')
-        self.receive_thread.join()
+        # The receive thread polls select() with a 1s timeout and recv() can
+        # block — cap the join so shutdown doesn't hang the process.
+        self.receive_thread.join(timeout=3.0)
+        if self.receive_thread.is_alive():
+            print('tcp_numpy_receive: thread did not exit within 3s')
         if self.app.verbose:
             print('joined')
 
@@ -1168,13 +1229,13 @@ class ProcessGroupNode(Node):
             if rank is not None:
                 self.rank = rank
 
-        if len(args) > 2:
-            self.backend = args[2]
-
         if len(args) > 3:
             world_size = any_to_int(args[3], validate=True)
             if world_size is not None:
                 self.world_size = world_size
+
+        if len(args) > 4:
+            self.backend = any_to_string(args[4])
 
         print('ip', self.ip, 'port', str(self.port), 'backend', self.backend, 'rank', self.rank, 'world_size', self.world_size)
         self.process_group = ProcessGroup(ip=self.ip, port=str(self.port), backend=self.backend, rank=self.rank, world_size=self.world_size)
@@ -1194,8 +1255,8 @@ class ProcessGroupNode(Node):
 
     def expected(self):
         example = self.expected_tensor_example_in()
-        if type(example) == torch.tensor:
-            self.tensor = torch.zeros_like(self.expected_tensor_example_in())
+        if isinstance(example, torch.Tensor):
+            self.tensor = torch.zeros_like(example)
 
     def send(self, tensor, dest=1):
         if self.sending:
@@ -1212,11 +1273,14 @@ class ProcessGroupNode(Node):
             self.receiving = True
 
     def is_completed(self):
-        if self.process_group is not None:
+        # process_group.req is None until the first send/receive has been
+        # issued; calling is_completed() before that raises AttributeError.
+        if self.process_group is not None and self.process_group.req is not None:
             return self.process_group.is_completed()
+        return False
 
     def wait(self):
-        if self.process_group is not None:
+        if self.process_group is not None and self.process_group.req is not None:
             return self.process_group.wait()
 
     def frame_task(self):
