@@ -49,6 +49,7 @@ llama_output_*.txt
 
 # Client secrets (sensitive)
 client_secret_*.json
+dpg_system/*_key.py
 
 # Other python dirs / scratch
 other\ python/
