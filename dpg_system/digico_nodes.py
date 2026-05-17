@@ -21,7 +21,10 @@ class DigicoFaders(Node, OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
 
         self.fader_count = 20
         if len(args) > 1:
-            self.fader_count = int(args[1])
+            try:
+                self.fader_count = int(args[1])
+            except (ValueError, TypeError):
+                pass
         self.faders = []
 
 
@@ -59,7 +62,7 @@ class DigicoFaders(Node, OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
     def get_addresses(self):
         addresses = []
         for index, fader in enumerate(self.faders):
-            addresses.append('/channel/' + str(index) + '/fader')
+            addresses.append('/channel/' + str(index + 1) + '/fader')
         return addresses
 
     def cleanup(self):
@@ -91,14 +94,19 @@ class DigicoFaders(Node, OSCBase, OSCReceiver, OSCSender, OSCRegistrableMixin):
 
     def receive(self, data, address=None):
         data = any_to_list(data)
-        if address is not None:
-            split_address = address.split('/')
-            if len(split_address) == 4:
-                if split_address[1] == 'channel':
-                    if split_address[3] == 'fader':
-                        input = any_to_int(split_address[2])
-                        if input < len(self.faders):
-                            self.faders[input].receive_data(data)
+        if address is None:
+            return
+        split_address = address.split('/')
+        if len(split_address) != 4:
+            return
+        if split_address[1] != 'channel' or split_address[3] != 'fader':
+            return
+        # execute() sends as /channel/<index+1>/fader (1-based), so subtract
+        # 1 here to recover the 0-based fader index used in self.faders.
+        channel = any_to_int(split_address[2])
+        fader_index = channel - 1
+        if 0 <= fader_index < len(self.faders):
+            self.faders[fader_index].receive_data(data)
 
     def _get_registry_path_components(self) -> list:
         # # Assumes `self.get_patcher_path` exists because self is a Node instance.
