@@ -88,30 +88,39 @@ class PJLinkNode(Node):
             
             # Reset Auth
             self.auth_token = ''
-            
+
             # Initial Handshake (Read PJLINK 0 or 1 <seed>)
-            data = self.socket.recv(1024).decode('utf-8').strip()
+            data = self.socket.recv(1024).decode('utf-8', errors='replace').strip()
             if self.print_debug_opt():
                 print(f"PJLink Handshake: {data}")
-                
+
             if 'PJLINK 0' in data:
                 # No Auth
                 self.auth_token = ''
             elif 'PJLINK 1' in data:
-                # Auth Required
-                # PJLINK 1 <seed>
-                    parts = data.split()
-                    if len(parts) > 2:
-                        seed = parts[2]
-                        # MD5(seed + password) - Correct order usually
-                        src = f"{seed}{password}"
-                        self.auth_token = hashlib.md5(src.encode('utf-8')).hexdigest()
-                        if self.print_debug_opt():
-                            print(f"PJLink Auth Token Generated for Seed {seed}")
-            
+                # Auth Required: PJLINK 1 <seed>
+                parts = data.split()
+                if len(parts) > 2:
+                    seed = parts[2]
+                    src = f"{seed}{password}"
+                    self.auth_token = hashlib.md5(src.encode('utf-8')).hexdigest()
+                    if self.print_debug_opt():
+                        print(f"PJLink Auth Token Generated for Seed {seed}")
+            else:
+                # Garbage handshake: don't mark connected — caller will see
+                # the failure state instead of getting silent auth errors later.
+                self.status_property.set(f'Bad handshake: {data[:64]}')
+                try:
+                    self.socket.close()
+                except OSError:
+                    pass
+                self.socket = None
+                self.connected = False
+                return
+
             self.connected = True
             self.status_property.set('Connected')
-            
+
             # Query Power Status
             self.query_power()
             
@@ -123,7 +132,10 @@ class PJLinkNode(Node):
 
     def disconnect(self):
         if self.socket:
-            self.socket.close()
+            try:
+                self.socket.close()
+            except OSError:
+                pass
         self.socket = None
         self.connected = False
         self.status_property.set('Disconnected')
@@ -176,7 +188,7 @@ class PJLinkNode(Node):
                     self.power_input.set(True)
                 else:
                     self.power_input.set(False)
-            except:
+            except (ValueError, IndexError):
                 pass
 
     def set_shutter(self):
