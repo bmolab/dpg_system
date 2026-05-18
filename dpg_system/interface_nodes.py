@@ -3555,6 +3555,7 @@ class EnvelopeNode(Node):
 
     def execute(self):
         if self.trigger_input.fresh_input:
+            self.trigger_input.get_received_data()
             self._start_ramp()
         if self.ramp_time_input.fresh_input:
             self.ramp_time = max(0.001, any_to_float(self.ramp_time_input()))
