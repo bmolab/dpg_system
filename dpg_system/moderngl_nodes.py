@@ -671,62 +671,24 @@ class MGLContextNode(Node):
                 self._was_use_direct = True
                 import sys as _sys
 
-                if _sys.platform.startswith('linux'):
-                    # --- Linux: per-node MGLNativeWindow ---
-                    from dpg_system.moderngl_base import MGLNativeWindow
-
-                    # Lazily create this node's own native window
-                    if self._native_win is None:
+                # Lazily create this node's own native window (Linux: GLFW
+                # wrapping DPG's handle; macOS/Windows: pyglet window sharing
+                # the master moderngl context).
+                if self._native_win is None:
+                    if _sys.platform.startswith('linux'):
+                        from dpg_system.moderngl_base import MGLNativeWindow
                         dpg_handle = getattr(self.context, '_dpg_glfw_win', None)
                         if dpg_handle:
                             self._native_win = MGLNativeWindow(dpg_handle)
-                            print(f'[MGLContextNode] Created per-node native window: {self._native_win.available}')
+                            if not self._native_win.available:
+                                print('[MGLContextNode] per-node native window unavailable')
+                    else:
+                        from dpg_system.moderngl_base import MGLDisplayWindow
+                        self._native_win = MGLDisplayWindow(self.context)
+                        if not self._native_win.available:
+                            print('[MGLContextNode] per-node display window unavailable')
 
-                    if self._native_win and self._native_win.available:
-                        win_size = self.win_size_option()
-                        if np.isscalar(win_size):
-                            win_size = [win_size, win_size]
-                        win_w = int(win_size[0]) if len(win_size) > 0 else self.width
-                        win_h = int(win_size[1]) if len(win_size) > 1 else self.height
-                        if win_w <= 0: win_w = self.width
-                        if win_h <= 0: win_h = self.height
-
-                        self._native_win.show(win_w, win_h,
-                                              title=f'MGL Output ({self.label})',
-                                              fullscreen=(mode == 'fullscreen'))
-
-                        # Size sync (non-fullscreen): user-drag of native window
-                        if mode != 'fullscreen':
-                            self._sync_window_size_from_native(self._native_win.get_size)
-
-                        # Position sync (non-fullscreen)
-                        if mode != 'fullscreen':
-                            actual_pos = self._native_win.get_pos()
-                            if actual_pos is not None:
-                                widget_pos = self.win_pos_option()
-                                if np.isscalar(widget_pos):
-                                    widget_pos = [widget_pos, widget_pos]
-                                wx, wy = int(widget_pos[0]), int(widget_pos[1])
-                                ax, ay = actual_pos
-                                if wx != ax or wy != ay:
-                                    last = getattr(self, '_last_win_pos', None)
-                                    if last is not None and wx == last[0] and wy == last[1]:
-                                        self.win_pos_option.widget.set([float(ax), float(ay)])
-                                        self._last_win_pos = (ax, ay)
-                                    else:
-                                        self._native_win.set_pos(wx, wy)
-                                        self._last_win_pos = (wx, wy)
-                                else:
-                                    self._last_win_pos = (ax, ay)
-
-                        # MSAA resolve + blit
-                        if self.render_target.samples > 0 and self.render_target.msaa_fbo:
-                            self.context.ctx.copy_framebuffer(
-                                self.render_target.fbo, self.render_target.msaa_fbo)
-                        self._native_win.blit(self.render_target)
-
-                else:
-                    # --- macOS/Windows: delegate to MGLContext (pyglet) ---
+                if self._native_win and self._native_win.available:
                     win_size = self.win_size_option()
                     if np.isscalar(win_size):
                         win_size = [win_size, win_size]
@@ -735,12 +697,16 @@ class MGLContextNode(Node):
                     if win_w <= 0: win_w = self.width
                     if win_h <= 0: win_h = self.height
 
-                    if mode == 'fullscreen':
-                        self.context.show_window(win_w, win_h, fullscreen=True)
-                    else:
-                        self.context.show_window(win_w, win_h)
-                        self._sync_window_size_from_native(self.context.get_window_size)
-                        actual_pos = self.context.get_window_pos()
+                    self._native_win.show(win_w, win_h,
+                                          title=f'MGL Output ({self.label})',
+                                          fullscreen=(mode == 'fullscreen'))
+
+                    if mode != 'fullscreen':
+                        # Size sync: user-drag of native window
+                        self._sync_window_size_from_native(self._native_win.get_size)
+
+                        # Position sync
+                        actual_pos = self._native_win.get_pos()
                         if actual_pos is not None:
                             widget_pos = self.win_pos_option()
                             if np.isscalar(widget_pos):
@@ -753,19 +719,17 @@ class MGLContextNode(Node):
                                     self.win_pos_option.widget.set([float(ax), float(ay)])
                                     self._last_win_pos = (ax, ay)
                                 else:
-                                    self.context.set_window_pos(wx, wy)
+                                    self._native_win.set_pos(wx, wy)
                                     self._last_win_pos = (wx, wy)
                             else:
                                 self._last_win_pos = (ax, ay)
-                        else:
-                            widget_pos = self.win_pos_option()
-                            if np.isscalar(widget_pos):
-                                widget_pos = [widget_pos, widget_pos]
-                            wx, wy = int(widget_pos[0]), int(widget_pos[1])
-                            self.context.set_window_pos(wx, wy)
-                            self._last_win_pos = (wx, wy)
 
-                    self.context.blit_to_window(self.render_target)
+                    # MSAA resolve on master context, then blit on the
+                    # per-node window's own context.
+                    if self.render_target.samples > 0 and self.render_target.msaa_fbo:
+                        self.context.ctx.copy_framebuffer(
+                            self.render_target.fbo, self.render_target.msaa_fbo)
+                    self._native_win.blit(self.render_target)
 
                 # Clean up ALL DPG display elements (node image, external window, fullscreen)
                 if self.image_item and dpg.does_item_exist(self.image_item):

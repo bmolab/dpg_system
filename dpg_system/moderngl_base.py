@@ -330,6 +330,240 @@ class MGLNativeWindow:
         self._visible = False
 
 
+class MGLDisplayWindow:
+    """Per-node pyglet display window that shares GL resources with the master.
+
+    Counterpart to MGLNativeWindow on Linux, but built on pyglet so it works
+    on macOS/Windows where DPG doesn't expose GLFW. Each instance creates its
+    own pyglet.window.Window with a GL context that shares textures, buffers,
+    and shader programs with the master MGLContext's pyglet window. That way
+    multiple mgl_context nodes can each own a separate OS window without
+    fighting over the shared master window.
+    """
+
+    BLIT_VERTEX_SHADER = '''
+        #version 330
+        in vec2 in_pos;
+        out vec2 v_uv;
+        void main() {
+            gl_Position = vec4(in_pos, 0.0, 1.0);
+            v_uv = in_pos * 0.5 + 0.5;
+        }
+    '''
+    BLIT_FRAGMENT_SHADER = '''
+        #version 330
+        uniform sampler2D tex;
+        in vec2 v_uv;
+        out vec4 f_color;
+        void main() {
+            f_color = texture(tex, v_uv);
+        }
+    '''
+
+    def __init__(self, master):
+        """master: a fully-initialized MGLContext singleton (must have a
+        valid pyglet window already)."""
+        self._master = master
+        self._win = None
+        self._display_ctx = None
+        self._blit_prog = None
+        self._blit_vao = None
+        self._visible = False
+        self._fullscreen = False
+
+        if not _HAS_PYGLET or master._pyglet_window is None:
+            return
+
+        try:
+            # Build a NEW canvas-matched DisplayConfig each time. We can't
+            # reuse the master's config: its pixel_format is released after
+            # the first create_context call (see pyglet.gl.cocoa), so calling
+            # create_context on it again segfaults. Calling .match() on a
+            # fresh template against the master's canvas gives us a clean
+            # CocoaDisplayConfig with its own pixel_format.
+            master_pg = master._pyglet_window
+            template = pyglet.gl.Config(
+                double_buffer=True, depth_size=24,
+                major_version=3, minor_version=3)
+            matched = template.match(master_pg.canvas)
+            if not matched:
+                raise RuntimeError('no matching GL config for shared context')
+            shared_pg_ctx = matched[0].create_context(master_pg.context)
+            self._win = pyglet.window.Window(
+                width=1, height=1, visible=False, resizable=True,
+                context=shared_pg_ctx, caption='MGL Output')
+
+            # Build the blit shader + VAO on OUR context. Programs/buffers
+            # built here live in the shared group; the VAO does not, so we
+            # need our own per-window VAO.
+            self._win.switch_to()
+            self._display_ctx = moderngl.create_context()
+            self._blit_prog = self._display_ctx.program(
+                vertex_shader=self.BLIT_VERTEX_SHADER,
+                fragment_shader=self.BLIT_FRAGMENT_SHADER)
+            # Pre-set the sampler uniform once; per-frame writes can trip
+            # moderngl's first-call validation against an unbound texture.
+            self._blit_prog['tex'].value = 0
+            verts = np.array([-1, -1, 1, -1, -1, 1, 1, 1], dtype='f4')
+            vbo = self._display_ctx.buffer(verts.tobytes())
+            self._blit_vao = self._display_ctx.simple_vertex_array(
+                self._blit_prog, vbo, 'in_pos')
+        except Exception as e:
+            print(f'[MGLDisplayWindow] init failed: {e}')
+            import traceback
+            traceback.print_exc()
+            if self._win is not None:
+                try:
+                    self._win.close()
+                except Exception:
+                    pass
+                self._win = None
+        finally:
+            # Always restore master context so subsequent moderngl calls
+            # against master.ctx land where they expect.
+            if master._pyglet_window is not None:
+                try:
+                    master._pyglet_window.switch_to()
+                except Exception:
+                    pass
+
+    @property
+    def available(self):
+        return self._win is not None and self._blit_vao is not None
+
+    def show(self, width, height, title='MGL Output', fullscreen=False):
+        if not self._win:
+            return
+        try:
+            if fullscreen:
+                if not self._fullscreen:
+                    self._win.set_fullscreen(True)
+                    self._fullscreen = True
+            else:
+                if self._fullscreen:
+                    self._win.set_fullscreen(False)
+                    self._fullscreen = False
+                self._win.set_size(int(width), int(height))
+            self._win.set_caption(title if isinstance(title, str) else str(title))
+            if not self._visible:
+                self._win.set_visible(True)
+                self._visible = True
+                # Warmup flip: the default framebuffer isn't fully "complete"
+                # until the window has presented at least once. Without this,
+                # the first real blit logs a GL_INVALID_OPERATION even though
+                # the second frame renders fine. Clear+flip burns that frame
+                # cleanly at the right size.
+                if not getattr(self, '_warmed_up', False):
+                    try:
+                        self._win.switch_to()
+                        self._display_ctx.screen.use()
+                        self._display_ctx.clear(0.0, 0.0, 0.0, 1.0)
+                        self._win.flip()
+                        self._warmed_up = True
+                    except Exception as e:
+                        # Non-fatal — the next blit will work anyway.
+                        print(f'[MGLDisplayWindow] warmup blit skipped: {e}')
+                    finally:
+                        try:
+                            self._master._pyglet_window.switch_to()
+                        except Exception:
+                            pass
+        except Exception as e:
+            print(f'[MGLDisplayWindow] show error: {e}')
+
+    def hide(self):
+        if not self._win:
+            return
+        if self._visible:
+            try:
+                self._win.set_visible(False)
+            except Exception as e:
+                print(f'[MGLDisplayWindow] hide error: {e}')
+            self._visible = False
+            self._fullscreen = False
+
+    def destroy(self):
+        if self._win is None:
+            return
+        try:
+            self._win.close()
+        except Exception as e:
+            print(f'[MGLDisplayWindow] destroy error: {e}')
+        self._win = None
+        self._visible = False
+
+    def set_pos(self, x, y):
+        if self._win and self._visible:
+            try:
+                self._win.set_location(int(x), int(y))
+            except Exception:
+                pass
+
+    def get_pos(self):
+        if self._win and self._visible:
+            try:
+                return self._win.get_location()
+            except Exception:
+                return None
+        return None
+
+    def get_size(self):
+        if self._win and self._visible:
+            try:
+                return self._win.get_size()
+            except Exception:
+                return None
+        return None
+
+    def blit(self, render_target):
+        """Render render_target.texture to this window's backbuffer.
+        MSAA resolve must already be done on the master context."""
+        if not self.available or not self._visible:
+            return False
+        master_pg = self._master._pyglet_window
+        try:
+            # Flush master before switching contexts so the texture write
+            # is observable from the display context. Without this, the
+            # first blit can get GL_INVALID_OPERATION because the shared
+            # texture handle isn't fully populated yet from the display
+            # context's perspective.
+            from pyglet import gl
+            gl.glFlush()
+
+            self._win.switch_to()
+            try:
+                fb_w, fb_h = self._win.get_framebuffer_size()
+            except Exception:
+                fb_w, fb_h = self._win.get_size()
+            self._display_ctx.screen.viewport = (0, 0, int(fb_w), int(fb_h))
+            self._display_ctx.screen.use()
+            self._display_ctx.clear(0.0, 0.0, 0.0, 1.0)
+            self._display_ctx.disable(moderngl.DEPTH_TEST)
+
+            # Bind the shared scene texture by its raw GL handle — the
+            # moderngl Texture object lives in master's context, but the
+            # underlying GL texture name is valid in any context in the
+            # share group.
+            gl.glActiveTexture(gl.GL_TEXTURE0)
+            gl.glBindTexture(gl.GL_TEXTURE_2D, render_target.texture.glo)
+
+            self._blit_vao.render(moderngl.TRIANGLE_STRIP)
+            self._win.flip()
+        except Exception as e:
+            # Rate-limit: print once per session, otherwise spam the log.
+            if not getattr(self, '_blit_warned', False):
+                self._blit_warned = True
+                print(f'[MGLDisplayWindow] blit error (first occurrence only): {e}')
+            return False
+        finally:
+            # Restore master context for any subsequent moderngl ops the
+            # caller may perform (scene render, MSAA resolve, etc.).
+            if master_pg is not None:
+                try:
+                    master_pg.switch_to()
+                except Exception:
+                    pass
+        return True
 
 
 class NativeGLContextManager:
