@@ -1597,6 +1597,10 @@ class App:
                         new_size = max(20, int(self.resize_start_size[0] + delta))
                         dpg.set_item_width(rh.target_uuid, new_size)
                         dpg.set_item_height(rh.target_uuid, new_size)
+                        for extra_uuid in rh.extra_target_uuids:
+                            if dpg.does_item_exist(extra_uuid):
+                                dpg.set_item_width(extra_uuid, new_size)
+                                dpg.set_item_height(extra_uuid, new_size)
                         if rh.sync_width and dpg.does_item_exist(rh.uuid):
                             dpg.set_item_width(rh.uuid, new_size)
                         if rh.sync_height and dpg.does_item_exist(rh.uuid):
@@ -1607,6 +1611,9 @@ class App:
                         if 'x' in rh.axis:
                             new_w = max(20, int(self.resize_start_size[0] + dx))
                             dpg.set_item_width(rh.target_uuid, new_w)
+                            for extra_uuid in rh.extra_target_uuids:
+                                if dpg.does_item_exist(extra_uuid):
+                                    dpg.set_item_width(extra_uuid, new_w)
                             if rh.sync_width and dpg.does_item_exist(rh.uuid):
                                 dpg.set_item_width(rh.uuid, new_w)
                             if rh.width_option is not None:
@@ -1614,6 +1621,9 @@ class App:
                         if 'y' in rh.axis:
                             new_h = max(20, int(self.resize_start_size[1] + dy))
                             dpg.set_item_height(rh.target_uuid, new_h)
+                            for extra_uuid in rh.extra_target_uuids:
+                                if dpg.does_item_exist(extra_uuid):
+                                    dpg.set_item_height(extra_uuid, new_h)
                             if rh.sync_height and dpg.does_item_exist(rh.uuid):
                                 dpg.set_item_height(rh.uuid, new_h)
                             if rh.height_option is not None:

@@ -1661,12 +1661,29 @@ class NumpyEditNode(Node):
         if index_string == '':
             index_string = ':'
 
-        self.input = self.add_input('tensor in', triggers_execution=True)
-        self.indices_input = self.add_input('indices', widget_type='text_input', widget_width=200, default_value=index_string,
+        self.input = self.add_input('array in', triggers_execution=True)
+        self.input.name_archive.append('tensor in')
+        self.indices_input = self.add_input('indices', widget_type='text_input', widget_width=70, default_value=index_string,
                                                   callback=self.edit_section_changed)
-        self.edit_values_input = self.add_input('values', widget_type='text_input', widget_width=200, default_value=0.0,
+        self.indices_input.widget.wants_resize_handle = True
+        self.edit_values_input = self.add_input('values', widget_type='text_input', widget_width=70, default_value=0.0,
                                                   callback=self.edit_value_changed)
         self.output = self.add_output('output')
+        self.indices_width_option = self.add_option('widget width', widget_type='drag_int', default_value=70,
+                                                    callback=self.indices_width_changed)
+
+    def indices_width_changed(self):
+        w = self.indices_width_option()
+        dpg.set_item_width(self.indices_input.widget.uuid, w)
+        dpg.set_item_width(self.edit_values_input.widget.uuid, w)
+
+    def custom_create(self, from_file):
+        self.add_resize_handle(self.indices_input.widget, axis='x',
+                               width_option=self.indices_width_option,
+                               extra_targets=[self.edit_values_input.widget])
+        w = self.indices_width_option()
+        dpg.set_item_width(self.indices_input.widget.uuid, w)
+        dpg.set_item_width(self.edit_values_input.widget.uuid, w)
 
     def edit_section_changed(self):
         dim_text = any_to_string(self.indices_input())

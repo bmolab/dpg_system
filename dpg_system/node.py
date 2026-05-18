@@ -110,7 +110,7 @@ def _get_pin_active_bang_theme():
 
 class ResizeHandle:
     def __init__(self, uuid, target_uuid, axis='x', width_option=None, height_option=None,
-                 sync_width=False, sync_height=True, square=False):
+                 sync_width=False, sync_height=True, square=False, extra_target_uuids=None):
         self.uuid = uuid
         self.target_uuid = target_uuid
         self.axis = axis
@@ -119,6 +119,7 @@ class ResizeHandle:
         self.sync_width = sync_width
         self.sync_height = sync_height
         self.square = square
+        self.extra_target_uuids = list(extra_target_uuids) if extra_target_uuids else []
 
 
 class NodeOutput:
@@ -2501,7 +2502,7 @@ class Node:
             return new_output
         return None
 
-    def add_resize_handle(self, widget, axis='x', width_option=None, height_option=None):
+    def add_resize_handle(self, widget, axis='x', width_option=None, height_option=None, extra_targets=None):
         parent = widget.h_group_uuid
         if parent is None:
             return None
@@ -2514,7 +2515,9 @@ class Node:
             except Exception as e:
                 print(f"add_resize_handle: height_option failed: {e}")
         btn_uuid = dpg.add_button(parent=parent, label='', width=4, height=handle_height)
-        handle = ResizeHandle(btn_uuid, widget.uuid, axis, width_option, height_option)
+        extra_uuids = [w.uuid for w in extra_targets] if extra_targets else None
+        handle = ResizeHandle(btn_uuid, widget.uuid, axis, width_option, height_option,
+                              extra_target_uuids=extra_uuids)
         dpg.set_item_user_data(btn_uuid, handle)
         dpg.bind_item_handler_registry(btn_uuid, "resize handle handler")
         dpg.bind_item_theme(btn_uuid, _get_resize_handle_theme())
