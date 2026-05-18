@@ -428,7 +428,7 @@ class OSCQueryBrowser:
                 handlers=[self._on_service_state_change]
             )
             self._running = True
-            print("OSCQueryBrowser: Started browsing for _oscjson._tcp. services")
+            # print("OSCQueryBrowser: Started browsing for _oscjson._tcp. services")
         except Exception as e:
             print(f"OSCQueryBrowser: Failed to start: {e}")
             traceback.print_exception(e)
