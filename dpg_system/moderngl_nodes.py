@@ -263,6 +263,13 @@ class MGLContextNode(Node):
 
         self.width_option = self.add_option('width', widget_type='drag_int', default_value=self.width, callback=self.resize)
         self.height_option = self.add_option('height', widget_type='drag_int', default_value=self.height, callback=self.resize)
+        self.node_display_width_option = self.add_option('node_display_width', widget_type='drag_int',
+                                                         default_value=self.width, callback=self._on_node_display_size_changed)
+        self.node_display_height_option = self.add_option('node_display_height', widget_type='drag_int',
+                                                          default_value=self.height, callback=self._on_node_display_size_changed)
+        self.match_texture_to_window_option = self.add_option('match_texture_to_window', widget_type='checkbox',
+                                                              default_value=False)
+        self.node_resize_handle = None
         self.display_mode_option = self.add_option('display_mode', widget_type='combo', default_value='node')
         self.display_mode_option.widget.combo_items = ['off', 'node', 'window', 'fullscreen']
         
@@ -341,6 +348,68 @@ class MGLContextNode(Node):
         self.width = max(1, self.width_option())
         self.height = max(1, self.height_option())
 
+    def _on_node_display_size_changed(self):
+        w = max(1, self.node_display_width_option())
+        h = max(1, self.node_display_height_option())
+        if self.image_item and dpg.does_item_exist(self.image_item):
+            dpg.set_item_width(self.image_item, w)
+            dpg.set_item_height(self.image_item, h)
+        rh = self.node_resize_handle
+        if rh is not None and dpg.does_item_exist(rh.uuid):
+            dpg.set_item_width(rh.uuid, w)
+
+    def _on_node_resize_drag(self, new_w, new_h):
+        # Default drag updates display size only (via width_option=node_display_*).
+        # Shift held also resizes the render texture for crisp high-res output.
+        if Node.app.shift_down():
+            self.width_option.set(int(new_w))
+            self.height_option.set(int(new_h))
+            self.resize()
+
+    def _install_node_resize_handle(self, bar_width):
+        from dpg_system.node import ResizeHandle, _get_resize_handle_theme
+        btn = dpg.add_button(parent=self.image_attribute, label='', width=int(bar_width), height=4)
+        handle = ResizeHandle(
+            btn, self.image_item, axis='xy',
+            width_option=self.node_display_width_option,
+            height_option=self.node_display_height_option,
+            sync_width=True, sync_height=False,
+            on_resize=self._on_node_resize_drag,
+        )
+        dpg.set_item_user_data(btn, handle)
+        dpg.bind_item_handler_registry(btn, "resize handle handler")
+        dpg.bind_item_theme(btn, _get_resize_handle_theme())
+        self.node_resize_handle = handle
+
+    def _sync_window_size_from_native(self, get_size_fn):
+        """If the native window size drifts between frames and Shift is held,
+        bump width_option/height_option so the render texture matches.
+
+        Drift-based (not option-based) on purpose: comparing actual to option
+        triggers a feedback runaway on Retina macOS where pyglet's get_size()
+        and set_size() use different pixel units, so any sync-back would push
+        the option larger, which then re-enters show_window and grows again."""
+        try:
+            actual_size = get_size_fn()
+        except Exception:
+            return
+        if actual_size is None:
+            return
+        aw, ah = int(actual_size[0]), int(actual_size[1])
+        if aw <= 0 or ah <= 0 or aw > 16384 or ah > 16384:
+            return
+        last = getattr(self, '_last_actual_win_size', None)
+        self._last_actual_win_size = (aw, ah)
+        if last is None or (aw == last[0] and ah == last[1]):
+            return
+        if self.match_texture_to_window_option():
+            cur_w = self.width_option()
+            cur_h = self.height_option()
+            if aw != cur_w or ah != cur_h:
+                self.width_option.set(aw)
+                self.height_option.set(ah)
+                self.resize()
+
     def update_display(self, mode):
         # ... (Node display logic omitted for brevity if unchanged, but I need to include context to replace correctly)
         # Handle Node Display
@@ -360,20 +429,45 @@ class MGLContextNode(Node):
             if recreate:
                 if self.image_item and dpg.does_item_exist(self.image_item):
                     dpg.delete_item(self.image_item)
-                
+                self.image_item = None
+
                 # We need a parent. Use static attribute.
                 if not hasattr(self, 'image_attribute') or self.image_attribute is None:
                      self.image_attribute = dpg.add_node_attribute(attribute_type=dpg.mvNode_Attr_Static, parent=self.uuid)
-                
+
                 # Check if attribute exists
                 if not dpg.does_item_exist(self.image_attribute):
                     self.image_attribute = dpg.add_node_attribute(attribute_type=dpg.mvNode_Attr_Static, parent=self.uuid)
 
-                self.image_item = dpg.add_image(self.texture_tag, parent=self.image_attribute)
+                disp_w = max(1, self.node_display_width_option())
+                disp_h = max(1, self.node_display_height_option())
+
+                # Preserve the resize bar across texture swaps: insert the
+                # new image before it and re-point its ResizeHandle target.
+                # Otherwise an in-flight Shift+drag (which references the bar
+                # and the old image UUIDs) goes stale the moment the texture
+                # is reallocated.
+                rh = self.node_resize_handle
+                if rh is not None and dpg.does_item_exist(rh.uuid):
+                    self.image_item = dpg.add_image(
+                        self.texture_tag, parent=self.image_attribute,
+                        width=disp_w, height=disp_h, before=rh.uuid,
+                    )
+                    rh.target_uuid = self.image_item
+                else:
+                    self.node_resize_handle = None
+                    self.image_item = dpg.add_image(
+                        self.texture_tag, parent=self.image_attribute,
+                        width=disp_w, height=disp_h,
+                    )
+                    self._install_node_resize_handle(disp_w)
         else:
             if self.image_item:
                 dpg.delete_item(self.image_item)
                 self.image_item = None
+            if self.node_resize_handle is not None and dpg.does_item_exist(self.node_resize_handle.uuid):
+                dpg.delete_item(self.node_resize_handle.uuid)
+            self.node_resize_handle = None
             if hasattr(self, 'image_attribute') and self.image_attribute:
                  dpg.delete_item(self.image_attribute)
                  self.image_attribute = None
@@ -476,6 +570,20 @@ class MGLContextNode(Node):
                              if dpg.get_item_width(child) != win_w or dpg.get_item_height(child) != win_h:
                                  dpg.configure_item(child, width=win_w, height=win_h)
 
+                 # If 'match_texture_to_window' is on, any window resize also
+                 # bumps the render texture so the texture follows. We can't
+                 # rely on a Shift modifier here because the OS swallows
+                 # modifier keys during native window resize, so a per-node
+                 # toggle is the only signal we can trust.
+                 last = getattr(self, '_last_dpg_win_size', None)
+                 self._last_dpg_win_size = (win_w, win_h)
+                 if last is not None and (win_w != last[0] or win_h != last[1]):
+                     if self.match_texture_to_window_option():
+                         if win_w != self.width_option() or win_h != self.height_option():
+                             self.width_option.set(int(win_w))
+                             self.height_option.set(int(win_h))
+                             self.resize()
+
         # Update FBO size/Check
         try:
             samples = int(self.samples_option())
@@ -560,6 +668,7 @@ class MGLContextNode(Node):
             # --- Display Path ---
             if use_direct:
                 # === DIRECT-TO-SCREEN: blit FBO to per-node native window (zero readback) ===
+                self._was_use_direct = True
                 import sys as _sys
 
                 if _sys.platform.startswith('linux'):
@@ -585,6 +694,10 @@ class MGLContextNode(Node):
                         self._native_win.show(win_w, win_h,
                                               title=f'MGL Output ({self.label})',
                                               fullscreen=(mode == 'fullscreen'))
+
+                        # Size sync (non-fullscreen): user-drag of native window
+                        if mode != 'fullscreen':
+                            self._sync_window_size_from_native(self._native_win.get_size)
 
                         # Position sync (non-fullscreen)
                         if mode != 'fullscreen':
@@ -626,6 +739,7 @@ class MGLContextNode(Node):
                         self.context.show_window(win_w, win_h, fullscreen=True)
                     else:
                         self.context.show_window(win_w, win_h)
+                        self._sync_window_size_from_native(self.context.get_window_size)
                         actual_pos = self.context.get_window_pos()
                         if actual_pos is not None:
                             widget_pos = self.win_pos_option()
@@ -673,9 +787,16 @@ class MGLContextNode(Node):
             else:
                 # === READBACK PATH: PBO → CPU → DPG texture ===
 
-                # Hide this node's native window if switching away from direct mode
-                if self._native_win:
-                    self._native_win.hide()
+                # Hide native windows ONLY on the transition from direct mode.
+                # The shared pyglet window must not be hidden every frame —
+                # another mgl_context node may still need it, and every show()
+                # makes the pyglet window steal focus from the editor.
+                if getattr(self, '_was_use_direct', False):
+                    if self._native_win:
+                        self._native_win.hide()
+                    if not _sys.platform.startswith('linux'):
+                        self.context.hide_window()
+                self._was_use_direct = False
 
                 # Resolve MSAA if needed
                 rt = self.render_target

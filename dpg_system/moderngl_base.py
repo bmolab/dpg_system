@@ -250,6 +250,18 @@ class MGLNativeWindow:
         gfw.glfwGetWindowPos(self._win, ctypes.byref(x), ctypes.byref(y))
         return (x.value, y.value)
 
+    def get_size(self):
+        if not self._win or not self._visible:
+            return None
+        gfw = _glfw()
+        if gfw is None:
+            return None
+        w, h = ctypes.c_int(0), ctypes.c_int(0)
+        gfw.glfwGetWindowSize.argtypes = [
+            ctypes.c_void_p, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+        gfw.glfwGetWindowSize(self._win, ctypes.byref(w), ctypes.byref(h))
+        return (w.value, h.value)
+
     def blit(self, render_target):
         """Blit render_target.texture to this window.
         Must be called from the main thread while DPG's context is current.
@@ -822,7 +834,7 @@ class MGLContext:
                 double_buffer=True, depth_size=24,
                 major_version=3, minor_version=3)
             self._pyglet_window = pyglet.window.Window(
-                width=1, height=1, visible=False, config=config,
+                width=1, height=1, visible=False, resizable=True, config=config,
                 caption='MGL Output')
             self.ctx = moderngl.create_context()  # wraps pyglet's active context
             self.ctx.enable(moderngl.BLEND)
@@ -830,7 +842,12 @@ class MGLContext:
             self.ctx.blend_func = (moderngl.ONE, moderngl.ONE_MINUS_SRC_ALPHA)
             self._gl_initialized = True
         except Exception as e:
-            print(f"Failed to create Pyglet/moderngl context: {e}")
+            # Retry next frame — pyglet's signal-handler setup can fail when first
+            # touched from a non-main thread, then succeed on a subsequent call.
+            # Print only the first error per session to avoid spamming the log.
+            if not getattr(self, '_pyglet_init_warned', False):
+                self._pyglet_init_warned = True
+                print(f"Failed to create Pyglet/moderngl context: {e} (will keep retrying silently)")
 
     def _ensure_initialized(self):
         """On Linux: lazily wrap DPG's GLFW context with moderngl.
@@ -1171,6 +1188,23 @@ class MGLContext:
             return nw.get_pos() if nw else None
         if self._pyglet_window and getattr(self, '_win_visible', False):
             return self._pyglet_window.get_location()
+        return None
+
+    def get_window_size(self):
+        """Get the actual display window size from the OS, or None if not shown."""
+        if sys.platform.startswith('linux'):
+            nw = getattr(self, '_native_win', None)
+            if nw and getattr(nw, '_visible', False):
+                try:
+                    return nw.get_size()
+                except AttributeError:
+                    return None
+            return None
+        if self._pyglet_window and getattr(self, '_win_visible', False):
+            try:
+                return self._pyglet_window.get_size()
+            except Exception:
+                return (self._pyglet_window.width, self._pyglet_window.height)
         return None
 
     @property
