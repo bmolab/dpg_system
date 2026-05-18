@@ -17,6 +17,7 @@ import platform as platform_
 import traceback
 import threading
 import _thread
+import sys
 from pathlib import Path
 
 import dpg_system.basic_nodes as basic_nodes
@@ -109,13 +110,30 @@ if 'gl_nodes' in to_be_imported:
 else:
     opengl_active = False
 
+# Stream successful imports onto a single rewriting line; errors clear that
+# line and print normally so they persist in scrollback. PyCharm's Run console
+# isn't a TTY but does honor \r, so detect it explicitly. Use space-padding to
+# clear (works without ANSI support).
+_status_stream = sys.stdout.isatty() or os.environ.get('PYCHARM_HOSTED') == '1'
+_status_width = 0
 for import_name in to_be_imported:
     try:
         globals()[import_name] = import_module('dpg_system.' + import_name)
         bare_import_name = import_name.split('_')[0]
-        print('Imported ' + bare_import_name)
+        if _status_stream:
+            msg = 'Imported ' + bare_import_name
+            pad = ' ' * max(0, _status_width - len(msg))
+            sys.stdout.write('\r' + msg + pad)
+            sys.stdout.flush()
+            _status_width = len(msg)
+        else:
+            print('Imported ' + bare_import_name)
         imported.append(import_name)
     except ModuleNotFoundError as e:
+        if _status_width:
+            sys.stdout.write('\r' + ' ' * _status_width + '\r')
+            sys.stdout.flush()
+            _status_width = 0
         # If the missing module IS the one we tried to load, say so plainly.
         # Otherwise the failure is a transitive dependency — name it explicitly
         # so the user knows what to install/fix instead of chasing a phantom.
@@ -123,6 +141,9 @@ for import_name in to_be_imported:
             print('No module named ' + import_name)
         else:
             print(f'Skipped {import_name}: missing dependency {e.name!r}')
+if _status_width:
+    sys.stdout.write('\n')
+    sys.stdout.flush()
 
 def widget_active(source, data, user_data):
     pass
