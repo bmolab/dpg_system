@@ -110,40 +110,46 @@ if 'gl_nodes' in to_be_imported:
 else:
     opengl_active = False
 
-# Stream successful imports onto a single rewriting line; errors clear that
-# line and print normally so they persist in scrollback. PyCharm's Run console
-# isn't a TTY but does honor \r, so detect it explicitly. Use space-padding to
-# clear (works without ANSI support).
-_status_stream = sys.stdout.isatty() or os.environ.get('PYCHARM_HOSTED') == '1'
-_status_width = 0
+# Stream successful imports onto a growing line, separated by ' | ' as each
+# loads, wrapping to a new indented line past _wrap_at chars. Errors are
+# collected and printed once the loop finishes so they don't interleave with
+# the wrapping list.
+_line_started = False
+_line_width = 0
+_indent = len('Imported: ')
+_wrap_at = 100
+_skipped = []
 for import_name in to_be_imported:
     try:
         globals()[import_name] = import_module('dpg_system.' + import_name)
         bare_import_name = import_name.split('_')[0]
-        if _status_stream:
-            msg = 'Imported ' + bare_import_name
-            pad = ' ' * max(0, _status_width - len(msg))
-            sys.stdout.write('\r' + msg + pad)
-            sys.stdout.flush()
-            _status_width = len(msg)
+        if not _line_started:
+            sys.stdout.write('Imported: ' + bare_import_name)
+            _line_width = _indent + len(bare_import_name)
+            _line_started = True
         else:
-            print('Imported ' + bare_import_name)
+            sep = ' | '
+            if _line_width + len(sep) + len(bare_import_name) > _wrap_at:
+                sys.stdout.write('\n' + ' ' * _indent + bare_import_name)
+                _line_width = _indent + len(bare_import_name)
+            else:
+                sys.stdout.write(sep + bare_import_name)
+                _line_width += len(sep) + len(bare_import_name)
+        sys.stdout.flush()
         imported.append(import_name)
     except ModuleNotFoundError as e:
-        if _status_width:
-            sys.stdout.write('\r' + ' ' * _status_width + '\r')
-            sys.stdout.flush()
-            _status_width = 0
         # If the missing module IS the one we tried to load, say so plainly.
         # Otherwise the failure is a transitive dependency — name it explicitly
         # so the user knows what to install/fix instead of chasing a phantom.
         if e.name in (import_name, 'dpg_system.' + import_name):
-            print('No module named ' + import_name)
+            _skipped.append('No module named ' + import_name)
         else:
-            print(f'Skipped {import_name}: missing dependency {e.name!r}')
-if _status_width:
+            _skipped.append(f'Skipped {import_name}: missing dependency {e.name!r}')
+if _line_started:
     sys.stdout.write('\n')
     sys.stdout.flush()
+for msg in _skipped:
+    print(msg)
 
 def widget_active(source, data, user_data):
     pass
