@@ -77,7 +77,8 @@ optional_import = [
     'movie_nodes',
     'whisper_nodes',
     'context_tracker_nodes',
-    'mgl_shaders_nodes'
+    'mgl_shaders_nodes',
+    'noise_review_node',
 ]
 
 imported = []
