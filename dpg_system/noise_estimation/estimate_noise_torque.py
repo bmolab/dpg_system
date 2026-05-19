@@ -307,6 +307,25 @@ CORRUPTION_MERGE_GAP_S = 1.0          # merge zones separated by less than this
 # Leg/pelvis/spine activity during dynamic movement is NOT corruption.
 CORRUPTION_JOINTS = {16, 17, 18, 19, 20, 21}  # L/R shoulder, elbow, wrist
 
+# Single-frame spike detection: a dropped/corrupted frame surrounded on both
+# sides by much lower velocity.  The neighbour ratio is the principled
+# discriminant — it normalises for local movement speed, so a dropped frame
+# during fast motion and one during slow motion produce similar ratios.
+# The velocity floor is only a guard against near-stillness numerical noise
+# inflating the ratio via a tiny denominator; it is not a signal in itself.
+SPIKE_NEIGHBOR_RATIO = 3.0   # vel[t] / max(vel[t-1], vel[t+1]) threshold
+SPIKE_VEL_FLOOR = 2.0        # rad/s — guard against near-stillness noise only
+
+@dataclass
+class SpikeFrame:
+    """A single dropped/corrupted frame identified by the neighbour-ratio test."""
+    frame: int
+    joint_idx: int
+    joint_name: str
+    velocity: float        # rad/s at the spike frame
+    neighbor_ratio: float  # vel[t] / max(vel[t-1], vel[t+1])
+
+
 @dataclass
 class CorruptionZone:
     """A sustained period of corrupted data on specific joints."""
@@ -373,6 +392,7 @@ class TorqueFileReport:
     glitch_clusters: List[Tuple[int, int]] = field(default_factory=list)
     clean_segments: List[CleanSegment] = field(default_factory=list)
     stream_breaks: List[StreamBreak] = field(default_factory=list)
+    spike_frames: List[SpikeFrame] = field(default_factory=list)
     surgery: Optional[SurgeryInfo] = None
     cadence: Optional[CadenceInfo] = None
     motion_profile: Optional['MotionProfile'] = None
@@ -754,6 +774,12 @@ def _build_classification(report):
         elif s.recommendation == 'discard':
             parts.append(f"⚡ {s.n_breaks} break(s) → discard")
     
+    # Single-frame spikes
+    if report.spike_frames:
+        n_sf = len({s.frame for s in report.spike_frames})
+        joints = ', '.join(sorted({s.joint_name for s in report.spike_frames}))
+        parts.append(f"⚡ {n_sf} spike frame(s) ({joints})")
+
     # Cadence
     if report.cadence and report.cadence.detected:
         parts.append(f"🔄 {report.cadence.period}-frame cadence")
@@ -829,6 +855,8 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
         g = d['gender']
         if hasattr(g, 'item'):
             g = g.item()
+        if isinstance(g, bytes):
+            g = g.decode('utf-8')
         gender = str(g)
         if gender not in ('male', 'female', 'neutral'):
             gender = 'neutral'
@@ -846,6 +874,13 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
     if verbose and stream_breaks:
         print(f"  Detected {len(stream_breaks)} stream break(s)")
     
+    # ── Detect single-frame spikes (dropped/corrupted frames) ────────────
+    spike_frames = _detect_spike_frames(poses, fps)
+    if verbose and spike_frames:
+        unique_frames = len({s.frame for s in spike_frames})
+        print(f"  Detected {unique_frames} spike frame(s) "
+              f"({', '.join(sorted({s.joint_name for s in spike_frames}))})")
+
     # ── Detect corruption zones (raw pose level, before torque filtering)
     # Done early so corruption frames can be excluded from torque scoring.
     # The torque pipeline's SG filtering absorbs arm corruption, making it
@@ -1330,12 +1365,19 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
     score_corruption = corruption_frac * 50  # 50% corruption → +25 points
     ns += score_corruption
     ns = min(100.0, ns)
-    
+
+    # Component 7: Single-frame spikes — each spike is a real dropped frame.
+    # Small per-spike penalty; they are structural artifacts, not noise.
+    n_spike_frames = len({s.frame for s in spike_frames})
+    score_spikes = min(n_spike_frames * 3, 15)
+    ns += score_spikes
+    ns = min(100.0, ns)
+
     # Corruption fraction also bumps classification.
     # >10% arm corruption means the file is structurally compromised.
     if corruption_frac > 0.10:
         cls = 'problematic'
-    
+
     report = TorqueFileReport(
         filename=os.path.basename(filepath),
         n_frames=T, fps=fps,
@@ -1355,6 +1397,7 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
         glitch_clusters=clusters,
         clean_segments=clean,
         stream_breaks=stream_breaks,
+        spike_frames=spike_frames,
         surgery=surgery,
         cadence=cadence,
         motion_profile=motion_profile,
@@ -1371,6 +1414,50 @@ def analyze_file(filepath, total_mass=75.0, gender_override=None,
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────
+
+def _detect_spike_frames(poses, fps):
+    """Detect single dropped/corrupted frames via the neighbour-ratio test.
+
+    A real sudden movement has at least one high-velocity neighbour (build-up
+    or follow-through).  A dropped frame is flanked by low velocity on BOTH
+    sides, so vel[t] / max(vel[t-1], vel[t+1]) is large.
+
+    Returns a list of SpikeFrame (one entry per joint per spike frame).
+    """
+    T = poses.shape[0]
+    if T < 3:
+        return []
+
+    nj = poses.shape[1] // 3 if poses.ndim == 2 else poses.shape[1]
+    nj = min(nj, N_JOINTS)
+    poses_3d = poses.reshape(T, -1, 3)[:, :nj, :]
+    vel = np.linalg.norm(np.diff(poses_3d, axis=0), axis=2) * fps  # (T-1, J)
+
+    spikes = []
+    for j in range(nj):
+        v = vel[:, j]
+        # Skip first and last velocity frames to always have two neighbours
+        for t in range(1, len(v) - 1):
+            if v[t] < SPIKE_VEL_FLOOR:
+                continue
+            neighbor_max = max(v[t - 1], v[t + 1])
+            if neighbor_max < 1e-6:
+                continue
+            ratio = v[t] / neighbor_max
+            if ratio >= SPIKE_NEIGHBOR_RATIO:
+                name = SMPL_JOINT_NAMES[j] if j < len(SMPL_JOINT_NAMES) else f'j{j}'
+                spikes.append(SpikeFrame(
+                    frame=t,
+                    joint_idx=j,
+                    joint_name=name,
+                    velocity=round(float(v[t]), 1),
+                    neighbor_ratio=round(float(ratio), 2),
+                ))
+
+    # Sort by frame then joint for stable output
+    spikes.sort(key=lambda s: (s.frame, s.joint_idx))
+    return spikes
+
 
 def _detect_corruption_zones(poses, fps):
     """Detect sustained joint-level corruption (marker dropout, capture failure).
@@ -1396,9 +1483,10 @@ def _detect_corruption_zones(poses, fps):
     # Per-joint angular velocity magnitude (rad/s)
     vel = np.linalg.norm(np.diff(poses_3d, axis=0), axis=2) * fps  # (T-1, J)
     
-    # Window sizes
+    # Window sizes.  Clamp w_long to half the file so that on short clips the
+    # baseline reflects a genuine local neighbourhood rather than the whole file.
     w_short = max(3, int(CORRUPTION_SHORT_WINDOW_S * fps))
-    w_long = max(w_short * 2, int(CORRUPTION_LONG_WINDOW_S * fps))
+    w_long = max(w_short * 2, min(int(CORRUPTION_LONG_WINDOW_S * fps), (T - 1) // 2))
     merge_gap = int(CORRUPTION_MERGE_GAP_S * fps)
     
     short_kernel = np.ones(w_short) / w_short
@@ -1744,6 +1832,14 @@ def print_report(r):
     elif r.stream_breaks:
         # Fallback: show raw breaks if no surgery info
         print(f"\n  ⚡ Stream breaks: {len(r.stream_breaks)} detected")
+
+    # ── Single-frame spikes ────────────────────────────────────────────
+    if r.spike_frames:
+        n_sf = len({s.frame for s in r.spike_frames})
+        print(f"\n  ⚡ Spike frames: {n_sf} dropped/corrupted frame(s)")
+        print(f"    {'Frame':>7s}  {'Joint':<16s}  {'Vel (rad/s)':>11s}  {'NeighbourRatio':>14s}")
+        for s in r.spike_frames:
+            print(f"    {s.frame:7d}  {s.joint_name:<16s}  {s.velocity:11.1f}  {s.neighbor_ratio:14.1f}×")
     
     # ── Cadence ────────────────────────────────────────────────────────
     if r.cadence and r.cadence.detected:
@@ -1848,7 +1944,9 @@ def main():
     p.add_argument('--dir', help='Directory of NPZ files to analyse')
     p.add_argument('--recursive', action='store_true',
                    help='Walk directory tree recursively (for AMASS)')
-    p.add_argument('--json', help='Save results to JSON file')
+    p.add_argument('--json', help='Save results to JSON file. When --dir + --recursive '
+                   'are used, treat this as an output directory and write one JSON per '
+                   'top-level subdirectory.')
     p.add_argument('--checkpoint', help='Checkpoint file for resume (JSON). '
                    'Results are written incrementally after each file. '
                    'On restart, already-processed files are skipped.')
@@ -1862,92 +1960,206 @@ def main():
                    help='Suppress per-file console reports (summary only)')
     
     args = p.parse_args()
-    
-    files = list(args.files or [])
-    if args.dir:
-        if args.recursive:
-            for root, _, f_names in os.walk(args.dir):
-                for f in sorted(f_names):
-                    if f.endswith('.npz'):
-                        files.append(os.path.join(root, f))
-        else:
+
+    reports = []   # all reports processed this session (for end-of-run summary)
+    n_skipped = 0
+    n_errors = 0
+
+    if args.dir and args.recursive:
+        # ── Recursive mode: process subdir-by-subdir ──────────────────
+        abs_dir = os.path.abspath(args.dir)
+
+        # Group files by top-level subdirectory
+        subdir_files = {}
+        for root, _, f_names in os.walk(args.dir):
+            for f in sorted(f_names):
+                if f.endswith('.npz'):
+                    fp = os.path.join(root, f)
+                    rel = os.path.relpath(fp, abs_dir)
+                    top = rel.split(os.sep)[0] if os.sep in rel else '__root__'
+                    subdir_files.setdefault(top, []).append(fp)
+
+        if not subdir_files:
+            p.print_help()
+            return
+
+        n_total = sum(len(v) for v in subdir_files.values())
+
+        # Load checkpoint — new format: {"completed_dirs": [...], "files": {...}}
+        # Falls back to migrating the old list format.
+        completed_dirs = set()
+        ckpt_files = {}   # abs_path -> report_dict for the current in-progress dir
+        if args.checkpoint and os.path.exists(args.checkpoint):
+            try:
+                with open(args.checkpoint, 'r') as fh:
+                    ckpt = json.load(fh)
+                if isinstance(ckpt, dict):
+                    completed_dirs = set(ckpt.get('completed_dirs', []))
+                    ckpt_files = ckpt.get('files', {})
+                else:
+                    for entry in ckpt:
+                        ckpt_files[entry.get('filepath', '')] = entry
+                print(f"  Resuming: {len(completed_dirs)} dirs complete, "
+                      f"{len(ckpt_files)} files cached for current dir")
+            except Exception as e:
+                print(f"  ⚠️  Could not load checkpoint: {e}")
+
+        if args.json:
+            os.makedirs(args.json, exist_ok=True)
+
+        file_idx = 0
+        for subdir_name in sorted(subdir_files.keys()):
+            subdir_fp_list = subdir_files[subdir_name]
+
+            if subdir_name in completed_dirs:
+                n_skipped += len(subdir_fp_list)
+                file_idx += len(subdir_fp_list)
+                print(f"\n  ✓ {subdir_name}  (already complete, skipping)")
+                continue
+
+            print(f"\n{'─' * 60}")
+            print(f"  Directory: {subdir_name}  ({len(subdir_fp_list)} files)")
+            print(f"{'─' * 60}")
+
+            subdir_reports = []
+            for filepath in subdir_fp_list:
+                abs_path = os.path.abspath(filepath)
+                file_idx += 1
+
+                if abs_path in ckpt_files:
+                    subdir_reports.append(ckpt_files[abs_path])
+                    n_skipped += 1
+                    print(f"  [{file_idx}/{n_total}] {os.path.basename(filepath)}  (resumed)")
+                    continue
+
+                if not os.path.exists(filepath):
+                    print(f"  ⚠️  Not found: {filepath}")
+                    continue
+
+                print(f"\n  [{file_idx}/{n_total}] {os.path.basename(filepath)}")
+                try:
+                    report = analyze_file(
+                        filepath,
+                        total_mass=args.mass,
+                        gender_override=args.gender,
+                        smooth_input_window=args.smooth_window,
+                        verbose=not args.quiet,
+                    )
+                    report_dict = _to_jsonable(asdict(report))
+                    report_dict['filepath'] = abs_path
+                    report_dict['glitch_frames'] = report_dict['glitch_frames'][:500]
+                    subdir_reports.append(report_dict)
+
+                    if args.checkpoint:
+                        ckpt_files[abs_path] = report_dict
+                        _write_checkpoint(args.checkpoint, {
+                            'completed_dirs': sorted(completed_dirs),
+                            'files': ckpt_files,
+                        })
+                except Exception as e:
+                    import traceback
+                    print(f"  ❌ Error: {filepath}: {e}")
+                    traceback.print_exc()
+                    n_errors += 1
+
+            # Subdir complete — write its JSON, then slim the checkpoint
+            if args.json and subdir_reports:
+                sorted_group = sorted(subdir_reports, key=lambda x: -x.get('noise_score', 0))
+                out_path = os.path.join(args.json, subdir_name + '.json')
+                with open(out_path, 'w') as fh:
+                    json.dump(sorted_group, fh, indent=2)
+                print(f"\n  Saved {len(sorted_group)} reports → {out_path}")
+
+            completed_dirs.add(subdir_name)
+            for fp in subdir_fp_list:
+                ckpt_files.pop(os.path.abspath(fp), None)
+            if args.checkpoint:
+                _write_checkpoint(args.checkpoint, {
+                    'completed_dirs': sorted(completed_dirs),
+                    'files': ckpt_files,
+                })
+
+            reports.extend(subdir_reports)
+
+    else:
+        # ── Flat mode: positional files and/or a single directory ─────
+        files = list(args.files or [])
+        if args.dir:
             files += [
                 os.path.join(args.dir, f)
                 for f in sorted(os.listdir(args.dir))
                 if f.endswith('.npz')
             ]
-    
-    if not files:
-        p.print_help()
-        return
-    
-    # ── Checkpoint / resume ───────────────────────────────────────────
-    completed = {}  # filepath -> report dict
-    if args.checkpoint and os.path.exists(args.checkpoint):
-        try:
-            with open(args.checkpoint, 'r') as f:
-                existing = json.load(f)
-            for entry in existing:
-                fp = entry.get('filepath', entry.get('filename', ''))
-                completed[fp] = entry
-            print(f"  Resuming: {len(completed)} files already processed, "
-                  f"{len(files) - len(completed)} remaining")
-        except Exception as e:
-            print(f"  ⚠️  Could not load checkpoint: {e}")
-    
-    reports = []
-    # Include previously completed results
-    for entry in completed.values():
-        # Reconstruct a minimal report for summary
-        reports.append(entry)
-    
-    n_total = len(files)
-    n_skipped = 0
-    n_errors = 0
-    
-    for i, filepath in enumerate(files):
-        abs_path = os.path.abspath(filepath)
-        if abs_path in completed:
-            n_skipped += 1
-            continue
-        
-        if not os.path.exists(filepath):
-            print(f"  ⚠️  Not found: {filepath}")
-            continue
-        
-        print(f"\n  [{i+1}/{n_total}] {os.path.basename(filepath)}")
-        try:
-            report = analyze_file(
-                filepath,
-                total_mass=args.mass,
-                gender_override=args.gender,
-                smooth_input_window=args.smooth_window,
-                verbose=not args.quiet,
-            )
-            report_dict = _to_jsonable(asdict(report))
-            report_dict['filepath'] = abs_path
-            # Limit glitch_frames for checkpoint size
-            report_dict['glitch_frames'] = report_dict['glitch_frames'][:500]
-            reports.append(report_dict)
-            
-            # Incremental checkpoint write
-            if args.checkpoint:
-                completed[abs_path] = report_dict
-                _write_checkpoint(args.checkpoint, list(completed.values()))
-                
-        except Exception as e:
-            import traceback
-            print(f"  ❌ Error: {filepath}: {e}")
-            traceback.print_exc()
-            n_errors += 1
-    
+
+        if not files:
+            p.print_help()
+            return
+
+        # Load checkpoint (list format; also accepts new dict format)
+        completed = {}  # abs_path -> report dict
+        if args.checkpoint and os.path.exists(args.checkpoint):
+            try:
+                with open(args.checkpoint, 'r') as fh:
+                    existing = json.load(fh)
+                entries = existing if isinstance(existing, list) else list(existing.get('files', {}).values())
+                for entry in entries:
+                    fp = entry.get('filepath', entry.get('filename', ''))
+                    completed[fp] = entry
+                print(f"  Resuming: {len(completed)} files already processed, "
+                      f"{len(files) - len(completed)} remaining")
+            except Exception as e:
+                print(f"  ⚠️  Could not load checkpoint: {e}")
+
+        reports = list(completed.values())
+        n_total = len(files)
+
+        for i, filepath in enumerate(files):
+            abs_path = os.path.abspath(filepath)
+            if abs_path in completed:
+                n_skipped += 1
+                continue
+
+            if not os.path.exists(filepath):
+                print(f"  ⚠️  Not found: {filepath}")
+                continue
+
+            print(f"\n  [{i+1}/{n_total}] {os.path.basename(filepath)}")
+            try:
+                report = analyze_file(
+                    filepath,
+                    total_mass=args.mass,
+                    gender_override=args.gender,
+                    smooth_input_window=args.smooth_window,
+                    verbose=not args.quiet,
+                )
+                report_dict = _to_jsonable(asdict(report))
+                report_dict['filepath'] = abs_path
+                report_dict['glitch_frames'] = report_dict['glitch_frames'][:500]
+                reports.append(report_dict)
+
+                if args.checkpoint:
+                    completed[abs_path] = report_dict
+                    _write_checkpoint(args.checkpoint, list(completed.values()))
+
+            except Exception as e:
+                import traceback
+                print(f"  ❌ Error: {filepath}: {e}")
+                traceback.print_exc()
+                n_errors += 1
+
+        if args.json:
+            sorted_reports = sorted(reports, key=lambda x: -x.get('noise_score', 0))
+            with open(args.json, 'w') as fh:
+                json.dump(sorted_reports, fh, indent=2)
+            print(f"\n  Saved {len(sorted_reports)} reports to {args.json}")
+
     # ── Multi-file summary ────────────────────────────────────────────
     if len(reports) > 1:
         print(f"\n{'═' * 72}")
         print(f"  SUMMARY ({len(reports)} files, {n_skipped} resumed, {n_errors} errors)")
         print(f"{'═' * 72}")
         print(f"  {'File':<40s}  {'Score':>7s}  {'Class':>12s}  {'Glitches':>8s}  {'Clean%':>6s}  {'Surgery':>10s}")
-        
+
         sorted_reports = sorted(reports, key=lambda x: -x.get('noise_score', 0))
         for r in sorted_reports:
             cls = r.get('classification', '?')
@@ -1959,19 +2171,11 @@ def main():
             fname = r.get('filename', '?')
             ns = r.get('noise_score', 0)
             ng = r.get('n_glitch_frames', 0)
-            # Surgery recommendation
             surg = r.get('surgery', None) or {}
             surg_rec = surg.get('recommendation', 'none') if surg else 'none'
             surg_str = {'none': '—', 'split': '✂️ split', 'excise': '🔪 excise',
                         'split+excise': '✂️🔪', 'discard': '⚡discard'}.get(surg_rec, '—')
             print(f"  {fname:<40s}  {ns:7.1f}  {e} {cls:<10s}  {ng:>8d}  {cp:5.1f}%  {surg_str:>10s}")
-    
-    # ── JSON output ───────────────────────────────────────────────────
-    if args.json:
-        sorted_reports = sorted(reports, key=lambda x: -x.get('noise_score', 0))
-        with open(args.json, 'w') as f:
-            json.dump(sorted_reports, f, indent=2)
-        print(f"\n  Saved {len(sorted_reports)} reports to {args.json}")
 
 
 def _write_checkpoint(path, data):
