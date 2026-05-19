@@ -334,11 +334,11 @@ class SMPLProcessingOptions:
     enable_one_euro_filter: bool = False
     acc_smooth_window: int = 0   # 0=off, 3/5/7 = Savitzky-Golay derivative window
     torque_smooth_window: int = 0  # 0=off, 3/5/7 = SG output smoothing window
-    adaptive_effort_smooth: bool = True  # magnitude-adaptive EMA: heavy at low torque, none at high
-    adaptive_effort_lo: float = 10.0     # Nm: below this, maximum smoothing (alpha_min)
-    adaptive_effort_hi: float = 40.0     # Nm: above this, minimum smoothing (alpha_max)
-    adaptive_effort_alpha_min: float = 0.05  # EMA alpha at low magnitudes (~20-frame window)
-    adaptive_effort_alpha_max: float = 0.5   # EMA alpha at high magnitudes (~11 Hz cutoff at 100fps)
+    adaptive_effort_smooth: bool = True  # effort-adaptive EMA: heavy at low effort, light at high
+    adaptive_effort_lo: float = 0.1      # effort fraction (||efforts_net||): below this → alpha_min
+    adaptive_effort_hi: float = 0.5      # effort fraction (||efforts_net||): above this → alpha_max
+    adaptive_effort_alpha_min: float = 0.05  # EMA alpha at low effort (~20-frame window)
+    adaptive_effort_alpha_max: float = 0.5   # EMA alpha at high effort (~11 Hz cutoff at 100fps)
     smooth_contact_forces: bool = False  # proximity-adaptive contact force smoothing
     filter_min_cutoff: float = 1.0
     filter_beta: float = 0.0
@@ -7622,14 +7622,20 @@ class SMPLProcessor:
                 n_j = min(torques_vec.shape[1], efforts_net.shape[1], denom.shape[0])
                 efforts_net[:, :n_j] = torques_vec[:, :n_j] / denom[np.newaxis, :n_j, :]
 
-        # --- Magnitude-Adaptive Effort Smoothing ---
-        # At low torque magnitudes, SNR is poor and direction/magnitude noise
-        # dominates (30-60° direction swings at <15 Nm). At high magnitudes,
-        # sub-degree parent orientation jitter creates 10-20 Hz torque noise
-        # via local-frame gravity projection. Apply per-joint EMA with:
-        #   - magnitude-adaptive alpha (heavier smoothing at low magnitudes)
+        # --- Effort-Adaptive Smoothing ---
+        # At low effort (||τ/τ_max|| << 1), SNR is poor and direction/magnitude
+        # noise dominates. At high effort, sub-degree parent orientation
+        # jitter creates 10-20 Hz torque noise via local-frame gravity
+        # projection. Apply per-joint EMA with:
+        #   - effort-adaptive alpha (heavier smoothing at low effort)
         #   - joint-specific alpha_max (heavier for high-inertia proximal
         #     joints, lighter for nimble distal joints)
+        #
+        # The threshold is on effort (torque normalized by max_torque), not
+        # absolute torque magnitude — this matters for small-muscle joints
+        # (wrist, hand) whose maximum physiological torque is small enough
+        # that an absolute-Nm threshold would lock them permanently in
+        # heavy-smoothing regime regardless of motion speed.
         #
         # Per-joint alpha_max rationale (at 100fps):
         #   Proximal (pelvis/hip/spine): α=0.3 → ~5.7 Hz cutoff
@@ -7640,8 +7646,8 @@ class SMPLProcessor:
         #   Extremity (wrist/hand/foot/head): α=0.8 → ~26 Hz cutoff
         #     Low inertia, fast movements (e.g. gestures, footwork).
         if getattr(options, 'adaptive_effort_smooth', False) and F == 1:
-            lo = getattr(options, 'adaptive_effort_lo', 10.0)
-            hi = getattr(options, 'adaptive_effort_hi', 40.0)
+            lo = getattr(options, 'adaptive_effort_lo', 0.1)
+            hi = getattr(options, 'adaptive_effort_hi', 0.5)
             alpha_min = getattr(options, 'adaptive_effort_alpha_min', 0.05)
             global_alpha_max = getattr(options, 'adaptive_effort_alpha_max', 0.5)
             
@@ -7699,10 +7705,13 @@ class SMPLProcessor:
             en_cur = efforts_net[0]  # (J, 3)
             
             if prev_tv is not None and prev_tv.shape == tv_cur.shape:
-                # Per-joint adaptive alpha based on torque magnitude
-                tau_mags = np.linalg.norm(tv_cur, axis=-1)  # (J,)
+                # Per-joint adaptive alpha based on effort magnitude
+                # (effort = torque / max_torque, already computed per axis).
+                # Norm of the effort vector is dimensionless and naturally
+                # joint-scaled — fixes wrist/hand being locked at alpha_min.
+                eff_mags = np.linalg.norm(en_cur, axis=-1)  # (J,)
                 # Blend: 0 at lo, 1 at hi
-                blend = np.clip((tau_mags - lo) / max(hi - lo, 1e-6), 0.0, 1.0)
+                blend = np.clip((eff_mags - lo) / max(hi - lo, 1e-6), 0.0, 1.0)
                 # alpha: alpha_min at low magnitudes, per-joint alpha_max at high
                 alpha = alpha_min + blend * (_PER_JOINT_ALPHA_MAX[:n_j] - alpha_min)  # (J,)
                 alpha_3 = alpha[:, np.newaxis]  # (J, 1) for broadcasting

@@ -70,9 +70,13 @@ registry so they're invocable as `python muscle_activation_tester.py
 
 _(Update at end of each session — one short paragraph)_
 
-- **2026-05-19:** Investigation infrastructure set up (this doc + memory
-  pointer). No cases investigated yet. Next: user supplies the first
-  case (file, frame range, question).
+- **2026-05-19:** First investigation complete + fix applied. Confirmed
+  upper-limb over-filtering, applied effort-based threshold to
+  `adaptive_effort_smooth`, re-validated. Wrist/elbow alpha now varies
+  with actual effort instead of being locked at alpha_min. Open
+  follow-up: per-joint `acc_smooth_window` with global scalar (see
+  Known Issues). Next: user to spot-check fix in live patch, then
+  pick next case to investigate.
 
 ## Investigations log
 
@@ -94,7 +98,68 @@ Even null results matter — they document validated behaviors.
 - Files touched: <if any>
 ```
 
-_(no investigations yet)_
+### 2026-05-19 — Upper-limb over-filtering on popping_1 (frames 500-1000)
+- File: `/Users/drokeby/Projects/BMO_Lab/GRANTS/NFRF_2023/smpl_mocap_files/RP/popping_1_aligned_smpl_poses_aligned_yaw_aligned.npz`
+- Frames: 500–1000 (5.0 s at 100 fps) — popping dance, has jerky wrist/lower-arm motion
+- Question: are real jerky lower-arm/wrist movements being filtered out, or
+  only noise? User notes wrist/elbow effort visualization looks smooth even
+  in cartwheels because max_torque is high enough that effort isn't clipped.
+- Diagnostic: new `upper_limb_filtering` test in `muscle_activation_tester.py`.
+  Runs two passes — canonical vs (smooth_input_window=0, acc_smooth_window=0,
+  adaptive_effort_smooth=False). Reports RMS, frame-to-frame jitter, fraction
+  of frames in alpha_min regime, and top-K most divergent frames per joint.
+- Observation:
+  | joint     | raw_rms | filt_rms | ret% | jit_ret% | <lo% | alpha_est |
+  |-----------|---------|----------|------|----------|------|-----------|
+  | L_shldr   |   16.35 |     6.38 |  39% |       9% |  46% |     0.124 |
+  | R_shldr   |   19.82 |     7.19 |  36% |       8% |  47% |     0.135 |
+  | L_elbow   |    5.37 |     2.07 |  39% |       3% |  94% |     0.055 |
+  | R_elbow   |    5.37 |     1.36 |  25% |       4% |  92% |     0.055 |
+  | L_wrist   |    1.15 |     0.27 |  24% |       3% | 100% |     0.050 |
+  | R_wrist   |    0.45 |     0.19 |  42% |       3% | 100% |     0.050 |
+  Single-frame examples (real movement, not noise): R_wrist frame 674 raw=1.32
+  Nm filt=0.19 Nm at kinematic angular displacement 12.4°/frame (~1240°/s
+  raw motion). R_shoulder frame 617 raw=97 Nm filt=6.9 Nm at 4.6°/frame.
+- Judgement: INCORRECT — the pipeline is over-filtering real lower-arm motion.
+- Root cause: `adaptive_effort_smooth` uses a torque-magnitude threshold
+  (`adaptive_effort_lo=10 Nm`) that's above the wrist's maximum possible
+  torque on every axis (`wrist max_torque = [8, 15, 10]`, min axis = 8 Nm).
+  So wrists are mathematically incapable of escaping the alpha_min=0.05
+  heavy-smoothing regime, regardless of how fast the motion actually is.
+  Elbows have the same issue on the twist/abduction axes (max [10, 40, 8])
+  and on the flexion axis only escape during big swings. The filter design
+  was built around proximal joints where torque magnitudes are large.
+- Action: APPLIED fix #1. Switched `adaptive_effort_smooth` threshold from
+  torque magnitude (Nm) to effort magnitude (||τ/τ_max||). Field semantics
+  changed (`adaptive_effort_lo` / `_hi` now in effort units), defaults
+  retuned from 10.0/40.0 Nm to 0.1/0.5 effort. Re-ran diagnostic on same
+  range, results:
+  | joint     | ret%       | jit%        | <lo%        | alpha_est       |
+  |-----------|------------|-------------|-------------|-----------------|
+  | L_shldr   | 39→**47**  |  9→**13**   |  46→**20**  |  0.12→**0.22**  |
+  | R_shldr   | 36→**46**  |  8→**13**   |  47→**17**  |  0.14→**0.25**  |
+  | L_elbow   | 39→**52**  |  3→**6**    |  94→**62**  |  0.06→**0.10**  |
+  | R_elbow   | 25→**42**  |  4→**9**    |  92→**65**  |  0.06→**0.09**  |
+  | L_wrist   | 24→**30**  |  3→**5**    | 100→**72**  |  0.05→**0.09**  |
+  | R_wrist   | 42→42      |  3→3        | 100→**96**  |  0.05→0.05      |
+  L_shoulder/R_shoulder/elbows now see real per-frame alpha variation on
+  popping accents (top-divergence frames hit alpha_max). L_wrist's most
+  energetic frames now alpha=0.4-0.8 instead of permanently locked at 0.05.
+  R_wrist barely moved because its peak raw torque (2.26 Nm) sits just
+  above the lo=0.1 floor — correct behavior, that wrist genuinely isn't
+  doing much in this range.
+- Files touched: `dpg_system/smpl_processor.py` (lines 337-341 defaults +
+  comments, lines 7625-7641 docstring, lines 7700-7706 magnitude → effort),
+  `dpg_system/logodds_evaluator/muscle_activation_tester.py` (added
+  `test_upper_limb_filtering`, updated to track effort fraction).
+
+## Open follow-ups from this investigation
+
+- `acc_smooth_window` is a global SG window applied uniformly to all
+  joints (currently 7 at the live node). User wants this to be per-joint
+  with a single global scalar that multiplies the per-joint windows
+  (analogous to `adaptive_effort_alpha_max` being a global scalar on
+  per-joint alpha_max). This wasn't addressed in this session.
 
 ## Validated behaviors
 
@@ -107,9 +172,26 @@ _(none yet)_
 
 Pending work — things we noticed but haven't resolved.
 
-_(none yet)_
+- **Per-joint `acc_smooth_window`** (2026-05-19): currently global SG
+  window of 7 frames applied uniformly. Should become per-joint (smaller
+  for wrist/elbow, larger for proximal high-inertia joints) with a single
+  global scalar that multiplies the per-joint values. Surfaced during
+  the upper-limb over-filtering investigation as the secondary
+  contributor to lost wrist/elbow signal. Not addressed in that session.
 
 ## Pipeline change log
+
+### 2026-05-19 — `adaptive_effort_smooth` threshold: Nm → effort
+- Files: `dpg_system/smpl_processor.py`
+- What: `adaptive_effort_lo` / `_hi` switched from torque-magnitude
+  thresholds (Nm) to effort-magnitude thresholds (||τ/τ_max||). Defaults
+  retuned from 10.0/40.0 Nm to 0.1/0.5 effort. The blend uses
+  `||efforts_net||` instead of `||torques_vec||`.
+- Why: the Nm threshold was above the wrist's maximum possible torque
+  on every axis, locking wrist/hand permanently in alpha_min=0.05
+  heavy-smoothing regime regardless of motion speed. Effort is naturally
+  joint-scaled. See investigation entry 2026-05-19 (upper-limb).
+- Motivated by: 2026-05-19 upper-limb over-filtering investigation.
 
 Code changes made as a direct result of investigations. Date, file,
 what changed, why, and which investigation entry motivated it.
