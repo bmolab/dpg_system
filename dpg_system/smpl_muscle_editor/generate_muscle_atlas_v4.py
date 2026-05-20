@@ -742,12 +742,12 @@ def build_muscle_contours(jpos):
     muscles.append({
         'name': 'L_Trapezius', 'joint': 13,
         'contours': {'back': trapezius_contour(l_collar, l_shoulder, 1)},
-        'falloff': F * 1.5, 'flex_axis': [0, 0, 1],
+        'falloff': F * 1.5, 'flex_axis': [-0.3, 0.7, 1.0],  # X=-0.3 posterior tilt (lower trap); Y=+0.7 retraction; Z=+1 elevation
     })
     muscles.append({
         'name': 'R_Trapezius', 'joint': 14,
         'contours': {'back': trapezius_contour(r_collar, r_shoulder, -1)},
-        'falloff': F * 1.5, 'flex_axis': [0, 0, -1],  # R: Z negated
+        'falloff': F * 1.5, 'flex_axis': [-0.3, -0.7, -1.0],  # R mirror: X same (polarity same L/R), Y/Z negated
     })
 
     # --- Rhomboids: MERGED into Trapezius (same joint + flex_axis) ---
