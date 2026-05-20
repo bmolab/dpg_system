@@ -3485,7 +3485,7 @@ class SMPLProcessor:
             elif 'head' in name: val = [50.0, 50.0, 50.0]
             
             elif 'collar' in name: val = [60.0, 40.0, 60.0]      # Scapular pro/retraction
-            elif 'shoulder' in name: val = [30.0, 70.0, 60.0]    # X=twist~30, Y=flex/ext~40-80, Z=abd~40-60
+            elif 'shoulder' in name: val = [30.0, 100.0, 60.0]   # X=twist~30, Y=flex/ext~100 (athletic peak), Z=abd~40-60
             elif 'elbow' in name: val = [10.0, 40.0, 8.0]        # Flexion dominant
             elif 'wrist' in name: val = [8.0, 15.0, 10.0]        # Small muscles
             elif 'hand' in name: val = [3.0, 5.0, 3.0]           # Terminal segment
@@ -3539,7 +3539,7 @@ class SMPLProcessor:
             'neck': [50.0, 50.0, 50.0],
             'head': [50.0, 50.0, 50.0],
             'collar': [60.0, 40.0, 60.0],       # Scapular pro/retraction
-            'shoulder': [30.0, 70.0, 60.0],     # X=twist~30, Y=flex/ext~40-80, Z=abd~40-60
+            'shoulder': [30.0, 100.0, 60.0],    # X=twist~30, Y=flex/ext~100 (athletic peak), Z=abd~40-60
             'elbow': [10.0, 40.0, 8.0],          # Flexion dominant
             'wrist': [8.0, 15.0, 10.0],          # Small muscles
             'hand': [3.0, 5.0, 3.0]              # Terminal segment
