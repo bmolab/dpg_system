@@ -123,7 +123,12 @@ _skipped = []
 for import_name in to_be_imported:
     try:
         globals()[import_name] = import_module('dpg_system.' + import_name)
-        bare_import_name = import_name.split('_')[0]
+        if import_name.endswith('_nodes'):
+            bare_import_name = import_name[:-len('_nodes')]
+        elif import_name.endswith('_node'):
+            bare_import_name = import_name[:-len('_node')]
+        else:
+            bare_import_name = import_name
         if not _line_started:
             sys.stdout.write('Imported: ' + bare_import_name)
             _line_width = _indent + len(bare_import_name)
